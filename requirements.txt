@@ -1,0 +1,13 @@
+# Remove
+# Less common, pinned
+PlexAPI==4.2.0
+tmdbv3api==1.7.3
+trakt.py==4.2.0
+# More common, flexible
+bs4
+lxml
+requests>=2.4.2
+ruamel.yaml
+schedule
+retrying
+mutagen
