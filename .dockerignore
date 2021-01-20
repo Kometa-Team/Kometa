@@ -1,0 +1,10 @@
+**/dist
+**/build
+*.spec
+**/__pycache__
+/.vscode
+**/log
+README.md
+LICENSE
+.gitignore
+.git

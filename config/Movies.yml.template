@@ -1,0 +1,1418 @@
+collections:
+
+######################################################
+#                Chart Collections                   #
+######################################################
+
+  Plex Popular:
+      tautulli_popular:
+          list_days: 30
+          list_size: 20
+          list_buffer: 20
+      tautulli_watched:
+          list_days: 30
+          list_size: 20
+          list_buffer: 20
+      sort_title: +++_1Plex Popular
+      sync_mode: sync
+      summary: Movies Popular on Plex
+      collection_order: alpha
+  Trending:
+    trakt_trending: 40
+    tmdb_trending_daily: 40
+    tmdb_trending_weekly: 40
+    sort_title: +++_3Trending
+    sync_mode: sync
+    summary: Movies Trending across the internet
+    collection_order: alpha
+  Popular:
+    tmdb_popular: 40
+    imdb_list:
+      url: https://www.imdb.com/search/title/?title_type=feature,tv_movie,documentary,short
+      limit: 40
+    sort_title: +++_4Popular
+    sync_mode: sync
+    summary: Popular Movies across the internet
+    collection_order: alpha
+  Top Rated:
+    imdb_list: https://www.imdb.com/search/title/?groups=top_250&count=250
+    tmdb_top_rated: 250
+    sort_title: +++_5Top Rated
+    sync_mode: sync
+    summary: Top Rated Movies across the internet
+    collection_order: alpha
+  Best of 2014:
+    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2014
+    sort_title: +++_Best of 2014
+    sync_mode: sync
+    summary: Rotten Tomatoes Best Movies of 2014
+    collection_order: release
+  Best of 2015:
+    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2015
+    sort_title: +++_Best of 2015
+    sync_mode: sync
+    summary: Rotten Tomatoes Best Movies of 2015
+    collection_order: release
+  Best of 2016:
+    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2016
+    sort_title: +++_Best of 2016
+    sync_mode: sync
+    summary: Rotten Tomatoes Best Movies of 2016
+    collection_order: release
+  Best of 2017:
+    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2017
+    sort_title: +++_Best of 2017
+    sync_mode: sync
+    summary: Rotten Tomatoes Best Movies of 2017
+    collection_order: release
+  Best of 2018:
+    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2018
+    sort_title: +++_Best of 2018
+    sync_mode: sync
+    summary: Rotten Tomatoes Best Movies of 2018
+    collection_order: release
+  Best of 2019:
+    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2019
+    sort_title: +++_Best of 2019
+    sync_mode: sync
+    summary: Rotten Tomatoes Best Movies of 2019
+    collection_order: release
+  Best of 2020:
+    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2020
+    sort_title: +++_Best of 2020
+    sync_mode: sync
+    summary: Rotten Tomatoes Best Movies of 2020
+    collection_order: release
+
+
+######################################################
+#                Genre Collections                   #
+######################################################
+
+  Action:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=action
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=action&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Action
+    sync_mode: sync
+    summary: Action film is a genre wherein physical action takes precedence in the storytelling. The film will often have continuous motion and action including physical stunts, chases, fights, battles, and races. The story usually revolves around a hero that has a goal, but is facing incredible odds to obtain it.
+    collection_order: alpha
+  Adventure:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=adventure
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=adventure&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Adventure
+    sync_mode: sync
+    summary: Adventure film is a genre that revolves around the conquests and explorations of a protagonist. The purpose of the conquest can be to retrieve a person or treasure, but often the main focus is simply the pursuit of the unknown. These films generally take place in exotic locations and play on historical myths. Adventure films incorporate suspenseful puzzles and intricate obstacles that the protagonist must overcome in order to achieve the end goal.
+    collection_order: alpha
+  Animation:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=animation
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=animation&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Animation
+    sync_mode: sync
+    summary: Animated film is a collection of illustrations that are photographed frame-by-frame and then played in a quick succession. Since its inception, animation has had a creative and imaginative tendency. Being able to bring animals and objects to life, this genre has catered towards fairy tales and children’s stories. However, animation has long been a genre enjoyed by all ages. As of recent, there has even been an influx of animation geared towards adults. Animation is commonly thought of as a technique, thus it’s ability to span over many different genres.
+    collection_order: alpha
+  Christmas:
+    trakt_list:
+      - https://trakt.tv/users/movistapp/lists/christmas-movies
+      - https://trakt.tv/users/2borno2b/lists/christmas-movies-extravanganza
+    imdb_list:
+      - https://www.imdb.com/list/ls025976544/
+      - https://www.imdb.com/list/ls003863000/
+      - https://www.imdb.com/list/ls027454200/
+      - https://www.imdb.com/list/ls027886673/
+      - https://www.imdb.com/list/ls097998599/
+    sort_title: ++_Christmas
+    sync_mode: sync
+    summary: Christmas film is a genre that revolves around the plot involving Christmas.
+    collection_order: alpha
+  Comedy:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=comedy
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=comedy&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Comedy
+    sync_mode: sync
+    summary: Comedy is a genre of film that uses humor as a driving force. The aim of a comedy film is to illicit laughter from the audience through entertaining stories and characters. Although the comedy film may take on some serious material, most have a happy ending. Comedy film has the tendency to become a hybrid sub-genre because humor can be incorporated into many other genres. Comedies are more likely than other films to fall back on the success and popularity of an individual star.
+    collection_order: alpha
+  Crime:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=crime
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=crime&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Crime
+    sync_mode: sync
+    summary: Crime film is a genre that revolves around the action of a criminal mastermind. A Crime film will often revolve around the criminal himself, chronicling his rise and fall. Some Crime films will have a storyline that follows the criminal's victim, yet others follow the person in pursuit of the criminal. This genre tends to be fast paced with an air of mystery – this mystery can come from the plot or from the characters themselves.
+    collection_order: alpha
+  Documentary:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=documentary
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=documentary&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Documentary
+    sync_mode: sync
+    summary: Documentary film is a non-fiction genre intended to document reality primarily for the purposes of instruction, education, or maintaining a historical record.
+    collection_order: alpha
+  Drama:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=drama
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=drama&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Drama
+    sync_mode: sync
+    summary: Drama film is a genre that relies on the emotional and relational development of realistic characters. While Drama film relies heavily on this kind of development, dramatic themes play a large role in the plot as well. Often, these dramatic themes are taken from intense, real life issues. Whether heroes or heroines are facing a conflict from the outside or a conflict within themselves, Drama film aims to tell an honest story of human struggles.
+    collection_order: alpha
+  Family:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=family
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=family&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Family
+    sync_mode: sync
+    summary: Family film is a genre that is contains appropriate content for younger viewers. Family film aims to appeal not only to children, but to a wide range of ages. While the storyline may appeal to a younger audience, there are components of the film that are geared towards adults- such as witty jokes and humor. This genre may fall into many other genres, including comedy, adventure, fantasy, and animated film.
+    collection_order: alpha
+  Fantasy:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=fantasy
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=fantasy&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Fantasy
+    sync_mode: sync
+    summary: Fantasy film is a genre that incorporates imaginative and fantastic themes. These themes usually involve magic, supernatural events, or fantasy worlds. Although it is its own distinct genre, these films can overlap into the horror and science fiction genres. Unlike science fiction, a fantasy film does not need to be rooted in fact. This element allows the audience to be transported into a new and unique world. Often, these films center on an ordinary hero in an extraordinary situation.
+    collection_order: alpha
+  Gangster:
+    imdb_list:
+      - https://www.imdb.com/list/ls026270180/
+      - https://www.imdb.com/list/ls000093502/
+    sort_title: ++_Gangster
+    sync_mode: sync
+    summary: Gangster film is a sub-genre of crime films that center on organized crime or the mafia. Often the plot revolves around the rise and fall of an organized crime leader. Many Gangster films explore the destructive nature of organized crime, while others attempt to show the humanity of the individual characters.
+    collection_order: alpha
+  Halloween.:
+    trakt_list:
+      - https://trakt.tv/users/kairbear08/lists/halloween
+      - https://trakt.tv/users/mybicycle/lists/halloween
+      - https://trakt.tv/users/jayinftl/lists/halloween
+      - https://trakt.tv/users/roswellgeek/lists/halloween
+    sort_title: ++_Halloween
+    sync_mode: sync
+    name_mapping: Halloween (Season)
+    summary: Halloween film is a genre that revolves around the plot involving Halloween.
+    collection_order: alpha
+  History:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=history
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=history&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_History
+    sync_mode: sync
+    summary: History film is a genre that takes historical events and people and interprets them in a larger scale. Historical accuracy is not the main focus, but rather the telling of a grandiose story. The drama of an History film is often accentuated by a sweeping musical score, lavish costumes, and high production value.
+    collection_order: alpha
+  Horror:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=horror
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=horror&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Horror
+    sync_mode: sync
+    summary: Horror film is a genre that aims to create a sense of fear, panic, alarm, and dread for the audience. These films are often unsettling and rely on scaring the audience through a portrayal of their worst fears and nightmares. Horror films usually center on the arrival of an evil force, person, or event. Many Horror films include mythical creatures such as ghosts, vampires, and zombies. Traditionally, Horror films incorporate a large amount of violence and gore into the plot. Though it has its own style, Horror film often overlaps into Fantasy, Thriller, and Science-Fiction genres.
+    collection_order: alpha
+  LGBTQ+:
+    imdb_list: https://www.imdb.com/list/ls062688328/
+    sort_title: ++_LGBTQ+
+    sync_mode: sync
+    summary: LGBTQ+ film is a genre of films where the characters decpict lesbian, gay, bisexual, transgender, queer and intersex people.
+    collection_order: alpha
+  Martial Arts:
+    imdb_list:
+      - https://www.imdb.com/list/ls000099643/
+      - https://www.imdb.com/list/ls068611186/
+      - https://www.imdb.com/list/ls068378513/
+      - https://www.imdb.com/list/ls090404120/
+    sort_title: ++_Martial Arts
+    sync_mode: sync
+    summary: Martial Arts film is a sub-genre of action films that feature numerous martial arts combat between characters. These combats are usually the films' primary appeal and entertainment value, and often are a method of storytelling and character expression and development. Martial Arts are frequently featured in training scenes and other sequences in addition to fights. Martial Arts films commonly include other types of action, such as hand-to-hand combat, stuntwork, chases, and gunfights.
+    collection_order: alpha
+  Music:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=music
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=music&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Music
+    sync_mode: sync
+    summary: Music film is genre that revolves around music being an integral part of the characters lives.
+    collection_order: alpha
+  Musical:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=musical
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=musical&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Musical
+    sync_mode: sync
+    summary: A Musical interweaves vocal and dance performances into the narrative of the film. The songs of a film can either be used to further the story or simply enhance the experience of the audience. These films are often done on a grand scale and incorporate lavish costumes and sets. Traditional musicals center on a well-known star, famous for their dancing or singing skills (i.e. Fred Astaire, Gene Kelly, Judy Garland). These films explore concepts such are love and success, allowing the audience to escape from reality.
+    collection_order: alpha
+  Mystery:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=mystery
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=mystery&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Mystery
+    sync_mode: sync
+    summary: A Mystery film centers on a person of authority, usually a detective, that is trying to solve a mysterious crime. The main protagonist uses clues, investigation, and logical reasoning. The biggest element in these films is a sense of “whodunit” suspense, usually created through visual cues and unusual plot twists.
+    collection_order: alpha
+  Pandemic:
+    imdb_list: https://www.imdb.com/list/ls092321048/
+    sort_title: ++_Pandemic
+    sync_mode: sync
+    summary: A Pandemic film resolves around widespread viruses, plagues, and diseases.
+    collection_order: alpha
+  Romance:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Romance
+    sync_mode: sync
+    summary: "Romance film can be defined as a genre wherein the plot revolves around the love between two protagonists. This genre usually has a theme that explores an issue within love, including but not limited to: love at first sight, forbidden love, love triangles, and sacrificial love. The tone of Romance film can vary greatly. Whether the end is happy or tragic, Romance film aims to evoke strong emotions in the audience."
+    collection_order: alpha
+  Romantic Comedy:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance,comedy
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance,comedy&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Romantic Comedy
+    sync_mode: sync
+    summary: Romantic Comedy is a genre that attempts to catch the viewer’s heart with the combination of love and humor. This sub-genre is light-hearted and usually places the two protagonists in humorus situation. Romantic-Comedy film revolves around a romantic ideal, such as true love. In the end, the ideal triumphs over the situation or obstacle, thus creating a happy ending.
+    collection_order: alpha
+    filters:
+      genre: Comedy
+  Romantic Drama:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance,drama
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance,drama&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Romantic Drama
+    sync_mode: sync
+    summary: Romantic Drama film is a genre that explores the complex side of love. The plot usually centers around an obstacle that is preventing love between two people. The obstacles in Romantic Drama film can range from a family's disapproval, to forbidden love, to one's own psychological restraints. Many Romantic Dramas end with the lovers separating because of the enormity of the obstacle, the realization of incompatibility, or simply because of fate.
+    collection_order: alpha
+    filters:
+      genre: Drama
+  Sci-Fi:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sci-fi
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sci-fi&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Sci-Fi
+    sync_mode: sync
+    summary: Science Fiction (Sci-Fi) film is a genre that incorporates hypothetical, science-based themes into the plot of the film. Often, this genre incorporates futuristic elements and technologies to explore social, political, and philosophical issues. The film itself is usually set in the future, either on earth or in space. Traditionally, a Science Fiction film will incorporate heroes, villains, unexplored locations, fantastical quests, and advanced technology.
+    collection_order: alpha
+  Sports:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sport
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sport&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Sport
+    sync_mode: sync
+    summary: A Sport Film revolves around a sport setting, event, or an athlete. Often, these films will center on a single sporting event that carries significant importance. Sports films traditionally have a simple plot that builds up to the significant sporting event. This genre is known for incorporating film techniques to build anticipation and intensity. Sport films have a large range of sub-genres, from comedies to dramas, and are more likely than other genres to be based true-life events.
+    collection_order: alpha
+  Stand Up Comedy:
+    imdb_list:
+      - https://www.imdb.com/list/ls070221411/
+      - https://www.imdb.com/list/ls086584751/
+      - https://www.imdb.com/list/ls086022668/
+      - https://www.imdb.com/list/ls049792208/
+    sort_title: ++_Stand Up Comedy
+    sync_mode: sync
+    summary: Stand-up comedy is a comedic style in which a comedian performs in front of a live audience, speaking directly to them through a microphone. Comedians give the illusion that they are dialoguing, but in actuality, they are monologuing a grouping of humorous stories, jokes and one-liners, typically called a shtick, routine, act, or set. Some stand-up comedians use props, music or magic tricks to enhance their acts. Stand-up comedians perform quasi-autobiographical and fictionalized extensions of their offstage selves.
+    collection_order: alpha
+  Sword & Sorcery:
+    imdb_list: https://www.imdb.com/list/ls022909805
+    sort_title: ++_Sword & Sorcery
+    sync_mode: sync
+    summary: Sword and Sorcery film is a sub-genre of Fantasy that tend to be more plot-driven. These films rely on heavy action and battle scenes. Common themes in Sword and Sorcery films include a rescue mission, saving a princess, and battling a fantastical monster. The worlds and characters in these films are often much less developed than in other fantasy sub-genres. Of all the Fantasy sub-genres, Sword and Sorcery is most likely to be geared towards a younger audience, as many of these films are animated.
+    collection_order: alpha
+  Thriller:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=thriller
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=thriller&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Thriller
+    sync_mode: sync
+    summary: Thriller Film is a genre that revolves around anticipation and suspense. The aim for Thrillers is to keep the audience alert and on the edge of their seats. The protagonist in these films is set against a problem – an escape, a mission, or a mystery. No matter what sub-genre a Thriller film falls into, it will emphasize the danger that the protagonist faces. The tension with the main problem is built on throughout the film and leads to a highly stressful climax.
+    collection_order: alpha
+  War:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=war
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=war&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_War
+    sync_mode: sync
+    summary: War Film is a genre that looks at the reality of war on a grand scale. They often focus on landmark battles as well as political issues within war. This genre usually focuses on a main character and his team of support, giving the audience an inside look into the gritty reality of war.
+    collection_order: alpha
+  Western:
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=western
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=western&sort=user_rating,desc
+      limit: 100
+    sort_title: ++_Western
+    sync_mode: sync
+    summary: "Western Film is a genre that revolves around stories primarily set in the late 19th century in the American Old West. Most Westerns are set between the American Civil War (1865) and the early 1900s. Common themes within Western Film include: the conquest of the wild west, the cultural separation of the East and the West, the West’s resistance to modern change, the conflict between Cowboys and Indians, outlaws, and treasure/gold hunting. American Western Film usually revolves around a stoic hero and emphasizes the importance of honor and sacrifice."
+    collection_order: alpha
+
+######################################################
+#                TMDB Collections                    #
+######################################################
+  101 Dalmatians:
+    tmdb_collection_details: 100693
+    schedule: monthly(2)
+  101 Dalmatians (Live-Action):
+    tmdb_collection_details: 124916
+    schedule: monthly(2)
+  28 Days/Weeks Later:
+    tmdb_collection_details: 1565
+    name_mapping: 28 Days-Weeks Later
+    schedule: monthly(2)
+  3 Ninja:
+    tmdb_collection_details: 71458
+    schedule: monthly(2)
+  "300":
+    tmdb_collection_details: 125570
+    schedule: monthly(19)
+  Addams Family:
+    tmdb_collection_details: 11716
+    schedule: monthly(2)
+  Air Bud:
+    tmdb_collection_details: 97445
+    schedule: monthly(2)
+  Aladdin:
+    tmdb_collection_details: 86027
+    schedule: monthly(2)
+  Alice in Wonderland:
+    tmdb_collection_details: 261307
+    schedule: monthly(2)
+  Alien:
+    tmdb_collection_details: 8091, 135416
+    schedule: monthly(2)
+  All Dogs Go to Heaven:
+    tmdb_collection_details: 140910
+    schedule: monthly(2)
+  Almighty:
+    tmdb_collection_details: 124949
+    schedule: monthly(2)
+  Alvin and the Chipmunks:
+    tmdb_collection_details: 167613
+    schedule: monthly(2)
+  The Amazing Spider-Man:
+    tmdb_collection_details: 125574
+    schedule: monthly(2)
+  American Pie:
+    tmdb_collection_details: 2806, 298820
+    schedule: monthly(2)
+  American Psycho:
+    tmdb_collection_details: 86105
+    schedule: monthly(2)
+  An American Tail:
+    tmdb_collection_details: 8783
+    schedule: monthly(2)
+  Anaconda:
+    tmdb_collection_details: 105995
+    tmdb_movie: 336560
+    schedule: monthly(2)
+  Anchorman:
+    tmdb_collection_details: 93791
+    schedule: monthly(2)
+  Angels in the ...:
+    tmdb_collection_details: 508334
+    name_mapping: Angels in the
+    schedule: monthly(2)
+  The Angry Birds:
+    tmdb_collection_details: 531315
+    schedule: monthly(8)
+    add_to_arr: true
+  Annabelle:
+    tmdb_collection_details: 402074
+    schedule: monthly(2)
+  Ant-Man:
+    tmdb_collection_details: 422834
+    schedule: monthly(2)
+  Appleseed:
+    tmdb_collection_details: 87800, 371526
+    schedule: monthly(2)
+  Atlantis:
+    tmdb_collection_details: 100965
+    schedule: monthly(2)
+  Attack on Titan:
+    tmdb_collection_details: 370411
+    schedule: monthly(2)
+  Austin Powers:
+    tmdb_collection_details: 1006
+    schedule: monthly(2)
+  The Avengers:
+    tmdb_collection_details: 86311
+    schedule: monthly(2)
+  AVP:
+    tmdb_collection_details: 115762
+    schedule: monthly(2)
+  Babe:
+    tmdb_collection_details: 9435
+    schedule: monthly(2)
+  Back to the Future:
+    tmdb_collection_details: 264
+    schedule: monthly(2)
+  Bad Boys:
+    tmdb_collection_details: 14890
+    schedule: monthly(2)
+  Bad Moms:
+    tmdb_collection_details: 487376
+    schedule: monthly(2)
+  Bad Santa:
+    tmdb_collection_details: 423173
+    schedule: monthly(2)
+  Balto:
+    tmdb_collection_details: 117693
+    schedule: monthly(2)
+  Bambi:
+    tmdb_collection_details: 87250
+    schedule: monthly(2)
+  Barbershop:
+    tmdb_collection_details: 176097
+    tmdb_movie: 14177
+    schedule: monthly(2)
+  Batman:
+    tmdb_collection_details: 120794
+    schedule: monthly(2)
+  Batman (Adam West) Animation:
+    tmdb_collection_details: 626517
+    schedule: monthly(2)
+  Beauty and the Beast:
+    tmdb_collection_details: 153010
+    schedule: monthly(2)
+  Bill & Ted's Most Excellent:
+    tmdb_collection_details: 91746
+    schedule: monthly(2)
+  Black Water:
+    tmdb_collection_details: 730166
+    schedule: monthly(2)
+  Blade:
+    tmdb_collection_details: 735
+    schedule: monthly(2)
+  Blade Runner:
+    tmdb_collection_details: 422837
+    schedule: monthly(2)
+  The Blues Brothers:
+    tmdb_collection_details: 112636
+    schedule: monthly(2)
+  The Boondock Saints:
+    tmdb_collection_details: 87186
+    schedule: monthly(2)
+  Borat Moviefilms:
+    tmdb_collection_details: 747168
+    schedule: monthly(2)
+  The Bourne:
+    tmdb_collection_details: 31562
+    schedule: monthly(2)
+  The Boy:
+    tmdb_collection_details: 666337
+    schedule: monthly(2)
+  Bring It On:
+    tmdb_collection_details: 430186
+    schedule: monthly(2)
+  Brother Bear:
+    tmdb_collection_details: 96472
+    schedule: monthly(2)
+  The Buddies:
+    tmdb_collection_details: 91657
+    schedule: monthly(2)
+  Captain America:
+    tmdb_collection_details: 131295
+    schedule: monthly(2)
+  Carrie:
+    tmdb_collection_details: 257053
+    schedule: monthly(2)
+  Cars:
+    tmdb_collection_details: 87118
+    schedule: monthly(2)
+  Charlie Brown:
+    imdb_list: https://www.imdb.com/list/ls054850259/
+    summary: Collection of Movies and TV Specials with the beloved Peanuts characters.
+    schedule: monthly(2)
+  Charlie's Angels:
+    tmdb_collection_details: 86029
+    schedule: monthly(2)
+  Cheaper by the Dozen:
+    tmdb_collection_details: 114783
+    schedule: monthly(2)
+  The Chronicles of Narnia:
+    tmdb_collection_details: 420
+    schedule: monthly(2)
+  The Chronicles of Riddick:
+    tmdb_collection_details: 2794
+    schedule: monthly(2)
+  Cinderella:
+    tmdb_collection_details: 55419
+    schedule: monthly(2)
+  Cinderella Story:
+    tmdb_collection_details: 437451
+    schedule: monthly(2)
+  City Slickers:
+    tmdb_collection_details: 150156
+    schedule: monthly(2)
+  Clash of the Titans:
+    tmdb_collection_details: 86780
+    schedule: monthly(2)
+  Clerks:
+    tmdb_collection_details: 182813
+    schedule: monthly(2)
+  Cloudy with a Chance of Meatballs:
+    tmdb_collection_details: 177467
+    schedule: monthly(2)
+  Cloverfield:
+    imdb_list: https://www.imdb.com/list/ls021933730/
+    summary: Cloverfield is an American science fiction anthology film series and media franchise created and produced by J. J. Abrams consisting of three films, viral marketing websites linking the films together, and a tie-in manga to the first film titled Cloverfield/Kishin (2008), all set in a shared fictional universe referred to as the "Cloververse". The franchise as a whole deals with creatures from other dimensions attacking Earth throughout various decades, all as a repercussion of an experiment by an astronaut team aboard the Cloverfield Station in outer-space. Each film depicts the reality-altering effects of their study, which was meant to find a new energy source replacing the planet's depleted resources, only to open portals for assault from various beasts from deep space.
+    schedule: monthly(17)
+  The Conjuring:
+    tmdb_collection_details: 313086
+    schedule: monthly(2)
+  Cornetto Trilogy:
+    imdb_list: https://www.imdb.com/list/ls068623110/
+    summary: An anthology series of British comedic genre films directed by Edgar Wright, written by Wright and Simon Pegg, produced by Nira Park, and starring Pegg and Nick Frost. The trilogy consists of Shaun of the Dead (2004), Hot Fuzz (2007), and The World's End (2013).
+    schedule: monthly(2)
+  Creed:
+    tmdb_collection_details: 553717
+    schedule: monthly(2)
+  Crocodile Dundee:
+    tmdb_collection_details: 9332
+    schedule: monthly(2)
+  The Croods:
+    tmdb_collection_details: 464577
+    schedule: monthly(2)
+  Crouching Tiger, Hidden Dragon:
+    tmdb_collection_details: 290973
+    schedule: monthly(2)
+  Daddy's Home:
+    tmdb_collection_details: 473971
+    schedule: monthly(2)
+  The Dark Knight:
+    tmdb_collection_details: 263
+    schedule: monthly(2)
+  DC Super Hero Girls:
+    tmdb_collection_details: 477208, 557495
+    schedule: monthly(2)
+  Deadpool:
+    tmdb_collection_details: 448150
+    tmdb_movie: 567604
+    schedule: monthly(2)
+  Death Note:
+    tmdb_collection_details: 102019
+    schedule: monthly(2)
+  Death Race:
+    tmdb_collection_details: 86116
+    schedule: monthly(2)
+  The Debt Collector:
+    tmdb_collection_details: 709271
+    schedule: monthly(2)
+  Despicable Me:
+    tmdb_collection_details: 86066, 544669
+    schedule: monthly(2)
+  Die Hard:
+    tmdb_collection_details: 1570
+    schedule: monthly(2)
+  Dirty Harry:
+    tmdb_collection_details: 10456
+    schedule: monthly(2)
+  Divergent:
+    tmdb_collection_details: 283579
+    schedule: monthly(2)
+  A Dog's Purpose:
+    tmdb_collection_details: 591028
+    schedule: monthly(2)
+  DragonHeart:
+    tmdb_collection_details: 169452
+    schedule: monthly(2)
+  Dumb and Dumber:
+    tmdb_collection_details: 96665
+    schedule: monthly(2)
+  Dungeons & Dragons:
+    tmdb_collection_details: 106498
+    add_to_arr: true
+    schedule: monthly(7)
+  The Emperor's New Groove:
+    tmdb_collection_details: 178117
+    schedule: monthly(2)
+  The Equalizer:
+    tmdb_collection_details: 523855
+    schedule: monthly(2)
+  Escape From ...:
+    tmdb_collection_details: 115838
+    name_mapping: Escape From
+    schedule: monthly(2)
+  Escape Plan:
+    tmdb_collection_details: 525891
+    schedule: monthly(2)
+  Evangelion:
+    tmdb_collection_details: 210303
+    summary: A Japanese animated film series and a retelling of the original Neon Genesis Evangelion anime television series, produced by Studio Khara. Hideaki Anno served as the writer and general manager of the project, with Kazuya Tsurumaki and Masayuki directing the films themselves. Yoshiyuki Sadamoto, Ikuto Yamashita and Shiro Sagisu returned to provide character designs, mechanical designs and music respectively.
+    schedule: monthly(2)
+  The Expendables:
+    tmdb_collection_details: 126125
+    schedule: monthly(2)
+  Fantasia:
+    tmdb_collection_details: 55427
+    schedule: monthly(2)
+  Fantastic Beasts:
+    tmdb_collection_details: 435259
+    schedule: monthly(2)
+  Fantastic Four:
+    tmdb_collection_details: 9744
+    schedule: monthly(2)
+  The Fast and the Furious:
+    tmdb_collection_details: 9485, 688042
+    schedule: monthly(2)
+  Fifty Shades:
+    tmdb_collection_details: 344830
+    schedule: monthly(2)
+  Final Destination:
+    tmdb_collection_details: 8864
+    schedule: monthly(2)
+  Final Fantasy:
+    imdb_list: https://www.imdb.com/list/ls022264056/
+    summary: A collection of films based off or closely associated with the Final Fantasy video games.
+    schedule: monthly(2)
+  Finding Nemo:
+    tmdb_collection_details: 137697
+    schedule: monthly(2)
+  The Flintstones:
+    tmdb_collection_details: 351684
+    schedule: monthly(2)
+  The Fox and the Hound:
+    tmdb_collection_details: 100970
+    schedule: monthly(2)
+  Free Willy:
+    tmdb_collection_details: 9328
+    schedule: monthly(2)
+  Friday:
+    tmdb_collection_details: 43563
+    schedule: monthly(2)
+  Friday the 13th:
+    tmdb_collection_details: 9735
+    tmdb_movie: 6466, 222724
+    schedule: monthly(2)
+  Frozen:
+    tmdb_collection_details: 386382
+    tmdb_movie: 326359, 460793
+    schedule: monthly(2)
+  G.I. Joe:
+    tmdb_collection_details: 135468
+    schedule: monthly(2)
+  Garfield:
+    tmdb_collection_details: 86115, 373918
+    schedule: monthly(2)
+  George Carlin Stand Up:
+    imdb_list: https://www.imdb.com/list/ls070221411/
+    summary: Collection of George Carlin's Stand Up Comedy HBO Specials
+    schedule: monthly(2)
+  George Lopez Stand Up:
+    imdb_list: https://www.imdb.com/list/ls086584751/
+    summary: Collection of George Lopez's Stand Up Comedy Specials
+    schedule: monthly(2)
+  George of the Jungle:
+    tmdb_collection_details: 126221
+    schedule: monthly(2)
+  Ghost in the Shell:
+    tmdb_collection_details: 23026
+    schedule: monthly(2)
+  Ghost Rider:
+    tmdb_collection_details: 90306
+    schedule: monthly(2)
+  Ghostbusters:
+    tmdb_collection_details: 2980
+    tmdb_movie: 43074
+    schedule: monthly(2)
+  The Girl - Millennium:
+    tmdb_collection_details: 575987
+    schedule: monthly(2)
+  The Godfather:
+    tmdb_collection_details: 230
+    schedule: monthly(2)
+  Godzilla (Showa):
+    tmdb_collection_details: 374509
+    tmdb_movie: 18983
+    schedule: monthly(2)
+  Godzilla (Heisei):
+    tmdb_collection_details: 374511
+    tmdb_movie: 39256
+    schedule: monthly(2)
+  Godzilla (Millennium):
+    tmdb_collection_details: 374512
+    schedule: monthly(2)
+  Godzilla (MonsterVerse):
+    tmdb_collection_details: 535313
+    tmdb_movie: 293167
+    schedule: monthly(2)
+  Godzilla (Anime):
+    tmdb_collection_details: 535790
+    schedule: monthly(2)
+  A Goofy Movie:
+    tmdb_collection_details: 410261
+    schedule: monthly(2)
+  Goosebumps:
+    tmdb_collection_details: 508783
+    schedule: monthly(19)
+  Guardians of the Galaxy:
+    tmdb_collection_details: 284433
+    schedule: monthly(2)
+  Green Street Hooligans:
+    tmdb_collection_details: 152544
+    schedule: monthly(2)
+  Grown Ups:
+    tmdb_collection_details: 180546
+    schedule: monthly(2)
+  Halloween:
+    tmdb_collection_details: 91361, 126209
+    schedule: monthly(2)
+  Halo:
+    tmdb_list_details: 7070832
+    schedule: monthly(2)
+  The Hangover:
+    tmdb_collection_details: 86119
+    schedule: monthly(2)
+  Hannibal Lecter:
+    tmdb_collection_details: 9743
+    tmdb_movie: 11454
+    schedule: monthly(2)
+  Happy Death Day:
+    tmdb_collection_details: 526380
+    schedule: monthly(19)
+  Happy Feet:
+    tmdb_collection_details: 92012
+    schedule: monthly(2)
+  Harold & Kumar:
+    tmdb_collection_details: 30663
+    schedule: monthly(2)
+  Harry Potter:
+    tmdb_collection_details: 1241
+    schedule: monthly(2)
+  ... Has Fallen:
+    tmdb_collection_details: 508783
+    name_mapping: Has Fallen
+    schedule: monthly(2)
+  Hellboy:
+    tmdb_collection_details: 508783
+    schedule: monthly(2)
+  Hellboy (Animated):
+    tmdb_collection_details: 123203
+    schedule: monthly(2)
+  High School Musical:
+    tmdb_collection_details: 87253
+    schedule: monthly(2)
+  Highlander:
+    tmdb_collection_details: 8050
+    schedule: monthly(2)
+  The Hobbit:
+    tmdb_collection_details: 121938
+    schedule: monthly(2)
+  Home Alone:
+    tmdb_collection_details: 9888
+    schedule: monthly(2)
+  Honey, I Shrunk the Kids:
+    tmdb_collection_details: 72119
+    schedule: monthly(2)
+  Horrible Bosses:
+    tmdb_collection_details: 280588
+    schedule: monthly(2)
+  Hot Tub Time Machine:
+    tmdb_collection_details: 313576
+    schedule: monthly(2)
+  Hotel Transylvania:
+    tmdb_collection_details: 185103
+    schedule: monthly(2)
+  House of 1000 Corpses:
+    tmdb_collection_details: 105625
+    schedule: monthly(2)
+  How to Train Your Dragon:
+    tmdb_collection_details: 89137
+    schedule: monthly(2)
+  The Human Centipede:
+    tmdb_collection_details: 96671
+    schedule: monthly(2)
+  The Hunchback of Notre Dame:
+    tmdb_collection_details: 97456
+    schedule: monthly(2)
+  The Hunger Games:
+    tmdb_collection_details: 131635
+    schedule: monthly(2)
+  The Huntsman:
+    tmdb_collection_details: 393379
+    schedule: monthly(2)
+  Ice Age:
+    tmdb_collection_details: 8354
+    tmdb_movie: 79218, 717095, 387893
+    schedule: monthly(2)
+  The Incredibles:
+    tmdb_collection_details: 468222
+    schedule: monthly(2)
+  Independence Day:
+    tmdb_collection_details: 304378
+    schedule: monthly(2)
+  Indiana Jones:
+    tmdb_collection_details: 84
+    schedule: monthly(2)
+  Ip Man:
+    tmdb_collection_details: 70068
+    tmdb_movie: 658009, 643413, 450001, 751391, 44249, 182127, 44865
+    collection_order: alpha
+    schedule: monthly(2)
+  Iron Man:
+    tmdb_collection_details: 131292
+    schedule: monthly(2)
+  It:
+    tmdb_collection_details: 477962
+    schedule: monthly(2)
+  James Bond:
+    tmdb_collection_details: 645
+    schedule: monthly(2)
+  Jaws:
+    tmdb_collection_details: 2366
+    schedule: monthly(2)
+  Jay and Silent Bob:
+    tmdb_collection_details: 726870
+    schedule: monthly(2)
+  Jeff Dunham Stand Up:
+    imdb_list: https://www.imdb.com/list/ls086022668/
+    summary: Collection of Jeff Dunham's Stand Up Comedy Specials
+    schedule: monthly(2)
+  John Wick:
+    tmdb_collection_details: 404609
+    schedule: monthly(2)
+  Johnny Tsunami:
+    tmdb_collection_details: 394316
+    schedule: monthly(2)
+  Jumanji:
+    tmdb_collection_details: 495527
+    schedule: monthly(2)
+  Jump Street:
+    tmdb_collection_details: 212562
+    schedule: monthly(2)
+  The Jungle Book:
+    tmdb_collection_details: 97459
+    schedule: monthly(2)
+  Jurassic Park:
+    tmdb_collection_details: 328
+    tmdb_movie: 630322
+    schedule: monthly(2)
+  The Karate Kid:
+    tmdb_collection_details: 8580
+    tmdb_movie: 38575
+    schedule: monthly(2)
+  Kevin Hart Stand Up:
+    imdb_list: https://www.imdb.com/list/ls049792208/
+    summary: Collection of Kevin Hart's Stand Up Comedy Specials
+    schedule: monthly(2)
+  Kick-Ass:
+    tmdb_collection_details: 179892
+    schedule: monthly(2)
+  Kill Bill:
+    tmdb_collection_details: 2883
+    schedule: monthly(2)
+  Kingsman:
+    tmdb_collection_details: 391860
+    schedule: monthly(2)
+  Kung Fu Panda:
+    tmdb_collection_details: 77816
+    schedule: monthly(2)
+  Lady and the Tramp:
+    tmdb_collection_details: 97460
+    schedule: monthly(2)
+  Lake Placid:
+    tmdb_collection_details: 97768
+    schedule: monthly(2)
+  The Land Before Time:
+    tmdb_collection_details: 19163
+    schedule: monthly(2)
+  Legally Blonde:
+    tmdb_collection_details: 86024
+    schedule: monthly(2)
+  LEGO DC Comics Super Heroes:
+    tmdb_collection_details: 386162
+    schedule: monthly(2)
+  The Lego Movie:
+    tmdb_collection_details: 325470
+    schedule: monthly(2)
+  Lego Star Wars:
+    tmdb_collection_details: 302331
+    schedule: monthly(2)
+  Lethal Weapon:
+    tmdb_collection_details: 945
+    schedule: monthly(2)
+  Lilo & Stitch:
+    tmdb_collection_details: 97461
+    schedule: monthly(2)
+  The Lion King:
+    tmdb_collection_details: 94032
+    schedule: monthly(2)
+  The Little Mermaid:
+    tmdb_collection_details: 33085
+    schedule: monthly(2)
+  The Lord of the Rings:
+    tmdb_collection_details: 119
+    schedule: monthly(2)
+  The Lord of the Rings (Animated):
+    tmdb_collection_details: 141290
+    schedule: monthly(2)
+  Mad Max:
+    tmdb_collection_details: 8945
+    schedule: monthly(2)
+  Madagascar:
+    tmdb_collection_details: 14740
+    tmdb_movie: 161143, 25472, 270946
+    schedule: monthly(2)
+  Maleficent:
+    tmdb_collection_details: 531331
+    schedule: monthly(2)
+  Mall Cop:
+    tmdb_collection_details: 328372
+    schedule: monthly(2)
+  The Man with No Name:
+    imdb_list: https://www.imdb.com/list/ls023916334/
+    summary: An Italian film series consisting of three Spaghetti Western films directed by Sergio Leone. The films are titled A Fistful of Dollars (1964), For a Few Dollars More (1965) and The Good, the Bad and the Ugly (1966). The series has become known for establishing the Spaghetti Western genre, and inspiring the creation of many more Spaghetti Western films. The three films are consistently listed among the best rated Western films in history.
+    schedule: monthly(2)
+  Marvel Rising:
+    tmdb_collection_details: 627234
+    schedule: monthly(2)
+  Marx Brothers:
+    imdb_list: https://www.imdb.com/list/ls068486735/
+    summary: The Marx Brothers were an American family comedy act that was successful in vaudeville, on Broadway, and in motion pictures from 1905 to 1949. Five of the Marx Brothers' thirteen feature films were selected by the American Film Institute (AFI) as among the top 100 comedy films, with two of them, Duck Soup (1933) and A Night at the Opera (1935), in the top fifteen. They are widely considered by critics, scholars, and fans to be among the greatest and most influential comedians of the 20th century.
+    schedule: monthly(2)
+  Mary Poppins:
+    tmdb_collection_details: 527439
+    schedule: monthly(2)
+  The Mask:
+    tmdb_collection_details: 43072
+    schedule: monthly(2)
+  The Matrix:
+    tmdb_collection_details: 2344
+    schedule: monthly(2)
+  Maya the Bee:
+    tmdb_collection_details: 522250
+    schedule: monthly(2)
+  The Maze Runner:
+    tmdb_collection_details: 295130
+    schedule: monthly(2)
+  Mean Girls:
+    tmdb_collection_details: 99606
+    schedule: monthly(2)
+  Meet the Parents:
+    tmdb_collection_details: 51509
+    schedule: monthly(2)
+  Men In Black:
+    tmdb_collection_details: 86055
+    schedule: monthly(2)
+  The Mighty Ducks:
+    tmdb_collection_details: 10709
+    schedule: monthly(2)
+  "Mission: Impossible":
+    tmdb_collection_details: 87359
+    name_mapping: Mission Impossible
+    schedule: monthly(2)
+  Monsters, Inc.:
+    tmdb_collection_details: 137696
+    schedule: monthly(2)
+  Monty Python:
+    imdb_list: https://www.imdb.com/list/ls072012494/
+    summary: Monty Python is a British surreal comedy troupe who created sketch comedy television shows and movies
+    schedule: monthly(2)
+    add_to_arr: false
+  Mortal Kombat:
+    tmdb_collection_details: 9818
+    tmdb_movie: 664767
+    schedule: monthly(2)
+  Mothra:
+    tmdb_collection_details: 171732
+    tmdb_movie: 39410
+    schedule: monthly(2)
+  Mulan:
+    tmdb_collection_details: 87236
+    schedule: monthly(2)
+  The Mummy:
+    tmdb_collection_details: 1733
+    schedule: monthly(2)
+  The Muppet:
+    tmdb_collection_details: 256377
+    schedule: monthly(2)
+  National Treasure:
+    tmdb_collection_details: 52984
+    schedule: monthly(2)
+  Neighbors:
+    tmdb_collection_details: 400700
+    schedule: monthly(2)
+  The Neverending Story:
+    tmdb_collection_details: 91430
+    schedule: monthly(2)
+  Night at the Museum:
+    tmdb_collection_details: 85943
+    schedule: monthly(2)
+  A Nightmare on Elm Street:
+    tmdb_collection_details: 8581
+    tmdb_movie: 6466, 23437
+    schedule: monthly(2)
+  Now You See Me:
+    tmdb_collection_details: 382685
+    schedule: monthly(2)
+  Ocean's:
+    tmdb_collection_details: 304
+    schedule: monthly(2)
+  Ong Bak:
+    tmdb_collection_details: 94589
+    schedule: monthly(2)
+  Oz:
+    tmdb_collection_details: 627517
+    tmdb_movie: 13155, 68728
+    schedule: monthly(2)
+  Pacific Rim:
+    tmdb_collection_details: 363369
+    schedule: monthly(2)
+  Paddington:
+    tmdb_collection_details: 488924
+    schedule: monthly(2)
+  Parasyte:
+    tmdb_collection_details: 385386
+    schedule: monthly(2)
+  Percy Jackson:
+    tmdb_collection_details: 179919
+    schedule: monthly(2)
+  Pet Sematary:
+    tmdb_collection_details: 10789
+    tmdb_movie: 157433
+    schedule: monthly(2)
+  Peter Pan:
+    tmdb_collection_details: 55422
+    schedule: monthly(2)
+  Pirates of the Caribbean:
+    tmdb_collection_details: 295
+    schedule: monthly(2)
+  Pitch Perfect:
+    tmdb_collection_details: 306031
+    schedule: monthly(2)
+  Planes:
+    tmdb_collection_details: 270252
+    schedule: monthly(2)
+  Planet of the Apes:
+    tmdb_collection_details: 173710
+    schedule: monthly(2)
+  Pocahontas:
+    tmdb_collection_details: 136214
+    schedule: monthly(2)
+  Pokémon:
+    imdb_list: https://www.imdb.com/list/ls062687939/
+    summary: Pokémon is a media franchise created by video game designer Satoshi Tajiri that centers on fictional creatures called Pokémon. As of 2020, there have been 23 animated films and one live action film. The first nineteen animated films are based on the anime television series of the same name, with the original film being remade into the 22nd. The 20th, 21st and 23rd animated films are set in an alternate continuity to the anime.
+    schedule: monthly(2)
+  Police Story:
+    tmdb_collection_details: 269098
+    schedule: monthly(2)
+  Power Rangers:
+    tmdb_collection_details: 708816
+    tmdb_movie: 305470, 306264
+    schedule: monthly(2)
+  Predator:
+    tmdb_collection_details: 399
+    schedule: monthly(2)
+  The Princess Diaries:
+    tmdb_collection_details: 107674
+    schedule: monthly(2)
+  The Purge:
+    tmdb_collection_details: 256322
+    schedule: monthly(2)
+  Quarantine:
+    tmdb_collection_details: 123932
+    schedule: monthly(2)
+  Rambo:
+    tmdb_collection_details: 5039
+    schedule: monthly(2)
+  Red Cliff:
+    tmdb_collection_details: 96677
+    schedule: monthly(2)
+  Rent:
+    tmdb_list_details: 7072241
+    schedule: monthly(2)
+  The Rescuers:
+    tmdb_collection_details: 57971
+    schedule: monthly(2)
+  Resident Evil:
+    tmdb_collection_details: 17255
+    schedule: monthly(2)
+  "Resident Evil: Biohazard":
+    tmdb_collection_details: 133352
+    name_mapping: Resident Evil Biohazard
+    schedule: monthly(2)
+  Ride Along:
+    tmdb_collection_details: 376650
+    schedule: monthly(2)
+  Rio:
+    tmdb_collection_details: 229932
+    schedule: monthly(2)
+  Robert Langdon:
+    tmdb_collection_details: 115776
+    schedule: monthly(2)
+  RoboCop:
+    tmdb_collection_details: 5547
+    schedule: monthly(2)
+  Rocky:
+    tmdb_collection_details: 1575
+    schedule: monthly(2)
+  Rugrats:
+    tmdb_collection_details: 57129
+    schedule: monthly(2)
+  Rurouni Kenshin:
+    tmdb_collection_details: 247028
+    schedule: monthly(2)
+  Rush Hour:
+    tmdb_collection_details: 90863
+    schedule: monthly(2)
+  The Sandlot:
+    tmdb_collection_details: 87214
+    schedule: monthly(2)
+  The Santa Clause:
+    tmdb_collection_details: 53159
+    schedule: monthly(2)
+  Santa Paws:
+    tmdb_collection_details: 469648
+    schedule: monthly(2)
+  Saw:
+    tmdb_collection_details: 656
+    schedule: monthly(2)
+  Scary Movie:
+    tmdb_collection_details: 4246
+    schedule: monthly(2)
+  The Scorpion King:
+    tmdb_collection_details: 116669
+    schedule: monthly(2)
+  Scream:
+    tmdb_collection_details: 2602
+    schedule: monthly(2)
+  The Secret Life of Pets:
+    tmdb_collection_details: 427084
+    schedule: monthly(2)
+  Shaft:
+    tmdb_collection_details: 495, 608103
+    schedule: monthly(2)
+  Shanghai Noon:
+    tmdb_collection_details: 59567
+    schedule: monthly(2)
+  Sharknado:
+    tmdb_collection_details: 286023
+    schedule: monthly(2)
+  Sherlock Holmes:
+    tmdb_collection_details: 102322
+    schedule: monthly(2)
+  The Shining:
+    tmdb_collection_details: 530064
+    schedule: monthly(2)
+  Shrek:
+    tmdb_collection_details: 2150
+    schedule: monthly(2)
+  Silent Hill:
+    tmdb_collection_details: 64748
+    schedule: monthly(2)
+  Slap Shot:
+    tmdb_collection_details: 261526
+    schedule: monthly(2)
+  The Smurfs:
+    tmdb_collection_details: 134897
+    schedule: monthly(2)
+  Spider-Man (Avengers):
+    tmdb_collection_details: 531241
+    schedule: monthly(2)
+  Spider-Man (Original):
+    tmdb_collection_details: 556
+    schedule: monthly(2)
+  Spy Kids:
+    tmdb_collection_details: 86486
+    schedule: monthly(2)
+  "Star Trek: Alternate Reality":
+    tmdb_collection_details: 115575
+    name_mapping: Star Trek Alternate Reality
+    schedule: monthly(2)
+  "Star Trek: The Next Generation":
+    tmdb_collection_details: 115570
+    name_mapping: Star Trek The Next Generation
+    schedule: monthly(2)
+  "Star Trek: The Original Series":
+    tmdb_collection_details: 151
+    name_mapping: Star Trek The Original Series
+    schedule: monthly(2)
+  "Star Wars: Skywalker Saga":
+    tmdb_collection_details: 10
+    name_mapping: Star Wars Skywalker Saga
+    schedule: monthly(2)
+  "Star Wars: Legends":
+    tmdb_movie: 348350, 330459
+    summary: "Star Wars Anthology Films and other Star Wars Movies"
+    name_mapping: Star Wars Legends
+    schedule: monthly(2)
+  Step Up:
+    tmdb_collection_details: 86092
+    schedule: monthly(2)
+  Street Fighter:
+    tmdb_collection_details: 190435
+    tmdb_movie: 687354, 11667
+    schedule: monthly(2)
+  Stuart Little:
+    tmdb_collection_details: 99727
+    schedule: monthly(2)
+  Super Troopers:
+    tmdb_collection_details: 449462
+    schedule: monthly(2)
+  Superman (Original):
+    tmdb_collection_details: 8537
+    schedule: monthly(2)
+  Surf's Up:
+    tmdb_collection_details: 436295
+    schedule: monthly(2)
+  Taken:
+    tmdb_collection_details: 135483
+    schedule: monthly(2)
+  Tarzan:
+    tmdb_collection_details: 106768
+    schedule: monthly(2)
+  Ted:
+    tmdb_collection_details: 266672
+    schedule: monthly(2)
+  Teenage Mutant Ninja Turtles:
+    tmdb_collection_details: 1582, 401562
+    tmdb_movie: 1273
+    schedule: monthly(2)
+  Tekken:
+    tmdb_collection_details: 294172
+    schedule: monthly(2)
+  The Terminator:
+    tmdb_collection_details: 528
+    schedule: monthly(2)
+  Texas Chainsaw Massacre:
+    tmdb_collection_details: 111751, 425175
+    schedule: monthly(2)
+  Thor:
+    tmdb_collection_details: 131296
+    schedule: monthly(2)
+  The Three Stooges:
+    imdb_list: https://www.imdb.com/list/ls075972675/
+    tmdb_movie: 76489
+    summary: The Three Stooges were an American vaudeville and comedy team active from 1922 until 1970, best known for their 190 short subject films by Columbia Pictures that have been regularly airing on television since 1958.
+    schedule: monthly(2)
+  Tinker Bell:
+    tmdb_collection_details: 315595
+    schedule: monthly(2)
+  Tokyo Ghoul:
+    tmdb_collection_details: 551278
+    schedule: monthly(2)
+  Tom and Jerry:
+    imdb_list: https://www.imdb.com/list/ls022966050/
+    summary: Tom and Jerry's animated feature-length films based on the series.
+    schedule: monthly(2)
+  Tomb Raider:
+    tmdb_collection_details: 2467, 621142
+    schedule: monthly(2)
+  Tomie:
+    tmdb_collection_details: 139394
+    schedule: monthly(2)
+  Toy Story:
+    tmdb_collection_details: 10194
+    tmdb_movie: 130925
+    schedule: monthly(2)
+  Trainspotting:
+    tmdb_collection_details: 424202
+    schedule: monthly(2)
+  Transformers:
+    tmdb_collection_details: 8650
+    schedule: monthly(2)
+  The Transporter:
+    tmdb_collection_details: 9518
+    schedule: monthly(2)
+  Tremors:
+    tmdb_collection_details: 91799
+    schedule: monthly(2)
+  Trolls:
+    tmdb_collection_details: 489724
+    schedule: monthly(19)
+  TRON:
+    tmdb_collection_details: 63043
+    tmdb_movie: 73362
+    schedule: monthly(2)
+  Unbreakable:
+    imdb_list: https://www.imdb.com/list/ls022101006/
+    summary: The Unbreakable trilogy, officially known as the Eastrail 177 Trilogy, is an American superhero thriller and psychological horror film series. The films were written, produced, and directed by M. Night Shyamalan. The trilogy consists of Unbreakable (2000), Split (2016), and Glass (2019).
+    schedule: monthly(2)
+  Underworld:
+    tmdb_collection_details: 2326
+    schedule: monthly(2)
+  Viy:
+    tmdb_collection_details: 428046
+    schedule: monthly(2)
+  Wall Street:
+    tmdb_collection_details: 52783
+    schedule: monthly(2)
+  Wayne's World:
+    tmdb_collection_details: 8979
+    schedule: monthly(2)
+  Wonder Woman:
+    tmdb_collection_details: 468552
+    schedule: monthly(2)
+  Wreck-It Ralph:
+    tmdb_collection_details: 404825
+    schedule: monthly(2)
+  X-Men:
+    tmdb_collection_details: 748, 453993, 448150
+    tmdb_movie: 567604
+    schedule: monthly(2)
+  xXx:
+    tmdb_collection_details: 52785
+    schedule: monthly(2)
+  Zenon:
+    tmdb_collection_details: 321148
+    schedule: monthly(2)
+  Zombieland:
+    tmdb_collection_details: 537982
+    schedule: monthly(2)
+  Zoolander:
+    tmdb_collection_details: 352789
+    schedule: monthly(2)
+  Zorro:
+    tmdb_collection_details: 1657
+    schedule: monthly(2)
+
+######################################################
+#            Collectionless Collection               #
+######################################################
+
+  Collectionless:
+    plex_collectionless:
+      exclude_prefix:
+        - +
+        - "~"
+    sort_title: ~_Collectionless
+    collection_order: alpha

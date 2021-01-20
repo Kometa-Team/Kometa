@@ -8,6 +8,10 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+/modules/test.py
+logs/
+config/*
+!config/*.template
 build/
 develop-eggs/
 dist/
