@@ -31,21 +31,21 @@ class AniDBAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, language):
-        return requests.get(url, headers={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}).content
+        return html.fromstring(requests.get(url, headers={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}).content)
 
     def get_popular(self, language):
-        response = html.fromstring(self.send_request(self.urls["popular"], language))
+        response = self.send_request(self.urls["popular"], language)
         return util.get_int_list(response.xpath("//td[@class='name anime']/a/@href"), "AniDB ID")
 
     def validate_anidb_id(self, anidb_id, language):
-        response = html.fromstring(self.send_request("{}/{}".format(self.urls["anime"], anidb_id), language))
+        response = self.send_request("{}/{}".format(self.urls["anime"], anidb_id), language)
         ids = response.xpath("//*[text()='a{}']/text()".format(anidb_id))
         if len(ids) > 0:
             return util.regex_first_int(ids[0], "AniDB ID")
         raise Failed("AniDB Error: AniDB ID: {} not found".format(anidb_id))
 
     def get_anidb_relations(self, anidb_id, language):
-        response = html.fromstring(self.send_request("{}/{}{}".format(self.urls["anime"], anidb_id, self.urls["relation"]), language))
+        response = self.send_request("{}/{}{}".format(self.urls["anime"], anidb_id, self.urls["relation"]), language)
         return util.get_int_list(response.xpath("//area/@href"), "AniDB ID")
 
     def validate_anidb_list(self, anidb_list, language):

@@ -17,29 +17,29 @@ class TVDbObj:
             raise Failed("TVDb Error: {} must begin with {}".format(tvdb_url, TVDb.movies_url if is_movie else TVDb.series_url))
 
         response = TVDb.send_request(tvdb_url, language)
-        results = html.fromstring(response).xpath("//*[text()='TheTVDB.com {} ID']/parent::node()/span/text()".format(self.media_type))
+        results = response.xpath("//*[text()='TheTVDB.com {} ID']/parent::node()/span/text()".format(self.media_type))
         if len(results) > 0:
             self.id = int(results[0])
         else:
             raise Failed("TVDb Error: Could not find a TVDb {} ID at the URL {}".format(self.media_type, tvdb_url))
 
-        results = html.fromstring(response).xpath("//div[@class='change_translation_text' and @data-language='eng']/@data-title")
+        results = response.xpath("//div[@class='change_translation_text' and @data-language='eng']/@data-title")
         if len(results) > 0 and len(results[0]) > 0:
             self.title = results[0]
         else:
             raise Failed("TVDb Error: Name not found from TVDb URL: {}".format(tvdb_url))
 
-        results = html.fromstring(response).xpath("//div[@class='row hidden-xs hidden-sm']/div/img/@src")
+        results = response.xpath("//div[@class='row hidden-xs hidden-sm']/div/img/@src")
         self.poster_path = results[0] if len(results) > 0 and len(results[0]) > 0 else None
 
         tmdb_id = None
         if is_movie:
-            results = html.fromstring(response).xpath("//*[text()='TheMovieDB.com']/@href")
+            results = response.xpath("//*[text()='TheMovieDB.com']/@href")
             if len(results) > 0:
                 try:                                                    tmdb_id = util.regex_first_int(results[0], "TMDb ID")
                 except Failed as e:                                     logger.error(e)
             if not tmdb_id:
-                results = html.fromstring(response).xpath("//*[text()='IMDB']/@href")
+                results = response.xpath("//*[text()='IMDB']/@href")
                 if len(results) > 0:
                     try:                                                tmdb_id = TVDb.convert_from_imdb(util.get_id_from_imdb_url(results[0]), language)
                     except Failed as e:                                 logger.error(e)
@@ -85,8 +85,7 @@ class TVDbAPI:
         tvdb_url = tvdb_url.strip()
         if tvdb_url.startswith((self.list_url, self.alt_list_url)):
             try:
-                response = self.send_request(tvdb_url, language)
-                items = html.fromstring(response).xpath("//div[@class='col-xs-12 col-sm-12 col-md-8 col-lg-8 col-md-pull-4']/div[@class='row']")
+                items = self.send_request(tvdb_url, language).xpath("//div[@class='col-xs-12 col-sm-12 col-md-8 col-lg-8 col-md-pull-4']/div[@class='row']")
                 for item in items:
                     title = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/text()")[0]
                     item_url = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/@href")[0]
@@ -113,7 +112,7 @@ class TVDbAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, language):
-        return requests.get(url, headers={"Accept-Language": language}).content
+        return html.fromstring(requests.get(url, headers={"Accept-Language": language}).content)
 
     def get_items(self, method, data, language, status_message=True):
         pretty = util.pretty_names[method] if method in util.pretty_names else method

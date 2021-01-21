@@ -29,8 +29,7 @@ class IMDbAPI:
         header = {"Accept-Language": language}
         length = 0
         imdb_ids = []
-        response = self.send_request(current_url, header)
-        try:                                results = html.fromstring(response).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
+        try:                                results = self.send_request(current_url, header).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
         except IndexError:                  raise Failed("IMDb Error: Failed to parse URL: {}".format(imdb_url))
         try:                                total = int(re.findall("(\\d+) title", results)[0])
         except IndexError:                  raise Failed("IMDb Error: No Results at URL: {}".format(imdb_url))
@@ -44,14 +43,14 @@ class IMDbAPI:
             start_num = (i - 1) * 250 + 1
             length = util.print_return(length, "Parsing Page {}/{} {}-{}".format(i, num_of_pages, start_num, limit if i == num_of_pages else i * 250))
             response = self.send_request("{}&count={}&start={}".format(current_url, remainder if i == num_of_pages else 250, start_num), header)
-            imdb_ids.extend(html.fromstring(response).xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst"))
+            imdb_ids.extend(response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst"))
         util.print_end(length)
         if imdb_ids:                        return imdb_ids
         else:                               raise Failed("IMDb Error: No Movies Found at {}".format(imdb_url))
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, header):
-        return requests.get(url, headers=header).content
+        return html.fromstring(requests.get(url, headers=header).content)
 
     def get_items(self, method, data, language, status_message=True):
         pretty = util.pretty_names[method] if method in util.pretty_names else method

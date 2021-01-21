@@ -1,5 +1,4 @@
 import logging, os, requests
-from bs4 import BeautifulSoup
 from modules import util
 from modules.radarr import RadarrAPI
 from modules.sonarr import SonarrAPI
@@ -11,15 +10,12 @@ from plexapi.server import PlexServer
 from plexapi.video import Movie, Show
 from retrying import retry
 from ruamel import yaml
-from urllib.parse import urlparse
-from urllib.request import Request
-from urllib.request import urlopen
 
 logger = logging.getLogger("Plex Meta Manager")
 
 class PlexAPI:
     def __init__(self, params):
-        try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=60)
+        try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=600)
         except Unauthorized:                                                    raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:                                                 raise Failed("Plex Error: {}".format(e))
         except requests.exceptions.ConnectionError as e:
@@ -140,19 +136,17 @@ class PlexAPI:
         raise Failed("Plex Error: Actor: {} not found".format(data))
 
     def get_ids(self, movie):
-        req = Request("{}{}".format(self.url, movie.key))
-        req.add_header("X-Plex-Token", self.token)
-        req.add_header("User-Agent", "Mozilla/5.0")
-        with urlopen(req) as response:
-            contents = response.read()
         tmdb_id = None
         imdb_id = None
-        for guid_tag in BeautifulSoup(contents, "lxml").find_all("guid"):
-            agent = urlparse(guid_tag["id"]).scheme
-            guid = urlparse(guid_tag["id"]).netloc
-            if agent == "tmdb":                 tmdb_id = guid
-            elif agent == "imdb":               imdb_id = guid
+        for guid_tag in self.send_request("{}{}".format(self.plex["url"], movie.key)).xpath("//guid/@id"):
+            parsed_url = requests.utils.urlparse(guid_tag)
+            if parsed_url.scheme == "tmdb":                 tmdb_id = parsed_url.netloc
+            elif parsed_url.scheme == "imdb":               imdb_id = parsed_url.netloc
         return tmdb_id, imdb_id
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def send_request(self, url):
+        return html.fromstring(requests.get(url, headers={"X-Plex-Token": self.token, "User-Agent": "Mozilla/5.0 x64"}).content)
 
     def del_collection_if_empty(self, collection):
         missing_data = {}
