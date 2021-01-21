@@ -404,15 +404,6 @@ class Config:
                 util.seperator("Mapping {} Library".format(library.name))
                 logger.info("")
                 movie_map, show_map = self.map_guids(library)
-
-                unmanaged_collections = [col.title for col in library.get_all_collections() if col.title not in collections]
-                if len(unmanaged_collections) > 0:
-                    for col in unmanaged_collections:
-                        logger.info(col)
-                    logger.info("{} Unmanaged Collections".format(len(unmanaged_collections)))
-                else:
-                    logger.info("No Unmanaged Collections")
-
                 for c in collections:
                     try:
                         logger.info("")
