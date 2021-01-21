@@ -78,9 +78,20 @@ try:
     if args.run:
         start(args.config)
     else:
+        length = 0
         schedule.every().day.at(args.time).do(start, args.config)
         while True:
             schedule.run_pending()
+            current = datetime.datetime.now().strftime("%H:%M")
+            seconds = (datetime.datetime.strptime(args.time, "%H:%M") - datetime.datetime.strptime(current, "%H:%M")).total_seconds()
+            hours = int(seconds // 3600)
+            if hours < 0:
+                hours += 24
+            minutes = int((seconds % 3600) // 60)
+            time_str = "{} Hour{} and ".format(hours, "s" if hours > 1 else "") if hours > 0 else ""
+            time_str += "{} Minute{}".format(minutes, "s" if minutes > 1 else "")
+
+            length = util.print_return(length, "Current Time: {} | {} until the daily run at {}".format(current, time_str, args.time))
             time.sleep(1)
 except KeyboardInterrupt:
     util.seperator("Exiting Plex Meta Manager")
