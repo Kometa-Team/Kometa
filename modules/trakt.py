@@ -1,4 +1,4 @@
-import logging, webbrowser
+import logging, requests, webbrowser
 from modules import util
 from modules.util import Failed, TimeoutExpired
 from retrying import retry
@@ -8,7 +8,6 @@ from trakt.objects.episode import Episode
 from trakt.objects.movie import Movie
 from trakt.objects.season import Season
 from trakt.objects.show import Show
-from urllib.parse import urlparse
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -106,7 +105,7 @@ class TraktAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def standard_list(self, data):
-        try:                                items = Trakt[urlparse(data).path].items()
+        try:                                items = Trakt[requests.utils.urlparse(data).path].items()
         except AttributeError:              items = None
         if items is None:                   raise Failed("Trakt Error: No List found")
         else:                               return items

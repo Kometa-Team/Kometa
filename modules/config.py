@@ -1,4 +1,4 @@
-import glob, json, logging, os, re
+import glob, json, logging, os, re, requests
 from datetime import datetime, timedelta
 from modules import util
 from modules.anidb import AniDBAPI
@@ -12,7 +12,6 @@ from modules.trakt import TraktAPI
 from modules.tvdb import TVDbAPI
 from modules.util import Failed
 from ruamel import yaml
-from urllib.parse import urlparse
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -662,7 +661,7 @@ class Config:
                                                 if len(prefix_list) == 0 and len(exact_list) == 0:
                                                     raise Failed("Collection Error: you must have at least one exclusion")
                                                 details["add_to_arr"] = False
-                                                details["collection_mode"] = "showItems"
+                                                details["collection_mode"] = "hide"
                                                 new_dictionary["exclude_prefix"] = prefix_list
                                                 new_dictionary["exclude"] = exact_list
                                                 methods.append((method_name, [new_dictionary]))
@@ -1065,7 +1064,7 @@ class Config:
                 tmdb_id, expired = self.Cache.get_tmdb_id("show", plex_guid=item.guid)
                 anidb_id, expired = self.Cache.get_anidb_id("show", plex_guid=item.guid)
         if expired or (not tmdb_id and library.is_movie) or (not tvdb_id and not tmdb_id and library.is_show):
-            guid = urlparse(item.guid)
+            guid = requests.utils.urlparse(item.guid)
             item_type = guid.scheme.split(".")[-1]
             check_id = guid.netloc
 
