@@ -1,4 +1,5 @@
 import logging, os, requests
+from lxml import html
 from modules import util
 from modules.radarr import RadarrAPI
 from modules.sonarr import SonarrAPI
