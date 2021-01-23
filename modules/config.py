@@ -422,6 +422,9 @@ class Config:
                             last_day = next_month - timedelta(days=next_month.day)
                             for schedule in schedule_list:
                                 run_time = str(schedule).lower()
+                                if run_time.startswith("day") or run_time.startswith("daily"):
+                                    skip_collection = False
+                                    break
                                 if run_time.startswith("week") or run_time.startswith("month") or run_time.startswith("year"):
                                     match = re.search("\\(([^)]+)\\)", run_time)
                                     if match:
