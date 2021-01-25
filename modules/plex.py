@@ -136,19 +136,6 @@ class PlexAPI:
                     return int(role[1])
         raise Failed("Plex Error: Actor: {} not found".format(data))
 
-    def get_ids(self, movie):
-        tmdb_id = None
-        imdb_id = None
-        for guid_tag in self.send_request("{}{}".format(self.plex["url"], movie.key)).xpath("//guid/@id"):
-            parsed_url = requests.utils.urlparse(guid_tag)
-            if parsed_url.scheme == "tmdb":                 tmdb_id = parsed_url.netloc
-            elif parsed_url.scheme == "imdb":               imdb_id = parsed_url.netloc
-        return tmdb_id, imdb_id
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_request(self, url):
-        return html.fromstring(requests.get(url, headers={"X-Plex-Token": self.token, "User-Agent": "Mozilla/5.0 x64"}).content)
-
     def del_collection_if_empty(self, collection):
         missing_data = {}
         if not os.path.exists(self.missing_path):
