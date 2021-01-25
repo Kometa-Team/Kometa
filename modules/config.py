@@ -554,7 +554,7 @@ class Config:
                                     elif method_name in ["year", "year.not"]:                           methods.append(("plex_search", [[(method_name, util.get_year_list(collections[c][m], method_name))]]))
                                     elif method_name in ["decade", "decade.not"]:                       methods.append(("plex_search", [[(method_name, util.get_int_list(collections[c][m], util.remove_not(method_name)))]]))
                                     elif method_name in ["actor_details_tmdb", "director_details_tmdb", "writer_details_tmdb"]:
-                                        tmdb_ids = get_int_list(collections[c][m], "TMDb Person ID")
+                                        tmdb_ids = util.get_int_list(collections[c][m], "TMDb Person ID")
                                         valid_ids = []
                                         for valid_id in valid_ids:
                                             try:
@@ -570,6 +570,7 @@ class Config:
                                             raise Failed("Collection Error: No valid TMDb Person IDs in {}".format(collections[c][m]))
                                         methods.append(("plex_search", [[(method_name[:-13], valid_ids)]]))
                                     elif method_name in util.plex_searches:                             methods.append(("plex_search", [[(method_name, util.get_list(collections[c][m]))]]))
+                                    elif method_name == "plex_all":                                     methods.append((method_name, [""]))
                                     elif method_name == "plex_collection":                              methods.append((method_name, library.validate_collections(collections[c][m] if isinstance(collections[c][m], list) else [collections[c][m]])))
                                     elif method_name == "anidb_popular":
                                         list_count = util.regex_first_int(collections[c][m], "List Size", default=40)
@@ -578,31 +579,6 @@ class Config:
                                         else:
                                             logger.error("Collection Error: anidb_popular must be an integer between 1 and 30 defaulting to 30")
                                             methods.append((method_name, [30]))
-                                    elif method_name in util.count_lists:
-                                        list_count = util.regex_first_int(collections[c][m], "List Size", default=20)
-                                        if list_count > 0:
-                                            methods.append((method_name, [list_count]))
-                                        else:
-                                            logger.error("Collection Error: {} must be an integer greater then 0 defaulting to 20".format(method_name))
-                                            methods.append((method_name, [20]))
-                                    elif method_name in util.tmdb_lists:
-                                        values = self.TMDb.validate_tmdb_list(util.get_int_list(collections[c][m], "TMDb {} ID".format(util.tmdb_type[method_name])), util.tmdb_type[method_name])
-                                        if method_name[-8:] == "_details":
-                                            if method_name in ["tmdb_collection_details", "tmdb_movie_details", "tmdb_show_details"]:
-                                                item = self.TMDb.get_movie_show_or_collection(values[0], library.is_movie)
-                                                if "summary" not in details and hasattr(item, "overview") and item.overview:
-                                                    details["summary"] = item.overview
-                                                if "background" not in details and hasattr(item, "backdrop_path") and item.backdrop_path:
-                                                    details["background"] = ("url", "{}{}".format(self.TMDb.image_url, item.backdrop_path), method_name[:-8])
-                                                if "poster" not in details and hasattr(item, "poster_path") and item.poster_path:
-                                                    details["poster"] = ("url", "{}{}".format(self.TMDb.image_url, item.poster_path), method_name[:-8])
-                                            else:
-                                                item = self.TMDb.get_list(values[0])
-                                                if "summary" not in details and hasattr(item, "description") and item.description:
-                                                    details["summary"] = item.description
-                                            methods.append((method_name[:-8], values))
-                                        else:
-                                            methods.append((method_name, values))
                                     elif method_name == "mal_id":                                       methods.append((method_name, util.get_int_list(collections[c][m], "MyAnimeList ID")))
                                     elif method_name in ["anidb_id", "anidb_relation"]:                 methods.append((method_name, self.AniDB.validate_anidb_list(util.get_int_list(collections[c][m], "AniDB ID"), library.Plex.language)))
                                     elif method_name == "trakt_list":                                   methods.append((method_name, self.Trakt.validate_trakt_list(util.get_list(collections[c][m]))))
@@ -808,7 +784,31 @@ class Config:
                                                 methods.append((method_name, [new_dictionary]))
                                         else:
                                             logger.error("Collection Error: {} attribute is not a dictionary: {}".format(m, collections[c][m]))
-                                    elif method_name == "plex_all":                                     methods.append((method_name, [""]))
+                                    elif method_name in util.count_lists:
+                                        list_count = util.regex_first_int(collections[c][m], "List Size", default=20)
+                                        if list_count > 0:
+                                            methods.append((method_name, [list_count]))
+                                        else:
+                                            logger.error("Collection Error: {} must be an integer greater then 0 defaulting to 20".format(method_name))
+                                            methods.append((method_name, [20]))
+                                    elif method_name in util.tmdb_lists:
+                                        values = self.TMDb.validate_tmdb_list(util.get_int_list(collections[c][m], "TMDb {} ID".format(util.tmdb_type[method_name])), util.tmdb_type[method_name])
+                                        if method_name[-8:] == "_details":
+                                            if method_name in ["tmdb_collection_details", "tmdb_movie_details", "tmdb_show_details"]:
+                                                item = self.TMDb.get_movie_show_or_collection(values[0], library.is_movie)
+                                                if "summary" not in details and hasattr(item, "overview") and item.overview:
+                                                    details["summary"] = item.overview
+                                                if "background" not in details and hasattr(item, "backdrop_path") and item.backdrop_path:
+                                                    details["background"] = ("url", "{}{}".format(self.TMDb.image_url, item.backdrop_path), method_name[:-8])
+                                                if "poster" not in details and hasattr(item, "poster_path") and item.poster_path:
+                                                    details["poster"] = ("url", "{}{}".format(self.TMDb.image_url, item.poster_path), method_name[:-8])
+                                            else:
+                                                item = self.TMDb.get_list(values[0])
+                                                if "summary" not in details and hasattr(item, "description") and item.description:
+                                                    details["summary"] = item.description
+                                            methods.append((method_name[:-8], values))
+                                        else:
+                                            methods.append((method_name, values))
                                     elif method_name in util.all_lists:                                 methods.append((method_name, util.get_list(collections[c][m])))
                                     elif method_name not in ["sync_mode", "schedule"]:                  logger.error("Collection Error: {} attribute not supported".format(method_name))
                                 else:
@@ -1071,7 +1071,11 @@ class Config:
             item_type = guid.scheme.split(".")[-1]
             check_id = guid.netloc
 
-            if item_type == "plex" and library.is_movie:    tmdb_id, imdb_id = library.get_ids(item)
+            if item_type == "plex" and library.is_movie:
+                for guid_tag in item.guids:
+                    url_parsed = requests.utils.urlparse(guid_tag.id)
+                    if url_parsed.scheme == "tmdb":                 tmdb_id = url_parsed.netloc
+                    elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
             elif item_type == "imdb":                       imdb_id = check_id
             elif item_type == "thetvdb":                    tvdb_id = check_id
             elif item_type == "themoviedb":                 tmdb_id = check_id
