@@ -29,6 +29,7 @@ method_alias = {
         "directors": "director",
         "genres": "genre",
         "studios": "studio", "network": "studio", "networks": "studio",
+        "producers": "producer",
         "writers": "writer",
         "years": "year"
     }
@@ -122,6 +123,7 @@ pretty_names = {
     "tmdb_movie_details": "TMDb Movie",
     "tmdb_network": "TMDb Network",
     "tmdb_now_playing": "TMDb Now Playing",
+    "tmdb_person": "TMDb Person",
     "tmdb_popular": "TMDb Popular",
     "tmdb_show": "TMDb Show",
     "tmdb_show_details": "TMDb Show",
@@ -259,13 +261,14 @@ dictionary_lists = [
     "tmdb_discover"
 ]
 plex_searches = [
-    "actor", "actor_details_tmdb", #"actor.not", # Waiting on PlexAPI to fix issue
+    "actor", #"actor.not", # Waiting on PlexAPI to fix issue
     "country", #"country.not",
     "decade", #"decade.not",
-    "director", "director_details_tmdb", #"director.not",
+    "director", #"director.not",
     "genre", #"genre.not",
+    "producer", #"producer.not",
     "studio", #"studio.not",
-    "writer", "writer_details_tmdb", #"writer.not"
+    "writer", #"writer.not"
     "year" #"year.not",
 ]
 show_only_lists = [
@@ -275,17 +278,26 @@ show_only_lists = [
     "tvdb_show"
 ]
 movie_only_lists = [
-    "actor_details_tmdb",
-    "director_details_tmdb",
+    "tmdb_collection",
+    "tmdb_collection_details",
+    "tmdb_movie",
+    "tmdb_movie_details",
     "tmdb_now_playing",
-    "writer_details_tmdb"
+    "tvdb_movie"
 ]
 movie_only_searches = [
-    "actor", "actor_details_tmdb", #"actor.not", # Waiting on PlexAPI to fix issue
-    "country", #"country.not",
-    "decade", #"decade.not",
-    "director", "director_details_tmdb", #"director.not",
-    "writer", "writer_details_tmdb" #"writer.not"
+    "actor", "actor.not",
+    "country", "country.not",
+    "decade", "decade.not",
+    "director", "director.not",
+    "producer", "producer.not",
+    "writer", "writer.not"
+]
+tmdb_searches = [
+    "actor", "actor.not",
+    "director", "director.not",
+    "producer", "producer.not",
+    "writer", "writer.not"
 ]
 count_lists = [
     "anidb_popular",
@@ -335,6 +347,7 @@ tmdb_type = {
     "tmdb_movie": "Movie",
     "tmdb_movie_details": "Movie",
     "tmdb_network": "Network",
+    "tmdb_person": "Person",
     "tmdb_show": "Show",
     "tmdb_show_details": "Show"
 }
