@@ -492,7 +492,7 @@ class Config:
                         if sync_collection or collectionless:
                             logger.info("Sync Mode: sync")
                             if collection_obj:
-                                for item in collection_obj.children:
+                                for item in collection_obj.items():
                                     map[item.ratingKey] = item
                         else:
                             logger.info("Sync Mode: append")
@@ -856,7 +856,7 @@ class Config:
                                     items = library.Plex.all()
                                     items_found += len(items)
                                 elif method == "plex_collection":
-                                    items = value.children
+                                    items = value.items()
                                     items_found += len(items)
                                 elif method == "plex_search":
                                     search_terms = {}
