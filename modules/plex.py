@@ -121,21 +121,6 @@ class PlexAPI:
             raise Failed("Collection Error: No valid Plex Collections in {}".format(collections[c][m]))
         return valid_collections
 
-    def get_actor_rating_key(self, data):
-        movie_rating_key = None
-        for result in self.server_search(data):
-            entry = str(result).split(":")
-            entry[0] = entry[0][1:]
-            if entry[0] == "Movie":
-                movie_rating_key = int(entry[1])
-                break
-        if movie_rating_key:
-            for role in self.fetchItem(movie_rating_key).roles:
-                role = str(role).split(":")
-                if data.upper().replace(" ", "-") == role[2][:-1].upper():
-                    return int(role[1])
-        raise Failed("Plex Error: Actor: {} not found".format(data))
-
     def del_collection_if_empty(self, collection):
         missing_data = {}
         if not os.path.exists(self.missing_path):
