@@ -554,11 +554,10 @@ class Config:
                                     elif method_name in ["year", "year.not"]:                           methods.append(("plex_search", [[(method_name, util.get_year_list(collections[c][m], method_name))]]))
                                     elif method_name in ["decade", "decade.not"]:                       methods.append(("plex_search", [[(method_name, util.get_int_list(collections[c][m], util.remove_not(method_name)))]]))
                                     elif method_name in ["actor_details_tmdb", "director_details_tmdb", "writer_details_tmdb"]:
-                                        tmdb_ids = util.get_int_list(collections[c][m], "TMDb Person ID")
                                         valid_ids = []
-                                        for valid_id in valid_ids:
+                                        for tmdb_id in util.get_int_list(collections[c][m], "TMDb Person ID"):
                                             try:
-                                                person = self.TMDb.get_person(valid_id)
+                                                person = self.TMDb.get_person(tmdb_id)
                                                 valid_ids.append(library.get_actor_rating_key(person.name) if method_name == "actor_details_tmdb" else person.name)
                                                 if "summary" not in details and hasattr(person, "biography") and person.biography:
                                                     details["summary"] = person.biography
