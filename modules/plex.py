@@ -186,8 +186,7 @@ class PlexAPI:
 
     def add_to_collection(self, collection, items, filters, map={}):
         name = collection.title if isinstance(collection, Collections) else collection
-        collection_items = collection.children if isinstance(collection, Collections) else []
-
+        collection_items = collection.items() if isinstance(collection, Collections) else []
         total = len(items)
         max_length = len(str(total))
         length = 0
