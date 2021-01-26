@@ -558,12 +558,13 @@ class Config:
                                         for tmdb_id in util.get_int_list(collections[c][m], "TMDb Person ID"):
                                             try:
                                                 person = self.TMDb.get_person(tmdb_id)
-                                                valid_ids.append(library.get_actor_rating_key(person.name) if method_name == "actor_details_tmdb" else person.name)
+                                                valid_ids.append(person.name)
                                                 if "summary" not in details and hasattr(person, "biography") and person.biography:
                                                     details["summary"] = person.biography
                                                 if "poster" not in details and hasattr(person, "profile_path") and person.profile_path:
                                                     details["poster"] = ("url", "{}{}".format(self.TMDb.image_url, person.profile_path), method_name)
                                             except Failed as e:
+                                                util.print_stacktrace()
                                                 logger.error(e)
                                         if len(valid_ids) == 0:
                                             raise Failed("Collection Error: No valid TMDb Person IDs in {}".format(collections[c][m]))
@@ -862,12 +863,7 @@ class Config:
                                     search_terms = {}
                                     output = ""
                                     for i, attr_pair in enumerate(value):
-                                        if attr_pair[0] == "actor":
-                                            search_list = []
-                                            for actor in attr_pair[1]:
-                                                search_list.append(library.get_actor_rating_key(actor))
-                                        else:
-                                            search_list = attr_pair[1]
+                                        search_list = attr_pair[1]
                                         final_method = attr_pair[0][:-4] + "!" if attr_pair[0][-4:] == ".not" else attr_pair[0]
                                         if library.is_show:
                                             final_method = "show." + final_method
