@@ -408,8 +408,16 @@ class Config:
                         logger.info("")
                         util.seperator("{} Collection".format(c))
                         logger.info("")
+
+                        map = {}
+                        details = {}
+                        methods = []
+                        filters = []
+                        posters_found = []
+                        backgrounds_found = []
                         collectionless = "plex_collectionless" in collections[c]
                         skip_collection = True
+
                         if "schedule" not in collections[c]:
                             skip_collection = False
                         elif not collections[c]["schedule"]:
@@ -464,17 +472,9 @@ class Config:
                                         logger.error("Collection Error: failed to parse schedule: {}".format(schedule))
                                 else:
                                     logger.error("Collection Error: schedule attribute {} invalid".format(schedule))
-
                         if skip_collection:
                             logger.info("Skipping Collection {}".format(c))
                             continue
-
-                        map = {}
-                        details = {}
-                        methods = []
-                        filters = []
-                        posters_found = []
-                        backgrounds_found = []
 
                         try:
                             collection_obj = library.get_collection(c)
@@ -482,7 +482,6 @@ class Config:
                         except Failed as e:
                             collection_obj = None
                             collection_name = c
-
 
                         sync_collection = library.sync_mode == "sync"
                         if "sync_mode" in collections[c]:
@@ -497,6 +496,25 @@ class Config:
                         else:
                             logger.info("Sync Mode: append")
 
+                        if "tmdb_person" in collections[c]:
+                            if collections[c]["tmdb_person"]:
+                                valid_names = []
+                                for tmdb_id in util.get_int_list(collections[c]["tmdb_person"], "TMDb Person ID"):
+                                    try:
+                                        person = self.TMDb.get_person(tmdb_id)
+                                        valid_names.append(person.name)
+                                        if "summary" not in details and hasattr(person, "biography") and person.biography:
+                                            details["summary"] = person.biography
+                                        if "poster" not in details and hasattr(person, "profile_path") and person.profile_path:
+                                            details["poster"] = ("url", "{}{}".format(self.TMDb.image_url, person.profile_path), "tmdb_person")
+                                    except Failed as e:
+                                        util.print_stacktrace()
+                                        logger.error(e)
+                                if len(valid_names) > 0:                                                details["tmdb_person"] = valid_names
+                                else:                                                                   logger.error("Collection Error: No valid TMDb Person IDs in {}".format(collections[c]["tmdb_person"]))
+                            else:
+                                logger.error("Collection Error: tmdb_person attribute is blank")
+
                         for m in collections[c]:
                             try:
                                 if "tmdb" in m and not self.TMDb:
@@ -508,7 +526,7 @@ class Config:
                                 elif "imdb" in m and not self.IMDb:
                                     logger.info("Collection Error: {} skipped. TMDb or Trakt must be configured".format(m))
                                     map = {}
-                                elif m == "tautulli" and not library.Tautulli:
+                                elif "tautulli" in m and not library.Tautulli:
                                     logger.info("Collection Error: {} skipped. Tautulli must be configured".format(m))
                                     map = {}
                                 elif "mal" in m and not self.MyAnimeList:
@@ -537,8 +555,8 @@ class Config:
                                         if collections[c][m] in ["release", "alpha"]:                       details[method_name] = collections[c][m]
                                         else:                                                               raise Failed("Collection Error: {} collection_order Invalid\n| \trelease (Order Collection by release dates)\n| \talpha (Order Collection Alphabetically)".format(collections[c][m]))
                                     elif method_name == "url_poster":                                   posters_found.append(("url", collections[c][m], method_name))
-                                    elif method_name == "tmdb_poster":                                  posters_found.append(("url", "{}{}".format(self.TMDb.image_url, self.get_movie_show_or_collection(util.regex_first_int(collections[c][m], "TMDb ID"), library.is_movie).poster_path), method_name))
-                                    elif method_name == "tmdb_profile":                                 posters_found.append(("url", "{}{}".format(self.TMDb.image_url, self.get_person(util.regex_first_int(collections[c][m], "TMDb Person ID")).profile_path), method_name))
+                                    elif method_name == "tmdb_poster":                                  posters_found.append(("url", "{}{}".format(self.TMDb.image_url, self.TMDb.get_movie_show_or_collection(util.regex_first_int(collections[c][m], "TMDb ID"), library.is_movie).poster_path), method_name))
+                                    elif method_name == "tmdb_profile":                                 posters_found.append(("url", "{}{}".format(self.TMDb.image_url, self.TMDb.get_person(util.regex_first_int(collections[c][m], "TMDb Person ID")).profile_path), method_name))
                                     elif method_name == "file_poster":
                                         if os.path.exists(collections[c][m]):                               posters_found.append(("file", os.path.abspath(collections[c][m]), method_name))
                                         else:                                                               raise Failed("Collection Error: Poster Path Does Not Exist: {}".format(os.path.abspath(collections[c][m])))
@@ -553,22 +571,15 @@ class Config:
                                     elif method_name in util.all_details:                               details[method_name] = collections[c][m]
                                     elif method_name in ["year", "year.not"]:                           methods.append(("plex_search", [[(method_name, util.get_year_list(collections[c][m], method_name))]]))
                                     elif method_name in ["decade", "decade.not"]:                       methods.append(("plex_search", [[(method_name, util.get_int_list(collections[c][m], util.remove_not(method_name)))]]))
-                                    elif method_name in ["actor_details_tmdb", "director_details_tmdb", "writer_details_tmdb"]:
-                                        valid_ids = []
-                                        for tmdb_id in util.get_int_list(collections[c][m], "TMDb Person ID"):
-                                            try:
-                                                person = self.TMDb.get_person(tmdb_id)
-                                                valid_ids.append(person.name)
-                                                if "summary" not in details and hasattr(person, "biography") and person.biography:
-                                                    details["summary"] = person.biography
-                                                if "poster" not in details and hasattr(person, "profile_path") and person.profile_path:
-                                                    details["poster"] = ("url", "{}{}".format(self.TMDb.image_url, person.profile_path), method_name)
-                                            except Failed as e:
-                                                util.print_stacktrace()
-                                                logger.error(e)
-                                        if len(valid_ids) == 0:
-                                            raise Failed("Collection Error: No valid TMDb Person IDs in {}".format(collections[c][m]))
-                                        methods.append(("plex_search", [[(method_name[:-13], valid_ids)]]))
+                                    elif method_name in util.tmdb_searches:
+                                        final_values = []
+                                        for value in util.get_list(collections[c][m]):
+                                            if value.lower() == "tmdb" and "tmdb_person" in details:
+                                                for name in details["tmdb_person"]:
+                                                    final_values.append(name)
+                                            else:
+                                                final_values.append(value)
+                                        methods.append(("plex_search", [[(method_name, final_values)]]))
                                     elif method_name in util.plex_searches:                             methods.append(("plex_search", [[(method_name, util.get_list(collections[c][m]))]]))
                                     elif method_name == "plex_all":                                     methods.append((method_name, [""]))
                                     elif method_name == "plex_collection":                              methods.append((method_name, library.validate_collections(collections[c][m] if isinstance(collections[c][m], list) else [collections[c][m]])))
@@ -810,7 +821,7 @@ class Config:
                                         else:
                                             methods.append((method_name, values))
                                     elif method_name in util.all_lists:                                 methods.append((method_name, util.get_list(collections[c][m])))
-                                    elif method_name not in ["sync_mode", "schedule"]:                  logger.error("Collection Error: {} attribute not supported".format(method_name))
+                                    elif method_name not in ["sync_mode", "schedule", "tmdb_person"]:   logger.error("Collection Error: {} attribute not supported".format(method_name))
                                 else:
                                     logger.error("Collection Error: {} attribute is blank".format(m))
                             except Failed as e:
