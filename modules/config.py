@@ -393,7 +393,7 @@ class Config:
         for library in self.libraries:
             logger.info("")
             util.seperator("{} Library".format(library.name))
-            try:                        library.update_metadata()
+            try:                        library.update_metadata(self.TMDb)
             except Failed as e:         logger.error(e)
             logger.info("")
             util.seperator("{} Library Collections".format(library.name))

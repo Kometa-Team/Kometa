@@ -1,4 +1,4 @@
-import logging, os, requests
+import datetime, logging, os, requests
 from lxml import html
 from modules import util
 from modules.radarr import RadarrAPI
@@ -102,16 +102,6 @@ class PlexAPI:
         if collection:                              return collection
         else:                                       raise Failed("Plex Error: Collection {} not found".format(data))
 
-    def get_item(self, data, year=None):
-        if isinstance(data, (int, Movie, Show)):
-            try:                                        return self.fetchItem(data.ratingKey if isinstance(data, (Movie, Show)) else data)
-            except BadRequest:                          raise Failed("Plex Error: Item {} not found".format(data))
-        else:
-            item_list = self.search(title=data) if year is None else self.search(data, year=year)
-            item = util.choose_from_list(item_list, "movie" if self.is_movie else "show", data)
-            if item:                                    return item
-            else:                                       raise Failed("Plex Error: Item {} not found".format(data))
-
     def validate_collections(self, collections):
         valid_collections = []
         for collection in collections:
@@ -176,7 +166,8 @@ class PlexAPI:
         max_length = len(str(total))
         length = 0
         for i, item in enumerate(items, 1):
-            current = self.get_item(item)
+            try:                                        current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
+            except BadRequest:                          raise Failed("Plex Error: Item {} not found".format(item))
             match = True
             if filters:
                 length = util.print_return(length, "Filtering {}/{} {}".format((" " * (max_length - len(str(i)))) + str(i), total, current.title))
@@ -224,7 +215,10 @@ class PlexAPI:
         util.print_end(length, "{} {} Processed".format(total, media_type))
         return map
 
-    def update_metadata(self):
+    def search_item(self, data, year=None):
+        return util.choose_from_list(self.search(data, year=year), "movie" if self.is_movie else "show", str(data), exact=True)
+
+    def update_metadata(self, TMDb):
         logger.info("")
         util.seperator("{} Library Metadata".format(self.name))
         logger.info("")
@@ -242,99 +236,115 @@ class PlexAPI:
                 elif self.metadata[m]["year"] not in range(1800, now.year + 2):         logger.error("Metadata Error: year attribute must be between 1800-{}".format(now.year + 1))
                 else:                                                                   year = self.metadata[m]["year"]
 
-            alt_title = None
-            used_alt = False
-            if "alt_title" in self.metadata[m]:
-                if self.metadata[m]["alt_title"] is None:                               logger.error("Metadata Error: alt_title attribute is blank")
-                else:                                                                   alt_title = self.metadata[m]["alt_title"]
+            title = m
+            if "title" in self.metadata[m]:
+                if self.metadata[m]["title"] is None:                                   logger.error("Metadata Error: title attribute is blank")
+                else:                                                                   title = self.metadata[m]["title"]
 
-            try:
-                item = self.get_item(m, year=year)
-            except Failed as e:
-                if alt_title:
-                    try:
-                        item = self.get_item(alt_title, year=year)
-                        used_alt = True
-                    except Failed as alt_e:
-                        logger.error(alt_e)
-                        logger.error("Skipping {}".format(m))
-                        continue
+            item = self.search_item(title, year=year)
+
+            if item is None:
+                item = self.search_item("{} (SUB)".format(title), year=year)
+
+            if item is None and "alt_title" in self.metadata[m]:
+                if self.metadata[m]["alt_title"] is None:
+                    logger.error("Metadata Error: alt_title attribute is blank")
                 else:
-                    logger.error(e)
-                    logger.error("Skipping {}".format(m))
-                    continue
+                    alt_title = self.metadata[m]["alt_title"]
+                    item = self.search_item(alt_title, year=year)
 
-            logger.info("Updating {}: {}...".format("Movie" if self.is_movie else "Show", alt_title if used_alt else m))
+            if item is None:
+                logger.error("Plex Error: Item {} not found".format(m))
+                logger.error("Skipping {}".format(m))
+                continue
+
+            logger.info("Updating {}: {}...".format("Movie" if self.is_movie else "Show", title))
+
+            tmdb_item = None
+            try:
+                if "tmdb_id" in self.metadata[m]:
+                    if self.metadata[m]["tmdb_id"] is None:                                 logger.error("Metadata Error: tmdb_id attribute is blank")
+                    elif self.is_show:                                                      logger.error("Metadata Error: tmdb_id attribute only works with movie libraries")
+                    else:                                                                   tmdb_item = TMDb.get_show(util.regex_first_int(self.metadata[m]["tmdb_id"], "Show"))
+            except Failed as e:
+                logger.error(e)
+
+
+            originally_available = tmdb_item.first_air_date if tmdb_item else None
+            rating = tmdb_item.vote_average if tmdb_item else None
+            original_title = tmdb_item.original_name if tmdb_item and tmdb_item.original_name != tmdb_item.name else None
+            studio = tmdb_item.networks[0].name if tmdb_item else None
+            tagline = tmdb_item.tagline if tmdb_item and len(tmdb_item.tagline) > 0 else None
+            summary = tmdb_item.overview if tmdb_item else None
+
             edits = {}
-            def add_edit(name, group, key=None, value=None, sub=None):
+            def add_edit(name, current, group, key=None, value=None):
                 if value or name in group:
                     if value or group[name]:
                         if key is None:         key = name
                         if value is None:       value = group[name]
-                        if sub and "sub" in group:
-                            if group["sub"]:
-                                if group["sub"] is True and "(SUB)" not in value:       value = "{} (SUB)".format(value)
-                                elif group["sub"] is False and " (SUB)" in value:       value = value[:-6]
-                            else:
-                                logger.error("Metadata Error: sub attribute is blank")
-                        edits["{}.value".format(key)] = value
-                        edits["{}.locked".format(key)] = 1
+                        if str(current) != str(value):
+                            edits["{}.value".format(key)] = value
+                            edits["{}.locked".format(key)] = 1
                     else:
                         logger.error("Metadata Error: {} attribute is blank".format(name))
-            if used_alt or "sub" in self.metadata[m]:
-                add_edit("title", self.metadata[m], value=m, sub=True)
-            add_edit("sort_title", self.metadata[m], key="titleSort")
-            add_edit("originally_available", self.metadata[m], key="originallyAvailableAt")
-            add_edit("rating", self.metadata[m])
-            add_edit("content_rating", self.metadata[m], key="contentRating")
-            add_edit("original_title", self.metadata[m], key="originalTitle")
-            add_edit("studio", self.metadata[m])
-            add_edit("tagline", self.metadata[m])
-            add_edit("summary", self.metadata[m])
-            try:
-                item.edit(**edits)
-                item.reload()
-                logger.info("{}: {} Details Update Successful".format("Movie" if self.is_movie else "Show", m))
-            except BadRequest:
-                logger.error("{}: {} Details Update Failed".format("Movie" if self.is_movie else "Show", m))
+            add_edit("title", item.title, self.metadata[m], value=title)
+            add_edit("sort_title", item.titleSort, self.metadata[m], key="titleSort")
+            add_edit("originally_available", str(item.originallyAvailableAt)[:-9], self.metadata[m], key="originallyAvailableAt", value=originally_available)
+            add_edit("rating", item.rating, self.metadata[m], value=rating)
+            add_edit("content_rating", item.contentRating, self.metadata[m], key="contentRating")
+            add_edit("original_title", item.originalTitle, self.metadata[m], key="originalTitle", value=original_title)
+            add_edit("studio", item.studio, self.metadata[m], value=studio)
+            add_edit("tagline", item.tagline, self.metadata[m], value=tagline)
+            add_edit("summary", item.summary, self.metadata[m], value=summary)
+            if len(edits) > 0:
                 logger.debug("Details Update: {}".format(edits))
-                util.print_stacktrace()
+                try:
+                    item.edit(**edits)
+                    item.reload()
+                    logger.info("{}: {} Details Update Successful".format("Movie" if self.is_movie else "Show", m))
+                except BadRequest:
+                    util.print_stacktrace()
+                    logger.error("{}: {} Details Update Failed".format("Movie" if self.is_movie else "Show", m))
+            else:
+                logger.info("{}: {} Details Update Not Needed".format("Movie" if self.is_movie else "Show", m))
+
+            genres = []
+
+            if tmdb_item:
+                genres.extend([genre.name for genre in tmdb_item.genres])
 
             if "genre" in self.metadata[m]:
-                if self.metadata[m]["genre"]:
-                    genre_sync = False
-                    if "genre_sync_mode" in self.metadata[m]:
-                        if self.metadata[m]["genre_sync_mode"] is None:                         logger.error("Metadata Error: genre_sync_mode attribute is blank defaulting to append")
-                        elif self.metadata[m]["genre_sync_mode"] not in ["append", "sync"]:     logger.error("Metadata Error: genre_sync_mode attribute must be either 'append' or 'sync' defaulting to append")
-                        elif self.metadata[m]["genre_sync_mode"] == "sync":                     genre_sync = True
-                    genres = [genre.tag for genre in item.genres]
-                    values = util.get_list(self.metadata[m]["genre"])
-                    if genre_sync:
-                        for genre in (g for g in genres if g not in values):
+                if self.metadata[m]["genre"]:                                           genres.extend(util.get_list(self.metadata[m]["genre"]))
+                else:                                                                   logger.error("Metadata Error: genre attribute is blank")
+
+            if len(genres) > 0:
+                item_genres = [genre.tag for genre in item.genres]
+                if "genre_sync_mode" in self.metadata[m]:
+                    if self.metadata[m]["genre_sync_mode"] is None:                         logger.error("Metadata Error: genre_sync_mode attribute is blank defaulting to append")
+                    elif self.metadata[m]["genre_sync_mode"] not in ["append", "sync"]:     logger.error("Metadata Error: genre_sync_mode attribute must be either 'append' or 'sync' defaulting to append")
+                    elif self.metadata[m]["genre_sync_mode"] == "sync":
+                        for genre in (g for g in item_genres if g not in genres):
                             item.removeGenre(genre)
                             logger.info("Detail: Genre {} removed".format(genre))
-                    for value in (v for v in values if v not in genres):
-                        item.addGenre(value)
-                        logger.info("Detail: Genre {} added".format(value))
-                else:
-                    logger.error("Metadata Error: genre attribute is blank")
+                for genre in (g for g in genres if g not in item_genres):
+                    item.addGenre(genre)
+                    logger.info("Detail: Genre {} added".format(genre))
 
             if "label" in self.metadata[m]:
                 if self.metadata[m]["label"]:
-                    label_sync = False
+                    item_labels = [label.tag for label in item.labels]
+                    labels = util.get_list(self.metadata[m]["label"])
                     if "label_sync_mode" in self.metadata[m]:
                         if self.metadata[m]["label_sync_mode"] is None:                         logger.error("Metadata Error: label_sync_mode attribute is blank defaulting to append")
                         elif self.metadata[m]["label_sync_mode"] not in ["append", "sync"]:     logger.error("Metadata Error: label_sync_mode attribute must be either 'append' or 'sync' defaulting to append")
-                        elif self.metadata[m]["label_sync_mode"] == "sync":                     label_sync = True
-                    labels = [label.tag for label in item.labels]
-                    values = util.get_list(self.metadata[m]["label"])
-                    if label_sync:
-                        for label in (l for l in labels if l not in values):
-                            item.removeLabel(label)
-                            logger.info("Detail: Label {} removed".format(label))
-                    for value in (v for v in values if v not in labels):
-                        item.addLabel(v)
-                        logger.info("Detail: Label {} added".format(v))
+                        elif self.metadata[m]["label_sync_mode"] == "sync":
+                            for label in (l for l in item_labels if l not in labels):
+                                item.removeLabel(label)
+                                logger.info("Detail: Label {} removed".format(label))
+                    for label in (l for l in labels if l not in item_labels):
+                        item.addLabel(label)
+                        logger.info("Detail: Label {} added".format(label))
                 else:
                     logger.error("Metadata Error: label attribute is blank")
 
@@ -342,22 +352,40 @@ class PlexAPI:
                 if self.metadata[m]["seasons"]:
                     for season_id in self.metadata[m]["seasons"]:
                         logger.info("")
-                        logger.info("Updating season {} of {}...".format(season_id, alt_title if used_alt else m))
+                        logger.info("Updating season {} of {}...".format(season_id, m))
                         if isinstance(season_id, int):
                             try:                                season = item.season(season_id)
                             except NotFound:                    logger.error("Metadata Error: Season: {} not found".format(season_id))
                             else:
+
+                                if "title" in self.metadata[m]["seasons"][season_id] and self.metadata[m]["seasons"][season_id]["title"]:
+                                    title = self.metadata[m]["seasons"][season_id]["title"]
+                                else:
+                                    title = season.title
+                                if "sub" in self.metadata[m]["seasons"][season_id]:
+                                    if self.metadata[m]["seasons"][season_id]["sub"] is None:
+                                        logger.error("Metadata Error: sub attribute is blank")
+                                    elif self.metadata[m]["seasons"][season_id]["sub"] is True and "(SUB)" not in title:
+                                        title = "{} (SUB)".format(title)
+                                    elif self.metadata[m]["seasons"][season_id]["sub"] is False and title.endswith(" (SUB)"):
+                                        title = title[:-6]
+                                    else:
+                                        logger.error("Metadata Error: sub attribute must be True or False")
+
                                 edits = {}
-                                add_edit("title", self.metadata[m]["seasons"][season_id], sub=True)
-                                add_edit("summary", self.metadata[m]["seasons"][season_id])
-                                try:
-                                    season.edit(**edits)
-                                    season.reload()
-                                    logger.info("Season: {} Details Update Successful".format(season_id))
-                                except BadRequest:
+                                add_edit("title", season.title, self.metadata[m]["seasons"][season_id], value=title)
+                                add_edit("summary", season.summary, self.metadata[m]["seasons"][season_id])
+                                if len(edits) > 0:
                                     logger.debug("Season: {} Details Update: {}".format(season_id, edits))
-                                    logger.error("Season: {} Details Update Failed".format(season_id))
-                                    util.print_stacktrace()
+                                    try:
+                                        season.edit(**edits)
+                                        season.reload()
+                                        logger.info("Season: {} Details Update Successful".format(season_id))
+                                    except BadRequest:
+                                        util.print_stacktrace()
+                                        logger.error("Season: {} Details Update Failed".format(season_id))
+                                else:
+                                    logger.info("Season: {} Details Update Not Needed".format(season_id))
                         else:
                             logger.error("Metadata Error: Season: {} invalid, it must be an integer".format(season_id))
                 else:
@@ -372,24 +400,40 @@ class PlexAPI:
                             output = match.group(0)[1:].split("E" if "E" in m.group(0) else "e")
                             episode_id = int(output[0])
                             season_id = int(output[1])
-                            logger.info("Updating episode S{}E{} of {}...".format(episode_id, season_id, alt_title if used_alt else m))
+                            logger.info("Updating episode S{}E{} of {}...".format(episode_id, season_id, m))
                             try:                                episode = item.episode(season=season_id, episode=episode_id)
                             except NotFound:                    logger.error("Metadata Error: episode {} of season {} not found".format(episode_id, season_id))
                             else:
+                                if "title" in self.metadata[m]["episodes"][episode_str] and self.metadata[m]["episodes"][episode_str]["title"]:
+                                    title = self.metadata[m]["episodes"][episode_str]["title"]
+                                else:
+                                    title = episode.title
+                                if "sub" in self.metadata[m]["episodes"][episode_str]:
+                                    if self.metadata[m]["episodes"][episode_str]["sub"] is None:
+                                        logger.error("Metadata Error: sub attribute is blank")
+                                    elif self.metadata[m]["episodes"][episode_str]["sub"] is True and "(SUB)" not in title:
+                                        title = "{} (SUB)".format(title)
+                                    elif self.metadata[m]["episodes"][episode_str]["sub"] is False and title.endswith(" (SUB)"):
+                                        title = title[:-6]
+                                    else:
+                                        logger.error("Metadata Error: sub attribute must be True or False")
                                 edits = {}
-                                add_edit("title", self.metadata[m]["episodes"][episode_str], sub=True)
-                                add_edit("sort_title", self.metadata[m]["episodes"][episode_str], key="titleSort")
-                                add_edit("rating", self.metadata[m]["episodes"][episode_str])
-                                add_edit("originally_available", self.metadata[m]["episodes"][episode_str], key="originallyAvailableAt")
-                                add_edit("summary", self.metadata[m]["episodes"][episode_str])
-                                try:
-                                    episode.edit(**edits)
-                                    episode.reload()
-                                    logger.info("Season: {} Episode: {} Details Update Successful".format(season_id, episode_id))
-                                except BadRequest:
+                                add_edit("title", episode.title, self.metadata[m]["episodes"][episode_str], value=title)
+                                add_edit("sort_title", episode.titleSort, self.metadata[m]["episodes"][episode_str], key="titleSort")
+                                add_edit("rating", episode.rating, self.metadata[m]["episodes"][episode_str])
+                                add_edit("originally_available", str(episode.originallyAvailableAt)[:-9], self.metadata[m]["episodes"][episode_str], key="originallyAvailableAt")
+                                add_edit("summary", episode.summary, self.metadata[m]["episodes"][episode_str])
+                                if len(edits) > 0:
                                     logger.debug("Season: {} Episode: {} Details Update: {}".format(season_id, episode_id, edits))
-                                    logger.error("Season: {} Episode: {} Details Update Failed".format(season_id, episode_id))
-                                    util.print_stacktrace()
+                                    try:
+                                        episode.edit(**edits)
+                                        episode.reload()
+                                        logger.info("Season: {} Episode: {} Details Update Successful".format(season_id, episode_id))
+                                    except BadRequest:
+                                        util.print_stacktrace()
+                                        logger.error("Season: {} Episode: {} Details Update Failed".format(season_id, episode_id))
+                                else:
+                                    logger.info("Season: {} Episode: {} Details Update Not Needed".format(season_id, episode_id))
                         else:
                             logger.error("Metadata Error: episode {} invlaid must have S##E## format".format(episode_str))
                 else:

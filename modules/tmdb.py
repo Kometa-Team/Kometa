@@ -209,17 +209,17 @@ class TMDbAPI:
     def validate_tmdb_list(self, tmdb_list, tmdb_type):
         tmdb_values = []
         for tmdb_id in tmdb_list:
-            try:
-                if tmdb_type == "Movie":                    self.get_movie(tmdb_id)
-                elif tmdb_type == "Show":                   self.get_show(tmdb_id)
-                elif tmdb_type == "Collection":             self.get_collection(tmdb_id)
-                elif tmdb_type == "Person":                 self.get_person(tmdb_id)
-                elif tmdb_type == "Company":                self.get_company(tmdb_id)
-                elif tmdb_type == "Network":                self.get_network(tmdb_id)
-                elif tmdb_type == "List":                   self.get_list(tmdb_id)
-                tmdb_values.append(tmdb_id)
-            except Failed as e:
-                logger.error(e)
-        if len(tmdb_values) == 0:
-            raise Failed("TMDb Error: No valid TMDb IDs in {}".format(tmdb_list))
+            try:                                        tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_type))
+            except Failed as e:                         logger.error(e)
+        if len(tmdb_values) == 0:                   raise Failed("TMDb Error: No valid TMDb IDs in {}".format(tmdb_list))
         return tmdb_values
+
+    def validate_tmdb(self, tmdb_id, tmdb_type):
+        if tmdb_type == "Movie":                    self.get_movie(tmdb_id)
+        elif tmdb_type == "Show":                   self.get_show(tmdb_id)
+        elif tmdb_type == "Collection":             self.get_collection(tmdb_id)
+        elif tmdb_type == "Person":                 self.get_person(tmdb_id)
+        elif tmdb_type == "Company":                self.get_company(tmdb_id)
+        elif tmdb_type == "Network":                self.get_network(tmdb_id)
+        elif tmdb_type == "List":                   self.get_list(tmdb_id)
+        return tmdb_id
