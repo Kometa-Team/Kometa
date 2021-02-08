@@ -935,7 +935,7 @@ class Config:
                                             try:
                                                 title = str(self.TMDb.get_movie(missing_id).title)
                                                 missing_movies_with_names.append((title, missing_id))
-                                                logger.info("{} Collection | ? | {} (TMDB: {})".format(collection_name, title, missing_id))
+                                                logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
                                             except Failed as e:
                                                 logger.error(e)
                                         logger.info("{} Movie{} Missing".format(len(missing_movies), "s" if len(missing_movies) > 1 else ""))
