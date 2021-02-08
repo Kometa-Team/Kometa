@@ -1159,7 +1159,7 @@ collections:
     sync_mode: sync
 
 ######################################################
-#                TMDB Collections                    #
+#                TMDb Collections                    #
 ######################################################
   101 Dalmatians:
     tmdb_collection_details: 100693

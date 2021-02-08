@@ -52,11 +52,11 @@ class RadarrAPI:
             try:
                 year = movie.release_date.split("-")[0]
             except AttributeError:
-                logger.error("TMDB Error: No year for ({}) {}".format(tmdb_id, movie.title))
+                logger.error("TMDb Error: No year for ({}) {}".format(tmdb_id, movie.title))
                 continue
 
             if year.isdigit() is False:
-                logger.error("TMDB Error: No release date yet for ({}) {}".format(tmdb_id, movie.title))
+                logger.error("TMDb Error: No release date yet for ({}) {}".format(tmdb_id, movie.title))
                 continue
 
             poster = "https://image.tmdb.org/t/p/original{}".format(movie.poster_path)

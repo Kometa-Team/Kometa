@@ -31,7 +31,7 @@ class TMDbAPI:
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def convert_from_tmdb(self, tmdb_id, convert_to, is_movie):
         try:                        return self.Movie.external_ids(tmdb_id)[convert_to] if is_movie else self.TV.external_ids(tmdb_id)[convert_to]
-        except TMDbException:       raise Failed("TMDB Error: No {} found for TMDb ID {}".format(convert_to.upper().replace("B_", "b "), tmdb_id))
+        except TMDbException:       raise Failed("TMDb Error: No {} found for TMDb ID {}".format(convert_to.upper().replace("B_", "b "), tmdb_id))
 
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
@@ -39,7 +39,7 @@ class TMDbAPI:
         search_results = self.Movie.external(external_id=external_id, external_source=external_source)
         search = search_results["movie_results" if is_movie else "tv_results"]
         if len(search) == 1:        return search[0]["id"]
-        else:                       raise Failed("TMDB Error: No TMDb ID found for {} {}".format(external_source.upper().replace("B_", "b "), external_id))
+        else:                       raise Failed("TMDb Error: No TMDb ID found for {} {}".format(external_source.upper().replace("B_", "b "), external_id))
 
     def convert_tmdb_to_imdb(self, tmdb_id, is_movie=True):         return self.convert_from_tmdb(tmdb_id, "imdb_id", is_movie)
     def convert_imdb_to_tmdb(self, imdb_id, is_movie=True):         return self.convert_to_tmdb(imdb_id, "imdb_id", is_movie)
