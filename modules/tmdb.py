@@ -146,13 +146,13 @@ class TMDbAPI:
             if method in ["tmdb_company", "tmdb_network", "tmdb_keyword"]:
                 tmdb_id = int(data)
                 if method == "tmdb_company":
-                    tmdb_name = str(self.get_company(tmdb_id))
+                    tmdb_name = str(self.get_company(tmdb_id).name)
                     attrs = {"with_companies": tmdb_id}
                 elif method == "tmdb_network":
-                    tmdb_name = str(self.get_network(tmdb_id))
+                    tmdb_name = str(self.get_network(tmdb_id).name)
                     attrs = {"with_networks": tmdb_id}
                 elif method == "tmdb_keyword":
-                    tmdb_name = str(self.get_keyword(tmdb_id))
+                    tmdb_name = str(self.get_keyword(tmdb_id).name)
                     attrs = {"with_keywords": tmdb_id}
                 limit = 0
             else:
