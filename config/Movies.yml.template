@@ -97,6 +97,11 @@ collections:
 ######################################################
 
 
+  Aardman:
+    tmdb_company: 297
+    sort_title: +++_Aardman
+    sync_mode: sync
+    summary: Aardman Animations, Ltd. is a British animation studio based in Bristol, England. Aardman is known for films made using stop-motion clay animation techniques, particularly those featuring Plasticine characters Wallace and Gromit.
   Blue Sky:
     tmdb_company: 9383
     sort_title: +++_Blue Sky
@@ -104,6 +109,8 @@ collections:
     summary: Blue Sky Studios, Inc. is an American computer animation film studio based in Greenwich, Connecticut. It is a subsidiary of 20th Century Animation, a division of Disney Studios Content.
   DreamWorks:
     tmdb_company: 521
+    filters:
+      collection.not: Aardman
     sort_title: +++_DreamWorks
     sync_mode: sync
     summary: DreamWorks Animation LLC (also simply known as DreamWorks) is an American animation studio and a subsidiary of Universal Pictures, itself a subsidiary of Comcast's NBCUniversal. It is based in Glendale, California, and produces animated feature films, television programs, and online virtual games.
@@ -222,9 +229,9 @@ collections:
     collection_order: alpha
   Documentary:
     imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=documentary
+    - url: https://www.imdb.com/search/title/?title_type=documentary&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=documentary
       limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=documentary&sort=user_rating,desc
+    - url: https://www.imdb.com/search/title/?title_type=documentary&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=documentary&sort=user_rating,desc
       limit: 100
     sort_title: ++_Documentary
     sync_mode: sync
@@ -483,10 +490,20 @@ collections:
     tmdb_person: 11701
     sort_title: +_Angelina Jolie
     sync_mode: sync
+  Anne Hathaway:
+    actor: tmdb
+    tmdb_person: 1813
+    sort_title: +_Anne Hathaway
+    sync_mode: sync
   Anthony Hopkins:
     actor: tmdb
     tmdb_person: 4173
     sort_title: +_Anthony Hopkins
+    sync_mode: sync
+  Antonio Banderas:
+    actor: tmdb
+    tmdb_person: 3131
+    sort_title: +_Antonio Banderas
     sync_mode: sync
   Arnold Schwarzenegger:
     actor: tmdb
@@ -513,6 +530,11 @@ collections:
     tmdb_person: 287
     sort_title: +_Brad Pitt
     sync_mode: sync
+  Brendan Fraser:
+    actor: tmdb
+    tmdb_person: 18269
+    sort_title: +_Brendan Fraser
+    sync_mode: sync
   Bruce Lee:
     actor: tmdb
     tmdb_person: 19429
@@ -523,15 +545,30 @@ collections:
     tmdb_person: 62
     sort_title: +_Bruce Willis
     sync_mode: sync
-  Cary Grant:
+  Cameron Diaz:
     actor: tmdb
-    tmdb_person: 2638
-    sort_title: +_Cary Grant
+    tmdb_person: 6941
+    sort_title: +_Cameron Diaz
     sync_mode: sync
-  Charles Bronson:
+  Carrie Fisher:
     actor: tmdb
-    tmdb_person: 4960
-    sort_title: +_Charles Bronson
+    tmdb_person: 4
+    sort_title: +_Carrie Fisher
+    sync_mode: sync
+  Cate Blanchett:
+    actor: tmdb
+    tmdb_person: 112
+    sort_title: +_Cate Blanchett
+    sync_mode: sync
+  Catherine Zeta-Jones:
+    actor: tmdb
+    tmdb_person: 1922
+    sort_title: +_Catherine Zeta-Jones
+    sync_mode: sync
+  Channing Tatum:
+    actor: tmdb
+    tmdb_person: 38673
+    sort_title: +_Channing Tatum
     sync_mode: sync
   Charlie Chaplin:
     actor: tmdb
@@ -543,25 +580,40 @@ collections:
     tmdb_person: 6885
     sort_title: +_Charlize Theron
     sync_mode: sync
-  Cheech & Chong:
-    tmdb_collection: tmdb
-    tmdb_person: 33071
-    sort_title: +_Cheech & Chong
-    sync_mode: sync
-  Chevy Chase:
-    actor: tmdb
-    tmdb_person: 54812
-    sort_title: +_Chevy Chase
-    sync_mode: sync
   Christian Bale:
     actor: tmdb
     tmdb_person: 3894
     sort_title: +_Christian Bale
     sync_mode: sync
+  Chris Evans:
+    actor: tmdb
+    tmdb_person: 16828
+    sort_title: +_Chris Evans
+    sync_mode: sync
+  Chris Hemsworth:
+    actor: tmdb
+    tmdb_person: 74568
+    sort_title: +_Chris Hemsworth
+    sync_mode: sync
+  Chris Pratt:
+    actor: tmdb
+    tmdb_person: 73457
+    sort_title: +_Chris Pratt
+    sync_mode: sync
+  Chris Rock:
+    actor: tmdb
+    tmdb_person: 2632
+    sort_title: +_Chris Rock
+    sync_mode: sync
   Christopher Nolan:
     director: tmdb
     tmdb_person: 525
     sort_title: +_Christopher Nolan
+    sync_mode: sync
+  Christopher Walken:
+    actor: tmdb
+    tmdb_person: 4690
+    sort_title: +_Christopher Walken
     sync_mode: sync
   Chuck Norris:
     actor: tmdb
@@ -581,6 +633,16 @@ collections:
     sort_title: +_Coen Brothers
     sync_mode: sync
     summary: "Joel Coen and Ethan Coen, collectively referred to as the Coen Brothers, are American film directors, producers, screenwriters, and editors. Their films span many genres and styles, which they frequently subvert or parody. Their most acclaimed works include: Raising Arizona (1987), Miller's Crossing (1990), Fargo (1996), The Big Lebowski (1998), O Brother, Where Art Thou? (2000), No Country for Old Men (2007), Burn After Reading (2008), A Serious Man (2009), True Grit (2010), Inside Llewyn Davis (2013), and The Ballad of Buster Scruggs (2018)."
+  Daniel Craig:
+    actor: tmdb
+    tmdb_person: 8784
+    sort_title: +_Daniel Craig
+    sync_mode: sync
+  Dave Bautista:
+    actor: tmdb
+    tmdb_person: 543530
+    sort_title: +_Dave Bautista
+    sync_mode: sync
   Dave Chappelle:
     actor: tmdb
     tmdb_person: 4169
@@ -596,10 +658,20 @@ collections:
     tmdb_person: 3092
     sort_title: +_Diane Keaton
     sync_mode: sync
+  Don Cheadle:
+    actor: tmdb
+    tmdb_person: 1896
+    sort_title: +_Don Cheadle
+    sync_mode: sync
   Dustin Hoffman:
     actor: tmdb
     tmdb_person: 4483
     sort_title: +_Dustin Hoffman
+    sync_mode: sync
+  Dwayne Johnson:
+    actor: tmdb
+    tmdb_person: 18918
+    sort_title: +_Dwayne Johnson
     sync_mode: sync
   Eddie Murphy:
     actor: tmdb
@@ -611,65 +683,80 @@ collections:
     tmdb_person: 819
     sort_title: +_Edward Norton
     sync_mode: sync
-  Elvis Presley:
+  Elliot Page:
     actor: tmdb
-    tmdb_person: 21457
-    sort_title: +_Elvis Presley
+    tmdb_person: 27578
+    sort_title: +_Elliot Page
     sync_mode: sync
   Emma Stone:
     actor: tmdb
     tmdb_person: 54693
     sort_title: +_Emma Stone
     sync_mode: sync
-  Francis Ford Coppola:
-    director: tmdb
-    tmdb_person: 1776
-    sort_title: +_Francis Ford Coppola
-    sync_mode: sync
-  Gene Hackman:
+  Emma Watson:
     actor: tmdb
-    tmdb_person: 193
-    sort_title: +_Gene Hackman
+    tmdb_person: 10990
+    sort_title: +_Emma Watson
     sync_mode: sync
-  Gene Wilder:
+  Ewan McGregor:
     actor: tmdb
-    tmdb_person: 3460
-    sort_title: +_Gene Wilder
+    tmdb_person: 3061
+    sort_title: +_Ewan McGregor
     sync_mode: sync
   George Clooney:
     actor: tmdb
     tmdb_person: 1461
     sort_title: +_George Clooney
     sync_mode: sync
-  Gregory Peck:
+  Gerard Butler:
     actor: tmdb
-    tmdb_person: 8487
-    sort_title: +_Gregory Peck
+    tmdb_person: 17276
+    sort_title: +_Gerard Butler
     sync_mode: sync
   Harrison Ford:
     actor: tmdb
     tmdb_person: 3
     sort_title: +_Harrison Ford
     sync_mode: sync
-  Humphrey Bogart:
-    actor: tmdb
-    tmdb_person: 4110
-    sort_title: +_Humphrey Bogart
+  Hayao Miyazaki:
+    director: tmdb
+    tmdb_person: 608
+    sort_title: +_Hayao Miyazaki
     sync_mode: sync
-  Jack Nicholson:
+  Hugh Jackman:
     actor: tmdb
-    tmdb_person: 514
-    sort_title: +_Jack Nicholson
+    tmdb_person: 6968
+    sort_title: +_Hugh Jackman
+    sync_mode: sync
+  Ian McKellen:
+    actor: tmdb
+    tmdb_person: 1327
+    sort_title: +_Ian McKellen
+    sync_mode: sync
+  Ice Cube:
+    actor: tmdb
+    tmdb_person: 9778
+    sort_title: +_Ice Cube
+    sync_mode: sync
+  J.J. Abrams:
+    director: tmdb
+    tmdb_person: 15344
+    sort_title: +_J.J. Abrams
+    sync_mode: sync
+  Jack Black:
+    actor: tmdb
+    tmdb_person: 70851
+    sort_title: +_Jack Black
+    sync_mode: sync
+  Jackie Chan:
+    actor: tmdb
+    tmdb_person: 18897
+    sort_title: +_Jackie Chan
     sync_mode: sync
   James Cameron:
     director: tmdb
     tmdb_person: 2710
     sort_title: +_James Cameron
-    sync_mode: sync
-  James Dean:
-    actor: tmdb
-    tmdb_person: 2749
-    sort_title: +_James Dean
     sync_mode: sync
   James Franco:
     actor: tmdb
@@ -681,20 +768,50 @@ collections:
     tmdb_person: 134
     sort_title: +_Jamie Foxx
     sync_mode: sync
+  Jason Bateman:
+    actor: tmdb
+    tmdb_person: 23532
+    sort_title: +_Jason Bateman
+    sync_mode: sync
+  Jason Statham:
+    actor: tmdb
+    tmdb_person: 976
+    sort_title: +_Jason Statham
+    sync_mode: sync
   Jeff Bridges:
     actor: tmdb
     tmdb_person: 1229
     sort_title: +_Jeff Bridges
     sync_mode: sync
+  Jeff Goldblum:
+    actor: tmdb
+    tmdb_person: 4785
+    sort_title: +_Jeff Goldblum
+    sync_mode: sync
   Jennifer Aniston:
     actor: tmdb
-    tmdb_person:
+    tmdb_person: 4491
     sort_title: +_Jennifer Aniston
     sync_mode: sync
   Jennifer Lawrence:
     actor: tmdb
     tmdb_person: 72129
     sort_title: +_Jennifer Lawrence
+    sync_mode: sync
+  Jesse Eisenberg:
+    actor: tmdb
+    tmdb_person: 44735
+    sort_title: +_Jesse Eisenberg
+    sync_mode: sync
+  Jessica Alba:
+    actor: tmdb
+    tmdb_person: 56731
+    sort_title: +_Jessica Alba
+    sync_mode: sync
+  Jet Li:
+    actor: tmdb
+    tmdb_person: 1336
+    sort_title: +_Jet Li
     sync_mode: sync
   Jim Carrey:
     actor: tmdb
@@ -721,30 +838,29 @@ collections:
     tmdb_person: 85
     sort_title: +_Johnny Depp
     sync_mode: sync
-  Jordan Peele:
-    actor: tmdb
-    tmdb_person: 291263
-    sort_title: +_Jordan Peele
-    sync_mode: sync
-  Judd Apatow:
-    writer: tmdb
-    director: tmdb
-    tmdb_person: 41039
-    sort_title: +_Judd Apatow
-    sync_mode: sync
   Julia Roberts:
     actor: tmdb
     tmdb_person: 1204
     sort_title: +_Julia Roberts
+    sync_mode: sync
+  Kevin Bacon:
+    actor: tmdb
+    tmdb_person: 4724
+    sort_title: +_Kevin Bacon
     sync_mode: sync
   Kevin Costner:
     actor: tmdb
     tmdb_person: 1269
     sort_title: +_Kevin Costner
     sync_mode: sync
+  Kevin Hart:
+    actor: tmdb
+    tmdb_person: 55638
+    sort_title: +_Kevin Hart
+    sync_mode: sync
   Kevin Smith:
-    director: tmdb
     writer: tmdb
+    director: tmdb
     tmdb_person: 19303
     sort_title: +_Kevin Smith
     sync_mode: sync
@@ -753,21 +869,25 @@ collections:
     tmdb_person: 6193
     sort_title: +_Leonardo DiCaprio
     sync_mode: sync
+  Liam Neeson:
+    actor: tmdb
+    tmdb_person: 3896
+    sort_title: +_Liam Neeson
+    sync_mode: sync
+  Lucy Liu:
+    actor: tmdb
+    tmdb_person: 140
+    sort_title: +_Lucy Liu
+    sync_mode: sync
+  M. Night Shyamalan:
+    director: tmdb
+    tmdb_person: 11614
+    sort_title: +_M. Night Shyamalan
+    sync_mode: sync
   Mark Wahlberg:
     actor: tmdb
     tmdb_person: 13240
     sort_title: +_Mark Wahlberg
-    sync_mode: sync
-  Marlon Brando:
-    actor: tmdb
-    tmdb_person: 3084
-    sort_title: +_Marlon Brando
-    sync_mode: sync
-  Martin Scorsese:
-    director: tmdb
-    writer: tmdb
-    tmdb_person: 1032
-    sort_title: +_Martin Scorsese
     sync_mode: sync
   Matt Damon:
     actor: tmdb
@@ -779,10 +899,15 @@ collections:
     tmdb_person: 10297
     sort_title: +_Matthew McConaughey
     sync_mode: sync
-  Mel Brooks:
-    director: tmdb
-    writer: tmdb
+  Megan Fox:
     actor: tmdb
+    tmdb_person: 19537
+    sort_title: +_Megan Fox
+    sync_mode: sync
+  Mel Brooks:
+    actor: tmdb
+    writer: tmdb
+    director: tmdb
     tmdb_person: 14639
     sort_title: +_Mel Brooks
     sync_mode: sync
@@ -792,10 +917,20 @@ collections:
     tmdb_person: 2461
     sort_title: +_Mel Gibson
     sync_mode: sync
+  Melissa McCarthy:
+    actor: tmdb
+    tmdb_person: 55536
+    sort_title: +_Melissa McCarthy
+    sync_mode: sync
   Meryl Streep:
     actor: tmdb
     tmdb_person: 5064
     sort_title: +_Meryl Streep
+    sync_mode: sync
+  Michael Bay:
+    director: tmdb
+    tmdb_person: 865
+    sort_title: +_Michael Bay
     sync_mode: sync
   Michael Caine:
     actor: tmdb
@@ -807,10 +942,30 @@ collections:
     tmdb_person: 2232
     sort_title: +_Michael Keaton
     sync_mode: sync
+  Mike Myers:
+    actor: tmdb
+    tmdb_person: 12073
+    sort_title: +_Mike Myers
+    sync_mode: sync
+  Mila Kunis:
+    actor: tmdb
+    tmdb_person: 18973
+    sort_title: +_Mila Kunis
+    sync_mode: sync
+  Milla Jovovich:
+    actor: tmdb
+    tmdb_person: 63
+    sort_title: +_Milla Jovovich
+    sync_mode: sync
   Morgan Freeman:
     actor: tmdb
     tmdb_person: 192
     sort_title: +_Morgan Freeman
+    sync_mode: sync
+  Natalie Portman:
+    actor: tmdb
+    tmdb_person: 524
+    sort_title: +_Natalie Portman
     sync_mode: sync
   Nicolas Cage:
     actor: tmdb
@@ -822,15 +977,25 @@ collections:
     tmdb_person: 2227
     sort_title: +_Nicole Kidman
     sync_mode: sync
-  Oliver Stone:
-    director: tmdb
-    writer: tmdb
-    tmdb_person: 1152
-    sort_title: +_Oliver Stone
+  Orlando Bloom:
+    actor: tmdb
+    tmdb_person: 114
+    sort_title: +_Orlando Bloom
+    sync_mode: sync
+  Owen Wilson:
+    actor: tmdb
+    tmdb_person: 887
+    sort_title: +_Owen Wilson
+    sync_mode: sync
+  Patrick Stewart:
+    actor: tmdb
+    tmdb_person: 2387
+    sort_title: +_Patrick Stewart
     sync_mode: sync
   Quentin Tarantino:
-    director: tmdb
+    actor: tmdb
     writer: tmdb
+    director: tmdb
     tmdb_person: 138
     sort_title: +_Quentin Tarantino
     sync_mode: sync
@@ -839,11 +1004,6 @@ collections:
     tmdb_person: 368
     sort_title: +_Reese Witherspoon
     sync_mode: sync
-  Richard Gere:
-    actor: tmdb
-    tmdb_person: 1205
-    sort_title: +_Richard Gere
-    sync_mode: sync
   Ridley Scott:
     director: tmdb
     tmdb_person: 578
@@ -851,7 +1011,7 @@ collections:
     sync_mode: sync
   Robert De Niro:
     actor: tmdb
-    tmdb_person: 80
+    tmdb_person: 380
     sort_title: +_Robert De Niro
     sync_mode: sync
   Robert Downey Jr.:
@@ -859,20 +1019,35 @@ collections:
     tmdb_person: 3223
     sort_title: +_Robert Downey Jr.
     sync_mode: sync
-  Robert Duvall:
-    actor: tmdb
-    tmdb_person: 3087
-    sort_title: +_Robert Duvall
-    sync_mode: sync
   Robin Williams:
     actor: tmdb
     tmdb_person: 2157
     sort_title: +_Robin Williams
     sync_mode: sync
+  Rosario Dawson:
+    actor: tmdb
+    tmdb_person: 5916
+    sort_title: +_Rosario Dawson
+    sync_mode: sync
+  Ryan Reynolds:
+    actor: tmdb
+    tmdb_person: 10859
+    sort_title: +_Ryan Reynolds
+    sync_mode: sync
   Samuel L. Jackson:
     actor: tmdb
     tmdb_person: 2231
     sort_title: +_Samuel L. Jackson
+    sync_mode: sync
+  Sandra Bullock:
+    actor: tmdb
+    tmdb_person: 18277
+    sort_title: +_Sandra Bullock
+    sync_mode: sync
+  Sacha Baron Cohen:
+    actor: tmdb
+    tmdb_person: 6730
+    sort_title: +_Sacha Baron Cohen
     sync_mode: sync
   Scarlett Johansson:
     actor: tmdb
@@ -884,21 +1059,22 @@ collections:
     tmdb_person: 738
     sort_title: +_Sean Connery
     sync_mode: sync
-  Sean Penn:
-    actor: tmdb
-    tmdb_person: 2228
-    sort_title: +_Sean Penn
-    sync_mode: sync
   Seth Rogen:
     actor: tmdb
     writer: tmdb
+    director: tmdb
     tmdb_person: 19274
     sort_title: +_Seth Rogen
     sync_mode: sync
-  Stanley Kubrick:
-    director: tmdb
-    tmdb_person: 240
-    sort_title: +_Stanley Kubrick
+  Shia LaBeouf:
+    actor: tmdb
+    tmdb_person: 10959
+    sort_title: +_Shia LaBeouf
+    sync_mode: sync
+  Steve Buscemi:
+    actor: tmdb
+    tmdb_person: 884
+    sort_title: +_Steve Buscemi
     sync_mode: sync
   Steve Carell:
     actor: tmdb
@@ -926,8 +1102,8 @@ collections:
     sort_title: +_Sylvester Stallone
     sync_mode: sync
   Tim Burton:
-    director: tmdb
     writer: tmdb
+    director: tmdb
     tmdb_person: 510
     sort_title: +_Tim Burton
     sync_mode: sync
@@ -946,6 +1122,16 @@ collections:
     tmdb_person: 2176
     sort_title: +_Tommy Lee Jones
     sync_mode: sync
+  Vin Diesel:
+    actor: tmdb
+    tmdb_person: 12835
+    sort_title: +_Vin Diesel
+    sync_mode: sync
+  Vince Vaughn:
+    actor: tmdb
+    tmdb_person: 4937
+    sort_title: +_Vince Vaughn
+    sync_mode: sync
   Wesley Snipes:
     actor: tmdb
     tmdb_person: 10814
@@ -961,17 +1147,15 @@ collections:
     tmdb_person: 2888
     sort_title: +_Will Smith
     sync_mode: sync
-  Woody Allen:
-    director: tmdb
-    actor: tmdb
-    writer: tmdb
-    tmdb_person: 1243
-    sort_title: +_Woody Allen
-    sync_mode: sync
   Woody Harrelson:
     actor: tmdb
     tmdb_person: 57755
     sort_title: +_Woody Harrelson
+    sync_mode: sync
+  Zack Snyder:
+    director: tmdb
+    tmdb_person: 15217
+    sort_title: +_Zack Snyder
     sync_mode: sync
 
 ######################################################
@@ -1352,20 +1536,25 @@ collections:
   Godzilla (Showa):
     tmdb_collection_details: 374509
     tmdb_movie: 18983
+    sort_title: Godzilla 01 (Showa)
     schedule: daily
   Godzilla (Heisei):
     tmdb_collection_details: 374511
     tmdb_movie: 39256
+    sort_title: Godzilla 02 (Heisei)
     schedule: daily
   Godzilla (Millennium):
     tmdb_collection_details: 374512
+    sort_title: Godzilla 04 (Millennium)
     schedule: daily
   Godzilla (MonsterVerse):
     tmdb_collection_details: 535313
     tmdb_movie: 293167
+    sort_title: Godzilla 05 (MonsterVerse)
     schedule: daily
   Godzilla (Anime):
     tmdb_collection_details: 535790
+    sort_title: Godzilla 07 (Anime)
     schedule: daily
   A Goofy Movie:
     tmdb_collection_details: 410261
@@ -1965,6 +2154,9 @@ collections:
   Wall Street:
     tmdb_collection_details: 52783
     schedule: daily
+  Wallace & Gromit:
+    tmdb_collection_details: 529
+    schedule: daily
   Wayne's World:
     tmdb_collection_details: 8979
     schedule: daily
@@ -2005,3 +2197,370 @@ collections:
         - "~"
     sort_title: ~_Collectionless
     collection_order: alpha
+
+metadata:
+  The Adventures of Ichabod and Mr. Toad:
+    content_rating: G
+  All Monsters Attack:
+    content_rating: G
+    originally_available: 1969-12-08
+  The Amazing Panda Adventure:
+    content_rating: G
+  American Pie:
+    content_rating: R
+  American Psycho:
+    content_rating: R
+  American Wedding:
+    content_rating: R
+  Angels in the Endzone:
+    content_rating: PG-13
+  Appleseed (1997):
+    title: Appleseed
+    year: 1997
+    content_rating: R
+  Appleseed (2004):
+    title: Appleseed
+    year: 2004
+    content_rating: R
+  "Appleseed XIII: Ouranos":
+    content_rating: PG-13
+  "Appleseed XIII: Tartaros":
+    content_rating: PG-13
+  "Arthur & Merlin: Knights of Camelot":
+    content_rating: R
+  "Assassin's Creed: Lineage":
+    content_rating: R
+  The Assistant:
+    content_rating: R
+  Attack on Titan:
+    content_rating: R
+  "Attack on Titan II: End of the World":
+    content_rating: R
+  August Rush:
+    content_rating: PG
+  "Aura: Koga Maryuin's Last War":
+    content_rating: R
+  Bad Education:
+    content_rating: R
+  Bad Grandpa:
+    alt_title: "Jackass Presents: Bad Grandpa"
+  Batman & Bill:
+    content_rating: PG-13
+  "Batman & Mr. Freeze: SubZero":
+    content_rating: PG
+  Battle at Big Rock:
+    content_rating: PG-13
+  "Black Water: Abyss":
+    content_rating: R
+  Blade of the Phantom Master:
+    content_rating: R
+  Blue Story:
+    content_rating: R
+  Bon Voyage, Charlie Brown (and Don't Come Back!):
+    content_rating: G
+  A Boy Named Charlie Brown:
+    content_rating: G
+  Bright:
+    content_rating: PG
+  "Bring It On: All or Nothing":
+    content_rating: PG
+  Canada Russia '72:
+    content_rating: PG-13
+  Cast Away:
+    content_rating: PG-13
+  Castle in the Sky:
+    content_rating: PG
+    originally_available: 1986-04-01
+  Catwoman:
+    content_rating: PG-13
+  A Charlie Brown Christmas:
+    content_rating: G
+  A Charlie Brown Thanksgiving:
+    content_rating: G
+  A Christmas Carol:
+    content_rating: PG
+  "The Chronicles of Riddick: Dark Fury":
+    content_rating: R
+  "A Cinderella Story: If the Shoe Fits":
+    content_rating: PG
+  Class Action Park:
+    content_rating: PG-13
+  The Cocoanuts:
+    content_rating: PG
+  Color Out of Space:
+    content_rating: R
+  "Constantine: City of Demons":
+    content_rating: R
+  Coogan's Bluff:
+    content_rating: R
+  "Crystal Lake Memories: The Complete History of Friday the 13th":
+    content_rating: R
+  "DC Super Hero Girls: Legends of Atlantis":
+    content_rating: G
+  "DC Super Hero Girls: Intergalactic Games":
+    content_rating: G
+  "DC Super Hero Girls: Super Hero High":
+    content_rating: G
+  Death Note:
+    content_rating: R
+  Death Proof:
+    content_rating: R
+  Destroy All Monsters:
+    content_rating: G
+    originally_available: 1968-05-23
+  Duck Soup:
+    content_rating: PG
+  "Dungeons & Dragons: Wrath of the Dragon God":
+    content_rating: PG-13
+  Ebirah, Horror of the Deep:
+    content_rating: G
+    originally_available: 1966-01-01
+  "Evangelion: 2.0 You Can (Not) Advance":
+    content_rating: PG-13
+  "Evangelion: 3.0 You Can (Not) Redo":
+    content_rating: PG-13
+  A Fistful of Dollars:
+    content_rating: R
+  "The Flintstones & WWE: Stone Age SmackDown!":
+    content_rating: PG
+  From Up on Poppy Hill:
+    originally_available: 2011-11-16
+  Ghidorah, the Three-Headed Monster:
+    content_rating: G
+    originally_available: 1964-10-13
+  Ghost in the Shell:
+    content_rating: PG-13
+  Ghost in the Shell 2.0:
+    content_rating: PG-13
+  Godzilla (1954):
+    title: Godzilla
+    year: 1954
+    content_rating: R
+  Godzilla (1998):
+    title: Godzilla
+    year: 1998
+    sort_title: Godzilla 03
+    content_rating: PG-13
+  Shin Godzilla:
+    sort_title: Godzilla 06
+    content_rating: R
+  Godzilla 1985:
+    content_rating: PG
+  "Godzilla 2000: Millennium":
+    originally_available: 1999-08-18
+  Godzilla Against MechaGodzilla:
+    originally_available: 2002-03-23
+  Godzilla Raids Again:
+    content_rating: G
+    originally_available: 1955-05-21
+  Godzilla vs. Biollante:
+    content_rating: PG
+  Godzilla vs. Destoroyah:
+    content_rating: PG
+    originally_available: 1995-01-19
+  Godzilla vs. Gigan:
+    content_rating: G
+    originally_available: 1972-09-14
+  Godzilla vs. Hedorah:
+    content_rating: G
+    originally_available: 1971-04-01
+  Godzilla vs. King Ghidorah:
+    content_rating: PG
+    originally_available: 1991-04-28
+  Godzilla vs. Mechagodzilla:
+    content_rating: G
+    originally_available: 1974-03-24
+  Godzilla vs. Mechagodzilla II:
+    content_rating: PG
+  Godzilla vs. Megaguirus:
+    content_rating: PG
+    originally_available: 2000-08-31
+  Godzilla vs. Megalon:
+    content_rating: G
+    originally_available: 1973-03-17
+  Godzilla vs. Mothra:
+    content_rating: PG
+    originally_available: 1992-04-28
+  Godzilla vs. SpaceGodzilla:
+    content_rating: PG
+    originally_available: 1994-01-19
+  Godzilla, King of the Monsters!:
+    content_rating: G
+  "Godzilla, Mothra and King Ghidorah: Giant Monsters All-Out Attack":
+    content_rating: PG
+    originally_available: 2001-08-31
+  "Godzilla: Final Wars":
+    content_rating: PG
+    originally_available: 2004-12-13
+  "Godzilla: Tokyo S.O.S.":
+    originally_available: 2003-12-14
+  Halloween (Rob Zombie):
+    alt_title: Halloween
+    year: 2007
+  "Halo 4: Forward Unto Dawn":
+    alt_title: Halo 4 Forward Unto Dawn
+    tmdb_id: 56295
+    content_rating: R
+  Harold & Kumar Go to White Castle:
+    content_rating: R
+  "Hellboy Animated: Blood and Iron":
+    content_rating: PG
+  Holidays:
+    content_rating: R
+  Horse Feathers:
+    content_rating: PG
+  Howl's Moving Castle:
+    originally_available: 2004-06-10
+  Hulk Vs.:
+    content_rating: PG-13
+  "Ice Age: The Great Egg-Scapade":
+    content_rating: PG
+  Invasion of Astro-Monster:
+    content_rating: G
+    originally_available: 1965-07-29
+  Ip Man:
+    originally_available: 2008-10-01
+  Ip Man 2:
+    originally_available: 2010-01-28
+  Ip Man 3:
+    originally_available: 2015-01-22
+  "Iron Man & Captain America: Heroes United":
+    content_rating: PG-13
+  IT:
+    alt_title: It (1990)
+    tmdb_id: 19614
+    content_rating: PG-13
+  It's Christmastime Again, Charlie Brown:
+    content_rating: G
+  It's Magic, Charlie Brown:
+    content_rating: G
+  It's the Great Pumpkin, Charlie Brown:
+    content_rating: G
+  Kelly's Heroes:
+    content_rating: R
+  Kiki's Delivery Service:
+    originally_available: 1989-12-31
+  King Kong vs. Godzilla:
+    content_rating: G
+    originally_available: 1962-06-03
+  "The Last Sharknado: It's About Time":
+    content_rating: PG-13
+  "Lego Batman: The Movie - DC Super HeroesUnite":
+    content_rating: PG
+  "Lego DC Batman: Family Matters":
+    content_rating: PG
+  "Lego DC Comics Super Heroes: Justice League  Attack of the Legion of Doom!":
+    content_rating: PG
+  "LEGO DC Comics Super Heroes: Justice League - Gotham City Breakout":
+    content_rating: PG
+  "LEGO DC Comics Super Heroes: Justice League vs. Bizarro League":
+    content_rating: PG
+  "LEGO DC Comics Super Heroes: Justice League: Cosmic Clash":
+    content_rating: PG
+  "Lego DC Comics Super Heroes: The Flash":
+    content_rating: PG
+  "LEGO DC Super Hero Girls: Brain Drain":
+    content_rating: G
+  "LEGO DC Super Hero Girls: Super-Villain High":
+    content_rating: G
+  "LEGO DC Super Heroes - Aquaman: Rage Of Atlantis":
+    content_rating: PG
+  "LEGO DC: Shazam! Magic and Monsters":
+    content_rating: PG
+  "Master Z: Ip Man Legacy":
+    originally_available: 2018-04-12
+  The Mayflower Voyagers:
+    content_rating: G
+  Monkey Business:
+    content_rating: PG
+  Mothra:
+    originally_available: 1961-05-10
+  Mothra vs. Godzilla:
+    content_rating: G
+  My Neighbor Totoro:
+    originally_available: 1988-12-11
+  My Neighbors the Yamadas:
+    originally_available: 1999-08-16
+  Nausicaä of the Valley of the Wind:
+    originally_available: 1984-06-13
+  Ocean Waves:
+    originally_available: 1993-04-18
+  Only Yesterday:
+    originally_available: 1991-08-01
+  "Parasyte: Part 1":
+    content_rating: R
+  Pirates of Silicon Valley:
+    content_rating: PG-13
+  Pom Poko:
+    originally_available: 1994-08-16
+  Ponyo:
+    originally_available: 2008-08-14
+  Princess Mononoke:
+    originally_available: 1997-10-29
+  Race for Your Life, Charlie Brown:
+    content_rating: G
+  Rebirth of Mothra:
+    originally_available: 1996-08-03
+  Rebirth of Mothra III:
+    originally_available: 1998-04-30
+  Red Cliff:
+    originally_available: 2008-07-02
+  The Red Turtle:
+    originally_available: 2016-01-20
+  Reign of the Supermen:
+    sort_title: Superman Reign of the
+  Rent:
+    content_rating: PG-13
+  "Rent: Filmed Live on Broadway":
+    content_rating: PG-13
+  The Return of Godzilla:
+    content_rating: PG
+    originally_available: 1984-09-13
+  The Return of the King:
+    content_rating: PG
+  "Riddick: Blindsided":
+    content_rating: R
+  The Secret World of Arrietty:
+    originally_available: 2010-02-17
+  Sharknado:
+    content_rating: PG-13
+  "Sharknado 2: The Second One":
+    content_rating: PG-13
+  "Sharknado 3: Oh Hell No!":
+    content_rating: PG-13
+  "Sharknado 4: The 4th Awakens":
+    content_rating: PG-13
+  "Sharknado 5: Global Swarming":
+    content_rating: PG-13
+  Snow White and the Three Stooges:
+    content_rating: PG
+  Son of Godzilla:
+    content_rating: G
+    originally_available: 1967-01-01
+  Spirited Away:
+    originally_available: 2001-06-16
+  "Star Wars: Clone Wars Volume Two":
+    originally_available: 2005-05-06
+  "Super Hero Girls: Hero of the Year":
+    content_rating: G
+  All Star Superman:
+    sort_title: Superman All Star
+  Sword of the Stranger:
+    content_rating: R
+  The Tale of the Princess Kaguya:
+    originally_available: 2013-10-17
+  Tales from Earthsea:
+    originally_available: 2006-08-13
+  Terror of Mechagodzilla:
+    content_rating: G
+    originally_available: 1975-03-24
+  The Three Stooges Go Around the World in a Daze:
+    content_rating: PG
+  The Three Stooges in Orbit:
+    content_rating: PG
+  Tokyo Ghoul:
+    content_rating: R
+  When Marnie Was There:
+    originally_available: 2014-05-22
+  The Wind Rises:
+    originally_available: 2013-02-21
