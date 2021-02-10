@@ -79,7 +79,13 @@ class RadarrAPI:
                 logger.info("Added to Radarr | {:<6} | {}".format(tmdb_id, movie.title))
                 add_count += 1
             else:
-                logger.error("Radarr Error: ({}) {}: ({}) {}".format(tmdb_id, movie.title, response.status_code, response.json()[0]["errorMessage"]))
+                try:
+                    logger.error("Radarr Error: ({}) {}: ({}) {}".format(tmdb_id, movie.title, response.status_code, response.json()[0]["errorMessage"]))
+                except KeyError as e:
+                    logger.debug(url_json)
+                    logger.debug(response)
+                    logger.debug(response.status_code)
+                    logger.debug(response.json())
         logger.info("{} Movie{} added to Radarr".format(add_count, "s" if add_count > 1 else ""))
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)

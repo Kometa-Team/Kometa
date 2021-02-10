@@ -533,6 +533,8 @@ class Config:
                                     logger.info("Collection Error: {} skipped. MyAnimeList must be configured".format(m))
                                     map = {}
                                 elif collections[c][m] is not None:
+                                    logger.debug("Method: {}".format(m))
+                                    logger.debug("Value: {}".format(collections[c][m]))
                                     if m in util.method_alias:
                                         method_name = util.method_alias[m]
                                         logger.warning("Collection Warning: {} attribute will run as {}".format(m, method_name))
@@ -843,8 +845,11 @@ class Config:
                         library.clear_collection_missing(collection_name)
 
                         for method, values in methods:
+                            logger.debug("Method: {}".format(method))
+                            logger.debug("Values: {}".format(values))
                             pretty = util.pretty_names[method] if method in util.pretty_names else method
                             for value in values:
+                                logger.debug("Value: {}".format(value))
                                 items = []
                                 missing_movies = []
                                 missing_shows = []
@@ -986,10 +991,10 @@ class Config:
                             edits["summary.value"] = details["summary"]
                             edits["summary.locked"] = 1
                         if len(edits) > 0:
+                            logger.debug(edits)
                             plex_collection.edit(**edits)
                             plex_collection.reload()
                             logger.info("Details: have been updated")
-                            logger.debug(edits)
                         if "collection_mode" in details:
                             plex_collection.modeUpdate(mode=details["collection_mode"])
                         if "collection_order" in details:
