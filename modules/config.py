@@ -106,6 +106,7 @@ class Config:
                 self.trakt["client_id"] = check_for_attribute(self.data, "client_id", parent="trakt", throw=True)
                 self.trakt["client_secret"] = check_for_attribute(self.data, "client_secret", parent="trakt", throw=True)
                 self.trakt["config_path"] = self.config_path
+                self.trakt["original_languages"] = check_for_attribute(self.data, "original_languages", parent="trakt", default_is_none=True)
                 authorization = self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] and self.data["trakt"]["authorization"] else None
                 self.Trakt = TraktAPI(self.trakt, authorization)
             except Failed as e:
@@ -937,7 +938,7 @@ class Config:
                                 elif "tvdb" in method:                              items_found += check_map(self.TVDb.get_items(method, value, library.Plex.language))
                                 elif "imdb" in method:                              items_found += check_map(self.IMDb.get_items(method, value, library.Plex.language))
                                 elif "tmdb" in method:                              items_found += check_map(self.TMDb.get_items(method, value, library.is_movie))
-                                elif "trakt" in method:                             items_found += check_map(self.Trakt.get_items(method, value, library.is_movie))
+                                elif "trakt" in method:                             items_found += check_map(self.Trakt.get_items(method, value, library.is_movie, self.TMDb))
                                 else:                                               logger.error("Collection Error: {} method not supported".format(method))
 
                                 if len(items) > 0:                                  map = library.add_to_collection(collection_obj if collection_obj else collection_name, items, filters, map=map)

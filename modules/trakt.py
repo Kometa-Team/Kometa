@@ -8,6 +8,7 @@ from trakt.objects.episode import Episode
 from trakt.objects.movie import Movie
 from trakt.objects.season import Season
 from trakt.objects.show import Show
+from modules.tmdb import TMDbAPI
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -22,6 +23,9 @@ class TraktAPI:
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
+        self.original_languages = None
+        if params["original_languages"] is not None:
+            self.original_languages = [x.strip().lower() for x in params["original_languages"].split(',')]
         self.authorization = authorization
         Trakt.configuration.defaults.client(self.client_id, self.client_secret)
         if not self.save_authorization(self.authorization):
@@ -134,7 +138,7 @@ class TraktAPI:
             raise Failed("Trakt Error: No valid Trakt Watchlists in {}".format(value))
         return trakt_values
 
-    def get_items(self, method, data, is_movie, status_message=True):
+    def get_items(self, method, data, is_movie, tmdb, status_message=True):
         if status_message:
             logger.debug("Data: {}".format(data))
         pretty = self.aliases[method] if method in self.aliases else method
@@ -150,12 +154,25 @@ class TraktAPI:
             if status_message:                          logger.info("Processing {}: {}".format(pretty, data))
         show_ids = []
         movie_ids = []
-        for trakt_item in trakt_items:
-            if isinstance(trakt_item, Movie):                                                                movie_ids.append(int(trakt_item.get_key("tmdb")))
+        for trakt_item in trakt_items:            
+            if isinstance(trakt_item, Movie):
+                try:                    
+                    tmdbid = int(trakt_item.get_key("tmdb"))
+                    if self.original_languages is None:
+                        movie_ids.append(tmdbid)
+                        continue
+                    movie = tmdb.get_movie(tmdbid)
+                    #logger.info("--- Movie {} ({}), TMDB original_language ({})".format(trakt_item.title, trakt_item.year, movie.original_language))
+                    if movie.original_language in self.original_languages:
+                        movie_ids.append(tmdbid)
+                    else:
+                        logger.info("--- Skipped Movie {} ({}), TMDB original_language ({}) not in original_languages attribute ({})".format(trakt_item.title, trakt_item.year, movie.original_language, self.original_languages))
+                except Failed as e:
+                    logger.error(e)
             elif isinstance(trakt_item, Show) and trakt_item.pk[1] not in show_ids:                          show_ids.append(int(trakt_item.pk[1]))
             elif (isinstance(trakt_item, (Season, Episode))) and trakt_item.show.pk[1] not in show_ids:      show_ids.append(int(trakt_item.show.pk[1]))
         if status_message:
             logger.debug("Trakt {} Found: {}".format(media_type, trakt_items))
             logger.debug("TMDb IDs Found: {}".format(movie_ids))
-            logger.debug("TVDb IDs Found: {}".format(show_ids))
+            logger.debug("TVDb IDs Found: {}".format(show_ids))        
         return movie_ids, show_ids
