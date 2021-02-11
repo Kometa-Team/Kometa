@@ -173,5 +173,5 @@ class TraktAPI:
         if status_message:
             logger.debug("Trakt {} Found: {}".format(media_type, trakt_items))
             logger.debug("TMDb IDs Found: {}".format(movie_ids))
-            logger.debug("TVDb IDs Found: {}".format(show_ids))        
+            logger.debug("TVDb IDs Found: {}".format(show_ids))
         return movie_ids, show_ids
