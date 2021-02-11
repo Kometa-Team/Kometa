@@ -74,6 +74,7 @@ class PlexAPI:
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
         self.sync_mode = params["sync_mode"]
+        self.show_unmanaged_collections = params["show_unmanaged_collections"]
         self.plex = params["plex"]
         self.radarr = params["radarr"]
         self.sonarr = params["sonarr"]
