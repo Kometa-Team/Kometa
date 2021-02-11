@@ -70,7 +70,11 @@ class SonarrAPI:
                 logger.info("Added to Sonarr | {:<6} | {}".format(tvdb_id, show.title))
                 add_count += 1
             else:
-                logger.error("Sonarr Error: ({}) {}: ({}) {}".format(tvdb_id, show.title, response.status_code, response.json()[0]["errorMessage"]))
+                try:
+                    logger.error("Sonarr Error: ({}) {}: ({}) {}".format(tvdb_id, show.title, response.status_code, response.json()[0]["errorMessage"]))
+                except KeyError as e:
+                    logger.debug(url_json)
+                    logger.error("Sonarr Error: {}".format(response.json()))
         logger.info("{} Show{} added to Sonarr".format(add_count, "s" if add_count > 1 else ""))
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
