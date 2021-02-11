@@ -142,6 +142,7 @@ class Config:
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True) if "plex" in self.data else None
         self.general["plex"]["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="plex", var_type="path", default=os.path.join(default_dir, "assets")) if "plex" in self.data else os.path.join(default_dir, "assets")
         self.general["plex"]["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="plex", default="append", test_list=["append", "sync"], options="| \tappend (Only Add Items to the Collection)\n| \tsync (Add & Remove Items from the Collection)") if "plex" in self.data else "append"
+        self.general["plex"]["show_unmanaged_collections"] = check_for_attribute(self.data, "show_unmanaged_collections", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True) if "radarr" in self.data else None
@@ -238,6 +239,16 @@ class Config:
                         logger.warning("Config Warning: sync_mode attribute must be either 'append' or 'sync' using general value: {}".format(self.general["plex"]["sync_mode"]))
                 else:
                     logger.warning("Config Warning: sync_mode attribute is blank using general value: {}".format(self.general["plex"]["sync_mode"]))
+
+            params["show_unmanaged_collections"] = self.general["plex"]["show_unmanaged_collections"]
+            if "plex" in libs[lib] and "show_unmanaged_collections" in libs[lib]["plex"]:
+                if libs[lib]["plex"]["show_unmanaged_collections"]:
+                    if isinstance(libs[lib]["plex"]["show_unmanaged_collections"], bool):
+                        params["plex"]["show_unmanaged_collections"] = libs[lib]["plex"]["show_unmanaged_collections"]
+                    else:
+                        logger.warning("Config Warning: plex sub-attribute show_unmanaged_collections must be either true or false using general value: {}".format(self.general["plex"]["show_unmanaged_collections"]))
+                else:
+                    logger.warning("Config Warning: radarr sub-attribute add is blank using general value: {}".format(self.general["radarr"]["add"]))
 
             params["tmdb"] = self.TMDb
             params["tvdb"] = self.TVDb
@@ -1032,17 +1043,17 @@ class Config:
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error("Unknown Error: {}".format(e))
-
-                logger.info("")
-                util.seperator("Unmanaged Collections in {} Library".format(library.name))
-                logger.info("")
-                unmanaged_count = 0
-                collections_in_plex = [str(pcol) for pcol in collections]
-                for col in library.get_all_collections():
-                     if col.title not in collections_in_plex:
-                         logger.info(col.title)
-                         unmanaged_count += 1
-                logger.info("{} Unmanaged Collections".format(unmanaged_count))
+                if library.show_unmanaged_collections is True:
+                    logger.info("")
+                    util.seperator("Unmanaged Collections in {} Library".format(library.name))
+                    logger.info("")
+                    unmanaged_count = 0
+                    collections_in_plex = [str(pcol) for pcol in collections]
+                    for col in library.get_all_collections():
+                         if col.title not in collections_in_plex:
+                             logger.info(col.title)
+                             unmanaged_count += 1
+                    logger.info("{} Unmanaged Collections".format(unmanaged_count))
             else:
                 logger.error("No collection to update")
 
