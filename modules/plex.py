@@ -74,6 +74,7 @@ class PlexAPI:
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
         self.sync_mode = params["sync_mode"]
+        self.show_unmanaged_collections = params["show_unmanaged_collections"]
         self.plex = params["plex"]
         self.radarr = params["radarr"]
         self.sonarr = params["sonarr"]
@@ -293,7 +294,10 @@ class PlexAPI:
             add_edit("originally_available", str(item.originallyAvailableAt)[:-9], self.metadata[m], key="originallyAvailableAt", value=originally_available)
             add_edit("rating", item.rating, self.metadata[m], value=rating)
             add_edit("content_rating", item.contentRating, self.metadata[m], key="contentRating")
-            add_edit("original_title", item.originalTitle, self.metadata[m], key="originalTitle", value=original_title)
+            if self.is_movie:
+                add_edit("original_title", item.originalTitle, self.metadata[m], key="originalTitle", value=original_title)
+            elif "original_title" in self.metadata[m]:
+                logger.error("Metadata Error: original_title does not work with shows")
             add_edit("studio", item.studio, self.metadata[m], value=studio)
             add_edit("tagline", item.tagline, self.metadata[m], value=tagline)
             add_edit("summary", item.summary, self.metadata[m], value=summary)

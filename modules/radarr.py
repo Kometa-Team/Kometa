@@ -67,7 +67,7 @@ class RadarrAPI:
                 "title": movie.title,
                 "{}".format("qualityProfileId" if self.version == "v3" else "profileId"): self.quality_profile_id,
                 "year": int(year),
-                "tmdbid": str(tmdb_id),
+                "tmdbid": int(tmdb_id),
                 "titleslug": titleslug,
                 "monitored": True,
                 "rootFolderPath": self.root_folder_path,
@@ -79,7 +79,11 @@ class RadarrAPI:
                 logger.info("Added to Radarr | {:<6} | {}".format(tmdb_id, movie.title))
                 add_count += 1
             else:
-                logger.error("Radarr Error: ({}) {}: ({}) {}".format(tmdb_id, movie.title, response.status_code, response.json()[0]["errorMessage"]))
+                try:
+                    logger.error("Radarr Error: ({}) {}: ({}) {}".format(tmdb_id, movie.title, response.status_code, response.json()[0]["errorMessage"]))
+                except KeyError as e:
+                    logger.debug(url_json)
+                    logger.error("Radarr Error: {}".format(response.json()))
         logger.info("{} Movie{} added to Radarr".format(add_count, "s" if add_count > 1 else ""))
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
