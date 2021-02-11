@@ -56,7 +56,7 @@ logger.info(util.get_centered_text("| |_) | |/ _ \ \/ / | |\/| |/ _ \ __/ _` | |
 logger.info(util.get_centered_text("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
 logger.info(util.get_centered_text("|_|   |_|\___/_/\_\ |_|  |_|\___|\__\__,_| |_|  |_|\__,_|_| |_|\__,_|\__, |\___|_|   "))
 logger.info(util.get_centered_text("                                                                     |___/           "))
-logger.info(util.get_centered_text("    Version: 1.0.1                                                                   "))
+logger.info(util.get_centered_text("    Version: 1.0.2                                                                   "))
 util.seperator()
 
 if args.test:
