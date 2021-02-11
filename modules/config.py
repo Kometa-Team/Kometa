@@ -574,7 +574,7 @@ class Config:
                                         if os.path.exists(collections[c][m]):                               posters_found.append(("file", os.path.abspath(collections[c][m]), method_name))
                                         else:                                                               raise Failed("Collection Error: Poster Path Does Not Exist: {}".format(os.path.abspath(collections[c][m])))
                                     elif method_name == "url_background":                               backgrounds_found.append(("url", collections[c][m], method_name))
-                                    elif method_name == "tmdb_background":                              backgrounds_found.append(("url", "{}{}".format(self.TMDb.image_url, self.get_movie_show_or_collection(util.regex_first_int(collections[c][m], "TMDb ID"), library.is_movie).poster_path), method_name))
+                                    elif method_name == "tmdb_background":                              backgrounds_found.append(("url", "{}{}".format(self.TMDb.image_url, self.TMDb.get_movie_show_or_collection(util.regex_first_int(collections[c][m], "TMDb ID"), library.is_movie).poster_path), method_name))
                                     elif method_name == "file_background":
                                         if os.path.exists(collections[c][m]):                               backgrounds_found.append(("file", os.path.abspath(collections[c][m]), method_name))
                                         else:                                                               raise Failed("Collection Error: Background Path Does Not Exist: {}".format(os.path.abspath(collections[c][m])))
