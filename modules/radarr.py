@@ -67,7 +67,7 @@ class RadarrAPI:
                 "title": movie.title,
                 "{}".format("qualityProfileId" if self.version == "v3" else "profileId"): self.quality_profile_id,
                 "year": int(year),
-                "tmdbid": str(tmdb_id),
+                "tmdbid": int(tmdb_id),
                 "titleslug": titleslug,
                 "monitored": True,
                 "rootFolderPath": self.root_folder_path,
