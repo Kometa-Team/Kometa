@@ -8,7 +8,6 @@ from trakt.objects.episode import Episode
 from trakt.objects.movie import Movie
 from trakt.objects.season import Season
 from trakt.objects.show import Show
-from modules.tmdb import TMDbAPI
 
 logger = logging.getLogger("Plex Meta Manager")
 
