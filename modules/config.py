@@ -129,7 +129,7 @@ class Config:
                 self.MyAnimeList = MyAnimeListAPI(self.mal, self.MyAnimeListIDList, authorization)
             except Failed as e:
                 logger.error(e)
-            logger.info("My Anime List Connection {}".format("Failed" if self.Trakt is None else "Successful"))
+            logger.info("My Anime List Connection {}".format("Failed" if self.MyAnimeList is None else "Successful"))
         else:
             logger.warning("mal attribute not found")
 
@@ -782,13 +782,13 @@ class Config:
                                                 elif current_time.month in [10, 11, 12]:                                new_dictionary["season"] = "fall"
                                                 new_dictionary["year"] = get_int(method_name, "year", collections[c][m], current_time.year, min=1917, max=current_time.year + 1)
                                                 new_dictionary["limit"] = get_int(method_name, "limit", collections[c][m], 100, max=500)
-                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Error: mal_season sort_by attribute not found using members as default")
-                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Error: mal_season sort_by attribute is blank using members as default")
-                                                elif collections[c][m]["sort_by"] not in util.mal_season_sort:          logger.warning("Collection Error: mal_season sort_by attribute {} invalid must be either 'members' or 'score' using members as default".format(collections[c][m]["sort_by"]))
+                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Warning: mal_season sort_by attribute not found using members as default")
+                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Warning: mal_season sort_by attribute is blank using members as default")
+                                                elif collections[c][m]["sort_by"] not in util.mal_season_sort:          logger.warning("Collection Warning: mal_season sort_by attribute {} invalid must be either 'members' or 'score' using members as default".format(collections[c][m]["sort_by"]))
                                                 else:                                                                   new_dictionary["sort_by"] = util.mal_season_sort[collections[c][m]["sort_by"]]
-                                                if "season" not in collections[c][m]:                                   logger.warning("Collection Error: mal_season season attribute not found using the current season: {} as default".format(new_dictionary["season"]))
-                                                elif not collections[c][m]["season"]:                                   logger.warning("Collection Error: mal_season season attribute is blank using the current season: {} as default".format(new_dictionary["season"]))
-                                                elif collections[c][m]["season"] not in util.pretty_seasons:            logger.warning("Collection Error: mal_season season attribute {} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {} as default".format(collections[c][m]["season"], new_dictionary["season"]))
+                                                if "season" not in collections[c][m]:                                   logger.warning("Collection Warning: mal_season season attribute not found using the current season: {} as default".format(new_dictionary["season"]))
+                                                elif not collections[c][m]["season"]:                                   logger.warning("Collection Warning: mal_season season attribute is blank using the current season: {} as default".format(new_dictionary["season"]))
+                                                elif collections[c][m]["season"] not in util.pretty_seasons:            logger.warning("Collection Warning: mal_season season attribute {} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {} as default".format(collections[c][m]["season"], new_dictionary["season"]))
                                                 else:                                                                   new_dictionary["season"] = collections[c][m]["season"]
                                                 methods.append((method_name, [new_dictionary]))
                                             elif method_name == "mal_userlist":
@@ -796,13 +796,13 @@ class Config:
                                                 if "username" not in collections[c][m]:                                 raise Failed("Collection Error: mal_userlist username attribute is required")
                                                 elif not collections[c][m]["username"]:                                 raise Failed("Collection Error: mal_userlist username attribute is blank")
                                                 else:                                                                   new_dictionary["username"] = collections[c][m]["username"]
-                                                if "status" not in collections[c][m]:                                   logger.warning("Collection Error: mal_season status attribute not found using all as default")
-                                                elif not collections[c][m]["status"]:                                   logger.warning("Collection Error: mal_season status attribute is blank using all as default")
-                                                elif collections[c][m]["status"] not in util.mal_userlist_status:       logger.warning("Collection Error: mal_season status attribute {} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default".format(collections[c][m]["status"]))
+                                                if "status" not in collections[c][m]:                                   logger.warning("Collection Warning: mal_season status attribute not found using all as default")
+                                                elif not collections[c][m]["status"]:                                   logger.warning("Collection Warning: mal_season status attribute is blank using all as default")
+                                                elif collections[c][m]["status"] not in util.mal_userlist_status:       logger.warning("Collection Warning: mal_season status attribute {} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default".format(collections[c][m]["status"]))
                                                 else:                                                                   new_dictionary["status"] = util.mal_userlist_status[collections[c][m]["status"]]
-                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Error: mal_season sort_by attribute not found using score as default")
-                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Error: mal_season sort_by attribute is blank using score as default")
-                                                elif collections[c][m]["sort_by"] not in util.mal_userlist_sort:        logger.warning("Collection Error: mal_season sort_by attribute {} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default".format(collections[c][m]["sort_by"]))
+                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Warning: mal_season sort_by attribute not found using score as default")
+                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Warning: mal_season sort_by attribute is blank using score as default")
+                                                elif collections[c][m]["sort_by"] not in util.mal_userlist_sort:        logger.warning("Collection Warning: mal_season sort_by attribute {} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default".format(collections[c][m]["sort_by"]))
                                                 else:                                                                   new_dictionary["sort_by"] = util.mal_userlist_sort[collections[c][m]["sort_by"]]
                                                 new_dictionary["limit"] = get_int(method_name, "limit", collections[c][m], 100, max=1000)
                                                 methods.append((method_name, [new_dictionary]))
