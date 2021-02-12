@@ -640,10 +640,12 @@ class Config:
                                                         final_filter = filter
                                                     if final_filter in util.movie_only_filters and library.is_show:
                                                         logger.error("Collection Error: {} filter only works for movie libraries".format(final_filter))
+                                                    elif collections[c][m][filter] is None:
+                                                        logger.error("Collection Error: {} filter is blank".format(final_filter))
                                                     elif final_filter in util.all_filters:
                                                         filters.append((final_filter, collections[c][m][filter]))
                                                     else:
-                                                        logger.error("Collection Error: {} filter not supported".format(filter))
+                                                        logger.error("Collection Error: {} filter not supported".format(final_filter))
                                             elif method_name == "plex_collectionless":
                                                 new_dictionary = {}
 
@@ -940,24 +942,33 @@ class Config:
                                 elif "trakt" in method:                             items_found += check_map(self.Trakt.get_items(method, value, library.is_movie))
                                 else:                                               logger.error("Collection Error: {} method not supported".format(method))
 
-                                if len(items) > 0:                                  map = library.add_to_collection(collection_obj if collection_obj else collection_name, items, filters, map=map)
+                                if len(items) > 0:                                  map = library.add_to_collection(collection_obj if collection_obj else collection_name, items, filters, map, movie_map, show_map)
                                 else:                                               logger.error("No items found to add to this collection ")
 
                                 if len(missing_movies) > 0 or len(missing_shows) > 0:
                                     logger.info("")
                                     if len(missing_movies) > 0:
+                                        if "original_language" in filters:
+                                            terms = filters["original_language"] if isinstance(filters["original_language"], list) else [lang.lower() for lang in str(filters["original_language"]).split(", ")]
+                                            not_lang = False
+                                        if "original_language.not" in filters:
+                                            terms = filters["original_language.not"] if isinstance(filters["original_language.not"], list) else [lang.lower() for lang in str(filters["original_language.not"]).split(", ")]
+                                            not_lang = True
+
                                         missing_movies_with_names = []
                                         for missing_id in missing_movies:
                                             try:
-                                                title = str(self.TMDb.get_movie(missing_id).title)
-                                                missing_movies_with_names.append((title, missing_id))
-                                                logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
+                                                movie = self.TMDb.get_movie(missing_id)
+                                                if (not_lang is True and movie.original_language not in terms) or (not_lang is False and movie.original_language in terms):
+                                                    title = str(movie.title)
+                                                    missing_movies_with_names.append((title, missing_id))
+                                                    logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
                                             except Failed as e:
                                                 logger.error(e)
-                                        logger.info("{} Movie{} Missing".format(len(missing_movies), "s" if len(missing_movies) > 1 else ""))
+                                        logger.info("{} Movie{} Missing".format(len(missing_movies_with_names), "s" if len(missing_movies_with_names) > 1 else ""))
                                         library.save_missing(collection_name, missing_movies_with_names, True)
                                         if do_arr and library.Radarr:
-                                            library.Radarr.add_tmdb(missing_movies)
+                                            library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names])
                                     if len(missing_shows) > 0 and library.is_show:
                                         missing_shows_with_names = []
                                         for missing_id in missing_shows:
