@@ -37,6 +37,9 @@ class RadarrAPI:
         self.root_folder_path = params["root_folder_path"]
         self.add = params["add"]
         self.search = params["search"]
+        self.allowed_languages = None
+        if params["allowed_languages"] is not None:
+            self.allowed_languages = [x.strip().lower() for x in params["allowed_languages"].split(',')]
 
     def add_tmdb(self, tmdb_ids):
         logger.info("")
@@ -57,6 +60,10 @@ class RadarrAPI:
 
             if year.isdigit() is False:
                 logger.error("TMDb Error: No release date yet for ({}) {}".format(tmdb_id, movie.title))
+                continue
+
+            if self.allowed_languages is not None and movie.original_language not in self.allowed_languages:
+                logger.info("Skipped adding {} ({}) to Radarr; TMDB original_language ({}) not in allowed_languages ({})".format(movie.title, year, movie.original_language, self.allowed_languages))
                 continue
 
             poster = "https://image.tmdb.org/t/p/original{}".format(movie.poster_path)
