@@ -948,6 +948,7 @@ class Config:
                                 if len(missing_movies) > 0 or len(missing_shows) > 0:
                                     logger.info("")
                                     if len(missing_movies) > 0:
+                                        not_lang = None
                                         if "original_language" in filters:
                                             terms = filters["original_language"] if isinstance(filters["original_language"], list) else [lang.lower() for lang in str(filters["original_language"]).split(", ")]
                                             not_lang = False
@@ -959,7 +960,7 @@ class Config:
                                         for missing_id in missing_movies:
                                             try:
                                                 movie = self.TMDb.get_movie(missing_id)
-                                                if (not_lang is True and movie.original_language not in terms) or (not_lang is False and movie.original_language in terms):
+                                                if not_lang is None or (not_lang is True and movie.original_language not in terms) or (not_lang is False and movie.original_language in terms):
                                                     title = str(movie.title)
                                                     missing_movies_with_names.append((title, missing_id))
                                                     logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
