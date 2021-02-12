@@ -949,12 +949,12 @@ class Config:
                                     logger.info("")
                                     if len(missing_movies) > 0:
                                         not_lang = None
-                                        if "original_language" in filters:
-                                            terms = filters["original_language"] if isinstance(filters["original_language"], list) else [lang.lower() for lang in str(filters["original_language"]).split(", ")]
-                                            not_lang = False
-                                        if "original_language.not" in filters:
-                                            terms = filters["original_language.not"] if isinstance(filters["original_language.not"], list) else [lang.lower() for lang in str(filters["original_language.not"]).split(", ")]
-                                            not_lang = True
+                                        terms = None
+                                        for filter_method, filter_data in filters:
+                                            if filter_method.startswith("original_language"):
+                                                terms = filter_data if isinstance(filter_data, list) else [lang.strip().lower() for lang in str(filter_data).split(",")]
+                                                not_lang = filter_method.endswith(".not")
+                                                break
 
                                         missing_movies_with_names = []
                                         for missing_id in missing_movies:
