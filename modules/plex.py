@@ -68,6 +68,8 @@ class PlexAPI:
             except Failed as e:                                                     logger.error(e)
             logger.info("{} library's Tautulli Connection {}".format(params["name"], "Failed" if self.Tautulli is None else "Successful"))
 
+        self.TMDb = params["tmdb"]
+        self.TVDb = params["tvdb"]
         self.name = params["name"]
 
         self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), "{}_missing.yml".format(os.path.splitext(os.path.basename(params["metadata_path"]))[0]))
@@ -160,7 +162,7 @@ class PlexAPI:
         except yaml.scanner.ScannerError as e:
             logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
-    def add_to_collection(self, collection, items, filters, map={}):
+    def add_to_collection(self, collection, items, filters, map, movie_map, show_map):
         name = collection.title if isinstance(collection, Collections) else collection
         collection_items = collection.items() if isinstance(collection, Collections) else []
         total = len(items)
@@ -179,6 +181,23 @@ class PlexAPI:
                         threshold_date = datetime.now() - timedelta(days=f[1])
                         attr = getattr(current, "originallyAvailableAt")
                         if attr is None or attr < threshold_date:
+                            match = False
+                            break
+                    elif method == "original_language":
+                        terms = f[1] if isinstance(f[1], list) else [lang.lower() for lang in str(f[1]).split(", ")]
+                        tmdb_id = None
+                        movie = None
+                        for key, value in movie_map.items():
+                            if current.ratingKey == value:
+                                try:
+                                    movie = self.TMDb.get_movie(key)
+                                    break
+                                except Failed:
+                                    pass
+                        if movie is None:
+                            logger.warning("Filter Error: No TMDb ID found for {}".format(current.title))
+                            continue
+                        if (modifier == ".not" and movie.original_language in terms) or (modifier != ".not" and movie.original_language not in terms):
                             match = False
                             break
                     elif modifier in [".gte", ".lte"]:

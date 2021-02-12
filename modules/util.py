@@ -43,6 +43,7 @@ filter_alias = {
     "genre": "genres",
     "max_age": "max_age",
     "originally_available": "originallyAvailableAt",
+    "original_language": "original_language",
     "rating": "rating",
     "studio": "studio",
     "subtitle_language": "subtitle_language",
@@ -361,6 +362,7 @@ all_filters = [
     "genre", "genre.not",
     "max_age",
     "originally_available.gte", "originally_available.lte",
+    "original_language", "original_language.not",
     "rating.gte", "rating.lte",
     "studio", "studio.not",
     "subtitle_language", "subtitle_language.not",
@@ -372,6 +374,7 @@ movie_only_filters = [
     "audio_language", "audio_language.not",
     "country", "country.not",
     "director", "director.not",
+    "original_language", "original_language.not", 
     "subtitle_language", "subtitle_language.not",
     "video_resolution", "video_resolution.not",
     "writer", "writer.not"
