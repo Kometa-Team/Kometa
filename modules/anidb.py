@@ -23,9 +23,12 @@ class AniDBAPI:
     def convert_tvdb_to_anidb(self, tvdb_id):           return self.convert_anidb(tvdb_id, "tvdbid", "anidbid")
     def convert_imdb_to_anidb(self, imdb_id):           return self.convert_anidb(imdb_id, "imdbid", "anidbid")
     def convert_anidb(self, input_id, from_id, to_id):
-        ids = self.id_list.xpath("//anime[@{}='{}']/@{}".format(from_id, input_id, to_id))
+        ids = self.id_list.xpath("//anime[contains(@{}, '{}')]/@{}".format(from_id, input_id, to_id))
         if len(ids) > 0:
-            if len(ids[0]) > 0:                                 return ids[0] if to_id == "imdbid" else int(ids[0])
+            if from_id == "tvdbid":                             return [int(id) for id in ids]
+            if len(ids[0]) > 0:
+                try:                                                return ids[0].split(",") if to_id == "imdbid" else int(ids[0])
+                except ValueError:                                  raise Failed("AniDB Error: No {} ID found for {} ID: {}".format(util.pretty_ids[to_id], util.pretty_ids[from_id], input_id))
             else:                                               raise Failed("AniDB Error: No {} ID found for {} ID: {}".format(util.pretty_ids[to_id], util.pretty_ids[from_id], input_id))
         else:                                               raise Failed("AniDB Error: {} ID: {} not found".format(util.pretty_ids[from_id], input_id))
 
@@ -77,7 +80,7 @@ class AniDBAPI:
         movie_ids = []
         for anidb_id in anime_ids:
             try:
-                tmdb_id, tvdb_id = self.convert_from_imdb(self.convert_anidb_to_imdb(anidb_id), language)
+                tmdb_id = self.convert_from_imdb(self.convert_anidb_to_imdb(anidb_id), language)
                 if tmdb_id:                                         movie_ids.append(tmdb_id)
                 else:                                               raise Failed
             except Failed:
@@ -90,27 +93,34 @@ class AniDBAPI:
         return movie_ids, show_ids
 
     def convert_from_imdb(self, imdb_id, language):
-        if self.Cache:
-            tmdb_id, tvdb_id = self.Cache.get_ids_from_imdb(imdb_id)
-            expired = False
-            if not tmdb_id:
-                tmdb_id, expired = self.Cache.get_tmdb_from_imdb(imdb_id)
-                if expired:
-                    tmdb_id = None
-        else:
-            tmdb_id = None
-        from_cache = tmdb_id is not None
+        output_tmdb_ids = []
+        if not isinstance(imdb_id, list):
+            imdb_id = [imdb_id]
 
-        if not tmdb_id and self.TMDb:
-            try:                                        tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb_id)
-            except Failed:                              pass
-        if not tmdb_id and self.Trakt:
-            try:                                        tmdb_id = self.Trakt.convert_imdb_to_tmdb(imdb_id)
-            except Failed:                              pass
-        try:
-            if tmdb_id and not from_cache:              self.TMDb.get_movie(tmdb_id)
-        except Failed:                              tmdb_id = None
-        if not tmdb_id:                             raise Failed("TVDb Error: No TMDb ID found for IMDb: {}".format(imdb_id))
-        if self.Cache and tmdb_id and expired is not False:
-            self.Cache.update_imdb("movie", expired, imdb_id, tmdb_id)
-        return tmdb_id
+        for imdb in imdb_id:
+            if self.Cache:
+                tmdb_id, tvdb_id = self.Cache.get_ids_from_imdb(imdb)
+                expired = False
+                if not tmdb_id:
+                    tmdb_id, expired = self.Cache.get_tmdb_from_imdb(imdb)
+                    if expired:
+                        tmdb_id = None
+            else:
+                tmdb_id = None
+            from_cache = tmdb_id is not None
+
+            if not tmdb_id and self.TMDb:
+                try:                                        tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb)
+                except Failed:                              pass
+            if not tmdb_id and self.Trakt:
+                try:                                        tmdb_id = self.Trakt.convert_imdb_to_tmdb(imdb)
+                except Failed:                              pass
+            try:
+                if tmdb_id and not from_cache:              self.TMDb.get_movie(tmdb_id)
+            except Failed:                              tmdb_id = None
+            if tmdb_id:                                 output_tmdb_ids.append(tmdb_id)
+            if self.Cache and tmdb_id and expired is not False:
+                self.Cache.update_imdb("movie", expired, imdb, tmdb_id)
+        if len(output_tmdb_ids) == 0:               raise Failed("AniDB Error: No TMDb ID found for IMDb: {}".format(imdb_id))
+        elif len(output_tmdb_ids) == 1:             return output_tmdb_ids[0]
+        else:                                       return output_tmdb_ids

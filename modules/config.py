@@ -1067,10 +1067,14 @@ class Config:
         for i, item in enumerate(items, 1):
             length = util.print_return(length, "Processing: {}/{} {}".format(i, len(items), item.title))
             id_type, main_id = self.get_id(item, library, length)
-            if id_type == "movie":
-                movie_map[main_id] = item.ratingKey
-            elif id_type == "show":
-                show_map[main_id] = item.ratingKey
+            if isinstance(main_id, list):
+                if id_type == "movie":
+                    for m in main_id:                               movie_map[m] = item.ratingKey
+                elif id_type == "show":
+                    for m in main_id:                               show_map[m] = item.ratingKey
+            else:
+                if id_type == "movie":                          movie_map[main_id] = item.ratingKey
+                elif id_type == "show":                         show_map[main_id] = item.ratingKey
         util.print_end(length, "Processed {} {}".format(len(items), "Movies" if library.is_movie else "Shows"))
         return movie_map, show_map
 
@@ -1130,6 +1134,17 @@ class Config:
                 if mal_id and not tmdb_id:
                     try:                                            tmdb_id = self.MyAnimeListIDList.convert_mal_to_tmdb(mal_id)
                     except Failed:                                  pass
+                if not tmdb_id and imdb_id and isinstance(imdb_id, list) and self.TMDb:
+                    tmdb_id = []
+                    new_imdb_id = []
+                    for imdb in imdb_id:
+                        try:
+                            temp_tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb)
+                            tmdb_id.append(temp_tmdb_id)
+                            new_imdb_id.append(imdb)
+                        except Failed:
+                            continue
+                    imdb_id = new_imdb_id
                 if not tmdb_id and imdb_id and self.TMDb:
                     try:                                            tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb_id)
                     except Failed:                                  pass
@@ -1160,18 +1175,6 @@ class Config:
                 if not tvdb_id and imdb_id and self.Trakt and library.is_show:
                     try:                                            tvdb_id = self.Trakt.convert_imdb_to_tvdb(imdb_id)
                     except Failed:                                  pass
-                if tvdb_id and not anidb_id:
-                    try:                                            anidb_id = self.AniDB.convert_tvdb_to_anidb(tvdb_id)
-                    except Failed:                                  pass
-                if imdb_id and not anidb_id:
-                    try:                                            anidb_id = self.AniDB.convert_imdb_to_anidb(imdb_id)
-                    except Failed:                                  pass
-                if tvdb_id and not mal_id:
-                    try:                                            mal_id = self.MyAnimeListIDList.convert_tvdb_to_mal(tvdb_id)
-                    except Failed:                                  pass
-                if tmdb_id and not mal_id:
-                    try:                                            mal_id = self.MyAnimeListIDList.convert_tmdb_to_mal(tmdb_id)
-                    except Failed:                                  pass
 
                 if (not tmdb_id and library.is_movie) or (not tvdb_id and not ((anidb_id or mal_id) and tmdb_id) and library.is_show):
                     service_name = "TMDb ID" if library.is_movie else "TVDb ID"
@@ -1194,8 +1197,13 @@ class Config:
                     elif id_name:                                   error_message = "Configure TMDb or Trakt to covert {} to {}".format(id_name, service_name)
                     else:                                           error_message = "No ID to convert to {}".format(service_name)
             if self.Cache and (tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show):
-                util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id if tmdb_id else "None", imdb_id if imdb_id else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
-                self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expired)
+                if isinstance(tmdb_id, list):
+                    for i in range(len(tmdb_id)):
+                        util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id[i] if tmdb_id[i] else "None", imdb_id[i] if imdb_id[i] else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
+                        self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_id[i], tvdb_id, anidb_id, mal_id, expired)
+                else:
+                    util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id if tmdb_id else "None", imdb_id if imdb_id else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
+                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expired)
         if tmdb_id and library.is_movie:                return "movie", tmdb_id
         elif tvdb_id and library.is_show:               return "show", tvdb_id
         elif (anidb_id or mal_id) and tmdb_id:          return "movie", tmdb_id
