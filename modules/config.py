@@ -142,7 +142,8 @@ class Config:
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True) if "plex" in self.data else None
         self.general["plex"]["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="plex", var_type="path", default=os.path.join(default_dir, "assets")) if "plex" in self.data else os.path.join(default_dir, "assets")
         self.general["plex"]["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="plex", default="append", test_list=["append", "sync"], options="| \tappend (Only Add Items to the Collection)\n| \tsync (Add & Remove Items from the Collection)") if "plex" in self.data else "append"
-        self.general["plex"]["show_unmanaged_collections"] = check_for_attribute(self.data, "show_unmanaged_collections", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
+        self.general["plex"]["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
+        self.general["plex"]["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="plex", var_type="bool", default=False) if "plex" in self.data else False
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True) if "radarr" in self.data else None
@@ -240,15 +241,25 @@ class Config:
                 else:
                     logger.warning("Config Warning: sync_mode attribute is blank using general value: {}".format(self.general["plex"]["sync_mode"]))
 
-            params["show_unmanaged_collections"] = self.general["plex"]["show_unmanaged_collections"]
-            if "plex" in libs[lib] and "show_unmanaged_collections" in libs[lib]["plex"]:
-                if libs[lib]["plex"]["show_unmanaged_collections"]:
-                    if isinstance(libs[lib]["plex"]["show_unmanaged_collections"], bool):
-                        params["plex"]["show_unmanaged_collections"] = libs[lib]["plex"]["show_unmanaged_collections"]
+            params["show_unmanaged"] = self.general["plex"]["show_unmanaged"]
+            if "plex" in libs[lib] and "show_unmanaged" in libs[lib]["plex"]:
+                if libs[lib]["plex"]["show_unmanaged"]:
+                    if isinstance(libs[lib]["plex"]["show_unmanaged"], bool):
+                        params["plex"]["show_unmanaged"] = libs[lib]["plex"]["show_unmanaged"]
                     else:
-                        logger.warning("Config Warning: plex sub-attribute show_unmanaged_collections must be either true or false using general value: {}".format(self.general["plex"]["show_unmanaged_collections"]))
+                        logger.warning("Config Warning: plex sub-attribute show_unmanaged must be either true or false using general value: {}".format(self.general["plex"]["show_unmanaged"]))
                 else:
-                    logger.warning("Config Warning: radarr sub-attribute add is blank using general value: {}".format(self.general["radarr"]["add"]))
+                    logger.warning("Config Warning: plex sub-attribute show_unmanaged is blank using general value: {}".format(self.general["plex"]["show_unmanaged"]))
+
+            params["show_filtered"] = self.general["plex"]["show_filtered"]
+            if "plex" in libs[lib] and "show_filtered" in libs[lib]["plex"]:
+                if libs[lib]["plex"]["show_filtered"]:
+                    if isinstance(libs[lib]["plex"]["show_filtered"], bool):
+                        params["plex"]["show_filtered"] = libs[lib]["plex"]["show_filtered"]
+                    else:
+                        logger.warning("Config Warning: plex sub-attribute show_filtered must be either true or false using general value: {}".format(self.general["plex"]["show_filtered"]))
+                else:
+                    logger.warning("Config Warning: plex sub-attribute show_filtered is blank using general value: {}".format(self.general["plex"]["show_filtered"]))
 
             params["tmdb"] = self.TMDb
             params["tvdb"] = self.TVDb
@@ -428,7 +439,7 @@ class Config:
                         backgrounds_found = []
                         collectionless = "plex_collectionless" in collections[c]
                         skip_collection = True
-                        show_filtered = False
+                        show_filtered = library.show_filtered
 
                         if "schedule" not in collections[c]:
                             skip_collection = False
@@ -1061,7 +1072,7 @@ class Config:
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error("Unknown Error: {}".format(e))
-                if library.show_unmanaged_collections is True:
+                if library.show_unmanaged is True:
                     logger.info("")
                     util.seperator("Unmanaged Collections in {} Library".format(library.name))
                     logger.info("")
