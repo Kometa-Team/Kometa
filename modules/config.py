@@ -946,7 +946,7 @@ class Config:
                                 elif "trakt" in method:                             items_found += check_map(self.Trakt.get_items(method, value, library.is_movie))
                                 else:                                               logger.error("Collection Error: {} method not supported".format(method))
 
-                                if len(items) > 0:                                  map = library.add_to_collection(collection_obj if collection_obj else collection_name, items, filters, map, movie_map, show_map)
+                                if len(items) > 0:                                  map = library.add_to_collection(collection_obj if collection_obj else collection_name, items, filters, show_filtered, map, movie_map, show_map)
                                 else:                                               logger.error("No items found to add to this collection ")
 
                                 if len(missing_movies) > 0 or len(missing_shows) > 0:
