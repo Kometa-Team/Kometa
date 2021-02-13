@@ -162,7 +162,7 @@ class PlexAPI:
         except yaml.scanner.ScannerError as e:
             logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
-    def add_to_collection(self, collection, items, filters, map, movie_map, show_map):
+    def add_to_collection(self, collection, items, filters, show_filtered, map, movie_map, show_map):
         name = collection.title if isinstance(collection, Collections) else collection
         collection_items = collection.items() if isinstance(collection, Collections) else []
         total = len(items)
@@ -231,6 +231,8 @@ class PlexAPI:
                 util.print_end(length, "{} Collection | {} | {}".format(name, "=" if current in collection_items else "+", current.title))
                 if current in collection_items:             map[current.ratingKey] = None
                 else:                                       current.addCollection(name)
+            elif show_filtered is True:
+                logger.info("{} Collection | X | {}".format(name, current.title))
         media_type = "{}{}".format("Movie" if self.is_movie else "Show", "s" if total > 1 else "")
         util.print_end(length, "{} {} Processed".format(total, media_type))
         return map

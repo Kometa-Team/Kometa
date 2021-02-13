@@ -428,6 +428,7 @@ class Config:
                         backgrounds_found = []
                         collectionless = "plex_collectionless" in collections[c]
                         skip_collection = True
+                        show_filtered = False
 
                         if "schedule" not in collections[c]:
                             skip_collection = False
@@ -581,6 +582,9 @@ class Config:
                                     elif method_name == "add_to_arr":
                                         if isinstance(collections[c][m], bool):                             details[method_name] = collections[c][m]
                                         else:                                                               raise Failed("Collection Error: add_to_arr must be either true or false")
+                                    elif method_name == "show_filtered":
+                                        if isinstance(collections[c][m], bool):                             show_filtered = collections[c][m]
+                                        else:                                                               raise Failed("Collection Error: show_filtered must be either true or false using the default false")
                                     elif method_name in util.all_details:                               details[method_name] = collections[c][m]
                                     elif method_name in ["year", "year.not"]:                           methods.append(("plex_search", [[(method_name, util.get_year_list(collections[c][m], method_name))]]))
                                     elif method_name in ["decade", "decade.not"]:                       methods.append(("plex_search", [[(method_name, util.get_int_list(collections[c][m], util.remove_not(method_name)))]]))
@@ -964,6 +968,8 @@ class Config:
                                                     title = str(movie.title)
                                                     missing_movies_with_names.append((title, missing_id))
                                                     logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
+                                                elif show_filtered is True:
+                                                    logger.info("{} Collection | X | {} (TMDb: {})".format(collection_name, title, missing_id))
                                             except Failed as e:
                                                 logger.error(e)
                                         logger.info("{} Movie{} Missing".format(len(missing_movies_with_names), "s" if len(missing_movies_with_names) > 1 else ""))
