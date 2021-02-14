@@ -1069,6 +1069,32 @@ class Config:
                             if background[0] == "url":                              plex_collection.uploadArt(url=background[1])
                             else:                                                   plex_collection.uploadArt(filepath=background[1])
                             logger.info("Detail: {} updated background to [{}] {}".format(background[2], background[0], background[1]))
+
+                        if library.asset_directory:
+                            path = os.path.join(library.asset_directory, "{}".format(name_mapping))
+                            dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
+                            if len(dirs) > 0:
+                                for item in plex_collection.items():
+                                    folder = os.path.basename(os.path.dirname(item.locations[0]))
+                                    if folder in dirs:
+                                        files = [file for file in os.listdir(os.path.join(path, folder)) if os.path.isfile(os.path.join(path, folder, file))]
+                                        poster_path = None
+                                        background_path = None
+                                        for file in files:
+                                            if poster_path is None and file.startswith("poster."):
+                                                poster_path = os.path.join(path, folder, file)
+                                            if background_path is None and file.startswith("background."):
+                                                background_path = os.path.join(path, folder, file)
+                                        if poster_path:
+                                            item.uploadPoster(filepath=poster_path)
+                                            logger.info("Detail: asset_directory updated {}'s poster to [file] {}".format(item.title, poster_path))
+                                        if background_path:
+                                            item.uploadArt(filepath=background_path)
+                                            logger.info("Detail: asset_directory updated {}'s background to [file] {}".format(item.title, background_path))
+                                        if poster_path is None and background_path is None:
+                                            logger.warning("No Files Found: {}".format(os.path.join(path, folder)))
+                                    else:
+                                        logger.warning("No Folder: {}".format(os.path.join(path, folder)))
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error("Unknown Error: {}".format(e))
