@@ -121,11 +121,11 @@ class TVDbAPI:
         if status_message:
             logger.info("Processing {}: {}".format(pretty, data))
         if method == "tvdb_show":
-            try:                                                    show_ids.append(self.get_series(language, tvdb_id=int(data)))
-            except ValueError:                                      show_ids.append(self.get_series(language, tvdb_url=data))
+            try:                                                    show_ids.append(self.get_series(language, tvdb_id=int(data)).id)
+            except ValueError:                                      show_ids.append(self.get_series(language, tvdb_url=data).id)
         elif method == "tvdb_movie":
-            try:                                                    movie_ids.append(self.get_movie(language, tvdb_id=int(data)))
-            except ValueError:                                      movie_ids.append(self.get_movie(language, tvdb_url=data))
+            try:                                                    movie_ids.append(self.get_movie(language, tvdb_id=int(data)).id)
+            except ValueError:                                      movie_ids.append(self.get_movie(language, tvdb_url=data).id)
         elif method == "tvdb_list":
             tmdb_ids, tvdb_ids = self.get_tvdb_ids_from_url(data, language)
             movie_ids.extend(tmdb_ids)
