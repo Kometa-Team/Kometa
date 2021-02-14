@@ -68,13 +68,16 @@ class PlexAPI:
             except Failed as e:                                                     logger.error(e)
             logger.info("{} library's Tautulli Connection {}".format(params["name"], "Failed" if self.Tautulli is None else "Successful"))
 
+        self.TMDb = params["tmdb"]
+        self.TVDb = params["tvdb"]
         self.name = params["name"]
 
         self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), "{}_missing.yml".format(os.path.splitext(os.path.basename(params["metadata_path"]))[0]))
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
         self.sync_mode = params["sync_mode"]
-        self.show_unmanaged_collections = params["show_unmanaged_collections"]
+        self.show_unmanaged = params["show_unmanaged"]
+        self.show_filtered = params["show_filtered"]
         self.plex = params["plex"]
         self.radarr = params["radarr"]
         self.sonarr = params["sonarr"]
@@ -160,7 +163,7 @@ class PlexAPI:
         except yaml.scanner.ScannerError as e:
             logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
-    def add_to_collection(self, collection, items, filters, map={}):
+    def add_to_collection(self, collection, items, filters, show_filtered, map, movie_map, show_map):
         name = collection.title if isinstance(collection, Collections) else collection
         collection_items = collection.items() if isinstance(collection, Collections) else []
         total = len(items)
@@ -179,6 +182,23 @@ class PlexAPI:
                         threshold_date = datetime.now() - timedelta(days=f[1])
                         attr = getattr(current, "originallyAvailableAt")
                         if attr is None or attr < threshold_date:
+                            match = False
+                            break
+                    elif method == "original_language":
+                        terms = f[1] if isinstance(f[1], list) else [lang.lower() for lang in str(f[1]).split(", ")]
+                        tmdb_id = None
+                        movie = None
+                        for key, value in movie_map.items():
+                            if current.ratingKey == value:
+                                try:
+                                    movie = self.TMDb.get_movie(key)
+                                    break
+                                except Failed:
+                                    pass
+                        if movie is None:
+                            logger.warning("Filter Error: No TMDb ID found for {}".format(current.title))
+                            continue
+                        if (modifier == ".not" and movie.original_language in terms) or (modifier != ".not" and movie.original_language not in terms):
                             match = False
                             break
                     elif modifier in [".gte", ".lte"]:
@@ -212,6 +232,8 @@ class PlexAPI:
                 util.print_end(length, "{} Collection | {} | {}".format(name, "=" if current in collection_items else "+", current.title))
                 if current in collection_items:             map[current.ratingKey] = None
                 else:                                       current.addCollection(name)
+            elif show_filtered is True:
+                logger.info("{} Collection | X | {}".format(name, current.title))
         media_type = "{}{}".format("Movie" if self.is_movie else "Show", "s" if total > 1 else "")
         util.print_end(length, "{} {} Processed".format(total, media_type))
         return map
@@ -294,10 +316,8 @@ class PlexAPI:
             add_edit("originally_available", str(item.originallyAvailableAt)[:-9], self.metadata[m], key="originallyAvailableAt", value=originally_available)
             add_edit("rating", item.rating, self.metadata[m], value=rating)
             add_edit("content_rating", item.contentRating, self.metadata[m], key="contentRating")
-            if self.is_movie:
-                add_edit("original_title", item.originalTitle, self.metadata[m], key="originalTitle", value=original_title)
-            elif "original_title" in self.metadata[m]:
-                logger.error("Metadata Error: original_title does not work with shows")
+            originalTitle = item.originalTitle if self.is_movie else item._data.attrib.get("originalTitle")
+            add_edit("original_title", originalTitle, self.metadata[m], key="originalTitle", value=original_title)
             add_edit("studio", item.studio, self.metadata[m], value=studio)
             add_edit("tagline", item.tagline, self.metadata[m], value=tagline)
             add_edit("summary", item.summary, self.metadata[m], value=summary)

@@ -129,7 +129,7 @@ class Config:
                 self.MyAnimeList = MyAnimeListAPI(self.mal, self.MyAnimeListIDList, authorization)
             except Failed as e:
                 logger.error(e)
-            logger.info("My Anime List Connection {}".format("Failed" if self.Trakt is None else "Successful"))
+            logger.info("My Anime List Connection {}".format("Failed" if self.MyAnimeList is None else "Successful"))
         else:
             logger.warning("mal attribute not found")
 
@@ -142,7 +142,8 @@ class Config:
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True) if "plex" in self.data else None
         self.general["plex"]["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="plex", var_type="path", default=os.path.join(default_dir, "assets")) if "plex" in self.data else os.path.join(default_dir, "assets")
         self.general["plex"]["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="plex", default="append", test_list=["append", "sync"], options="| \tappend (Only Add Items to the Collection)\n| \tsync (Add & Remove Items from the Collection)") if "plex" in self.data else "append"
-        self.general["plex"]["show_unmanaged_collections"] = check_for_attribute(self.data, "show_unmanaged_collections", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
+        self.general["plex"]["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
+        self.general["plex"]["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="plex", var_type="bool", default=False) if "plex" in self.data else False
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True) if "radarr" in self.data else None
@@ -240,15 +241,25 @@ class Config:
                 else:
                     logger.warning("Config Warning: sync_mode attribute is blank using general value: {}".format(self.general["plex"]["sync_mode"]))
 
-            params["show_unmanaged_collections"] = self.general["plex"]["show_unmanaged_collections"]
-            if "plex" in libs[lib] and "show_unmanaged_collections" in libs[lib]["plex"]:
-                if libs[lib]["plex"]["show_unmanaged_collections"]:
-                    if isinstance(libs[lib]["plex"]["show_unmanaged_collections"], bool):
-                        params["plex"]["show_unmanaged_collections"] = libs[lib]["plex"]["show_unmanaged_collections"]
+            params["show_unmanaged"] = self.general["plex"]["show_unmanaged"]
+            if "plex" in libs[lib] and "show_unmanaged" in libs[lib]["plex"]:
+                if libs[lib]["plex"]["show_unmanaged"]:
+                    if isinstance(libs[lib]["plex"]["show_unmanaged"], bool):
+                        params["plex"]["show_unmanaged"] = libs[lib]["plex"]["show_unmanaged"]
                     else:
-                        logger.warning("Config Warning: plex sub-attribute show_unmanaged_collections must be either true or false using general value: {}".format(self.general["plex"]["show_unmanaged_collections"]))
+                        logger.warning("Config Warning: plex sub-attribute show_unmanaged must be either true or false using general value: {}".format(self.general["plex"]["show_unmanaged"]))
                 else:
-                    logger.warning("Config Warning: radarr sub-attribute add is blank using general value: {}".format(self.general["radarr"]["add"]))
+                    logger.warning("Config Warning: plex sub-attribute show_unmanaged is blank using general value: {}".format(self.general["plex"]["show_unmanaged"]))
+
+            params["show_filtered"] = self.general["plex"]["show_filtered"]
+            if "plex" in libs[lib] and "show_filtered" in libs[lib]["plex"]:
+                if libs[lib]["plex"]["show_filtered"]:
+                    if isinstance(libs[lib]["plex"]["show_filtered"], bool):
+                        params["plex"]["show_filtered"] = libs[lib]["plex"]["show_filtered"]
+                    else:
+                        logger.warning("Config Warning: plex sub-attribute show_filtered must be either true or false using general value: {}".format(self.general["plex"]["show_filtered"]))
+                else:
+                    logger.warning("Config Warning: plex sub-attribute show_filtered is blank using general value: {}".format(self.general["plex"]["show_filtered"]))
 
             params["tmdb"] = self.TMDb
             params["tvdb"] = self.TVDb
@@ -428,6 +439,7 @@ class Config:
                         backgrounds_found = []
                         collectionless = "plex_collectionless" in collections[c]
                         skip_collection = True
+                        show_filtered = library.show_filtered
 
                         if "schedule" not in collections[c]:
                             skip_collection = False
@@ -581,6 +593,9 @@ class Config:
                                     elif method_name == "add_to_arr":
                                         if isinstance(collections[c][m], bool):                             details[method_name] = collections[c][m]
                                         else:                                                               raise Failed("Collection Error: add_to_arr must be either true or false")
+                                    elif method_name == "show_filtered":
+                                        if isinstance(collections[c][m], bool):                             show_filtered = collections[c][m]
+                                        else:                                                               raise Failed("Collection Error: show_filtered must be either true or false using the default false")
                                     elif method_name in util.all_details:                               details[method_name] = collections[c][m]
                                     elif method_name in ["year", "year.not"]:                           methods.append(("plex_search", [[(method_name, util.get_year_list(collections[c][m], method_name))]]))
                                     elif method_name in ["decade", "decade.not"]:                       methods.append(("plex_search", [[(method_name, util.get_int_list(collections[c][m], util.remove_not(method_name)))]]))
@@ -640,10 +655,12 @@ class Config:
                                                         final_filter = filter
                                                     if final_filter in util.movie_only_filters and library.is_show:
                                                         logger.error("Collection Error: {} filter only works for movie libraries".format(final_filter))
+                                                    elif collections[c][m][filter] is None:
+                                                        logger.error("Collection Error: {} filter is blank".format(final_filter))
                                                     elif final_filter in util.all_filters:
                                                         filters.append((final_filter, collections[c][m][filter]))
                                                     else:
-                                                        logger.error("Collection Error: {} filter not supported".format(filter))
+                                                        logger.error("Collection Error: {} filter not supported".format(final_filter))
                                             elif method_name == "plex_collectionless":
                                                 new_dictionary = {}
 
@@ -782,13 +799,13 @@ class Config:
                                                 elif current_time.month in [10, 11, 12]:                                new_dictionary["season"] = "fall"
                                                 new_dictionary["year"] = get_int(method_name, "year", collections[c][m], current_time.year, min=1917, max=current_time.year + 1)
                                                 new_dictionary["limit"] = get_int(method_name, "limit", collections[c][m], 100, max=500)
-                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Error: mal_season sort_by attribute not found using members as default")
-                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Error: mal_season sort_by attribute is blank using members as default")
-                                                elif collections[c][m]["sort_by"] not in util.mal_season_sort:          logger.warning("Collection Error: mal_season sort_by attribute {} invalid must be either 'members' or 'score' using members as default".format(collections[c][m]["sort_by"]))
+                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Warning: mal_season sort_by attribute not found using members as default")
+                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Warning: mal_season sort_by attribute is blank using members as default")
+                                                elif collections[c][m]["sort_by"] not in util.mal_season_sort:          logger.warning("Collection Warning: mal_season sort_by attribute {} invalid must be either 'members' or 'score' using members as default".format(collections[c][m]["sort_by"]))
                                                 else:                                                                   new_dictionary["sort_by"] = util.mal_season_sort[collections[c][m]["sort_by"]]
-                                                if "season" not in collections[c][m]:                                   logger.warning("Collection Error: mal_season season attribute not found using the current season: {} as default".format(new_dictionary["season"]))
-                                                elif not collections[c][m]["season"]:                                   logger.warning("Collection Error: mal_season season attribute is blank using the current season: {} as default".format(new_dictionary["season"]))
-                                                elif collections[c][m]["season"] not in util.pretty_seasons:            logger.warning("Collection Error: mal_season season attribute {} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {} as default".format(collections[c][m]["season"], new_dictionary["season"]))
+                                                if "season" not in collections[c][m]:                                   logger.warning("Collection Warning: mal_season season attribute not found using the current season: {} as default".format(new_dictionary["season"]))
+                                                elif not collections[c][m]["season"]:                                   logger.warning("Collection Warning: mal_season season attribute is blank using the current season: {} as default".format(new_dictionary["season"]))
+                                                elif collections[c][m]["season"] not in util.pretty_seasons:            logger.warning("Collection Warning: mal_season season attribute {} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {} as default".format(collections[c][m]["season"], new_dictionary["season"]))
                                                 else:                                                                   new_dictionary["season"] = collections[c][m]["season"]
                                                 methods.append((method_name, [new_dictionary]))
                                             elif method_name == "mal_userlist":
@@ -796,13 +813,13 @@ class Config:
                                                 if "username" not in collections[c][m]:                                 raise Failed("Collection Error: mal_userlist username attribute is required")
                                                 elif not collections[c][m]["username"]:                                 raise Failed("Collection Error: mal_userlist username attribute is blank")
                                                 else:                                                                   new_dictionary["username"] = collections[c][m]["username"]
-                                                if "status" not in collections[c][m]:                                   logger.warning("Collection Error: mal_season status attribute not found using all as default")
-                                                elif not collections[c][m]["status"]:                                   logger.warning("Collection Error: mal_season status attribute is blank using all as default")
-                                                elif collections[c][m]["status"] not in util.mal_userlist_status:       logger.warning("Collection Error: mal_season status attribute {} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default".format(collections[c][m]["status"]))
+                                                if "status" not in collections[c][m]:                                   logger.warning("Collection Warning: mal_season status attribute not found using all as default")
+                                                elif not collections[c][m]["status"]:                                   logger.warning("Collection Warning: mal_season status attribute is blank using all as default")
+                                                elif collections[c][m]["status"] not in util.mal_userlist_status:       logger.warning("Collection Warning: mal_season status attribute {} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default".format(collections[c][m]["status"]))
                                                 else:                                                                   new_dictionary["status"] = util.mal_userlist_status[collections[c][m]["status"]]
-                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Error: mal_season sort_by attribute not found using score as default")
-                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Error: mal_season sort_by attribute is blank using score as default")
-                                                elif collections[c][m]["sort_by"] not in util.mal_userlist_sort:        logger.warning("Collection Error: mal_season sort_by attribute {} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default".format(collections[c][m]["sort_by"]))
+                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Warning: mal_season sort_by attribute not found using score as default")
+                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Warning: mal_season sort_by attribute is blank using score as default")
+                                                elif collections[c][m]["sort_by"] not in util.mal_userlist_sort:        logger.warning("Collection Warning: mal_season sort_by attribute {} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default".format(collections[c][m]["sort_by"]))
                                                 else:                                                                   new_dictionary["sort_by"] = util.mal_userlist_sort[collections[c][m]["sort_by"]]
                                                 new_dictionary["limit"] = get_int(method_name, "limit", collections[c][m], 100, max=1000)
                                                 methods.append((method_name, [new_dictionary]))
@@ -940,24 +957,36 @@ class Config:
                                 elif "trakt" in method:                             items_found += check_map(self.Trakt.get_items(method, value, library.is_movie))
                                 else:                                               logger.error("Collection Error: {} method not supported".format(method))
 
-                                if len(items) > 0:                                  map = library.add_to_collection(collection_obj if collection_obj else collection_name, items, filters, map=map)
+                                if len(items) > 0:                                  map = library.add_to_collection(collection_obj if collection_obj else collection_name, items, filters, show_filtered, map, movie_map, show_map)
                                 else:                                               logger.error("No items found to add to this collection ")
 
                                 if len(missing_movies) > 0 or len(missing_shows) > 0:
                                     logger.info("")
                                     if len(missing_movies) > 0:
+                                        not_lang = None
+                                        terms = None
+                                        for filter_method, filter_data in filters:
+                                            if filter_method.startswith("original_language"):
+                                                terms = filter_data if isinstance(filter_data, list) else [lang.strip().lower() for lang in str(filter_data).split(",")]
+                                                not_lang = filter_method.endswith(".not")
+                                                break
+
                                         missing_movies_with_names = []
                                         for missing_id in missing_movies:
                                             try:
-                                                title = str(self.TMDb.get_movie(missing_id).title)
-                                                missing_movies_with_names.append((title, missing_id))
-                                                logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
+                                                movie = self.TMDb.get_movie(missing_id)
+                                                title = str(movie.title)
+                                                if not_lang is None or (not_lang is True and movie.original_language not in terms) or (not_lang is False and movie.original_language in terms):
+                                                    missing_movies_with_names.append((title, missing_id))
+                                                    logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
+                                                elif show_filtered is True:
+                                                    logger.info("{} Collection | X | {} (TMDb: {})".format(collection_name, title, missing_id))
                                             except Failed as e:
                                                 logger.error(e)
-                                        logger.info("{} Movie{} Missing".format(len(missing_movies), "s" if len(missing_movies) > 1 else ""))
+                                        logger.info("{} Movie{} Missing".format(len(missing_movies_with_names), "s" if len(missing_movies_with_names) > 1 else ""))
                                         library.save_missing(collection_name, missing_movies_with_names, True)
                                         if do_arr and library.Radarr:
-                                            library.Radarr.add_tmdb(missing_movies)
+                                            library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names])
                                     if len(missing_shows) > 0 and library.is_show:
                                         missing_shows_with_names = []
                                         for missing_id in missing_shows:
@@ -1040,10 +1069,36 @@ class Config:
                             if background[0] == "url":                              plex_collection.uploadArt(url=background[1])
                             else:                                                   plex_collection.uploadArt(filepath=background[1])
                             logger.info("Detail: {} updated background to [{}] {}".format(background[2], background[0], background[1]))
+
+                        if library.asset_directory:
+                            path = os.path.join(library.asset_directory, "{}".format(name_mapping))
+                            dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
+                            if len(dirs) > 0:
+                                for item in plex_collection.items():
+                                    folder = os.path.basename(os.path.dirname(item.locations[0]))
+                                    if folder in dirs:
+                                        files = [file for file in os.listdir(os.path.join(path, folder)) if os.path.isfile(os.path.join(path, folder, file))]
+                                        poster_path = None
+                                        background_path = None
+                                        for file in files:
+                                            if poster_path is None and file.startswith("poster."):
+                                                poster_path = os.path.join(path, folder, file)
+                                            if background_path is None and file.startswith("background."):
+                                                background_path = os.path.join(path, folder, file)
+                                        if poster_path:
+                                            item.uploadPoster(filepath=poster_path)
+                                            logger.info("Detail: asset_directory updated {}'s poster to [file] {}".format(item.title, poster_path))
+                                        if background_path:
+                                            item.uploadArt(filepath=background_path)
+                                            logger.info("Detail: asset_directory updated {}'s background to [file] {}".format(item.title, background_path))
+                                        if poster_path is None and background_path is None:
+                                            logger.warning("No Files Found: {}".format(os.path.join(path, folder)))
+                                    else:
+                                        logger.warning("No Folder: {}".format(os.path.join(path, folder)))
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error("Unknown Error: {}".format(e))
-                if library.show_unmanaged_collections is True:
+                if library.show_unmanaged is True:
                     logger.info("")
                     util.seperator("Unmanaged Collections in {} Library".format(library.name))
                     logger.info("")
@@ -1067,10 +1122,14 @@ class Config:
         for i, item in enumerate(items, 1):
             length = util.print_return(length, "Processing: {}/{} {}".format(i, len(items), item.title))
             id_type, main_id = self.get_id(item, library, length)
-            if id_type == "movie":
-                movie_map[main_id] = item.ratingKey
-            elif id_type == "show":
-                show_map[main_id] = item.ratingKey
+            if isinstance(main_id, list):
+                if id_type == "movie":
+                    for m in main_id:                               movie_map[m] = item.ratingKey
+                elif id_type == "show":
+                    for m in main_id:                               show_map[m] = item.ratingKey
+            else:
+                if id_type == "movie":                          movie_map[main_id] = item.ratingKey
+                elif id_type == "show":                         show_map[main_id] = item.ratingKey
         util.print_end(length, "Processed {} {}".format(len(items), "Movies" if library.is_movie else "Shows"))
         return movie_map, show_map
 
@@ -1130,6 +1189,17 @@ class Config:
                 if mal_id and not tmdb_id:
                     try:                                            tmdb_id = self.MyAnimeListIDList.convert_mal_to_tmdb(mal_id)
                     except Failed:                                  pass
+                if not tmdb_id and imdb_id and isinstance(imdb_id, list) and self.TMDb:
+                    tmdb_id = []
+                    new_imdb_id = []
+                    for imdb in imdb_id:
+                        try:
+                            temp_tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb)
+                            tmdb_id.append(temp_tmdb_id)
+                            new_imdb_id.append(imdb)
+                        except Failed:
+                            continue
+                    imdb_id = new_imdb_id
                 if not tmdb_id and imdb_id and self.TMDb:
                     try:                                            tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb_id)
                     except Failed:                                  pass
@@ -1160,18 +1230,6 @@ class Config:
                 if not tvdb_id and imdb_id and self.Trakt and library.is_show:
                     try:                                            tvdb_id = self.Trakt.convert_imdb_to_tvdb(imdb_id)
                     except Failed:                                  pass
-                if tvdb_id and not anidb_id:
-                    try:                                            anidb_id = self.AniDB.convert_tvdb_to_anidb(tvdb_id)
-                    except Failed:                                  pass
-                if imdb_id and not anidb_id:
-                    try:                                            anidb_id = self.AniDB.convert_imdb_to_anidb(imdb_id)
-                    except Failed:                                  pass
-                if tvdb_id and not mal_id:
-                    try:                                            mal_id = self.MyAnimeListIDList.convert_tvdb_to_mal(tvdb_id)
-                    except Failed:                                  pass
-                if tmdb_id and not mal_id:
-                    try:                                            mal_id = self.MyAnimeListIDList.convert_tmdb_to_mal(tmdb_id)
-                    except Failed:                                  pass
 
                 if (not tmdb_id and library.is_movie) or (not tvdb_id and not ((anidb_id or mal_id) and tmdb_id) and library.is_show):
                     service_name = "TMDb ID" if library.is_movie else "TVDb ID"
@@ -1194,8 +1252,13 @@ class Config:
                     elif id_name:                                   error_message = "Configure TMDb or Trakt to covert {} to {}".format(id_name, service_name)
                     else:                                           error_message = "No ID to convert to {}".format(service_name)
             if self.Cache and (tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show):
-                util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id if tmdb_id else "None", imdb_id if imdb_id else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
-                self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expired)
+                if isinstance(tmdb_id, list):
+                    for i in range(len(tmdb_id)):
+                        util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id[i] if tmdb_id[i] else "None", imdb_id[i] if imdb_id[i] else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
+                        self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_id[i], tvdb_id, anidb_id, mal_id, expired)
+                else:
+                    util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id if tmdb_id else "None", imdb_id if imdb_id else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
+                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expired)
         if tmdb_id and library.is_movie:                return "movie", tmdb_id
         elif tvdb_id and library.is_show:               return "show", tvdb_id
         elif (anidb_id or mal_id) and tmdb_id:          return "movie", tmdb_id
