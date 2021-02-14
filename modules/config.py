@@ -975,8 +975,8 @@ class Config:
                                         for missing_id in missing_movies:
                                             try:
                                                 movie = self.TMDb.get_movie(missing_id)
+                                                title = str(movie.title)
                                                 if not_lang is None or (not_lang is True and movie.original_language not in terms) or (not_lang is False and movie.original_language in terms):
-                                                    title = str(movie.title)
                                                     missing_movies_with_names.append((title, missing_id))
                                                     logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
                                                 elif show_filtered is True:
