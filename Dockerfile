@@ -1,6 +1,7 @@
 FROM python:3-slim
-VOLUME /config
-COPY . /
+VOLUME /application /config
+WORKDIR /application
+COPY requirements.txt /tmp/
 RUN \
 	echo "**** install system packages ****" && \
 		apt-get update && \
@@ -8,13 +9,12 @@ RUN \
 		apt-get install -y tzdata --no-install-recommends && \
 		apt-get install -y gcc g++ libxml2-dev libxslt-dev libz-dev && \
 	echo "**** install python packages ****" && \
-		pip3 install --no-cache-dir --upgrade --requirement /requirements.txt && \
+		pip3 install --no-cache-dir --upgrade --requirement /tmp/requirements.txt && \
 	echo "**** cleanup ****" && \
 		apt-get autoremove -y && \
 		apt-get clean && \
 		rm -rf \
-			/requirements.txt \
 			/tmp/* \
 			/var/tmp/* \
 			/var/lib/apt/lists/*
-ENTRYPOINT ["python3", "plex_meta_manager.py"]
+ENTRYPOINT ["python3", "/application/plex_meta_manager.py", "--config", "/config/"]
