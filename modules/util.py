@@ -251,6 +251,12 @@ collectionless_lists = [
     "url_background", "file_background",
     "name_mapping"
 ]
+other_attributes = [
+    "schedule",
+    "sync_mode",
+    "test", 
+    "tmdb_person"
+]
 dictionary_lists = [
     "filters",
     "mal_season",
@@ -374,7 +380,7 @@ movie_only_filters = [
     "audio_language", "audio_language.not",
     "country", "country.not",
     "director", "director.not",
-    "original_language", "original_language.not", 
+    "original_language", "original_language.not",
     "subtitle_language", "subtitle_language.not",
     "video_resolution", "video_resolution.not",
     "writer", "writer.not"
