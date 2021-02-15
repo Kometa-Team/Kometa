@@ -3,10 +3,11 @@ from modules import tests, util
 from modules.config import Config
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--test", dest="test", help=argparse.SUPPRESS, action="store_true", default=False)
+parser.add_argument("--mytests", dest="tests", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", dest="time", help="Time to update each day use format HH:MM (Default: 03:00)", default="03:00", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
+parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run only tests without the scheduler", action="store_true", default=False)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -41,7 +42,7 @@ file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(lev
 
 cmd_handler = logging.StreamHandler()
 cmd_handler.setFormatter(logging.Formatter("| %(message)-100s |"))
-cmd_handler.setLevel(logging.INFO)
+cmd_handler.setLevel(logging.DEBUG if args.tests or args.test else logging.INFO)
 
 logger.addHandler(cmd_handler)
 logger.addHandler(file_handler)
@@ -59,27 +60,30 @@ logger.info(util.get_centered_text("                                            
 logger.info(util.get_centered_text("    Version: 1.1.0                                                                   "))
 util.seperator()
 
-if args.test:
+if args.tests:
     tests.run_tests(default_dir)
     sys.exit(0)
 
-def start(config_path):
+def start(config_path, test, daily):
+    if daily:               type = "Daily "
+    elif test:              type = "Test "
+    else:                   type = ""
+    util.seperator("Starting {}Run".format(type))
     try:
-        util.seperator("Starting Daily Run")
         config = Config(default_dir, config_path)
-        config.update_libraries()
+        config.update_libraries(test)
     except Exception as e:
         util.print_stacktrace()
         logger.critical(e)
     logger.info("")
-    util.seperator("Finished Daily Run")
+    util.seperator("Finished {}Run".format(type))
 
 try:
-    if args.run:
-        start(args.config)
+    if args.run or args.test:
+        start(args.config, args.test, False)
     else:
         length = 0
-        schedule.every().day.at(args.time).do(start, args.config)
+        schedule.every().day.at(args.time).do(start, args.config, False, True)
         while True:
             schedule.run_pending()
             current = datetime.datetime.now().strftime("%H:%M")

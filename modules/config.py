@@ -411,14 +411,14 @@ class Config:
 
         util.seperator()
 
-    def update_libraries(self):
+    def update_libraries(self, test):
         for library in self.libraries:
             logger.info("")
             util.seperator("{} Library".format(library.name))
-            try:                        library.update_metadata(self.TMDb)
+            try:                        library.update_metadata(self.TMDb, test)
             except Failed as e:         logger.error(e)
             logger.info("")
-            util.seperator("{} Library Collections".format(library.name))
+            util.seperator("{} Library {}Collections".format(library.name, "Test " if test else ""))
             collections = library.collections
             if collections:
                 logger.info("")
@@ -426,6 +426,8 @@ class Config:
                 logger.info("")
                 movie_map, show_map = self.map_guids(library)
                 for c in collections:
+                    if test and ("test" not in collections[c] or collections[c]["test"] is not True):
+                        continue
                     try:
                         logger.info("")
                         util.seperator("{} Collection".format(c))
@@ -556,6 +558,7 @@ class Config:
                                     logger.info("Collection Error: {} skipped. MyAnimeList must be configured".format(m))
                                     map = {}
                                 elif collections[c][m] is not None:
+                                    logger.debug("")
                                     logger.debug("Method: {}".format(m))
                                     logger.debug("Value: {}".format(collections[c][m]))
                                     if m in util.method_alias:
@@ -851,7 +854,7 @@ class Config:
                                         else:
                                             methods.append((method_name, values))
                                     elif method_name in util.all_lists:                                 methods.append((method_name, util.get_list(collections[c][m])))
-                                    elif method_name not in ["sync_mode", "schedule", "tmdb_person"]:   logger.error("Collection Error: {} attribute not supported".format(method_name))
+                                    elif method_name not in util.other_attributes:                      logger.error("Collection Error: {} attribute not supported".format(method_name))
                                 else:
                                     logger.error("Collection Error: {} attribute is blank".format(m))
                             except Failed as e:
@@ -868,16 +871,15 @@ class Config:
                         if library.Sonarr:
                             do_arr = details["add_to_arr"] if "add_to_arr" in details else library.Sonarr.add
 
-
                         items_found = 0
                         library.clear_collection_missing(collection_name)
 
                         for method, values in methods:
+                            logger.debug("")
                             logger.debug("Method: {}".format(method))
                             logger.debug("Values: {}".format(values))
                             pretty = util.pretty_names[method] if method in util.pretty_names else method
                             for value in values:
-                                logger.debug("Value: {}".format(value))
                                 items = []
                                 missing_movies = []
                                 missing_shows = []
@@ -896,6 +898,7 @@ class Config:
                                             else:                                               missing_shows.append(show_id)
                                     return items_found_inside
                                 logger.info("")
+                                logger.debug("Value: {}".format(value))
                                 if method == "plex_all":
                                     logger.info("Processing {} {}".format(pretty, "Movies" if library.is_movie else "Shows"))
                                     items = library.Plex.all()

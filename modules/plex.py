@@ -171,7 +171,9 @@ class PlexAPI:
         length = 0
         for i, item in enumerate(items, 1):
             try:                                        current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
-            except BadRequest:                          raise Failed("Plex Error: Item {} not found".format(item))
+            except (BadRequest, NotFound):
+                logger.error("Plex Error: Item {} not found".format(item))
+                continue
             match = True
             if filters:
                 length = util.print_return(length, "Filtering {}/{} {}".format((" " * (max_length - len(str(i)))) + str(i), total, current.title))
@@ -241,13 +243,15 @@ class PlexAPI:
     def search_item(self, data, year=None):
         return util.choose_from_list(self.search(data, year=year), "movie" if self.is_movie else "show", str(data), exact=True)
 
-    def update_metadata(self, TMDb):
+    def update_metadata(self, TMDb, test):
         logger.info("")
         util.seperator("{} Library Metadata".format(self.name))
         logger.info("")
         if not self.metadata:
             raise Failed("No metadata to edit")
         for m in self.metadata:
+            if test and ("test" not in self.metadata[m] or self.metadata[m]["test"] is not True):
+                continue
             logger.info("")
             util.seperator()
             logger.info("")
