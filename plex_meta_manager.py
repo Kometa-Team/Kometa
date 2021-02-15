@@ -8,6 +8,7 @@ parser.add_argument("-c", "--config", dest="config", help="Run with desired *.ym
 parser.add_argument("-t", "--time", dest="time", help="Time to update each day use format HH:MM (Default: 03:00)", default="03:00", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run only tests without the scheduler", action="store_true", default=False)
+parser.add_argument("-cl", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str, default="")
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -64,14 +65,15 @@ if args.tests:
     tests.run_tests(default_dir)
     sys.exit(0)
 
-def start(config_path, test, daily):
+def start(config_path, test, daily, collections = ""):
     if daily:               type = "Daily "
     elif test:              type = "Test "
+    elif collections:       type = "Collections "
     else:                   type = ""
     util.seperator("Starting {}Run".format(type))
     try:
         config = Config(default_dir, config_path)
-        config.update_libraries(test)
+        config.update_libraries(test, collections)
     except Exception as e:
         util.print_stacktrace()
         logger.critical(e)
@@ -79,8 +81,8 @@ def start(config_path, test, daily):
     util.seperator("Finished {}Run".format(type))
 
 try:
-    if args.run or args.test:
-        start(args.config, args.test, False)
+    if args.run or args.test or args.collections:
+        start(args.config, args.test, False, args.collections)
     else:
         length = 0
         schedule.every().day.at(args.time).do(start, args.config, False, True)
