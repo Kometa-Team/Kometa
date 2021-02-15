@@ -1124,7 +1124,12 @@ class Config:
         items = library.Plex.all()
         for i, item in enumerate(items, 1):
             length = util.print_return(length, "Processing: {}/{} {}".format(i, len(items), item.title))
-            id_type, main_id = self.get_id(item, library, length)
+            try:
+                id_type, main_id = self.get_id(item, library, length)
+            except BadRequest:
+                util.print_stacktrace()
+                util.print_end(length, "{} {:<46} | {} for {}".format("Cache | ! |" if self.Cache else "Mapping Error:", item.guid, error_message, item.title))
+                continue
             if isinstance(main_id, list):
                 if id_type == "movie":
                     for m in main_id:                               movie_map[m] = item.ratingKey
