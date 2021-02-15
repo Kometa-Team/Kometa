@@ -426,7 +426,7 @@ class Config:
 
         util.seperator()
 
-    def update_libraries(self, test):
+    def update_libraries(self, test, requested_collections):
         for library in self.libraries:
             logger.info("")
             util.seperator("{} Library".format(library.name))
@@ -435,14 +435,15 @@ class Config:
             logger.info("")
             util.seperator("{} Library {}Collections".format(library.name, "Test " if test else ""))
             collections = library.collections
-            if collections:
+            collections_to_process = (collections.keys() & util.get_list(requested_collections)) if requested_collections else collections
+            if collections_to_process:
                 logger.info("")
                 util.seperator("Mapping {} Library".format(library.name))
                 logger.info("")
                 movie_map, show_map = self.map_guids(library)
                 logger.info(movie_map)
                 logger.info(show_map)
-                for c in collections:
+                for c in collections_to_process:
                     if test and ("test" not in collections[c] or collections[c]["test"] is not True):
                         continue
                     try:
@@ -1123,7 +1124,7 @@ class Config:
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error("Unknown Error: {}".format(e))
-                if library.show_unmanaged is True and not test:
+                if library.show_unmanaged is True and not test and not requested_collections:
                     logger.info("")
                     util.seperator("Unmanaged Collections in {} Library".format(library.name))
                     logger.info("")
