@@ -11,6 +11,7 @@ from modules.tmdb import TMDbAPI
 from modules.trakt import TraktAPI
 from modules.tvdb import TVDbAPI
 from modules.util import Failed
+from plexapi.exceptions import BadRequest
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
