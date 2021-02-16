@@ -38,11 +38,24 @@ class SonarrAPI:
         self.root_folder_path = params["root_folder_path"]
         self.add = params["add"]
         self.search = params["search"]
+        self.tag = params["tag"]
 
-    def add_tvdb(self, tvdb_ids):
+    def add_tvdb(self, tvdb_ids, tag=None):
         logger.info("")
         logger.debug("TVDb IDs: {}".format(tvdb_ids))
+        tag_nums = []
         add_count = 0
+        if tag is None:
+            tag = self.tag
+        if tag:
+            tag_cache = {}
+            for label in tag:
+                self.send_post("{}tag".format(self.base_url), {"label": str(label)})
+            for t in self.send_get("{}tag".format(self.base_url)).json():
+                tag_cache[t["label"]] = t["id"]
+            for label in tag:
+                if label in tag_cache
+                    tag_nums.append(tag_cache[label])
         for tvdb_id in tvdb_ids:
             try:
                 show = self.tvdb.get_series(self.language, tvdb_id=tvdb_id)
@@ -65,6 +78,8 @@ class SonarrAPI:
                 "images": [{"covertype": "poster", "url": show.poster_path}],
                 "addOptions": {"searchForMissingEpisodes": self.search}
             }
+            if tag_nums:
+                url_json["tags"] = tag_nums
             response = self.send_post("{}series".format(self.base_url), url_json)
             if response.status_code < 400:
                 logger.info("Added to Sonarr | {:<6} | {}".format(tvdb_id, show.title))
@@ -76,6 +91,10 @@ class SonarrAPI:
                     logger.debug(url_json)
                     logger.error("Sonarr Error: {}".format(response.json()))
         logger.info("{} Show{} added to Sonarr".format(add_count, "s" if add_count > 1 else ""))
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def send_get(self, url, url_json):
+        return requests.get(url, json=url_json, params=self.url_params)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_post(self, url, url_json):
