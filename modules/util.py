@@ -254,7 +254,7 @@ collectionless_lists = [
 other_attributes = [
     "schedule",
     "sync_mode",
-    "test", 
+    "test",
     "tmdb_person"
 ]
 dictionary_lists = [
@@ -481,10 +481,11 @@ def choose_from_list(datalist, description, data=None, list_type="title", exact=
     else:
         return None
 
-def get_list(data):
+def get_list(data, lower=False):
     if isinstance(data, list):      return data
     elif isinstance(data, dict):    return [data]
-    else:                           return str(data).split(", ")
+    elif lower is True:             return [d.strip().lower() for d in str(data).split(",")]
+    else:                           return [d.strip() for d in str(data).split(",")]
 
 def get_int_list(data, id_type):
     values = get_list(data)

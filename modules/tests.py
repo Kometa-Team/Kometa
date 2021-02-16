@@ -10,10 +10,8 @@ def run_tests(default_dir):
         config = Config(default_dir)
         logger.info("")
         util.seperator("Mapping Tests")
-
-        config.map_guids(config.libraries[0])
-        config.map_guids(config.libraries[1])
-        config.map_guids(config.libraries[2])
+        for library in config.libraries:
+            config.map_guids(library)
         anidb_tests(config)
         imdb_tests(config)
         mal_tests(config)
