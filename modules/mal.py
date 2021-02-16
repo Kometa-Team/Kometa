@@ -17,7 +17,7 @@ class MyAnimeListIDList:
     def convert_mal(self, input_id, from_id, to_id):
         for attrs in self.ids:
             if from_id in attrs and int(attrs[from_id]) == int(input_id) and to_id in attrs and int(attrs[to_id]) > 0:
-                return attrs[to_id]
+                return int(attrs[to_id])
         raise Failed("MyAnimeList Error: {} ID not found for {}: {}".format(util.pretty_ids[to_id], util.pretty_ids[from_id], input_id))
 
     def find_mal_ids(self, mal_id):
