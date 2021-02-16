@@ -10,8 +10,7 @@ class SonarrAPI:
         self.url_params = {"apikey": "{}".format(params["token"])}
         self.base_url = "{}/api{}".format(params["url"], "/v3/" if params["version"] == "v3" else "/")
         try:
-            response = requests.get("{}system/status".format(self.base_url), params=self.url_params)
-            result = response.json()
+            result = requests.get("{}system/status".format(self.base_url), params=self.url_params).json()
         except Exception as e:
             util.print_stacktrace()
             raise Failed("Sonarr Error: Could not connect to Sonarr at {}".format(params["url"]))
@@ -19,10 +18,9 @@ class SonarrAPI:
             raise Failed("Sonarr Error: Invalid API Key")
         if "version" not in result:
             raise Failed("Sonarr Error: Unexpected Response Check URL")
-        response = requests.get("{}{}".format(self.base_url, "qualityProfile" if params["version"] == "v3" else "profile"), params=self.url_params)
         self.quality_profile_id = None
         profiles = ""
-        for profile in response.json():
+        for profile in self.send_get("{}{}".format(self.base_url, "qualityProfile" if params["version"] == "v3" else "profile")):
             if len(profiles) > 0:
                 profiles += ", "
             profiles += profile["name"]
@@ -51,7 +49,7 @@ class SonarrAPI:
             tag_cache = {}
             for label in tag:
                 self.send_post("{}tag".format(self.base_url), {"label": str(label)})
-            for t in self.send_get("{}tag".format(self.base_url)).json():
+            for t in self.send_get("{}tag".format(self.base_url)):
                 tag_cache[t["label"]] = t["id"]
             for label in tag:
                 if label in tag_cache:
@@ -93,8 +91,8 @@ class SonarrAPI:
         logger.info("{} Show{} added to Sonarr".format(add_count, "s" if add_count > 1 else ""))
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_get(self, url, url_json):
-        return requests.get(url, json=url_json, params=self.url_params)
+    def send_get(self, url):
+        return requests.get(url, params=self.url_params).json()
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_post(self, url, url_json):
