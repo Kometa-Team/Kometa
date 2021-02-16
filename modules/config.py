@@ -440,6 +440,8 @@ class Config:
                 util.seperator("Mapping {} Library".format(library.name))
                 logger.info("")
                 movie_map, show_map = self.map_guids(library)
+                logger.info(movie_map)
+                logger.info(show_map)
                 for c in collections:
                     if test and ("test" not in collections[c] or collections[c]["test"] is not True):
                         continue
@@ -1184,13 +1186,13 @@ class Config:
             if item_type == "plex" and library.is_movie:
                 for guid_tag in item.guids:
                     url_parsed = requests.utils.urlparse(guid_tag.id)
-                    if url_parsed.scheme == "tmdb":                 tmdb_id = url_parsed.netloc
+                    if url_parsed.scheme == "tmdb":                 tmdb_id = int(url_parsed.netloc)
                     elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
             elif item_type == "imdb":                       imdb_id = check_id
-            elif item_type == "thetvdb":                    tvdb_id = check_id
-            elif item_type == "themoviedb":                 tmdb_id = check_id
+            elif item_type == "thetvdb":                    tvdb_id = int(check_id)
+            elif item_type == "themoviedb":                 tmdb_id = int(check_id)
             elif item_type == "hama":
-                if check_id.startswith("tvdb"):             tvdb_id = re.search("-(.*)", check_id).group(1)
+                if check_id.startswith("tvdb"):             tvdb_id = int(re.search("-(.*)", check_id).group(1))
                 elif check_id.startswith("anidb"):          anidb_id = re.search("-(.*)", check_id).group(1)
                 else:                                       error_message = "Hama Agent ID: {} not supported".format(check_id)
             elif item_type == "myanimelist":                mal_id = check_id
