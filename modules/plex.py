@@ -187,7 +187,7 @@ class PlexAPI:
                             match = False
                             break
                     elif method == "original_language":
-                        terms = f[1] if isinstance(f[1], list) else [lang.lower() for lang in str(f[1]).split(", ")]
+                        terms = util.get_list(f[1], lower=True)
                         tmdb_id = None
                         movie = None
                         for key, value in movie_map.items():
@@ -216,7 +216,7 @@ class PlexAPI:
                                 match = False
                                 break
                     else:
-                        terms = f[1] if isinstance(f[1], list) else str(f[1]).split(", ")
+                        terms = util.get_list(f[1])
                         if method in ["video_resolution", "audio_language", "subtitle_language"]:
                             for media in current.media:
                                 if method == "video_resolution":                                                                attrs = [media.videoResolution]

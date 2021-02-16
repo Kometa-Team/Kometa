@@ -971,7 +971,7 @@ class Config:
                                         terms = None
                                         for filter_method, filter_data in filters:
                                             if filter_method.startswith("original_language"):
-                                                terms = filter_data if isinstance(filter_data, list) else [lang.strip().lower() for lang in str(filter_data).split(",")]
+                                                terms = util.get_list(filter_data, lower=True)
                                                 not_lang = filter_method.endswith(".not")
                                                 break
 
@@ -1076,33 +1076,34 @@ class Config:
 
                         if library.asset_directory:
                             path = os.path.join(library.asset_directory, "{}".format(name_mapping))
-                            dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
-                            if len(dirs) > 0:
-                                for item in plex_collection.items():
-                                    folder = os.path.basename(os.path.dirname(item.locations[0]))
-                                    if folder in dirs:
-                                        files = [file for file in os.listdir(os.path.join(path, folder)) if os.path.isfile(os.path.join(path, folder, file))]
-                                        poster_path = None
-                                        background_path = None
-                                        for file in files:
-                                            if poster_path is None and file.startswith("poster."):
-                                                poster_path = os.path.join(path, folder, file)
-                                            if background_path is None and file.startswith("background."):
-                                                background_path = os.path.join(path, folder, file)
-                                        if poster_path:
-                                            item.uploadPoster(filepath=poster_path)
-                                            logger.info("Detail: asset_directory updated {}'s poster to [file] {}".format(item.title, poster_path))
-                                        if background_path:
-                                            item.uploadArt(filepath=background_path)
-                                            logger.info("Detail: asset_directory updated {}'s background to [file] {}".format(item.title, background_path))
-                                        if poster_path is None and background_path is None:
-                                            logger.warning("No Files Found: {}".format(os.path.join(path, folder)))
-                                    else:
-                                        logger.warning("No Folder: {}".format(os.path.join(path, folder)))
+                            if os.path.isdir(path):
+                                dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
+                                if len(dirs) > 0:
+                                    for item in plex_collection.items():
+                                        folder = os.path.basename(os.path.dirname(item.locations[0]))
+                                        if folder in dirs:
+                                            files = [file for file in os.listdir(os.path.join(path, folder)) if os.path.isfile(os.path.join(path, folder, file))]
+                                            poster_path = None
+                                            background_path = None
+                                            for file in files:
+                                                if poster_path is None and file.startswith("poster."):
+                                                    poster_path = os.path.join(path, folder, file)
+                                                if background_path is None and file.startswith("background."):
+                                                    background_path = os.path.join(path, folder, file)
+                                            if poster_path:
+                                                item.uploadPoster(filepath=poster_path)
+                                                logger.info("Detail: asset_directory updated {}'s poster to [file] {}".format(item.title, poster_path))
+                                            if background_path:
+                                                item.uploadArt(filepath=background_path)
+                                                logger.info("Detail: asset_directory updated {}'s background to [file] {}".format(item.title, background_path))
+                                            if poster_path is None and background_path is None:
+                                                logger.warning("No Files Found: {}".format(os.path.join(path, folder)))
+                                        else:
+                                            logger.warning("No Folder: {}".format(os.path.join(path, folder)))
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error("Unknown Error: {}".format(e))
-                if library.show_unmanaged is True:
+                if library.show_unmanaged is True and not test:
                     logger.info("")
                     util.seperator("Unmanaged Collections in {} Library".format(library.name))
                     logger.info("")
@@ -1114,6 +1115,7 @@ class Config:
                              unmanaged_count += 1
                     logger.info("{} Unmanaged Collections".format(unmanaged_count))
             else:
+                logger.info("")
                 logger.error("No collection to update")
 
     def map_guids(self, library):
