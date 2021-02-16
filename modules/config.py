@@ -154,6 +154,7 @@ class Config:
         self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True) if "radarr" in self.data else None
         self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False) if "radarr" in self.data else False
         self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False) if "radarr" in self.data else False
+        self.general["radarr"]["tag"] = util.get_list(check_for_attribute(self.data, "tag", parent="radarr", default_is_none=True), lower=True) if "radarr" in self.data else None
 
         self.general["sonarr"] = {}
         self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", default_is_none=True) if "sonarr" in self.data else None
@@ -163,6 +164,7 @@ class Config:
         self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True) if "sonarr" in self.data else None
         self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False) if "sonarr" in self.data else False
         self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False) if "sonarr" in self.data else False
+        self.general["sonarr"]["tag"] = util.get_list(check_for_attribute(self.data, "tag", parent="sonarr", default_is_none=True), lower=True) if "sonarr" in self.data else None
 
         self.general["tautulli"] = {}
         self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True) if "tautulli" in self.data else None
@@ -318,6 +320,12 @@ class Config:
                     else:
                         logger.warning("Config Warning: radarr sub-attribute search is blank using general value: {}".format(self.general["radarr"]["search"]))
 
+                if "tag" in libs[lib]["radarr"]:
+                    if libs[lib]["radarr"]["tag"]:
+                        params["radarr"]["tag"] = util.get_list(libs[lib]["radarr"]["tag"], lower=True)
+                    else:
+                        logger.warning("Config Warning: radarr sub-attribute tag is blank using general value: {}".format(self.general["radarr"]["tag"]))
+
             if not params["radarr"]["url"] or not params["radarr"]["token"] or not params["radarr"]["quality_profile"] or not params["radarr"]["root_folder_path"]:
                 params["radarr"] = None
 
@@ -373,6 +381,12 @@ class Config:
                             logger.warning("Config Warning: sonarr sub-attribute search must be either true or false using general value: {}".format(self.general["sonarr"]["search"]))
                     else:
                         logger.warning("Config Warning: sonarr sub-attribute search is blank using general value: {}".format(self.general["sonarr"]["search"]))
+
+                if "tag" in libs[lib]["sonarr"]:
+                    if libs[lib]["sonarr"]["tag"]:
+                        params["sonarr"]["tag"] = util.get_list(libs[lib]["sonarr"]["tag"], lower=True)
+                    else:
+                        logger.warning("Config Warning: sonarr sub-attribute tag is blank using general value: {}".format(self.general["sonarr"]["tag"]))
 
             if not params["sonarr"]["url"] or not params["sonarr"]["token"] or not params["sonarr"]["quality_profile"] or not params["sonarr"]["root_folder_path"] or params["library_type"] == "movie":
                 params["sonarr"] = None
@@ -597,6 +611,7 @@ class Config:
                                     elif method_name == "add_to_arr":
                                         if isinstance(collections[c][m], bool):                             details[method_name] = collections[c][m]
                                         else:                                                               raise Failed("Collection Error: add_to_arr must be either true or false")
+                                    elif method_name == "arr_tag":                                          details[method_name] = util.get_list(collections[c][m])
                                     elif method_name == "show_filtered":
                                         if isinstance(collections[c][m], bool):                             show_filtered = collections[c][m]
                                         else:                                                               raise Failed("Collection Error: show_filtered must be either true or false using the default false")
@@ -872,6 +887,9 @@ class Config:
                         if library.Sonarr:
                             do_arr = details["add_to_arr"] if "add_to_arr" in details else library.Sonarr.add
 
+                        movie_tag = details["arr_tag"] if "arr_tag" in details else None
+                        show_tag = details["arr_tag"] if "arr_tag" in details else None
+
                         items_found = 0
                         library.clear_collection_missing(collection_name)
 
@@ -990,7 +1008,7 @@ class Config:
                                         logger.info("{} Movie{} Missing".format(len(missing_movies_with_names), "s" if len(missing_movies_with_names) > 1 else ""))
                                         library.save_missing(collection_name, missing_movies_with_names, True)
                                         if do_arr and library.Radarr:
-                                            library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names])
+                                            library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], tag=movie_tag)
                                     if len(missing_shows) > 0 and library.is_show:
                                         missing_shows_with_names = []
                                         for missing_id in missing_shows:
@@ -1000,10 +1018,10 @@ class Config:
                                                 logger.info("{} Collection | ? | {} (TVDB: {})".format(collection_name, title, missing_id))
                                             except Failed as e:
                                                 logger.error(e)
-                                        logger.info("{} Show{} Missing".format(len(missing_shows), "s" if len(missing_shows) > 1 else ""))
+                                        logger.info("{} Show{} Missing".format(len(missing_shows_with_names), "s" if len(missing_shows_with_names) > 1 else ""))
                                         library.save_missing(c, missing_shows_with_names, False)
                                         if do_arr and library.Sonarr:
-                                            library.Sonarr.add_tvdb(missing_shows)
+                                            library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tag=show_tag)
 
                         library.del_collection_if_empty(collection_name)
 
