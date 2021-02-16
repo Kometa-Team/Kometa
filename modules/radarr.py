@@ -53,7 +53,7 @@ class RadarrAPI:
             for t in self.send_get("{}tag".format(self.base_url)).json():
                 tag_cache[t["label"]] = t["id"]
             for label in tag:
-                if label in tag_cache
+                if label in tag_cache:
                     tag_nums.append(tag_cache[label])
         for tmdb_id in tmdb_ids:
             try:
