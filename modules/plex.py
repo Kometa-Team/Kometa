@@ -82,6 +82,7 @@ class PlexAPI:
         self.radarr = params["radarr"]
         self.sonarr = params["sonarr"]
         self.tautulli = params["tautulli"]
+        self.missing = {}
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def search(self, title, libtype=None, year=None):
@@ -129,37 +130,18 @@ class PlexAPI:
         except yaml.scanner.ScannerError as e:
             logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
-    def clear_collection_missing(self, collection):
-        missing_data = {}
-        if not os.path.exists(self.missing_path):
-            with open(self.missing_path, "w"): pass
+    def add_missing(self, collection, items, is_movie):
+        col_name = collection.encode("ascii", "replace").decode()
+        if col_name not in self.missing:
+            self.missing[col_name] = {}
+        section = "Movies Missing (TMDb IDs)" if is_movie else "Shows Missing (TVDb IDs)"
+        if section not in self.missing[col_name]:
+            self.missing[col_name][section] = {}
+        for title, item_id in items:
+            self.missing[col_name][section][int(item_id)] = str(title).encode("ascii", "replace").decode()
+        with open(self.missing_path, "w"): pass
         try:
-            missing_data, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.missing_path))
-            if not missing_data:
-                missing_data = {}
-            if collection in missing_data:
-                missing_data[collection.encode("ascii", "replace").decode()] = {}
-            yaml.round_trip_dump(missing_data, open(self.missing_path, "w"), indent=ind, block_seq_indent=bsi)
-        except yaml.scanner.ScannerError as e:
-            logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
-
-    def save_missing(self, collection, items, is_movie):
-        missing_data = {}
-        if not os.path.exists(self.missing_path):
-            with open(self.missing_path, "w"): pass
-        try:
-            missing_data, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.missing_path))
-            if not missing_data:
-                missing_data = {}
-            col_name = collection.encode("ascii", "replace").decode()
-            if col_name not in missing_data:
-                missing_data[col_name] = {}
-            section = "Movies Missing (TMDb IDs)" if is_movie else "Shows Missing (TVDb IDs)"
-            if section not in missing_data[col_name]:
-                missing_data[col_name][section] = {}
-            for title, item_id in items:
-                missing_data[col_name][section][int(item_id)] = str(title).encode("ascii", "replace").decode()
-            yaml.round_trip_dump(missing_data, open(self.missing_path, "w"), indent=ind, block_seq_indent=bsi)
+            yaml.round_trip_dump(self.missing, open(self.missing_path, "w"))
         except yaml.scanner.ScannerError as e:
             logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 

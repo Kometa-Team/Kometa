@@ -894,7 +894,6 @@ class Config:
                         show_tag = details["arr_tag"] if "arr_tag" in details else None
 
                         items_found = 0
-                        library.clear_collection_missing(collection_name)
 
                         for method, values in methods:
                             logger.debug("")
@@ -1009,7 +1008,7 @@ class Config:
                                             except Failed as e:
                                                 logger.error(e)
                                         logger.info("{} Movie{} Missing".format(len(missing_movies_with_names), "s" if len(missing_movies_with_names) > 1 else ""))
-                                        library.save_missing(collection_name, missing_movies_with_names, True)
+                                        library.add_missing(collection_name, missing_movies_with_names, True)
                                         if do_arr and library.Radarr:
                                             library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], tag=movie_tag)
                                     if len(missing_shows) > 0 and library.is_show:
@@ -1022,7 +1021,7 @@ class Config:
                                             except Failed as e:
                                                 logger.error(e)
                                         logger.info("{} Show{} Missing".format(len(missing_shows_with_names), "s" if len(missing_shows_with_names) > 1 else ""))
-                                        library.save_missing(c, missing_shows_with_names, False)
+                                        library.add_missing(c, missing_shows_with_names, False)
                                         if do_arr and library.Sonarr:
                                             library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tag=show_tag)
 
