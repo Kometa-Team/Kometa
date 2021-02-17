@@ -65,7 +65,7 @@ if args.tests:
     tests.run_tests(default_dir)
     sys.exit(0)
 
-def start(config_path, test, daily, collections = ""):
+def start(config_path, test, daily, collections):
     if daily:               type = "Daily "
     elif test:              type = "Test "
     elif collections:       type = "Collections "
@@ -85,7 +85,7 @@ try:
         start(args.config, args.test, False, args.collections)
     else:
         length = 0
-        schedule.every().day.at(args.time).do(start, args.config, False, True)
+        schedule.every().day.at(args.time).do(start, args.config, False, True, None)
         while True:
             schedule.run_pending()
             current = datetime.datetime.now().strftime("%H:%M")
