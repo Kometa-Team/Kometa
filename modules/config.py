@@ -434,16 +434,13 @@ class Config:
             except Failed as e:         logger.error(e)
             logger.info("")
             util.seperator("{} Library {}Collections".format(library.name, "Test " if test else ""))
-            collections = library.collections
-            collections_to_process = (collections.keys() & util.get_list(requested_collections)) if requested_collections else collections
-            if collections_to_process:
+            collections = (library.collections.keys() & util.get_list(requested_collections)) if requested_collections else library.collections
+            if collections:
                 logger.info("")
                 util.seperator("Mapping {} Library".format(library.name))
                 logger.info("")
                 movie_map, show_map = self.map_guids(library)
-                logger.info(movie_map)
-                logger.info(show_map)
-                for c in collections_to_process:
+                for c in collections:
                     if test and ("test" not in collections[c] or collections[c]["test"] is not True):
                         continue
                     try:
@@ -646,13 +643,12 @@ class Config:
                                     elif method_name == "trakt_watchlist":                              methods.append((method_name, self.Trakt.validate_trakt_watchlist(util.get_list(collections[c][m]), library.is_movie)))
                                     elif method_name == "imdb_list":
                                         new_list = []
-                                        for imdb_list in util.get_list(collections[c][m]):
+                                        for imdb_list in util.get_list(collections[c][m], split=False):
                                             new_dictionary = {}
                                             if isinstance(imdb_list, dict):
                                                 if "url" in imdb_list and imdb_list["url"]:                         imdb_url = imdb_list["url"]
-                                                else:                                                               raise Failed("Collection Error: No I")
-                                                if "limit" in imdb_list and imdb_list["limit"]:                     list_count = util.regex_first_int(imdb_list["limit"], "List Limit", default=0)
-                                                else:                                                               list_count = 0
+                                                else:                                                               raise Failed("Collection Error: imdb_list attribute url is required")
+                                                list_count = util.regex_first_int(imdb_list["limit"], "List Limit", default=0) if "limit" in imdb_list and imdb_list["limit"] else 0
                                             else:
                                                 imdb_url = str(imdb_list)
                                                 list_count = 0
@@ -726,8 +722,6 @@ class Config:
                                                             searches_used.append(util.remove_not(final_attr))
                                                             search.append((final_attr, util.get_int_list(collections[c][m][search_attr], util.remove_not(final_attr))))
                                                     elif final_attr in util.plex_searches:
-                                                        if final_attr.startswith("tmdb_"):
-                                                            final_attr = final_attr[5:]
                                                         searches_used.append(util.remove_not(final_attr))
                                                         search.append((final_attr, util.get_list(collections[c][m][search_attr])))
                                                     else:
