@@ -434,7 +434,7 @@ class Config:
             except Failed as e:         logger.error(e)
             logger.info("")
             util.seperator("{} Library {}Collections".format(library.name, "Test " if test else ""))
-            collections = (library.collections.keys() & util.get_list(requested_collections)) if requested_collections else library.collections
+            collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
             if collections:
                 logger.info("")
                 util.seperator("Mapping {} Library".format(library.name))
