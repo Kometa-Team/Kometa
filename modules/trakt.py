@@ -89,9 +89,9 @@ class TraktAPI:
         lookup = Trakt["search"].lookup(external_id, from_source, media_type)
         if lookup:
             lookup = lookup[0] if isinstance(lookup, list) else lookup
-            return lookup.get_key(to_source) if to_source == "imdb" else int(lookup.get_key(to_source))
-        else:
-            raise Failed("No {} ID found for {} ID {}".format(to_source.upper().replace("B", "b"), from_source.upper().replace("B", "b"), external_id))
+            if lookup.get_key(to_source)):
+                return lookup.get_key(to_source) if to_source == "imdb" else int(lookup.get_key(to_source))
+        raise Failed("No {} ID found for {} ID {}".format(to_source.upper().replace("B", "b"), from_source.upper().replace("B", "b"), external_id))
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def trending(self, amount, is_movie):
