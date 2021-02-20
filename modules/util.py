@@ -249,7 +249,7 @@ collectionless_lists = [
     "collection_order", "plex_collectionless",
     "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
     "url_background", "file_background",
-    "name_mapping"
+    "name_mapping", "label", "label_sync_mode"
 ]
 other_attributes = [
     "schedule",
@@ -389,7 +389,7 @@ movie_only_filters = [
 boolean_details = [
     "add_to_arr",
     "show_filtered",
-    "show_missing", 
+    "show_missing",
     "save_missing"
 ]
 all_details = [
@@ -398,7 +398,7 @@ all_details = [
     "collection_mode", "collection_order",
     "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
     "url_background", "file_background",
-    "name_mapping", "add_to_arr",
+    "name_mapping", "add_to_arr", "arr_tag", "label",
     "show_filtered", "show_missing", "save_missing"
 ]
 discover_movie = [

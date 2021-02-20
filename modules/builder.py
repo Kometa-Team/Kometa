@@ -247,11 +247,14 @@ class CollectionBuilder:
                 elif method_name == "file_background":
                     if os.path.exists(data[m]):                                 self.backgrounds.append(("file", os.path.abspath(data[m]), method_name))
                     else:                                                       raise Failed("Collection Error: Background Path Does Not Exist: {}".format(os.path.abspath(data[m])))
-                elif method_name == "arr_tag":
+                elif method_name == "label_sync_mode":
+                    if data[m] in ["append", "sync"]:                           self.details[method_name] = data[m]
+                    else:                                                       raise Failed("Collection Error: label_sync_mode attribute must be either 'append' or 'sync'")
+                elif method_name in ["arr_tag", "label"]:
                     self.details[method_name] = util.get_list(data[m])
                 elif method_name in util.boolean_details:
                     if isinstance(data[m], bool):                               self.details[method_name] = data[m]
-                    else:                                                       raise Failed("Collection Error: {} must be either true or false".format(method_name))
+                    else:                                                       raise Failed("Collection Error: {} attribute must be either true or false".format(method_name))
                 elif method_name in util.all_details:
                     self.details[method_name] = data[m]
                 elif method_name in ["year", "year.not"]:
@@ -688,6 +691,17 @@ class CollectionBuilder:
             collection.modeUpdate(mode=self.details["collection_mode"])
         if "collection_order" in self.details:
             collection.sortUpdate(sort=self.details["collection_order"])
+
+        if "label" in self.details:
+            item_labels = [label.tag for label in collection.labels]
+            labels = util.get_list(self.details["label"])
+            if "label_sync_mode" in self.details and self.details["label_sync_mode"] == "sync":
+                for label in (l for l in item_labels if l not in labels):
+                    collection.removeLabel(label)
+                    logger.info("Detail: Label {} removed".format(label))
+            for label in (l for l in labels if l not in item_labels):
+                collection.addLabel(label)
+                logger.info("Detail: Label {} added".format(label))
 
         if self.library.asset_directory:
             name_mapping = self.name
