@@ -151,6 +151,8 @@ class Config:
         self.general["plex"]["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="plex", default="append", test_list=["append", "sync"], options="| \tappend (Only Add Items to the Collection)\n| \tsync (Add & Remove Items from the Collection)") if "plex" in self.data else "append"
         self.general["plex"]["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
         self.general["plex"]["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="plex", var_type="bool", default=False) if "plex" in self.data else False
+        self.general["plex"]["show_missing"] = check_for_attribute(self.data, "show_missing", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
+        self.general["plex"]["save_missing"] = check_for_attribute(self.data, "save_missing", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True) if "radarr" in self.data else None
@@ -266,6 +268,26 @@ class Config:
                         logger.warning("Config Warning: plex sub-attribute show_filtered must be either true or false using general value: {}".format(self.general["plex"]["show_filtered"]))
                 else:
                     logger.warning("Config Warning: plex sub-attribute show_filtered is blank using general value: {}".format(self.general["plex"]["show_filtered"]))
+
+            params["show_missing"] = self.general["plex"]["show_missing"]
+            if "plex" in libs[lib] and "show_missing" in libs[lib]["plex"]:
+                if libs[lib]["plex"]["show_missing"]:
+                    if isinstance(libs[lib]["plex"]["show_missing"], bool):
+                        params["plex"]["show_missing"] = libs[lib]["plex"]["show_missing"]
+                    else:
+                        logger.warning("Config Warning: plex sub-attribute show_missing must be either true or false using general value: {}".format(self.general["plex"]["show_missing"]))
+                else:
+                    logger.warning("Config Warning: plex sub-attribute show_missing is blank using general value: {}".format(self.general["plex"]["show_missing"]))
+
+            params["save_missing"] = self.general["plex"]["save_missing"]
+            if "plex" in libs[lib] and "save_missing" in libs[lib]["plex"]:
+                if libs[lib]["plex"]["save_missing"]:
+                    if isinstance(libs[lib]["plex"]["save_missing"], bool):
+                        params["plex"]["save_missing"] = libs[lib]["plex"]["save_missing"]
+                    else:
+                        logger.warning("Config Warning: plex sub-attribute save_missing must be either true or false using general value: {}".format(self.general["plex"]["save_missing"]))
+                else:
+                    logger.warning("Config Warning: plex sub-attribute save_missing is blank using general value: {}".format(self.general["plex"]["save_missing"]))
 
             params["tmdb"] = self.TMDb
             params["tvdb"] = self.TVDb

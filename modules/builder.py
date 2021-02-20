@@ -11,7 +11,12 @@ class CollectionBuilder:
         self.library = library
         self.name = name
         self.data = data
-        self.details = {"arr_tag": None}
+        self.details = {
+            "arr_tag": None,
+            "show_filtered": library.show_filtered,
+            "show_missing": library.show_missing,
+            "save_missing": library.save_missing
+        }
         self.methods = []
         self.filters = []
         self.posters = []
@@ -242,11 +247,11 @@ class CollectionBuilder:
                 elif method_name == "file_background":
                     if os.path.exists(data[m]):                                 self.backgrounds.append(("file", os.path.abspath(data[m]), method_name))
                     else:                                                       raise Failed("Collection Error: Background Path Does Not Exist: {}".format(os.path.abspath(data[m])))
-                elif method_name in ["add_to_arr", "show_filtered"]:
-                    if isinstance(data[m], bool):                               self.details[method_name] = data[m]
-                    else:                                                       raise Failed("Collection Error: {} must be either true or false".format(method_name))
                 elif method_name == "arr_tag":
                     self.details[method_name] = util.get_list(data[m])
+                elif method_name in util.boolean_details:
+                    if isinstance(data[m], bool):                               self.details[method_name] = data[m]
+                    else:                                                       raise Failed("Collection Error: {} must be either true or false".format(method_name))
                 elif method_name in util.all_details:
                     self.details[method_name] = data[m]
                 elif method_name in ["year", "year.not"]:
@@ -604,7 +609,7 @@ class CollectionBuilder:
                 elif "trakt" in method:                             items_found += check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error("Collection Error: {} method not supported".format(method))
 
-                if len(items) > 0:                                  map = self.library.add_to_collection(collection_obj if collection_obj else collection_name, items, self.filters, self.library.show_filtered, map, movie_map, show_map)
+                if len(items) > 0:                                  map = self.library.add_to_collection(collection_obj if collection_obj else collection_name, items, self.filters, self.details["show_filtered"], map, movie_map, show_map)
                 else:                                               logger.error("No items found to add to this collection ")
 
                 if len(missing_movies) > 0 or len(missing_shows) > 0:
@@ -625,13 +630,15 @@ class CollectionBuilder:
                                 title = str(movie.title)
                                 if not_lang is None or (not_lang is True and movie.original_language not in terms) or (not_lang is False and movie.original_language in terms):
                                     missing_movies_with_names.append((title, missing_id))
-                                    logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
-                                elif self.library.show_filtered is True:
+                                    if self.details["show_missing"] is True:
+                                        logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
+                                elif self.details["show_filtered"] is True:
                                     logger.info("{} Collection | X | {} (TMDb: {})".format(collection_name, title, missing_id))
                             except Failed as e:
                                 logger.error(e)
                         logger.info("{} Movie{} Missing".format(len(missing_movies_with_names), "s" if len(missing_movies_with_names) > 1 else ""))
-                        self.library.add_missing(collection_name, missing_movies_with_names, True)
+                        if self.details["save_missing"] is True:
+                            self.library.add_missing(collection_name, missing_movies_with_names, True)
                         if self.do_arr and self.library.Radarr:
                             self.library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], tag=self.details["arr_tag"])
                     if len(missing_shows) > 0 and self.library.is_show:
@@ -640,11 +647,13 @@ class CollectionBuilder:
                             try:
                                 title = str(self.config.TVDb.get_series(self.library.Plex.language, tvdb_id=missing_id).title.encode("ascii", "replace").decode())
                                 missing_shows_with_names.append((title, missing_id))
-                                logger.info("{} Collection | ? | {} (TVDB: {})".format(collection_name, title, missing_id))
+                                if self.details["show_missing"] is True:
+                                    logger.info("{} Collection | ? | {} (TVDB: {})".format(collection_name, title, missing_id))
                             except Failed as e:
                                 logger.error(e)
                         logger.info("{} Show{} Missing".format(len(missing_shows_with_names), "s" if len(missing_shows_with_names) > 1 else ""))
-                        self.library.add_missing(c, missing_shows_with_names, False)
+                        if self.details["save_missing"] is True:
+                            self.library.add_missing(c, missing_shows_with_names, False)
                         if self.do_arr and self.library.Sonarr:
                             self.library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tag=self.details["arr_tag"])
 
