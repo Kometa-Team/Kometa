@@ -78,6 +78,8 @@ class PlexAPI:
         self.sync_mode = params["sync_mode"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_filtered = params["show_filtered"]
+        self.show_missing = params["show_missing"]
+        self.save_missing = params["save_missing"]
         self.plex = params["plex"]
         self.radarr = params["radarr"]
         self.sonarr = params["sonarr"]

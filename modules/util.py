@@ -386,13 +386,20 @@ movie_only_filters = [
     "video_resolution", "video_resolution.not",
     "writer", "writer.not"
 ]
+boolean_details = [
+    "add_to_arr",
+    "show_filtered",
+    "show_missing", 
+    "save_missing"
+]
 all_details = [
     "sort_title", "content_rating",
     "summary", "tmdb_summary", "tmdb_description", "tmdb_biography",
     "collection_mode", "collection_order",
     "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
     "url_background", "file_background",
-    "name_mapping", "add_to_arr"
+    "name_mapping", "add_to_arr",
+    "show_filtered", "show_missing", "save_missing"
 ]
 discover_movie = [
     "language", "with_original_language", "region", "sort_by",
