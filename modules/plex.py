@@ -29,17 +29,17 @@ class PlexAPI:
         try:                                                                    self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(params["metadata_path"], encoding="utf-8"))
         except yaml.scanner.ScannerError as e:                                  raise Failed("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
-        self.metadata = None
-        if "metadata" in self.data:
-            if self.data["metadata"]:                                               self.metadata = self.data["metadata"]
-            else:                                                                   logger.warning("Config Warning: metadata attribute is blank")
-        else:                                                                   logger.warning("Config Warning: metadata attribute not found")
+        def get_dict(attribute):
+            if attribute in self.data:
+                if self.data[attribute]:
+                    if isinstance(self.data[attribute], dict):                              return self.data[attribute]
+                    else:                                                                   logger.waring("Config Warning: {} must be a dictionary".format(attribute))
+                else:                                                                   logger.warning("Config Warning: {} attribute is blank".format(attribute))
+            return None
 
-        self.collections = None
-        if "collections" in self.data:
-            if self.data["collections"]:                                            self.collections = self.data["collections"]
-            else:                                                                   logger.warning("Config Warning: collections attribute is blank")
-        else:                                                                   logger.warning("Config Warning: collections attribute not found")
+        self.metadata = get_dict("metadata")
+        self.templates = get_dict("templates")
+        self.collections = get_dict("collections")
 
         if self.metadata is None and self.collections is None:
             raise Failed("YAML Error: metadata attributes or collections attribute required")
@@ -116,20 +116,6 @@ class PlexAPI:
             raise Failed("Collection Error: No valid Plex Collections in {}".format(collections[c][m]))
         return valid_collections
 
-    def del_collection_if_empty(self, collection):
-        missing_data = {}
-        if not os.path.exists(self.missing_path):
-            with open(self.missing_path, "w"): pass
-        try:
-            missing_data, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.missing_path))
-            if not missing_data:
-                missing_data = {}
-            if collection in missing_data and len(missing_data[collection]) == 0:
-                del missing_data[collection]
-            yaml.round_trip_dump(missing_data, open(self.missing_path, "w"), indent=ind, block_seq_indent=bsi)
-        except yaml.scanner.ScannerError as e:
-            logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
-
     def add_missing(self, collection, items, is_movie):
         col_name = collection.encode("ascii", "replace").decode()
         if col_name not in self.missing:
@@ -152,7 +138,8 @@ class PlexAPI:
         max_length = len(str(total))
         length = 0
         for i, item in enumerate(items, 1):
-            try:                                        current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
+            try:
+                current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
             except (BadRequest, NotFound):
                 logger.error("Plex Error: Item {} not found".format(item))
                 continue
