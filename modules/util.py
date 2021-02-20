@@ -254,6 +254,7 @@ collectionless_lists = [
 other_attributes = [
     "schedule",
     "sync_mode",
+    "template",
     "test",
     "tmdb_person"
 ]

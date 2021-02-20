@@ -89,7 +89,7 @@ class TraktAPI:
         lookup = Trakt["search"].lookup(external_id, from_source, media_type)
         if lookup:
             lookup = lookup[0] if isinstance(lookup, list) else lookup
-            if lookup.get_key(to_source)):
+            if lookup.get_key(to_source):
                 return lookup.get_key(to_source) if to_source == "imdb" else int(lookup.get_key(to_source))
         raise Failed("No {} ID found for {} ID {}".format(to_source.upper().replace("B", "b"), from_source.upper().replace("B", "b"), external_id))
 

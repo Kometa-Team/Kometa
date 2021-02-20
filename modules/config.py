@@ -1,7 +1,7 @@
-import glob, json, logging, os, re, requests
-from datetime import datetime, timedelta
+import glob, logging, os, re, requests
 from modules import util
 from modules.anidb import AniDBAPI
+from modules.builder import CollectionBuilder
 from modules.cache import Cache
 from modules.imdb import IMDbAPI
 from modules.plex import PlexAPI
@@ -44,7 +44,9 @@ class Config:
                     elif attribute not in new_config[parent]:                           new_config[parent][attribute] = default
                     else:                                                               endLine = ""
                     yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
-            elif not data[attribute] and data[attribute] != False:              message = "Config Error: {} is blank".format(text)
+            elif not data[attribute] and data[attribute] != False:
+                if default_is_none is True:                                         return None
+                else:                                                               message = "Config Error: {} is blank".format(text)
             elif var_type == "bool":
                 if isinstance(data[attribute], bool):                               return data[attribute]
                 else:                                                               message = "Config Error: {} must be either true or false".format(text)
@@ -138,6 +140,10 @@ class Config:
         self.IMDb = IMDbAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt, TVDb=self.TVDb) if self.TMDb or self.Trakt else None
         self.AniDB = AniDBAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
 
+        util.seperator()
+
+        logger.info("Connecting to Plex Libraries...")
+
         self.general["plex"] = {}
         self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", default_is_none=True) if "plex" in self.data else None
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True) if "plex" in self.data else None
@@ -170,9 +176,6 @@ class Config:
         self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True) if "tautulli" in self.data else None
         self.general["tautulli"]["apikey"] = check_for_attribute(self.data, "apikey", parent="tautulli", default_is_none=True) if "tautulli" in self.data else None
 
-        util.seperator()
-
-        logger.info("Connecting to Plex Libraries...")
 
         self.libraries = []
         libs = check_for_attribute(self.data, "libraries", throw=True)
@@ -449,71 +452,11 @@ class Config:
                         logger.info("")
 
                         map = {}
-                        details = {}
-                        methods = []
-                        filters = []
-                        posters_found = []
-                        backgrounds_found = []
-                        collectionless = "plex_collectionless" in collections[c]
-                        skip_collection = True
-                        show_filtered = library.show_filtered
-
-                        if "schedule" not in collections[c]:
-                            skip_collection = False
-                        elif not collections[c]["schedule"]:
-                            logger.error("Collection Error: schedule attribute is blank. Running daily")
-                            skip_collection = False
-                        else:
-                            schedule_list = util.get_list(collections[c]["schedule"])
-                            current_time = datetime.now()
-                            next_month = current_time.replace(day=28) + timedelta(days=4)
-                            last_day = next_month - timedelta(days=next_month.day)
-                            for schedule in schedule_list:
-                                run_time = str(schedule).lower()
-                                if run_time.startswith("day") or run_time.startswith("daily"):
-                                    skip_collection = False
-                                    break
-                                if run_time.startswith("week") or run_time.startswith("month") or run_time.startswith("year"):
-                                    match = re.search("\\(([^)]+)\\)", run_time)
-                                    if match:
-                                        param = match.group(1)
-                                        if run_time.startswith("week"):
-                                            if param.lower() in util.days_alias:
-                                                weekday = util.days_alias[param.lower()]
-                                                logger.info("Scheduled weekly on {}".format(util.pretty_days[weekday]))
-                                                if weekday == current_time.weekday():
-                                                    skip_collection = False
-                                                    break
-                                            else:
-                                                logger.error("Collection Error: weekly schedule attribute {} invalid must be a day of the weeek i.e. weekly(Monday)".format(schedule))
-                                        elif run_time.startswith("month"):
-                                            try:
-                                                if 1 <= int(param) <= 31:
-                                                    logger.info("Scheduled monthly on the {}".format(util.make_ordinal(param)))
-                                                    if current_time.day == int(param) or (current_time.day == last_day.day and int(param) > last_day.day):
-                                                        skip_collection = False
-                                                        break
-                                                else:
-                                                    logger.error("Collection Error: monthly schedule attribute {} invalid must be between 1 and 31".format(schedule))
-                                            except ValueError:
-                                                logger.error("Collection Error: monthly schedule attribute {} invalid must be an integer".format(schedule))
-                                        elif run_time.startswith("year"):
-                                            match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
-                                            if match:
-                                                month = int(match.group(1))
-                                                day = int(match.group(2))
-                                                logger.info("Scheduled yearly on {} {}".format(util.pretty_months[month], util.make_ordinal(day)))
-                                                if current_time.month == month and (current_time.day == day or (current_time.day == last_day.day and day > last_day.day)):
-                                                    skip_collection = False
-                                                    break
-                                            else:
-                                                logger.error("Collection Error: yearly schedule attribute {} invalid must be in the MM/DD format i.e. yearly(11/22)".format(schedule))
-                                    else:
-                                        logger.error("Collection Error: failed to parse schedule: {}".format(schedule))
-                                else:
-                                    logger.error("Collection Error: schedule attribute {} invalid".format(schedule))
-                        if skip_collection:
-                            logger.info("Skipping Collection {}".format(c))
+                        try:
+                            builder = CollectionBuilder(self, library, c, collections[c])
+                        except Exception as e:
+                            util.print_stacktrace()
+                            logger.error(e)
                             continue
 
                         try:
@@ -523,12 +466,11 @@ class Config:
                             collection_obj = None
                             collection_name = c
 
-                        sync_collection = library.sync_mode == "sync"
-                        if "sync_mode" in collections[c]:
-                            if not collections[c]["sync_mode"]:                                     logger.warning("Collection Warning: sync_mode attribute is blank using general: {}".format(library.sync_mode))
-                            elif collections[c]["sync_mode"] not in ["append", "sync"]:             logger.warning("Collection Warning: {} sync_mode invalid using general: {}".format(library.sync_mode, collections[c]["sync_mode"]))
-                            else:                                                                   sync_collection = collections[c]["sync_mode"] == "sync"
-                        if sync_collection or collectionless:
+                        if builder.schedule is not None:
+                            print_multiline(builder.schedule, info=True)
+
+                        logger.info("")
+                        if builder.sync:
                             logger.info("Sync Mode: sync")
                             if collection_obj:
                                 for item in collection_obj.items():
@@ -536,501 +478,12 @@ class Config:
                         else:
                             logger.info("Sync Mode: append")
 
-                        if "tmdb_person" in collections[c]:
-                            if collections[c]["tmdb_person"]:
-                                valid_names = []
-                                for tmdb_id in util.get_int_list(collections[c]["tmdb_person"], "TMDb Person ID"):
-                                    try:
-                                        person = self.TMDb.get_person(tmdb_id)
-                                        valid_names.append(person.name)
-                                        if "summary" not in details and hasattr(person, "biography") and person.biography:
-                                            details["summary"] = person.biography
-                                        if "poster" not in details and hasattr(person, "profile_path") and person.profile_path:
-                                            details["poster"] = ("url", "{}{}".format(self.TMDb.image_url, person.profile_path), "tmdb_person")
-                                    except Failed as e:
-                                        util.print_stacktrace()
-                                        logger.error(e)
-                                if len(valid_names) > 0:                                                details["tmdb_person"] = valid_names
-                                else:                                                                   logger.error("Collection Error: No valid TMDb Person IDs in {}".format(collections[c]["tmdb_person"]))
-                            else:
-                                logger.error("Collection Error: tmdb_person attribute is blank")
-
-                        for m in collections[c]:
-                            try:
-                                if "tmdb" in m and not self.TMDb:
-                                    logger.info("Collection Error: {} skipped. TMDb must be configured".format(m))
-                                    map = {}
-                                elif "trakt" in m and not self.Trakt:
-                                    logger.info("Collection Error: {} skipped. Trakt must be configured".format(m))
-                                    map = {}
-                                elif "imdb" in m and not self.IMDb:
-                                    logger.info("Collection Error: {} skipped. TMDb or Trakt must be configured".format(m))
-                                    map = {}
-                                elif "tautulli" in m and not library.Tautulli:
-                                    logger.info("Collection Error: {} skipped. Tautulli must be configured".format(m))
-                                    map = {}
-                                elif "mal" in m and not self.MyAnimeList:
-                                    logger.info("Collection Error: {} skipped. MyAnimeList must be configured".format(m))
-                                    map = {}
-                                elif collections[c][m] is not None:
-                                    logger.debug("")
-                                    logger.debug("Method: {}".format(m))
-                                    logger.debug("Value: {}".format(collections[c][m]))
-                                    if m in util.method_alias:
-                                        method_name = util.method_alias[m]
-                                        logger.warning("Collection Warning: {} attribute will run as {}".format(m, method_name))
-                                    else:
-                                        method_name = m
-                                    if method_name in util.show_only_lists and library.is_movie:        raise Failed("Collection Error: {} attribute only works for show libraries".format(method_name))
-                                    elif method_name in util.movie_only_lists and library.is_show:      raise Failed("Collection Error: {} attribute only works for movie libraries".format(method_name))
-                                    elif method_name in util.movie_only_searches and library.is_show:   raise Failed("Collection Error: {} plex search only works for movie libraries".format(method_name))
-                                    elif method_name not in util.collectionless_lists and collectionless: raise Failed("Collection Error: {} attribute does not work for Collectionless collection".format(method_name))
-                                    elif method_name == "tmdb_summary":                                 details["summary"] = self.TMDb.get_movie_show_or_collection(util.regex_first_int(collections[c][m], "TMDb ID"), library.is_movie).overview
-                                    elif method_name == "tmdb_description":                             details["summary"] = self.TMDb.get_list(util.regex_first_int(collections[c][m], "TMDb List ID")).description
-                                    elif method_name == "tmdb_biography":                               details["summary"] = self.TMDb.get_person(util.regex_first_int(collections[c][m], "TMDb Person ID")).biography
-                                    elif method_name == "collection_mode":
-                                        if collections[c][m] in ["default", "hide", "hide_items", "show_items", "hideItems", "showItems"]:
-                                            if collections[c][m] == "hide_items":                               details[method_name] = "hideItems"
-                                            elif collections[c][m] == "show_items":                             details[method_name] = "showItems"
-                                            else:                                                               details[method_name] = collections[c][m]
-                                        else:                                                               raise Failed("Collection Error: {} collection_mode Invalid\n| \tdefault (Library default)\n| \thide (Hide Collection)\n| \thide_items (Hide Items in this Collection)\n| \tshow_items (Show this Collection and its Items)".format(collections[c][m]))
-                                    elif method_name == "collection_order":
-                                        if collections[c][m] in ["release", "alpha"]:                       details[method_name] = collections[c][m]
-                                        else:                                                               raise Failed("Collection Error: {} collection_order Invalid\n| \trelease (Order Collection by release dates)\n| \talpha (Order Collection Alphabetically)".format(collections[c][m]))
-                                    elif method_name == "url_poster":                                   posters_found.append(("url", collections[c][m], method_name))
-                                    elif method_name == "tmdb_poster":                                  posters_found.append(("url", "{}{}".format(self.TMDb.image_url, self.TMDb.get_movie_show_or_collection(util.regex_first_int(collections[c][m], "TMDb ID"), library.is_movie).poster_path), method_name))
-                                    elif method_name == "tmdb_profile":                                 posters_found.append(("url", "{}{}".format(self.TMDb.image_url, self.TMDb.get_person(util.regex_first_int(collections[c][m], "TMDb Person ID")).profile_path), method_name))
-                                    elif method_name == "file_poster":
-                                        if os.path.exists(collections[c][m]):                               posters_found.append(("file", os.path.abspath(collections[c][m]), method_name))
-                                        else:                                                               raise Failed("Collection Error: Poster Path Does Not Exist: {}".format(os.path.abspath(collections[c][m])))
-                                    elif method_name == "url_background":                               backgrounds_found.append(("url", collections[c][m], method_name))
-                                    elif method_name == "tmdb_background":                              backgrounds_found.append(("url", "{}{}".format(self.TMDb.image_url, self.TMDb.get_movie_show_or_collection(util.regex_first_int(collections[c][m], "TMDb ID"), library.is_movie).poster_path), method_name))
-                                    elif method_name == "file_background":
-                                        if os.path.exists(collections[c][m]):                               backgrounds_found.append(("file", os.path.abspath(collections[c][m]), method_name))
-                                        else:                                                               raise Failed("Collection Error: Background Path Does Not Exist: {}".format(os.path.abspath(collections[c][m])))
-                                    elif method_name == "add_to_arr":
-                                        if isinstance(collections[c][m], bool):                             details[method_name] = collections[c][m]
-                                        else:                                                               raise Failed("Collection Error: add_to_arr must be either true or false")
-                                    elif method_name == "arr_tag":                                          details[method_name] = util.get_list(collections[c][m])
-                                    elif method_name == "show_filtered":
-                                        if isinstance(collections[c][m], bool):                             show_filtered = collections[c][m]
-                                        else:                                                               raise Failed("Collection Error: show_filtered must be either true or false using the default false")
-                                    elif method_name in util.all_details:                               details[method_name] = collections[c][m]
-                                    elif method_name in ["year", "year.not"]:                           methods.append(("plex_search", [[(method_name, util.get_year_list(collections[c][m], method_name))]]))
-                                    elif method_name in ["decade", "decade.not"]:                       methods.append(("plex_search", [[(method_name, util.get_int_list(collections[c][m], util.remove_not(method_name)))]]))
-                                    elif method_name in util.tmdb_searches:
-                                        final_values = []
-                                        for value in util.get_list(collections[c][m]):
-                                            if value.lower() == "tmdb" and "tmdb_person" in details:
-                                                for name in details["tmdb_person"]:
-                                                    final_values.append(name)
-                                            else:
-                                                final_values.append(value)
-                                        methods.append(("plex_search", [[(method_name, final_values)]]))
-                                    elif method_name in util.plex_searches:                             methods.append(("plex_search", [[(method_name, util.get_list(collections[c][m]))]]))
-                                    elif method_name == "plex_all":                                     methods.append((method_name, [""]))
-                                    elif method_name == "plex_collection":                              methods.append((method_name, library.validate_collections(collections[c][m] if isinstance(collections[c][m], list) else [collections[c][m]])))
-                                    elif method_name == "anidb_popular":
-                                        list_count = util.regex_first_int(collections[c][m], "List Size", default=40)
-                                        if 1 <= list_count <= 30:
-                                            methods.append((method_name, [list_count]))
-                                        else:
-                                            logger.error("Collection Error: anidb_popular must be an integer between 1 and 30 defaulting to 30")
-                                            methods.append((method_name, [30]))
-                                    elif method_name == "mal_id":                                       methods.append((method_name, util.get_int_list(collections[c][m], "MyAnimeList ID")))
-                                    elif method_name in ["anidb_id", "anidb_relation"]:                 methods.append((method_name, self.AniDB.validate_anidb_list(util.get_int_list(collections[c][m], "AniDB ID"), library.Plex.language)))
-                                    elif method_name == "trakt_list":                                   methods.append((method_name, self.Trakt.validate_trakt_list(util.get_list(collections[c][m]))))
-                                    elif method_name == "trakt_watchlist":                              methods.append((method_name, self.Trakt.validate_trakt_watchlist(util.get_list(collections[c][m]), library.is_movie)))
-                                    elif method_name == "imdb_list":
-                                        new_list = []
-                                        for imdb_list in util.get_list(collections[c][m], split=False):
-                                            new_dictionary = {}
-                                            if isinstance(imdb_list, dict):
-                                                if "url" in imdb_list and imdb_list["url"]:                         imdb_url = imdb_list["url"]
-                                                else:                                                               raise Failed("Collection Error: imdb_list attribute url is required")
-                                                list_count = util.regex_first_int(imdb_list["limit"], "List Limit", default=0) if "limit" in imdb_list and imdb_list["limit"] else 0
-                                            else:
-                                                imdb_url = str(imdb_list)
-                                                list_count = 0
-                                            new_list.append({"url": imdb_url, "limit": list_count})
-                                        methods.append((method_name, new_list))
-                                    elif method_name in util.dictionary_lists:
-                                        if isinstance(collections[c][m], dict):
-                                            def get_int(parent, method, data, default, min=1, max=None):
-                                                if method not in data:                                                  logger.warning("Collection Warning: {} {} attribute not found using {} as default".format(parent, method, default))
-                                                elif not data[method]:                                                  logger.warning("Collection Warning: {} {} attribute is blank using {} as default".format(parent, method, default))
-                                                elif isinstance(data[method], int) and data[method] >= min:
-                                                    if max is None or data[method] <= max:                                  return data[method]
-                                                    else:                                                                   logger.warning("Collection Warning: {} {} attribute {} invalid must an integer <= {} using {} as default".format(parent, method, data[method], max, default))
-                                                else:                                                                   logger.warning("Collection Warning: {} {} attribute {} invalid must an integer >= {} using {} as default".format(parent, method, data[method], min, default))
-                                                return default
-                                            if method_name == "filters":
-                                                for filter in collections[c][m]:
-                                                    if filter in util.method_alias or (filter.endswith(".not") and filter[:-4] in util.method_alias):
-                                                        final_filter = (util.method_alias[filter[:-4]] + filter[-4:]) if filter.endswith(".not") else util.method_alias[filter]
-                                                        logger.warning("Collection Warning: {} filter will run as {}".format(filter, final_filter))
-                                                    else:
-                                                        final_filter = filter
-                                                    if final_filter in util.movie_only_filters and library.is_show:
-                                                        logger.error("Collection Error: {} filter only works for movie libraries".format(final_filter))
-                                                    elif collections[c][m][filter] is None:
-                                                        logger.error("Collection Error: {} filter is blank".format(final_filter))
-                                                    elif final_filter in util.all_filters:
-                                                        filters.append((final_filter, collections[c][m][filter]))
-                                                    else:
-                                                        logger.error("Collection Error: {} filter not supported".format(final_filter))
-                                            elif method_name == "plex_collectionless":
-                                                new_dictionary = {}
-
-                                                prefix_list = []
-                                                if "exclude_prefix" in collections[c][m] and collections[c][m]["exclude_prefix"]:
-                                                    if isinstance(collections[c][m]["exclude_prefix"], list):
-                                                        prefix_list.extend(collections[c][m]["exclude_prefix"])
-                                                    else:
-                                                        prefix_list.append("{}".format(collections[c][m]["exclude_prefix"]))
-
-                                                exact_list = []
-                                                if "exclude" in collections[c][m] and collections[c][m]["exclude"]:
-                                                    if isinstance(collections[c][m]["exclude"], list):
-                                                        exact_list.extend(collections[c][m]["exclude"])
-                                                    else:
-                                                        exact_list.append("{}".format(collections[c][m]["exclude"]))
-
-                                                if len(prefix_list) == 0 and len(exact_list) == 0:
-                                                    raise Failed("Collection Error: you must have at least one exclusion")
-                                                details["add_to_arr"] = False
-                                                details["collection_mode"] = "hide"
-                                                new_dictionary["exclude_prefix"] = prefix_list
-                                                new_dictionary["exclude"] = exact_list
-                                                methods.append((method_name, [new_dictionary]))
-                                            elif method_name == "plex_search":
-                                                search = []
-                                                searches_used = []
-                                                for search_attr in collections[c][m]:
-                                                    if search_attr in util.method_alias or (search_attr.endswith(".not") and search_attr[:-4] in util.method_alias):
-                                                        final_attr = (util.method_alias[search_attr[:-4]] + search_attr[-4:]) if search_attr.endswith(".not") else util.method_alias[search_attr]
-                                                        logger.warning("Collection Warning: {} plex search attribute will run as {}".format(search_attr, final_attr))
-                                                    else:
-                                                        final_attr = search_attr
-                                                    if final_attr in util.movie_only_searches and library.is_show:
-                                                        logger.error("Collection Error: {} plex search attribute only works for movie libraries".format(final_attr))
-                                                    elif util.remove_not(final_attr) in searches_used:
-                                                        logger.error("Collection Error: Only one instance of {} can be used try using it as a filter instead".format(final_attr))
-                                                    elif final_attr in ["year", "year.not"]:
-                                                        years = util.get_year_list(collections[c][m][search_attr], final_attr)
-                                                        if len(years) > 0:
-                                                            searches_used.append(util.remove_not(final_attr))
-                                                            search.append((final_attr, util.get_int_list(collections[c][m][search_attr], util.remove_not(final_attr))))
-                                                    elif final_attr in util.plex_searches:
-                                                        searches_used.append(util.remove_not(final_attr))
-                                                        search.append((final_attr, util.get_list(collections[c][m][search_attr])))
-                                                    else:
-                                                        logger.error("Collection Error: {} plex search attribute not supported".format(search_attr))
-                                                methods.append((method_name, [search]))
-                                            elif method_name == "tmdb_discover":
-                                                new_dictionary = {"limit": 100}
-                                                for attr in collections[c][m]:
-                                                    if collections[c][m][attr]:
-                                                        attr_data = collections[c][m][attr]
-                                                        if (library.is_movie and attr in util.discover_movie) or (library.is_show and attr in util.discover_tv):
-                                                            if attr == "language":
-                                                                if re.compile("([a-z]{2})-([A-Z]{2})").match(str(attr_data)):
-                                                                    new_dictionary[attr] = str(attr_data)
-                                                                else:
-                                                                    logger.error("Collection Error: Skipping {} attribute {}: {} must match pattern ([a-z]{2})-([A-Z]{2}) e.g. en-US".format(m, attr, attr_data))
-                                                            elif attr == "region":
-                                                                if re.compile("^[A-Z]{2}$").match(str(attr_data)):
-                                                                    new_dictionary[attr] = str(attr_data)
-                                                                else:
-                                                                    logger.error("Collection Error: Skipping {} attribute {}: {} must match pattern ^[A-Z]{2}$ e.g. US".format(m, attr, attr_data))
-                                                            elif attr == "sort_by":
-                                                                if (library.is_movie and attr_data in util.discover_movie_sort) or (library.is_show and attr_data in util.discover_tv_sort):
-                                                                    new_dictionary[attr] = attr_data
-                                                                else:
-                                                                    logger.error("Collection Error: Skipping {} attribute {}: {} is invalid".format(m, attr, attr_data))
-                                                            elif attr == "certification_country":
-                                                                if "certification" in collections[c][m] or "certification.lte" in collections[c][m] or "certification.gte" in collections[c][m]:
-                                                                    new_dictionary[attr] = attr_data
-                                                                else:
-                                                                    logger.error("Collection Error: Skipping {} attribute {}: must be used with either certification, certification.lte, or certification.gte".format(m, attr))
-                                                            elif attr in ["certification", "certification.lte", "certification.gte"]:
-                                                                if "certification_country" in collections[c][m]:
-                                                                    new_dictionary[attr] = attr_data
-                                                                else:
-                                                                    logger.error("Collection Error: Skipping {} attribute {}: must be used with certification_country".format(m, attr))
-                                                            elif attr in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
-                                                                if attr_data is True:
-                                                                    new_dictionary[attr] = attr_data
-                                                            elif attr in ["primary_release_date.gte", "primary_release_date.lte", "release_date.gte", "release_date.lte", "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte"]:
-                                                                if re.compile("[0-1]?[0-9][/-][0-3]?[0-9][/-][1-2][890][0-9][0-9]").match(str(attr_data)):
-                                                                    the_date = str(attr_data).split("/") if "/" in str(attr_data) else str(attr_data).split("-")
-                                                                    new_dictionary[attr] = "{}-{}-{}".format(the_date[2], the_date[0], the_date[1])
-                                                                elif re.compile("[1-2][890][0-9][0-9][/-][0-1]?[0-9][/-][0-3]?[0-9]").match(str(attr_data)):
-                                                                    the_date = str(attr_data).split("/") if "/" in str(attr_data) else str(attr_data).split("-")
-                                                                    new_dictionary[attr] = "{}-{}-{}".format(the_date[0], the_date[1], the_date[2])
-                                                                else:
-                                                                    logger.error("Collection Error: Skipping {} attribute {}: {} must match pattern MM/DD/YYYY e.g. 12/25/2020".format(m, attr, attr_data))
-                                                            elif attr in ["primary_release_year", "year", "first_air_date_year"]:
-                                                                if isinstance(attr_data, int) and 1800 < attr_data and attr_data < 2200:
-                                                                    new_dictionary[attr] = attr_data
-                                                                else:
-                                                                    logger.error("Collection Error: Skipping {} attribute {}: must be a valid year e.g. 1990".format(m, attr))
-                                                            elif attr in ["vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte"]:
-                                                                if (isinstance(attr_data, int) or isinstance(attr_data, float)) and 0 < attr_data:
-                                                                    new_dictionary[attr] = attr_data
-                                                                else:
-                                                                    logger.error("Collection Error: Skipping {} attribute {}: must be a valid number greater then 0".format(m, attr))
-                                                            elif attr in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
-                                                                new_dictionary[attr] = attr_data
-                                                            else:
-                                                                logger.error("Collection Error: {} attribute {} not supported".format(m, attr))
-                                                        elif attr == "limit":
-                                                            if isinstance(attr_data, int) and attr_data > 0:
-                                                                new_dictionary[attr] = attr_data
-                                                            else:
-                                                                logger.error("Collection Error: Skipping {} attribute {}: must be a valid number greater then 0".format(m, attr))
-                                                        else:
-                                                            logger.error("Collection Error: {} attribute {} not supported".format(m, attr))
-                                                    else:
-                                                        logger.error("Collection Error: {} parameter {} is blank".format(m, attr))
-                                                if len(new_dictionary) > 1:
-                                                    methods.append((method_name, [new_dictionary]))
-                                                else:
-                                                    logger.error("Collection Error: {} had no valid fields".format(m))
-                                            elif "tautulli" in method_name:
-                                                new_dictionary = {}
-                                                if method_name == "tautulli_popular":                                   new_dictionary["list_type"] = "popular"
-                                                elif method_name == "tautulli_watched":                                 new_dictionary["list_type"] = "watched"
-                                                else:                                                                   raise Failed("Collection Error: {} attribute not supported".format(method_name))
-                                                new_dictionary["list_days"] = get_int(method_name, "list_days", collections[c][m], 30)
-                                                new_dictionary["list_size"] = get_int(method_name, "list_size", collections[c][m], 10)
-                                                new_dictionary["list_buffer"] = get_int(method_name, "list_buffer", collections[c][m], 20)
-                                                methods.append((method_name, [new_dictionary]))
-                                            elif method_name == "mal_season":
-                                                new_dictionary = {"sort_by": "anime_num_list_users"}
-                                                current_time = datetime.now()
-                                                if current_time.month in [1, 2, 3]:                                     new_dictionary["season"] = "winter"
-                                                elif current_time.month in [4, 5, 6]:                                   new_dictionary["season"] = "spring"
-                                                elif current_time.month in [7, 8, 9]:                                   new_dictionary["season"] = "summer"
-                                                elif current_time.month in [10, 11, 12]:                                new_dictionary["season"] = "fall"
-                                                new_dictionary["year"] = get_int(method_name, "year", collections[c][m], current_time.year, min=1917, max=current_time.year + 1)
-                                                new_dictionary["limit"] = get_int(method_name, "limit", collections[c][m], 100, max=500)
-                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Warning: mal_season sort_by attribute not found using members as default")
-                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Warning: mal_season sort_by attribute is blank using members as default")
-                                                elif collections[c][m]["sort_by"] not in util.mal_season_sort:          logger.warning("Collection Warning: mal_season sort_by attribute {} invalid must be either 'members' or 'score' using members as default".format(collections[c][m]["sort_by"]))
-                                                else:                                                                   new_dictionary["sort_by"] = util.mal_season_sort[collections[c][m]["sort_by"]]
-                                                if "season" not in collections[c][m]:                                   logger.warning("Collection Warning: mal_season season attribute not found using the current season: {} as default".format(new_dictionary["season"]))
-                                                elif not collections[c][m]["season"]:                                   logger.warning("Collection Warning: mal_season season attribute is blank using the current season: {} as default".format(new_dictionary["season"]))
-                                                elif collections[c][m]["season"] not in util.pretty_seasons:            logger.warning("Collection Warning: mal_season season attribute {} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {} as default".format(collections[c][m]["season"], new_dictionary["season"]))
-                                                else:                                                                   new_dictionary["season"] = collections[c][m]["season"]
-                                                methods.append((method_name, [new_dictionary]))
-                                            elif method_name == "mal_userlist":
-                                                new_dictionary = {"status": "all", "sort_by": "list_score"}
-                                                if "username" not in collections[c][m]:                                 raise Failed("Collection Error: mal_userlist username attribute is required")
-                                                elif not collections[c][m]["username"]:                                 raise Failed("Collection Error: mal_userlist username attribute is blank")
-                                                else:                                                                   new_dictionary["username"] = collections[c][m]["username"]
-                                                if "status" not in collections[c][m]:                                   logger.warning("Collection Warning: mal_season status attribute not found using all as default")
-                                                elif not collections[c][m]["status"]:                                   logger.warning("Collection Warning: mal_season status attribute is blank using all as default")
-                                                elif collections[c][m]["status"] not in util.mal_userlist_status:       logger.warning("Collection Warning: mal_season status attribute {} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default".format(collections[c][m]["status"]))
-                                                else:                                                                   new_dictionary["status"] = util.mal_userlist_status[collections[c][m]["status"]]
-                                                if "sort_by" not in collections[c][m]:                                  logger.warning("Collection Warning: mal_season sort_by attribute not found using score as default")
-                                                elif not collections[c][m]["sort_by"]:                                  logger.warning("Collection Warning: mal_season sort_by attribute is blank using score as default")
-                                                elif collections[c][m]["sort_by"] not in util.mal_userlist_sort:        logger.warning("Collection Warning: mal_season sort_by attribute {} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default".format(collections[c][m]["sort_by"]))
-                                                else:                                                                   new_dictionary["sort_by"] = util.mal_userlist_sort[collections[c][m]["sort_by"]]
-                                                new_dictionary["limit"] = get_int(method_name, "limit", collections[c][m], 100, max=1000)
-                                                methods.append((method_name, [new_dictionary]))
-                                        else:
-                                            logger.error("Collection Error: {} attribute is not a dictionary: {}".format(m, collections[c][m]))
-                                    elif method_name in util.count_lists:
-                                        list_count = util.regex_first_int(collections[c][m], "List Size", default=20)
-                                        if list_count > 0:
-                                            methods.append((method_name, [list_count]))
-                                        else:
-                                            logger.error("Collection Error: {} must be an integer greater then 0 defaulting to 20".format(method_name))
-                                            methods.append((method_name, [20]))
-                                    elif method_name in util.tmdb_lists:
-                                        values = self.TMDb.validate_tmdb_list(util.get_int_list(collections[c][m], "TMDb {} ID".format(util.tmdb_type[method_name])), util.tmdb_type[method_name])
-                                        if method_name[-8:] == "_details":
-                                            if method_name in ["tmdb_collection_details", "tmdb_movie_details", "tmdb_show_details"]:
-                                                item = self.TMDb.get_movie_show_or_collection(values[0], library.is_movie)
-                                                if "summary" not in details and hasattr(item, "overview") and item.overview:
-                                                    details["summary"] = item.overview
-                                                if "background" not in details and hasattr(item, "backdrop_path") and item.backdrop_path:
-                                                    details["background"] = ("url", "{}{}".format(self.TMDb.image_url, item.backdrop_path), method_name[:-8])
-                                                if "poster" not in details and hasattr(item, "poster_path") and item.poster_path:
-                                                    details["poster"] = ("url", "{}{}".format(self.TMDb.image_url, item.poster_path), method_name[:-8])
-                                            else:
-                                                item = self.TMDb.get_list(values[0])
-                                                if "summary" not in details and hasattr(item, "description") and item.description:
-                                                    details["summary"] = item.description
-                                            methods.append((method_name[:-8], values))
-                                        else:
-                                            methods.append((method_name, values))
-                                    elif method_name in util.all_lists:                                 methods.append((method_name, util.get_list(collections[c][m])))
-                                    elif method_name not in util.other_attributes:                      logger.error("Collection Error: {} attribute not supported".format(method_name))
-                                else:
-                                    logger.error("Collection Error: {} attribute is blank".format(m))
-                            except Failed as e:
-                                logger.error(e)
-
-                        for i, f in enumerate(filters):
+                        for i, f in enumerate(builder.filters):
                             if i == 0:
                                 logger.info("")
                             logger.info("Collection Filter {}: {}".format(f[0], f[1]))
 
-                        do_arr = False
-                        if library.Radarr:
-                            do_arr = details["add_to_arr"] if "add_to_arr" in details else library.Radarr.add
-                        if library.Sonarr:
-                            do_arr = details["add_to_arr"] if "add_to_arr" in details else library.Sonarr.add
-
-                        movie_tag = details["arr_tag"] if "arr_tag" in details else None
-                        show_tag = details["arr_tag"] if "arr_tag" in details else None
-
-                        items_found = 0
-
-                        for method, values in methods:
-                            logger.debug("")
-                            logger.debug("Method: {}".format(method))
-                            logger.debug("Values: {}".format(values))
-                            pretty = util.pretty_names[method] if method in util.pretty_names else method
-                            for value in values:
-                                items = []
-                                missing_movies = []
-                                missing_shows = []
-                                def check_map(input_ids):
-                                    movie_ids, show_ids = input_ids
-                                    items_found_inside = 0
-                                    if len(movie_ids) > 0:
-                                        items_found_inside += len(movie_ids)
-                                        for movie_id in movie_ids:
-                                            if movie_id in movie_map:                           items.append(movie_map[movie_id])
-                                            else:                                               missing_movies.append(movie_id)
-                                    if len(show_ids) > 0:
-                                        items_found_inside += len(show_ids)
-                                        for show_id in show_ids:
-                                            if show_id in show_map:                             items.append(show_map[show_id])
-                                            else:                                               missing_shows.append(show_id)
-                                    return items_found_inside
-                                logger.info("")
-                                logger.debug("Value: {}".format(value))
-                                if method == "plex_all":
-                                    logger.info("Processing {} {}".format(pretty, "Movies" if library.is_movie else "Shows"))
-                                    items = library.Plex.all()
-                                    items_found += len(items)
-                                elif method == "plex_collection":
-                                    items = value.items()
-                                    items_found += len(items)
-                                elif method == "plex_search":
-                                    search_terms = {}
-                                    output = ""
-                                    for i, attr_pair in enumerate(value):
-                                        search_list = attr_pair[1]
-                                        final_method = attr_pair[0][:-4] + "!" if attr_pair[0][-4:] == ".not" else attr_pair[0]
-                                        if library.is_show:
-                                            final_method = "show." + final_method
-                                        search_terms[final_method] = search_list
-                                        ors = ""
-                                        for o, param in enumerate(attr_pair[1]):
-                                            ors += "{}{}".format(" OR " if o > 0 else "{}(".format(attr_pair[0]), param)
-                                        logger.info("\t\t      AND {})".format(ors) if i > 0 else "Processing {}: {})".format(pretty, ors))
-                                    items = library.Plex.search(**search_terms)
-                                    items_found += len(items)
-                                elif method == "plex_collectionless":
-                                    good_collections = []
-                                    for col in library.get_all_collections():
-                                        keep_collection = True
-                                        for pre in value["exclude_prefix"]:
-                                            if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
-                                                keep_collection = False
-                                                break
-                                        for ext in value["exclude"]:
-                                            if col.title == ext or (col.titleSort and col.titleSort == ext):
-                                                keep_collection = False
-                                                break
-                                        if keep_collection:
-                                            good_collections.append(col.title.lower())
-
-                                    all_items = library.Plex.all()
-                                    length = 0
-                                    for i, item in enumerate(all_items, 1):
-                                        length = util.print_return(length, "Processing: {}/{} {}".format(i, len(all_items), item.title))
-                                        add_item = True
-                                        for collection in item.collections:
-                                            if collection.tag.lower() in good_collections:
-                                                add_item = False
-                                                break
-                                        if add_item:
-                                            items.append(item)
-                                    items_found += len(items)
-                                    util.print_end(length, "Processed {} {}".format(len(all_items), "Movies" if library.is_movie else "Shows"))
-                                elif "tautulli" in method:
-                                    items = library.Tautulli.get_items(library, time_range=value["list_days"], stats_count=value["list_size"], list_type=value["list_type"], stats_count_buffer=value["list_buffer"])
-                                    items_found += len(items)
-                                elif "anidb" in method:                             items_found += check_map(self.AniDB.get_items(method, value, library.Plex.language))
-                                elif "mal" in method:                               items_found += check_map(self.MyAnimeList.get_items(method, value))
-                                elif "tvdb" in method:                              items_found += check_map(self.TVDb.get_items(method, value, library.Plex.language))
-                                elif "imdb" in method:                              items_found += check_map(self.IMDb.get_items(method, value, library.Plex.language))
-                                elif "tmdb" in method:                              items_found += check_map(self.TMDb.get_items(method, value, library.is_movie))
-                                elif "trakt" in method:                             items_found += check_map(self.Trakt.get_items(method, value, library.is_movie))
-                                else:                                               logger.error("Collection Error: {} method not supported".format(method))
-
-                                if len(items) > 0:                                  map = library.add_to_collection(collection_obj if collection_obj else collection_name, items, filters, show_filtered, map, movie_map, show_map)
-                                else:                                               logger.error("No items found to add to this collection ")
-
-                                if len(missing_movies) > 0 or len(missing_shows) > 0:
-                                    logger.info("")
-                                    if len(missing_movies) > 0:
-                                        not_lang = None
-                                        terms = None
-                                        for filter_method, filter_data in filters:
-                                            if filter_method.startswith("original_language"):
-                                                terms = util.get_list(filter_data, lower=True)
-                                                not_lang = filter_method.endswith(".not")
-                                                break
-
-                                        missing_movies_with_names = []
-                                        for missing_id in missing_movies:
-                                            try:
-                                                movie = self.TMDb.get_movie(missing_id)
-                                                title = str(movie.title)
-                                                if not_lang is None or (not_lang is True and movie.original_language not in terms) or (not_lang is False and movie.original_language in terms):
-                                                    missing_movies_with_names.append((title, missing_id))
-                                                    logger.info("{} Collection | ? | {} (TMDb: {})".format(collection_name, title, missing_id))
-                                                elif show_filtered is True:
-                                                    logger.info("{} Collection | X | {} (TMDb: {})".format(collection_name, title, missing_id))
-                                            except Failed as e:
-                                                logger.error(e)
-                                        logger.info("{} Movie{} Missing".format(len(missing_movies_with_names), "s" if len(missing_movies_with_names) > 1 else ""))
-                                        library.add_missing(collection_name, missing_movies_with_names, True)
-                                        if do_arr and library.Radarr:
-                                            library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], tag=movie_tag)
-                                    if len(missing_shows) > 0 and library.is_show:
-                                        missing_shows_with_names = []
-                                        for missing_id in missing_shows:
-                                            try:
-                                                title = str(self.TVDb.get_series(library.Plex.language, tvdb_id=missing_id).title.encode("ascii", "replace").decode())
-                                                missing_shows_with_names.append((title, missing_id))
-                                                logger.info("{} Collection | ? | {} (TVDB: {})".format(collection_name, title, missing_id))
-                                            except Failed as e:
-                                                logger.error(e)
-                                        logger.info("{} Show{} Missing".format(len(missing_shows_with_names), "s" if len(missing_shows_with_names) > 1 else ""))
-                                        library.add_missing(c, missing_shows_with_names, False)
-                                        if do_arr and library.Sonarr:
-                                            library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tag=show_tag)
-
-                        library.del_collection_if_empty(collection_name)
-
-                        if (sync_collection or collectionless) and items_found > 0:
-                            logger.info("")
-                            count_removed = 0
-                            for ratingKey, item in map.items():
-                                if item is not None:
-                                    logger.info("{} Collection | - | {}".format(collection_name, item.title))
-                                    item.removeCollection(collection_name)
-                                    count_removed += 1
-                            logger.info("{} {}{} Removed".format(count_removed, "Movie" if library.is_movie else "Show", "s" if count_removed == 1 else ""))
-                        logger.info("")
+                        builder.run_methods(collection_obj, collection_name, map, movie_map, show_map)
 
                         try:
                             plex_collection = library.get_collection(collection_name)
@@ -1038,82 +491,8 @@ class Config:
                             logger.debug(e)
                             continue
 
-                        edits = {}
-                        if "sort_title" in details:
-                            edits["titleSort.value"] = details["sort_title"]
-                            edits["titleSort.locked"] = 1
-                        if "content_rating" in details:
-                            edits["contentRating.value"] = details["content_rating"]
-                            edits["contentRating.locked"] = 1
-                        if "summary" in details:
-                            edits["summary.value"] = details["summary"]
-                            edits["summary.locked"] = 1
-                        if len(edits) > 0:
-                            logger.debug(edits)
-                            plex_collection.edit(**edits)
-                            plex_collection.reload()
-                            logger.info("Details: have been updated")
-                        if "collection_mode" in details:
-                            plex_collection.modeUpdate(mode=details["collection_mode"])
-                        if "collection_order" in details:
-                            plex_collection.sortUpdate(sort=details["collection_order"])
+                        builder.update_details(plex_collection)
 
-                        if library.asset_directory:
-                            name_mapping = c
-                            if "name_mapping" in collections[c]:
-                                if collections[c]["name_mapping"]:                                  name_mapping = collections[c]["name_mapping"]
-                                else:                                                               logger.error("Collection Error: name_mapping attribute is blank")
-                            path = os.path.join(library.asset_directory, "{}".format(name_mapping), "poster.*")
-                            matches = glob.glob(path)
-                            if len(matches) > 0:
-                                for match in matches:                                               posters_found.append(("file", os.path.abspath(match), "asset_directory"))
-                            elif len(posters_found) == 0 and "poster" not in details:           logger.warning("poster not found at: {}".format(os.path.abspath(path)))
-                            path = os.path.join(library.asset_directory, "{}".format(name_mapping), "background.*")
-                            matches = glob.glob(path)
-                            if len(matches) > 0:
-                                for match in matches:                                               backgrounds_found.append(("file", os.path.abspath(match), "asset_directory"))
-                            elif len(backgrounds_found) == 0 and "background" not in details:   logger.warning("background not found at: {}".format(os.path.abspath(path)))
-
-                        poster = util.choose_from_list(posters_found, "poster", list_type="tuple")
-                        if not poster and "poster" in details:                  poster = details["poster"]
-                        if poster:
-                            if poster[0] == "url":                                  plex_collection.uploadPoster(url=poster[1])
-                            else:                                                   plex_collection.uploadPoster(filepath=poster[1])
-                            logger.info("Detail: {} updated poster to [{}] {}".format(poster[2], poster[0], poster[1]))
-
-                        background = util.choose_from_list(backgrounds_found, "background", list_type="tuple")
-                        if not background and "background" in details:          background = details["background"]
-                        if background:
-                            if background[0] == "url":                              plex_collection.uploadArt(url=background[1])
-                            else:                                                   plex_collection.uploadArt(filepath=background[1])
-                            logger.info("Detail: {} updated background to [{}] {}".format(background[2], background[0], background[1]))
-
-                        if library.asset_directory:
-                            path = os.path.join(library.asset_directory, "{}".format(name_mapping))
-                            if os.path.isdir(path):
-                                dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
-                                if len(dirs) > 0:
-                                    for item in plex_collection.items():
-                                        folder = os.path.basename(os.path.dirname(item.locations[0]))
-                                        if folder in dirs:
-                                            files = [file for file in os.listdir(os.path.join(path, folder)) if os.path.isfile(os.path.join(path, folder, file))]
-                                            poster_path = None
-                                            background_path = None
-                                            for file in files:
-                                                if poster_path is None and file.startswith("poster."):
-                                                    poster_path = os.path.join(path, folder, file)
-                                                if background_path is None and file.startswith("background."):
-                                                    background_path = os.path.join(path, folder, file)
-                                            if poster_path:
-                                                item.uploadPoster(filepath=poster_path)
-                                                logger.info("Detail: asset_directory updated {}'s poster to [file] {}".format(item.title, poster_path))
-                                            if background_path:
-                                                item.uploadArt(filepath=background_path)
-                                                logger.info("Detail: asset_directory updated {}'s background to [file] {}".format(item.title, background_path))
-                                            if poster_path is None and background_path is None:
-                                                logger.warning("No Files Found: {}".format(os.path.join(path, folder)))
-                                        else:
-                                            logger.warning("No Folder: {}".format(os.path.join(path, folder)))
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error("Unknown Error: {}".format(e))
