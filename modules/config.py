@@ -29,73 +29,7 @@ class Config:
         logger.info("Using {} as config".format(self.config_path))
 
         yaml.YAML().allow_duplicate_keys = True
-        try:                                                                self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
-        except yaml.scanner.ScannerError as e:                              raise Failed("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
-
-        def check_for_attribute(data, attribute, parent=None, test_list=None, options="", default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
-            message = ""
-            endline = ""
-            if parent is not None:
-                if parent in data:
-                    data = data[parent]
-                else:
-                    data = None
-                    do_print = False
-                    save = False
-            text = "{} attribute".format(attribute) if parent is None else "{} sub-attribute {}".format(parent, attribute)
-            if data is None or attribute not in data:
-                message = "{} not found".format(text)
-                if parent and save is True:
-                    new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
-                    endline = "\n| {} sub-attribute {} added to config".format(parent, attribute)
-                    if parent not in new_config:                                        new_config = {parent: {attribute: default}}
-                    elif not new_config[parent]:                                        new_config[parent] = {attribute: default}
-                    elif attribute not in new_config[parent]:                           new_config[parent][attribute] = default
-                    else:                                                               endLine = ""
-                    yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
-            elif not data[attribute] and data[attribute] != False:
-                if default_is_none is True:                                         return None
-                else:                                                               message = "{} is blank".format(text)
-            elif var_type == "bool":
-                if isinstance(data[attribute], bool):                               return data[attribute]
-                else:                                                               message = "{} must be either true or false".format(text)
-            elif var_type == "int":
-                if isinstance(data[attribute], int) and data[attribute] > 0:        return data[attribute]
-                else:                                                               message = "{} must an integer > 0".format(text)
-            elif var_type == "path":
-                if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
-                else:                                                               message = "Path {} does not exist".format(os.path.abspath(data[attribute]))
-            elif var_type == "list":                                            return util.get_list(data[attribute])
-            elif var_type == "listpath":
-                temp_list = [path for path in util.get_list(data[attribute]) if os.path.exists(os.path.abspath(path))]
-                if len(temp_list) > 0:                                              return temp_list
-                else:                                                               message = "No Paths exist"
-            elif var_type == "lowerlist":                                       return util.get_list(data[attribute], lower=True)
-            elif test_list is None or data[attribute] in test_list:             return data[attribute]
-            else:                                                               message = "{}: {} is an invalid input".format(text, data[attribute])
-            if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
-                return default
-            elif var_type == "path" and default:
-                default = None
-                message = "neither {} or the default path {} could be found".format(data[attribute], default)
-            if default is not None or default_is_none:
-                message = message + " using {} as default".format(default)
-            message = message + endline
-            if req_default and default is None:
-                raise Failed("Config Error: {} attribute must be set under {} globally or under this specific Library".format(attribute, parent))
-            if (default is None and not default_is_none) or throw:
-                if len(options) > 0:
-                    message = message + "\n" + options
-                raise Failed("Config Error: {}".format(message))
-            if do_print:
-                util.print_multiline("Config Warning: {}".format(message))
-                if attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
-                    util.print_multiline(options)
-            return default
-
-        self.general = {}
-
-        if "settings" not in self.data:
+        try:
             new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
             def replace_attr(all_data, attr, par):
                 if "settings" not in all_data:
@@ -137,8 +71,72 @@ class Config:
             new_config["trakt"] = new_config.pop("trakt")
             new_config["mal"] = new_config.pop("mal")
             yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
+            self.data = new_config
+        except yaml.scanner.ScannerError as e:
+            raise Failed("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
+        def check_for_attribute(data, attribute, parent=None, test_list=None, options="", default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
+            message = ""
+            endline = ""
+            if parent is not None:
+                if parent in data:
+                    data = data[parent]
+                else:
+                    data = None
+                    do_print = False
+                    save = False
+            text = "{} attribute".format(attribute) if parent is None else "{} sub-attribute {}".format(parent, attribute)
+            if data is None or attribute not in data:
+                message = "{} not found".format(text)
+                if parent and save is True:
+                    new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
+                    endline = "\n| {} sub-attribute {} added to config".format(parent, attribute)
+                    if parent not in new_config:                                        new_config = {parent: {attribute: default}}
+                    elif not new_config[parent]:                                        new_config[parent] = {attribute: default}
+                    elif attribute not in new_config[parent]:                           new_config[parent][attribute] = default
+                    else:                                                               endLine = ""
+                    yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
+            elif not data[attribute] and data[attribute] != False:
+                if default_is_none is True:                                         return None
+                else:                                                               message = "{} is blank".format(text)
+            elif var_type == "bool":
+                if isinstance(data[attribute], bool):                               return data[attribute]
+                else:                                                               message = "{} must be either true or false".format(text)
+            elif var_type == "int":
+                if isinstance(data[attribute], int) and data[attribute] > 0:        return data[attribute]
+                else:                                                               message = "{} must an integer > 0".format(text)
+            elif var_type == "path":
+                if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
+                else:                                                               message = "Path {} does not exist".format(os.path.abspath(data[attribute]))
+            elif var_type == "list":                                            return util.get_list(data[attribute])
+            elif var_type == "listpath":
+                temp_list = [path for path in util.get_list(data[attribute], split=True) if os.path.exists(os.path.abspath(path))]
+                if len(temp_list) > 0:                                              return temp_list
+                else:                                                               message = "No Paths exist"
+            elif var_type == "lowerlist":                                       return util.get_list(data[attribute], lower=True)
+            elif test_list is None or data[attribute] in test_list:             return data[attribute]
+            else:                                                               message = "{}: {} is an invalid input".format(text, data[attribute])
+            if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
+                return default
+            elif var_type == "path" and default:
+                default = None
+                message = "neither {} or the default path {} could be found".format(data[attribute], default)
+            if default is not None or default_is_none:
+                message = message + " using {} as default".format(default)
+            message = message + endline
+            if req_default and default is None:
+                raise Failed("Config Error: {} attribute must be set under {} globally or under this specific Library".format(attribute, parent))
+            if (default is None and not default_is_none) or throw:
+                if len(options) > 0:
+                    message = message + "\n" + options
+                raise Failed("Config Error: {}".format(message))
+            if do_print:
+                util.print_multiline("Config Warning: {}".format(message))
+                if attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
+                    util.print_multiline(options)
+            return default
 
+        self.general = {}
         self.general["cache"] = check_for_attribute(self.data, "cache", parent="settings", options="    true (Create a cache to store ids)\n    false (Do not create a cache to store ids)", var_type="bool", default=True)
         self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
         if self.general["cache"]:
