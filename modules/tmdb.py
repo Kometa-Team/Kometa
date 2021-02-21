@@ -38,7 +38,7 @@ class TMDbAPI:
     def convert_to_tmdb(self, external_id, external_source, is_movie):
         search_results = self.Movie.external(external_id=external_id, external_source=external_source)
         search = search_results["movie_results" if is_movie else "tv_results"]
-        if len(search) == 1:        return search[0]["id"]
+        if len(search) == 1:        return int(search[0]["id"])
         else:                       raise Failed("TMDb Error: No TMDb ID found for {} {}".format(external_source.upper().replace("B_", "b "), external_id))
 
     def convert_tmdb_to_imdb(self, tmdb_id, is_movie=True):         return self.convert_from_tmdb(tmdb_id, "imdb_id", is_movie)

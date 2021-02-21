@@ -249,7 +249,14 @@ collectionless_lists = [
     "collection_order", "plex_collectionless",
     "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
     "url_background", "file_background",
-    "name_mapping"
+    "name_mapping", "label", "label_sync_mode"
+]
+other_attributes = [
+    "schedule",
+    "sync_mode",
+    "template",
+    "test",
+    "tmdb_person"
 ]
 dictionary_lists = [
     "filters",
@@ -374,10 +381,16 @@ movie_only_filters = [
     "audio_language", "audio_language.not",
     "country", "country.not",
     "director", "director.not",
-    "original_language", "original_language.not", 
+    "original_language", "original_language.not",
     "subtitle_language", "subtitle_language.not",
     "video_resolution", "video_resolution.not",
     "writer", "writer.not"
+]
+boolean_details = [
+    "add_to_arr",
+    "show_filtered",
+    "show_missing",
+    "save_missing"
 ]
 all_details = [
     "sort_title", "content_rating",
@@ -385,7 +398,8 @@ all_details = [
     "collection_mode", "collection_order",
     "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
     "url_background", "file_background",
-    "name_mapping", "add_to_arr"
+    "name_mapping", "add_to_arr", "arr_tag", "label",
+    "show_filtered", "show_missing", "save_missing"
 ]
 discover_movie = [
     "language", "with_original_language", "region", "sort_by",
@@ -475,10 +489,12 @@ def choose_from_list(datalist, description, data=None, list_type="title", exact=
     else:
         return None
 
-def get_list(data):
+def get_list(data, lower=False, split=True):
     if isinstance(data, list):      return data
     elif isinstance(data, dict):    return [data]
-    else:                           return str(data).split(", ")
+    elif split is False:            return [str(data)]
+    elif lower is True:             return [d.strip().lower() for d in str(data).split(",")]
+    else:                           return [d.strip() for d in str(data).split(",")]
 
 def get_int_list(data, id_type):
     values = get_list(data)
@@ -570,7 +586,7 @@ def windows_input(prompt, timeout=5):
 
 
 def print_multiline(lines, info=False, warning=False, error=False, critical=False):
-    for i, line in enumerate(lines.split("\n")):
+    for i, line in enumerate(str(lines).split("\n")):
         if critical:        logger.critical(line)
         elif error:         logger.error(line)
         elif warning:       logger.warning(line)

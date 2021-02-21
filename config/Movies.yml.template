@@ -1,3 +1,105 @@
+## This file is a template remove the .template to use the file
+
+templates:
+  Chart Alpha:
+    sort_title: ++++_<<num>><<collection_name>>
+    sync_mode: sync
+    collection_order: alpha
+  Chart Release:
+    sort_title: ++++_<<collection_name>>
+    sync_mode: sync
+    collection_order: release
+  Best of:
+    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-<<year>>
+    sort_title: ++++_Best of <<year>>
+    sync_mode: sync
+    summary: Rotten Tomatoes Best Movies of <<year>>
+    collection_order: release
+  Studio:
+    tmdb_company: <<company>>
+    sort_title: +++_<<collection_name>>
+    sync_mode: sync
+    collection_order: alpha
+  Studio Alpha:
+    sort_title: +++_<<collection_name>>
+    sync_mode: sync
+    collection_order: alpha
+  IMDb Genre:
+    default:
+      title: feature
+      limit: 100
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=<<title>>&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=<<genre>>
+      limit: <<limit>>
+    - url: https://www.imdb.com/search/title/?title_type=<<title>>&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=<<genre>>&sort=user_rating,desc
+      limit: <<limit>>
+    sort_title: ++_<<collection_name>>
+    sync_mode: sync
+    collection_order: alpha
+  Other Genre:
+    sort_title: ++_<<collection_name>>
+    sync_mode: sync
+    collection_order: alpha
+  Actor:
+    actor: tmdb
+    tmdb_person: <<person>>
+    sort_title: +_<<collection_name>>
+    sync_mode: sync
+    collection_order: release
+  Actor Director:
+    actor: tmdb
+    director: tmdb
+    tmdb_person: <<person>>
+    sort_title: +_<<collection_name>>
+    sync_mode: sync
+    collection_order: release
+  Actor Director Writer:
+    actor: tmdb
+    director: tmdb
+    writer: tmdb
+    tmdb_person: <<person>>
+    sort_title: +_<<collection_name>>
+    sync_mode: sync
+    collection_order: release
+  Actor Writer:
+    actor: tmdb
+    writer: tmdb
+    tmdb_person: <<person>>
+    sort_title: +_<<collection_name>>
+    sync_mode: sync
+    collection_order: release
+  Director:
+    director: tmdb
+    tmdb_person: <<person>>
+    sort_title: +_<<collection_name>>
+    sync_mode: sync
+    collection_order: release
+  Director Writer:
+    director: tmdb
+    writer: tmdb
+    tmdb_person: <<person>>
+    sort_title: +_<<collection_name>>
+    sync_mode: sync
+    collection_order: release
+  Writer:
+    writer: tmdb
+    tmdb_person: <<person>>
+    sort_title: +_<<collection_name>>
+    sync_mode: sync
+    collection_order: release
+  Collection:
+    tmdb_collection_details: <<collection>>
+    sync_mode: sync
+    collection_order: release
+  Collection Movie:
+    tmdb_collection_details: <<collection>>
+    tmdb_movie: <<movie>>
+    sync_mode: sync
+    collection_order: release
+  Other Collection:
+    sync_mode: sync
+    collection_order: release
+
 collections:
 
 ######################################################
@@ -5,6 +107,7 @@ collections:
 ######################################################
 
   Plex Popular:
+    template: {name: Chart Alpha, num: 1}
     tautulli_popular:
       list_days: 30
       list_size: 20
@@ -13,2178 +116,1180 @@ collections:
       list_days: 30
       list_size: 20
       list_buffer: 20
-    schedule: daily
-    sort_title: ++++_1Plex Popular
-    sync_mode: sync
     summary: Movies Popular on Plex
-    collection_order: alpha
   Trending:
+    template: {name: Chart Alpha, num: 2}
     trakt_trending: 40
     tmdb_trending_daily: 40
     tmdb_trending_weekly: 40
-    sort_title: ++++_3Trending
-    sync_mode: sync
     summary: Movies Trending across the internet
-    collection_order: alpha
   Popular:
+    template: {name: Chart Alpha, num: 3}
     tmdb_popular: 40
     imdb_list:
       url: https://www.imdb.com/search/title/?title_type=feature,tv_movie,documentary,short
       limit: 40
-    sort_title: ++++_4Popular
-    sync_mode: sync
     summary: Popular Movies across the internet
-    collection_order: alpha
   Top Rated:
+    template: {name: Chart Alpha, num: 4}
     imdb_list: https://www.imdb.com/search/title/?groups=top_250&count=250
     tmdb_top_rated: 250
-    sort_title: ++++_5Top Rated
-    sync_mode: sync
     summary: Top Rated Movies across the internet
-    collection_order: alpha
   Best of 2014:
-    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2014
-    sort_title: ++++_Best of 2014
-    sync_mode: sync
-    summary: Rotten Tomatoes Best Movies of 2014
-    collection_order: release
+    template: {name: Best of, year: 2014}
   Best of 2015:
-    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2015
-    sort_title: ++++_Best of 2015
-    sync_mode: sync
-    summary: Rotten Tomatoes Best Movies of 2015
-    collection_order: release
+    template: {name: Best of, year: 2015}
   Best of 2016:
-    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2016
-    sort_title: ++++_Best of 2016
-    sync_mode: sync
-    summary: Rotten Tomatoes Best Movies of 2016
-    collection_order: release
+    template: {name: Best of, year: 2016}
   Best of 2017:
-    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2017
-    sort_title: ++++_Best of 2017
-    sync_mode: sync
-    summary: Rotten Tomatoes Best Movies of 2017
-    collection_order: release
+    template: {name: Best of, year: 2017}
   Best of 2018:
-    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2018
-    sort_title: ++++_Best of 2018
-    sync_mode: sync
-    summary: Rotten Tomatoes Best Movies of 2018
-    collection_order: release
+    template: {name: Best of, year: 2018}
   Best of 2019:
-    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2019
-    sort_title: ++++_Best of 2019
-    sync_mode: sync
-    summary: Rotten Tomatoes Best Movies of 2019
-    collection_order: release
+    template: {name: Best of, year: 2019}
   Best of 2020:
-    trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-2020
-    sort_title: ++++_Best of 2020
-    sync_mode: sync
-    summary: Rotten Tomatoes Best Movies of 2020
-    collection_order: release
+    template: {name: Best of, year: 2020}
+  Best of 2021:
+    template: {name: Best of, year: 2021}
   Oscars:
+    template: {name: Chart Release}
     imdb_list: https://www.imdb.com/search/title/?title_type=feature,documentary&groups=oscar_winner
-    sort_title: ++++_Oscars
-    sync_mode: sync
     summary: Oscar Winning Movies
-    collection_order: release
-
 
 ######################################################
 #                Studio Collections                  #
 ######################################################
 
-
   Aardman:
-    tmdb_company: 297
-    sort_title: +++_Aardman
-    sync_mode: sync
+    template: {name: Studio, company: 297}
     summary: Aardman Animations, Ltd. is a British animation studio based in Bristol, England. Aardman is known for films made using stop-motion clay animation techniques, particularly those featuring Plasticine characters Wallace and Gromit.
   Blue Sky:
-    tmdb_company: 9383
-    sort_title: +++_Blue Sky
-    sync_mode: sync
+    template: {name: Studio, company: 9383}
     summary: Blue Sky Studios, Inc. is an American computer animation film studio based in Greenwich, Connecticut. It is a subsidiary of 20th Century Animation, a division of Disney Studios Content.
   DreamWorks:
-    tmdb_company: 521
+    template: {name: Studio, company: 521}
     filters:
       collection.not: Aardman
-    sort_title: +++_DreamWorks
-    sync_mode: sync
     summary: DreamWorks Animation LLC (also simply known as DreamWorks) is an American animation studio and a subsidiary of Universal Pictures, itself a subsidiary of Comcast's NBCUniversal. It is based in Glendale, California, and produces animated feature films, television programs, and online virtual games.
   Illumination Entertainment:
-    tmdb_company: 6704
-    sort_title: +++_Illumination Entertainment
-    sync_mode: sync
+    template: {name: Studio, company: 6704}
     summary: Illumination is an American film and animation studio founded by Chris Meledandri in 2007 and owned by Universal Pictures, a division of NBCUniversal, which is itself a division of Comcast. Meledandri produces the films, while Universal finances and distributes all the films. The studio is responsible for the Despicable Me and The Secret Life of Pets franchises and the film adaptations of Dr. Seuss’ books The Lorax and How the Grinch Stole Christmas. The Minions, characters from the Despicable Me series, are the studio's mascots.
   Pixar:
-    tmdb_company: 3
-    sort_title: +++_Pixar
-    sync_mode: sync
+    template: {name: Studio, company: 3}
     summary: Pixar Animation Studios, commonly known as Pixar, is an American computer animation studio based in Emeryville, California, a subsidiary of Disney Studios Content owned by The Walt Disney Company. Pixar began in 1979 as part of the Lucasfilm computer division, known as the Graphics Group, before its spin-off as a corporation on February 3, 1986, with funding from Apple co-founder Steve Jobs, who became its majority shareholder. Disney purchased Pixar in 2006 at a valuation of $7.4 billion by converting each share of Pixar stock to 2.3 shares of Disney stock, a transaction that resulted in Jobs becoming Disney's largest single shareholder at the time. Pixar is best known for its feature films technologically powered by RenderMan, the company's own implementation of the industry-standard RenderMan Interface Specification image-rendering application programming interface. Luxo Jr., a desk lamp from the studio's 1986 short film of the same name, is the studio's mascot.
   Studio Ghibli:
-    tmdb_company: 10342
-    sort_title: +++_Studio Ghibli
-    sync_mode: sync
+    template: {name: Studio, company: 10342}
     summary: Studio Ghibli Inc. is a Japanese animation film studio headquartered in Koganei, Tokyo. The studio is best known for its animated feature films, and has also produced several short films, television commercials, and one television film. The studio’s mascot and most recognizable symbol is the character, Totoro, a giant cat-like spirit from the 1988 classic, My Neighbor Totoro.
   Sony Pictures Animation:
-    tmdb_company: 2251
-    sort_title: +++_Sony Pictures Animation
-    sync_mode: sync
+    template: {name: Studio, company: 2251}
     summary: Sony Pictures Animation Inc. is an American animation studio owned by Sony Entertainment's Sony Pictures Entertainment through their Motion Picture Group division and founded on May 9, 2002. The studio's films are distributed worldwide by Sony Pictures Releasing under their Columbia Pictures label, while all direct-to-video releases are released by Sony Pictures Home Entertainment.
   Warner Animation Group:
-    tmdb_company: 25120
-    sort_title: +++_Warner Animation Group
-    sync_mode: sync
+    template: {name: Studio, company: 25120}
     summary: The Warner Animation Group (WAG) is an American animation studio that is the feature animation division of Warner Bros. Entertainment. Established on January 7, 2013, the studio is the successor to the dissolved 2D traditional hand-drawn animation studio Warner Bros. Feature Animation, which shut down in 2003 and the dissolved family film division Warner Bros. Family Entertainment, which shut down in 2009. The entity is also a sister animation studio of the regular animation studio Warner Bros. Animation
   Walt Disney Animation Studios:
+    template: {name: Studio Alpha}
     imdb_list: https://www.imdb.com/list/ls059383351/
-    sort_title: +++_Walt Disney Animation Studios
-    sync_mode: sync
     summary: Walt Disney Animation Studios (WDAS), sometimes shortened to Disney Animation, is an American animation studio that creates animated features and short films for The Walt Disney Company. Founded on October 16, 1923 by brothers Walt Disney and Roy O. Disney, it is one of the oldest-running animation studios in the world. It is currently organized as a division of Walt Disney Studios and is headquartered at the Roy E. Disney Animation Building at the Walt Disney Studios lot in Burbank, California.
   Walt Disney Pictures:
+    template: {name: Studio Alpha}
     imdb_list: https://www.imdb.com/list/ls077114097/
-    sort_title: +++_Walt Disney Pictures
-    sync_mode: sync
     summary: Walt Disney Pictures is an American film production studio of The Walt Disney Studios, which is owned by The Walt Disney Company. The studio is the flagship producer of live-action feature films within the Walt Disney Studios unit, and is based at the Walt Disney Studios in Burbank, California. Animated films produced by Walt Disney Animation Studios and Pixar Animation Studios are also released under this brand. Walt Disney Studios Motion Pictures distributes and markets the films produced by Walt Disney Pictures.
-
-
-
-
-  Godzilla:
-    tmdb_collection: 374509, 374511, 374512, 535313
-    tmdb_movie: 18983, 39256, 293167
-    schedule: daily
-
 
 ######################################################
 #                Genre Collections                   #
 ######################################################
 
   Action:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=action
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=action&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Action
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: action}
     summary: Action film is a genre wherein physical action takes precedence in the storytelling. The film will often have continuous motion and action including physical stunts, chases, fights, battles, and races. The story usually revolves around a hero that has a goal, but is facing incredible odds to obtain it.
-    collection_order: alpha
   Adventure:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=adventure
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=adventure&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Adventure
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: adventure}
     summary: Adventure film is a genre that revolves around the conquests and explorations of a protagonist. The purpose of the conquest can be to retrieve a person or treasure, but often the main focus is simply the pursuit of the unknown. These films generally take place in exotic locations and play on historical myths. Adventure films incorporate suspenseful puzzles and intricate obstacles that the protagonist must overcome in order to achieve the end goal.
-    collection_order: alpha
   Animation:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=animation
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=animation&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Animation
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: animation}
     summary: Animated film is a collection of illustrations that are photographed frame-by-frame and then played in a quick succession. Since its inception, animation has had a creative and imaginative tendency. Being able to bring animals and objects to life, this genre has catered towards fairy tales and children’s stories. However, animation has long been a genre enjoyed by all ages. As of recent, there has even been an influx of animation geared towards adults. Animation is commonly thought of as a technique, thus it’s ability to span over many different genres.
-    collection_order: alpha
-  Christmas:
-    trakt_list:
-      - https://trakt.tv/users/movistapp/lists/christmas-movies
-      - https://trakt.tv/users/2borno2b/lists/christmas-movies-extravanganza
-    imdb_list:
-      - https://www.imdb.com/list/ls025976544/
-      - https://www.imdb.com/list/ls003863000/
-      - https://www.imdb.com/list/ls027454200/
-      - https://www.imdb.com/list/ls027886673/
-      - https://www.imdb.com/list/ls097998599/
-    sort_title: ++_Christmas
-    sync_mode: sync
-    summary: Christmas film is a genre that revolves around the plot involving Christmas.
-    collection_order: alpha
   Comedy:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=comedy
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=comedy&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Comedy
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: comedy}
     summary: Comedy is a genre of film that uses humor as a driving force. The aim of a comedy film is to illicit laughter from the audience through entertaining stories and characters. Although the comedy film may take on some serious material, most have a happy ending. Comedy film has the tendency to become a hybrid sub-genre because humor can be incorporated into many other genres. Comedies are more likely than other films to fall back on the success and popularity of an individual star.
-    collection_order: alpha
   Crime:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=crime
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=crime&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Crime
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: crime}
     summary: Crime film is a genre that revolves around the action of a criminal mastermind. A Crime film will often revolve around the criminal himself, chronicling his rise and fall. Some Crime films will have a storyline that follows the criminal's victim, yet others follow the person in pursuit of the criminal. This genre tends to be fast paced with an air of mystery – this mystery can come from the plot or from the characters themselves.
-    collection_order: alpha
   Documentary:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=documentary&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=documentary
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=documentary&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=documentary&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Documentary
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: documentary, title: documentary}
     summary: Documentary film is a non-fiction genre intended to document reality primarily for the purposes of instruction, education, or maintaining a historical record.
-    collection_order: alpha
   Drama:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=drama
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=drama&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Drama
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: drama}
     summary: Drama film is a genre that relies on the emotional and relational development of realistic characters. While Drama film relies heavily on this kind of development, dramatic themes play a large role in the plot as well. Often, these dramatic themes are taken from intense, real life issues. Whether heroes or heroines are facing a conflict from the outside or a conflict within themselves, Drama film aims to tell an honest story of human struggles.
-    collection_order: alpha
   Family:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=family
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=family&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Family
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: family}
     summary: Family film is a genre that is contains appropriate content for younger viewers. Family film aims to appeal not only to children, but to a wide range of ages. While the storyline may appeal to a younger audience, there are components of the film that are geared towards adults- such as witty jokes and humor. This genre may fall into many other genres, including comedy, adventure, fantasy, and animated film.
-    collection_order: alpha
   Fantasy:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=fantasy
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=fantasy&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Fantasy
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: fantasy}
     summary: Fantasy film is a genre that incorporates imaginative and fantastic themes. These themes usually involve magic, supernatural events, or fantasy worlds. Although it is its own distinct genre, these films can overlap into the horror and science fiction genres. Unlike science fiction, a fantasy film does not need to be rooted in fact. This element allows the audience to be transported into a new and unique world. Often, these films center on an ordinary hero in an extraordinary situation.
-    collection_order: alpha
   Gangster:
+    template: {name: Other Genre}
     imdb_list:
       - https://www.imdb.com/list/ls026270180/
       - https://www.imdb.com/list/ls000093502/
-    sort_title: ++_Gangster
-    sync_mode: sync
     summary: Gangster film is a sub-genre of crime films that center on organized crime or the mafia. Often the plot revolves around the rise and fall of an organized crime leader. Many Gangster films explore the destructive nature of organized crime, while others attempt to show the humanity of the individual characters.
-    collection_order: alpha
   Halloween.:
+    template: {name: Other Genre}
     trakt_list:
       - https://trakt.tv/users/kairbear08/lists/halloween
       - https://trakt.tv/users/mybicycle/lists/halloween
       - https://trakt.tv/users/jayinftl/lists/halloween
       - https://trakt.tv/users/roswellgeek/lists/halloween
-    sort_title: ++_Halloween
-    sync_mode: sync
     name_mapping: Halloween (Season)
     summary: Halloween film is a genre that revolves around the plot involving Halloween.
-    collection_order: alpha
   History:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=history
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=history&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_History
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: history}
     summary: History film is a genre that takes historical events and people and interprets them in a larger scale. Historical accuracy is not the main focus, but rather the telling of a grandiose story. The drama of an History film is often accentuated by a sweeping musical score, lavish costumes, and high production value.
-    collection_order: alpha
   Horror:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=horror
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=horror&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Horror
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: horror}
     summary: Horror film is a genre that aims to create a sense of fear, panic, alarm, and dread for the audience. These films are often unsettling and rely on scaring the audience through a portrayal of their worst fears and nightmares. Horror films usually center on the arrival of an evil force, person, or event. Many Horror films include mythical creatures such as ghosts, vampires, and zombies. Traditionally, Horror films incorporate a large amount of violence and gore into the plot. Though it has its own style, Horror film often overlaps into Fantasy, Thriller, and Science-Fiction genres.
-    collection_order: alpha
   LGBTQ+:
+    template: {name: Other Genre}
     imdb_list: https://www.imdb.com/list/ls062688328/
-    sort_title: ++_LGBTQ+
-    sync_mode: sync
     summary: LGBTQ+ film is a genre of films where the characters decpict lesbian, gay, bisexual, transgender, queer and intersex people.
-    collection_order: alpha
   Martial Arts:
+    template: {name: Other Genre}
     imdb_list:
       - https://www.imdb.com/list/ls000099643/
       - https://www.imdb.com/list/ls068611186/
       - https://www.imdb.com/list/ls068378513/
       - https://www.imdb.com/list/ls090404120/
-    sort_title: ++_Martial Arts
-    sync_mode: sync
     summary: Martial Arts film is a sub-genre of action films that feature numerous martial arts combat between characters. These combats are usually the films' primary appeal and entertainment value, and often are a method of storytelling and character expression and development. Martial Arts are frequently featured in training scenes and other sequences in addition to fights. Martial Arts films commonly include other types of action, such as hand-to-hand combat, stuntwork, chases, and gunfights.
-    collection_order: alpha
   Music:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=music
-      limit: 200
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=music&sort=user_rating,desc
-      limit: 200
-    sort_title: ++_Music
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: music, limit: 200}
     summary: Music film is genre that revolves around music being an integral part of the characters lives.
-    collection_order: alpha
   Musical:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=musical
-      limit: 200
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=musical&sort=user_rating,desc
-      limit: 200
-    sort_title: ++_Musical
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: musical, limit: 200}
     summary: A Musical interweaves vocal and dance performances into the narrative of the film. The songs of a film can either be used to further the story or simply enhance the experience of the audience. These films are often done on a grand scale and incorporate lavish costumes and sets. Traditional musicals center on a well-known star, famous for their dancing or singing skills (i.e. Fred Astaire, Gene Kelly, Judy Garland). These films explore concepts such are love and success, allowing the audience to escape from reality.
-    collection_order: alpha
   Mystery:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=mystery
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=mystery&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Mystery
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: mystery}
     summary: A Mystery film centers on a person of authority, usually a detective, that is trying to solve a mysterious crime. The main protagonist uses clues, investigation, and logical reasoning. The biggest element in these films is a sense of “whodunit” suspense, usually created through visual cues and unusual plot twists.
-    collection_order: alpha
   Pandemic:
+    template: {name: Other Genre}
     imdb_list: https://www.imdb.com/list/ls092321048/
-    sort_title: ++_Pandemic
-    sync_mode: sync
     summary: A Pandemic film resolves around widespread viruses, plagues, and diseases.
-    collection_order: alpha
   Romance:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance
-      limit: 200
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance&sort=user_rating,desc
-      limit: 200
-    sort_title: ++_Romance
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: romance, limit: 200}
     summary: "Romance film can be defined as a genre wherein the plot revolves around the love between two protagonists. This genre usually has a theme that explores an issue within love, including but not limited to: love at first sight, forbidden love, love triangles, and sacrificial love. The tone of Romance film can vary greatly. Whether the end is happy or tragic, Romance film aims to evoke strong emotions in the audience."
-    collection_order: alpha
   Romantic Comedy:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance,comedy
-      limit: 200
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance,comedy&sort=user_rating,desc
-      limit: 200
-    sort_title: ++_Romantic Comedy
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: "romance,comedy", limit: 200}
     summary: Romantic Comedy is a genre that attempts to catch the viewer’s heart with the combination of love and humor. This sub-genre is light-hearted and usually places the two protagonists in humorus situation. Romantic-Comedy film revolves around a romantic ideal, such as true love. In the end, the ideal triumphs over the situation or obstacle, thus creating a happy ending.
-    collection_order: alpha
     filters:
       genre: Comedy
+    test: true
   Romantic Drama:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance,drama
-      limit: 200
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=romance,drama&sort=user_rating,desc
-      limit: 200
-    sort_title: ++_Romantic Drama
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: "romance,drama", limit: 200}
     summary: Romantic Drama film is a genre that explores the complex side of love. The plot usually centers around an obstacle that is preventing love between two people. The obstacles in Romantic Drama film can range from a family's disapproval, to forbidden love, to one's own psychological restraints. Many Romantic Dramas end with the lovers separating because of the enormity of the obstacle, the realization of incompatibility, or simply because of fate.
-    collection_order: alpha
     filters:
       genre: Drama
   Sci-Fi:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sci-fi
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sci-fi&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Sci-Fi
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: sci-fi}
     summary: Science Fiction (Sci-Fi) film is a genre that incorporates hypothetical, science-based themes into the plot of the film. Often, this genre incorporates futuristic elements and technologies to explore social, political, and philosophical issues. The film itself is usually set in the future, either on earth or in space. Traditionally, a Science Fiction film will incorporate heroes, villains, unexplored locations, fantastical quests, and advanced technology.
-    collection_order: alpha
   Sports:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sport
-      limit: 200
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sport&sort=user_rating,desc
-      limit: 200
-    sort_title: ++_Sport
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: sport, limit: 200}
     summary: A Sport Film revolves around a sport setting, event, or an athlete. Often, these films will center on a single sporting event that carries significant importance. Sports films traditionally have a simple plot that builds up to the significant sporting event. This genre is known for incorporating film techniques to build anticipation and intensity. Sport films have a large range of sub-genres, from comedies to dramas, and are more likely than other genres to be based true-life events.
-    collection_order: alpha
   Stand Up Comedy:
+    template: {name: Other Genre}
     imdb_list:
       - https://www.imdb.com/list/ls070221411/
       - https://www.imdb.com/list/ls086584751/
       - https://www.imdb.com/list/ls086022668/
       - https://www.imdb.com/list/ls049792208/
-    sort_title: ++_Stand Up Comedy
-    sync_mode: sync
     summary: Stand-up comedy is a comedic style in which a comedian performs in front of a live audience, speaking directly to them through a microphone. Comedians give the illusion that they are dialoguing, but in actuality, they are monologuing a grouping of humorous stories, jokes and one-liners, typically called a shtick, routine, act, or set. Some stand-up comedians use props, music or magic tricks to enhance their acts. Stand-up comedians perform quasi-autobiographical and fictionalized extensions of their offstage selves.
-    collection_order: alpha
   Sword & Sorcery:
+    template: {name: Other Genre}
     imdb_list: https://www.imdb.com/list/ls022909805
-    sort_title: ++_Sword & Sorcery
-    sync_mode: sync
     summary: Sword and Sorcery film is a sub-genre of Fantasy that tend to be more plot-driven. These films rely on heavy action and battle scenes. Common themes in Sword and Sorcery films include a rescue mission, saving a princess, and battling a fantastical monster. The worlds and characters in these films are often much less developed than in other fantasy sub-genres. Of all the Fantasy sub-genres, Sword and Sorcery is most likely to be geared towards a younger audience, as many of these films are animated.
-    collection_order: alpha
   Thriller:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=thriller
-      limit: 100
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=thriller&sort=user_rating,desc
-      limit: 100
-    sort_title: ++_Thriller
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: thriller}
     summary: Thriller Film is a genre that revolves around anticipation and suspense. The aim for Thrillers is to keep the audience alert and on the edge of their seats. The protagonist in these films is set against a problem – an escape, a mission, or a mystery. No matter what sub-genre a Thriller film falls into, it will emphasize the danger that the protagonist faces. The tension with the main problem is built on throughout the film and leads to a highly stressful climax.
-    collection_order: alpha
   War:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=war
-      limit: 200
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=war&sort=user_rating,desc
-      limit: 200
-    sort_title: ++_War
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: war, limit: 200}
     summary: War Film is a genre that looks at the reality of war on a grand scale. They often focus on landmark battles as well as political issues within war. This genre usually focuses on a main character and his team of support, giving the audience an inside look into the gritty reality of war.
-    collection_order: alpha
   Western:
-    imdb_list:
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=western
-      limit: 200
-    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=western&sort=user_rating,desc
-      limit: 200
-    sort_title: ++_Western
-    sync_mode: sync
+    template: {name: IMDb Genre, genre: western, limit: 200}
     summary: "Western Film is a genre that revolves around stories primarily set in the late 19th century in the American Old West. Most Westerns are set between the American Civil War (1865) and the early 1900s. Common themes within Western Film include: the conquest of the wild west, the cultural separation of the East and the West, the West’s resistance to modern change, the conflict between Cowboys and Indians, outlaws, and treasure/gold hunting. American Western Film usually revolves around a stoic hero and emphasizes the importance of honor and sacrifice."
-    collection_order: alpha
 
 ######################################################
 #               People Collections                   #
 ######################################################
 
   Adam Sandler:
-    actor: tmdb
-    writer: tmdb
-    tmdb_person: 19292
-    sort_title: +_Adam Sandler
-    sync_mode: sync
+    template: {name: Actor Writer, person: 19292}
   Al Pacino:
-    actor: tmdb
-    tmdb_person: 1158
-    sort_title: +_Al Pacino
-    sync_mode: sync
+    template: {name: Actor, person: 1158}
   Alfred Hitchcock:
-    director: tmdb
-    tmdb_person: 2636
+    template: {name: Director, person: 2636}
     trakt_list: https://trakt.tv/users/movistapp/lists/hitchcock
-    sort_title: +_Alfred Hitchcock
-    sync_mode: sync
   Amy Adams:
-    actor: tmdb
-    tmdb_person: 9273
-    sort_title: +_Amy Adams
-    sync_mode: sync
+    template: {name: Actor, person: 9273}
   Angelina Jolie:
-    actor: tmdb
-    tmdb_person: 11701
-    sort_title: +_Angelina Jolie
-    sync_mode: sync
+    template: {name: Actor, person: 11701}
   Anne Hathaway:
-    actor: tmdb
-    tmdb_person: 1813
-    sort_title: +_Anne Hathaway
-    sync_mode: sync
+    template: {name: Actor, person: 1813}
   Anthony Hopkins:
-    actor: tmdb
-    tmdb_person: 4173
-    sort_title: +_Anthony Hopkins
-    sync_mode: sync
+    template: {name: Actor, person: 4173}
   Antonio Banderas:
-    actor: tmdb
-    tmdb_person: 3131
-    sort_title: +_Antonio Banderas
-    sync_mode: sync
+    template: {name: Actor, person: 3131}
   Arnold Schwarzenegger:
-    actor: tmdb
-    tmdb_person: 1100
-    sort_title: +_Arnold Schwarzenegger
-    sync_mode: sync
+    template: {name: Actor, person: 1100}
   Ben Affleck:
-    actor: tmdb
-    tmdb_person: 880
-    sort_title: +_Ben Affleck
-    sync_mode: sync
+    template: {name: Actor, person: 880}
   Ben Stiller:
-    actor: tmdb
-    tmdb_person: 7399
-    sort_title: +_Ben Stiller
-    sync_mode: sync
+    template: {name: Actor, person: 7399}
   Bill Murray:
-    actor: tmdb
-    tmdb_person: 1532
-    sort_title: +_Bill Murray
-    sync_mode: sync
+    template: {name: Actor, person: 1532}
   Brad Pitt:
-    actor: tmdb
-    tmdb_person: 287
-    sort_title: +_Brad Pitt
-    sync_mode: sync
+    template: {name: Actor, person: 287}
   Brendan Fraser:
-    actor: tmdb
-    tmdb_person: 18269
-    sort_title: +_Brendan Fraser
-    sync_mode: sync
+    template: {name: Actor, person: 18269}
   Bruce Lee:
-    actor: tmdb
-    tmdb_person: 19429
-    sort_title: +_Bruce Lee
-    sync_mode: sync
+    template: {name: Actor, person: 19429}
   Bruce Willis:
-    actor: tmdb
-    tmdb_person: 62
-    sort_title: +_Bruce Willis
-    sync_mode: sync
+    template: {name: Actor, person: 62}
   Cameron Diaz:
-    actor: tmdb
-    tmdb_person: 6941
-    sort_title: +_Cameron Diaz
-    sync_mode: sync
+    template: {name: Actor, person: 6941}
   Carrie Fisher:
-    actor: tmdb
-    tmdb_person: 4
-    sort_title: +_Carrie Fisher
-    sync_mode: sync
+    template: {name: Actor, person: 4}
   Cate Blanchett:
-    actor: tmdb
-    tmdb_person: 112
-    sort_title: +_Cate Blanchett
-    sync_mode: sync
+    template: {name: Actor, person: 112}
   Catherine Zeta-Jones:
-    actor: tmdb
-    tmdb_person: 1922
-    sort_title: +_Catherine Zeta-Jones
-    sync_mode: sync
+    template: {name: Actor, person: 1922}
   Channing Tatum:
-    actor: tmdb
-    tmdb_person: 38673
-    sort_title: +_Channing Tatum
-    sync_mode: sync
+    template: {name: Actor, person: 38673}
   Charlie Chaplin:
-    actor: tmdb
-    tmdb_person: 13848
-    sort_title: +_Charlie Chaplin
-    sync_mode: sync
+    template: {name: Actor, person: 13848}
   Charlize Theron:
-    actor: tmdb
-    tmdb_person: 6885
-    sort_title: +_Charlize Theron
-    sync_mode: sync
+    template: {name: Actor, person: 6885}
   Christian Bale:
-    actor: tmdb
-    tmdb_person: 3894
-    sort_title: +_Christian Bale
-    sync_mode: sync
+    template: {name: Actor, person: 3894}
   Chris Evans:
-    actor: tmdb
-    tmdb_person: 16828
-    sort_title: +_Chris Evans
-    sync_mode: sync
+    template: {name: Actor, person: 16828}
   Chris Hemsworth:
-    actor: tmdb
-    tmdb_person: 74568
-    sort_title: +_Chris Hemsworth
-    sync_mode: sync
+    template: {name: Actor, person: 74568}
   Chris Pratt:
-    actor: tmdb
-    tmdb_person: 73457
-    sort_title: +_Chris Pratt
-    sync_mode: sync
+    template: {name: Actor, person: 73457}
   Chris Rock:
-    actor: tmdb
-    tmdb_person: 2632
-    sort_title: +_Chris Rock
-    sync_mode: sync
+    template: {name: Actor, person: 2632}
   Christopher Nolan:
-    director: tmdb
-    tmdb_person: 525
-    sort_title: +_Christopher Nolan
-    sync_mode: sync
+    template: {name: Director, person: 525}
   Christopher Walken:
-    actor: tmdb
-    tmdb_person: 4690
-    sort_title: +_Christopher Walken
-    sync_mode: sync
+    template: {name: Actor, person: 4690}
   Chuck Norris:
-    actor: tmdb
-    tmdb_person: 51576
-    sort_title: +_Chuck Norris
-    sync_mode: sync
+    template: {name: Actor, person: 51576}
   Clint Eastwood:
-    actor: tmdb
-    director: tmdb
-    tmdb_person: 190
-    sort_title: +_Clint Eastwood
-    sync_mode: sync
+    template: {name: Actor Director, person: 190}
   Coen Brothers:
-    writer: tmdb
-    director: tmdb
-    tmdb_person: 1223, 1224
-    sort_title: +_Coen Brothers
-    sync_mode: sync
+    template: {name: Director Writer, person: "1223, 1224"}
     summary: "Joel Coen and Ethan Coen, collectively referred to as the Coen Brothers, are American film directors, producers, screenwriters, and editors. Their films span many genres and styles, which they frequently subvert or parody. Their most acclaimed works include: Raising Arizona (1987), Miller's Crossing (1990), Fargo (1996), The Big Lebowski (1998), O Brother, Where Art Thou? (2000), No Country for Old Men (2007), Burn After Reading (2008), A Serious Man (2009), True Grit (2010), Inside Llewyn Davis (2013), and The Ballad of Buster Scruggs (2018)."
   Daniel Craig:
-    actor: tmdb
-    tmdb_person: 8784
-    sort_title: +_Daniel Craig
-    sync_mode: sync
+    template: {name: Actor, person: 8784}
   Dave Bautista:
-    actor: tmdb
-    tmdb_person: 543530
-    sort_title: +_Dave Bautista
-    sync_mode: sync
+    template: {name: Actor, person: 543530}
   Dave Chappelle:
-    actor: tmdb
-    tmdb_person: 4169
-    sort_title: +_Dave Chappelle
-    sync_mode: sync
+    template: {name: Actor, person: 4169}
   Denzel Washington:
-    actor: tmdb
-    tmdb_person: 5292
-    sort_title: +_Denzel Washington
-    sync_mode: sync
+    template: {name: Actor, person: 5292}
   Diane Keaton:
-    actor: tmdb
-    tmdb_person: 3092
-    sort_title: +_Diane Keaton
-    sync_mode: sync
+    template: {name: Actor, person: 3092}
   Don Cheadle:
-    actor: tmdb
-    tmdb_person: 1896
-    sort_title: +_Don Cheadle
-    sync_mode: sync
+    template: {name: Actor, person: 1896}
   Dustin Hoffman:
-    actor: tmdb
-    tmdb_person: 4483
-    sort_title: +_Dustin Hoffman
-    sync_mode: sync
+    template: {name: Actor, person: 4483}
   Dwayne Johnson:
-    actor: tmdb
-    tmdb_person: 18918
-    sort_title: +_Dwayne Johnson
-    sync_mode: sync
+    template: {name: Actor, person: 18918}
   Eddie Murphy:
-    actor: tmdb
-    tmdb_person: 776
-    sort_title: +_Eddie Murphy
-    sync_mode: sync
+    template: {name: Actor, person: 776}
   Edward Norton:
-    actor: tmdb
-    tmdb_person: 819
-    sort_title: +_Edward Norton
-    sync_mode: sync
+    template: {name: Actor, person: 819}
   Elliot Page:
-    actor: tmdb
-    tmdb_person: 27578
-    sort_title: +_Elliot Page
-    sync_mode: sync
+    template: {name: Actor, person: 27578}
   Emma Stone:
-    actor: tmdb
-    tmdb_person: 54693
-    sort_title: +_Emma Stone
-    sync_mode: sync
+    template: {name: Actor, person: 54693}
   Emma Watson:
-    actor: tmdb
-    tmdb_person: 10990
-    sort_title: +_Emma Watson
-    sync_mode: sync
+    template: {name: Actor, person: 10990}
   Ewan McGregor:
-    actor: tmdb
-    tmdb_person: 3061
-    sort_title: +_Ewan McGregor
-    sync_mode: sync
+    template: {name: Actor, person: 3061}
   George Clooney:
-    actor: tmdb
-    tmdb_person: 1461
-    sort_title: +_George Clooney
-    sync_mode: sync
+    template: {name: Actor, person: 1461}
   Gerard Butler:
-    actor: tmdb
-    tmdb_person: 17276
-    sort_title: +_Gerard Butler
-    sync_mode: sync
+    template: {name: Actor, person: 17276}
   Harrison Ford:
-    actor: tmdb
-    tmdb_person: 3
-    sort_title: +_Harrison Ford
-    sync_mode: sync
+    template: {name: Actor, person: 3}
   Hayao Miyazaki:
-    director: tmdb
-    tmdb_person: 608
-    sort_title: +_Hayao Miyazaki
-    sync_mode: sync
+    template: {name: Director, person: 608}
   Hugh Jackman:
-    actor: tmdb
-    tmdb_person: 6968
-    sort_title: +_Hugh Jackman
-    sync_mode: sync
+    template: {name: Actor, person: 6968}
   Ian McKellen:
-    actor: tmdb
-    tmdb_person: 1327
-    sort_title: +_Ian McKellen
-    sync_mode: sync
+    template: {name: Actor, person: 1327}
   Ice Cube:
-    actor: tmdb
-    tmdb_person: 9778
-    sort_title: +_Ice Cube
-    sync_mode: sync
+    template: {name: Actor, person: 9778}
   J.J. Abrams:
-    director: tmdb
-    tmdb_person: 15344
-    sort_title: +_J.J. Abrams
-    sync_mode: sync
+    template: {name: Director, person: 15344}
   Jack Black:
-    actor: tmdb
-    tmdb_person: 70851
-    sort_title: +_Jack Black
-    sync_mode: sync
+    template: {name: Actor, person: 70851}
   Jackie Chan:
-    actor: tmdb
-    tmdb_person: 18897
-    sort_title: +_Jackie Chan
-    sync_mode: sync
+    template: {name: Actor, person: 18897}
   James Cameron:
-    director: tmdb
-    tmdb_person: 2710
-    sort_title: +_James Cameron
-    sync_mode: sync
+    template: {name: Director, person: 2710}
   James Franco:
-    actor: tmdb
-    tmdb_person: 17051
-    sort_title: +_James Franco
-    sync_mode: sync
+    template: {name: Actor, person: 17051}
   Jamie Foxx:
-    actor: tmdb
-    tmdb_person: 134
-    sort_title: +_Jamie Foxx
-    sync_mode: sync
-  Jason Bateman:
-    actor: tmdb
-    tmdb_person: 23532
-    sort_title: +_Jason Bateman
-    sync_mode: sync
+    template: {name: Actor, person: 134}
+  Jason Bateman::
+    template: {name: Actor, person: 23532}
   Jason Statham:
-    actor: tmdb
-    tmdb_person: 976
-    sort_title: +_Jason Statham
-    sync_mode: sync
+    template: {name: Actor, person: 976}
   Jeff Bridges:
-    actor: tmdb
-    tmdb_person: 1229
-    sort_title: +_Jeff Bridges
-    sync_mode: sync
+    template: {name: Actor, person: 1229}
   Jeff Goldblum:
-    actor: tmdb
-    tmdb_person: 4785
-    sort_title: +_Jeff Goldblum
-    sync_mode: sync
+    template: {name: Actor, person: 4785}
   Jennifer Aniston:
-    actor: tmdb
-    tmdb_person: 4491
-    sort_title: +_Jennifer Aniston
-    sync_mode: sync
+    template: {name: Actor, person: 4491}
   Jennifer Lawrence:
-    actor: tmdb
-    tmdb_person: 72129
-    sort_title: +_Jennifer Lawrence
-    sync_mode: sync
+    template: {name: Actor, person: 72129}
   Jesse Eisenberg:
-    actor: tmdb
-    tmdb_person: 44735
-    sort_title: +_Jesse Eisenberg
-    sync_mode: sync
+    template: {name: Actor, person: 44735}
   Jessica Alba:
-    actor: tmdb
-    tmdb_person: 56731
-    sort_title: +_Jessica Alba
-    sync_mode: sync
+    template: {name: Actor, person: 56731}
   Jet Li:
-    actor: tmdb
-    tmdb_person: 1336
-    sort_title: +_Jet Li
-    sync_mode: sync
+    template: {name: Actor, person: 1336}
   Jim Carrey:
-    actor: tmdb
-    tmdb_person: 206
-    sort_title: +_Jim Carrey
-    sync_mode: sync
+    template: {name: Actor, person: 206}
   John Candy:
-    actor: tmdb
-    tmdb_person: 7180
-    sort_title: +_John Candy
-    sync_mode: sync
+    template: {name: Actor, person: 7180}
   John Travolta:
-    actor: tmdb
-    tmdb_person: 8891
-    sort_title: +_John Travolta
-    sync_mode: sync
+    template: {name: Actor, person: 8891}
   John Wayne:
-    actor: tmdb
-    tmdb_person: 4165
-    sort_title: +_John Wayne
-    sync_mode: sync
+    template: {name: Actor, person: 4165}
   Johnny Depp:
-    actor: tmdb
-    tmdb_person: 85
-    sort_title: +_Johnny Depp
-    sync_mode: sync
+    template: {name: Actor, person: 85}
   Julia Roberts:
-    actor: tmdb
-    tmdb_person: 1204
-    sort_title: +_Julia Roberts
-    sync_mode: sync
+    template: {name: Actor, person: 1204}
   Kevin Bacon:
-    actor: tmdb
-    tmdb_person: 4724
-    sort_title: +_Kevin Bacon
-    sync_mode: sync
+    template: {name: Actor, person: 4724}
   Kevin Costner:
-    actor: tmdb
-    tmdb_person: 1269
-    sort_title: +_Kevin Costner
-    sync_mode: sync
+    template: {name: Actor, person: 1269}
   Kevin Hart:
-    actor: tmdb
-    tmdb_person: 55638
-    sort_title: +_Kevin Hart
-    sync_mode: sync
+    template: {name: Actor, person: 55638}
   Kevin Smith:
-    writer: tmdb
-    director: tmdb
-    tmdb_person: 19303
-    sort_title: +_Kevin Smith
-    sync_mode: sync
+    template: {name: Director Writer, person: 19303}
   Leonardo DiCaprio:
-    actor: tmdb
-    tmdb_person: 6193
-    sort_title: +_Leonardo DiCaprio
-    sync_mode: sync
+    template: {name: Actor, person: 6193}
   Liam Neeson:
-    actor: tmdb
-    tmdb_person: 3896
-    sort_title: +_Liam Neeson
-    sync_mode: sync
+    template: {name: Actor, person: 3896}
   Lucy Liu:
-    actor: tmdb
-    tmdb_person: 140
-    sort_title: +_Lucy Liu
-    sync_mode: sync
+    template: {name: Actor, person: 140}
   M. Night Shyamalan:
-    director: tmdb
-    tmdb_person: 11614
-    sort_title: +_M. Night Shyamalan
-    sync_mode: sync
+    template: {name: Director, person: 11614}
   Mark Wahlberg:
-    actor: tmdb
-    tmdb_person: 13240
-    sort_title: +_Mark Wahlberg
-    sync_mode: sync
+    template: {name: Actor, person: 13240}
   Matt Damon:
-    actor: tmdb
-    tmdb_person: 1892
-    sort_title: +_Matt Damon
-    sync_mode: sync
+    template: {name: Actor, person: 1892}
   Matthew McConaughey:
-    actor: tmdb
-    tmdb_person: 10297
-    sort_title: +_Matthew McConaughey
-    sync_mode: sync
+    template: {name: Actor, person: 10297}
   Megan Fox:
-    actor: tmdb
-    tmdb_person: 19537
-    sort_title: +_Megan Fox
-    sync_mode: sync
+    template: {name: Actor, person: 19537}
   Mel Brooks:
-    actor: tmdb
-    writer: tmdb
-    director: tmdb
-    tmdb_person: 14639
-    sort_title: +_Mel Brooks
-    sync_mode: sync
+    template: {name: Actor Director Writer, person: 14639}
   Mel Gibson:
-    actor: tmdb
-    director: tmdb
-    tmdb_person: 2461
-    sort_title: +_Mel Gibson
-    sync_mode: sync
+    template: {name: Actor Director, person: 2461}
   Melissa McCarthy:
-    actor: tmdb
-    tmdb_person: 55536
-    sort_title: +_Melissa McCarthy
-    sync_mode: sync
+    template: {name: Actor, person: 55536}
   Meryl Streep:
-    actor: tmdb
-    tmdb_person: 5064
-    sort_title: +_Meryl Streep
-    sync_mode: sync
+    template: {name: Actor, person: 5064}
   Michael Bay:
-    director: tmdb
-    tmdb_person: 865
-    sort_title: +_Michael Bay
-    sync_mode: sync
+    template: {name: Director, person: 865}
   Michael Caine:
-    actor: tmdb
-    tmdb_person: 3895
-    sort_title: +_Michael Caine
-    sync_mode: sync
+    template: {name: Actor, person: 3895}
   Michael Keaton:
-    actor: tmdb
-    tmdb_person: 2232
-    sort_title: +_Michael Keaton
-    sync_mode: sync
+    template: {name: Actor, person: 2232}
   Mike Myers:
-    actor: tmdb
-    tmdb_person: 12073
-    sort_title: +_Mike Myers
-    sync_mode: sync
+    template: {name: Actor, person: 12073}
   Mila Kunis:
-    actor: tmdb
-    tmdb_person: 18973
-    sort_title: +_Mila Kunis
-    sync_mode: sync
+    template: {name: Actor, person: 18973}
   Milla Jovovich:
-    actor: tmdb
-    tmdb_person: 63
-    sort_title: +_Milla Jovovich
-    sync_mode: sync
+    template: {name: Actor, person: 63}
   Morgan Freeman:
-    actor: tmdb
-    tmdb_person: 192
-    sort_title: +_Morgan Freeman
-    sync_mode: sync
+    template: {name: Actor, person: 192}
   Natalie Portman:
-    actor: tmdb
-    tmdb_person: 524
-    sort_title: +_Natalie Portman
-    sync_mode: sync
+    template: {name: Actor, person: 524}
   Nicolas Cage:
-    actor: tmdb
-    tmdb_person: 2963
-    sort_title: +_Nicolas Cage
-    sync_mode: sync
+    template: {name: Actor, person: 2963}
   Nicole Kidman:
-    actor: tmdb
-    tmdb_person: 2227
-    sort_title: +_Nicole Kidman
-    sync_mode: sync
+    template: {name: Actor, person: 2227}
   Orlando Bloom:
-    actor: tmdb
-    tmdb_person: 114
-    sort_title: +_Orlando Bloom
-    sync_mode: sync
+    template: {name: Actor, person: 114}
   Owen Wilson:
-    actor: tmdb
-    tmdb_person: 887
-    sort_title: +_Owen Wilson
-    sync_mode: sync
+    template: {name: Actor, person: 887}
   Patrick Stewart:
-    actor: tmdb
-    tmdb_person: 2387
-    sort_title: +_Patrick Stewart
-    sync_mode: sync
+    template: {name: Actor, person: 2387}
   Quentin Tarantino:
-    actor: tmdb
-    writer: tmdb
-    director: tmdb
-    tmdb_person: 138
-    sort_title: +_Quentin Tarantino
-    sync_mode: sync
+    template: {name: Actor Director Writer, person: 138}
   Reese Witherspoon:
-    actor: tmdb
-    tmdb_person: 368
-    sort_title: +_Reese Witherspoon
-    sync_mode: sync
+    template: {name: Actor, person: 368}
   Ridley Scott:
-    director: tmdb
-    tmdb_person: 578
-    sort_title: +_Ridley Scott
-    sync_mode: sync
+    template: {name: Director, person: 578}
   Robert De Niro:
-    actor: tmdb
-    tmdb_person: 380
-    sort_title: +_Robert De Niro
-    sync_mode: sync
+    template: {name: Actor, person: 380}
   Robert Downey Jr.:
-    actor: tmdb
-    tmdb_person: 3223
-    sort_title: +_Robert Downey Jr.
-    sync_mode: sync
+    template: {name: Actor, person: 3223}
   Robin Williams:
-    actor: tmdb
-    tmdb_person: 2157
-    sort_title: +_Robin Williams
-    sync_mode: sync
+    template: {name: Actor, person: 2157}
   Rosario Dawson:
-    actor: tmdb
-    tmdb_person: 5916
-    sort_title: +_Rosario Dawson
-    sync_mode: sync
+    template: {name: Actor, person: 5916}
   Ryan Reynolds:
-    actor: tmdb
-    tmdb_person: 10859
-    sort_title: +_Ryan Reynolds
-    sync_mode: sync
+    template: {name: Actor, person: 10859}
   Samuel L. Jackson:
-    actor: tmdb
-    tmdb_person: 2231
-    sort_title: +_Samuel L. Jackson
-    sync_mode: sync
+    template: {name: Actor, person: 2231}
   Sandra Bullock:
-    actor: tmdb
-    tmdb_person: 18277
-    sort_title: +_Sandra Bullock
-    sync_mode: sync
+    template: {name: Actor, person: 18277}
   Sacha Baron Cohen:
-    actor: tmdb
-    tmdb_person: 6730
-    sort_title: +_Sacha Baron Cohen
-    sync_mode: sync
+    template: {name: Actor, person: 6730}
   Scarlett Johansson:
-    actor: tmdb
-    tmdb_person: 1245
-    sort_title: +_Scarlett Johansson
-    sync_mode: sync
+    template: {name: Actor, person: 1245}
   Sean Connery:
-    actor: tmdb
-    tmdb_person: 738
-    sort_title: +_Sean Connery
-    sync_mode: sync
+    template: {name: Actor, person: 738}
   Seth Rogen:
-    actor: tmdb
-    writer: tmdb
-    director: tmdb
-    tmdb_person: 19274
-    sort_title: +_Seth Rogen
-    sync_mode: sync
+    template: {name: Actor Director Writer, person: 19274}
   Shia LaBeouf:
-    actor: tmdb
-    tmdb_person: 10959
-    sort_title: +_Shia LaBeouf
-    sync_mode: sync
+    template: {name: Actor, person: 10959}
   Steve Buscemi:
-    actor: tmdb
-    tmdb_person: 884
-    sort_title: +_Steve Buscemi
-    sync_mode: sync
+    template: {name: Actor, person: 884}
   Steve Carell:
-    actor: tmdb
-    tmdb_person: 4495
-    sort_title: +_Steve Carell
-    sync_mode: sync
+    template: {name: Actor, person: 4495}
   Steve Martin:
-    actor: tmdb
-    tmdb_person: 67773
-    sort_title: +_Steve Martin
-    sync_mode: sync
+    template: {name: Actor, person: 67773}
   Steven Seagal:
-    actor: tmdb
-    tmdb_person: 23880
-    sort_title: +_Steven Seagal
-    sync_mode: sync
+    template: {name: Actor, person: 23880}
   Steven Spielberg:
-    director: tmdb
-    tmdb_person: 488
-    sort_title: +_Steven Spielberg
-    sync_mode: sync
+    template: {name: Director, person: 488}
   Sylvester Stallone:
-    actor: tmdb
-    tmdb_person: 16483
-    sort_title: +_Sylvester Stallone
-    sync_mode: sync
+    template: {name: Actor, person: 16483}
   Tim Burton:
-    writer: tmdb
-    director: tmdb
-    tmdb_person: 510
-    sort_title: +_Tim Burton
-    sync_mode: sync
+    template: {name: Director Writer, person: 510}
   Tom Cruise:
-    actor: tmdb
-    tmdb_person: 500
-    sort_title: +_Tom Cruise
-    sync_mode: sync
+    template: {name: Actor, person: 500}
   Tom Hanks:
-    actor: tmdb
-    tmdb_person: 31
-    sort_title: +_Tom Hanks
-    sync_mode: sync
+    template: {name: Actor, person: 31}
   Tommy Lee Jones:
-    actor: tmdb
-    tmdb_person: 2176
-    sort_title: +_Tommy Lee Jones
-    sync_mode: sync
+    template: {name: Actor, person: 2176}
   Vin Diesel:
-    actor: tmdb
-    tmdb_person: 12835
-    sort_title: +_Vin Diesel
-    sync_mode: sync
+    template: {name: Actor, person: 12835}
   Vince Vaughn:
-    actor: tmdb
-    tmdb_person: 4937
-    sort_title: +_Vince Vaughn
-    sync_mode: sync
+    template: {name: Actor, person: 4937}
   Wesley Snipes:
-    actor: tmdb
-    tmdb_person: 10814
-    sort_title: +_Wesley Snipes
-    sync_mode: sync
+    template: {name: Actor, person: 10814}
   Will Ferrell:
-    actor: tmdb
-    tmdb_person: 23659
-    sort_title: +_Will Ferrell
-    sync_mode: sync
+    template: {name: Actor, person: 23659}
   Will Smith:
-    actor: tmdb
-    tmdb_person: 2888
-    sort_title: +_Will Smith
-    sync_mode: sync
+    template: {name: Actor, person: 2888}
   Woody Harrelson:
-    actor: tmdb
-    tmdb_person: 57755
-    sort_title: +_Woody Harrelson
-    sync_mode: sync
+    template: {name: Actor, person: 57755}
   Zack Snyder:
-    director: tmdb
-    tmdb_person: 15217
-    sort_title: +_Zack Snyder
-    sync_mode: sync
+    template: {name: Director, person: 15217}
 
 ######################################################
 #                TMDb Collections                    #
 ######################################################
+
   101 Dalmatians:
-    tmdb_collection_details: 100693
-    schedule: daily
+    template: {name: Collection, collection: 100693}
   101 Dalmatians (Live-Action):
-    tmdb_collection_details: 124916
-    schedule: daily
+    template: {name: Collection, collection: 124916}
   28 Days/Weeks Later:
-    tmdb_collection_details: 1565
+    template: {name: Collection, collection: 1565}
     name_mapping: 28 Days-Weeks Later
-    schedule: daily
   3 Ninja:
-    tmdb_collection_details: 71458
-    schedule: daily
+    template: {name: Collection, collection: 71458}
   "300":
-    tmdb_collection_details: 125570
-    schedule: daily
+    template: {name: Collection, collection: 125570}
   Addams Family:
-    tmdb_collection_details: 11716
-    schedule: daily
+    template: {name: Collection, collection: 11716}
   Air Bud:
-    tmdb_collection_details: 97445
-    schedule: daily
+    template: {name: Collection, collection: 97445}
   Aladdin:
-    tmdb_collection_details: 86027
-    schedule: daily
+    template: {name: Collection, collection: 86027}
   Alice in Wonderland:
-    tmdb_collection_details: 261307
-    schedule: daily
+    template: {name: Collection, collection: 261307}
   Alien:
-    tmdb_collection_details: 8091, 135416
-    schedule: daily
+    template: {name: Collection, collection: "8091, 135416"}
   All Dogs Go to Heaven:
-    tmdb_collection_details: 140910
-    schedule: daily
+    template: {name: Collection, collection: 140910}
   Almighty:
-    tmdb_collection_details: 124949
-    schedule: daily
+    template: {name: Collection, collection: 124949}
   Alvin and the Chipmunks:
-    tmdb_collection_details: 167613
-    schedule: daily
+    template: {name: Collection, collection: 167613}
   The Amazing Spider-Man:
-    tmdb_collection_details: 125574
-    schedule: daily
+    template: {name: Collection, collection: 125574}
   American Pie:
-    tmdb_collection_details: 2806, 298820
-    schedule: daily
+    template: {name: Collection, collection: "2806, 298820"}
   American Psycho:
-    tmdb_collection_details: 86105
-    schedule: daily
+    template: {name: Collection, collection: 86105}
   An American Tail:
-    tmdb_collection_details: 8783
-    schedule: daily
+    template: {name: Collection, collection: 8783}
   Anaconda:
-    tmdb_collection_details: 105995
-    tmdb_movie: 336560
-    schedule: daily
+    template: {name: Collection Movie, collection: 105995, movie: 336560}
   Anchorman:
-    tmdb_collection_details: 93791
-    schedule: daily
+    template: {name: Collection, collection: 93791}
   Angels in the ...:
-    tmdb_collection_details: 508334
+    template: {name: Collection, collection: 508334}
     name_mapping: Angels in the
-    schedule: daily
   The Angry Birds:
-    tmdb_collection_details: 531315
-    schedule: daily
-    add_to_arr: true
+    template: {name: Collection, collection: 531315}
   Annabelle:
-    tmdb_collection_details: 402074
-    schedule: daily
+    template: {name: Collection, collection: 402074}
   Ant-Man:
-    tmdb_collection_details: 422834
-    schedule: daily
+    template: {name: Collection, collection: 422834}
   Appleseed:
-    tmdb_collection_details: 87800, 371526
-    schedule: daily
+    template: {name: Collection, collection: "87800, 371526"}
   Atlantis:
-    tmdb_collection_details: 100965
-    schedule: daily
+    template: {name: Collection, collection: 100965}
   Attack on Titan:
-    tmdb_collection_details: 370411
-    schedule: daily
+    template: {name: Collection, collection: 370411}
   Austin Powers:
-    tmdb_collection_details: 1006
-    schedule: daily
+    template: {name: Collection, collection: 1006}
   The Avengers:
-    tmdb_collection_details: 86311
-    schedule: daily
+    template: {name: Collection, collection: 86311}
   AVP:
-    tmdb_collection_details: 115762
-    schedule: daily
+    template: {name: Collection, collection: 115762}
   Babe:
-    tmdb_collection_details: 9435
-    schedule: daily
+    template: {name: Collection, collection: 9435}
   Back to the Future:
-    tmdb_collection_details: 264
-    schedule: daily
+    template: {name: Collection, collection: 264}
   Bad Boys:
-    tmdb_collection_details: 14890
-    schedule: daily
+    template: {name: Collection, collection: 14890}
   Bad Moms:
-    tmdb_collection_details: 487376
-    schedule: daily
+    template: {name: Collection, collection: 487376}
   Bad Santa:
-    tmdb_collection_details: 423173
-    schedule: daily
+    template: {name: Collection, collection: 423173}
   Balto:
-    tmdb_collection_details: 117693
-    schedule: daily
+    template: {name: Collection, collection: 117693}
   Bambi:
-    tmdb_collection_details: 87250
-    schedule: daily
+    template: {name: Collection, collection: 87250}
   Barbershop:
-    tmdb_collection_details: 176097
-    tmdb_movie: 14177
-    schedule: daily
+    template: {name: Collection Movie, collection: 176097, movie: 14177}
   Batman:
-    tmdb_collection_details: 120794
-    schedule: daily
+    template: {name: Collection, collection: 120794}
   Batman (Adam West) Animation:
-    tmdb_collection_details: 626517
-    schedule: daily
+    template: {name: Collection, collection: 626517}
   Beauty and the Beast:
-    tmdb_collection_details: 153010
-    schedule: daily
+    template: {name: Collection, collection: 153010}
   Bill & Ted's Most Excellent:
-    tmdb_collection_details: 91746
-    schedule: daily
+    template: {name: Collection, collection: 91746}
   Black Water:
-    tmdb_collection_details: 730166
-    schedule: daily
+    template: {name: Collection, collection: 730166}
   Blade:
-    tmdb_collection_details: 735
-    schedule: daily
+    template: {name: Collection, collection: 735}
   Blade Runner:
-    tmdb_collection_details: 422837
-    schedule: daily
+    template: {name: Collection, collection: 422837}
   The Blues Brothers:
-    tmdb_collection_details: 112636
-    schedule: daily
+    template: {name: Collection, collection: 112636}
   The Boondock Saints:
-    tmdb_collection_details: 87186
-    schedule: daily
+    template: {name: Collection, collection: 87186}
   Borat Moviefilms:
-    tmdb_collection_details: 747168
-    schedule: daily
+    template: {name: Collection, collection: 747168}
   The Bourne:
-    tmdb_collection_details: 31562
-    schedule: daily
+    template: {name: Collection, collection: 31562}
   The Boy:
-    tmdb_collection_details: 666337
-    schedule: daily
+    template: {name: Collection, collection: 666337}
   Bring It On:
-    tmdb_collection_details: 430186
-    schedule: daily
+    template: {name: Collection, collection: 430186}
   Brother Bear:
-    tmdb_collection_details: 96472
-    schedule: daily
+    template: {name: Collection, collection: 96472}
   The Buddies:
-    tmdb_collection_details: 91657
-    schedule: daily
+    template: {name: Collection, collection: 91657}
   Captain America:
-    tmdb_collection_details: 131295
-    schedule: daily
+    template: {name: Collection, collection: 131295}
   Carrie:
-    tmdb_collection_details: 257053
-    schedule: daily
+    template: {name: Collection, collection: 257053}
   Cars:
-    tmdb_collection_details: 87118
-    schedule: daily
+    template: {name: Collection, collection: 87118}
   Charlie Brown:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls054850259/
     summary: Collection of Movies and TV Specials with the beloved Peanuts characters.
-    schedule: daily
   Charlie's Angels:
-    tmdb_collection_details: 86029
-    schedule: daily
+    template: {name: Collection, collection: 86029}
   Cheaper by the Dozen:
-    tmdb_collection_details: 114783
-    schedule: daily
+    template: {name: Collection, collection: 114783}
   The Chronicles of Narnia:
-    tmdb_collection_details: 420
-    schedule: daily
+    template: {name: Collection, collection: 420}
   The Chronicles of Riddick:
-    tmdb_collection_details: 2794
-    schedule: daily
+    template: {name: Collection, collection: 2794}
   Cinderella:
-    tmdb_collection_details: 55419
-    schedule: daily
+    template: {name: Collection, collection: 55419}
   Cinderella Story:
-    tmdb_collection_details: 437451
-    schedule: daily
+    template: {name: Collection, collection: 437451}
   City Slickers:
-    tmdb_collection_details: 150156
-    schedule: daily
+    template: {name: Collection, collection: 150156}
   Clash of the Titans:
-    tmdb_collection_details: 86780
-    schedule: daily
+    template: {name: Collection, collection: 86780}
   Clerks:
-    tmdb_collection_details: 182813
-    schedule: daily
+    template: {name: Collection, collection: 182813}
   Cloudy with a Chance of Meatballs:
-    tmdb_collection_details: 177467
-    schedule: daily
+    template: {name: Collection, collection: 177467}
   Cloverfield:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls021933730/
     summary: Cloverfield is an American science fiction anthology film series and media franchise created and produced by J. J. Abrams consisting of three films, viral marketing websites linking the films together, and a tie-in manga to the first film titled Cloverfield/Kishin (2008), all set in a shared fictional universe referred to as the "Cloververse". The franchise as a whole deals with creatures from other dimensions attacking Earth throughout various decades, all as a repercussion of an experiment by an astronaut team aboard the Cloverfield Station in outer-space. Each film depicts the reality-altering effects of their study, which was meant to find a new energy source replacing the planet's depleted resources, only to open portals for assault from various beasts from deep space.
-    schedule: daily
   The Conjuring:
-    tmdb_collection_details: 313086
-    schedule: daily
+    template: {name: Collection, collection: 313086}
   Cornetto Trilogy:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls068623110/
     summary: An anthology series of British comedic genre films directed by Edgar Wright, written by Wright and Simon Pegg, produced by Nira Park, and starring Pegg and Nick Frost. The trilogy consists of Shaun of the Dead (2004), Hot Fuzz (2007), and The World's End (2013).
-    schedule: daily
   Creed:
-    tmdb_collection_details: 553717
-    schedule: daily
+    template: {name: Collection, collection: 553717}
   Crocodile Dundee:
-    tmdb_collection_details: 9332
-    schedule: daily
+    template: {name: Collection, collection: 9332}
   The Croods:
-    tmdb_collection_details: 464577
-    schedule: daily
+    template: {name: Collection, collection: 464577}
   Crouching Tiger, Hidden Dragon:
-    tmdb_collection_details: 290973
-    schedule: daily
+    template: {name: Collection, collection: 290973}
   Daddy's Home:
-    tmdb_collection_details: 473971
-    schedule: daily
+    template: {name: Collection, collection: 473971}
   The Dark Knight:
-    tmdb_collection_details: 263
-    schedule: daily
+    template: {name: Collection, collection: 263}
   DC Super Hero Girls:
-    tmdb_collection_details: 477208, 557495
-    schedule: daily
+    template: {name: Collection, collection: "477208, 557495"}
   Deadpool:
-    tmdb_collection_details: 448150
-    tmdb_movie: 567604
-    schedule: daily
+    template: {name: Collection Movie, collection: 448150, movie: 567604}
   Death Note:
-    tmdb_collection_details: 102019
-    schedule: daily
+    template: {name: Collection, collection: 102019}
   Death Race:
-    tmdb_collection_details: 86116
-    schedule: daily
+    template: {name: Collection, collection: 86116}
   The Debt Collector:
-    tmdb_collection_details: 709271
-    schedule: daily
+    template: {name: Collection, collection: 709271}
   Despicable Me:
-    tmdb_collection_details: 86066, 544669
-    schedule: daily
+    template: {name: Collection, collection: "86066, 544669"}
   Die Hard:
-    tmdb_collection_details: 1570
-    schedule: daily
+    template: {name: Collection, collection: 1570}
   Dirty Harry:
-    tmdb_collection_details: 10456
-    schedule: daily
+    template: {name: Collection, collection: 10456}
   Divergent:
-    tmdb_collection_details: 283579
-    schedule: daily
+    template: {name: Collection, collection: 283579}
   A Dog's Purpose:
-    tmdb_collection_details: 591028
-    schedule: daily
+    template: {name: Collection, collection: 591028}
   DragonHeart:
-    tmdb_collection_details: 169452
-    schedule: daily
+    template: {name: Collection, collection: 169452}
   Dumb and Dumber:
-    tmdb_collection_details: 96665
-    schedule: daily
+    template: {name: Collection, collection: 96665}
   Dungeons & Dragons:
-    tmdb_collection_details: 106498
-    add_to_arr: true
-    schedule: daily
+    template: {name: Collection, collection: 106498}
   The Emperor's New Groove:
-    tmdb_collection_details: 178117
-    schedule: daily
+    template: {name: Collection, collection: 178117}
   The Equalizer:
-    tmdb_collection_details: 523855
-    schedule: daily
+    template: {name: Collection, collection: 523855}
   Escape From ...:
-    tmdb_collection_details: 115838
+    template: {name: Collection, collection: 115838}
     name_mapping: Escape From
-    schedule: daily
   Escape Plan:
-    tmdb_collection_details: 525891
-    schedule: daily
+    template: {name: Collection, collection: 525891}
   Evangelion:
-    tmdb_collection_details: 210303
+    template: {name: Collection, collection: 210303}
     summary: A Japanese animated film series and a retelling of the original Neon Genesis Evangelion anime television series, produced by Studio Khara. Hideaki Anno served as the writer and general manager of the project, with Kazuya Tsurumaki and Masayuki directing the films themselves. Yoshiyuki Sadamoto, Ikuto Yamashita and Shiro Sagisu returned to provide character designs, mechanical designs and music respectively.
-    schedule: daily
   The Expendables:
-    tmdb_collection_details: 126125
-    schedule: daily
+    template: {name: Collection, collection: 126125}
   Fantasia:
-    tmdb_collection_details: 55427
-    schedule: daily
+    template: {name: Collection, collection: 55427}
   Fantastic Beasts:
-    tmdb_collection_details: 435259
-    schedule: daily
+    template: {name: Collection, collection: 435259}
   Fantastic Four:
-    tmdb_collection_details: 9744
-    schedule: daily
+    template: {name: Collection, collection: 9744}
   The Fast and the Furious:
-    tmdb_collection_details: 9485, 688042
-    schedule: daily
+    template: {name: Collection, collection: "9485, 688042"}
   Fifty Shades:
-    tmdb_collection_details: 344830
-    schedule: daily
+    template: {name: Collection, collection: 344830}
   Final Destination:
-    tmdb_collection_details: 8864
-    schedule: daily
+    template: {name: Collection, collection: 8864}
   Final Fantasy:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls022264056/
     summary: A collection of films based off or closely associated with the Final Fantasy video games.
-    schedule: daily
   Finding Nemo:
-    tmdb_collection_details: 137697
-    schedule: daily
+    template: {name: Collection, collection: 137697}
   The Flintstones:
-    tmdb_collection_details: 351684
-    schedule: daily
+    template: {name: Collection, collection: 351684}
   The Fox and the Hound:
-    tmdb_collection_details: 100970
-    schedule: daily
+    template: {name: Collection, collection: 100970}
   Free Willy:
-    tmdb_collection_details: 9328
-    schedule: daily
+    template: {name: Collection, collection: 9328}
   Friday:
-    tmdb_collection_details: 43563
-    schedule: daily
+    template: {name: Collection, collection: 43563}
   Friday the 13th:
-    tmdb_collection_details: 9735
-    tmdb_movie: 6466, 222724
-    schedule: daily
+    template: {name: Collection Movie, collection: 9735, movie: "6466, 222724"}
   Frozen:
-    tmdb_collection_details: 386382
-    tmdb_movie: 326359, 460793
-    schedule: daily
+    template: {name: Collection Movie, collection: 386382, movie: "326359, 460793"}
   G.I. Joe:
-    tmdb_collection_details: 135468
-    schedule: daily
+    template: {name: Collection, collection: 135468}
   Garfield:
-    tmdb_collection_details: 86115, 373918
-    schedule: daily
+    template: {name: Collection, collection: "86115, 373918"}
   George Carlin Stand Up:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls070221411/
     summary: Collection of George Carlin's Stand Up Comedy HBO Specials
-    schedule: daily
   George Lopez Stand Up:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls086584751/
     summary: Collection of George Lopez's Stand Up Comedy Specials
-    schedule: daily
   George of the Jungle:
-    tmdb_collection_details: 126221
-    schedule: daily
+    template: {name: Collection, collection: 126221}
   Ghost in the Shell:
-    tmdb_collection_details: 23026
-    schedule: daily
+    template: {name: Collection, collection: 23026}
   Ghost Rider:
-    tmdb_collection_details: 90306
-    schedule: daily
+    template: {name: Collection, collection: 90306}
   Ghostbusters:
-    tmdb_collection_details: 2980
-    tmdb_movie: 43074
-    schedule: daily
+    template: {name: Collection Movie, collection: 2980, movie: 43074}
   The Girl - Millennium:
-    tmdb_collection_details: 575987
-    schedule: daily
+    template: {name: Collection, collection: 575987}
   The Godfather:
-    tmdb_collection_details: 230
-    schedule: daily
+    template: {name: Collection, collection: 230}
   Godzilla (Showa):
-    tmdb_collection_details: 374509
-    tmdb_movie: 18983
+    template: {name: Collection Movie, collection: 374509, movie: 18983}
     sort_title: Godzilla 01 (Showa)
-    schedule: daily
   Godzilla (Heisei):
-    tmdb_collection_details: 374511
-    tmdb_movie: 39256
+    template: {name: Collection, collection: 374511, movie: 39256}
     sort_title: Godzilla 02 (Heisei)
-    schedule: daily
   Godzilla (Millennium):
-    tmdb_collection_details: 374512
+    template: {name: Collection, collection: 374512}
     sort_title: Godzilla 04 (Millennium)
-    schedule: daily
   Godzilla (MonsterVerse):
-    tmdb_collection_details: 535313
-    tmdb_movie: 293167
+    template: {name: Collection, collection: 535313, movie: 293167}
     sort_title: Godzilla 05 (MonsterVerse)
-    schedule: daily
   Godzilla (Anime):
-    tmdb_collection_details: 535790
+    template: {name: Collection, collection: 535790}
     sort_title: Godzilla 07 (Anime)
-    schedule: daily
   A Goofy Movie:
-    tmdb_collection_details: 410261
-    schedule: daily
+    template: {name: Collection, collection: 410261}
   Goosebumps:
-    tmdb_collection_details: 508783
-    schedule: daily
+    template: {name: Collection, collection: 508783}
   Guardians of the Galaxy:
-    tmdb_collection_details: 284433
-    schedule: daily
+    template: {name: Collection, collection: 284433}
   Green Street Hooligans:
-    tmdb_collection_details: 152544
-    schedule: daily
+    template: {name: Collection, collection: 152544}
   Grown Ups:
-    tmdb_collection_details: 180546
-    schedule: daily
+    template: {name: Collection, collection: 180546}
   Halloween:
-    tmdb_collection_details: 91361, 126209
-    schedule: daily
+    template: {name: Collection, collection: "91361, 126209"}
   Halo:
+    template: {name: Other Collection}
     tmdb_list_details: 7070832
-    schedule: daily
   The Hangover:
-    tmdb_collection_details: 86119
-    schedule: daily
+    template: {name: Collection, collection: 86119}
   Hannibal Lecter:
-    tmdb_collection_details: 9743
-    tmdb_movie: 11454
-    schedule: daily
+    template: {name: Collection Movie, collection: 9743, movie: 11454}
   Happy Death Day:
-    tmdb_collection_details: 526380
-    schedule: daily
+    template: {name: Collection, collection: 526380}
   Happy Feet:
-    tmdb_collection_details: 92012
-    schedule: daily
+    template: {name: Collection, collection: 92012}
   Harold & Kumar:
-    tmdb_collection_details: 30663
-    schedule: daily
+    template: {name: Collection, collection: 30663}
   Harry Potter:
-    tmdb_collection_details: 1241
-    schedule: daily
+    template: {name: Collection, collection: 1241}
   ... Has Fallen:
-    tmdb_collection_details: 508783
+    template: {name: Collection, collection: 508783}
     name_mapping: Has Fallen
-    schedule: daily
   Hellboy:
-    tmdb_collection_details: 508783
-    schedule: daily
+    template: {name: Collection, collection: 508783}
   Hellboy (Animated):
-    tmdb_collection_details: 123203
-    schedule: daily
+    template: {name: Collection, collection: 123203}
   High School Musical:
-    tmdb_collection_details: 87253
-    schedule: daily
+    template: {name: Collection, collection: 87253}
   Highlander:
-    tmdb_collection_details: 8050
-    schedule: daily
+    template: {name: Collection, collection: 8050}
   The Hobbit:
-    tmdb_collection_details: 121938
-    schedule: daily
+    template: {name: Collection, collection: 121938}
   Home Alone:
-    tmdb_collection_details: 9888
-    schedule: daily
+    template: {name: Collection, collection: 9888}
   Honey, I Shrunk the Kids:
-    tmdb_collection_details: 72119
-    schedule: daily
+    template: {name: Collection, collection: 72119}
   Horrible Bosses:
-    tmdb_collection_details: 280588
-    schedule: daily
+    template: {name: Collection, collection: 280588}
   Hot Tub Time Machine:
-    tmdb_collection_details: 313576
-    schedule: daily
+    template: {name: Collection, collection: 313576}
   Hotel Transylvania:
-    tmdb_collection_details: 185103
-    schedule: daily
+    template: {name: Collection, collection: 185103}
   House of 1000 Corpses:
-    tmdb_collection_details: 105625
-    schedule: daily
+    template: {name: Collection, collection: 105625}
   How to Train Your Dragon:
-    tmdb_collection_details: 89137
-    schedule: daily
+    template: {name: Collection, collection: 89137}
   The Human Centipede:
-    tmdb_collection_details: 96671
-    schedule: daily
+    template: {name: Collection, collection: 96671}
   The Hunchback of Notre Dame:
-    tmdb_collection_details: 97456
-    schedule: daily
+    template: {name: Collection, collection: 97456}
   The Hunger Games:
-    tmdb_collection_details: 131635
-    schedule: daily
+    template: {name: Collection, collection: 131635}
   The Huntsman:
-    tmdb_collection_details: 393379
-    schedule: daily
+    template: {name: Collection, collection: 393379}
   Ice Age:
-    tmdb_collection_details: 8354
-    tmdb_movie: 79218, 717095, 387893
-    schedule: daily
+    template: {name: Collection Movie, collection: 8354, movie: "79218, 717095, 387893"}
   The Incredibles:
-    tmdb_collection_details: 468222
-    schedule: daily
+    template: {name: Collection, collection: 468222}
   Independence Day:
-    tmdb_collection_details: 304378
-    schedule: daily
+    template: {name: Collection, collection: 304378}
   Indiana Jones:
-    tmdb_collection_details: 84
-    schedule: daily
+    template: {name: Collection, collection: 84}
   Ip Man:
-    tmdb_collection_details: 70068
-    tmdb_movie: 658009, 643413, 450001, 751391, 44249, 182127, 44865
+    template: {name: Collection Movie, collection: 70068, movie: "658009, 643413, 450001, 751391, 44249, 182127, 44865"}
     collection_order: alpha
-    schedule: daily
   Iron Man:
-    tmdb_collection_details: 131292
-    schedule: daily
+    template: {name: Collection, collection: 131292}
   It:
-    tmdb_collection_details: 477962
-    schedule: daily
+    template: {name: Collection, collection: 477962}
   James Bond:
-    tmdb_collection_details: 645
-    schedule: daily
+    template: {name: Collection, collection: 645}
   Jaws:
-    tmdb_collection_details: 2366
-    schedule: daily
+    template: {name: Collection, collection: 2366}
   Jay and Silent Bob:
-    tmdb_collection_details: 726870
-    schedule: daily
+    template: {name: Collection, collection: 726870}
   Jeff Dunham Stand Up:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls086022668/
     summary: Collection of Jeff Dunham's Stand Up Comedy Specials
-    schedule: daily
   John Wick:
-    tmdb_collection_details: 404609
-    schedule: daily
+    template: {name: Collection, collection: 404609}
   Johnny Tsunami:
-    tmdb_collection_details: 394316
-    schedule: daily
+    template: {name: Collection, collection: 394316}
   Jumanji:
-    tmdb_collection_details: 495527
-    schedule: daily
+    template: {name: Collection, collection: 495527}
   Jump Street:
-    tmdb_collection_details: 212562
-    schedule: daily
+    template: {name: Collection, collection: 212562}
   The Jungle Book:
-    tmdb_collection_details: 97459
-    schedule: daily
+    template: {name: Collection, collection: 97459}
   Jurassic Park:
-    tmdb_collection_details: 328
-    tmdb_movie: 630322
-    schedule: daily
+    template: {name: Collection Movie, collection: 328, movie: 630322}
   The Karate Kid:
-    tmdb_collection_details: 8580
-    tmdb_movie: 38575
-    schedule: daily
+    template: {name: Collection Movie, collection: 8580, movie: 38575}
   Kevin Hart Stand Up:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls049792208/
     summary: Collection of Kevin Hart's Stand Up Comedy Specials
-    schedule: daily
   Kick-Ass:
-    tmdb_collection_details: 179892
-    schedule: daily
+    template: {name: Collection, collection: 179892}
   Kill Bill:
-    tmdb_collection_details: 2883
-    schedule: daily
+    template: {name: Collection, collection: 2883}
   Kingsman:
-    tmdb_collection_details: 391860
-    schedule: daily
+    template: {name: Collection, collection: 391860}
   Kung Fu Panda:
-    tmdb_collection_details: 77816
-    schedule: daily
+    template: {name: Collection, collection: 77816}
   Lady and the Tramp:
-    tmdb_collection_details: 97460
-    schedule: daily
+    template: {name: Collection, collection: 97460}
   Lake Placid:
-    tmdb_collection_details: 97768
-    schedule: daily
+    template: {name: Collection, collection: 97768}
   The Land Before Time:
-    tmdb_collection_details: 19163
-    schedule: daily
+    template: {name: Collection, collection: 19163}
   Legally Blonde:
-    tmdb_collection_details: 86024
-    schedule: daily
+    template: {name: Collection, collection: 86024}
   LEGO DC Comics Super Heroes:
-    tmdb_collection_details: 386162
-    schedule: daily
+    template: {name: Collection, collection: 386162}
   The Lego Movie:
-    tmdb_collection_details: 325470
-    schedule: daily
+    template: {name: Collection, collection: 325470}
   Lego Star Wars:
-    tmdb_collection_details: 302331
-    schedule: daily
+    template: {name: Collection, collection: 302331}
   Lethal Weapon:
-    tmdb_collection_details: 945
-    schedule: daily
+    template: {name: Collection, collection: 945}
   Lilo & Stitch:
-    tmdb_collection_details: 97461
-    schedule: daily
+    template: {name: Collection, collection: 97461}
   The Lion King:
-    tmdb_collection_details: 94032
-    schedule: daily
+    template: {name: Collection, collection: 94032}
   The Little Mermaid:
-    tmdb_collection_details: 33085
-    schedule: daily
+    template: {name: Collection, collection: 33085}
   The Lord of the Rings:
-    tmdb_collection_details: 119
-    schedule: daily
+    template: {name: Collection, collection: 119}
   The Lord of the Rings (Animated):
-    tmdb_collection_details: 141290
-    schedule: daily
+    template: {name: Collection, collection: 141290}
   Mad Max:
-    tmdb_collection_details: 8945
-    schedule: daily
+    template: {name: Collection, collection: 8945}
   Madagascar:
-    tmdb_collection_details: 14740
-    tmdb_movie: 161143, 25472, 270946
-    schedule: daily
+    template: {name: Collection, collection: 14740, movie: "161143, 25472, 270946"}
   Maleficent:
-    tmdb_collection_details: 531331
-    schedule: daily
+    template: {name: Collection, collection: 531331}
   Mall Cop:
-    tmdb_collection_details: 328372
-    schedule: daily
+    template: {name: Collection, collection: 328372}
   The Man with No Name:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls023916334/
     summary: An Italian film series consisting of three Spaghetti Western films directed by Sergio Leone. The films are titled A Fistful of Dollars (1964), For a Few Dollars More (1965) and The Good, the Bad and the Ugly (1966). The series has become known for establishing the Spaghetti Western genre, and inspiring the creation of many more Spaghetti Western films. The three films are consistently listed among the best rated Western films in history.
-    schedule: daily
   Marvel Rising:
-    tmdb_collection_details: 627234
-    schedule: daily
+    template: {name: Collection, collection: 627234}
   Marx Brothers:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls068486735/
     summary: The Marx Brothers were an American family comedy act that was successful in vaudeville, on Broadway, and in motion pictures from 1905 to 1949. Five of the Marx Brothers' thirteen feature films were selected by the American Film Institute (AFI) as among the top 100 comedy films, with two of them, Duck Soup (1933) and A Night at the Opera (1935), in the top fifteen. They are widely considered by critics, scholars, and fans to be among the greatest and most influential comedians of the 20th century.
-    schedule: daily
   Mary Poppins:
-    tmdb_collection_details: 527439
-    schedule: daily
+    template: {name: Collection, collection: 527439}
   The Mask:
-    tmdb_collection_details: 43072
-    schedule: daily
+    template: {name: Collection, collection: 43072}
   The Matrix:
-    tmdb_collection_details: 2344
-    schedule: daily
+    template: {name: Collection, collection: 2344}
   Maya the Bee:
-    tmdb_collection_details: 522250
-    schedule: daily
+    template: {name: Collection, collection: 522250}
   The Maze Runner:
-    tmdb_collection_details: 295130
-    schedule: daily
+    template: {name: Collection, collection: 295130}
   Mean Girls:
-    tmdb_collection_details: 99606
-    schedule: daily
+    template: {name: Collection, collection: 99606}
   Meet the Parents:
-    tmdb_collection_details: 51509
-    schedule: daily
+    template: {name: Collection, collection: 51509}
   Men In Black:
-    tmdb_collection_details: 86055
-    schedule: daily
+    template: {name: Collection, collection: 86055}
   The Mighty Ducks:
-    tmdb_collection_details: 10709
-    schedule: daily
+    template: {name: Collection, collection: 10709}
   "Mission: Impossible":
-    tmdb_collection_details: 87359
+    template: {name: Collection, collection: 87359}
     name_mapping: Mission Impossible
-    schedule: daily
   Monsters, Inc.:
-    tmdb_collection_details: 137696
-    schedule: daily
+    template: {name: Collection, collection: 137696}
   Monty Python:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls072012494/
     summary: Monty Python is a British surreal comedy troupe who created sketch comedy television shows and movies
-    schedule: daily
-    add_to_arr: false
   Mortal Kombat:
-    tmdb_collection_details: 9818
-    tmdb_movie: 664767
-    schedule: daily
+    template: {name: Collection Movie, collection: 9818, movie: 664767}
   Mothra:
-    tmdb_collection_details: 171732
-    tmdb_movie: 39410
-    schedule: daily
+    template: {name: Collection Movie, collection: 171732, movie: 39410}
   Mulan:
-    tmdb_collection_details: 87236
-    schedule: daily
+    template: {name: Collection, collection: 87236}
   The Mummy:
-    tmdb_collection_details: 1733
-    schedule: daily
+    template: {name: Collection, collection: 1733}
   The Muppet:
-    tmdb_collection_details: 256377
-    schedule: daily
+    template: {name: Collection, collection: 256377}
   National Treasure:
-    tmdb_collection_details: 52984
-    schedule: daily
+    template: {name: Collection, collection: 52984}
   Neighbors:
-    tmdb_collection_details: 400700
-    schedule: daily
+    template: {name: Collection, collection: 400700}
   The Neverending Story:
-    tmdb_collection_details: 91430
-    schedule: daily
+    template: {name: Collection, collection: 91430}
   Night at the Museum:
-    tmdb_collection_details: 85943
-    schedule: daily
+    template: {name: Collection, collection: 85943}
   A Nightmare on Elm Street:
-    tmdb_collection_details: 8581
-    tmdb_movie: 6466, 23437
-    schedule: daily
+    template: {name: Collection Movie, collection: 8581, movie: "6466, 23437"}
   Now You See Me:
-    tmdb_collection_details: 382685
-    schedule: daily
+    template: {name: Collection, collection: 382685}
   Ocean's:
-    tmdb_collection_details: 304
-    schedule: daily
+    template: {name: Collection, collection: 304}
   Ong Bak:
-    tmdb_collection_details: 94589
-    schedule: daily
+    template: {name: Collection, collection: 94589}
   Oz:
-    tmdb_collection_details: 627517
-    tmdb_movie: 13155, 68728
-    schedule: daily
+    template: {name: Collection Movie, collection: 627517, movie: "13155, 68728"}
   Pacific Rim:
-    tmdb_collection_details: 363369
-    schedule: daily
+    template: {name: Collection, collection: 363369}
   Paddington:
-    tmdb_collection_details: 488924
-    schedule: daily
+    template: {name: Collection, collection: 488924}
   Parasyte:
-    tmdb_collection_details: 385386
-    schedule: daily
+    template: {name: Collection, collection: 385386}
   Percy Jackson:
-    tmdb_collection_details: 179919
-    schedule: daily
+    template: {name: Collection, collection: 179919}
   Pet Sematary:
-    tmdb_collection_details: 10789
-    tmdb_movie: 157433
-    schedule: daily
+    template: {name: Collection Movie, collection: 10789, movie: 157433}
   Peter Pan:
-    tmdb_collection_details: 55422
-    schedule: daily
+    template: {name: Collection, collection: 55422}
   Pirates of the Caribbean:
-    tmdb_collection_details: 295
-    schedule: daily
+    template: {name: Collection, collection: 295}
   Pitch Perfect:
-    tmdb_collection_details: 306031
-    schedule: daily
+    template: {name: Collection, collection: 306031}
   Planes:
-    tmdb_collection_details: 270252
-    schedule: daily
+    template: {name: Collection, collection: 270252}
   Planet of the Apes:
-    tmdb_collection_details: 173710
-    schedule: daily
+    template: {name: Collection, collection: 173710}
   Pocahontas:
-    tmdb_collection_details: 136214
-    schedule: daily
+    template: {name: Collection, collection: 136214}
   Pokémon:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls062687939/
     summary: Pokémon is a media franchise created by video game designer Satoshi Tajiri that centers on fictional creatures called Pokémon. As of 2020, there have been 23 animated films and one live action film. The first nineteen animated films are based on the anime television series of the same name, with the original film being remade into the 22nd. The 20th, 21st and 23rd animated films are set in an alternate continuity to the anime.
-    schedule: daily
   Police Story:
-    tmdb_collection_details: 269098
-    schedule: daily
+    template: {name: Collection, collection: 269098}
   Power Rangers:
-    tmdb_collection_details: 708816
-    tmdb_movie: 305470, 306264
-    schedule: daily
+    template: {name: Collection Movie, collection: 708816, movie: "305470, 306264"}
   Predator:
-    tmdb_collection_details: 399
-    schedule: daily
+    template: {name: Collection, collection: 399}
   The Princess Diaries:
-    tmdb_collection_details: 107674
-    schedule: daily
+    template: {name: Collection, collection: 107674}
   The Purge:
-    tmdb_collection_details: 256322
-    schedule: daily
+    template: {name: Collection, collection: 256322}
   Quarantine:
-    tmdb_collection_details: 123932
-    schedule: daily
+    template: {name: Collection, collection: 123932}
   Rambo:
-    tmdb_collection_details: 5039
-    schedule: daily
+    template: {name: Collection, collection: 5039}
   Red Cliff:
-    tmdb_collection_details: 96677
-    schedule: daily
+    template: {name: Collection, collection: 96677}
   Rent:
+    template: {name: Other Collection}
     tmdb_list_details: 7072241
-    schedule: daily
   The Rescuers:
-    tmdb_collection_details: 57971
-    schedule: daily
+    template: {name: Collection, collection: 57971}
   Resident Evil:
-    tmdb_collection_details: 17255
-    schedule: daily
+    template: {name: Collection, collection: 17255}
   "Resident Evil: Biohazard":
-    tmdb_collection_details: 133352
+    template: {name: Collection, collection: 133352}
     name_mapping: Resident Evil Biohazard
-    schedule: daily
   Ride Along:
-    tmdb_collection_details: 376650
-    schedule: daily
+    template: {name: Collection, collection: 376650}
   Rio:
-    tmdb_collection_details: 229932
-    schedule: daily
+    template: {name: Collection, collection: 229932}
   Robert Langdon:
-    tmdb_collection_details: 115776
-    schedule: daily
+    template: {name: Collection, collection: 115776}
   RoboCop:
-    tmdb_collection_details: 5547
-    schedule: daily
+    template: {name: Collection, collection: 5547}
   Rocky:
-    tmdb_collection_details: 1575
-    schedule: daily
+    template: {name: Collection, collection: 1575}
   Rugrats:
-    tmdb_collection_details: 57129
-    schedule: daily
+    template: {name: Collection, collection: 57129}
   Rurouni Kenshin:
-    tmdb_collection_details: 247028
-    schedule: daily
+    template: {name: Collection, collection: 247028}
   Rush Hour:
-    tmdb_collection_details: 90863
-    schedule: daily
+    template: {name: Collection, collection: 90863}
   The Sandlot:
-    tmdb_collection_details: 87214
-    schedule: daily
+    template: {name: Collection, collection: 87214}
   The Santa Clause:
-    tmdb_collection_details: 53159
-    schedule: daily
+    template: {name: Collection, collection: 53159}
   Santa Paws:
-    tmdb_collection_details: 469648
-    schedule: daily
+    template: {name: Collection, collection: 469648}
   Saw:
-    tmdb_collection_details: 656
-    schedule: daily
+    template: {name: Collection, collection: 656}
   Scary Movie:
-    tmdb_collection_details: 4246
-    schedule: daily
+    template: {name: Collection, collection: 4246}
   The Scorpion King:
-    tmdb_collection_details: 116669
-    schedule: daily
+    template: {name: Collection, collection: 116669}
   Scream:
-    tmdb_collection_details: 2602
-    schedule: daily
+    template: {name: Collection, collection: 2602}
   The Secret Life of Pets:
-    tmdb_collection_details: 427084
-    schedule: daily
+    template: {name: Collection, collection: 427084}
   Shaft:
-    tmdb_collection_details: 495, 608103
-    schedule: daily
+    template: {name: Collection, collection: "495, 608103"}
   Shanghai Noon:
-    tmdb_collection_details: 59567
-    schedule: daily
+    template: {name: Collection, collection: 59567}
   Sharknado:
-    tmdb_collection_details: 286023
-    schedule: daily
+    template: {name: Collection, collection: 286023}
   Sherlock Holmes:
-    tmdb_collection_details: 102322
-    schedule: daily
+    template: {name: Collection, collection: 102322}
   The Shining:
-    tmdb_collection_details: 530064
-    schedule: daily
+    template: {name: Collection, collection: 530064}
   Shrek:
-    tmdb_collection_details: 2150
-    schedule: daily
+    template: {name: Collection, collection: 2150}
   Silent Hill:
-    tmdb_collection_details: 64748
-    schedule: daily
+    template: {name: Collection, collection: 64748}
   Slap Shot:
-    tmdb_collection_details: 261526
-    schedule: daily
+    template: {name: Collection, collection: 261526}
   The Smurfs:
-    tmdb_collection_details: 134897
-    schedule: daily
+    template: {name: Collection, collection: 134897}
   Spider-Man (Avengers):
-    tmdb_collection_details: 531241
-    schedule: daily
+    template: {name: Collection, collection: 531241}
   Spider-Man (Original):
-    tmdb_collection_details: 556
-    schedule: daily
+    template: {name: Collection, collection: 556}
   Spy Kids:
-    tmdb_collection_details: 86486
-    schedule: daily
+    template: {name: Collection, collection: 86486}
   "Star Trek: Alternate Reality":
-    tmdb_collection_details: 115575
+    template: {name: Collection, collection: 115575}
     name_mapping: Star Trek Alternate Reality
-    schedule: daily
   "Star Trek: The Next Generation":
-    tmdb_collection_details: 115570
+    template: {name: Collection, collection: 115570}
     name_mapping: Star Trek The Next Generation
-    schedule: daily
   "Star Trek: The Original Series":
-    tmdb_collection_details: 151
+    template: {name: Collection, collection: 151}
     name_mapping: Star Trek The Original Series
-    schedule: daily
   "Star Wars: Skywalker Saga":
-    tmdb_collection_details: 10
+    template: {name: Collection, collection: 10}
     name_mapping: Star Wars Skywalker Saga
-    schedule: daily
   "Star Wars: Legends":
+    template: {name: Other Collection}
     tmdb_movie: 348350, 330459
     summary: "Star Wars Anthology Films and other Star Wars Movies"
     name_mapping: Star Wars Legends
-    schedule: daily
   Step Up:
-    tmdb_collection_details: 86092
-    schedule: daily
+    template: {name: Collection, collection: 86092}
   Street Fighter:
-    tmdb_collection_details: 190435
-    tmdb_movie: 687354, 11667
-    schedule: daily
+    template: {name: Collection Movie, collection: 190435, movie: "687354, 11667"}
   Stuart Little:
-    tmdb_collection_details: 99727
-    schedule: daily
+    template: {name: Collection, collection: 99727}
   Super Troopers:
-    tmdb_collection_details: 449462
-    schedule: daily
+    template: {name: Collection, collection: 449462}
   Superman (Original):
-    tmdb_collection_details: 8537
-    schedule: daily
+    template: {name: Collection, collection: 8537}
   Surf's Up:
-    tmdb_collection_details: 436295
-    schedule: daily
+    template: {name: Collection, collection: 436295}
   Taken:
-    tmdb_collection_details: 135483
-    schedule: daily
+    template: {name: Collection, collection: 135483}
   Tarzan:
-    tmdb_collection_details: 106768
-    schedule: daily
+    template: {name: Collection, collection: 106768}
   Ted:
-    tmdb_collection_details: 266672
-    schedule: daily
+    template: {name: Collection, collection: 266672}
   Teenage Mutant Ninja Turtles:
-    tmdb_collection_details: 1582, 401562
-    tmdb_movie: 1273
-    schedule: daily
+    template: {name: Collection Movie, collection: "1582, 401562", movie: 1273}
   Tekken:
-    tmdb_collection_details: 294172
-    schedule: daily
+    template: {name: Collection, collection: 294172}
   The Terminator:
-    tmdb_collection_details: 528
-    schedule: daily
+    template: {name: Collection, collection: 528}
   Texas Chainsaw Massacre:
-    tmdb_collection_details: 111751, 425175
-    schedule: daily
+    template: {name: Collection, collection: "111751, 425175"}
   Thor:
-    tmdb_collection_details: 131296
-    schedule: daily
+    template: {name: Collection, collection: 131296}
   The Three Stooges:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls075972675/
     tmdb_movie: 76489
     summary: The Three Stooges were an American vaudeville and comedy team active from 1922 until 1970, best known for their 190 short subject films by Columbia Pictures that have been regularly airing on television since 1958.
-    schedule: daily
   Tinker Bell:
-    tmdb_collection_details: 315595
-    schedule: daily
+    template: {name: Collection, collection: 315595}
   Tokyo Ghoul:
-    tmdb_collection_details: 551278
-    schedule: daily
+    template: {name: Collection, collection: 551278}
   Tom and Jerry:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls022966050/
     summary: Tom and Jerry's animated feature-length films based on the series.
-    schedule: daily
   Tomb Raider:
-    tmdb_collection_details: 2467, 621142
-    schedule: daily
+    template: {name: Collection, collection: "2467, 621142"}
   Tomie:
-    tmdb_collection_details: 139394
-    schedule: daily
+    template: {name: Collection, collection: 139394}
   Toy Story:
-    tmdb_collection_details: 10194
-    tmdb_movie: 130925
-    schedule: daily
+    template: {name: Collection Movie, collection: 10194, movie: 130925}
   Trainspotting:
-    tmdb_collection_details: 424202
-    schedule: daily
+    template: {name: Collection, collection: 424202}
   Transformers:
-    tmdb_collection_details: 8650
-    schedule: daily
+    template: {name: Collection, collection: 8650}
   The Transporter:
-    tmdb_collection_details: 9518
-    schedule: daily
+    template: {name: Collection, collection: 9518}
   Tremors:
-    tmdb_collection_details: 91799
-    schedule: daily
+    template: {name: Collection, collection: 91799}
   Trolls:
-    tmdb_collection_details: 489724
-    schedule: daily
+    template: {name: Collection, collection: 489724}
   TRON:
-    tmdb_collection_details: 63043
-    tmdb_movie: 73362
-    schedule: daily
+    template: {name: Collection Movie, collection: 63043, movie: 73362}
   Unbreakable:
+    template: {name: Other Collection}
     imdb_list: https://www.imdb.com/list/ls022101006/
     summary: The Unbreakable trilogy, officially known as the Eastrail 177 Trilogy, is an American superhero thriller and psychological horror film series. The films were written, produced, and directed by M. Night Shyamalan. The trilogy consists of Unbreakable (2000), Split (2016), and Glass (2019).
-    schedule: daily
   Underworld:
-    tmdb_collection_details: 2326
-    schedule: daily
+    template: {name: Collection, collection: 2326}
   Viy:
-    tmdb_collection_details: 428046
-    schedule: daily
+    template: {name: Collection, collection: 428046}
   Wall Street:
-    tmdb_collection_details: 52783
-    schedule: daily
+    template: {name: Collection, collection: 52783}
   Wallace & Gromit:
-    tmdb_collection_details: 529
-    schedule: daily
+    template: {name: Collection, collection: 529}
   Wayne's World:
-    tmdb_collection_details: 8979
-    schedule: daily
+    template: {name: Collection, collection: 8979}
   Wonder Woman:
-    tmdb_collection_details: 468552
-    schedule: daily
+    template: {name: Collection, collection: 468552}
   Wreck-It Ralph:
-    tmdb_collection_details: 404825
-    schedule: daily
+    template: {name: Collection, collection: 404825}
   X-Men:
-    tmdb_collection_details: 748, 453993, 448150
-    tmdb_movie: 567604
-    schedule: daily
+    template: {name: Collection Movie, collection: "748, 453993, 448150", movie: 567604}
   xXx:
-    tmdb_collection_details: 52785
-    schedule: daily
+    template: {name: Collection, collection: 52785}
   Zenon:
-    tmdb_collection_details: 321148
-    schedule: daily
+    template: {name: Collection, collection: 321148}
   Zombieland:
-    tmdb_collection_details: 537982
-    schedule: daily
+    template: {name: Collection, collection: 537982}
   Zoolander:
-    tmdb_collection_details: 352789
-    schedule: daily
+    template: {name: Collection, collection: 352789}
   Zorro:
-    tmdb_collection_details: 1657
-    schedule: daily
+    template: {name: Collection, collection: 1657}
 
 ######################################################
 #            Collectionless Collection               #
@@ -2197,6 +1302,10 @@ collections:
         - "~"
     sort_title: ~_Collectionless
     collection_order: alpha
+
+######################################################
+#                  Metadata Edits                    #
+######################################################
 
 metadata:
   The Adventures of Ichabod and Mr. Toad:
