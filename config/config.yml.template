@@ -1,3 +1,5 @@
+## This file is a template remove the .template to use the file
+
 libraries:
   Movies:
     library_type: movie

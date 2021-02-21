@@ -1,3 +1,5 @@
+## This file is a template remove the .template to use the file
+
 templates:
   Chart Alpha:
     sort_title: ++++_<<num>><<collection_name>>
