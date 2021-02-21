@@ -4,9 +4,12 @@ from modules.anidb import AniDBAPI
 from modules.builder import CollectionBuilder
 from modules.cache import Cache
 from modules.imdb import IMDbAPI
-from modules.plex import PlexAPI
 from modules.mal import MyAnimeListAPI
 from modules.mal import MyAnimeListIDList
+from modules.plex import PlexAPI
+from modules.radarr import RadarrAPI
+from modules.sonarr import SonarrAPI
+from modules.tautulli import TautulliAPI
 from modules.tmdb import TMDbAPI
 from modules.trakt import TraktAPI
 from modules.tvdb import TVDbAPI
@@ -29,13 +32,19 @@ class Config:
         try:                                                                self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
         except yaml.scanner.ScannerError as e:                              raise Failed("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
-        def check_for_attribute(data, attribute, parent=None, test_list=None, options="", default=None, do_print=True, default_is_none=False, var_type="str", throw=False, save=True):
+        def check_for_attribute(data, attribute, parent=None, test_list=None, options="", default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
             message = ""
             endline = ""
-            data = data if parent is None else data[parent]
+            if parent is not None:
+                if parent in data:
+                    data = data[parent]
+                else:
+                    data = None
+                    do_print = False
+                    save = False
             text = "{} attribute".format(attribute) if parent is None else "{} sub-attribute {}".format(parent, attribute)
             if data is None or attribute not in data:
-                message = "Config Error: {} not found".format(text)
+                message = "{} not found".format(text)
                 if parent and save is True:
                     new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
                     endline = "\n| {} sub-attribute {} added to config".format(parent, attribute)
@@ -46,40 +55,47 @@ class Config:
                     yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
             elif not data[attribute] and data[attribute] != False:
                 if default_is_none is True:                                         return None
-                else:                                                               message = "Config Error: {} is blank".format(text)
+                else:                                                               message = "{} is blank".format(text)
             elif var_type == "bool":
                 if isinstance(data[attribute], bool):                               return data[attribute]
-                else:                                                               message = "Config Error: {} must be either true or false".format(text)
+                else:                                                               message = "{} must be either true or false".format(text)
             elif var_type == "int":
                 if isinstance(data[attribute], int) and data[attribute] > 0:        return data[attribute]
-                else:                                                               message = "Config Error: {} must an integer > 0".format(text)
+                else:                                                               message = "{} must an integer > 0".format(text)
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
-                else:                                                               message = "Config Error: {} could not be found".format(text)
-                if default and os.path.exists(os.path.abspath(default)):
-                    return default
-                elif default:
-                    default = None
-                    default_is_none = True
-                    message = "Config Error: neither {} or the default path {} could be found".format(data[attribute], default)
+                else:                                                               message = "Path {} does not exist".format(os.path.abspath(data[attribute]))
+            elif var_type == "list":                                            return util.get_list(data[attribute])
+            elif var_type == "listpath":
+                temp_list = [path for path in util.get_list(data[attribute]) if os.path.exists(os.path.abspath(path))]
+                if len(temp_list) > 0:                                              return temp_list
+                else:                                                               message = "No Paths exist"
+            elif var_type == "lowerlist":                                       return util.get_list(data[attribute], lower=True)
             elif test_list is None or data[attribute] in test_list:             return data[attribute]
-            else:                                                               message = "Config Error: {}: {} is an invalid input".format(text, data[attribute])
+            else:                                                               message = "{}: {} is an invalid input".format(text, data[attribute])
+            if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
+                return default
+            elif var_type == "path" and default:
+                default = None
+                message = "neither {} or the default path {} could be found".format(data[attribute], default)
             if default is not None or default_is_none:
                 message = message + " using {} as default".format(default)
             message = message + endline
+            if req_default and default is None:
+                raise Failed("{} attribute must be set under {} globally or under this specific Library".format(attribute, parent))
             if (default is None and not default_is_none) or throw:
                 if len(options) > 0:
                     message = message + "\n" + options
                 raise Failed(message)
             if do_print:
-                util.print_multiline(message)
+                util.print_multiline("Config Warning: {}".format(message))
                 if attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
                     util.print_multiline(options)
             return default
 
         self.general = {}
-        self.general["cache"] = check_for_attribute(self.data, "cache", parent="cache", options="| \ttrue (Create a cache to store ids)\n| \tfalse (Do not create a cache to store ids)", var_type="bool", default=True) if "cache" in self.data else True
-        self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="cache", var_type="int", default=60) if "cache" in self.data else 60
+        self.general["cache"] = check_for_attribute(self.data, "cache", parent="cache", options="    true (Create a cache to store ids)\n    false (Do not create a cache to store ids)", var_type="bool", default=True)
+        self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="cache", var_type="int", default=60)
         if self.general["cache"]:
             util.seperator()
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
@@ -92,7 +108,8 @@ class Config:
         if "tmdb" in self.data:
             logger.info("Connecting to TMDb...")
             self.tmdb = {}
-            self.tmdb["apikey"] = check_for_attribute(self.data, "apikey", parent="tmdb", throw=True)
+            try:                                self.tmdb["apikey"] = check_for_attribute(self.data, "apikey", parent="tmdb", throw=True)
+            except Failed as e:                 raise Failed("Config Error: {}".format(e))
             self.tmdb["language"] = check_for_attribute(self.data, "language", parent="tmdb", default="en")
             self.TMDb = TMDbAPI(self.tmdb)
             logger.info("TMDb Connection {}".format("Failed" if self.TMDb is None else "Successful"))
@@ -112,7 +129,7 @@ class Config:
                 authorization = self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] and self.data["trakt"]["authorization"] else None
                 self.Trakt = TraktAPI(self.trakt, authorization)
             except Failed as e:
-                logger.error(e)
+                logger.error("Config Error: {}".format(e))
             logger.info("Trakt Connection {}".format("Failed" if self.Trakt is None else "Successful"))
         else:
             logger.warning("trakt attribute not found")
@@ -131,7 +148,7 @@ class Config:
                 authorization = self.data["mal"]["authorization"] if "authorization" in self.data["mal"] and self.data["mal"]["authorization"] else None
                 self.MyAnimeList = MyAnimeListAPI(self.mal, self.MyAnimeListIDList, authorization)
             except Failed as e:
-                logger.error(e)
+                logger.error("Config Error: {}".format(e))
             logger.info("My Anime List Connection {}".format("Failed" if self.MyAnimeList is None else "Successful"))
         else:
             logger.warning("mal attribute not found")
@@ -145,42 +162,42 @@ class Config:
         logger.info("Connecting to Plex Libraries...")
 
         self.general["plex"] = {}
-        self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", default_is_none=True) if "plex" in self.data else None
-        self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True) if "plex" in self.data else None
-        self.general["plex"]["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="plex", var_type="path", default=os.path.join(default_dir, "assets")) if "plex" in self.data else os.path.join(default_dir, "assets")
-        self.general["plex"]["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="plex", default="append", test_list=["append", "sync"], options="| \tappend (Only Add Items to the Collection)\n| \tsync (Add & Remove Items from the Collection)") if "plex" in self.data else "append"
-        self.general["plex"]["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
-        self.general["plex"]["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="plex", var_type="bool", default=False) if "plex" in self.data else False
-        self.general["plex"]["show_missing"] = check_for_attribute(self.data, "show_missing", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
-        self.general["plex"]["save_missing"] = check_for_attribute(self.data, "save_missing", parent="plex", var_type="bool", default=True) if "plex" in self.data else True
+        self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", default_is_none=True)
+        self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True)
+        self.general["plex"]["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="plex", var_type="listpath", default=os.path.join(default_dir, "assets"))
+        self.general["plex"]["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="plex", default="append", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)")
+        self.general["plex"]["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="plex", var_type="bool", default=True)
+        self.general["plex"]["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="plex", var_type="bool", default=False)
+        self.general["plex"]["show_missing"] = check_for_attribute(self.data, "show_missing", parent="plex", var_type="bool", default=True)
+        self.general["plex"]["save_missing"] = check_for_attribute(self.data, "save_missing", parent="plex", var_type="bool", default=True)
 
         self.general["radarr"] = {}
-        self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True) if "radarr" in self.data else None
-        self.general["radarr"]["version"] = check_for_attribute(self.data, "version", parent="radarr", test_list=["v2", "v3"], options="| \tv2 (For Radarr 0.2)\n| \tv3 (For Radarr 3.0)", default="v2") if "radarr" in self.data else "v2"
-        self.general["radarr"]["token"] = check_for_attribute(self.data, "token", parent="radarr", default_is_none=True) if "radarr" in self.data else None
-        self.general["radarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="radarr", default_is_none=True) if "radarr" in self.data else None
-        self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True) if "radarr" in self.data else None
-        self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False) if "radarr" in self.data else False
-        self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False) if "radarr" in self.data else False
-        self.general["radarr"]["tag"] = util.get_list(check_for_attribute(self.data, "tag", parent="radarr", default_is_none=True), lower=True) if "radarr" in self.data else None
+        self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True)
+        self.general["radarr"]["version"] = check_for_attribute(self.data, "version", parent="radarr", test_list=["v2", "v3"], options="    v2 (For Radarr 0.2)\n    v3 (For Radarr 3.0)", default="v2")
+        self.general["radarr"]["token"] = check_for_attribute(self.data, "token", parent="radarr", default_is_none=True)
+        self.general["radarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="radarr", default_is_none=True)
+        self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True)
+        self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False)
+        self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
+        self.general["radarr"]["tag"] = check_for_attribute(self.data, "tag", parent="radarr", var_type="lowerlist", default_is_none=True)
 
         self.general["sonarr"] = {}
-        self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", default_is_none=True) if "sonarr" in self.data else None
-        self.general["sonarr"]["token"] = check_for_attribute(self.data, "token", parent="sonarr", default_is_none=True) if "sonarr" in self.data else None
-        self.general["sonarr"]["version"] = check_for_attribute(self.data, "version", parent="sonarr", test_list=["v2", "v3"], options="| \tv2 (For Sonarr 0.2)\n| \tv3 (For Sonarr 3.0)", default="v2") if "sonarr" in self.data else "v2"
-        self.general["sonarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="sonarr", default_is_none=True) if "sonarr" in self.data else None
-        self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True) if "sonarr" in self.data else None
-        self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False) if "sonarr" in self.data else False
-        self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False) if "sonarr" in self.data else False
-        self.general["sonarr"]["tag"] = util.get_list(check_for_attribute(self.data, "tag", parent="sonarr", default_is_none=True), lower=True) if "sonarr" in self.data else None
+        self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["token"] = check_for_attribute(self.data, "token", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["version"] = check_for_attribute(self.data, "version", parent="sonarr", test_list=["v2", "v3"], options="    v2 (For Sonarr 0.2)\n    v3 (For Sonarr 3.0)", default="v2")
+        self.general["sonarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False)
+        self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False)
+        self.general["sonarr"]["tag"] = check_for_attribute(self.data, "tag", parent="sonarr", var_type="lowerlist", default_is_none=True)
 
         self.general["tautulli"] = {}
-        self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True) if "tautulli" in self.data else None
-        self.general["tautulli"]["apikey"] = check_for_attribute(self.data, "apikey", parent="tautulli", default_is_none=True) if "tautulli" in self.data else None
-
+        self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True)
+        self.general["tautulli"]["apikey"] = check_for_attribute(self.data, "apikey", parent="tautulli", default_is_none=True)
 
         self.libraries = []
-        libs = check_for_attribute(self.data, "libraries", throw=True)
+        try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
+        except Failed as e:             raise Failed("Config Error: {}".format(e))
         for lib in libs:
             util.seperator()
             params = {}
@@ -192,46 +209,22 @@ class Config:
                 logger.info("Connecting to {} Library...".format(params["name"]))
             default_lib = os.path.join(default_dir, "{}.yml".format(lib))
             try:
-                if "metadata_path" in libs[lib]:
-                    if libs[lib]["metadata_path"]:
-                        if os.path.exists(libs[lib]["metadata_path"]):              params["metadata_path"] = libs[lib]["metadata_path"]
-                        else:                                                       raise Failed("metadata_path not found at {}".format(libs[lib]["metadata_path"]))
-                    else:                                                       raise Failed("metadata_path attribute is blank")
-                else:
-                    if os.path.exists(default_lib):                             params["metadata_path"] = os.path.abspath(default_lib)
-                    else:                                                       raise Failed("default metadata_path not found at {}".format(os.path.abspath(os.path.join(default_dir, "{}.yml".format(params["name"])))))
-
-                if "library_type" in libs[lib]:
-                    if libs[lib]["library_type"]:
-                        if libs[lib]["library_type"] in ["movie", "show"]:          params["library_type"] = libs[lib]["library_type"]
-                        else:                                                       raise Failed("library_type attribute must be either 'movie' or 'show'")
-                    else:                                                       raise Failed("library_type attribute is blank")
-                else:                                                       raise Failed("library_type attribute is required")
-
+                params["metadata_path"] = check_for_attribute(libs[lib], "metadata_path", var_type="path", default=os.path.join(default_dir, "{}.yml".format(lib)), throw=True)
+                params["library_type"] = check_for_attribute(libs[lib], "library_type", test_list=["movie", "show"], options="    movie (For Movie Libraries)\n    show (For Show Libraries)", throw=True)
                 params["plex"] = {}
-                if "plex" in libs[lib] and libs[lib]["plex"] and "url" in libs[lib]["plex"]:
-                    if libs[lib]["plex"]["url"]:                                params["plex"]["url"] = libs[lib]["plex"]["url"]
-                    else:                                                       raise Failed("url library attribute is blank")
-                elif self.general["plex"]["url"]:                           params["plex"]["url"] = self.general["plex"]["url"]
-                else:                                                       raise Failed("url attribute must be set under plex or under this specific Library")
-
-                if "plex" in libs[lib] and libs[lib]["plex"] and "token" in libs[lib]["plex"]:
-                    if libs[lib]["plex"]["token"]:                              params["plex"]["token"] = libs[lib]["plex"]["token"]
-                    else:                                                       raise Failed("token library attribute is blank")
-                elif self.general["plex"]["token"]:                         params["plex"]["token"] = self.general["plex"]["token"]
-                else:                                                       raise Failed("token attribute must be set under plex or under this specific Library")
+                params["plex"]["url"] = check_for_attribute(libs[lib], "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
+                params["plex"]["token"] = check_for_attribute(libs[lib], "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
             except Failed as e:
-                logger.error("Config Error: Skipping {} Library {}".format(str(lib), e))
+                util.print_multiline("Config Error: Skipping {} Library {}".format(str(lib), e))
                 continue
 
-            params["asset_directory"] = None
+            params["asset_directory"] = check_for_attribute(libs[lib], "asset_directory", parent="plex", var_type="listpath", default=os.path.join(default_dir, "assets"))
 
             if "plex" in libs[lib] and "asset_directory" in libs[lib]["plex"]:
                 if libs[lib]["plex"]["asset_directory"]:
-                    if os.path.exists(libs[lib]["plex"]["asset_directory"]):
-                        params["asset_directory"] = libs[lib]["plex"]["asset_directory"]
-                    else:
-                        logger.warning("Config Warning: Assets will not be used asset_directory not found at {}".format(libs[lib]["plex"]["asset_directory"]))
+                    temp_list = [path for path in util.get_list(libs[lib]["plex"]["asset_directory"]) if os.path.exists(os.path.abspath(path))]
+                    if len(temp_list) > 0:                      params["asset_directory"] = temp_list
+                    else:                                       logger.warning("Config Warning: No Paths exist")
                 else:
                    logger.warning("Config Warning: Assets will not be used asset_directory library attribute is blank")
             elif self.general["plex"]["asset_directory"]:
@@ -239,203 +232,62 @@ class Config:
             else:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
-            params["sync_mode"] = self.general["plex"]["sync_mode"]
-            if "plex" in libs[lib] and "sync_mode" in libs[lib]["plex"]:
-                if libs[lib]["plex"]["sync_mode"]:
-                    if libs[lib]["plex"]["sync_mode"] in ["append", "sync"]:
-                        params["sync_mode"] = libs[lib]["plex"]["sync_mode"]
-                    else:
-                        logger.warning("Config Warning: sync_mode attribute must be either 'append' or 'sync' using general value: {}".format(self.general["plex"]["sync_mode"]))
-                else:
-                    logger.warning("Config Warning: sync_mode attribute is blank using general value: {}".format(self.general["plex"]["sync_mode"]))
+            params["sync_mode"] = check_for_attribute(libs[lib], "sync_mode", parent="plex", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["plex"]["sync_mode"], save=False)
+            params["show_unmanaged"] = check_for_attribute(libs[lib], "show_unmanaged", parent="plex", var_type="bool", default=self.general["plex"]["show_unmanaged"], save=False)
+            params["show_filtered"] = check_for_attribute(libs[lib], "show_filtered", parent="plex", var_type="bool", default=self.general["plex"]["show_filtered"], save=False)
+            params["show_missing"] = check_for_attribute(libs[lib], "show_missing", parent="plex", var_type="bool", default=self.general["plex"]["show_missing"], save=False)
+            params["save_missing"] = check_for_attribute(libs[lib], "save_missing", parent="plex", var_type="bool", default=self.general["plex"]["save_missing"], save=False)
 
-            params["show_unmanaged"] = self.general["plex"]["show_unmanaged"]
-            if "plex" in libs[lib] and "show_unmanaged" in libs[lib]["plex"]:
-                if libs[lib]["plex"]["show_unmanaged"]:
-                    if isinstance(libs[lib]["plex"]["show_unmanaged"], bool):
-                        params["plex"]["show_unmanaged"] = libs[lib]["plex"]["show_unmanaged"]
-                    else:
-                        logger.warning("Config Warning: plex sub-attribute show_unmanaged must be either true or false using general value: {}".format(self.general["plex"]["show_unmanaged"]))
-                else:
-                    logger.warning("Config Warning: plex sub-attribute show_unmanaged is blank using general value: {}".format(self.general["plex"]["show_unmanaged"]))
+            if self.general["radarr"]["url"] or "radarr" in libs[lib]:
+                logger.info("Connecting to {} library's Radarr...".format(params["name"]))
+                radarr_params = {}
+                try:
+                    radarr_params["url"] = check_for_attribute(libs[lib], "url", parent="radarr", default=self.general["radarr"]["url"], req_default=True, save=False)
+                    radarr_params["token"] = check_for_attribute(libs[lib], "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False)
+                    radarr_params["version"] = check_for_attribute(libs[lib], "version", parent="radarr", test_list=["v2", "v3"], options="    v2 (For Radarr 0.2)\n    v3 (For Radarr 3.0)", default=self.general["radarr"]["version"], save=False)
+                    radarr_params["quality_profile"] = check_for_attribute(libs[lib], "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False)
+                    radarr_params["root_folder_path"] = check_for_attribute(libs[lib], "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
+                    radarr_params["add"] = check_for_attribute(libs[lib], "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
+                    radarr_params["search"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
+                    radarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="lowerlist", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
+                    Radarr = RadarrAPI(self.TMDb, radarr_params)
+                except Failed as e:
+                    util.print_multiline("Config Error: {}".format(e))
+                    Radarr = None
+                logger.info("{} library's Radarr Connection {}".format(params["name"], "Failed" if Radarr is None else "Successful"))
 
-            params["show_filtered"] = self.general["plex"]["show_filtered"]
-            if "plex" in libs[lib] and "show_filtered" in libs[lib]["plex"]:
-                if libs[lib]["plex"]["show_filtered"]:
-                    if isinstance(libs[lib]["plex"]["show_filtered"], bool):
-                        params["plex"]["show_filtered"] = libs[lib]["plex"]["show_filtered"]
-                    else:
-                        logger.warning("Config Warning: plex sub-attribute show_filtered must be either true or false using general value: {}".format(self.general["plex"]["show_filtered"]))
-                else:
-                    logger.warning("Config Warning: plex sub-attribute show_filtered is blank using general value: {}".format(self.general["plex"]["show_filtered"]))
+            if self.general["sonarr"]["url"] or "sonarr" in libs[lib]:
+                logger.info("Connecting to {} library's Sonarr...".format(params["name"]))
+                sonarr_params = {}
+                try:
+                    sonarr_params["url"] = check_for_attribute(libs[lib], "url", parent="sonarr", default=self.general["sonarr"]["url"], req_default=True, save=False)
+                    sonarr_params["token"] = check_for_attribute(libs[lib], "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False)
+                    sonarr_params["version"] = check_for_attribute(libs[lib], "version", parent="sonarr", test_list=["v2", "v3"], options="    v2 (For Sonarr 0.2)\n    v3 (For Sonarr 3.0)", default=self.general["sonarr"]["version"], save=False)
+                    sonarr_params["quality_profile"] = check_for_attribute(libs[lib], "quality_profile", parent="sonarr", default=self.general["sonarr"]["quality_profile"], req_default=True, save=False)
+                    sonarr_params["root_folder_path"] = check_for_attribute(libs[lib], "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
+                    sonarr_params["add"] = check_for_attribute(libs[lib], "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
+                    sonarr_params["search"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
+                    sonarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="lowerlist", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
+                    Sonarr = SonarrAPI(self.TVDb, sonarr_params, self.tmdb["language"])
+                except Failed as e:
+                    util.print_multiline("Config Error: {}".format(e))
+                    Sonarr = None
+                logger.info("{} library's Sonarr Connection {}".format(params["name"], "Failed" if Sonarr is None else "Successful"))
 
-            params["show_missing"] = self.general["plex"]["show_missing"]
-            if "plex" in libs[lib] and "show_missing" in libs[lib]["plex"]:
-                if libs[lib]["plex"]["show_missing"]:
-                    if isinstance(libs[lib]["plex"]["show_missing"], bool):
-                        params["plex"]["show_missing"] = libs[lib]["plex"]["show_missing"]
-                    else:
-                        logger.warning("Config Warning: plex sub-attribute show_missing must be either true or false using general value: {}".format(self.general["plex"]["show_missing"]))
-                else:
-                    logger.warning("Config Warning: plex sub-attribute show_missing is blank using general value: {}".format(self.general["plex"]["show_missing"]))
-
-            params["save_missing"] = self.general["plex"]["save_missing"]
-            if "plex" in libs[lib] and "save_missing" in libs[lib]["plex"]:
-                if libs[lib]["plex"]["save_missing"]:
-                    if isinstance(libs[lib]["plex"]["save_missing"], bool):
-                        params["plex"]["save_missing"] = libs[lib]["plex"]["save_missing"]
-                    else:
-                        logger.warning("Config Warning: plex sub-attribute save_missing must be either true or false using general value: {}".format(self.general["plex"]["save_missing"]))
-                else:
-                    logger.warning("Config Warning: plex sub-attribute save_missing is blank using general value: {}".format(self.general["plex"]["save_missing"]))
-
-            params["tmdb"] = self.TMDb
-            params["tvdb"] = self.TVDb
-
-            params["radarr"] = self.general["radarr"].copy()
-            if "radarr" in libs[lib] and libs[lib]["radarr"]:
-                if "url" in libs[lib]["radarr"]:
-                    if libs[lib]["radarr"]["url"]:
-                        params["radarr"]["url"] = libs[lib]["radarr"]["url"]
-                    else:
-                        logger.warning("Config Warning: radarr sub-attribute url is blank using general value: {}".format(self.general["radarr"]["url"]))
-
-                if "token" in libs[lib]["radarr"]:
-                    if libs[lib]["radarr"]["token"]:
-                        params["radarr"]["token"] = libs[lib]["radarr"]["token"]
-                    else:
-                        logger.warning("Config Warning: radarr sub-attribute token is blank using general value: {}".format(self.general["radarr"]["token"]))
-
-                if "version" in libs[lib]["radarr"]:
-                    if libs[lib]["radarr"]["version"]:
-                        if libs[lib]["radarr"]["version"] in ["v2", "v3"]:
-                            params["radarr"]["version"] = libs[lib]["radarr"]["version"]
-                        else:
-                            logger.warning("Config Warning: radarr sub-attribute version must be either 'v2' or 'v3' using general value: {}".format(self.general["radarr"]["version"]))
-                    else:
-                        logger.warning("Config Warning: radarr sub-attribute version is blank using general value: {}".format(self.general["radarr"]["version"]))
-
-                if "quality_profile" in libs[lib]["radarr"]:
-                    if libs[lib]["radarr"]["quality_profile"]:
-                        params["radarr"]["quality_profile"] = libs[lib]["radarr"]["quality_profile"]
-                    else:
-                        logger.warning("Config Warning: radarr sub-attribute quality_profile is blank using general value: {}".format(self.general["radarr"]["quality_profile"]))
-
-                if "root_folder_path" in libs[lib]["radarr"]:
-                    if libs[lib]["radarr"]["root_folder_path"]:
-                        params["radarr"]["root_folder_path"] = libs[lib]["radarr"]["root_folder_path"]
-                    else:
-                        logger.warning("Config Warning: radarr sub-attribute root_folder_path is blank using general value: {}".format(self.general["radarr"]["root_folder_path"]))
-
-                if "add" in libs[lib]["radarr"]:
-                    if libs[lib]["radarr"]["add"]:
-                        if isinstance(libs[lib]["radarr"]["add"], bool):
-                            params["radarr"]["add"] = libs[lib]["radarr"]["add"]
-                        else:
-                            logger.warning("Config Warning: radarr sub-attribute add must be either true or false using general value: {}".format(self.general["radarr"]["add"]))
-                    else:
-                        logger.warning("Config Warning: radarr sub-attribute add is blank using general value: {}".format(self.general["radarr"]["add"]))
-
-                if "search" in libs[lib]["radarr"]:
-                    if libs[lib]["radarr"]["search"]:
-                        if isinstance(libs[lib]["radarr"]["search"], bool):
-                            params["radarr"]["search"] = libs[lib]["radarr"]["search"]
-                        else:
-                            logger.warning("Config Warning: radarr sub-attribute search must be either true or false using general value: {}".format(self.general["radarr"]["search"]))
-                    else:
-                        logger.warning("Config Warning: radarr sub-attribute search is blank using general value: {}".format(self.general["radarr"]["search"]))
-
-                if "tag" in libs[lib]["radarr"]:
-                    if libs[lib]["radarr"]["tag"]:
-                        params["radarr"]["tag"] = util.get_list(libs[lib]["radarr"]["tag"], lower=True)
-                    else:
-                        logger.warning("Config Warning: radarr sub-attribute tag is blank using general value: {}".format(self.general["radarr"]["tag"]))
-
-            if not params["radarr"]["url"] or not params["radarr"]["token"] or not params["radarr"]["quality_profile"] or not params["radarr"]["root_folder_path"]:
-                params["radarr"] = None
-
-            params["sonarr"] = self.general["sonarr"].copy()
-            if "sonarr" in libs[lib] and libs[lib]["sonarr"]:
-                if "url" in libs[lib]["sonarr"]:
-                    if libs[lib]["sonarr"]["url"]:
-                        params["sonarr"]["url"] = libs[lib]["sonarr"]["url"]
-                    else:
-                        logger.warning("Config Warning: sonarr sub-attribute url is blank using general value: {}".format(self.general["sonarr"]["url"]))
-
-                if "token" in libs[lib]["sonarr"]:
-                    if libs[lib]["sonarr"]["token"]:
-                        params["sonarr"]["token"] = libs[lib]["sonarr"]["token"]
-                    else:
-                        logger.warning("Config Warning: sonarr sub-attribute token is blank using general value: {}".format(self.general["sonarr"]["token"]))
-
-                if "version" in libs[lib]["sonarr"]:
-                    if libs[lib]["sonarr"]["version"]:
-                        if libs[lib]["sonarr"]["version"] in ["v2", "v3"]:
-                            params["sonarr"]["version"] = libs[lib]["sonarr"]["version"]
-                        else:
-                            logger.warning("Config Warning: sonarr sub-attribute version must be either 'v2' or 'v3' using general value: {}".format(self.general["sonarr"]["version"]))
-                    else:
-                        logger.warning("Config Warning: sonarr sub-attribute version is blank using general value: {}".format(self.general["sonarr"]["version"]))
-
-                if "quality_profile" in libs[lib]["sonarr"]:
-                    if libs[lib]["sonarr"]["quality_profile"]:
-                        params["sonarr"]["quality_profile"] = libs[lib]["sonarr"]["quality_profile"]
-                    else:
-                        logger.warning("Config Warning: sonarr sub-attribute quality_profile is blank using general value: {}".format(self.general["sonarr"]["quality_profile"]))
-
-                if "root_folder_path" in libs[lib]["sonarr"]:
-                    if libs[lib]["sonarr"]["root_folder_path"]:
-                        params["sonarr"]["root_folder_path"] = libs[lib]["sonarr"]["root_folder_path"]
-                    else:
-                        logger.warning("Config Warning: sonarr sub-attribute root_folder_path is blank using general value: {}".format(self.general["sonarr"]["root_folder_path"]))
-
-                if "add" in libs[lib]["sonarr"]:
-                    if libs[lib]["sonarr"]["add"]:
-                        if isinstance(libs[lib]["sonarr"]["add"], bool):
-                            params["sonarr"]["add"] = libs[lib]["sonarr"]["add"]
-                        else:
-                            logger.warning("Config Warning: sonarr sub-attribute add must be either true or false using general value: {}".format(self.general["sonarr"]["add"]))
-                    else:
-                        logger.warning("Config Warning: sonarr sub-attribute add is blank using general value: {}".format(self.general["sonarr"]["add"]))
-
-                if "search" in libs[lib]["sonarr"]:
-                    if libs[lib]["sonarr"]["search"]:
-                        if isinstance(libs[lib]["sonarr"]["search"], bool):
-                            params["sonarr"]["search"] = libs[lib]["sonarr"]["search"]
-                        else:
-                            logger.warning("Config Warning: sonarr sub-attribute search must be either true or false using general value: {}".format(self.general["sonarr"]["search"]))
-                    else:
-                        logger.warning("Config Warning: sonarr sub-attribute search is blank using general value: {}".format(self.general["sonarr"]["search"]))
-
-                if "tag" in libs[lib]["sonarr"]:
-                    if libs[lib]["sonarr"]["tag"]:
-                        params["sonarr"]["tag"] = util.get_list(libs[lib]["sonarr"]["tag"], lower=True)
-                    else:
-                        logger.warning("Config Warning: sonarr sub-attribute tag is blank using general value: {}".format(self.general["sonarr"]["tag"]))
-
-            if not params["sonarr"]["url"] or not params["sonarr"]["token"] or not params["sonarr"]["quality_profile"] or not params["sonarr"]["root_folder_path"] or params["library_type"] == "movie":
-                params["sonarr"] = None
-
-
-            params["tautulli"] = self.general["tautulli"].copy()
-            if "tautulli" in libs[lib] and libs[lib]["tautulli"]:
-                if "url" in libs[lib]["tautulli"]:
-                    if libs[lib]["tautulli"]["url"]:
-                        params["tautulli"]["url"] = libs[lib]["tautulli"]["url"]
-                    else:
-                        logger.warning("Config Warning: tautulli sub-attribute url is blank using general value: {}".format(self.general["tautulli"]["url"]))
-
-                if "apikey" in libs[lib]["tautulli"]:
-                    if libs[lib]["tautulli"]["apikey"]:
-                        params["tautulli"]["apikey"] = libs[lib]["tautulli"]["apikey"]
-                    else:
-                        logger.warning("Config Warning: tautulli sub-attribute apikey is blank using general value: {}".format(self.general["tautulli"]["apikey"]))
-
-            if not params["tautulli"]["url"] or not params["tautulli"]["apikey"] :
-                params["tautulli"] = None
+            if self.general["tautulli"]["url"] or "tautulli" in libs[lib]:
+                logger.info("Connecting to {} library's Tautulli...".format(params["name"]))
+                tautulli_params = {}
+                try:
+                    tautulli_params["url"] = check_for_attribute(libs[lib], "url", parent="tautulli", default=self.general["tautulli"]["url"], req_default=True, save=False)
+                    tautulli_params["apikey"] = check_for_attribute(libs[lib], "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
+                    Tautulli = TautulliAPI(tautulli_params)
+                except Failed as e:
+                    util.print_multiline("Config Error: {}".format(e))
+                    Tautulli = None
+                logger.info("{} library's Tautulli Connection {}".format(params["name"], "Failed" if Tautulli is None else "Successful"))
 
             try:
-                self.libraries.append(PlexAPI(params))
+                self.libraries.append(PlexAPI(params, self.TMDb, self.TVDb, Radarr, Sonarr, Tautulli))
                 logger.info("{} Library Connection Successful".format(params["name"]))
             except Failed as e:
                 logger.error(e)

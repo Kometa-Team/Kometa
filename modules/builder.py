@@ -708,51 +708,27 @@ class CollectionBuilder:
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                        name_mapping = self.details["name_mapping"]
                 else:                                                   logger.error("Collection Error: name_mapping attribute is blank")
-            path = os.path.join(self.library.asset_directory, "{}".format(name_mapping), "poster.*")
-            matches = glob.glob(path)
-            if len(matches) > 0:
-                for match in matches:
-                    self.posters.append(("file", os.path.abspath(match), "asset_directory"))
-            elif len(self.posters) == 0 and "poster" not in self.details:
-                logger.warning("poster not found at: {}".format(os.path.abspath(path)))
-            path = os.path.join(self.library.asset_directory, "{}".format(name_mapping), "background.*")
-            matches = glob.glob(path)
-            if len(matches) > 0:
-                for match in matches:
-                    self.backgrounds.append(("file", os.path.abspath(match), "asset_directory"))
-            elif len(self.backgrounds) == 0 and "background" not in self.details:
-                logger.warning("background not found at: {}".format(os.path.abspath(path)))
-
-        poster = util.choose_from_list(self.posters, "poster", list_type="tuple")
-        if not poster and "poster" in self.details:             poster = self.details["poster"]
-        if poster:
-            if poster[0] == "url":                                  collection.uploadPoster(url=poster[1])
-            else:                                                   collection.uploadPoster(filepath=poster[1])
-            logger.info("Detail: {} updated poster to [{}] {}".format(poster[2], poster[0], poster[1]))
-
-        background = util.choose_from_list(self.backgrounds, "background", list_type="tuple")
-        if not background and "background" in self.details:     background = self.details["background"]
-        if background:
-            if background[0] == "url":                              collection.uploadArt(url=background[1])
-            else:                                                   collection.uploadArt(filepath=background[1])
-            logger.info("Detail: {} updated background to [{}] {}".format(background[2], background[0], background[1]))
-
-        if self.library.asset_directory:
-            path = os.path.join(self.library.asset_directory, "{}".format(name_mapping))
-            if os.path.isdir(path):
+            for ad in self.library.asset_directory:
+                path = os.path.join(ad, "{}".format(name_mapping))
+                if not os.path.isdir(path):
+                    continue
+                matches = glob.glob(os.path.join(ad, "{}".format(name_mapping), "poster.*"))
+                if len(matches) > 0:
+                    for match in matches:
+                        self.posters.append(("file", os.path.abspath(match), "asset_directory"))
+                matches = glob.glob(os.path.join(ad, "{}".format(name_mapping), "background.*"))
+                if len(matches) > 0:
+                    for match in matches:
+                        self.backgrounds.append(("file", os.path.abspath(match), "asset_directory"))
                 dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
                 if len(dirs) > 0:
                     for item in collection.items():
                         folder = os.path.basename(os.path.dirname(item.locations[0]))
                         if folder in dirs:
-                            files = [file for file in os.listdir(os.path.join(path, folder)) if os.path.isfile(os.path.join(path, folder, file))]
-                            poster_path = None
-                            background_path = None
-                            for file in files:
-                                if poster_path is None and file.startswith("poster."):
-                                    poster_path = os.path.join(path, folder, file)
-                                if background_path is None and file.startswith("background."):
-                                    background_path = os.path.join(path, folder, file)
+                            matches = glob.glob(os.path.join(path, folder, "poster.*"))
+                            poster_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
+                            matches = glob.glob(os.path.join(path, folder, "background.*"))
+                            background_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
                             if poster_path:
                                 item.uploadPoster(filepath=poster_path)
                                 logger.info("Detail: asset_directory updated {}'s poster to [file] {}".format(item.title, poster_path))
@@ -763,3 +739,17 @@ class CollectionBuilder:
                                 logger.warning("No Files Found: {}".format(os.path.join(path, folder)))
                         else:
                             logger.warning("No Folder: {}".format(os.path.join(path, folder)))
+
+        poster = util.choose_from_list(self.posters, "poster", list_type="tuple")
+        if not poster and "poster" in self.details:             poster = self.details["poster"]
+        if poster:
+            if poster[0] == "url":                                  collection.uploadPoster(url=poster[1])
+            else:                                                   collection.uploadPoster(filepath=poster[1])
+            logger.info("Detail: {} updated collection poster to [{}] {}".format(poster[2], poster[0], poster[1]))
+
+        background = util.choose_from_list(self.backgrounds, "background", list_type="tuple")
+        if not background and "background" in self.details:     background = self.details["background"]
+        if background:
+            if background[0] == "url":                              collection.uploadArt(url=background[1])
+            else:                                                   collection.uploadArt(filepath=background[1])
+            logger.info("Detail: {} updated collection background to [{}] {}".format(background[2], background[0], background[1]))

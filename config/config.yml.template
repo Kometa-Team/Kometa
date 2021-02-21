@@ -15,6 +15,8 @@ plex:                                         # Can be individually specified pe
   asset_directory: config/assets
   show_unmanaged: true
   show_filtered: false
+  show_missing: true
+  save_missing: true
 radarr:                                         # Can be individually specified per library as well
   url: http://192.168.1.12:7878
   token: ################################

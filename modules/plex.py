@@ -1,9 +1,6 @@
 import datetime, logging, os, requests
 from lxml import html
 from modules import util
-from modules.radarr import RadarrAPI
-from modules.sonarr import SonarrAPI
-from modules.tautulli import TautulliAPI
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.library import Collections, MovieSection, ShowSection
@@ -15,7 +12,7 @@ from ruamel import yaml
 logger = logging.getLogger("Plex Meta Manager")
 
 class PlexAPI:
-    def __init__(self, params):
+    def __init__(self, params, TMDb, TVDb, Radarr, Sonarr, Tautulli):
         try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=600)
         except Unauthorized:                                                    raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:                                                 raise Failed("Plex Error: {}".format(e))
@@ -45,33 +42,15 @@ class PlexAPI:
             raise Failed("YAML Error: metadata attributes or collections attribute required")
 
         if params["asset_directory"]:
-            logger.info("Using Asset Directory: {}".format(params["asset_directory"]))
+            for ad in params["asset_directory"]:
+                logger.info("Using Asset Directory: {}".format(ad))
 
-        self.Radarr = None
-        if params["tmdb"] and params["radarr"]:
-            logger.info("Connecting to {} library's Radarr...".format(params["name"]))
-            try:                                                                    self.Radarr = RadarrAPI(params["tmdb"], params["radarr"])
-            except Failed as e:                                                     logger.error(e)
-            logger.info("{} library's Radarr Connection {}".format(params["name"], "Failed" if self.Radarr is None else "Successful"))
-
-        self.Sonarr = None
-        if params["tvdb"] and params["sonarr"]:
-            logger.info("Connecting to {} library's Sonarr...".format(params["name"]))
-            try:                                                                    self.Sonarr = SonarrAPI(params["tvdb"], params["sonarr"], self.Plex.language)
-            except Failed as e:                                                     logger.error(e)
-            logger.info("{} library's Sonarr Connection {}".format(params["name"], "Failed" if self.Sonarr is None else "Successful"))
-
-        self.Tautulli = None
-        if params["tautulli"]:
-            logger.info("Connecting to {} library's Tautulli...".format(params["name"]))
-            try:                                                                    self.Tautulli = TautulliAPI(params["tautulli"])
-            except Failed as e:                                                     logger.error(e)
-            logger.info("{} library's Tautulli Connection {}".format(params["name"], "Failed" if self.Tautulli is None else "Successful"))
-
-        self.TMDb = params["tmdb"]
-        self.TVDb = params["tvdb"]
+        self.TMDb = TMDb
+        self.TVDb = TVDb
+        self.Radarr = Radarr
+        self.Sonarr = Sonarr
+        self.Tautulli = Tautulli
         self.name = params["name"]
-
         self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), "{}_missing.yml".format(os.path.splitext(os.path.basename(params["metadata_path"]))[0]))
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
@@ -81,9 +60,6 @@ class PlexAPI:
         self.show_missing = params["show_missing"]
         self.save_missing = params["save_missing"]
         self.plex = params["plex"]
-        self.radarr = params["radarr"]
-        self.sonarr = params["sonarr"]
-        self.tautulli = params["tautulli"]
         self.missing = {}
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
