@@ -1,9 +1,6 @@
 import datetime, logging, os, requests
 from lxml import html
 from modules import util
-from modules.radarr import RadarrAPI
-from modules.sonarr import SonarrAPI
-from modules.tautulli import TautulliAPI
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.library import Collections, MovieSection, ShowSection
@@ -15,7 +12,7 @@ from ruamel import yaml
 logger = logging.getLogger("Plex Meta Manager")
 
 class PlexAPI:
-    def __init__(self, params):
+    def __init__(self, params, TMDb, TVDb):
         try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=600)
         except Unauthorized:                                                    raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:                                                 raise Failed("Plex Error: {}".format(e))
@@ -29,59 +26,52 @@ class PlexAPI:
         try:                                                                    self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(params["metadata_path"], encoding="utf-8"))
         except yaml.scanner.ScannerError as e:                                  raise Failed("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
-        self.metadata = None
-        if "metadata" in self.data:
-            if self.data["metadata"]:                                               self.metadata = self.data["metadata"]
-            else:                                                                   logger.warning("Config Warning: metadata attribute is blank")
-        else:                                                                   logger.warning("Config Warning: metadata attribute not found")
+        def get_dict(attribute):
+            if attribute in self.data:
+                if self.data[attribute]:
+                    if isinstance(self.data[attribute], dict):                              return self.data[attribute]
+                    else:                                                                   logger.waring("Config Warning: {} must be a dictionary".format(attribute))
+                else:                                                                   logger.warning("Config Warning: {} attribute is blank".format(attribute))
+            return None
 
-        self.collections = None
-        if "collections" in self.data:
-            if self.data["collections"]:                                            self.collections = self.data["collections"]
-            else:                                                                   logger.warning("Config Warning: collections attribute is blank")
-        else:                                                                   logger.warning("Config Warning: collections attribute not found")
+        self.metadata = get_dict("metadata")
+        self.templates = get_dict("templates")
+        self.collections = get_dict("collections")
 
         if self.metadata is None and self.collections is None:
             raise Failed("YAML Error: metadata attributes or collections attribute required")
 
         if params["asset_directory"]:
-            logger.info("Using Asset Directory: {}".format(params["asset_directory"]))
+            for ad in params["asset_directory"]:
+                logger.info("Using Asset Directory: {}".format(ad))
 
+        self.TMDb = TMDb
+        self.TVDb = TVDb
         self.Radarr = None
-        if params["tmdb"] and params["radarr"]:
-            logger.info("Connecting to {} library's Radarr...".format(params["name"]))
-            try:                                                                    self.Radarr = RadarrAPI(params["tmdb"], params["radarr"])
-            except Failed as e:                                                     logger.error(e)
-            logger.info("{} library's Radarr Connection {}".format(params["name"], "Failed" if self.Radarr is None else "Successful"))
-
         self.Sonarr = None
-        if params["tvdb"] and params["sonarr"]:
-            logger.info("Connecting to {} library's Sonarr...".format(params["name"]))
-            try:                                                                    self.Sonarr = SonarrAPI(params["tvdb"], params["sonarr"], self.Plex.language)
-            except Failed as e:                                                     logger.error(e)
-            logger.info("{} library's Sonarr Connection {}".format(params["name"], "Failed" if self.Sonarr is None else "Successful"))
-
         self.Tautulli = None
-        if params["tautulli"]:
-            logger.info("Connecting to {} library's Tautulli...".format(params["name"]))
-            try:                                                                    self.Tautulli = TautulliAPI(params["tautulli"])
-            except Failed as e:                                                     logger.error(e)
-            logger.info("{} library's Tautulli Connection {}".format(params["name"], "Failed" if self.Tautulli is None else "Successful"))
-
-        self.TMDb = params["tmdb"]
-        self.TVDb = params["tvdb"]
         self.name = params["name"]
-
         self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), "{}_missing.yml".format(os.path.splitext(os.path.basename(params["metadata_path"]))[0]))
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
         self.sync_mode = params["sync_mode"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_filtered = params["show_filtered"]
+        self.show_missing = params["show_missing"]
+        self.save_missing = params["save_missing"]
         self.plex = params["plex"]
-        self.radarr = params["radarr"]
-        self.sonarr = params["sonarr"]
-        self.tautulli = params["tautulli"]
+        self.missing = {}
+
+    def add_Radarr(self, Radarr):
+        self.Radarr = Radarr
+
+    def add_Sonarr(self, Sonarr):
+        self.Sonarr = Sonarr
+
+    def add_Tautulli(self, Tautulli):
+        self.Tautulli = Tautulli
+
+
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def search(self, title, libtype=None, year=None):
@@ -115,51 +105,18 @@ class PlexAPI:
             raise Failed("Collection Error: No valid Plex Collections in {}".format(collections[c][m]))
         return valid_collections
 
-    def del_collection_if_empty(self, collection):
-        missing_data = {}
-        if not os.path.exists(self.missing_path):
-            with open(self.missing_path, "w"): pass
+    def add_missing(self, collection, items, is_movie):
+        col_name = collection.encode("ascii", "replace").decode()
+        if col_name not in self.missing:
+            self.missing[col_name] = {}
+        section = "Movies Missing (TMDb IDs)" if is_movie else "Shows Missing (TVDb IDs)"
+        if section not in self.missing[col_name]:
+            self.missing[col_name][section] = {}
+        for title, item_id in items:
+            self.missing[col_name][section][int(item_id)] = str(title).encode("ascii", "replace").decode()
+        with open(self.missing_path, "w"): pass
         try:
-            missing_data, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.missing_path))
-            if not missing_data:
-                missing_data = {}
-            if collection in missing_data and len(missing_data[collection]) == 0:
-                del missing_data[collection]
-            yaml.round_trip_dump(missing_data, open(self.missing_path, "w"), indent=ind, block_seq_indent=bsi)
-        except yaml.scanner.ScannerError as e:
-            logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
-
-    def clear_collection_missing(self, collection):
-        missing_data = {}
-        if not os.path.exists(self.missing_path):
-            with open(self.missing_path, "w"): pass
-        try:
-            missing_data, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.missing_path))
-            if not missing_data:
-                missing_data = {}
-            if collection in missing_data:
-                missing_data[collection.encode("ascii", "replace").decode()] = {}
-            yaml.round_trip_dump(missing_data, open(self.missing_path, "w"), indent=ind, block_seq_indent=bsi)
-        except yaml.scanner.ScannerError as e:
-            logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
-
-    def save_missing(self, collection, items, is_movie):
-        missing_data = {}
-        if not os.path.exists(self.missing_path):
-            with open(self.missing_path, "w"): pass
-        try:
-            missing_data, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.missing_path))
-            if not missing_data:
-                missing_data = {}
-            col_name = collection.encode("ascii", "replace").decode()
-            if col_name not in missing_data:
-                missing_data[col_name] = {}
-            section = "Movies Missing (TMDb IDs)" if is_movie else "Shows Missing (TVDb IDs)"
-            if section not in missing_data[col_name]:
-                missing_data[col_name][section] = {}
-            for title, item_id in items:
-                missing_data[col_name][section][int(item_id)] = str(title).encode("ascii", "replace").decode()
-            yaml.round_trip_dump(missing_data, open(self.missing_path, "w"), indent=ind, block_seq_indent=bsi)
+            yaml.round_trip_dump(self.missing, open(self.missing_path, "w"))
         except yaml.scanner.ScannerError as e:
             logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
@@ -170,8 +127,11 @@ class PlexAPI:
         max_length = len(str(total))
         length = 0
         for i, item in enumerate(items, 1):
-            try:                                        current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
-            except BadRequest:                          raise Failed("Plex Error: Item {} not found".format(item))
+            try:
+                current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
+            except (BadRequest, NotFound):
+                logger.error("Plex Error: Item {} not found".format(item))
+                continue
             match = True
             if filters:
                 length = util.print_return(length, "Filtering {}/{} {}".format((" " * (max_length - len(str(i)))) + str(i), total, current.title))
@@ -185,7 +145,7 @@ class PlexAPI:
                             match = False
                             break
                     elif method == "original_language":
-                        terms = f[1] if isinstance(f[1], list) else [lang.lower() for lang in str(f[1]).split(", ")]
+                        terms = util.get_list(f[1], lower=True)
                         tmdb_id = None
                         movie = None
                         for key, value in movie_map.items():
@@ -214,7 +174,7 @@ class PlexAPI:
                                 match = False
                                 break
                     else:
-                        terms = f[1] if isinstance(f[1], list) else str(f[1]).split(", ")
+                        terms = util.get_list(f[1])
                         if method in ["video_resolution", "audio_language", "subtitle_language"]:
                             for media in current.media:
                                 if method == "video_resolution":                                                                attrs = [media.videoResolution]
@@ -241,13 +201,15 @@ class PlexAPI:
     def search_item(self, data, year=None):
         return util.choose_from_list(self.search(data, year=year), "movie" if self.is_movie else "show", str(data), exact=True)
 
-    def update_metadata(self, TMDb):
+    def update_metadata(self, TMDb, test):
         logger.info("")
         util.seperator("{} Library Metadata".format(self.name))
         logger.info("")
         if not self.metadata:
             raise Failed("No metadata to edit")
         for m in self.metadata:
+            if test and ("test" not in self.metadata[m] or self.metadata[m]["test"] is not True):
+                continue
             logger.info("")
             util.seperator()
             logger.info("")
@@ -316,10 +278,11 @@ class PlexAPI:
             add_edit("originally_available", str(item.originallyAvailableAt)[:-9], self.metadata[m], key="originallyAvailableAt", value=originally_available)
             add_edit("rating", item.rating, self.metadata[m], value=rating)
             add_edit("content_rating", item.contentRating, self.metadata[m], key="contentRating")
-            originalTitle = item.originalTitle if self.is_movie else item._data.attrib.get("originalTitle")
-            add_edit("original_title", originalTitle, self.metadata[m], key="originalTitle", value=original_title)
+            item_original_title = item.originalTitle if self.is_movie else item._data.attrib.get("originalTitle")
+            add_edit("original_title", item_original_title, self.metadata[m], key="originalTitle", value=original_title)
             add_edit("studio", item.studio, self.metadata[m], value=studio)
-            add_edit("tagline", item.tagline, self.metadata[m], value=tagline)
+            item_tagline = item.tagline if self.is_movie else item._data.attrib.get("tagline")
+            add_edit("tagline", item_tagline, self.metadata[m], value=tagline)
             add_edit("summary", item.summary, self.metadata[m], value=summary)
             if len(edits) > 0:
                 logger.debug("Details Update: {}".format(edits))

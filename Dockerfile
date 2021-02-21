@@ -6,10 +6,9 @@ RUN \
 		apt-get update && \
 		apt-get upgrade -y --no-install-recommends && \
 		apt-get install -y tzdata --no-install-recommends && \
+		apt-get install -y gcc g++ libxml2-dev libxslt-dev libz-dev && \
 	echo "**** install python packages ****" && \
 		pip3 install --no-cache-dir --upgrade --requirement /requirements.txt && \
-	echo "**** install Plex-Auto-Collections ****" && \
-		chmod +x /plex_meta_manager.py && \
 	echo "**** cleanup ****" && \
 		apt-get autoremove -y && \
 		apt-get clean && \
