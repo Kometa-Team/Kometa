@@ -348,7 +348,19 @@ class Config:
                 movie_map, show_map = self.map_guids(library)
                 for c in collections:
                     if test and ("test" not in collections[c] or collections[c]["test"] is not True):
-                        continue
+                        no_template_test = True
+                        if "template" in collections[c] and collections[c]["template"]:
+                            for data_template in util.get_list(collections[c]["template"], split=False):
+                                if "name" in data_template \
+                                and data_template["name"] \
+                                and library.templates \
+                                and data_template["name"] in self.library.templates \
+                                and self.library.templates[data_template["name"]] \
+                                and "test" in self.library.templates[data_template["name"]] \
+                                and self.library.templates[data_template["name"]]["test"] == True:
+                                    no_template_test = False
+                        if no_template_test:
+                            continue
                     try:
                         logger.info("")
                         util.seperator("{} Collection".format(c))
