@@ -4,11 +4,12 @@ from modules.config import Config
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--mytests", dest="tests", help=argparse.SUPPRESS, action="store_true", default=False)
+parser.add_argument("--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", dest="time", help="Time to update each day use format HH:MM (Default: 03:00)", default="03:00", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
-parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run only tests without the scheduler", action="store_true", default=False)
-parser.add_argument("-cl", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str, default="")
+parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
+parser.add_argument("-cl", "--collection", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str, default="")
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -43,7 +44,7 @@ file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(lev
 
 cmd_handler = logging.StreamHandler()
 cmd_handler.setFormatter(logging.Formatter("| %(message)-100s |"))
-cmd_handler.setLevel(logging.DEBUG if args.tests or args.test else logging.INFO)
+cmd_handler.setLevel(logging.DEBUG if args.tests or args.test or args.debug else logging.INFO)
 
 logger.addHandler(cmd_handler)
 logger.addHandler(file_handler)
