@@ -8,8 +8,8 @@ libraries:
 settings:                                       # Can be individually specified per library as well
   cache: true
   cache_expiration: 60
-  sync_mode: append
   asset_directory: config/assets
+  sync_mode: append
   show_unmanaged: true
   show_filtered: false
   show_missing: true
