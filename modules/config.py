@@ -258,11 +258,11 @@ class Config:
             if params["asset_directory"] is None:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
-            params["sync_mode"] = check_for_attribute(libs[lib], "sync_mode", parent="plex", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], save=False)
-            params["show_unmanaged"] = check_for_attribute(libs[lib], "show_unmanaged", parent="plex", var_type="bool", default=self.general["show_unmanaged"], save=False)
-            params["show_filtered"] = check_for_attribute(libs[lib], "show_filtered", parent="plex", var_type="bool", default=self.general["show_filtered"], save=False)
-            params["show_missing"] = check_for_attribute(libs[lib], "show_missing", parent="plex", var_type="bool", default=self.general["show_missing"], save=False)
-            params["save_missing"] = check_for_attribute(libs[lib], "save_missing", parent="plex", var_type="bool", default=self.general["save_missing"], save=False)
+            params["sync_mode"] = check_for_attribute(libs[lib], "sync_mode", parent="settings", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], save=False)
+            params["show_unmanaged"] = check_for_attribute(libs[lib], "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], save=False)
+            params["show_filtered"] = check_for_attribute(libs[lib], "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], save=False)
+            params["show_missing"] = check_for_attribute(libs[lib], "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], save=False)
+            params["save_missing"] = check_for_attribute(libs[lib], "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], save=False)
 
             try:
                 params["metadata_path"] = check_for_attribute(libs[lib], "metadata_path", var_type="path", default=os.path.join(default_dir, "{}.yml".format(lib)), throw=True)
