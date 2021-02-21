@@ -29,8 +29,7 @@ class CollectionBuilder:
             elif not data["template"]:
                 raise Failed("Collection Error: template attribute is blank")
             else:
-                template_list = data["template"] if isinstance(data["template"], list) else [data["template"]]
-                for data_template in template_list:
+                for data_template in util.get_list(data["template"], split=False):
                     if not isinstance(data_template, dict):
                         raise Failed("Collection Error: template attribute is not a dictionary")
                     elif "name" not in data_template:
