@@ -45,7 +45,8 @@ class Config:
                 new_config["tmdb"] = {}
             replace_attr(new_config, "cache", "cache")
             replace_attr(new_config, "cache_expiration", "cache")
-            del new_config["cache"]
+            if "config" in new_config:
+                del new_config["cache"]
             replace_attr(new_config, "asset_directory", "plex")
             replace_attr(new_config, "sync_mode", "plex")
             replace_attr(new_config, "show_unmanaged", "plex")
