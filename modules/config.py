@@ -82,11 +82,11 @@ class Config:
                 message = message + " using {} as default".format(default)
             message = message + endline
             if req_default and default is None:
-                raise Failed("{} attribute must be set under {} globally or under this specific Library".format(attribute, parent))
+                raise Failed("Config Error: {} attribute must be set under {} globally or under this specific Library".format(attribute, parent))
             if (default is None and not default_is_none) or throw:
                 if len(options) > 0:
                     message = message + "\n" + options
-                raise Failed(message)
+                raise Failed("Config Error: {}".format(message))
             if do_print:
                 util.print_multiline("Config Warning: {}".format(message))
                 if attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
@@ -94,13 +94,64 @@ class Config:
             return default
 
         self.general = {}
-        self.general["cache"] = check_for_attribute(self.data, "cache", parent="cache", options="    true (Create a cache to store ids)\n    false (Do not create a cache to store ids)", var_type="bool", default=True)
-        self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="cache", var_type="int", default=60)
+
+        if "settings" not in self.data:
+            new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
+            def replace_attr(all_data, attr, par):
+                if "settings" not in all_data:
+                    all_data["settings"] = {}
+                if par in all_data and all_data[par] and attr in all_data[par] and attr not in all_data["settings"]:
+                    all_data["settings"][attr] = all_data[par][attr]
+                    del all_data[par][attr]
+            if "libraries" not in new_config:
+                new_config["libraries"] = {}
+            if "settings" not in new_config:
+                new_config["settings"] = {}
+            if "tmdb" not in new_config:
+                new_config["tmdb"] = {}
+            replace_attr(new_config, "cache", "cache")
+            replace_attr(new_config, "cache_expiration", "cache")
+            del new_config["cache"]
+            replace_attr(new_config, "asset_directory", "plex")
+            replace_attr(new_config, "sync_mode", "plex")
+            replace_attr(new_config, "show_unmanaged", "plex")
+            replace_attr(new_config, "show_filtered", "plex")
+            replace_attr(new_config, "show_missing", "plex")
+            replace_attr(new_config, "save_missing", "plex")
+            if new_config["libraries"]:
+                for library in new_config["libraries"]:
+                    if "plex" in new_config["libraries"][library]:
+                        replace_attr(new_config["libraries"][library], "asset_directory", "plex")
+                        replace_attr(new_config["libraries"][library], "sync_mode", "plex")
+                        replace_attr(new_config["libraries"][library], "show_unmanaged", "plex")
+                        replace_attr(new_config["libraries"][library], "show_filtered", "plex")
+                        replace_attr(new_config["libraries"][library], "show_missing", "plex")
+                        replace_attr(new_config["libraries"][library], "save_missing", "plex")
+            new_config["libraries"] = new_config.pop("libraries")
+            new_config["settings"] = new_config.pop("settings")
+            new_config["plex"] = new_config.pop("plex")
+            new_config["tmdb"] = new_config.pop("tmdb")
+            new_config["tautulli"] = new_config.pop("tautulli")
+            new_config["radarr"] = new_config.pop("radarr")
+            new_config["sonarr"] = new_config.pop("sonarr")
+            new_config["trakt"] = new_config.pop("trakt")
+            new_config["mal"] = new_config.pop("mal")
+            yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
+
+
+        self.general["cache"] = check_for_attribute(self.data, "cache", parent="settings", options="    true (Create a cache to store ids)\n    false (Do not create a cache to store ids)", var_type="bool", default=True)
+        self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
         if self.general["cache"]:
             util.seperator()
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
+        self.general["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="settings", var_type="listpath", default=[os.path.join(default_dir, "assets")])
+        self.general["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)")
+        self.general["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True)
+        self.general["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False)
+        self.general["show_missing"] = check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True)
+        self.general["save_missing"] = check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True)
 
         util.seperator()
 
@@ -109,7 +160,7 @@ class Config:
             logger.info("Connecting to TMDb...")
             self.tmdb = {}
             try:                                self.tmdb["apikey"] = check_for_attribute(self.data, "apikey", parent="tmdb", throw=True)
-            except Failed as e:                 raise Failed("Config Error: {}".format(e))
+            except Failed as e:                 raise Failed(e)
             self.tmdb["language"] = check_for_attribute(self.data, "language", parent="tmdb", default="en")
             self.TMDb = TMDbAPI(self.tmdb)
             logger.info("TMDb Connection {}".format("Failed" if self.TMDb is None else "Successful"))
@@ -129,7 +180,7 @@ class Config:
                 authorization = self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] and self.data["trakt"]["authorization"] else None
                 self.Trakt = TraktAPI(self.trakt, authorization)
             except Failed as e:
-                logger.error("Config Error: {}".format(e))
+                logger.error(e)
             logger.info("Trakt Connection {}".format("Failed" if self.Trakt is None else "Successful"))
         else:
             logger.warning("trakt attribute not found")
@@ -148,7 +199,7 @@ class Config:
                 authorization = self.data["mal"]["authorization"] if "authorization" in self.data["mal"] and self.data["mal"]["authorization"] else None
                 self.MyAnimeList = MyAnimeListAPI(self.mal, self.MyAnimeListIDList, authorization)
             except Failed as e:
-                logger.error("Config Error: {}".format(e))
+                logger.error(e)
             logger.info("My Anime List Connection {}".format("Failed" if self.MyAnimeList is None else "Successful"))
         else:
             logger.warning("mal attribute not found")
@@ -164,12 +215,6 @@ class Config:
         self.general["plex"] = {}
         self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", default_is_none=True)
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True)
-        self.general["plex"]["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="plex", var_type="listpath", default=os.path.join(default_dir, "assets"))
-        self.general["plex"]["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="plex", default="append", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)")
-        self.general["plex"]["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="plex", var_type="bool", default=True)
-        self.general["plex"]["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="plex", var_type="bool", default=False)
-        self.general["plex"]["show_missing"] = check_for_attribute(self.data, "show_missing", parent="plex", var_type="bool", default=True)
-        self.general["plex"]["save_missing"] = check_for_attribute(self.data, "save_missing", parent="plex", var_type="bool", default=True)
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True)
@@ -197,7 +242,7 @@ class Config:
 
         self.libraries = []
         try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
-        except Failed as e:             raise Failed("Config Error: {}".format(e))
+        except Failed as e:             raise Failed(e)
         for lib in libs:
             util.seperator()
             params = {}
@@ -208,35 +253,29 @@ class Config:
                 params["name"] = str(lib)
                 logger.info("Connecting to {} Library...".format(params["name"]))
             default_lib = os.path.join(default_dir, "{}.yml".format(lib))
+
+            params["asset_directory"] = check_for_attribute(libs[lib], "asset_directory", parent="settings", var_type="listpath", default=self.general["asset_directory"], default_is_none=True, save=False)
+            if params["asset_directory"] is None:
+                logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
+
+            params["sync_mode"] = check_for_attribute(libs[lib], "sync_mode", parent="plex", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], save=False)
+            params["show_unmanaged"] = check_for_attribute(libs[lib], "show_unmanaged", parent="plex", var_type="bool", default=self.general["show_unmanaged"], save=False)
+            params["show_filtered"] = check_for_attribute(libs[lib], "show_filtered", parent="plex", var_type="bool", default=self.general["show_filtered"], save=False)
+            params["show_missing"] = check_for_attribute(libs[lib], "show_missing", parent="plex", var_type="bool", default=self.general["show_missing"], save=False)
+            params["save_missing"] = check_for_attribute(libs[lib], "save_missing", parent="plex", var_type="bool", default=self.general["save_missing"], save=False)
+
             try:
                 params["metadata_path"] = check_for_attribute(libs[lib], "metadata_path", var_type="path", default=os.path.join(default_dir, "{}.yml".format(lib)), throw=True)
                 params["library_type"] = check_for_attribute(libs[lib], "library_type", test_list=["movie", "show"], options="    movie (For Movie Libraries)\n    show (For Show Libraries)", throw=True)
                 params["plex"] = {}
                 params["plex"]["url"] = check_for_attribute(libs[lib], "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(libs[lib], "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
+                library = PlexAPI(params, self.TMDb, self.TVDb)
+                logger.info("{} Library Connection Successful".format(params["name"]))
             except Failed as e:
-                util.print_multiline("Config Error: Skipping {} Library {}".format(str(lib), e))
+                util.print_multiline(e)
+                logger.info("{} Library Connection Failed".format(params["name"]))
                 continue
-
-            params["asset_directory"] = check_for_attribute(libs[lib], "asset_directory", parent="plex", var_type="listpath", default=os.path.join(default_dir, "assets"))
-
-            if "plex" in libs[lib] and "asset_directory" in libs[lib]["plex"]:
-                if libs[lib]["plex"]["asset_directory"]:
-                    temp_list = [path for path in util.get_list(libs[lib]["plex"]["asset_directory"]) if os.path.exists(os.path.abspath(path))]
-                    if len(temp_list) > 0:                      params["asset_directory"] = temp_list
-                    else:                                       logger.warning("Config Warning: No Paths exist")
-                else:
-                   logger.warning("Config Warning: Assets will not be used asset_directory library attribute is blank")
-            elif self.general["plex"]["asset_directory"]:
-                params["asset_directory"] = self.general["plex"]["asset_directory"]
-            else:
-                logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
-
-            params["sync_mode"] = check_for_attribute(libs[lib], "sync_mode", parent="plex", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["plex"]["sync_mode"], save=False)
-            params["show_unmanaged"] = check_for_attribute(libs[lib], "show_unmanaged", parent="plex", var_type="bool", default=self.general["plex"]["show_unmanaged"], save=False)
-            params["show_filtered"] = check_for_attribute(libs[lib], "show_filtered", parent="plex", var_type="bool", default=self.general["plex"]["show_filtered"], save=False)
-            params["show_missing"] = check_for_attribute(libs[lib], "show_missing", parent="plex", var_type="bool", default=self.general["plex"]["show_missing"], save=False)
-            params["save_missing"] = check_for_attribute(libs[lib], "save_missing", parent="plex", var_type="bool", default=self.general["plex"]["save_missing"], save=False)
 
             if self.general["radarr"]["url"] or "radarr" in libs[lib]:
                 logger.info("Connecting to {} library's Radarr...".format(params["name"]))
@@ -250,11 +289,10 @@ class Config:
                     radarr_params["add"] = check_for_attribute(libs[lib], "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
                     radarr_params["search"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
                     radarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="lowerlist", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
-                    Radarr = RadarrAPI(self.TMDb, radarr_params)
+                    library.add_Radarr(RadarrAPI(self.TMDb, radarr_params))
                 except Failed as e:
-                    util.print_multiline("Config Error: {}".format(e))
-                    Radarr = None
-                logger.info("{} library's Radarr Connection {}".format(params["name"], "Failed" if Radarr is None else "Successful"))
+                    util.print_multiline(e)
+                logger.info("{} library's Radarr Connection {}".format(params["name"], "Failed" if library.Radarr is None else "Successful"))
 
             if self.general["sonarr"]["url"] or "sonarr" in libs[lib]:
                 logger.info("Connecting to {} library's Sonarr...".format(params["name"]))
@@ -268,11 +306,10 @@ class Config:
                     sonarr_params["add"] = check_for_attribute(libs[lib], "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
                     sonarr_params["search"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
                     sonarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="lowerlist", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
-                    Sonarr = SonarrAPI(self.TVDb, sonarr_params, self.tmdb["language"])
+                    library.add_Sonarr(SonarrAPI(self.TVDb, sonarr_params, library.Plex.language))
                 except Failed as e:
-                    util.print_multiline("Config Error: {}".format(e))
-                    Sonarr = None
-                logger.info("{} library's Sonarr Connection {}".format(params["name"], "Failed" if Sonarr is None else "Successful"))
+                    util.print_multiline(e)
+                logger.info("{} library's Sonarr Connection {}".format(params["name"], "Failed" if library.Sonarr is None else "Successful"))
 
             if self.general["tautulli"]["url"] or "tautulli" in libs[lib]:
                 logger.info("Connecting to {} library's Tautulli...".format(params["name"]))
@@ -280,19 +317,12 @@ class Config:
                 try:
                     tautulli_params["url"] = check_for_attribute(libs[lib], "url", parent="tautulli", default=self.general["tautulli"]["url"], req_default=True, save=False)
                     tautulli_params["apikey"] = check_for_attribute(libs[lib], "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
-                    Tautulli = TautulliAPI(tautulli_params)
+                    library.add_Tautulli(TautulliAPI(tautulli_params))
                 except Failed as e:
-                    util.print_multiline("Config Error: {}".format(e))
-                    Tautulli = None
-                logger.info("{} library's Tautulli Connection {}".format(params["name"], "Failed" if Tautulli is None else "Successful"))
+                    util.print_multiline(e)
+                logger.info("{} library's Tautulli Connection {}".format(params["name"], "Failed" if library.Tautulli is None else "Successful"))
 
-            try:
-                self.libraries.append(PlexAPI(params, self.TMDb, self.TVDb, Radarr, Sonarr, Tautulli))
-                logger.info("{} Library Connection Successful".format(params["name"]))
-            except Failed as e:
-                logger.error(e)
-                logger.info("{} Library Connection Failed".format(params["name"]))
-                continue
+            self.libraries.append(library)
 
         util.seperator()
 
