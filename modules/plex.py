@@ -12,7 +12,7 @@ from ruamel import yaml
 logger = logging.getLogger("Plex Meta Manager")
 
 class PlexAPI:
-    def __init__(self, params, TMDb, TVDb, Radarr, Sonarr, Tautulli):
+    def __init__(self, params, TMDb, TVDb):
         try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=600)
         except Unauthorized:                                                    raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:                                                 raise Failed("Plex Error: {}".format(e))
@@ -47,9 +47,9 @@ class PlexAPI:
 
         self.TMDb = TMDb
         self.TVDb = TVDb
-        self.Radarr = Radarr
-        self.Sonarr = Sonarr
-        self.Tautulli = Tautulli
+        self.Radarr = None
+        self.Sonarr = None
+        self.Tautulli = None
         self.name = params["name"]
         self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), "{}_missing.yml".format(os.path.splitext(os.path.basename(params["metadata_path"]))[0]))
         self.metadata_path = params["metadata_path"]
@@ -61,6 +61,17 @@ class PlexAPI:
         self.save_missing = params["save_missing"]
         self.plex = params["plex"]
         self.missing = {}
+
+    def add_Radarr(self, Radarr):
+        self.Radarr = Radarr
+
+    def add_Sonarr(self, Sonarr):
+        self.Sonarr = Sonarr
+
+    def add_Tautulli(self, Tautulli):
+        self.Tautulli = Tautulli
+
+
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def search(self, title, libtype=None, year=None):

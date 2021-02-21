@@ -586,7 +586,7 @@ def windows_input(prompt, timeout=5):
 
 
 def print_multiline(lines, info=False, warning=False, error=False, critical=False):
-    for i, line in enumerate(lines.split("\n")):
+    for i, line in enumerate(str(lines).split("\n")):
         if critical:        logger.critical(line)
         elif error:         logger.error(line)
         elif warning:       logger.warning(line)
