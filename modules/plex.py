@@ -13,7 +13,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 class PlexAPI:
     def __init__(self, params, TMDb, TVDb):
-        try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=600)
+        try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
         except Unauthorized:                                                    raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:                                                 raise Failed("Plex Error: {}".format(e))
         except requests.exceptions.ConnectionError as e:
@@ -60,6 +60,7 @@ class PlexAPI:
         self.show_missing = params["show_missing"]
         self.save_missing = params["save_missing"]
         self.plex = params["plex"]
+        self.timeout = params["plex"]["timeout"]
         self.missing = {}
 
     def add_Radarr(self, Radarr):
@@ -70,8 +71,6 @@ class PlexAPI:
 
     def add_Tautulli(self, Tautulli):
         self.Tautulli = Tautulli
-
-
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def search(self, title, libtype=None, year=None):

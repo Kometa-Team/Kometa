@@ -19,6 +19,7 @@ settings:                                       # Can be individually specified 
 plex:                                           # Can be individually specified per library as well
   url: http://192.168.1.12:32400
   token: ####################
+  timeout: 60
 tmdb:
   apikey: ################################
   language: en
