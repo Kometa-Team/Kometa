@@ -62,15 +62,15 @@ class Config:
                         replace_attr(new_config["libraries"][library], "show_filtered", "plex")
                         replace_attr(new_config["libraries"][library], "show_missing", "plex")
                         replace_attr(new_config["libraries"][library], "save_missing", "plex")
-            new_config["libraries"] = new_config.pop("libraries")
-            new_config["settings"] = new_config.pop("settings")
-            new_config["plex"] = new_config.pop("plex")
-            new_config["tmdb"] = new_config.pop("tmdb")
-            new_config["tautulli"] = new_config.pop("tautulli")
-            new_config["radarr"] = new_config.pop("radarr")
-            new_config["sonarr"] = new_config.pop("sonarr")
-            new_config["trakt"] = new_config.pop("trakt")
-            new_config["mal"] = new_config.pop("mal")
+            if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
+            if "settings" in new_config:                    new_config["settings"] = new_config.pop("settings")
+            if "plex" in new_config:                        new_config["plex"] = new_config.pop("plex")
+            if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
+            if "tautulli" in new_config:                    new_config["tautulli"] = new_config.pop("tautulli")
+            if "radarr" in new_config:                      new_config["radarr"] = new_config.pop("radarr")
+            if "sonarr" in new_config:                      new_config["sonarr"] = new_config.pop("sonarr")
+            if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
+            if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
             yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
@@ -91,7 +91,7 @@ class Config:
                 message = "{} not found".format(text)
                 if parent and save is True:
                     new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
-                    endline = "\n| {} sub-attribute {} added to config".format(parent, attribute)
+                    endline = "\n{} sub-attribute {} added to config".format(parent, attribute)
                     if parent not in new_config:                                        new_config = {parent: {attribute: default}}
                     elif not new_config[parent]:                                        new_config[parent] = {attribute: default}
                     elif attribute not in new_config[parent]:                           new_config[parent][attribute] = default
@@ -214,6 +214,7 @@ class Config:
         self.general["plex"] = {}
         self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", default_is_none=True)
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True)
+        self.general["plex"]["timeout"] = check_for_attribute(self.data, "timeout", parent="plex", var_type="int", default=60)
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True)
@@ -269,6 +270,7 @@ class Config:
                 params["plex"] = {}
                 params["plex"]["url"] = check_for_attribute(libs[lib], "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(libs[lib], "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
+                params["plex"]["timeout"] = check_for_attribute(libs[lib], "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False)
                 library = PlexAPI(params, self.TMDb, self.TVDb)
                 logger.info("{} Library Connection Successful".format(params["name"]))
             except Failed as e:
@@ -334,6 +336,7 @@ class Config:
 
     def update_libraries(self, test, requested_collections):
         for library in self.libraries:
+            os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
             util.seperator("{} Library".format(library.name))
             try:                        library.update_metadata(self.TMDb, test)
