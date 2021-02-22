@@ -655,7 +655,7 @@ class CollectionBuilder:
                                 logger.error(e)
                         logger.info("{} Show{} Missing".format(len(missing_shows_with_names), "s" if len(missing_shows_with_names) > 1 else ""))
                         if self.details["save_missing"] is True:
-                            self.library.add_missing(c, missing_shows_with_names, False)
+                            self.library.add_missing(collection_name, missing_shows_with_names, False)
                         if self.do_arr and self.library.Sonarr:
                             self.library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tag=self.details["arr_tag"])
 
