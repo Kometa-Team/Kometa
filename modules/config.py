@@ -121,7 +121,10 @@ class Config:
                 return default
             elif var_type == "path" and default:
                 default = None
-                message = "neither {} or the default path {} could be found".format(data[attribute], default)
+                if attribute in data and data[attribute]:
+                    message = "neither {} or the default path {} could be found".format(data[attribute], default)
+                else:
+                    message = "no {} found and the default path {} could be found".format(text, default)
             if default is not None or default_is_none:
                 message = message + " using {} as default".format(default)
             message = message + endline
