@@ -9,7 +9,7 @@ class TautulliAPI:
     def __init__(self, params):
         try:
             response = requests.get("{}/api/v2?apikey={}&cmd=get_library_names".format(params["url"], params["apikey"])).json()
-        except Exception as e:
+        except Exception:
             util.print_stacktrace()
             raise Failed("Tautulli Error: Invalid url")
         if response["response"]["result"] != "success":

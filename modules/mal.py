@@ -27,7 +27,7 @@ class MyAnimeListIDList:
         raise Failed("MyAnimeList Error: MyAnimeList ID: {} not found".format(mal_id))
 
 class MyAnimeListAPI:
-    def __init__(self, params, MyAnimeListIDList, authorization=None):
+    def __init__(self, params, MyAnimeListIDList_in, authorization=None):
         self.urls = {
             "oauth_token": "https://myanimelist.net/v1/oauth2/token",
             "oauth_authorize": "https://myanimelist.net/v1/oauth2/authorize",
@@ -40,7 +40,7 @@ class MyAnimeListAPI:
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
         self.authorization = authorization
-        self.MyAnimeListIDList = MyAnimeListIDList
+        self.MyAnimeListIDList = MyAnimeListIDList_in
         if not self.save_authorization(self.authorization):
             if not self.refresh_authorization():
                 self.get_authorization()

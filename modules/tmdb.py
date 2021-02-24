@@ -1,4 +1,4 @@
-import logging, os, tmdbv3api
+import logging, tmdbv3api
 from modules import util
 from modules.util import Failed
 from retrying import retry
@@ -30,9 +30,13 @@ class TMDbAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def convert_from_tmdb(self, tmdb_id, convert_to, is_movie):
-        try:                        return self.Movie.external_ids(tmdb_id)[convert_to] if is_movie else self.TV.external_ids(tmdb_id)[convert_to]
-        except TMDbException:       raise Failed("TMDb Error: No {} found for TMDb ID {}".format(convert_to.upper().replace("B_", "b "), tmdb_id))
-
+        try:
+            id_to_return = self.Movie.external_ids(tmdb_id)[convert_to] if is_movie else self.TV.external_ids(tmdb_id)[convert_to]
+            if not id_to_return or (convert_to == "tvdb_id" and id_to_return == 0):
+                raise Failed("TMDb Error: No {} found for TMDb ID {}".format(convert_to.upper().replace("B_", "b "), tmdb_id))
+            return id_to_return
+        except TMDbException:
+            raise Failed("TMDb Error: {} TMDb ID: {} not found".format("Movie" if is_movie else "Show", tmdb_id))
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def convert_to_tmdb(self, external_id, external_source, is_movie):
@@ -105,6 +109,7 @@ class TMDbAPI:
             elif method == "tmdb_now_playing" and is_movie:     tmdb_items = self.Movie.now_playing(x + 1)
             elif method == "tmdb_trending_daily":               tmdb_items = self.Trending.movie_day(x + 1) if is_movie else self.Trending.tv_day(x + 1)
             elif method == "tmdb_trending_weekly":              tmdb_items = self.Trending.movie_week(x + 1) if is_movie else self.Trending.tv_week(x + 1)
+            else:                                               raise Failed("TMDb Error: {} method not supported".format(method))
             for tmdb_item in tmdb_items:
                 try:
                     ids.append(tmdb_item.id if is_movie else self.convert_tmdb_to_tvdb(tmdb_item.id))
@@ -143,6 +148,9 @@ class TMDbAPI:
         movie_ids = []
         show_ids = []
         if method in ["tmdb_discover", "tmdb_company", "tmdb_keyword"] or (method == "tmdb_network" and not is_movie):
+            attrs = None
+            tmdb_id = ""
+            tmdb_name = ""
             if method in ["tmdb_company", "tmdb_network", "tmdb_keyword"]:
                 tmdb_id = int(data)
                 if method == "tmdb_company":
@@ -163,7 +171,7 @@ class TMDbAPI:
             if status_message:
                 if method in ["tmdb_company", "tmdb_network", "tmdb_keyword"]:
                     logger.info("Processing {}: ({}) {} ({} {}{})".format(pretty, tmdb_id, tmdb_name, amount, media_type, "" if amount == 1 else "s"))
-                else:
+                elif method == "tmdb_discover":
                     logger.info("Processing {}: {} {}{}".format(pretty, amount, media_type, "" if amount == 1 else "s"))
                     for attr, value in attrs.items():
                         logger.info("           {}: {}".format(attr, value))

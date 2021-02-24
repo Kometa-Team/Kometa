@@ -9,7 +9,7 @@ def run_tests(default_dir):
     try:
         config = Config(default_dir)
         logger.info("")
-        util.seperator("Mapping Tests")
+        util.separator("Mapping Tests")
         for library in config.libraries:
             config.map_guids(library)
         anidb_tests(config)
@@ -19,13 +19,13 @@ def run_tests(default_dir):
         tmdb_tests(config)
         trakt_tests(config)
         tvdb_tests(config)
-        util.seperator("Finished All Plex Meta Manager Tests")
+        util.separator("Finished All Plex Meta Manager Tests")
     except KeyboardInterrupt:
-        util.seperator("Canceled Plex Meta Manager Tests")
+        util.separator("Canceled Plex Meta Manager Tests")
 
 def anidb_tests(config):
     if config.AniDB:
-        util.seperator("AniDB Tests")
+        util.separator("AniDB Tests")
 
         try:
             config.AniDB.convert_anidb_to_tvdb(69)
@@ -84,11 +84,11 @@ def anidb_tests(config):
             logger.error("Failure | Validate AniDB List: {}".format(e))
 
     else:
-        util.seperator("AniDB Not Configured")
+        util.separator("AniDB Not Configured")
 
 def imdb_tests(config):
     if config.IMDb:
-        util.seperator("IMDb Tests")
+        util.separator("IMDb Tests")
 
         tmdb_ids, tvdb_ids = config.IMDb.get_items("imdb_list", {"url": "https://www.imdb.com/search/title/?groups=top_1000", "limit": 0}, "en", status_message=False)
         if len(tmdb_ids) == 1000:                           logger.info("Success | IMDb URL get TMDb IDs")
@@ -103,11 +103,11 @@ def imdb_tests(config):
         else:                                               logger.error("Failure | IMDb ID get TMDb IDs: {} Should be 1".format(len(tmdb_ids)))
 
     else:
-        util.seperator("IMDb Not Configured")
+        util.separator("IMDb Not Configured")
 
 def mal_tests(config):
     if config.MyAnimeListIDList:
-        util.seperator("MyAnimeListXML Tests")
+        util.separator("MyAnimeListXML Tests")
 
         try:
             config.MyAnimeListIDList.convert_mal_to_tvdb(21)
@@ -145,10 +145,10 @@ def mal_tests(config):
             logger.error("Failure | Find MyAnimeList ID: {}".format(e))
 
     else:
-        util.seperator("MyAnimeListXML Not Configured")
+        util.separator("MyAnimeListXML Not Configured")
 
     if config.MyAnimeList:
-        util.seperator("MyAnimeList Tests")
+        util.separator("MyAnimeList Tests")
 
         mal_list_tests = [
             ("mal_all", 10),
@@ -173,11 +173,11 @@ def mal_tests(config):
                 util.print_stacktrace()
                 logger.error("Failure | Get Anime using {}: {}".format(util.pretty_names[mal_list_test[0]], e))
     else:
-        util.seperator("MyAnimeList Not Configured")
+        util.separator("MyAnimeList Not Configured")
 
 def tautulli_tests(config):
     if config.libraries[0].Tautulli:
-        util.seperator("Tautulli Tests")
+        util.separator("Tautulli Tests")
 
         try:
             config.libraries[0].Tautulli.get_section_id(config.libraries[0].name)
@@ -200,11 +200,11 @@ def tautulli_tests(config):
             util.print_stacktrace()
             logger.error("Failure | Get Top: {}".format(e))
     else:
-        util.seperator("Tautulli Not Configured")
+        util.separator("Tautulli Not Configured")
 
 def tmdb_tests(config):
     if config.TMDb:
-        util.seperator("TMDb Tests")
+        util.separator("TMDb Tests")
 
         try:
             config.TMDb.convert_imdb_to_tmdb("tt0076759")
@@ -284,11 +284,11 @@ def tmdb_tests(config):
                 util.print_stacktrace()
                 logger.error("Failure | Get {} using {}: {}".format("Movies" if tmdb_list_test[2] else "Shows", util.pretty_names[tmdb_list_test[0]], e))
     else:
-        util.seperator("TMDb Not Configured")
+        util.separator("TMDb Not Configured")
 
 def trakt_tests(config):
     if config.Trakt:
-        util.seperator("Trakt Tests")
+        util.separator("Trakt Tests")
 
         try:
             config.Trakt.convert_imdb_to_tmdb("tt0076759")
@@ -369,11 +369,11 @@ def trakt_tests(config):
                 util.print_stacktrace()
                 logger.error("Failure | Get {} using {}: {}".format("Movies" if trakt_list_test[2] else "Shows", util.pretty_names[trakt_list_test[0]], e))
     else:
-        util.seperator("Trakt Not Configured")
+        util.separator("Trakt Not Configured")
 
 def tvdb_tests(config):
     if config.TVDb:
-        util.seperator("TVDb Tests")
+        util.separator("TVDb Tests")
 
         tmdb_ids, tvdb_ids = config.TVDb.get_items("tvdb_list", "https://www.thetvdb.com/lists/arrowverse", "en", status_message=False)
         if len(tvdb_ids) == 10 and len(tmdb_ids) == 0:      logger.info("Success | TVDb URL get TVDb IDs and TMDb IDs")
@@ -412,4 +412,4 @@ def tvdb_tests(config):
             logger.error("Failure | TVDb ID get TVDb Movie ID: {}".format(e))
 
     else:
-        util.seperator("TVDb Not Configured")
+        util.separator("TVDb Not Configured")

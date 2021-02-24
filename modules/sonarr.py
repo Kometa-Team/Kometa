@@ -11,7 +11,7 @@ class SonarrAPI:
         self.base_url = "{}/api{}".format(params["url"], "/v3/" if params["version"] == "v3" else "/")
         try:
             result = requests.get("{}system/status".format(self.base_url), params=self.url_params).json()
-        except Exception as e:
+        except Exception:
             util.print_stacktrace()
             raise Failed("Sonarr Error: Could not connect to Sonarr at {}".format(params["url"]))
         if "error" in result and result["error"] == "Unauthorized":
@@ -72,7 +72,7 @@ class SonarrAPI:
                 "language": self.language,
                 "monitored": True,
                 "rootFolderPath": self.root_folder_path,
-                "seasons" : [],
+                "seasons": [],
                 "images": [{"covertype": "poster", "url": show.poster_path}],
                 "addOptions": {"searchForMissingEpisodes": self.search}
             }
@@ -85,7 +85,7 @@ class SonarrAPI:
             else:
                 try:
                     logger.error("Sonarr Error: ({}) {}: ({}) {}".format(tvdb_id, show.title, response.status_code, response.json()[0]["errorMessage"]))
-                except KeyError as e:
+                except KeyError:
                     logger.debug(url_json)
                     logger.error("Sonarr Error: {}".format(response.json()))
         logger.info("{} Show{} added to Sonarr".format(add_count, "s" if add_count > 1 else ""))

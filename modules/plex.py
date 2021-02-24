@@ -1,5 +1,5 @@
-import datetime, logging, os, requests
-from lxml import html
+import logging, os, re, requests
+from datetime import datetime, timedelta
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -16,7 +16,7 @@ class PlexAPI:
         try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
         except Unauthorized:                                                    raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:                                                 raise Failed("Plex Error: {}".format(e))
-        except requests.exceptions.ConnectionError as e:
+        except requests.exceptions.ConnectionError:
             util.print_stacktrace()
             raise Failed("Plex Error: Plex url is invalid")
         self.is_movie = params["library_type"] == "movie"
@@ -30,7 +30,7 @@ class PlexAPI:
             if attribute in self.data:
                 if self.data[attribute]:
                     if isinstance(self.data[attribute], dict):                              return self.data[attribute]
-                    else:                                                                   logger.waring("Config Warning: {} must be a dictionary".format(attribute))
+                    else:                                                                   logger.warning("Config Warning: {} must be a dictionary".format(attribute))
                 else:                                                                   logger.warning("Config Warning: {} attribute is blank".format(attribute))
             return None
 
@@ -101,7 +101,7 @@ class PlexAPI:
             try:                                        valid_collections.append(self.get_collection(collection))
             except Failed as e:                         logger.error(e)
         if len(valid_collections) == 0:
-            raise Failed("Collection Error: No valid Plex Collections in {}".format(collections[c][m]))
+            raise Failed("Collection Error: No valid Plex Collections in {}".format(collections))
         return valid_collections
 
     def add_missing(self, collection, items, is_movie):
@@ -119,7 +119,7 @@ class PlexAPI:
         except yaml.scanner.ScannerError as e:
             logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
-    def add_to_collection(self, collection, items, filters, show_filtered, map, movie_map, show_map):
+    def add_to_collection(self, collection, items, filters, show_filtered, rating_key_map, movie_map, show_map):
         name = collection.title if isinstance(collection, Collections) else collection
         collection_items = collection.items() if isinstance(collection, Collections) else []
         total = len(items)
@@ -145,7 +145,6 @@ class PlexAPI:
                             break
                     elif method == "original_language":
                         terms = util.get_list(f[1], lower=True)
-                        tmdb_id = None
                         movie = None
                         for key, value in movie_map.items():
                             if current.ratingKey == value:
@@ -174,6 +173,7 @@ class PlexAPI:
                                 break
                     else:
                         terms = util.get_list(f[1])
+                        attrs = []
                         if method in ["video_resolution", "audio_language", "subtitle_language"]:
                             for media in current.media:
                                 if method == "video_resolution":                                                                attrs = [media.videoResolution]
@@ -189,20 +189,20 @@ class PlexAPI:
                 length = util.print_return(length, "Filtering {}/{} {}".format((" " * (max_length - len(str(i)))) + str(i), total, current.title))
             if match:
                 util.print_end(length, "{} Collection | {} | {}".format(name, "=" if current in collection_items else "+", current.title))
-                if current in collection_items:             map[current.ratingKey] = None
+                if current in collection_items:             rating_key_map[current.ratingKey] = None
                 else:                                       current.addCollection(name)
             elif show_filtered is True:
                 logger.info("{} Collection | X | {}".format(name, current.title))
         media_type = "{}{}".format("Movie" if self.is_movie else "Show", "s" if total > 1 else "")
         util.print_end(length, "{} {} Processed".format(total, media_type))
-        return map
+        return rating_key_map
 
     def search_item(self, data, year=None):
         return util.choose_from_list(self.search(data, year=year), "movie" if self.is_movie else "show", str(data), exact=True)
 
     def update_metadata(self, TMDb, test):
         logger.info("")
-        util.seperator("{} Library Metadata".format(self.name))
+        util.separator("{} Library Metadata".format(self.name))
         logger.info("")
         if not self.metadata:
             raise Failed("No metadata to edit")
@@ -210,11 +210,11 @@ class PlexAPI:
             if test and ("test" not in self.metadata[m] or self.metadata[m]["test"] is not True):
                 continue
             logger.info("")
-            util.seperator()
+            util.separator()
             logger.info("")
             year = None
             if "year" in self.metadata[m]:
-                now = datetime.datetime.now()
+                now = datetime.now()
                 if self.metadata[m]["year"] is None:                                    logger.error("Metadata Error: year attribute is blank")
                 elif not isinstance(self.metadata[m]["year"], int):                     logger.error("Metadata Error: year attribute must be an integer")
                 elif self.metadata[m]["year"] not in range(1800, now.year + 2):         logger.error("Metadata Error: year attribute must be between 1800-{}".format(now.year + 1))
@@ -252,7 +252,6 @@ class PlexAPI:
                     else:                                                                   tmdb_item = TMDb.get_show(util.regex_first_int(self.metadata[m]["tmdb_id"], "Show"))
             except Failed as e:
                 logger.error(e)
-
 
             originally_available = tmdb_item.first_air_date if tmdb_item else None
             rating = tmdb_item.vote_average if tmdb_item else None
@@ -325,10 +324,10 @@ class PlexAPI:
                         if self.metadata[m]["label_sync_mode"] is None:                         logger.error("Metadata Error: label_sync_mode attribute is blank defaulting to append")
                         elif self.metadata[m]["label_sync_mode"] not in ["append", "sync"]:     logger.error("Metadata Error: label_sync_mode attribute must be either 'append' or 'sync' defaulting to append")
                         elif self.metadata[m]["label_sync_mode"] == "sync":
-                            for label in (l for l in item_labels if l not in labels):
+                            for label in (la for la in item_labels if la not in labels):
                                 item.removeLabel(label)
                                 logger.info("Detail: Label {} removed".format(label))
-                    for label in (l for l in labels if l not in item_labels):
+                    for label in (la for la in labels if la not in item_labels):
                         item.addLabel(label)
                         logger.info("Detail: Label {} added".format(label))
                 else:
@@ -381,7 +380,7 @@ class PlexAPI:
                 if self.metadata[m]["episodes"]:
                     for episode_str in self.metadata[m]["episodes"]:
                         logger.info("")
-                        match = re.search("[Ss]{1}\d+[Ee]{1}\d+", episode_str)
+                        match = re.search("[Ss]\\d+[Ee]\\d+", episode_str)
                         if match:
                             output = match.group(0)[1:].split("E" if "E" in m.group(0) else "e")
                             episode_id = int(output[0])
@@ -421,6 +420,6 @@ class PlexAPI:
                                 else:
                                     logger.info("Season: {} Episode: {} Details Update Not Needed".format(season_id, episode_id))
                         else:
-                            logger.error("Metadata Error: episode {} invlaid must have S##E## format".format(episode_str))
+                            logger.error("Metadata Error: episode {} invalid must have S##E## format".format(episode_str))
                 else:
                     logger.error("Metadata Error: episodes attribute is blank")

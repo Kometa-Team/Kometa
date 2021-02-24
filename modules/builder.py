@@ -61,17 +61,14 @@ class CollectionBuilder:
                             else:
                                 raise Failed("Collection Error: template sub-attribute default is blank")
 
-
-
                         for m in template:
                             if m not in self.data and m != "default":
                                 if template[m]:
-                                    attr = None
                                     def replace_txt(txt):
                                         txt = str(txt)
-                                        for tm in data_template:
-                                            if tm != "name" and "<<{}>>".format(tm) in txt:
-                                                txt = txt.replace("<<{}>>".format(tm), str(data_template[tm]))
+                                        for template_method in data_template:
+                                            if template_method != "name" and "<<{}>>".format(template_method) in txt:
+                                                txt = txt.replace("<<{}>>".format(template_method), str(data_template[template_method]))
                                         if "<<collection_name>>" in txt:
                                             txt = txt.replace("<<collection_name>>", str(self.name))
                                         for dm in default:
@@ -134,7 +131,7 @@ class CollectionBuilder:
                                 if weekday == current_time.weekday():
                                     skip_collection = False
                             else:
-                                logger.error("Collection Error: weekly schedule attribute {} invalid must be a day of the weeek i.e. weekly(Monday)".format(schedule))
+                                logger.error("Collection Error: weekly schedule attribute {} invalid must be a day of the week i.e. weekly(Monday)".format(schedule))
                         elif run_time.startswith("month"):
                             try:
                                 if 1 <= int(param) <= 31:
@@ -162,7 +159,7 @@ class CollectionBuilder:
         if self.schedule is None:
             skip_collection = False
         if skip_collection:
-            raise Failed("Skipping Collection {}".format(c))
+            raise Failed("Skipping Collection {}".format(self.name))
 
         logger.info("Scanning {} Collection".format(self.name))
 
@@ -293,7 +290,6 @@ class CollectionBuilder:
                 elif method_name == "imdb_list":
                     new_list = []
                     for imdb_list in util.get_list(data[m], split=False):
-                        new_dictionary = {}
                         if isinstance(imdb_list, dict):
                             if "url" in imdb_list and imdb_list["url"]:                 imdb_url = imdb_list["url"]
                             else:                                                       raise Failed("Collection Error: imdb_list attribute url is required")
@@ -305,25 +301,25 @@ class CollectionBuilder:
                     self.methods.append((method_name, new_list))
                 elif method_name in util.dictionary_lists:
                     if isinstance(data[m], dict):
-                        def get_int(parent, method, data, default, min=1, max=None):
-                            if method not in data:                                      logger.warning("Collection Warning: {} {} attribute not found using {} as default".format(parent, method, default))
-                            elif not data[method]:                                      logger.warning("Collection Warning: {} {} attribute is blank using {} as default".format(parent, method, default))
-                            elif isinstance(data[method], int) and data[method] >= min:
-                                if max is None or data[method] <= max:                      return data[method]
-                                else:                                                       logger.warning("Collection Warning: {} {} attribute {} invalid must an integer <= {} using {} as default".format(parent, method, data[method], max, default))
-                            else:                                                       logger.warning("Collection Warning: {} {} attribute {} invalid must an integer >= {} using {} as default".format(parent, method, data[method], min, default))
-                            return default
+                        def get_int(parent, method, data_in, default_in, minimum=1, maximum=None):
+                            if method not in data_in:                                       logger.warning("Collection Warning: {} {} attribute not found using {} as default".format(parent, method, default))
+                            elif not data_in[method]:                                       logger.warning("Collection Warning: {} {} attribute is blank using {} as default".format(parent, method, default))
+                            elif isinstance(data_in[method], int) and data_in[method] >= minimum:
+                                if maximum is None or data_in[method] <= maximum:           return data_in[method]
+                                else:                                                       logger.warning("Collection Warning: {} {} attribute {} invalid must an integer <= {} using {} as default".format(parent, method, data_in[method], maximum, default))
+                            else:                                                       logger.warning("Collection Warning: {} {} attribute {} invalid must an integer >= {} using {} as default".format(parent, method, data_in[method], minimum, default))
+                            return default_in
                         if method_name == "filters":
                             for f in data[m]:
                                 if f in util.method_alias or (f.endswith(".not") and f[:-4] in util.method_alias):
-                                    filter = (util.method_alias[f[:-4]] + f[-4:]) if f.endswith(".not") else util.method_alias[f]
-                                    logger.warning("Collection Warning: {} filter will run as {}".format(f, filter))
+                                    filter_method = (util.method_alias[f[:-4]] + f[-4:]) if f.endswith(".not") else util.method_alias[f]
+                                    logger.warning("Collection Warning: {} filter will run as {}".format(f, filter_method))
                                 else:
-                                    filter = f
-                                if filter in util.movie_only_filters and self.library.is_show:   raise Failed("Collection Error: {} filter only works for movie libraries".format(filter))
-                                elif data[m][f] is None:                                    raise Failed("Collection Error: {} filter is blank".format(filter))
-                                elif filter in util.all_filters:                            self.filters.append((filter, data[m][f]))
-                                else:                                                       raise Failed("Collection Error: {} filter not supported".format(filter))
+                                    filter_method = f
+                                if filter_method in util.movie_only_filters and self.library.is_show:   raise Failed("Collection Error: {} filter only works for movie libraries".format(filter_method))
+                                elif data[m][f] is None:                                    raise Failed("Collection Error: {} filter is blank".format(filter_method))
+                                elif filter_method in util.all_filters:                            self.filters.append((filter_method, data[m][f]))
+                                else:                                                       raise Failed("Collection Error: {} filter not supported".format(filter_method))
                         elif method_name == "plex_collectionless":
                             new_dictionary = {}
                             prefix_list = []
@@ -375,12 +371,12 @@ class CollectionBuilder:
                                             if re.compile("([a-z]{2})-([A-Z]{2})").match(str(attr_data)):
                                                 new_dictionary[attr] = str(attr_data)
                                             else:
-                                                raise Failed("Collection Error: {} attribute {}: {} must match pattern ([a-z]{2})-([A-Z]{2}) e.g. en-US".format(m, attr, attr_data))
+                                                raise Failed("Collection Error: {} attribute {}: {} must match pattern ([a-z]{{2}})-([A-Z]{{2}}) e.g. en-US".format(m, attr, attr_data))
                                         elif attr == "region":
                                             if re.compile("^[A-Z]{2}$").match(str(attr_data)):
                                                 new_dictionary[attr] = str(attr_data)
                                             else:
-                                                raise Failed("Collection Error: {} attribute {}: {} must match pattern ^[A-Z]{2}$ e.g. US".format(m, attr, attr_data))
+                                                raise Failed("Collection Error: {} attribute {}: {} must match pattern ^[A-Z]{{2}}$ e.g. US".format(m, attr, attr_data))
                                         elif attr == "sort_by":
                                             if (self.library.is_movie and attr_data in util.discover_movie_sort) or (self.library.is_show and attr_data in util.discover_tv_sort):
                                                 new_dictionary[attr] = attr_data
@@ -409,7 +405,7 @@ class CollectionBuilder:
                                             else:
                                                 raise Failed("Collection Error: {} attribute {}: {} must match pattern MM/DD/YYYY e.g. 12/25/2020".format(m, attr, attr_data))
                                         elif attr in ["primary_release_year", "year", "first_air_date_year"]:
-                                            if isinstance(attr_data, int) and 1800 < attr_data and attr_data < 2200:
+                                            if isinstance(attr_data, int) and 1800 < attr_data < 2200:
                                                 new_dictionary[attr] = attr_data
                                             else:
                                                 raise Failed("Collection Error: {} attribute {}: must be a valid year e.g. 1990".format(m, attr))
@@ -463,8 +459,8 @@ class CollectionBuilder:
                             elif data[m]["season"] not in util.pretty_seasons:      logger.warning("Collection Warning: mal_season season attribute {} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {} as default".format(data[m]["season"], new_dictionary["season"]))
                             else:                                                   new_dictionary["season"] = data[m]["season"]
 
-                            new_dictionary["year"] = get_int(method_name, "year", data[m], current_time.year, min=1917, max=current_time.year + 1)
-                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, max=500)
+                            new_dictionary["year"] = get_int(method_name, "year", data[m], current_time.year, minimum=1917, maximum=current_time.year + 1)
+                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, maximum=500)
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "mal_userlist":
                             new_dictionary = {"status": "all", "sort_by": "list_score"}
@@ -482,7 +478,7 @@ class CollectionBuilder:
                             elif data[m]["sort_by"] not in util.mal_userlist_sort:  logger.warning("Collection Warning: mal_season sort_by attribute {} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default".format(data[m]["sort_by"]))
                             else:                                                   new_dictionary["sort_by"] = util.mal_userlist_sort[data[m]["sort_by"]]
 
-                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, max=1000)
+                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, maximum=1000)
                             self.methods.append((method_name, [new_dictionary]))
                     else:
                         raise Failed("Collection Error: {} attribute is not a dictionary: {}".format(m, data[m]))
@@ -523,7 +519,7 @@ class CollectionBuilder:
         if self.library.Sonarr:
             self.do_arr = self.details["add_to_arr"] if "add_to_arr" in self.details else self.library.Sonarr.add
 
-    def run_methods(self, collection_obj, collection_name, map, movie_map, show_map):
+    def run_methods(self, collection_obj, collection_name, rating_key_map, movie_map, show_map):
         items_found = 0
         for method, values in self.methods:
             logger.debug("")
@@ -559,7 +555,6 @@ class CollectionBuilder:
                     items_found += len(items)
                 elif method == "plex_search":
                     search_terms = {}
-                    output = ""
                     for i, attr_pair in enumerate(value):
                         search_list = attr_pair[1]
                         final_method = attr_pair[0][:-4] + "!" if attr_pair[0][-4:] == ".not" else attr_pair[0]
@@ -611,7 +606,7 @@ class CollectionBuilder:
                 elif "trakt" in method:                             items_found += check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error("Collection Error: {} method not supported".format(method))
 
-                if len(items) > 0:                                  map = self.library.add_to_collection(collection_obj if collection_obj else collection_name, items, self.filters, self.details["show_filtered"], map, movie_map, show_map)
+                if len(items) > 0:                                  rating_key_map = self.library.add_to_collection(collection_obj if collection_obj else collection_name, items, self.filters, self.details["show_filtered"], rating_key_map, movie_map, show_map)
                 else:                                               logger.error("No items found to add to this collection ")
 
                 if len(missing_movies) > 0 or len(missing_shows) > 0:
@@ -662,7 +657,7 @@ class CollectionBuilder:
         if self.sync and items_found > 0:
             logger.info("")
             count_removed = 0
-            for ratingKey, item in map.items():
+            for ratingKey, item in rating_key_map.items():
                 if item is not None:
                     logger.info("{} Collection | - | {}".format(collection_name, item.title))
                     item.removeCollection(collection_name)
@@ -695,10 +690,10 @@ class CollectionBuilder:
             item_labels = [label.tag for label in collection.labels]
             labels = util.get_list(self.details["label"])
             if "label_sync_mode" in self.details and self.details["label_sync_mode"] == "sync":
-                for label in (l for l in item_labels if l not in labels):
+                for label in (la for la in item_labels if la not in labels):
                     collection.removeLabel(label)
                     logger.info("Detail: Label {} removed".format(label))
-            for label in (l for l in labels if l not in item_labels):
+            for label in (la for la in labels if la not in item_labels):
                 collection.addLabel(label)
                 logger.info("Detail: Label {} added".format(label))
 

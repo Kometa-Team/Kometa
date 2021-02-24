@@ -1,4 +1,4 @@
-import logging, math, re, requests, time
+import logging, math, re, requests
 from lxml import html
 from modules import util
 from modules.util import Failed
@@ -33,8 +33,8 @@ class IMDbAPI:
         except IndexError:                  raise Failed("IMDb Error: Failed to parse URL: {}".format(imdb_url))
         try:                                total = int(re.findall("(\\d+) title", results)[0])
         except IndexError:                  raise Failed("IMDb Error: No Results at URL: {}".format(imdb_url))
-        if "&start=" in current_url:        current_url = re.sub("&start=\d+", "", current_url)
-        if "&count=" in current_url:        current_url = re.sub("&count=\d+", "", current_url)
+        if "&start=" in current_url:        current_url = re.sub("&start=\\d+", "", current_url)
+        if "&count=" in current_url:        current_url = re.sub("&count=\\d+", "", current_url)
         if limit < 1 or total < limit:      limit = total
         remainder = limit % 250
         if remainder == 0:                  remainder = 250
@@ -66,7 +66,7 @@ class IMDbAPI:
             if tvdb_id:                     show_ids.append(tvdb_id)
         elif method == "imdb_list":
             if status_message:
-                logger.info("Processing {}: {}".format(pretty,"{} Items at {}".format(data["limit"], data["url"]) if data["limit"] > 0 else data["url"]))
+                logger.info("Processing {}: {}".format(pretty, "{} Items at {}".format(data["limit"], data["url"]) if data["limit"] > 0 else data["url"]))
             imdb_ids = self.get_imdb_ids_from_url(data["url"], language, data["limit"])
             total_ids = len(imdb_ids)
             length = 0
@@ -86,6 +86,8 @@ class IMDbAPI:
         return movie_ids, show_ids
 
     def convert_from_imdb(self, imdb_id, language):
+        update_tmdb = False
+        update_tvdb = False
         if self.Cache:
             tmdb_id, tvdb_id = self.Cache.get_ids_from_imdb(imdb_id)
             update_tmdb = False
@@ -121,7 +123,7 @@ class IMDbAPI:
         try:
             if tvdb_id and not from_cache:              self.TVDb.get_series(language, tvdb_id=tvdb_id)
         except Failed:                              tvdb_id = None
-        if not tmdb_id and not tvdb_id :            raise Failed("IMDb Error: No TMDb ID or TVDb ID found for IMDb: {}".format(imdb_id))
+        if not tmdb_id and not tvdb_id:             raise Failed("IMDb Error: No TMDb ID or TVDb ID found for IMDb: {}".format(imdb_id))
         if self.Cache:
             if tmdb_id and update_tmdb is not False:
                 self.Cache.update_imdb("movie", update_tmdb, imdb_id, tmdb_id)
