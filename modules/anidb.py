@@ -23,14 +23,14 @@ class AniDBAPI:
     def convert_tvdb_to_anidb(self, tvdb_id):           return self.convert_anidb(tvdb_id, "tvdbid", "anidbid")
     def convert_imdb_to_anidb(self, imdb_id):           return self.convert_anidb(imdb_id, "imdbid", "anidbid")
     def convert_anidb(self, input_id, from_id, to_id):
-        ids = self.id_list.xpath("//anime[contains(@{}, '{}')]/@{}".format(from_id, input_id, to_id))
+        ids = self.id_list.xpath(f"//anime[contains(@{from_id}, '{input_id}')]/@{to_id}")
         if len(ids) > 0:
             if from_id == "tvdbid":                             return [int(i) for i in ids]
             if len(ids[0]) > 0:
                 try:                                                return ids[0].split(",") if to_id == "imdbid" else int(ids[0])
-                except ValueError:                                  raise Failed("AniDB Error: No {} ID found for {} ID: {}".format(util.pretty_ids[to_id], util.pretty_ids[from_id], input_id))
-            else:                                               raise Failed("AniDB Error: No {} ID found for {} ID: {}".format(util.pretty_ids[to_id], util.pretty_ids[from_id], input_id))
-        else:                                               raise Failed("AniDB Error: {} ID: {} not found".format(util.pretty_ids[from_id], input_id))
+                except ValueError:                                  raise Failed(f"AniDB Error: No {util.pretty_ids[to_id]} ID found for {util.pretty_ids[from_id]} ID: {input_id}")
+            else:                                               raise Failed(f"AniDB Error: No {util.pretty_ids[to_id]} ID found for {util.pretty_ids[from_id]} ID: {input_id}")
+        else:                                               raise Failed(f"AniDB Error: {util.pretty_ids[from_id]} ID: {input_id} not found")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, language):
@@ -41,14 +41,14 @@ class AniDBAPI:
         return util.get_int_list(response.xpath("//td[@class='name anime']/a/@href"), "AniDB ID")
 
     def validate_anidb_id(self, anidb_id, language):
-        response = self.send_request("{}/{}".format(self.urls["anime"], anidb_id), language)
-        ids = response.xpath("//*[text()='a{}']/text()".format(anidb_id))
+        response = self.send_request(f"{self.urls['anime']}/{anidb_id}", language)
+        ids = response.xpath(f"//*[text()='a{anidb_id}']/text()")
         if len(ids) > 0:
             return util.regex_first_int(ids[0], "AniDB ID")
-        raise Failed("AniDB Error: AniDB ID: {} not found".format(anidb_id))
+        raise Failed(f"AniDB Error: AniDB ID: {anidb_id} not found")
 
     def get_anidb_relations(self, anidb_id, language):
-        response = self.send_request("{}/{}{}".format(self.urls["anime"], anidb_id, self.urls["relation"]), language)
+        response = self.send_request(f"{self.urls['anime']}/{anidb_id}{self.urls['relation']}", language)
         return util.get_int_list(response.xpath("//area/@href"), "AniDB ID")
 
     def validate_anidb_list(self, anidb_list, language):
@@ -60,22 +60,22 @@ class AniDBAPI:
                 logger.error(e)
         if len(anidb_values) > 0:
             return anidb_values
-        raise Failed("AniDB Error: No valid AniDB IDs in {}".format(anidb_list))
+        raise Failed(f"AniDB Error: No valid AniDB IDs in {anidb_list}")
 
     def get_items(self, method, data, language, status_message=True):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if status_message:
-            logger.debug("Data: {}".format(data))
+            logger.debug(f"Data: {data}")
         anime_ids = []
         if method == "anidb_popular":
             if status_message:
-                logger.info("Processing {}: {} Anime".format(pretty, data))
+                logger.info(f"Processing {pretty}: {data} Anime")
             anime_ids.extend(self.get_popular(language)[:data])
         else:
-            if status_message:                                  logger.info("Processing {}: {}".format(pretty, data))
+            if status_message:                                  logger.info(f"Processing {pretty}: {data}")
             if method == "anidb_id":                            anime_ids.append(data)
             elif method == "anidb_relation":                    anime_ids.extend(self.get_anidb_relations(data, language))
-            else:                                               raise Failed("AniDB Error: Method {} not supported".format(method))
+            else:                                               raise Failed(f"AniDB Error: Method {method} not supported")
         show_ids = []
         movie_ids = []
         for anidb_id in anime_ids:
@@ -85,11 +85,11 @@ class AniDBAPI:
                 else:                                               raise Failed
             except Failed:
                 try:                                                show_ids.append(self.convert_anidb_to_tvdb(anidb_id))
-                except Failed:                                      logger.error("AniDB Error: No TVDb ID or IMDb ID found for AniDB ID: {}".format(anidb_id))
+                except Failed:                                      logger.error(f"AniDB Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
         if status_message:
-            logger.debug("AniDB IDs Found: {}".format(anime_ids))
-            logger.debug("TMDb IDs Found: {}".format(movie_ids))
-            logger.debug("TVDb IDs Found: {}".format(show_ids))
+            logger.debug(f"AniDB IDs Found: {anime_ids}")
+            logger.debug(f"TMDb IDs Found: {movie_ids}")
+            logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids
 
     def convert_from_imdb(self, imdb_id):
@@ -121,6 +121,6 @@ class AniDBAPI:
             if tmdb_id:                                 output_tmdb_ids.append(tmdb_id)
             if self.Cache and tmdb_id and expired is not False:
                 self.Cache.update_imdb("movie", expired, imdb, tmdb_id)
-        if len(output_tmdb_ids) == 0:               raise Failed("AniDB Error: No TMDb ID found for IMDb: {}".format(imdb_id))
+        if len(output_tmdb_ids) == 0:               raise Failed(f"AniDB Error: No TMDb ID found for IMDb: {imdb_id}")
         elif len(output_tmdb_ids) == 1:             return output_tmdb_ids[0]
         else:                                       return output_tmdb_ids

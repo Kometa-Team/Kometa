@@ -443,6 +443,9 @@ discover_tv_sort = [
     "popularity.desc", "popularity.asc"
 ]
 
+def tab_new_lines(data):
+    return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
+
 def adjust_space(old_length, display_title):
     display_title = str(display_title)
     space_length = old_length - len(display_title)
@@ -461,30 +464,31 @@ def choose_from_list(datalist, description, data=None, list_type="title", exact=
     if len(datalist) > 0:
         if len(datalist) == 1 and (description != "collection" or datalist[0].title == data):
             return datalist[0]
-        message = "Multiple {}s Found\n0) {}".format(description, "Create New Collection: {}".format(data) if description == "collection" else "Do Nothing")
+        zero_option = f"Create New Collection: {data}" if description == "collection" else "Do Nothing"
+        message = f"Multiple {description}s Found\n0) {zero_option}"
         for i, d in enumerate(datalist, 1):
             if list_type == "title":
                 if d.title == data:
                     return d
-                message += "\n{}) {}".format(i, d.title)
+                message += f"\n{i}) {d.title}"
             else:
-                message += "\n{}) [{}] {}".format(i, d[0], d[1])
+                message += f"\n{i}) [{d[0]}] {d[1]}"
         if exact:
             return None
         print_multiline(message, info=True)
         while True:
             try:
-                selection = int(logger_input("Choose {} number".format(description))) - 1
+                selection = int(logger_input(f"Choose {description} number")) - 1
                 if selection >= 0:                                          return datalist[selection]
                 elif selection == -1:                                       return None
-                else:                                                       logger.info("Invalid {} number".format(description))
-            except IndexError:                                          logger.info("Invalid {} number".format(description))
+                else:                                                       logger.info(f"Invalid {description} number")
+            except IndexError:                                          logger.info(f"Invalid {description} number")
             except TimeoutExpired:
                 if list_type == "title":
-                    logger.warning("Input Timeout: using {}".format(data))
+                    logger.warning(f"Input Timeout: using {data}")
                     return None
                 else:
-                    logger.warning("Input Timeout: using {}".format(datalist[0][1]))
+                    logger.warning(f"Input Timeout: using {datalist[0][1]}")
                     return datalist[0][1]
     else:
         return None
@@ -516,22 +520,22 @@ def get_year_list(data, method):
                 end = year_range.group(2)
                 if end == "NOW":
                     end = current_year
-                if int(start) < 1800 or int(start) > current_year:      logger.error("Collection Error: Skipping {} starting year {} must be between 1800 and {}".format(method, start, current_year))
-                elif int(end) < 1800 or int(end) > current_year:        logger.error("Collection Error: Skipping {} ending year {} must be between 1800 and {}".format(method, end, current_year))
-                elif int(start) > int(end):                             logger.error("Collection Error: Skipping {} starting year {} cannot be greater then ending year {}".format(method, start, end))
+                if int(start) < 1800 or int(start) > current_year:      logger.error(f"Collection Error: Skipping {method} starting year {start} must be between 1800 and {current_year}")
+                elif int(end) < 1800 or int(end) > current_year:        logger.error(f"Collection Error: Skipping {method} ending year {end} must be between 1800 and {current_year}")
+                elif int(start) > int(end):                             logger.error(f"Collection Error: Skipping {method} starting year {start} cannot be greater then ending year {end}")
                 else:
                     for i in range(int(start), int(end) + 1):
                         final_years.append(i)
             else:
                 year = re.search("(\\d+)", str(value)).group(1)
                 if int(year) < 1800 or int(year) > current_year:
-                    logger.error("Collection Error: Skipping {} year {} must be between 1800 and {}".format(method, year, current_year))
+                    logger.error(f"Collection Error: Skipping {method} year {year} must be between 1800 and {current_year}")
                 else:
                     if len(str(year)) != len(str(value)):
-                        logger.warning("Collection Warning: {} can be replaced with {}".format(value, year))
+                        logger.warning(f"Collection Warning: {value} can be replaced with {year}")
                     final_years.append(year)
         except AttributeError:
-            logger.error("Collection Error: Skipping {} failed to parse year from {}".format(method, value))
+            logger.error(f"Collection Error: Skipping {method} failed to parse year from {value}")
     return final_years
 
 def logger_input(prompt, timeout=60):
@@ -543,14 +547,14 @@ def alarm_handler(signum, frame):
     raise TimeoutExpired
 
 def unix_input(prompt, timeout=60):
-    prompt = "| {}: ".format(prompt)
+    prompt = f"| {prompt}: "
     signal.signal(signal.SIGALRM, alarm_handler)
     signal.alarm(timeout)
     try:            return input(prompt)
     finally:        signal.alarm(0)
 
 def old_windows_input(prompt, timeout=60, timer=time.monotonic):
-    prompt = "| {}: ".format(prompt)
+    prompt = f"| {prompt}: "
     sys.stdout.write(prompt)
     sys.stdout.flush()
     endtime = timer() + timeout
@@ -560,13 +564,13 @@ def old_windows_input(prompt, timeout=60, timer=time.monotonic):
             result.append(msvcrt.getwche())
             if result[-1] == "\n":
                 out = "".join(result[:-1])
-                logger.debug("{}{}".format(prompt[2:], out))
+                logger.debug(f"{prompt[2:]}{out}")
                 return out
         time.sleep(0.04)
     raise TimeoutExpired
 
 def windows_input(prompt, timeout=5):
-    sys.stdout.write("| {}: ".format(prompt))
+    sys.stdout.write(f"| {prompt}: ")
     sys.stdout.flush()
     result = []
     start_time = time.time()
@@ -576,7 +580,7 @@ def windows_input(prompt, timeout=5):
             if ord(char) == 13: # enter_key
                 out = "".join(result)
                 print("")
-                logger.debug("{}: {}".format(prompt, out))
+                logger.debug(f"{prompt}: {out}")
                 return out
             elif ord(char) >= 32: #space_char
                 result.append(char)
@@ -606,17 +610,17 @@ def my_except_hook(exctype, value, tb):
 def get_id_from_imdb_url(imdb_url):
     match = re.search("(tt\\d+)", str(imdb_url))
     if match:           return match.group(1)
-    else:               raise Failed("Regex Error: Failed to parse IMDb ID from IMDb URL: {}".format(imdb_url))
+    else:               raise Failed(f"Regex Error: Failed to parse IMDb ID from IMDb URL: {imdb_url}")
 
 def regex_first_int(data, id_type, default=None):
     match = re.search("(\\d+)", str(data))
     if match:
         return int(match.group(1))
     elif default:
-        logger.warning("Regex Warning: Failed to parse {} from {} using {} as default".format(id_type, data, default))
+        logger.warning(f"Regex Warning: Failed to parse {id_type} from {data} using {default} as default")
         return int(default)
     else:
-        raise Failed("Regex Error: Failed to parse {} from {}".format(id_type, data))
+        raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
 def remove_not(method):
     return method[:-4] if method.endswith(".not") else method
@@ -629,20 +633,20 @@ def get_centered_text(text):
         text += " "
         space -= 1
     side = int(space / 2)
-    return "{}{}{}".format(" " * side, text, " " * side)
+    return f"{' ' * side}{text}{' ' * side}"
 
 def separator(text=None):
-    logger.handlers[0].setFormatter(logging.Formatter("%(message)-{}s".format(screen_width - 2)))
-    logger.handlers[1].setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s %(message)-{}s".format(screen_width - 2)))
-    logger.info("|{}|".format(separating_character * screen_width))
+    logger.handlers[0].setFormatter(logging.Formatter(f"%(message)-{screen_width - 2}s"))
+    logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s %(message)-{screen_width - 2}s"))
+    logger.info(f"|{separating_character * screen_width}|")
     if text:
-        logger.info("| {} |".format(get_centered_text(text)))
-        logger.info("|{}|".format(separating_character * screen_width))
-    logger.handlers[0].setFormatter(logging.Formatter("| %(message)-{}s |".format(screen_width - 2)))
-    logger.handlers[1].setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{}s |".format(screen_width - 2)))
+        logger.info(f"| {get_centered_text(text)} |")
+        logger.info(f"|{separating_character * screen_width}|")
+    logger.handlers[0].setFormatter(logging.Formatter(f"| %(message)-{screen_width - 2}s |"))
+    logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{screen_width - 2}s |"))
 
 def print_return(length, text):
-    print(adjust_space(length, "| {}".format(text)), end="\r")
+    print(adjust_space(length, f"| {text}"), end="\r")
     return len(text) + 2
 
 def print_end(length, text=None):

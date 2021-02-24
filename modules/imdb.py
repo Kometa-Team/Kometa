@@ -18,21 +18,21 @@ class IMDbAPI:
     def get_imdb_ids_from_url(self, imdb_url, language, limit):
         imdb_url = imdb_url.strip()
         if not imdb_url.startswith("https://www.imdb.com/list/ls") and not imdb_url.startswith("https://www.imdb.com/search/title/?"):
-            raise Failed("IMDb Error: {} must begin with either:\n| https://www.imdb.com/list/ls (For Lists)\n| https://www.imdb.com/search/title/? (For Searches)".format(imdb_url))
+            raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n| https://www.imdb.com/list/ls (For Lists)\n| https://www.imdb.com/search/title/? (For Searches)")
 
         if imdb_url.startswith("https://www.imdb.com/list/ls"):
             try:                                list_id = re.search("(\\d+)", str(imdb_url)).group(1)
-            except AttributeError:              raise Failed("IMDb Error: Failed to parse List ID from {}".format(imdb_url))
-            current_url = "https://www.imdb.com/search/title/?lists=ls{}".format(list_id)
+            except AttributeError:              raise Failed(f"IMDb Error: Failed to parse List ID from {imdb_url}")
+            current_url = f"https://www.imdb.com/search/title/?lists=ls{list_id}"
         else:
             current_url = imdb_url
         header = {"Accept-Language": language}
         length = 0
         imdb_ids = []
         try:                                results = self.send_request(current_url, header).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
-        except IndexError:                  raise Failed("IMDb Error: Failed to parse URL: {}".format(imdb_url))
+        except IndexError:                  raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
         try:                                total = int(re.findall("(\\d+) title", results)[0])
-        except IndexError:                  raise Failed("IMDb Error: No Results at URL: {}".format(imdb_url))
+        except IndexError:                  raise Failed(f"IMDb Error: No Results at URL: {imdb_url}")
         if "&start=" in current_url:        current_url = re.sub("&start=\\d+", "", current_url)
         if "&count=" in current_url:        current_url = re.sub("&count=\\d+", "", current_url)
         if limit < 1 or total < limit:      limit = total
@@ -41,12 +41,12 @@ class IMDbAPI:
         num_of_pages = math.ceil(int(limit) / 250)
         for i in range(1, num_of_pages + 1):
             start_num = (i - 1) * 250 + 1
-            length = util.print_return(length, "Parsing Page {}/{} {}-{}".format(i, num_of_pages, start_num, limit if i == num_of_pages else i * 250))
-            response = self.send_request("{}&count={}&start={}".format(current_url, remainder if i == num_of_pages else 250, start_num), header)
+            length = util.print_return(length, f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * 250}")
+            response = self.send_request(f"{current_url}&count={remainder if i == num_of_pages else 250}&start={start_num}", header)
             imdb_ids.extend(response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst"))
         util.print_end(length)
         if imdb_ids:                        return imdb_ids
-        else:                               raise Failed("IMDb Error: No Movies Found at {}".format(imdb_url))
+        else:                               raise Failed(f"IMDb Error: No Movies Found at {imdb_url}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, header):
@@ -55,34 +55,35 @@ class IMDbAPI:
     def get_items(self, method, data, language, status_message=True):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if status_message:
-            logger.debug("Data: {}".format(data))
+            logger.debug(f"Data: {data}")
         show_ids = []
         movie_ids = []
         if method == "imdb_id":
             if status_message:
-                logger.info("Processing {}: {}".format(pretty, data))
+                logger.info(f"Processing {pretty}: {data}")
             tmdb_id, tvdb_id = self.convert_from_imdb(data, language)
             if tmdb_id:                     movie_ids.append(tmdb_id)
             if tvdb_id:                     show_ids.append(tvdb_id)
         elif method == "imdb_list":
             if status_message:
-                logger.info("Processing {}: {}".format(pretty, "{} Items at {}".format(data["limit"], data["url"]) if data["limit"] > 0 else data["url"]))
+                status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
+                logger.info(f"Processing {pretty}: {status}{data['url']}")
             imdb_ids = self.get_imdb_ids_from_url(data["url"], language, data["limit"])
             total_ids = len(imdb_ids)
             length = 0
             for i, imdb_id in enumerate(imdb_ids, 1):
-                length = util.print_return(length, "Converting IMDb ID {}/{}".format(i, total_ids))
+                length = util.print_return(length, f"Converting IMDb ID {i}/{total_ids}")
                 try:
                     tmdb_id, tvdb_id = self.convert_from_imdb(imdb_id, language)
                     if tmdb_id:                     movie_ids.append(tmdb_id)
                     if tvdb_id:                     show_ids.append(tvdb_id)
                 except Failed as e:             logger.warning(e)
-            util.print_end(length, "Processed {} IMDb IDs".format(total_ids))
+            util.print_end(length, f"Processed {total_ids} IMDb IDs")
         else:
-            raise Failed("IMDb Error: Method {} not supported".format(method))
+            raise Failed(f"IMDb Error: Method {method} not supported")
         if status_message:
-            logger.debug("TMDb IDs Found: {}".format(movie_ids))
-            logger.debug("TVDb IDs Found: {}".format(show_ids))
+            logger.debug(f"TMDb IDs Found: {movie_ids}")
+            logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids
 
     def convert_from_imdb(self, imdb_id, language):
@@ -123,7 +124,7 @@ class IMDbAPI:
         try:
             if tvdb_id and not from_cache:              self.TVDb.get_series(language, tvdb_id=tvdb_id)
         except Failed:                              tvdb_id = None
-        if not tmdb_id and not tvdb_id:             raise Failed("IMDb Error: No TMDb ID or TVDb ID found for IMDb: {}".format(imdb_id))
+        if not tmdb_id and not tvdb_id:             raise Failed(f"IMDb Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
         if self.Cache:
             if tmdb_id and update_tmdb is not False:
                 self.Cache.update_imdb("movie", update_tmdb, imdb_id, tmdb_id)
