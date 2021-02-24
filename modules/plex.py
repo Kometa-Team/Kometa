@@ -15,23 +15,23 @@ class PlexAPI:
     def __init__(self, params, TMDb, TVDb):
         try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
         except Unauthorized:                                                    raise Failed("Plex Error: Plex token is invalid")
-        except ValueError as e:                                                 raise Failed("Plex Error: {}".format(e))
+        except ValueError as e:                                                 raise Failed(f"Plex Error: {e}")
         except requests.exceptions.ConnectionError:
             util.print_stacktrace()
             raise Failed("Plex Error: Plex url is invalid")
         self.is_movie = params["library_type"] == "movie"
         self.is_show = params["library_type"] == "show"
         self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"] and ((self.is_movie and isinstance(s, MovieSection)) or (self.is_show and isinstance(s, ShowSection)))), None)
-        if not self.Plex:                                                       raise Failed("Plex Error: Plex Library {} not found".format(params["name"]))
+        if not self.Plex:                                                       raise Failed(f"Plex Error: Plex Library {params['name']} not found")
         try:                                                                    self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(params["metadata_path"], encoding="utf-8"))
-        except yaml.scanner.ScannerError as e:                                  raise Failed("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
+        except yaml.scanner.ScannerError as e:                                  raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
 
         def get_dict(attribute):
             if attribute in self.data:
                 if self.data[attribute]:
                     if isinstance(self.data[attribute], dict):                              return self.data[attribute]
-                    else:                                                                   logger.warning("Config Warning: {} must be a dictionary".format(attribute))
-                else:                                                                   logger.warning("Config Warning: {} attribute is blank".format(attribute))
+                    else:                                                                   logger.warning(f"Config Warning: {attribute} must be a dictionary")
+                else:                                                                   logger.warning(f"Config Warning: {attribute} attribute is blank")
             return None
 
         self.metadata = get_dict("metadata")
@@ -43,7 +43,7 @@ class PlexAPI:
 
         if params["asset_directory"]:
             for ad in params["asset_directory"]:
-                logger.info("Using Asset Directory: {}".format(ad))
+                logger.info(f"Using Asset Directory: {ad}")
 
         self.TMDb = TMDb
         self.TVDb = TVDb
@@ -51,7 +51,7 @@ class PlexAPI:
         self.Sonarr = None
         self.Tautulli = None
         self.name = params["name"]
-        self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), "{}_missing.yml".format(os.path.splitext(os.path.basename(params["metadata_path"]))[0]))
+        self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), f"{os.path.splitext(os.path.basename(params['metadata_path']))[0]}_missing.yml")
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
         self.sync_mode = params["sync_mode"]
@@ -93,7 +93,7 @@ class PlexAPI:
     def get_collection(self, data):
         collection = util.choose_from_list(self.search(str(data), libtype="collection"), "collection", str(data), exact=True)
         if collection:                              return collection
-        else:                                       raise Failed("Plex Error: Collection {} not found".format(data))
+        else:                                       raise Failed(f"Plex Error: Collection {data} not found")
 
     def validate_collections(self, collections):
         valid_collections = []
@@ -101,7 +101,7 @@ class PlexAPI:
             try:                                        valid_collections.append(self.get_collection(collection))
             except Failed as e:                         logger.error(e)
         if len(valid_collections) == 0:
-            raise Failed("Collection Error: No valid Plex Collections in {}".format(collections))
+            raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
 
     def add_missing(self, collection, items, is_movie):
@@ -117,7 +117,7 @@ class PlexAPI:
         try:
             yaml.round_trip_dump(self.missing, open(self.missing_path, "w"))
         except yaml.scanner.ScannerError as e:
-            logger.error("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
+            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
 
     def add_to_collection(self, collection, items, filters, show_filtered, rating_key_map, movie_map, show_map):
         name = collection.title if isinstance(collection, Collections) else collection
@@ -129,11 +129,11 @@ class PlexAPI:
             try:
                 current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
             except (BadRequest, NotFound):
-                logger.error("Plex Error: Item {} not found".format(item))
+                logger.error(f"Plex Error: Item {item} not found")
                 continue
             match = True
             if filters:
-                length = util.print_return(length, "Filtering {}/{} {}".format((" " * (max_length - len(str(i)))) + str(i), total, current.title))
+                length = util.print_return(length, f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
                 for f in filters:
                     modifier = f[0][-4:]
                     method = util.filter_alias[f[0][:-4]] if modifier in [".not", ".lte", ".gte"] else util.filter_alias[f[0]]
@@ -154,7 +154,7 @@ class PlexAPI:
                                 except Failed:
                                     pass
                         if movie is None:
-                            logger.warning("Filter Error: No TMDb ID found for {}".format(current.title))
+                            logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
                             continue
                         if (modifier == ".not" and movie.original_language in terms) or (modifier != ".not" and movie.original_language not in terms):
                             match = False
@@ -186,15 +186,15 @@ class PlexAPI:
                         if (not list(set(terms) & set(attrs)) and modifier != ".not") or (list(set(terms) & set(attrs)) and modifier == ".not"):
                             match = False
                             break
-                length = util.print_return(length, "Filtering {}/{} {}".format((" " * (max_length - len(str(i)))) + str(i), total, current.title))
+                length = util.print_return(length, f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
             if match:
-                util.print_end(length, "{} Collection | {} | {}".format(name, "=" if current in collection_items else "+", current.title))
+                util.print_end(length, f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}")
                 if current in collection_items:             rating_key_map[current.ratingKey] = None
                 else:                                       current.addCollection(name)
             elif show_filtered is True:
-                logger.info("{} Collection | X | {}".format(name, current.title))
-        media_type = "{}{}".format("Movie" if self.is_movie else "Show", "s" if total > 1 else "")
-        util.print_end(length, "{} {} Processed".format(total, media_type))
+                logger.info(f"{name} Collection | X | {current.title}")
+        media_type = f"{'Movie' if self.is_movie else 'Show'}{'s' if total > 1 else ''}"
+        util.print_end(length, f"{total} {media_type} Processed")
         return rating_key_map
 
     def search_item(self, data, year=None):
@@ -202,7 +202,7 @@ class PlexAPI:
 
     def update_metadata(self, TMDb, test):
         logger.info("")
-        util.separator("{} Library Metadata".format(self.name))
+        util.separator(f"{self.name} Library Metadata")
         logger.info("")
         if not self.metadata:
             raise Failed("No metadata to edit")
@@ -217,7 +217,7 @@ class PlexAPI:
                 now = datetime.now()
                 if self.metadata[m]["year"] is None:                                    logger.error("Metadata Error: year attribute is blank")
                 elif not isinstance(self.metadata[m]["year"], int):                     logger.error("Metadata Error: year attribute must be an integer")
-                elif self.metadata[m]["year"] not in range(1800, now.year + 2):         logger.error("Metadata Error: year attribute must be between 1800-{}".format(now.year + 1))
+                elif self.metadata[m]["year"] not in range(1800, now.year + 2):         logger.error(f"Metadata Error: year attribute must be between 1800-{now.year + 1}")
                 else:                                                                   year = self.metadata[m]["year"]
 
             title = m
@@ -228,7 +228,7 @@ class PlexAPI:
             item = self.search_item(title, year=year)
 
             if item is None:
-                item = self.search_item("{} (SUB)".format(title), year=year)
+                item = self.search_item(f"{title} (SUB)", year=year)
 
             if item is None and "alt_title" in self.metadata[m]:
                 if self.metadata[m]["alt_title"] is None:
@@ -238,11 +238,12 @@ class PlexAPI:
                     item = self.search_item(alt_title, year=year)
 
             if item is None:
-                logger.error("Plex Error: Item {} not found".format(m))
-                logger.error("Skipping {}".format(m))
+                logger.error(f"Plex Error: Item {m} not found")
+                logger.error(f"Skipping {m}")
                 continue
 
-            logger.info("Updating {}: {}...".format("Movie" if self.is_movie else "Show", title))
+            item_type = "Movie" if self.is_movie else "Show"
+            logger.info(f"Updating {item_type}: {title}...")
 
             tmdb_item = None
             try:
@@ -267,10 +268,10 @@ class PlexAPI:
                         if key is None:         key = name
                         if value is None:       value = group[name]
                         if str(current) != str(value):
-                            edits["{}.value".format(key)] = value
-                            edits["{}.locked".format(key)] = 1
+                            edits[f"{key}.value"] = value
+                            edits[f"{key}.locked"] = 1
                     else:
-                        logger.error("Metadata Error: {} attribute is blank".format(name))
+                        logger.error(f"Metadata Error: {name} attribute is blank")
             add_edit("title", item.title, self.metadata[m], value=title)
             add_edit("sort_title", item.titleSort, self.metadata[m], key="titleSort")
             add_edit("originally_available", str(item.originallyAvailableAt)[:-9], self.metadata[m], key="originallyAvailableAt", value=originally_available)
@@ -283,16 +284,16 @@ class PlexAPI:
             add_edit("tagline", item_tagline, self.metadata[m], value=tagline)
             add_edit("summary", item.summary, self.metadata[m], value=summary)
             if len(edits) > 0:
-                logger.debug("Details Update: {}".format(edits))
+                logger.debug(f"Details Update: {edits}")
                 try:
                     item.edit(**edits)
                     item.reload()
-                    logger.info("{}: {} Details Update Successful".format("Movie" if self.is_movie else "Show", m))
+                    logger.info(f"{item_type}: {m} Details Update Successful")
                 except BadRequest:
                     util.print_stacktrace()
-                    logger.error("{}: {} Details Update Failed".format("Movie" if self.is_movie else "Show", m))
+                    logger.error(f"{item_type}: {m} Details Update Failed")
             else:
-                logger.info("{}: {} Details Update Not Needed".format("Movie" if self.is_movie else "Show", m))
+                logger.info(f"{item_type}: {m} Details Update Not Needed")
 
             genres = []
 
@@ -311,10 +312,10 @@ class PlexAPI:
                     elif self.metadata[m]["genre_sync_mode"] == "sync":
                         for genre in (g for g in item_genres if g not in genres):
                             item.removeGenre(genre)
-                            logger.info("Detail: Genre {} removed".format(genre))
+                            logger.info(f"Detail: Genre {genre} removed")
                 for genre in (g for g in genres if g not in item_genres):
                     item.addGenre(genre)
-                    logger.info("Detail: Genre {} added".format(genre))
+                    logger.info(f"Detail: Genre {genre} added")
 
             if "label" in self.metadata[m]:
                 if self.metadata[m]["label"]:
@@ -326,10 +327,10 @@ class PlexAPI:
                         elif self.metadata[m]["label_sync_mode"] == "sync":
                             for label in (la for la in item_labels if la not in labels):
                                 item.removeLabel(label)
-                                logger.info("Detail: Label {} removed".format(label))
+                                logger.info(f"Detail: Label {label} removed")
                     for label in (la for la in labels if la not in item_labels):
                         item.addLabel(label)
-                        logger.info("Detail: Label {} added".format(label))
+                        logger.info(f"Detail: Label {label} added")
                 else:
                     logger.error("Metadata Error: label attribute is blank")
 
@@ -337,10 +338,10 @@ class PlexAPI:
                 if self.metadata[m]["seasons"]:
                     for season_id in self.metadata[m]["seasons"]:
                         logger.info("")
-                        logger.info("Updating season {} of {}...".format(season_id, m))
+                        logger.info(f"Updating season {season_id} of {m}...")
                         if isinstance(season_id, int):
                             try:                                season = item.season(season_id)
-                            except NotFound:                    logger.error("Metadata Error: Season: {} not found".format(season_id))
+                            except NotFound:                    logger.error(f"Metadata Error: Season: {season_id} not found")
                             else:
 
                                 if "title" in self.metadata[m]["seasons"][season_id] and self.metadata[m]["seasons"][season_id]["title"]:
@@ -351,7 +352,7 @@ class PlexAPI:
                                     if self.metadata[m]["seasons"][season_id]["sub"] is None:
                                         logger.error("Metadata Error: sub attribute is blank")
                                     elif self.metadata[m]["seasons"][season_id]["sub"] is True and "(SUB)" not in title:
-                                        title = "{} (SUB)".format(title)
+                                        title = f"{title} (SUB)"
                                     elif self.metadata[m]["seasons"][season_id]["sub"] is False and title.endswith(" (SUB)"):
                                         title = title[:-6]
                                     else:
@@ -361,18 +362,18 @@ class PlexAPI:
                                 add_edit("title", season.title, self.metadata[m]["seasons"][season_id], value=title)
                                 add_edit("summary", season.summary, self.metadata[m]["seasons"][season_id])
                                 if len(edits) > 0:
-                                    logger.debug("Season: {} Details Update: {}".format(season_id, edits))
+                                    logger.debug(f"Season: {season_id} Details Update: {edits}")
                                     try:
                                         season.edit(**edits)
                                         season.reload()
-                                        logger.info("Season: {} Details Update Successful".format(season_id))
+                                        logger.info(f"Season: {season_id} Details Update Successful")
                                     except BadRequest:
                                         util.print_stacktrace()
-                                        logger.error("Season: {} Details Update Failed".format(season_id))
+                                        logger.error(f"Season: {season_id} Details Update Failed")
                                 else:
-                                    logger.info("Season: {} Details Update Not Needed".format(season_id))
+                                    logger.info(f"Season: {season_id} Details Update Not Needed")
                         else:
-                            logger.error("Metadata Error: Season: {} invalid, it must be an integer".format(season_id))
+                            logger.error(f"Metadata Error: Season: {season_id} invalid, it must be an integer")
                 else:
                     logger.error("Metadata Error: seasons attribute is blank")
 
@@ -385,9 +386,9 @@ class PlexAPI:
                             output = match.group(0)[1:].split("E" if "E" in m.group(0) else "e")
                             episode_id = int(output[0])
                             season_id = int(output[1])
-                            logger.info("Updating episode S{}E{} of {}...".format(episode_id, season_id, m))
+                            logger.info(f"Updating episode S{episode_id}E{season_id} of {m}...")
                             try:                                episode = item.episode(season=season_id, episode=episode_id)
-                            except NotFound:                    logger.error("Metadata Error: episode {} of season {} not found".format(episode_id, season_id))
+                            except NotFound:                    logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
                             else:
                                 if "title" in self.metadata[m]["episodes"][episode_str] and self.metadata[m]["episodes"][episode_str]["title"]:
                                     title = self.metadata[m]["episodes"][episode_str]["title"]
@@ -397,7 +398,7 @@ class PlexAPI:
                                     if self.metadata[m]["episodes"][episode_str]["sub"] is None:
                                         logger.error("Metadata Error: sub attribute is blank")
                                     elif self.metadata[m]["episodes"][episode_str]["sub"] is True and "(SUB)" not in title:
-                                        title = "{} (SUB)".format(title)
+                                        title = f"{title} (SUB)"
                                     elif self.metadata[m]["episodes"][episode_str]["sub"] is False and title.endswith(" (SUB)"):
                                         title = title[:-6]
                                     else:
@@ -409,17 +410,18 @@ class PlexAPI:
                                 add_edit("originally_available", str(episode.originallyAvailableAt)[:-9], self.metadata[m]["episodes"][episode_str], key="originallyAvailableAt")
                                 add_edit("summary", episode.summary, self.metadata[m]["episodes"][episode_str])
                                 if len(edits) > 0:
-                                    logger.debug("Season: {} Episode: {} Details Update: {}".format(season_id, episode_id, edits))
+                                    logger.debug(f"Season: {season_id} Episode: {episode_id} Details Update: {edits}")
                                     try:
                                         episode.edit(**edits)
                                         episode.reload()
-                                        logger.info("Season: {} Episode: {} Details Update Successful".format(season_id, episode_id))
+                                        logger.info(
+                                            f"Season: {season_id} Episode: {episode_id} Details Update Successful")
                                     except BadRequest:
                                         util.print_stacktrace()
-                                        logger.error("Season: {} Episode: {} Details Update Failed".format(season_id, episode_id))
+                                        logger.error(f"Season: {season_id} Episode: {episode_id} Details Update Failed")
                                 else:
-                                    logger.info("Season: {} Episode: {} Details Update Not Needed".format(season_id, episode_id))
+                                    logger.info(f"Season: {season_id} Episode: {episode_id} Details Update Not Needed")
                         else:
-                            logger.error("Metadata Error: episode {} invalid must have S##E## format".format(episode_str))
+                            logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
                 else:
                     logger.error("Metadata Error: episodes attribute is blank")

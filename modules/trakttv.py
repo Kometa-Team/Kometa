@@ -30,7 +30,7 @@ class TraktAPI:
 
     def get_authorization(self):
         url = Trakt["oauth"].authorize_url(self.redirect_uri)
-        logger.info("Navigate to: {}".format(url))
+        logger.info(f"Navigate to: {url}")
         logger.info("If you get an OAuth error your client_id or client_secret is invalid")
         webbrowser.open(url, new=2)
         try:                                pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
@@ -70,7 +70,7 @@ class TraktAPI:
                     "scope": authorization["scope"],
                     "created_at": authorization["created_at"]
                 }
-                logger.info("Saving authorization information to {}".format(self.config_path))
+                logger.info(f"Saving authorization information to {self.config_path}")
                 yaml.round_trip_dump(config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
             self.authorization = authorization
             Trakt.configuration.defaults.oauth.from_response(self.authorization)
@@ -91,7 +91,7 @@ class TraktAPI:
             lookup = lookup[0] if isinstance(lookup, list) else lookup
             if lookup.get_key(to_source):
                 return lookup.get_key(to_source) if to_source == "imdb" else int(lookup.get_key(to_source))
-        raise Failed("No {} ID found for {} ID {}".format(to_source.upper().replace("B", "b"), from_source.upper().replace("B", "b"), external_id))
+        raise Failed(f"No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID {external_id}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def trending(self, amount, is_movie):
@@ -99,7 +99,7 @@ class TraktAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def watchlist(self, data, is_movie):
-        items = Trakt["users/{}/watchlist".format(data)].movies() if is_movie else Trakt["users/{}/watchlist".format(data)].shows()
+        items = Trakt[f"users/{data}/watchlist"].movies() if is_movie else Trakt[f"users/{data}/watchlist"].shows()
         if items is None:                   raise Failed("Trakt Error: No List found")
         else:                               return [i for i in items]
 
@@ -119,7 +119,7 @@ class TraktAPI:
             except Failed as e:
                 logger.error(e)
         if len(trakt_values) == 0:
-            raise Failed("Trakt Error: No valid Trakt Lists in {}".format(values))
+            raise Failed(f"Trakt Error: No valid Trakt Lists in {values}")
         return trakt_values
 
     def validate_trakt_watchlist(self, values, is_movie):
@@ -131,23 +131,23 @@ class TraktAPI:
             except Failed as e:
                 logger.error(e)
         if len(trakt_values) == 0:
-            raise Failed("Trakt Error: No valid Trakt Watchlists in {}".format(values))
+            raise Failed(f"Trakt Error: No valid Trakt Watchlists in {values}")
         return trakt_values
 
     def get_items(self, method, data, is_movie, status_message=True):
         if status_message:
-            logger.debug("Data: {}".format(data))
+            logger.debug(f"Data: {data}")
         pretty = self.aliases[method] if method in self.aliases else method
         media_type = "Movie" if is_movie else "Show"
         if method == "trakt_trending":
             trakt_items = self.trending(int(data), is_movie)
             if status_message:
-                logger.info("Processing {}: {} {}{}".format(pretty, data, media_type, "" if data == 1 else "s"))
+                logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
         else:
             if method == "trakt_watchlist":             trakt_items = self.watchlist(data, is_movie)
             elif method == "trakt_list":                trakt_items = self.standard_list(data)
-            else:                                       raise Failed("Trakt Error: Method {} not supported".format(method))
-            if status_message:                          logger.info("Processing {}: {}".format(pretty, data))
+            else:                                       raise Failed(f"Trakt Error: Method {method} not supported")
+            if status_message:                          logger.info(f"Processing {pretty}: {data}")
         show_ids = []
         movie_ids = []
         for trakt_item in trakt_items:
@@ -155,7 +155,7 @@ class TraktAPI:
             elif isinstance(trakt_item, Show) and trakt_item.pk[1] not in show_ids:                          show_ids.append(int(trakt_item.pk[1]))
             elif (isinstance(trakt_item, (Season, Episode))) and trakt_item.show.pk[1] not in show_ids:      show_ids.append(int(trakt_item.show.pk[1]))
         if status_message:
-            logger.debug("Trakt {} Found: {}".format(media_type, trakt_items))
-            logger.debug("TMDb IDs Found: {}".format(movie_ids))
-            logger.debug("TVDb IDs Found: {}".format(show_ids))
+            logger.debug(f"Trakt {media_type} Found: {trakt_items}")
+            logger.debug(f"TMDb IDs Found: {movie_ids}")
+            logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

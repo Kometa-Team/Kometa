@@ -15,18 +15,18 @@ parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 
 args = parser.parse_args()
 
 if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args.time):
-    raise util.Failed("Argument Error: time argument invalid: {} must be in the HH:MM format".format(args.time))
+    raise util.Failed(f"Argument Error: time argument invalid: {args.time} must be in the HH:MM format")
 
 util.separating_character = args.divider[0]
 if 90 <= args.width <= 300:
     util.screen_width = args.width
 else:
-    raise util.Failed("Argument Error: width argument invalid: {} must be an integer between 90 and 300".format(args.width))
+    raise util.Failed(f"Argument Error: width argument invalid: {args.width} must be an integer between 90 and 300")
 
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 if args.config and os.path.exists(args.config):                     default_dir = os.path.join(os.path.dirname(os.path.abspath(args.config)))
-elif args.config and not os.path.exists(args.config):               raise util.Failed("Config Error: config not found at {}".format(os.path.abspath(args.config)))
-elif not os.path.exists(os.path.join(default_dir, "config.yml")):   raise util.Failed("Config Error: config not found at {}".format(os.path.abspath(default_dir)))
+elif args.config and not os.path.exists(args.config):               raise util.Failed(f"Config Error: config not found at {os.path.abspath(args.config)}")
+elif not os.path.exists(os.path.join(default_dir, "config.yml")):   raise util.Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
 
 os.makedirs(os.path.join(default_dir, "logs"), exist_ok=True)
 
@@ -34,8 +34,8 @@ logger = logging.getLogger("Plex Meta Manager")
 logger.setLevel(logging.DEBUG)
 
 def fmt_filter(record):
-    record.levelname = "[{}]".format(record.levelname)
-    record.filename = "[{}:{}]".format(record.filename, record.lineno)
+    record.levelname = f"[{record.levelname}]"
+    record.filename = f"[{record.filename}:{record.lineno}]"
     return True
 
 file_handler = logging.handlers.TimedRotatingFileHandler(os.path.join(default_dir, "logs", "meta.log"), when="midnight", backupCount=10, encoding="utf-8")
@@ -71,7 +71,7 @@ def start(config_path, test, daily, collections):
     elif test:              start_type = "Test "
     elif collections:       start_type = "Collections "
     else:                   start_type = ""
-    util.separator("Starting {}Run".format(start_type))
+    util.separator(f"Starting {start_type}Run")
     try:
         config = Config(default_dir, config_path)
         config.update_libraries(test, collections)
@@ -79,7 +79,7 @@ def start(config_path, test, daily, collections):
         util.print_stacktrace()
         logger.critical(e)
     logger.info("")
-    util.separator("Finished {}Run".format(start_type))
+    util.separator(f"Finished {start_type}Run")
 
 try:
     if args.run or args.test or args.collections:
@@ -95,10 +95,10 @@ try:
             if hours < 0:
                 hours += 24
             minutes = int((seconds % 3600) // 60)
-            time_str = "{} Hour{} and ".format(hours, "s" if hours > 1 else "") if hours > 0 else ""
-            time_str += "{} Minute{}".format(minutes, "s" if minutes > 1 else "")
+            time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
+            time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
 
-            length = util.print_return(length, "Current Time: {} | {} until the daily run at {}".format(current, time_str, args.time))
+            length = util.print_return(length, f"Current Time: {current} | {time_str} until the daily run at {args.time}")
             time.sleep(1)
 except KeyboardInterrupt:
     util.separator("Exiting Plex Meta Manager")
