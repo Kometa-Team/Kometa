@@ -25,7 +25,7 @@ class AniDBAPI:
     def convert_anidb(self, input_id, from_id, to_id):
         ids = self.id_list.xpath("//anime[contains(@{}, '{}')]/@{}".format(from_id, input_id, to_id))
         if len(ids) > 0:
-            if from_id == "tvdbid":                             return [int(id) for id in ids]
+            if from_id == "tvdbid":                             return [int(i) for i in ids]
             if len(ids[0]) > 0:
                 try:                                                return ids[0].split(",") if to_id == "imdbid" else int(ids[0])
                 except ValueError:                                  raise Failed("AniDB Error: No {} ID found for {} ID: {}".format(util.pretty_ids[to_id], util.pretty_ids[from_id], input_id))
@@ -80,7 +80,7 @@ class AniDBAPI:
         movie_ids = []
         for anidb_id in anime_ids:
             try:
-                tmdb_id = self.convert_from_imdb(self.convert_anidb_to_imdb(anidb_id), language)
+                tmdb_id = self.convert_from_imdb(self.convert_anidb_to_imdb(anidb_id))
                 if tmdb_id:                                         movie_ids.append(tmdb_id)
                 else:                                               raise Failed
             except Failed:
@@ -92,15 +92,15 @@ class AniDBAPI:
             logger.debug("TVDb IDs Found: {}".format(show_ids))
         return movie_ids, show_ids
 
-    def convert_from_imdb(self, imdb_id, language):
+    def convert_from_imdb(self, imdb_id):
         output_tmdb_ids = []
         if not isinstance(imdb_id, list):
             imdb_id = [imdb_id]
 
         for imdb in imdb_id:
+            expired = False
             if self.Cache:
                 tmdb_id, tvdb_id = self.Cache.get_ids_from_imdb(imdb)
-                expired = False
                 if not tmdb_id:
                     tmdb_id, expired = self.Cache.get_tmdb_from_imdb(imdb)
                     if expired:

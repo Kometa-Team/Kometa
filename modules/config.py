@@ -1,4 +1,4 @@
-import glob, logging, os, re, requests
+import logging, os, re, requests
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.builder import CollectionBuilder
@@ -11,7 +11,7 @@ from modules.radarr import RadarrAPI
 from modules.sonarr import SonarrAPI
 from modules.tautulli import TautulliAPI
 from modules.tmdb import TMDbAPI
-from modules.trakt import TraktAPI
+from modules.trakttv import TraktAPI
 from modules.tvdb import TVDbAPI
 from modules.util import Failed
 from plexapi.exceptions import BadRequest
@@ -77,7 +77,6 @@ class Config:
             raise Failed("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
 
         def check_for_attribute(data, attribute, parent=None, test_list=None, options="", default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
-            message = ""
             endline = ""
             if parent is not None:
                 if parent in data:
@@ -90,14 +89,13 @@ class Config:
             if data is None or attribute not in data:
                 message = "{} not found".format(text)
                 if parent and save is True:
-                    new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
+                    loaded_config, ind_in, bsi_in = yaml.util.load_yaml_guess_indent(open(self.config_path))
                     endline = "\n{} sub-attribute {} added to config".format(parent, attribute)
-                    if parent not in new_config:                                        new_config = {parent: {attribute: default}}
-                    elif not new_config[parent]:                                        new_config[parent] = {attribute: default}
-                    elif attribute not in new_config[parent]:                           new_config[parent][attribute] = default
-                    else:                                                               endLine = ""
-                    yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
-            elif not data[attribute] and data[attribute] != False:
+                    if parent not in loaded_config or not loaded_config[parent]:        loaded_config[parent] = {attribute: default}
+                    elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
+                    else:                                                               endline = ""
+                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=ind_in, block_seq_indent=bsi_in)
+            elif not data[attribute] and data[attribute] is not False:
                 if default_is_none is True:                                         return None
                 else:                                                               message = "{} is blank".format(text)
             elif var_type == "bool":
@@ -110,11 +108,11 @@ class Config:
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = "Path {} does not exist".format(os.path.abspath(data[attribute]))
             elif var_type == "list":                                            return util.get_list(data[attribute])
-            elif var_type == "listpath":
+            elif var_type == "list_path":
                 temp_list = [path for path in util.get_list(data[attribute], split=True) if os.path.exists(os.path.abspath(path))]
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
-            elif var_type == "lowerlist":                                       return util.get_list(data[attribute], lower=True)
+            elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
             elif test_list is None or data[attribute] in test_list:             return data[attribute]
             else:                                                               message = "{}: {} is an invalid input".format(text, data[attribute])
             if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
@@ -144,18 +142,18 @@ class Config:
         self.general["cache"] = check_for_attribute(self.data, "cache", parent="settings", options="    true (Create a cache to store ids)\n    false (Do not create a cache to store ids)", var_type="bool", default=True)
         self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
         if self.general["cache"]:
-            util.seperator()
+            util.separator()
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
-        self.general["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="settings", var_type="listpath", default=[os.path.join(default_dir, "assets")])
+        self.general["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")])
         self.general["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)")
         self.general["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True)
         self.general["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False)
         self.general["show_missing"] = check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True)
         self.general["save_missing"] = check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True)
 
-        util.seperator()
+        util.separator()
 
         self.TMDb = None
         if "tmdb" in self.data:
@@ -169,7 +167,7 @@ class Config:
         else:
             raise Failed("Config Error: tmdb attribute not found")
 
-        util.seperator()
+        util.separator()
 
         self.Trakt = None
         if "trakt" in self.data:
@@ -187,7 +185,7 @@ class Config:
         else:
             logger.warning("trakt attribute not found")
 
-        util.seperator()
+        util.separator()
 
         self.MyAnimeList = None
         self.MyAnimeListIDList = MyAnimeListIDList()
@@ -210,7 +208,7 @@ class Config:
         self.IMDb = IMDbAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt, TVDb=self.TVDb) if self.TMDb or self.Trakt else None
         self.AniDB = AniDBAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
 
-        util.seperator()
+        util.separator()
 
         logger.info("Connecting to Plex Libraries...")
 
@@ -227,7 +225,7 @@ class Config:
         self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True)
         self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False)
         self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
-        self.general["radarr"]["tag"] = check_for_attribute(self.data, "tag", parent="radarr", var_type="lowerlist", default_is_none=True)
+        self.general["radarr"]["tag"] = check_for_attribute(self.data, "tag", parent="radarr", var_type="lower_list", default_is_none=True)
 
         self.general["sonarr"] = {}
         self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", default_is_none=True)
@@ -237,7 +235,7 @@ class Config:
         self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True)
         self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False)
         self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False)
-        self.general["sonarr"]["tag"] = check_for_attribute(self.data, "tag", parent="sonarr", var_type="lowerlist", default_is_none=True)
+        self.general["sonarr"]["tag"] = check_for_attribute(self.data, "tag", parent="sonarr", var_type="lower_list", default_is_none=True)
 
         self.general["tautulli"] = {}
         self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True)
@@ -247,7 +245,7 @@ class Config:
         try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
         except Failed as e:             raise Failed(e)
         for lib in libs:
-            util.seperator()
+            util.separator()
             params = {}
             if "library_name" in libs[lib] and libs[lib]["library_name"]:
                 params["name"] = str(libs[lib]["library_name"])
@@ -255,9 +253,8 @@ class Config:
             else:
                 params["name"] = str(lib)
                 logger.info("Connecting to {} Library...".format(params["name"]))
-            default_lib = os.path.join(default_dir, "{}.yml".format(lib))
 
-            params["asset_directory"] = check_for_attribute(libs[lib], "asset_directory", parent="settings", var_type="listpath", default=self.general["asset_directory"], default_is_none=True, save=False)
+            params["asset_directory"] = check_for_attribute(libs[lib], "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
             if params["asset_directory"] is None:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
@@ -292,7 +289,7 @@ class Config:
                     radarr_params["root_folder_path"] = check_for_attribute(libs[lib], "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
                     radarr_params["add"] = check_for_attribute(libs[lib], "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
                     radarr_params["search"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
-                    radarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="lowerlist", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
+                    radarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
                     library.add_Radarr(RadarrAPI(self.TMDb, radarr_params))
                 except Failed as e:
                     util.print_multiline(e)
@@ -309,7 +306,7 @@ class Config:
                     sonarr_params["root_folder_path"] = check_for_attribute(libs[lib], "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
                     sonarr_params["add"] = check_for_attribute(libs[lib], "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
                     sonarr_params["search"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
-                    sonarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="lowerlist", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
+                    sonarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
                     library.add_Sonarr(SonarrAPI(self.TVDb, sonarr_params, library.Plex.language))
                 except Failed as e:
                     util.print_multiline(e)
@@ -328,28 +325,28 @@ class Config:
 
             self.libraries.append(library)
 
-        util.seperator()
+        util.separator()
 
         if len(self.libraries) > 0:
             logger.info("{} Plex Library Connection{} Successful".format(len(self.libraries), "s" if len(self.libraries) > 1 else ""))
         else:
             raise Failed("Plex Error: No Plex libraries were found")
 
-        util.seperator()
+        util.separator()
 
     def update_libraries(self, test, requested_collections):
         for library in self.libraries:
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
-            util.seperator("{} Library".format(library.name))
+            util.separator("{} Library".format(library.name))
             try:                        library.update_metadata(self.TMDb, test)
             except Failed as e:         logger.error(e)
             logger.info("")
-            util.seperator("{} Library {}Collections".format(library.name, "Test " if test else ""))
+            util.separator("{} Library {}Collections".format(library.name, "Test " if test else ""))
             collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
             if collections:
                 logger.info("")
-                util.seperator("Mapping {} Library".format(library.name))
+                util.separator("Mapping {} Library".format(library.name))
                 logger.info("")
                 movie_map, show_map = self.map_guids(library)
                 for c in collections:
@@ -358,21 +355,21 @@ class Config:
                         if "template" in collections[c] and collections[c]["template"]:
                             for data_template in util.get_list(collections[c]["template"], split=False):
                                 if "name" in data_template \
-                                and data_template["name"] \
-                                and library.templates \
-                                and data_template["name"] in self.library.templates \
-                                and self.library.templates[data_template["name"]] \
-                                and "test" in self.library.templates[data_template["name"]] \
-                                and self.library.templates[data_template["name"]]["test"] == True:
+                                    and data_template["name"] \
+                                    and library.templates \
+                                    and data_template["name"] in library.templates \
+                                    and library.templates[data_template["name"]] \
+                                    and "test" in library.templates[data_template["name"]] \
+                                    and library.templates[data_template["name"]]["test"] is True:
                                     no_template_test = False
                         if no_template_test:
                             continue
                     try:
                         logger.info("")
-                        util.seperator("{} Collection".format(c))
+                        util.separator("{} Collection".format(c))
                         logger.info("")
 
-                        map = {}
+                        rating_key_map = {}
                         try:
                             builder = CollectionBuilder(self, library, c, collections[c])
                         except Exception as e:
@@ -383,19 +380,19 @@ class Config:
                         try:
                             collection_obj = library.get_collection(c)
                             collection_name = collection_obj.title
-                        except Failed as e:
+                        except Failed:
                             collection_obj = None
                             collection_name = c
 
                         if builder.schedule is not None:
-                            print_multiline(builder.schedule, info=True)
+                            util.print_multiline(builder.schedule, info=True)
 
                         logger.info("")
                         if builder.sync:
                             logger.info("Sync Mode: sync")
                             if collection_obj:
                                 for item in collection_obj.items():
-                                    map[item.ratingKey] = item
+                                    rating_key_map[item.ratingKey] = item
                         else:
                             logger.info("Sync Mode: append")
 
@@ -404,7 +401,7 @@ class Config:
                                 logger.info("")
                             logger.info("Collection Filter {}: {}".format(f[0], f[1]))
 
-                        builder.run_methods(collection_obj, collection_name, map, movie_map, show_map)
+                        builder.run_methods(collection_obj, collection_name, rating_key_map, movie_map, show_map)
 
                         try:
                             plex_collection = library.get_collection(collection_name)
@@ -419,14 +416,14 @@ class Config:
                         logger.error("Unknown Error: {}".format(e))
                 if library.show_unmanaged is True and not test and not requested_collections:
                     logger.info("")
-                    util.seperator("Unmanaged Collections in {} Library".format(library.name))
+                    util.separator("Unmanaged Collections in {} Library".format(library.name))
                     logger.info("")
                     unmanaged_count = 0
-                    collections_in_plex = [str(pcol) for pcol in collections]
+                    collections_in_plex = [str(plex_col) for plex_col in collections]
                     for col in library.get_all_collections():
-                         if col.title not in collections_in_plex:
-                             logger.info(col.title)
-                             unmanaged_count += 1
+                        if col.title not in collections_in_plex:
+                            logger.info(col.title)
+                            unmanaged_count += 1
                     logger.info("{} Unmanaged Collections".format(unmanaged_count))
             else:
                 logger.info("")
@@ -436,7 +433,6 @@ class Config:
         movie_map = {}
         show_map = {}
         length = 0
-        count = 0
         logger.info("Mapping {} Library: {}".format("Movie" if library.is_movie else "Show", library.name))
         items = library.Plex.all()
         for i, item in enumerate(items, 1):
@@ -445,7 +441,7 @@ class Config:
                 id_type, main_id = self.get_id(item, library, length)
             except BadRequest:
                 util.print_stacktrace()
-                util.print_end(length, "{} {:<46} | {} for {}".format("Cache | ! |" if self.Cache else "Mapping Error:", item.guid, error_message, item.title))
+                util.print_end(length, "{} | {} for {} not found".format("Cache | ! |" if self.Cache else "Mapping Error:", item.guid, item.title))
                 continue
             if isinstance(main_id, list):
                 if id_type == "movie":

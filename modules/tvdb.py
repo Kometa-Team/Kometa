@@ -1,4 +1,4 @@
-import logging, math, re, requests, time
+import logging, requests
 from lxml import html
 from modules import util
 from modules.util import Failed
@@ -20,6 +20,10 @@ class TVDbObj:
         results = response.xpath("//*[text()='TheTVDB.com {} ID']/parent::node()/span/text()".format(self.media_type))
         if len(results) > 0:
             self.id = int(results[0])
+        elif tvdb_url.startswith(TVDb.movie_id_url):
+            raise Failed("TVDb Error: Could not find a TVDb Movie using TVDb Movie ID: {}".format(tvdb_url[len(TVDb.series_id_url):]))
+        elif tvdb_url.startswith(TVDb.series_id_url):
+            raise Failed("TVDb Error: Could not find a TVDb Series using TVDb Series ID: {}".format(tvdb_url[len(TVDb.series_id_url):]))
         else:
             raise Failed("TVDb Error: Could not find a TVDb {} ID at the URL {}".format(self.media_type, tvdb_url))
 
@@ -41,7 +45,7 @@ class TVDbObj:
             if not tmdb_id:
                 results = response.xpath("//*[text()='IMDB']/@href")
                 if len(results) > 0:
-                    try:                                                tmdb_id = TVDb.convert_from_imdb(util.get_id_from_imdb_url(results[0]), language)
+                    try:                                                tmdb_id = TVDb.convert_from_imdb(util.get_id_from_imdb_url(results[0]))
                     except Failed as e:                                 logger.error(e)
         self.tmdb_id = tmdb_id
         self.tvdb_url = tvdb_url
@@ -67,7 +71,7 @@ class TVDbAPI:
 
     def get_series(self, language, tvdb_url=None, tvdb_id=None):
         if not tvdb_url and not tvdb_id:
-            raise Failed("TVDB Error: getget_seriesmove requires either tvdb_url or tvdb_id")
+            raise Failed("TVDB Error: get_series requires either tvdb_url or tvdb_id")
         elif not tvdb_url and tvdb_id:
             tvdb_url = "{}{}".format(self.series_id_url, tvdb_id)
         return TVDbObj(tvdb_url, language, False, self)
@@ -104,7 +108,7 @@ class TVDbAPI:
                 if len(show_ids) > 0 or len(movie_ids) > 0:
                     return movie_ids, show_ids
                 raise Failed("TVDb Error: No TVDb IDs found at {}".format(tvdb_url))
-            except requests.exceptions.MissingSchema as e:
+            except requests.exceptions.MissingSchema:
                 util.print_stacktrace()
                 raise Failed("TVDb Error: URL Lookup Failed for {}".format(tvdb_url))
         else:
@@ -137,10 +141,10 @@ class TVDbAPI:
             logger.debug("TVDb IDs Found: {}".format(show_ids))
         return movie_ids, show_ids
 
-    def convert_from_imdb(self, imdb_id, language):
+    def convert_from_imdb(self, imdb_id):
+        update = False
         if self.Cache:
             tmdb_id, tvdb_id = self.Cache.get_ids_from_imdb(imdb_id)
-            update = False
             if not tmdb_id:
                 tmdb_id, update = self.Cache.get_tmdb_from_imdb(imdb_id)
                 if update:

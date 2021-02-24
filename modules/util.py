@@ -18,7 +18,7 @@ class Failed(Exception):
 def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)
 
-seperating_character = "="
+separating_character = "="
 screen_width = 100
 
 method_alias = {
@@ -524,7 +524,7 @@ def get_year_list(data, method):
                         final_years.append(i)
             else:
                 year = re.search("(\\d+)", str(value)).group(1)
-                if int(start) < 1800 or int(start) > current_year:
+                if int(year) < 1800 or int(year) > current_year:
                     logger.error("Collection Error: Skipping {} year {} must be between 1800 and {}".format(method, year, current_year))
                 else:
                     if len(str(year)) != len(str(value)):
@@ -572,14 +572,14 @@ def windows_input(prompt, timeout=5):
     start_time = time.time()
     while True:
         if msvcrt.kbhit():
-            chr = msvcrt.getwche()
-            if ord(chr) == 13: # enter_key
+            char = msvcrt.getwche()
+            if ord(char) == 13: # enter_key
                 out = "".join(result)
                 print("")
                 logger.debug("{}: {}".format(prompt, out))
                 return out
-            elif ord(chr) >= 32: #space_char
-                result.append(chr)
+            elif ord(char) >= 32: #space_char
+                result.append(char)
         if (time.time() - start_time) > timeout:
             print("")
             raise TimeoutExpired
@@ -631,13 +631,13 @@ def get_centered_text(text):
     side = int(space / 2)
     return "{}{}{}".format(" " * side, text, " " * side)
 
-def seperator(text=None):
+def separator(text=None):
     logger.handlers[0].setFormatter(logging.Formatter("%(message)-{}s".format(screen_width - 2)))
     logger.handlers[1].setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s %(message)-{}s".format(screen_width - 2)))
-    logger.info("|{}|".format(seperating_character * screen_width))
+    logger.info("|{}|".format(separating_character * screen_width))
     if text:
         logger.info("| {} |".format(get_centered_text(text)))
-        logger.info("|{}|".format(seperating_character * screen_width))
+        logger.info("|{}|".format(separating_character * screen_width))
     logger.handlers[0].setFormatter(logging.Formatter("| %(message)-{}s |".format(screen_width - 2)))
     logger.handlers[1].setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{}s |".format(screen_width - 2)))
 

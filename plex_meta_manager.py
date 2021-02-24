@@ -1,9 +1,9 @@
-import argparse, logging, os, re, schedule, sys, time, traceback, datetime
+import argparse, logging, os, re, schedule, sys, time, datetime
 from modules import tests, util
 from modules.config import Config
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--mytests", dest="tests", help=argparse.SUPPRESS, action="store_true", default=False)
+parser.add_argument("--my-tests", dest="tests", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", dest="time", help="Time to update each day use format HH:MM (Default: 03:00)", default="03:00", type=str)
@@ -17,7 +17,7 @@ args = parser.parse_args()
 if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args.time):
     raise util.Failed("Argument Error: time argument invalid: {} must be in the HH:MM format".format(args.time))
 
-util.seperating_character = args.divider[0]
+util.separating_character = args.divider[0]
 if 90 <= args.width <= 300:
     util.screen_width = args.width
 else:
@@ -51,27 +51,27 @@ logger.addHandler(file_handler)
 
 sys.excepthook = util.my_except_hook
 
-util.seperator()
+util.separator()
 logger.info(util.get_centered_text("                                                                                     "))
 logger.info(util.get_centered_text(" ____  _             __  __      _          __  __                                   "))
-logger.info(util.get_centered_text("|  _ \| | _____  __ |  \/  | ___| |_ __ _  |  \/  | __ _ _ __   __ _  __ _  ___ _ __ "))
-logger.info(util.get_centered_text("| |_) | |/ _ \ \/ / | |\/| |/ _ \ __/ _` | | |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '__|"))
+logger.info(util.get_centered_text("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ "))
+logger.info(util.get_centered_text("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|"))
 logger.info(util.get_centered_text("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
-logger.info(util.get_centered_text("|_|   |_|\___/_/\_\ |_|  |_|\___|\__\__,_| |_|  |_|\__,_|_| |_|\__,_|\__, |\___|_|   "))
+logger.info(util.get_centered_text("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
 logger.info(util.get_centered_text("                                                                     |___/           "))
 logger.info(util.get_centered_text("    Version: 1.2.2                                                                   "))
-util.seperator()
+util.separator()
 
 if args.tests:
     tests.run_tests(default_dir)
     sys.exit(0)
 
 def start(config_path, test, daily, collections):
-    if daily:               type = "Daily "
-    elif test:              type = "Test "
-    elif collections:       type = "Collections "
-    else:                   type = ""
-    util.seperator("Starting {}Run".format(type))
+    if daily:               start_type = "Daily "
+    elif test:              start_type = "Test "
+    elif collections:       start_type = "Collections "
+    else:                   start_type = ""
+    util.separator("Starting {}Run".format(start_type))
     try:
         config = Config(default_dir, config_path)
         config.update_libraries(test, collections)
@@ -79,7 +79,7 @@ def start(config_path, test, daily, collections):
         util.print_stacktrace()
         logger.critical(e)
     logger.info("")
-    util.seperator("Finished {}Run".format(type))
+    util.separator("Finished {}Run".format(start_type))
 
 try:
     if args.run or args.test or args.collections:
@@ -101,4 +101,4 @@ try:
             length = util.print_return(length, "Current Time: {} | {} until the daily run at {}".format(current, time_str, args.time))
             time.sleep(1)
 except KeyboardInterrupt:
-    util.seperator("Exiting Plex Meta Manager")
+    util.separator("Exiting Plex Meta Manager")

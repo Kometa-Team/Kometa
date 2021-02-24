@@ -119,7 +119,7 @@ class TraktAPI:
             except Failed as e:
                 logger.error(e)
         if len(trakt_values) == 0:
-            raise Failed("Trakt Error: No valid Trakt Lists in {}".format(value))
+            raise Failed("Trakt Error: No valid Trakt Lists in {}".format(values))
         return trakt_values
 
     def validate_trakt_watchlist(self, values, is_movie):
@@ -131,7 +131,7 @@ class TraktAPI:
             except Failed as e:
                 logger.error(e)
         if len(trakt_values) == 0:
-            raise Failed("Trakt Error: No valid Trakt Watchlists in {}".format(value))
+            raise Failed("Trakt Error: No valid Trakt Watchlists in {}".format(values))
         return trakt_values
 
     def get_items(self, method, data, is_movie, status_message=True):
