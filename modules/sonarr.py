@@ -71,6 +71,7 @@ class SonarrAPI:
                 "titleslug": titleslug,
                 "language": self.language,
                 "monitored": True,
+                "seasonFolder": True,
                 "rootFolderPath": self.root_folder_path,
                 "seasons": [],
                 "images": [{"covertype": "poster", "url": show.poster_path}],

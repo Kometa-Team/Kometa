@@ -21,7 +21,7 @@ class TVDbObj:
         if len(results) > 0:
             self.id = int(results[0])
         elif tvdb_url.startswith(TVDb.movie_id_url):
-            raise Failed(f"TVDb Error: Could not find a TVDb Movie using TVDb Movie ID: {tvdb_url[len(TVDb.series_id_url):]}")
+            raise Failed(f"TVDb Error: Could not find a TVDb Movie using TVDb Movie ID: {tvdb_url[len(TVDb.movie_id_url):]}")
         elif tvdb_url.startswith(TVDb.series_id_url):
             raise Failed(f"TVDb Error: Could not find a TVDb Series using TVDb Series ID: {tvdb_url[len(TVDb.series_id_url):]}")
         else:
