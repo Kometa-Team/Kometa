@@ -22,6 +22,8 @@ class CollectionBuilder:
         self.posters = []
         self.backgrounds = []
         self.schedule = None
+        current_time = datetime.now()
+        current_year = current_time.year
 
         if "template" in data:
             if not self.library.templates:
@@ -113,7 +115,6 @@ class CollectionBuilder:
             skip_collection = False
         else:
             schedule_list = util.get_list(data["schedule"])
-            current_time = datetime.now()
             next_month = current_time.replace(day=28) + timedelta(days=4)
             last_day = next_month - timedelta(days=next_month.day)
             for schedule in schedule_list:
@@ -316,10 +317,24 @@ class CollectionBuilder:
                                     logger.warning(f"Collection Warning: {f} filter will run as {filter_method}")
                                 else:
                                     filter_method = f
-                                if filter_method in util.movie_only_filters and self.library.is_show:   raise Failed(f"Collection Error: {filter_method} filter only works for movie libraries")
-                                elif data[m][f] is None:                                    raise Failed(f"Collection Error: {filter_method} filter is blank")
-                                elif filter_method in util.all_filters:                     self.filters.append((filter_method, data[m][f]))
-                                else:                                                       raise Failed(f"Collection Error: {filter_method} filter not supported")
+                                if filter_method in util.movie_only_filters and self.library.is_show:
+                                    raise Failed(f"Collection Error: {filter_method} filter only works for movie libraries")
+                                elif data[m][f] is None:
+                                    raise Failed(f"Collection Error: {filter_method} filter is blank")
+                                elif filter_method == "year":
+                                    self.filters.append((filter_method, util.get_year_list(data[m][f], f"{filter_method} filter")))
+                                elif filter_method in ["max_age", "duration.gte", "duration.lte"]:
+                                    self.filters.append((filter_method, util.check_number(data[m][f], f"{filter_method} filter", minimum=1)))
+                                elif filter_method in ["year.gte", "year.lte"]:
+                                    self.filters.append((filter_method, util.check_number(data[m][f], f"{filter_method} filter", minimum=1800, maximum=current_year)))
+                                elif filter_method in ["rating.gte", "rating.lte"]:
+                                    self.filters.append((filter_method, util.check_number(data[m][f], f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)))
+                                elif filter_method in ["originally_available.gte", "originally_available.lte"]:
+                                    self.filters.append((filter_method, util.check_date(data[m][f], f"{filter_method} filter")))
+                                elif filter_method in util.all_filters:
+                                    self.filters.append((filter_method, data[m][f]))
+                                else:
+                                    raise Failed(f"Collection Error: {filter_method} filter not supported")
                         elif method_name == "plex_collectionless":
                             new_dictionary = {}
                             prefix_list = []
@@ -396,24 +411,11 @@ class CollectionBuilder:
                                             if attr_data is True:
                                                 new_dictionary[attr] = attr_data
                                         elif attr in ["primary_release_date.gte", "primary_release_date.lte", "release_date.gte", "release_date.lte", "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte"]:
-                                            if re.compile("[0-1]?[0-9][/-][0-3]?[0-9][/-][1-2][890][0-9][0-9]").match(str(attr_data)):
-                                                the_date = str(attr_data).split("/") if "/" in str(attr_data) else str(attr_data).split("-")
-                                                new_dictionary[attr] = f"{the_date[2]}-{the_date[0]}-{the_date[1]}"
-                                            elif re.compile("[1-2][890][0-9][0-9][/-][0-1]?[0-9][/-][0-3]?[0-9]").match(str(attr_data)):
-                                                the_date = str(attr_data).split("/") if "/" in str(attr_data) else str(attr_data).split("-")
-                                                new_dictionary[attr] = f"{the_date[0]}-{the_date[1]}-{the_date[2]}"
-                                            else:
-                                                raise Failed(f"Collection Error: {m} attribute {attr}: {attr_data} must match pattern MM/DD/YYYY e.g. 12/25/2020")
+                                            new_dictionary[attr] = util.check_date(attr_data, f"{m} attribute {attr}", return_string=True)
                                         elif attr in ["primary_release_year", "year", "first_air_date_year"]:
-                                            if isinstance(attr_data, int) and 1800 < attr_data < 2200:
-                                                new_dictionary[attr] = attr_data
-                                            else:
-                                                raise Failed(f"Collection Error: {m} attribute {attr}: must be a valid year e.g. 1990")
+                                            new_dictionary[attr] = util.check_number(attr_data, f"{m} attribute {attr}", minimum=1800, maximum=current_year + 1)
                                         elif attr in ["vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte"]:
-                                            if (isinstance(attr_data, int) or isinstance(attr_data, float)) and 0 < attr_data:
-                                                new_dictionary[attr] = attr_data
-                                            else:
-                                                raise Failed(f"Collection Error: {m} attribute {attr}: must be a valid number greater then 0")
+                                            new_dictionary[attr] = util.check_number(attr_data, f"{m} attribute {attr}", minimum=1)
                                         elif attr in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
                                             new_dictionary[attr] = attr_data
                                         else:
@@ -448,7 +450,6 @@ class CollectionBuilder:
                             elif data[m]["sort_by"] not in util.mal_season_sort:    logger.warning(f"Collection Warning: mal_season sort_by attribute {data[m]['sort_by']} invalid must be either 'members' or 'score' using members as default")
                             else:                                                   new_dictionary["sort_by"] = util.mal_season_sort[data[m]["sort_by"]]
 
-                            current_time = datetime.now()
                             if current_time.month in [1, 2, 3]:                     new_dictionary["season"] = "winter"
                             elif current_time.month in [4, 5, 6]:                   new_dictionary["season"] = "spring"
                             elif current_time.month in [7, 8, 9]:                   new_dictionary["season"] = "summer"
