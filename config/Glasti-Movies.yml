@@ -1,0 +1,580 @@
+# https://github.com/meisnate12/Plex-Meta-Manager                                      
+                                      ######################################################
+                                      #                Movie Collections                   #
+                                      ######################################################
+###########################
+#        Templates        #
+###########################
+templates:
+    Genre:
+        plex_search:
+          genre: <<genre>>
+        url_poster: <<poster>>
+        sort_title: +++++++_<<7Genre>>
+        collection_order: alpha
+    Holiday:
+        url_poster: <<poster>>
+        sort_title: +++++++_<<7Genre>>
+        collection_order: release
+    Studio:
+        plex_search:
+          studio: <<studio>>
+        url_poster: <<poster>>
+        sort_title: +++++_<<5Studio>>
+        collection_order: alpha
+    Movie:
+        tmdb_collection: <<collection>>
+        tmdb_summary: <<summary>>
+        url_poster: <<poster>>
+        sort_title: ++++_<<4Movie>>
+        collection_order: release
+    Decade:
+        plex_search:
+          decade: <<year>>
+        #url_poster: <<poster>>
+        sort_title: +++_<<3Decade>>
+        collection_order: alpha        
+    people:
+        actor: tmdb
+        tmdb_person: <<person>>
+        sort_title: ++_<<2people>>
+        collection_order: release
+
+collections:
+###########################
+#    Genre Collections    #
+###########################
+  Action:
+    template: {name: Genre, genre: Action/Adventure, poster: https://theposterdb.com/api/assets/52018}
+    summary: Action film is a genre wherein physical action takes precedence in the storytelling. The film will often have continuous motion and action including physical stunts, chases, fights, battles, and races. The story usually revolves around a hero that has a goal, but is facing incredible odds to obtain it.
+  Adventure:
+    template: {name: Genre, genre: Action/Adventure, poster: https://theposterdb.com/api/assets/52218}
+    summary: Adventure film is a genre that revolves around the conquests and explorations of a protagonist. The purpose of the conquest can be to retrieve a person or treasure, but often the main focus is simply the pursuit of the unknown. These films generally take place in exotic locations and play on historical myths. Adventure films incorporate suspenseful puzzles and intricate obstacles that the protagonist must overcome in order to achieve the end goal.  
+  Animation:
+    template: {name: Genre, genre: Animation, poster: https://theposterdb.com/api/assets/120090}
+    summary: Animated film is a collection of illustrations that are photographed frame-by-frame and then played in a quick succession. Since its inception, animation has had a creative and imaginative tendency. Being able to bring animals and objects to life, this genre has catered towards fairy tales and children’s stories. However, animation has long been a genre enjoyed by all ages. As of recent, there has even been an influx of animation geared towards adults. Animation is commonly thought of as a technique, thus it’s ability to span over many different genres.
+  Anime:
+    template: {name: Genre, genre: Anime, poster: https://theposterdb.com/api/assets/126743}
+    summary: A collection of Anime movies
+  Biography:
+    template: {name: Genre, genre: Biography, poster: https://theposterdb.com/api/assets/60369}
+    summary: A collection of Biography movies
+  Comedy:
+    template: {name: Genre, genre: Comedy, poster: https://theposterdb.com/api/assets/51397}
+    summary: Comedy is a genre of film that uses humor as a driving force. The aim of a comedy film is to illicit laughter from the audience through entertaining stories and characters. Although the comedy film may take on some serious material, most have a happy ending. Comedy film has the tendency to become a hybrid sub-genre because humor can be incorporated into many other genres. Comedies are more likely than other films to fall back on the success and popularity of an individual star.
+  Crime:
+    template: {name: Genre, genre: Crime, poster: https://theposterdb.com/api/assets/53057}
+    summary: Crime film is a genre that revolves around the action of a criminal mastermind. A Crime film will often revolve around the criminal himself, chronicling his rise and fall. Some Crime films will have a storyline that follows the criminal's victim, yet others follow the person in pursuit of the criminal. This genre tends to be fast paced with an air of mystery – this mystery can come from the plot or from the characters themselves.
+  Documentary:
+    template: {name: Genre, genre: Documentary, poster: https://theposterdb.com/api/assets/51430}
+    summary: Documentary film is a non-fiction genre intended to document reality primarily for the purposes of instruction, education, or maintaining a historical record.
+  Drama:
+    template: {name: Genre, genre: Drama, poster: https://theposterdb.com/api/assets/52016}
+    summary: Drama film is a genre that relies on the emotional and relational development of realistic characters. While Drama film relies heavily on this kind of development, dramatic themes play a large role in the plot as well. Often, these dramatic themes are taken from intense, real life issues. Whether heroes or heroines are facing a conflict from the outside or a conflict within themselves, Drama film aims to tell an honest story of human struggles.
+  Family:
+    template: {name: Genre, genre: Family, poster: https://theposterdb.com/api/assets/53059}
+    summary: Fantasy film is a genre that incorporates imaginative and fantastic themes. These themes usually involve magic, supernatural events, or fantasy worlds. Although it is its own distinct genre, these films can overlap into the horror and science fiction genres. Unlike science fiction, a fantasy film does not need to be rooted in fact. This element allows the audience to be transported into a new and unique world. Often, these films center on an ordinary hero in an extraordinary situation.
+  Fantasy:
+    template: {name: Genre, genre: Animation, poster: https://theposterdb.com/api/assets/51476}
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=fantasy
+      limit: 100
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=fantasy&sort=user_rating,desc
+      limit: 100
+    summary: Fantasy film is a genre that incorporates imaginative and fantastic themes. These themes usually involve magic, supernatural events, or fantasy worlds. Although it is its own distinct genre, these films can overlap into the horror and science fiction genres. Unlike science fiction, a fantasy film does not need to be rooted in fact. This element allows the audience to be transported into a new and unique world. Often, these films center on an ordinary hero in an extraordinary situation.
+  Gangster:
+    template: {name: Genre, poster: https://theposterdb.com/api/assets/62561}
+    imdb_list:
+      - https://www.imdb.com/list/ls026270180/
+      - https://www.imdb.com/list/ls000093502/
+    summary: Gangster film is a sub-genre of crime films that center on organized crime or the mafia. Often the plot revolves around the rise and fall of an organized crime leader. Many Gangster films explore the destructive nature of organized crime, while others attempt to show the humanity of the individual characters.
+  History:
+    template: {name: Genre, genre: History, poster: https://theposterdb.com/api/assets/58022}
+    summary: History film is a genre that takes historical events and people and interprets them in a larger scale. Historical accuracy is not the main focus, but rather the telling of a grandiose story. The drama of an History film is often accentuated by a sweeping musical score, lavish costumes, and high production value.
+  Horror:
+    template: {name: Genre, genre: Horror, poster: https://theposterdb.com/api/assets/51475}
+    summary: Horror film is a genre that aims to create a sense of fear, panic, alarm, and dread for the audience. These films are often unsettling and rely on scaring the audience through a portrayal of their worst fears and nightmares. Horror films usually center on the arrival of an evil force, person, or event. Many Horror films include mythical creatures such as ghosts, vampires, and zombies. Traditionally, Horror films incorporate a large amount of violence and gore into the plot. Though it has its own style, Horror film often overlaps into Fantasy, Thriller, and Science-Fiction genres.
+  Martial Arts:
+    template: {name: Genre, poster: https://theposterdb.com/api/assets/51773}
+    imdb_list:
+      - https://www.imdb.com/list/ls000099643/
+      - https://www.imdb.com/list/ls068611186/
+      - https://www.imdb.com/list/ls068378513/
+      - https://www.imdb.com/list/ls090404120/
+    summary: Martial Arts film is a sub-genre of action films that feature numerous martial arts combat between characters. These combats are usually the films' primary appeal and entertainment value, and often are a method of storytelling and character expression and development. Martial Arts are frequently featured in training scenes and other sequences in addition to fights. Martial Arts films commonly include other types of action, such as hand-to-hand combat, stuntwork, chases, and gunfights.  
+  Music:
+    template: {name: Genre, poster: https://theposterdb.com/api/assets/51398}
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=music
+      limit: 200
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=music&sort=user_rating,desc
+      limit: 200
+    summary: Music film is genre that revolves around music being an integral part of the characters lives.
+  Musical:
+    template: {name: Genre, genre: Musical, poster: https://theposterdb.com/api/assets/51427}
+    summary: A Musical interweaves vocal and dance performances into the narrative of the film. The songs of a film can either be used to further the story or simply enhance the experience of the audience. These films are often done on a grand scale and incorporate lavish costumes and sets. Traditional musicals center on a well-known star, famous for their dancing or singing skills (i.e. Fred Astaire, Gene Kelly, Judy Garland). These films explore concepts such are love and success, allowing the audience to escape from reality.
+  Mystery:
+    template: {name: Genre, genre: Mystery, poster: https://theposterdb.com/api/assets/53060}
+    summary: A Mystery film centers on a person of authority, usually a detective, that is trying to solve a mysterious crime. The main protagonist uses clues, investigation, and logical reasoning. The biggest element in these films is a sense of “whodunit” suspense, usually created through visual cues and unusual plot twists.
+  Pandemic:
+    template: {name: Genre, poster: https://theposterdb.com/api/assets/55837}
+    imdb_list: https://www.imdb.com/list/ls092321048/
+    summary: A Pandemic film resolves around widespread viruses, plagues, and diseases.
+  Romance:
+    template: {name: Genre, genre: Romance, poster: https://theposterdb.com/api/assets/53062}
+    summary: "Romance film can be defined as a genre wherein the plot revolves around the love between two protagonists. This genre usually has a theme that explores an issue within love, including but not limited to: love at first sight, forbidden love, love triangles, and sacrificial love. The tone of Romance film can vary greatly. Whether the end is happy or tragic, Romance film aims to evoke strong emotions in the audience."
+  Science Fiction:
+    template: {name: Genre, genre: Science Fiction, poster: https://theposterdb.com/api/assets/51772}
+    summary: Science Fiction (Sci-Fi) film is a genre that incorporates hypothetical, science-based themes into the plot of the film. Often, this genre incorporates futuristic elements and technologies to explore social, political, and philosophical issues. The film itself is usually set in the future, either on earth or in space. Traditionally, a Science Fiction film will incorporate heroes, villains, unexplored locations, fantastical quests, and advanced technology.
+  Short:
+    template: {name: Genre, genre: Short, poster: https://theposterdb.com/api/assets/53063}
+    summary: A collection of Short movies
+  Sports:
+    template: {name: Genre, poster: https://theposterdb.com/api/assets/60371}
+    imdb_list:
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sport
+      limit: 200
+    - url: https://www.imdb.com/search/title/?title_type=feature&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=sport&sort=user_rating,desc
+      limit: 200
+    summary: A Sport Film revolves around a sport setting, event, or an athlete. Often, these films will center on a single sporting event that carries significant importance. Sports films traditionally have a simple plot that builds up to the significant sporting event. This genre is known for incorporating film techniques to build anticipation and intensity. Sport films have a large range of sub-genres, from comedies to dramas, and are more likely than other genres to be based true-life events.
+  Stand Up Comedy:
+    template: {name: Genre, poster: https://theposterdb.com/api/assets/49137}
+    imdb_list:
+      - https://www.imdb.com/list/ls070221411/
+      - https://www.imdb.com/list/ls086584751/
+      - https://www.imdb.com/list/ls086022668/
+      - https://www.imdb.com/list/ls049792208/
+    summary: Stand-up comedy is a comedic style in which a comedian performs in front of a live audience, speaking directly to them through a microphone. Comedians give the illusion that they are dialoguing, but in actuality, they are monologuing a grouping of humorous stories, jokes and one-liners, typically called a shtick, routine, act, or set. Some stand-up comedians use props, music or magic tricks to enhance their acts. Stand-up comedians perform quasi-autobiographical and fictionalized extensions of their offstage selves.
+  Sword & Sorcery:
+    template: {name: Genre, poster: https://theposterdb.com/api/assets/74604}
+    imdb_list: https://www.imdb.com/list/ls022909805
+    summary: Sword and Sorcery film is a sub-genre of Fantasy that tend to be more plot-driven. These films rely on heavy action and battle scenes. Common themes in Sword and Sorcery films include a rescue mission, saving a princess, and battling a fantastical monster. The worlds and characters in these films are often much less developed than in other fantasy sub-genres. Of all the Fantasy sub-genres, Sword and Sorcery is most likely to be geared towards a younger audience, as many of these films are animated.
+  Sport:
+    template: {name: Genre, genre: Sport, poster: https://theposterdb.com/api/assets/60371}
+    summary: A Sport Film revolves around a sport setting, event, or an athlete. Often, these films will center on a single sporting event that carries significant importance. Sports films traditionally have a simple plot that builds up to the significant sporting event. This genre is known for incorporating film techniques to build anticipation and intensity. Sport films have a large range of sub-genres, from comedies to dramas, and are more likely than other genres to be based true-life events.
+  Thriller:
+    template: {name: Genre, genre: Thriller, poster: https://theposterdb.com/api/assets/52019}
+    summary: Thriller Film is a genre that revolves around anticipation and suspense. The aim for Thrillers is to keep the audience alert and on the edge of their seats. The protagonist in these films is set against a problem – an escape, a mission, or a mystery. No matter what sub-genre a Thriller film falls into, it will emphasize the danger that the protagonist faces. The tension with the main problem is built on throughout the film and leads to a highly stressful climax.
+  War:
+    template: {name: Genre, genre: War, poster: https://theposterdb.com/api/assets/51477}
+    summary: War Film is a genre that looks at the reality of war on a grand scale. They often focus on landmark battles as well as political issues within war. This genre usually focuses on a main character and his team of support, giving the audience an inside look into the gritty reality of war.
+  Western:
+    template: {name: Genre, genre: Western, poster: https://theposterdb.com/api/assets/51774}
+    summary: "Western Film is a genre that revolves around stories primarily set in the late 19th century in the American Old West. Most Westerns are set between the American Civil War (1865) and the early 1900s. Common themes within Western Film include: the conquest of the wild west, the cultural separation of the East and the West, the West’s resistance to modern change, the conflict between Cowboys and Indians, outlaws, and treasure/gold hunting. American Western Film usually revolves around a stoic hero and emphasizes the importance of honor and sacrifice."
+###########################
+#  Holliday Collections   #
+###########################
+  Christmas:
+    template: {name: Holiday, poster: https://theposterdb.com/api/assets/111696}
+    trakt_list:
+      - https://trakt.tv/users/movistapp/lists/christmas-movies
+      - https://trakt.tv/users/2borno2b/lists/christmas-movies-extravanganza
+    imdb_list:
+     - https://www.imdb.com/list/ls025976544/
+      - https://www.imdb.com/list/ls003863000/
+      - https://www.imdb.com/list/ls027454200/
+      - https://www.imdb.com/list/ls027886673/
+      - https://www.imdb.com/list/ls097998599/
+    summary: Christmas film is a genre that revolves around the plot involving Christmas.
+  Halloween.:
+    template: {name: Holiday, poster: https://theposterdb.com/api/assets/27316}
+    trakt_list:
+      - https://trakt.tv/users/kairbear08/lists/halloween
+      - https://trakt.tv/users/mybicycle/lists/halloween
+      - https://trakt.tv/users/jayinftl/lists/halloween
+      - https://trakt.tv/users/roswellgeek/lists/halloween
+    summary: Halloween film is a genre that revolves around the plot involving Halloween.
+###########################
+#   Studio Collections    #
+###########################
+  Aardman:
+    template: {name: Studio, studio: Aardman, poster: https://theposterdb.com/api/assets/26074}
+    summary: Aardman Animations, Ltd. is a British animation studio based in Bristol, England. Aardman is known for films made using stop-motion clay animation techniques, particularly those featuring Plasticine characters Wallace and Gromit.
+  Studio Ghibli:
+    template: {name: Studio, studio: "Studio Ghibli", poster: https://theposterdb.com/api/assets/32223}
+    summary: Studio Ghibli Inc. is a Japanese animation film studio headquartered in Koganei, Tokyo. The studio is best known for its animated feature films, and has also produced several short films, television commercials, and one television film. The studio’s mascot and most recognizable symbol is the character, Totoro, a giant cat-like spirit from the 1988 classic, My Neighbor Totoro.
+  DC Extended Universe:
+    template: {name: Studio, studio: "DC Extended Universe", poster: https://theposterdb.com/api/assets/92689}
+    summary: The DC Extended Universe (DCEU) is a series of superhero films, distributed by Warner Bros. Pictures and based on characters that appear in American comic books by DC Comics. The shared universe, much like the original DC Universe in comic books and the television programs, was established by crossing over common plot elements, settings, cast, and characters. 
+  Marvel Cinematic Universe:
+    template: {name: Studio, studio: "Marvel Cinematic Universe", poster: https://theposterdb.com/api/assets/5912}
+    summary: The Marvel Cinematic Universe (MCU) is an American media franchise and shared universe centered on a series of superhero films, independently produced by Marvel Studios and based on characters that appear in American comic books published by Marvel Comics. The franchise includes comic books, short films, television series, and digital series. The shared universe, much like the original Marvel Universe in comic books, was established by crossing over common plot elements, settings, cast, and characters. The first MCU film is Iron Man (2008), which began the films of Phase One culminating in the crossover film The Avengers (2012). Phase Two began with Iron Man 3 (2013) and concluded with Ant-Man (2015). Phase Three began with Captain America - Civil War (2016) and concluded with Spider-Man - Far From Home (2019). The first three phases in the franchise are collectively known as "The Infinity Saga". The films of Phase Four will begin with Black Widow (2021) and are set to conclude with Guardians of the Galaxy Vol. 3 (2023).
+  Blue Sky Animation:
+    template: {name: Studio, studio: "Blue Sky Animation", poster: https://theposterdb.com/poster/33753}
+    summary: Blue Sky Studios, Inc. is an American computer animation film studio based in Greenwich, Connecticut. It is a subsidiary of 20th Century Animation, a division of Disney Studios Content.
+  DreamWorks:
+    template: {name: Studio, studio: "DreamWorks Animation, DreamWorks Pictures", poster: https://theposterdb.com/api/assets/52723}
+    summary: DreamWorks Animation LLC (also simply known as DreamWorks) is an American animation studio and a subsidiary of Universal Pictures, itself a subsidiary of Comcast's NBCUniversal. It is based in Glendale, California, and produces animated feature films, television programs, and online virtual games.
+  Illumination Entertainment:
+    template: {name: Studio, studio: "Illumination Entertainment", poster: https://theposterdb.com/api/assets/8158}
+    summary: Illumination is an American film and animation studio founded by Chris Meledandri in 2007 and owned by Universal Pictures, a division of NBCUniversal, which is itself a division of Comcast. Meledandri produces the films, while Universal finances and distributes all the films. The studio is responsible for the Despicable Me and The Secret Life of Pets franchises and the film adaptations of Dr. Seuss’ books The Lorax and How the Grinch Stole Christmas. The Minions, characters from the Despicable Me series, are the studio's mascots.
+  Pixar:
+    template: {name: Studio, studio: Pixar, poster: https://theposterdb.com/api/assets/38226}
+    summary: Pixar Animation Studios, commonly known as Pixar, is an American computer animation studio based in Emeryville, California, a subsidiary of Disney Studios Content owned by The Walt Disney Company. Pixar began in 1979 as part of the Lucasfilm computer division, known as the Graphics Group, before its spin-off as a corporation on February 3, 1986, with funding from Apple co-founder Steve Jobs, who became its majority shareholder. Disney purchased Pixar in 2006 at a valuation of $7.4 billion by converting each share of Pixar stock to 2.3 shares of Disney stock, a transaction that resulted in Jobs becoming Disney's largest single shareholder at the time. Pixar is best known for its feature films technologically powered by RenderMan, the company's own implementation of the industry-standard RenderMan Interface Specification image-rendering application programming interface. Luxo Jr., a desk lamp from the studio's 1986 short film of the same name, is the studio's mascot.
+  Sony Pictures Animation:
+    template: {name: Studio, studio: "Sony Pictures, Sony Pictures Television", poster: https://theposterdb.com/api/assets/131749}
+    summary: Sony Pictures Animation Inc. is an American animation studio owned by Sony Entertainment's Sony Pictures Entertainment through their Motion Picture Group division and founded on May 9, 2002. The studio's films are distributed worldwide by Sony Pictures Releasing under their Columbia Pictures label, while all direct-to-video releases are released by Sony Pictures Home Entertainment.
+  Walt Disney Animation Studios:
+    template: {name: Studio, studio: "Walt Disney Animation Studios", poster: https://theposterdb.com/api/assets/6016}
+    summary: Walt Disney Animation Studios (WDAS), sometimes shortened to Disney Animation, is an American animation studio that creates animated features and short films for The Walt Disney Company. Founded on October 16, 1923 by brothers Walt Disney and Roy O. Disney, it is one of the oldest-running animation studios in the world. It is currently organized as a division of Walt Disney Studios and is headquartered at the Roy E. Disney Animation Building at the Walt Disney Studios lot in Burbank, California.
+  Walt Disney Pictures:
+    template: {name: Studio, studio: "Walt Disney Pictures", poster: https://theposterdb.com/api/assets/16549}
+    summary: Walt Disney Pictures is an American film production studio of The Walt Disney Studios, which is owned by The Walt Disney Company. The studio is the flagship producer of live-action feature films within the Walt Disney Studios unit, and is based at the Walt Disney Studios in Burbank, California. Animated films produced by Walt Disney Animation Studios and Pixar Animation Studios are also released under this brand. Walt Disney Studios Motion Pictures distributes and markets the films produced by Walt Disney Pictures.
+  Warner Bros.:
+    template: {name: Studio, studio: "Warner Animation Group, Warner Bros., Warner Bros. Animation, Warner Bros. Pictures, Warner Independent Pictures (WIP)", poster: ttps://theposterdb.com/api/assets/47604}
+    Summary: Warner Bros.is the third-oldest American movie studio in continuous operation, after Paramount Pictures was founded on May 8, 1912 as Famous Players Film Corporation, and Universal Studios founded on June 8, 1912. Warner Bros. incorporated on April 4, 1923.
+###########################
+#    Movie Collections    #
+###########################
+  James Bond:
+    template: {name: Movie, collection: 645, summary: 645, poster: https://theposterdb.com/api/assets/115662}
+  X-Men:
+    template: {name: Movie, collection: 748, summary: 748, poster: https://theposterdb.com/api/assets/20 }
+  Mission Impossible:
+    template: {name: Movie, collection: 87359, summary: 87359, poster: https://theposterdb.com/api/assets/65202}
+  Pirates of the Caribbean:
+    template: {name: Movie, collection: 295, summary: 295, poster: https://theposterdb.com/api/assets/71934}
+  Jurassic Park:
+    template: {name: Movie, collection: 328, summary: 328, poster: https://theposterdb.com/api/assets/45080}
+  Harry Potter:
+    template: {name: Movie, collection: 1241, summary: 1241, poster: https://theposterdb.com/api/assets/737}
+###########################
+#    Decade Collections   #
+###########################
+  30's Movies:
+    template: {name: Decade, year: 1930, poster: https://theposterdb.com/api/assets/105675}
+  40's Movies:
+    template: {name: Decade, year: 1940, poster: https://theposterdb.com/api/assets/105676}
+  50's Movies: 
+    template: {name: Decade, year: 1950, oster: https://theposterdb.com/api/assets/105677}
+  60's Movies:
+    template: {name: Decade, year: 1960, poster: https://theposterdb.com/api/assets/105331}
+  70's Movies:
+    template: {name: Decade, year: 1970, poster: https://theposterdb.com/api/assets/105332}
+  80's Movies:
+    template: {name: Decade, year: 1980, poster: https://theposterdb.com/api/assets/105333}
+  90's Movies:
+    template: {name: Decade, year: 1990, poster: https://theposterdb.com/api/assets/105334}
+  00's Movies:
+    plex_search:
+      decade: 2000
+    sort_title: +++_Decade
+    collection_order: alpha
+  10's Movies:
+    plex_search:
+      decade: 2010
+    sort_title: +++_Decade
+    collection_order: alpha
+###########################
+#     Trakt Trending      #
+###########################
+  Trakt Trending:
+    trakt_trending: 50
+    sort_title: +++++++++_Trakt Trending
+###########################
+#      IMDb Top 250       #
+###########################
+  IMDb Top 250:
+    imdb_list: https://www.imdb.com/search/title/?groups=top_250&count=250&sort=user_rating,desc
+    sort_title: ++++++++_IMDb Top 250
+###########################
+#    People Collections   #
+###########################
+  Adam Sandler:
+    writer: tmdb
+    template: {name: people, person: 19292}
+  Al Pacino:
+    template: {name: people, person: 1158}
+  Alfred Hitchcock:
+    director: tmdb
+    template: {name: people, person: 2636}
+    trakt_list: https://trakt.tv/users/movistapp/lists/hitchcock
+  Amy Adams:
+    template: {name: people, person: 9273}
+  Angelina Jolie:
+    template: {name: people, person: 11701}
+  Anne Hathaway:
+    template: {name: people, person: 1813}
+  Anthony Hopkins:
+    template: {name: people, person: 4173}
+  Antonio Banderas:
+    template: {name: people, person: 3131}
+  Arnold Schwarzenegger:
+    template: {name: people, person: 1100}
+  Ben Affleck:
+    template: {name: people, person: 880}
+  Ben Stiller:
+    template: {name: people, person: 7399}
+  Bill Murray:
+    template: {name: people, person: 1532}
+  Brad Pitt:
+    template: {name: people, person: 287}
+  Brendan Fraser:
+    template: {name: people, person: 18269}
+  Bruce Lee:
+    template: {name: people, person: 19429}
+  Bruce Willis:
+    template: {name: people, person: 62}
+  Cameron Diaz:
+    template: {name: people, person: 6941}
+  Carrie Fisher:
+    template: {name: people, person: 4}
+  Cate Blanchett:
+    template: {name: people, person: 112}
+  Catherine Zeta-Jones:
+    template: {name: people, person: 1922}
+  Channing Tatum:
+    template: {name: people, person: 38673}
+  Charlie Chaplin:
+    template: {name: people, person: 13848}
+  Charlize Theron:
+    template: {name: people, person: 6885}
+  Christian Bale:
+    template: {name: people, person: 3894}
+  Chris Evans:
+    template: {name: people, person: 16828}
+  Chris Hemsworth:
+    template: {name: people, person: 74568}
+  Chris Pratt:
+    template: {name: people, person: 73457}
+  Chris Rock:
+    template: {name: people, person: 2632}
+  Christopher Nolan:
+    director: tmdb
+    template: {name: people, person: 525}
+  Christopher Walken:
+    template: {name: people, person: 4690}
+  Chuck Norris:
+    template: {name: people, person: 51576}
+  Clint Eastwood:
+    director: tmdb
+    template: {name: people, person: 190}
+  Coen Brothers:
+    writer: tmdb
+    director: tmdb
+    template: {name: people, person: "1223, 1224"}
+    summary: "Joel Coen and Ethan Coen, collectively referred to as the Coen Brothers, are American film directors, producers, screenwriters, and editors. Their films span many genres and styles, which they frequently subvert or parody. Their most acclaimed works include: Raising Arizona (1987), Miller's Crossing (1990), Fargo (1996), The Big Lebowski (1998), O Brother, Where Art Thou? (2000), No Country for Old Men (2007), Burn After Reading (2008), A Serious Man (2009), True Grit (2010), Inside Llewyn Davis (2013), and The Ballad of Buster Scruggs (2018)."
+  Daniel Craig:
+    template: {name: people, person: 8784}
+  Dave Bautista:
+    template: {name: people, person: 543530}
+  Dave Chappelle:
+    template: {name: people, person: 4169}
+  Denzel Washington:
+    template: {name: people, person: 5292}
+  Diane Keaton:
+    template: {name: people, person: 3092}
+  Don Cheadle:
+    template: {name: people, person: 1896}
+  Dustin Hoffman:
+    template: {name: people, person: 4483}
+  Dwayne Johnson:
+    template: {name: people, person: 18918}
+  Eddie Murphy:
+    template: {name: people, person: 776}
+  Edward Norton:
+    template: {name: people, person: 819}
+  Elliot Page:
+    template: {name: people, person: 27578}
+  Emma Stone:
+    template: {name: people, person: 54693}
+  Emma Watson:
+    template: {name: people, person: 10990}
+  Ewan McGregor:
+    template: {name: people, person: 3061}
+  George Clooney:
+    template: {name: people, person: 1461}
+  Gerard Butler:
+    template: {name: people, person: 17276}
+  Harrison Ford:
+    template: {name: people, person: 3}
+  Hayao Miyazaki:
+    template: {name: people, person: 608}
+  Hugh Jackman:
+    template: {name: people, person: 6968}
+  Ian McKellen:
+    template: {name: people, person: 1327}
+  Ice Cube:
+    template: {name: people, person: 9778}
+  J.J. Abrams:
+    director: tmdb
+    template: {name: people, person: 15344}
+  Jack Black:
+    template: {name: people, person: 70851}
+  Jackie Chan:
+    template: {name: people, person: 18897}
+  James Cameron:
+    director: tmdb
+    template: {name: people, person: 2710}
+  James Franco:
+    template: {name: people, person: 17051}
+  Jamie Foxx:
+    template: {name: people, person: 134}
+  Jason Bateman:
+    template: {name: people, person: 23532}
+  Jason Statham:
+    template: {name: people, person: 976}
+  Jeff Bridges:
+    template: {name: people, person: 1229}
+  Jeff Goldblum:
+    template: {name: people, person: 4785}
+  Jennifer Aniston:
+    template: {name: people, person: 4491}
+  Jennifer Lawrence:
+    template: {name: people, person: 72129}
+  Jesse Eisenberg:
+    template: {name: people, person: 44735}
+  Jessica Alba:
+    template: {name: people, person: 56731}
+  Jet Li:
+    template: {name: people, person: 1336}
+  Jim Carrey:
+    template: {name: people, person: 206}
+  John Candy:
+    template: {name: people, person: 7180}
+  John Travolta:
+    template: {name: people, person: 8891}
+  John Wayne:
+    template: {name: people, person: 4165}
+  Johnny Depp:
+    template: {name: people, person: 85}
+  Julia Roberts:
+    template: {name: people, person: 1204}
+  Kevin Bacon:
+    template: {name: people, person: 4724}
+  Kevin Costner:
+    template: {name: people, person: 1269}
+  Kevin Hart:
+    template: {name: people, person: 55638}
+  Kevin Smith:
+    writer: tmdb
+    director: tmdb
+    template: {name: people, person: 19303}
+  Leonardo DiCaprio:
+    template: {name: people, person: 6193}
+  Liam Neeson:
+    template: {name: people, person: 3896}
+  Lucy Liu:
+    template: {name: people, person: 140}
+  M. Night Shyamalan:
+    director: tmdb
+    template: {name: people, person: 11614}
+  Mark Wahlberg:
+    template: {name: people, person: 13240}
+  Matt Damon:
+    template: {name: people, person: 1892}
+  Matthew McConaughey:
+    template: {name: people, person: 10297}
+  Megan Fox:
+    template: {name: people, person: 19537}
+  Mel Brooks:
+    writer: tmdb
+    director: tmdb
+    template: {name: people, person: 14639}
+  Mel Gibson:
+    director: tmdb
+    template: {name: people, person: 2461}
+  Melissa McCarthy:
+    template: {name: people, person: 55536}
+  Meryl Streep:
+    template: {name: people, person: 5064}
+  Michael Bay:
+    director: tmdb
+    template: {name: people, person: 865}
+  Michael Caine:
+    template: {name: people, person: 3895}
+  Michael Keaton:
+    template: {name: people, person: 2232}
+  Mike Myers:
+    template: {name: people, person: 12073}
+  Mila Kunis:
+    template: {name: people, person: 18973}
+  Milla Jovovich:
+    template: {name: people, person: 63}
+  Morgan Freeman:
+    template: {name: people, person: 192}
+  Natalie Portman:
+    template: {name: people, person: 524}
+  Nicolas Cage:
+    template: {name: people, person: 2963}
+  Nicole Kidman:
+    template: {name: people, person: 2227}
+  Orlando Bloom:
+    template: {name: people, person: 114}
+  Owen Wilson:
+    template: {name: people, person: 887}
+  Patrick Stewart:
+    template: {name: people, person: 2387}
+  Quentin Tarantino:
+    writer: tmdb
+    director: tmdb
+    template: {name: people, person: 138}
+  Reese Witherspoon:
+    template: {name: people, person: 368}
+  Ridley Scott:
+    director: tmdb
+    template: {name: people, person: 578}
+  Robert De Niro:
+    template: {name: people, person: 380}
+  Robert Downey Jr.:
+    template: {name: people, person: 3223}
+  Robin Williams:
+    template: {name: people, person: 2157}
+  Rosario Dawson:
+    template: {name: people, person: 5916}
+  Ryan Reynolds:
+    template: {name: people, person: 10859}
+  Samuel L. Jackson:
+    template: {name: people, person: 2231}
+  Sandra Bullock:
+    template: {name: people, person: 18277}
+  Sacha Baron Cohen:
+    template: {name: people, person: 6730}
+  Scarlett Johansson:
+    template: {name: people, person: 1245}
+  Sean Connery:
+    template: {name: people, person: 738}
+  Seth Rogen:
+    writer: tmdb
+    director: tmdb
+    template: {name: people, person: 19274}
+  Shia LaBeouf:
+    template: {name: people, person: 10959}
+  Steve Buscemi:
+    template: {name: people, person: 884}
+  Steve Carell:
+    template: {name: people, person: 4495}
+  Steve Martin:
+    template: {name: people, person: 67773}
+  Steven Seagal:
+    template: {name: people, person: 23880}
+  Steven Spielberg:
+    director: tmdb
+    template: {name: people, person: 488}
+  Sylvester Stallone:
+    template: {name: people, person: 16483}
+  Tim Burton:
+    writer: tmdb
+    director: tmdb
+    template: {name: people, person: 510}
+  Tom Cruise:
+    template: {name: people, person: 500}
+  Tom Hanks:
+    template: {name: people, person: 31}
+  Tommy Lee Jones:
+    template: {name: people, person: 2176}
+  Vin Diesel:
+    template: {name: people, person: 12835}
+  Vince Vaughn:
+    template: {name: people, person: 4937}
+  Wesley Snipes:
+    template: {name: people, person: 10814}
+  Will Ferrell:
+    template: {name: people, person: 23659}
+  Will Smith:
+    template: {name: people, person: 2888}
+  Woody Harrelson:
+    template: {name: people, person: 57755}
+  Zack Snyder:
+    director: tmdb
+    template: {name: people, person: 15217}
