@@ -1,4 +1,5 @@
-import datetime, logging, re, signal, sys, time, traceback
+import logging, re, signal, sys, time, traceback
+from datetime import datetime
 
 try:
     import msvcrt
@@ -369,6 +370,7 @@ all_filters = [
     "genre", "genre.not",
     "max_age",
     "originally_available.gte", "originally_available.lte",
+    "duration.gte", "duration.lte",
     "original_language", "original_language.not",
     "rating.gte", "rating.lte",
     "studio", "studio.not",
@@ -381,6 +383,7 @@ movie_only_filters = [
     "audio_language", "audio_language.not",
     "country", "country.not",
     "director", "director.not",
+    "duration.gte", "duration.lte",
     "original_language", "original_language.not",
     "subtitle_language", "subtitle_language.not",
     "video_resolution", "video_resolution.not",
@@ -511,32 +514,48 @@ def get_int_list(data, id_type):
 def get_year_list(data, method):
     values = get_list(data)
     final_years = []
-    current_year = datetime.datetime.now().year
+    current_year = datetime.now().year
     for value in values:
         try:
             if "-" in value:
                 year_range = re.search("(\\d{4})-(\\d{4}|NOW)", str(value))
-                start = year_range.group(1)
-                end = year_range.group(2)
-                if end == "NOW":
-                    end = current_year
-                if int(start) < 1800 or int(start) > current_year:      logger.error(f"Collection Error: Skipping {method} starting year {start} must be between 1800 and {current_year}")
-                elif int(end) < 1800 or int(end) > current_year:        logger.error(f"Collection Error: Skipping {method} ending year {end} must be between 1800 and {current_year}")
-                elif int(start) > int(end):                             logger.error(f"Collection Error: Skipping {method} starting year {start} cannot be greater then ending year {end}")
+                start = check_year(year_range.group(1), current_year, method)
+                end = current_year if year_range.group(2) == "NOW" else check_year(year_range.group(2), current_year, method)
+                if int(start) > int(end):
+                    raise Failed(f"Collection Error: {method} starting year: {start} cannot be greater then ending year {end}")
                 else:
                     for i in range(int(start), int(end) + 1):
-                        final_years.append(i)
+                        final_years.append(int(i))
             else:
-                year = re.search("(\\d+)", str(value)).group(1)
-                if int(year) < 1800 or int(year) > current_year:
-                    logger.error(f"Collection Error: Skipping {method} year {year} must be between 1800 and {current_year}")
-                else:
-                    if len(str(year)) != len(str(value)):
-                        logger.warning(f"Collection Warning: {value} can be replaced with {year}")
-                    final_years.append(year)
+                final_years.append(check_year(value, current_year, method))
         except AttributeError:
-            logger.error(f"Collection Error: Skipping {method} failed to parse year from {value}")
+            raise Failed(f"Collection Error: {method} failed to parse year from {value}")
     return final_years
+
+def check_year(year, current_year, method):
+    return check_number(year, method, minimum=1800, maximum=current_year)
+
+def check_number(value, method, number_type="int", minimum=None, maximum=None):
+    if number_type == "int":
+        try:                                                    num_value = int(str(value))
+        except ValueError:                                      raise Failed(f"Collection Error: {method}: {value} must be an integer")
+    elif number_type == "float":
+        try:                                                    num_value = float(str(value))
+        except ValueError:                                      raise Failed(f"Collection Error: {method}: {value} must be a number")
+    else:                                                   raise Failed(f"Number Type: {number_type} invalid")
+    if minimum is not None and maximum is not None and (num_value < minimum or num_value > maximum):
+        raise Failed(f"Collection Error: {method}: {num_value} must be between {minimum} and {maximum}")
+    elif minimum is not None and num_value < minimum:
+        raise Failed(f"Collection Error: {method}: {num_value} is less then  {minimum}")
+    elif maximum is not None and num_value > maximum:
+        raise Failed(f"Collection Error: {method}: {num_value} is greater then  {maximum}")
+    else:
+        return num_value
+
+def check_date(date_text, method, return_string=False):
+    try:                                    date_obg = datetime.strptime(str(date_text), "%m/%d/%Y")
+    except ValueError:                      raise Failed(f"Collection Error: {method}: {date_text} must match pattern MM/DD/YYYY e.g. 12/25/2020")
+    return str(date_text) if return_string else date_obg
 
 def logger_input(prompt, timeout=60):
     if windows:                             return windows_input(prompt, timeout)

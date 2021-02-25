@@ -139,8 +139,7 @@ class PlexAPI:
                     method = util.filter_alias[f[0][:-4]] if modifier in [".not", ".lte", ".gte"] else util.filter_alias[f[0]]
                     if method == "max_age":
                         threshold_date = datetime.now() - timedelta(days=f[1])
-                        attr = getattr(current, "originallyAvailableAt")
-                        if attr is None or attr < threshold_date:
+                        if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
                             match = False
                             break
                     elif method == "original_language":
@@ -160,17 +159,12 @@ class PlexAPI:
                             match = False
                             break
                     elif modifier in [".gte", ".lte"]:
-                        if method == "originallyAvailableAt":
-                            threshold_date = datetime.strptime(f[1], "%m/%d/%y")
-                            attr = getattr(current, "originallyAvailableAt")
-                            if (modifier == ".lte" and attr > threshold_date) or (modifier == ".gte" and attr < threshold_date):
-                                match = False
-                                break
-                        elif method in ["year", "rating"]:
-                            attr = getattr(current, method)
-                            if (modifier == ".lte" and attr > f[1]) or (modifier == ".gte" and attr < f[1]):
-                                match = False
-                                break
+                        attr = getattr(current, method)
+                        if method == "duration":
+                            attr = attr / 60000
+                        if (modifier == ".lte" and attr > f[1]) or (modifier == ".gte" and attr < f[1]):
+                            match = False
+                            break
                     else:
                         terms = util.get_list(f[1])
                         attrs = []
@@ -214,11 +208,7 @@ class PlexAPI:
             logger.info("")
             year = None
             if "year" in self.metadata[m]:
-                now = datetime.now()
-                if self.metadata[m]["year"] is None:                                    logger.error("Metadata Error: year attribute is blank")
-                elif not isinstance(self.metadata[m]["year"], int):                     logger.error("Metadata Error: year attribute must be an integer")
-                elif self.metadata[m]["year"] not in range(1800, now.year + 2):         logger.error(f"Metadata Error: year attribute must be between 1800-{now.year + 1}")
-                else:                                                                   year = self.metadata[m]["year"]
+                year = util.check_number(self.metadata[m]["year"], "year", minimum=1800, maximum=datetime.now().year + 1)
 
             title = m
             if "title" in self.metadata[m]:
