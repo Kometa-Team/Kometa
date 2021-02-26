@@ -14,30 +14,30 @@ templates:
         collection_order: alpha
     Holiday:
         url_poster: <<poster>>
-        sort_title: +++++++_<<7Genre>>
+        sort_title: +++++++_<<collection_name>>
         collection_order: release
     Studio:
         plex_search:
           studio: <<studio>>
         url_poster: <<poster>>
-        sort_title: +++++_<<5Studio>>
+        sort_title: +++++_<<collection_name>>
         collection_order: alpha
     Movie:
         tmdb_collection: <<collection>>
         tmdb_summary: <<summary>>
         url_poster: <<poster>>
-        sort_title: ++++_<<4Movie>>
+        sort_title: ++++_<<collection_name>>
         collection_order: release
     Decade:
         plex_search:
           decade: <<year>>
         #url_poster: <<poster>>
-        sort_title: +++_<<3Decade>>
+        sort_title: +++_<<collection_name>>
         collection_order: alpha        
     people:
         actor: tmdb
         tmdb_person: <<person>>
-        sort_title: ++_<<2people>>
+        sort_title: ++_<<collection_name>>
         collection_order: release
 
 collections:
