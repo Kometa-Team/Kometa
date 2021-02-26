@@ -10,7 +10,7 @@ templates:
         plex_search:
           genre: <<genre>>
         url_poster: <<poster>>
-        sort_title: +++++++_<<7Genre>>
+        sort_title: +++++++_<<collection_name>>
         collection_order: alpha
     Holiday:
         url_poster: <<poster>>
@@ -31,7 +31,7 @@ templates:
     Decade:
         plex_search:
           decade: <<year>>
-        #url_poster: <<poster>>
+        url_poster: <<poster>>
         sort_title: +++_<<collection_name>>
         collection_order: alpha        
     people:
