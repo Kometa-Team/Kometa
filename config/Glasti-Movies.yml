@@ -17,6 +17,7 @@ templates:
         sort_title: +++++++_<<collection_name>>
         collection_order: release
     Studio:
+# for the decades 2000-2009 and 2010-2019 i was not able to find a nice poster, so i didnt use the template for them.
         plex_search:
           studio: <<studio>>
         url_poster: <<poster>>
