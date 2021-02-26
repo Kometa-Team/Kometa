@@ -21,7 +21,7 @@ class CollectionBuilder:
         self.filters = []
         self.posters = []
         self.backgrounds = []
-        self.schedule = None
+        self.schedule = ""
         current_time = datetime.now()
         current_year = current_time.year
 
