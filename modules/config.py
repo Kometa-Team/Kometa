@@ -372,9 +372,12 @@ class Config:
                         rating_key_map = {}
                         try:
                             builder = CollectionBuilder(self, library, c, collections[c])
-                        except Exception as e:
+                        except Failed as ef:
+                            util.print_multiline(ef, error=True)
+                            continue
+                        except Exception as ee:
                             util.print_stacktrace()
-                            logger.error(e)
+                            logger.error(ee)
                             continue
 
                         try:
@@ -384,7 +387,7 @@ class Config:
                             collection_obj = None
                             collection_name = c
 
-                        if builder.schedule is not None:
+                        if len(builder.schedule) > 0:
                             util.print_multiline(builder.schedule, info=True)
 
                         logger.info("")

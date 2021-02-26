@@ -157,10 +157,10 @@ class CollectionBuilder:
                         logger.error(f"Collection Error: failed to parse schedule: {schedule}")
                 else:
                     logger.error(f"Collection Error: schedule attribute {schedule} invalid")
-        if self.schedule is None:
+        if len(self.schedule) == 0:
             skip_collection = False
         if skip_collection:
-            raise Failed(f"Skipping Collection {self.name}")
+            raise Failed(f"{self.schedule}\n\nCollection {self.name} not scheduled to run")
 
         logger.info(f"Scanning {self.name} Collection")
 
