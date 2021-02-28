@@ -81,6 +81,11 @@ class TMDbAPI:
         except TMDbException as e:      raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    def get_person_credits(self, tmdb_id):
+        try:                            return self.Person.combined_credits(tmdb_id)
+        except TMDbException as e:      raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_company(self, tmdb_id):
         try:                            return self.Company.details(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Company found for TMDb ID {tmdb_id}: {e}")
@@ -99,6 +104,27 @@ class TMDbAPI:
     def get_list(self, tmdb_id):
         try:                            return self.List.details(tmdb_id, all_details=True)
         except TMDbException as e:      raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
+
+    def get_credits(self, tmdb_id, actor=False, crew=False, director=False, producer=False, writer=False):
+        movie_ids = []
+        show_ids = []
+        actor_credits = self.get_person_credits(tmdb_id)
+        if actor:
+            for credit in actor_credits.cast:
+                if credit.media_type == "movie":
+                    movie_ids.append(credit.id)
+                elif credit.media_type == "tv":
+                    show_ids.append(credit.id)
+        for credit in actor_credits.crew:
+            if crew or \
+                    (director and credit.department == "Directing") or  \
+                    (producer and credit.department == "Production") or \
+                    (writer and credit.department == "Writing"):
+                if credit.media_type == "movie":
+                    movie_ids.append(credit.id)
+                elif credit.media_type == "tv":
+                    show_ids.append(credit.id)
+        return movie_ids, show_ids
 
     def get_pagenation(self, method, amount, is_movie):
         ids = []
@@ -201,13 +227,18 @@ class TMDbAPI:
                     movie_ids.append(tmdb_item["id"])
             elif method == "tmdb_show":
                 tmdb_name = str(self.get_show(tmdb_id).name)
-                try:                    show_ids.append(self.convert_tmdb_to_tvdb(tmdb_id))
-                except Failed:          pass
+                show_ids.append(self.convert_tmdb_to_tvdb(tmdb_id))
             else:
-                raise Failed(f"TMDb Error: Method {method} not supported")
+                tmdb_name = str(self.get_person(tmdb_id).name)
+                if method == "tmdb_actor":                  movie_ids, show_ids = self.get_credits(tmdb_id, actor=True)
+                elif method == "tmdb_director":             movie_ids, show_ids = self.get_credits(tmdb_id, director=True)
+                elif method == "tmdb_producer":             movie_ids, show_ids = self.get_credits(tmdb_id, producer=True)
+                elif method == "tmdb_writer":               movie_ids, show_ids = self.get_credits(tmdb_id, writer=True)
+                elif method == "tmdb_crew":                 movie_ids, show_ids = self.get_credits(tmdb_id, crew=True)
+                else:                                       raise Failed(f"TMDb Error: Method {method} not supported")
             if status_message and len(movie_ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(movie_ids)} Movie{'' if len(movie_ids) == 1 else 's'})")
-            if status_message and len(show_ids) > 0:
+            if status_message and not is_movie and len(show_ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(show_ids)} Show{'' if len(show_ids) == 1 else 's'})")
         if status_message:
             logger.debug(f"TMDb IDs Found: {movie_ids}")
