@@ -135,16 +135,15 @@ class PlexAPI:
             match = True
             if filters:
                 length = util.print_return(length, f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
-                for f in filters:
-                    modifier = f[0][-4:]
-                    method = util.filter_alias[f[0][:-4]] if modifier in [".not", ".lte", ".gte"] else util.filter_alias[f[0]]
+                for filter_method, filter_data in filters:
+                    modifier = filter_method[-4:]
+                    method = util.filter_alias[filter_method[:-4]] if modifier in [".not", ".lte", ".gte"] else util.filter_alias[filter_method]
                     if method == "max_age":
-                        threshold_date = datetime.now() - timedelta(days=f[1])
+                        threshold_date = datetime.now() - timedelta(days=filter_data)
                         if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
                             match = False
                             break
                     elif method == "original_language":
-                        terms = util.get_list(f[1], lower=True)
                         movie = None
                         for key, value in movie_map.items():
                             if current.ratingKey == value:
@@ -156,18 +155,29 @@ class PlexAPI:
                         if movie is None:
                             logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
                             continue
-                        if (modifier == ".not" and movie.original_language in terms) or (modifier != ".not" and movie.original_language not in terms):
+                        if (modifier == ".not" and movie.original_language in filter_data) or (modifier != ".not" and movie.original_language not in filter_data):
                             match = False
                             break
                     elif modifier in [".gte", ".lte"]:
-                        attr = getattr(current, method)
-                        if method == "duration":
-                            attr = attr / 60000
-                        if (modifier == ".lte" and attr > f[1]) or (modifier == ".gte" and attr < f[1]):
+                        if method == "vote_count":
+                            tmdb_item = None
+                            for key, value in movie_map.items():
+                                if current.ratingKey == value:
+                                    try:
+                                        tmdb_item = self.TMDb.get_movie(key) if self.is_movie else self.TMDb.get_show(key)
+                                        break
+                                    except Failed:
+                                        pass
+                            if tmdb_item is None:
+                                logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
+                                continue
+                            attr = tmdb_item.vote_count
+                        else:
+                            attr = getattr(current, method) / 60000 if method == "duration" else getattr(current, method)
+                        if (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
                             match = False
                             break
                     else:
-                        terms = util.get_list(f[1])
                         attrs = []
                         if method in ["video_resolution", "audio_language", "subtitle_language"]:
                             for media in current.media:
@@ -178,7 +188,7 @@ class PlexAPI:
                         elif method in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:          attrs = [str(getattr(current, method))]
                         elif method in ["actors", "countries", "directors", "genres", "writers", "collections"]:        attrs = [getattr(x, "tag") for x in getattr(current, method)]
 
-                        if (not list(set(terms) & set(attrs)) and modifier != ".not") or (list(set(terms) & set(attrs)) and modifier == ".not"):
+                        if (not list(set(filter_data) & set(attrs)) and modifier != ".not") or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             match = False
                             break
                 length = util.print_return(length, f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")

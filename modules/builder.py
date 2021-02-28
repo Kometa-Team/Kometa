@@ -303,8 +303,8 @@ class CollectionBuilder:
                 elif method_name in util.dictionary_lists:
                     if isinstance(data[m], dict):
                         def get_int(parent, method, data_in, default_in, minimum=1, maximum=None):
-                            if method not in data_in:                                       logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default} as default")
-                            elif not data_in[method]:                                       logger.warning(f"Collection Warning: {parent} {method} attribute is blank using {default} as default")
+                            if method not in data_in:                                   logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default} as default")
+                            elif not data_in[method]:                                   logger.warning(f"Collection Warning: {parent} {method} attribute is blank using {default} as default")
                             elif isinstance(data_in[method], int) and data_in[method] >= minimum:
                                 if maximum is None or data_in[method] <= maximum:           return data_in[method]
                                 else:                                                       logger.warning(f"Collection Warning: {parent} {method} attribute {data_in[method]} invalid must an integer <= {maximum} using {default} as default")
@@ -322,19 +322,24 @@ class CollectionBuilder:
                                 elif data[m][f] is None:
                                     raise Failed(f"Collection Error: {filter_method} filter is blank")
                                 elif filter_method == "year":
-                                    self.filters.append((filter_method, util.get_year_list(data[m][f], f"{filter_method} filter")))
-                                elif filter_method in ["max_age", "duration.gte", "duration.lte"]:
-                                    self.filters.append((filter_method, util.check_number(data[m][f], f"{filter_method} filter", minimum=1)))
+                                    filter_data = util.get_year_list(data[m][f], f"{filter_method} filter")
+                                elif filter_method in ["max_age", "duration.gte", "duration.lte", "tmdb_vote_count.gte", "tmdb_vote_count.lte"]:
+                                    filter_data = util.check_number(data[m][f], f"{filter_method} filter", minimum=1)
                                 elif filter_method in ["year.gte", "year.lte"]:
-                                    self.filters.append((filter_method, util.check_number(data[m][f], f"{filter_method} filter", minimum=1800, maximum=current_year)))
+                                    filter_data = util.check_number(data[m][f], f"{filter_method} filter", minimum=1800, maximum=current_year)
                                 elif filter_method in ["rating.gte", "rating.lte"]:
-                                    self.filters.append((filter_method, util.check_number(data[m][f], f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)))
+                                    filter_data = util.check_number(data[m][f], f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)
                                 elif filter_method in ["originally_available.gte", "originally_available.lte"]:
-                                    self.filters.append((filter_method, util.check_date(data[m][f], f"{filter_method} filter")))
+                                    filter_data = util.check_date(data[m][f], f"{filter_method} filter")
+                                elif filter_method == "original_language":
+                                    filter_data = util.get_list(data[m][f], lower=True)
+                                elif filter_method == "collection":
+                                    filter_data = data[m][f] if isinstance(data[m][f], list) else [data[m][f]]
                                 elif filter_method in util.all_filters:
-                                    self.filters.append((filter_method, data[m][f]))
+                                    filter_data = util.get_list(data[m][f])
                                 else:
                                     raise Failed(f"Collection Error: {filter_method} filter not supported")
+                                self.filters.append((filter_method, filter_data))
                         elif method_name == "plex_collectionless":
                             new_dictionary = {}
                             prefix_list = []
@@ -613,28 +618,32 @@ class CollectionBuilder:
 
                 if len(missing_movies) > 0 or len(missing_shows) > 0:
                     logger.info("")
+                    arr_filters = []
+                    for filter_method, filter_data in self.filters:
+                        if (filter_method.startswith("original_language") and self.library.is_movie) or filter_method.startswith("tmdb_vote_count"):
+                            arr_filters.append((filter_method, filter_data))
                     if len(missing_movies) > 0:
-                        not_lang = None
-                        terms = None
-                        for filter_method, filter_data in self.filters:
-                            if filter_method.startswith("original_language"):
-                                terms = util.get_list(filter_data, lower=True)
-                                not_lang = filter_method.endswith(".not")
-                                break
-
                         missing_movies_with_names = []
                         for missing_id in missing_movies:
                             try:
                                 movie = self.config.TMDb.get_movie(missing_id)
-                                title = str(movie.title)
-                                if not_lang is None or (not_lang is True and movie.original_language not in terms) or (not_lang is False and movie.original_language in terms):
-                                    missing_movies_with_names.append((title, missing_id))
-                                    if self.details["show_missing"] is True:
-                                        logger.info(f"{collection_name} Collection | ? | {title} (TMDb: {missing_id})")
-                                elif self.details["show_filtered"] is True:
-                                    logger.info(f"{collection_name} Collection | X | {title} (TMDb: {missing_id})")
                             except Failed as e:
                                 logger.error(e)
+                                continue
+                            match = True
+                            for filter_method, filter_data in arr_filters:
+                                if (filter_method == "original_language" and movie.original_language not in filter_data) \
+                                        or (filter_method == "original_language.not" and movie.original_language in filter_data) \
+                                        or (filter_method == "tmdb_vote_count.gte" and movie.vote_count < filter_data) \
+                                        or (filter_method == "tmdb_vote_count.lte" and movie.vote_count > filter_data):
+                                    match = False
+                                    break
+                            if match:
+                                missing_movies_with_names.append((movie.title, missing_id))
+                                if self.details["show_missing"] is True:
+                                    logger.info(f"{collection_name} Collection | ? | {movie.title} (TMDb: {missing_id})")
+                            elif self.details["show_filtered"] is True:
+                                logger.info(f"{collection_name} Collection | X | {movie.title} (TMDb: {missing_id})")
                         logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_movies_with_names, True)
@@ -645,11 +654,23 @@ class CollectionBuilder:
                         for missing_id in missing_shows:
                             try:
                                 title = str(self.config.TVDb.get_series(self.library.Plex.language, tvdb_id=missing_id).title.encode("ascii", "replace").decode())
+                            except Failed as e:
+                                logger.error(e)
+                                continue
+                            match = True
+                            if arr_filters:
+                                show = self.config.TMDb.get_show(self.config.TMDb.convert_tvdb_to_tmdb(missing_id))
+                                for filter_method, filter_data in arr_filters:
+                                    if (filter_method == "tmdb_vote_count.gte" and show.vote_count < filter_data) \
+                                            or (filter_method == "tmdb_vote_count.lte" and show.vote_count > filter_data):
+                                        match = False
+                                        break
+                            if match:
                                 missing_shows_with_names.append((title, missing_id))
                                 if self.details["show_missing"] is True:
                                     logger.info(f"{collection_name} Collection | ? | {title} (TVDB: {missing_id})")
-                            except Failed as e:
-                                logger.error(e)
+                            elif self.details["show_filtered"] is True:
+                                logger.info(f"{collection_name} Collection | X | {title} (TMDb: {missing_id})")
                         logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_shows_with_names, False)
