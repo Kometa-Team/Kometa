@@ -565,27 +565,27 @@ class Config:
 
                     if tmdb_id and imdb_id:                         id_name = f"TMDb ID: {tmdb_id} or IMDb ID: {imdb_id}"
                     elif imdb_id and tvdb_id:                       id_name = f"IMDb ID: {imdb_id} or TVDb ID: {tvdb_id}"
-                    elif tmdb_id:                                   id_name = "TMDb ID: {}".format(tmdb_id)
-                    elif imdb_id:                                   id_name = "IMDb ID: {}".format(imdb_id)
-                    elif tvdb_id:                                   id_name = "TVDb ID: {}".format(tvdb_id)
+                    elif tmdb_id:                                   id_name = f"TMDb ID: {tmdb_id}"
+                    elif imdb_id:                                   id_name = f"IMDb ID: {imdb_id}"
+                    elif tvdb_id:                                   id_name = f"TVDb ID: {tvdb_id}"
                     else:                                           id_name = None
 
-                    if anidb_id and not tmdb_id and not tvdb_id:    error_message = "Unable to convert AniDb ID: {} to TMDb ID or TVDb ID".format(anidb_id)
-                    elif mal_id and not tmdb_id and not tvdb_id:    error_message = "Unable to convert MyAnimeList ID: {} to TMDb ID or TVDb ID".format(mal_id)
-                    elif id_name and api_name:                      error_message = "Unable to convert {} to {} using {}".format(id_name, service_name, api_name)
-                    elif id_name:                                   error_message = "Configure TMDb or Trakt to covert {} to {}".format(id_name, service_name)
-                    else:                                           error_message = "No ID to convert to {}".format(service_name)
+                    if anidb_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert AniDb ID: {anidb_id} to TMDb ID or TVDb ID"
+                    elif mal_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert MyAnimeList ID: {mal_id} to TMDb ID or TVDb ID"
+                    elif id_name and api_name:                      error_message = f"Unable to convert {id_name} to {service_name} using {api_name}"
+                    elif id_name:                                   error_message = f"Configure TMDb or Trakt to covert {id_name} to {service_name}"
+                    else:                                           error_message = f"No ID to convert to {service_name}"
             if self.Cache and (tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show):
                 if isinstance(tmdb_id, list):
                     for i in range(len(tmdb_id)):
                         util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_id[i] if imdb_id[i] else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
                         self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_id[i], tvdb_id, anidb_id, mal_id, expired)
                 else:
-                    util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id if tmdb_id else "None", imdb_id if imdb_id else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
+                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id if tmdb_id else 'None':<6} | {imdb_id if imdb_id else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
                     self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expired)
         if tmdb_id and library.is_movie:                return "movie", tmdb_id
         elif tvdb_id and library.is_show:               return "show", tvdb_id
         elif (anidb_id or mal_id) and tmdb_id:          return "movie", tmdb_id
         else:
-            util.print_end(length, "{} {:<46} | {} for {}".format("Cache | ! |" if self.Cache else "Mapping Error:", item.guid, error_message, item.title))
+            util.print_end(length, f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | {error_message} for {item.title}")
             return None, None

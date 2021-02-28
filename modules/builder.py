@@ -19,8 +19,9 @@ class CollectionBuilder:
         }
         self.methods = []
         self.filters = []
-        self.posters = []
-        self.backgrounds = []
+        self.posters = {}
+        self.backgrounds = {}
+        self.summaries = {}
         self.schedule = ""
         current_time = datetime.now()
         current_year = current_time.year
@@ -180,10 +181,10 @@ class CollectionBuilder:
                 for tmdb_id in util.get_int_list(data["tmdb_person"], "TMDb Person ID"):
                     person = config.TMDb.get_person(tmdb_id)
                     valid_names.append(person.name)
-                    if "summary" not in self.details and hasattr(person, "biography") and person.biography:
-                        self.details["summary"] = person.biography
-                    if "poster" not in self.details and hasattr(person, "profile_path") and person.profile_path:
-                        self.details["poster"] = ("url", f"{config.TMDb.image_url}{person.profile_path}", "tmdb_person")
+                    if hasattr(person, "biography") and person.biography:
+                        self.summaries["tmdb_person"] = person.biography
+                    if hasattr(person, "profile_path") and person.profile_path:
+                        self.posters["tmdb_person"] = f"{config.TMDb.image_url}{person.profile_path}"
                 if len(valid_names) > 0:                                        self.details["tmdb_person"] = valid_names
                 else:                                                           raise Failed(f"Collection Error: No valid TMDb Person IDs in {data['tmdb_person']}")
             else:
@@ -212,12 +213,14 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: {method_name} plex search only works for movie libraries")
                 elif method_name not in util.collectionless_lists and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
+                elif method_name == "summary":
+                    self.summaries[method_name] = data[m]
                 elif method_name == "tmdb_summary":
-                    self.details["summary"] = config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], "TMDb ID"), self.library.is_movie).overview
+                    self.summaries[method_name] = config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], "TMDb ID"), self.library.is_movie).overview
                 elif method_name == "tmdb_description":
-                    self.details["summary"] = config.TMDb.get_list(util.regex_first_int(data[m], "TMDb List ID")).description
+                    self.summaries[method_name] = config.TMDb.get_list(util.regex_first_int(data[m], "TMDb List ID")).description
                 elif method_name == "tmdb_biography":
-                    self.details["summary"] = config.TMDb.get_person(util.regex_first_int(data[m], "TMDb Person ID")).biography
+                    self.summaries[method_name] = config.TMDb.get_person(util.regex_first_int(data[m], "TMDb Person ID")).biography
                 elif method_name == "collection_mode":
                     if data[m] in ["default", "hide", "hide_items", "show_items", "hideItems", "showItems"]:
                         if data[m] == "hide_items":                                 self.details[method_name] = "hideItems"
@@ -231,20 +234,20 @@ class CollectionBuilder:
                     else:
                         raise Failed(f"Collection Error: {data[m]} collection_order Invalid\n| \trelease (Order Collection by release dates)\n| \talpha (Order Collection Alphabetically)")
                 elif method_name == "url_poster":
-                    self.posters.append(("url", data[m], method_name))
+                    self.posters[method_name] = data[m]
                 elif method_name == "tmdb_poster":
-                    self.posters.append(("url", f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], 'TMDb ID'), self.library.is_movie).poster_path}", method_name))
+                    self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], 'TMDb ID'), self.library.is_movie).poster_path}"
                 elif method_name == "tmdb_profile":
-                    self.posters.append(("url", f"{config.TMDb.image_url}{config.TMDb.get_person(util.regex_first_int(data[m], 'TMDb Person ID')).profile_path}", method_name))
+                    self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_person(util.regex_first_int(data[m], 'TMDb Person ID')).profile_path}"
                 elif method_name == "file_poster":
-                    if os.path.exists(data[m]):                                 self.posters.append(("file", os.path.abspath(data[m]), method_name))
+                    if os.path.exists(data[m]):                                 self.posters[method_name] = os.path.abspath(data[m])
                     else:                                                       raise Failed(f"Collection Error: Poster Path Does Not Exist: {os.path.abspath(data[m])}")
                 elif method_name == "url_background":
-                    self.backgrounds.append(("url", data[m], method_name))
+                    self.backgrounds[method_name] = data[m]
                 elif method_name == "tmdb_background":
-                    self.backgrounds.append(("url", f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], 'TMDb ID'), self.library.is_movie).poster_path}", method_name))
+                    self.backgrounds[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], 'TMDb ID'), self.library.is_movie).poster_path}"
                 elif method_name == "file_background":
-                    if os.path.exists(data[m]):                                 self.backgrounds.append(("file", os.path.abspath(data[m]), method_name))
+                    if os.path.exists(data[m]):                                 self.backgrounds[method_name] = os.path.abspath(data[m])
                     else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(data[m])}")
                 elif method_name == "label_sync_mode":
                     if data[m] in ["append", "sync"]:                           self.details[method_name] = data[m]
@@ -501,16 +504,16 @@ class CollectionBuilder:
                     if method_name[-8:] == "_details":
                         if method_name in ["tmdb_collection_details", "tmdb_movie_details", "tmdb_show_details"]:
                             item = config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
-                            if "summary" not in self.details and hasattr(item, "overview") and item.overview:
-                                self.details["summary"] = item.overview
-                            if "background" not in self.details and hasattr(item, "backdrop_path") and item.backdrop_path:
-                                self.details["background"] = ("url", f"{config.TMDb.image_url}{item.backdrop_path}", method_name[:-8])
-                            if "poster" not in self.details and hasattr(item, "poster_path") and item.poster_path:
-                                self.details["poster"] = ("url", f"{config.TMDb.image_url}{item.poster_path}", method_name[:-8])
+                            if hasattr(item, "overview") and item.overview:
+                                self.summaries[method_name] = item.overview
+                            if hasattr(item, "backdrop_path") and item.backdrop_path:
+                                self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.backdrop_path}"
+                            if hasattr(item, "poster_path") and item.poster_path:
+                                self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
                         else:
                             item = config.TMDb.get_list(values[0])
-                            if "summary" not in self.details and hasattr(item, "description") and item.description:
-                                self.details["summary"] = item.description
+                            if hasattr(item, "description") and item.description:
+                                self.summaries[method_name] = item.description
                         self.methods.append((method_name[:-8], values))
                     else:
                         self.methods.append((method_name, values))
@@ -692,15 +695,28 @@ class CollectionBuilder:
 
     def update_details(self, collection):
         edits = {}
+        def get_summary(summary_method, summaries):
+            logger.info(f"Detail: {summary_method} updated collection summary")
+            return summaries[summary_method]
+        if "summary" in self.summaries:                     summary = get_summary("summary", self.summaries)
+        elif "tmdb_description" in self.summaries:          summary = get_summary("tmdb_description", self.summaries)
+        elif "tmdb_summary" in self.summaries:              summary = get_summary("tmdb_summary", self.summaries)
+        elif "tmdb_biography" in self.summaries:            summary = get_summary("tmdb_biography", self.summaries)
+        elif "tmdb_person" in self.summaries:               summary = get_summary("tmdb_person", self.summaries)
+        elif "tmdb_collection_details" in self.summaries:   summary = get_summary("tmdb_collection_details", self.summaries)
+        elif "tmdb_list_details" in self.summaries:         summary = get_summary("tmdb_list_details", self.summaries)
+        elif "tmdb_movie_details" in self.summaries:        summary = get_summary("tmdb_movie_details", self.summaries)
+        elif "tmdb_show_details" in self.summaries:         summary = get_summary("tmdb_show_details", self.summaries)
+        else:                                               summary = None
+        if summary:
+            edits["summary.value"] = summary
+            edits["summary.locked"] = 1
         if "sort_title" in self.details:
             edits["titleSort.value"] = self.details["sort_title"]
             edits["titleSort.locked"] = 1
         if "content_rating" in self.details:
             edits["contentRating.value"] = self.details["content_rating"]
             edits["contentRating.locked"] = 1
-        if "summary" in self.details:
-            edits["summary.value"] = self.details["summary"]
-            edits["summary.locked"] = 1
         if len(edits) > 0:
             logger.debug(edits)
             collection.edit(**edits)
@@ -725,8 +741,8 @@ class CollectionBuilder:
         if self.library.asset_directory:
             name_mapping = self.name
             if "name_mapping" in self.details:
-                if self.details["name_mapping"]:                        name_mapping = self.details["name_mapping"]
-                else:                                                   logger.error("Collection Error: name_mapping attribute is blank")
+                if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
+                else:                                               logger.error("Collection Error: name_mapping attribute is blank")
             for ad in self.library.asset_directory:
                 path = os.path.join(ad, f"{name_mapping}")
                 if not os.path.isdir(path):
@@ -734,11 +750,11 @@ class CollectionBuilder:
                 matches = glob.glob(os.path.join(ad, f"{name_mapping}", "poster.*"))
                 if len(matches) > 0:
                     for match in matches:
-                        self.posters.append(("file", os.path.abspath(match), "asset_directory"))
+                        self.posters["asset_directory"] = os.path.abspath(match)
                 matches = glob.glob(os.path.join(ad, f"{name_mapping}", "background.*"))
                 if len(matches) > 0:
                     for match in matches:
-                        self.backgrounds.append(("file", os.path.abspath(match), "asset_directory"))
+                        self.backgrounds["asset_directory"] = os.path.abspath(match)
                 dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
                 if len(dirs) > 0:
                     for item in collection.items():
@@ -759,16 +775,46 @@ class CollectionBuilder:
                         else:
                             logger.warning(f"No Folder: {os.path.join(path, folder)}")
 
-        poster = util.choose_from_list(self.posters, "poster", list_type="tuple")
-        if not poster and "poster" in self.details:             poster = self.details["poster"]
-        if poster:
-            if poster[0] == "url":                                  collection.uploadPoster(url=poster[1])
-            else:                                                   collection.uploadPoster(filepath=poster[1])
-            logger.info(f"Detail: {poster[2]} updated collection poster to [{poster[0]}] {poster[1]}")
+        def set_image(image_method, images, is_background=False):
+            if image_method in ['file_poster', 'asset_directory']:
+                if is_background:                                   collection.uploadArt(url=images[image_method])
+                else:                                               collection.uploadPoster(url=images[image_method])
+                image_location = "File"
+            else:
+                if is_background:                                   collection.uploadArt(filepath=images[image_method])
+                else:                                               collection.uploadPoster(filepath=images[image_method])
+                image_location = "URL"
+            logger.info(f"Detail: {image_method} updated collection {'background' if is_background else 'poster'} to [{image_location}] {images[image_method]}")
 
-        background = util.choose_from_list(self.backgrounds, "background", list_type="tuple")
-        if not background and "background" in self.details:     background = self.details["background"]
-        if background:
-            if background[0] == "url":                              collection.uploadArt(url=background[1])
-            else:                                                   collection.uploadArt(filepath=background[1])
-            logger.info(f"Detail: {background[2]} updated collection background to [{background[0]}] {background[1]}")
+        if len(self.posters) > 1:
+            logger.info(f"{len(self.posters)} posters found:")
+            for p in self.posters:
+                logger.info(f"Method: {p} Poster: {self.posters[p]}")
+
+        if "url_poster" in self.posters:                    set_image("url_poster", self.posters)
+        elif "file_poster" in self.posters:                 set_image("file_poster", self.posters)
+        elif "tmdb_poster" in self.posters:                 set_image("tmdb_poster", self.posters)
+        elif "tmdb_profile" in self.posters:                set_image("tmdb_profile", self.posters)
+        elif "asset_directory" in self.posters:             set_image("asset_directory", self.posters)
+        elif "tmdb_collection_details" in self.posters:     set_image("tmdb_collection", self.posters)
+        elif "tmdb_movie_details" in self.posters:          set_image("tmdb_movie", self.posters)
+        elif "tmdb_show_details" in self.posters:           set_image("tmdb_show", self.posters)
+        elif "tmdb_person" in self.posters:                 set_image("tmdb_person", self.posters)
+        else:                                               logger.info("No poster to update")
+
+        logger.info("")
+
+        if len(self.backgrounds) > 1:
+            logger.info(f"{len(self.backgrounds)} backgrounds found:")
+            for b in self.backgrounds:
+                logger.info(f"Method: {b} Background: {self.backgrounds[b]}")
+
+        if "url_background" in self.backgrounds:            set_image("url_background", self.backgrounds, is_background=True)
+        elif "file_background" in self.backgrounds:         set_image("file_poster", self.backgrounds, is_background=True)
+        elif "tmdb_background" in self.backgrounds:         set_image("tmdb_poster", self.backgrounds, is_background=True)
+        elif "asset_directory" in self.backgrounds:         set_image("asset_directory", self.backgrounds, is_background=True)
+        elif "tmdb_collection_details" in self.backgrounds: set_image("tmdb_collection", self.backgrounds, is_background=True)
+        elif "tmdb_movie_details" in self.backgrounds:      set_image("tmdb_movie", self.backgrounds, is_background=True)
+        elif "tmdb_show_details" in self.backgrounds:       set_image("tmdb_show", self.backgrounds, is_background=True)
+        else:                                               logger.info("No background to update")
+
