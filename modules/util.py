@@ -679,7 +679,9 @@ def separator(text=None):
     logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s %(message)-{screen_width - 2}s"))
     logger.info(f"|{separating_character * screen_width}|")
     if text:
-        logger.info(f"| {get_centered_text(text)} |")
+        text_list = text.split("\n")
+        for t in text_list:
+            logger.info(f"| {get_centered_text(t)} |")
         logger.info(f"|{separating_character * screen_width}|")
     logger.handlers[0].setFormatter(logging.Formatter(f"| %(message)-{screen_width - 2}s |"))
     logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{screen_width - 2}s |"))
