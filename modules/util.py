@@ -48,6 +48,7 @@ filter_alias = {
     "rating": "rating",
     "studio": "studio",
     "subtitle_language": "subtitle_language",
+    "tmdb_vote_count": "vote_count",
     "writer": "writers",
     "video_resolution": "video_resolution",
     "year": "year"
@@ -390,6 +391,7 @@ all_filters = [
     "genre", "genre.not",
     "max_age",
     "originally_available.gte", "originally_available.lte",
+    "tmdb_vote_count.gte", "tmdb_vote_count.lte",
     "duration.gte", "duration.lte",
     "original_language", "original_language.not",
     "rating.gte", "rating.lte",
