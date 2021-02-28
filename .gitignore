@@ -9,7 +9,7 @@ __pycache__/
 # Distribution / packaging
 .idea
 .Python
-/modules/test.py
+/test.py
 logs/
 config/*
 !config/*.template
