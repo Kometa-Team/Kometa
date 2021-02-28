@@ -54,10 +54,7 @@ class CollectionBuilder:
                             if template["default"]:
                                 if isinstance(template["default"], dict):
                                     for dv in template["default"]:
-                                        if template["default"][dv]:
-                                            default[dv] = template["default"][dv]
-                                        else:
-                                            raise Failed(f"Collection Error: template default sub-attribute {dv} is blank")
+                                        default[dv] = template["default"][dv]
                                 else:
                                     raise Failed("Collection Error: template sub-attribute default is not a dictionary")
                             else:
@@ -75,34 +72,39 @@ class CollectionBuilder:
                                             txt = txt.replace("<<collection_name>>", str(self.name))
                                         for dm in default:
                                             if f"<<{dm}>>" in txt:
+                                                if default[dm] is None:
+                                                    raise Failed(f"template default {dm} is blank")
                                                 txt = txt.replace(f"<<{dm}>>", str(default[dm]))
                                         if txt in ["true", "True"]:                     return True
                                         elif txt in ["false", "False"]:                 return False
                                         else:
                                             try:                                            return int(txt)
                                             except ValueError:                              return txt
-                                    if isinstance(template[m], dict):
-                                        attr = {}
-                                        for sm in template[m]:
-                                            if isinstance(template[m][sm], list):
-                                                temp_list = []
-                                                for li in template[m][sm]:
-                                                    temp_list.append(replace_txt(li))
-                                                attr[sm] = temp_list
-                                            else:
-                                                attr[sm] = replace_txt(template[m][sm])
-                                    elif isinstance(template[m], list):
-                                        attr = []
-                                        for li in template[m]:
-                                            if isinstance(li, dict):
-                                                temp_dict = {}
-                                                for sm in li:
-                                                    temp_dict[sm] = replace_txt(li[sm])
-                                                attr.append(temp_dict)
-                                            else:
-                                                attr.append(replace_txt(li))
-                                    else:
-                                        attr = replace_txt(template[m])
+                                    try:
+                                        if isinstance(template[m], dict):
+                                            attr = {}
+                                            for sm in template[m]:
+                                                if isinstance(template[m][sm], list):
+                                                    temp_list = []
+                                                    for li in template[m][sm]:
+                                                        temp_list.append(replace_txt(li))
+                                                    attr[sm] = temp_list
+                                                else:
+                                                    attr[sm] = replace_txt(template[m][sm])
+                                        elif isinstance(template[m], list):
+                                            attr = []
+                                            for li in template[m]:
+                                                if isinstance(li, dict):
+                                                    temp_dict = {}
+                                                    for sm in li:
+                                                        temp_dict[sm] = replace_txt(li[sm])
+                                                    attr.append(temp_dict)
+                                                else:
+                                                    attr.append(replace_txt(li))
+                                        else:
+                                            attr = replace_txt(template[m])
+                                    except Failed:
+                                        continue
                                     self.data[m] = attr
                                 else:
                                     raise Failed(f"Collection Error: template attribute {m} is blank")
