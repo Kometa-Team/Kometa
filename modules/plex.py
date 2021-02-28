@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import Collections, MovieSection, ShowSection
+from plexapi.library import MovieSection, ShowSection
+from plexapi.collection import Collections
 from plexapi.server import PlexServer
 from plexapi.video import Movie, Show
 from retrying import retry
@@ -267,8 +268,7 @@ class PlexAPI:
             add_edit("originally_available", str(item.originallyAvailableAt)[:-9], self.metadata[m], key="originallyAvailableAt", value=originally_available)
             add_edit("rating", item.rating, self.metadata[m], value=rating)
             add_edit("content_rating", item.contentRating, self.metadata[m], key="contentRating")
-            item_original_title = item.originalTitle if self.is_movie else item._data.attrib.get("originalTitle")
-            add_edit("original_title", item_original_title, self.metadata[m], key="originalTitle", value=original_title)
+            add_edit("original_title", item.originalTitle, self.metadata[m], key="originalTitle", value=original_title)
             add_edit("studio", item.studio, self.metadata[m], value=studio)
             item_tagline = item.tagline if self.is_movie else item._data.attrib.get("tagline")
             add_edit("tagline", item_tagline, self.metadata[m], value=tagline)
