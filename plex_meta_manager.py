@@ -1,4 +1,5 @@
-import argparse, logging, os, re, schedule, sys, time, datetime
+import argparse, logging, os, re, schedule, sys, time
+from datetime import datetime
 from modules import tests, util
 from modules.config import Config
 
@@ -71,6 +72,7 @@ def start(config_path, test, daily, collections):
     elif test:              start_type = "Test "
     elif collections:       start_type = "Collections "
     else:                   start_type = ""
+    start_time = datetime.now()
     util.separator(f"Starting {start_type}Run")
     try:
         config = Config(default_dir, config_path)
@@ -79,7 +81,7 @@ def start(config_path, test, daily, collections):
         util.print_stacktrace()
         logger.critical(e)
     logger.info("")
-    util.separator(f"Finished {start_type}Run")
+    util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
 
 try:
     if args.run or args.test or args.collections:
@@ -89,8 +91,8 @@ try:
         schedule.every().day.at(args.time).do(start, args.config, False, True, None)
         while True:
             schedule.run_pending()
-            current = datetime.datetime.now().strftime("%H:%M")
-            seconds = (datetime.datetime.strptime(args.time, "%H:%M") - datetime.datetime.strptime(current, "%H:%M")).total_seconds()
+            current = datetime.now().strftime("%H:%M")
+            seconds = (datetime.strptime(args.time, "%H:%M") - datetime.strptime(current, "%H:%M")).total_seconds()
             hours = int(seconds // 3600)
             if hours < 0:
                 hours += 24
