@@ -514,7 +514,7 @@ def choose_from_list(datalist, description, data=None, list_type="title", exact=
                     return None
                 else:
                     logger.warning(f"Input Timeout: using {datalist[0][1]}")
-                    return datalist[0][1]
+                    return datalist[0]
     else:
         return None
 
