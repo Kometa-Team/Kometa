@@ -1,4 +1,4 @@
-import logging, os, re, requests
+import logging, os, re, requests, time
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.builder import CollectionBuilder
@@ -152,6 +152,7 @@ class Config:
         self.general["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False)
         self.general["show_missing"] = check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True)
         self.general["save_missing"] = check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True)
+        self.general["run_again_delay"] = check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0)
 
         util.separator()
 
@@ -414,9 +415,13 @@ class Config:
 
                         builder.update_details(plex_collection)
 
+                        if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                            library.run_again.append(builder)
+
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error(f"Unknown Error: {e}")
+
                 if library.show_unmanaged is True and not test and not requested_collections:
                     logger.info("")
                     util.separator(f"Unmanaged Collections in {library.name} Library")
@@ -431,6 +436,44 @@ class Config:
             else:
                 logger.info("")
                 logger.error("No collection to update")
+
+        has_run_again = False
+        for library in self.libraries:
+            if library.run_again:
+                has_run_again = True
+                break
+
+        if has_run_again:
+            logger.info("")
+            util.separator("Run Again")
+            logger.info("")
+            length = 0
+            for x in range(1, self.general["run_again_delay"] + 1):
+                length = util.print_return(length, f"Waiting to run again in {self.general['run_again_delay'] - x + 1} minutes")
+                for y in range(60):
+                    time.sleep(1)
+            util.print_end(length)
+            for library in self.libraries:
+                if library.run_again:
+                    os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
+                    logger.info("")
+                    util.separator(f"{library.name} Library Run Again")
+                    logger.info("")
+                    collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
+                    if collections:
+                        util.separator(f"Mapping {library.name} Library")
+                        logger.info("")
+                        movie_map, show_map = self.map_guids(library)
+                        for builder in library.run_again:
+                            logger.info("")
+                            util.separator(f"{builder.name} Collection")
+                            logger.info("")
+                            try:
+                                collection_obj = library.get_collection(builder.name)
+                            except Failed as e:
+                                util.print_multiline(e, error=True)
+                                continue
+                            builder.run_collections_again(library, collection_obj, movie_map, show_map)
 
     def map_guids(self, library):
         movie_map = {}
