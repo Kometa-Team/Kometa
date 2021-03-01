@@ -36,6 +36,7 @@ class SonarrAPI:
         self.root_folder_path = params["root_folder_path"]
         self.add = params["add"]
         self.search = params["search"]
+        self.season_folder = params["season_folder"]
         self.tag = params["tag"]
 
     def add_tvdb(self, tvdb_ids, tag=None):
@@ -71,7 +72,7 @@ class SonarrAPI:
                 "titleslug": titleslug,
                 "language": self.language,
                 "monitored": True,
-                "seasonFolder": True,
+                "seasonFolder": self.season_folder,
                 "rootFolderPath": self.root_folder_path,
                 "seasons": [],
                 "images": [{"covertype": "poster", "url": show.poster_path}],
