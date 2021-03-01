@@ -696,7 +696,7 @@ class CollectionBuilder:
     def update_details(self, collection):
         edits = {}
         def get_summary(summary_method, summaries):
-            logger.info(f"Detail: {summary_method} updated collection summary")
+            logger.info(f"Detail: {summary_method} updated Collection Summary")
             return summaries[summary_method]
         if "summary" in self.summaries:                     summary = get_summary("summary", self.summaries)
         elif "tmdb_description" in self.summaries:          summary = get_summary("tmdb_description", self.summaries)
@@ -711,21 +711,24 @@ class CollectionBuilder:
         if summary:
             edits["summary.value"] = summary
             edits["summary.locked"] = 1
+
         if "sort_title" in self.details:
             edits["titleSort.value"] = self.details["sort_title"]
             edits["titleSort.locked"] = 1
+            logger.info(f"Detail: sort_title updated Collection Sort Title to {self.details['sort_title']}")
+
         if "content_rating" in self.details:
             edits["contentRating.value"] = self.details["content_rating"]
             edits["contentRating.locked"] = 1
-        if len(edits) > 0:
-            logger.debug(edits)
-            collection.edit(**edits)
-            collection.reload()
-            logger.info("Details: have been updated")
+            logger.info(f"Detail: content_rating updated Collection Content Rating to {self.details['content_rating']}")
+
         if "collection_mode" in self.details:
             collection.modeUpdate(mode=self.details["collection_mode"])
+            logger.info(f"Detail: collection_mode updated Collection Mode to {self.details['collection_mode']}")
+
         if "collection_order" in self.details:
             collection.sortUpdate(sort=self.details["collection_order"])
+            logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
 
         if "label" in self.details:
             item_labels = [label.tag for label in collection.labels]
@@ -737,6 +740,12 @@ class CollectionBuilder:
             for label in (la for la in labels if la not in item_labels):
                 collection.addLabel(label)
                 logger.info(f"Detail: Label {label} added")
+
+        if len(edits) > 0:
+            logger.debug(edits)
+            collection.edit(**edits)
+            collection.reload()
+            logger.info("Details: have been updated")
 
         if self.library.asset_directory:
             name_mapping = self.name
@@ -817,4 +826,3 @@ class CollectionBuilder:
         elif "tmdb_movie_details" in self.backgrounds:      set_image("tmdb_movie", self.backgrounds, is_background=True)
         elif "tmdb_show_details" in self.backgrounds:       set_image("tmdb_show", self.backgrounds, is_background=True)
         else:                                               logger.info("No background to update")
-
