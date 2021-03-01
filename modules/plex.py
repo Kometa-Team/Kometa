@@ -271,6 +271,7 @@ class PlexAPI:
                         if str(current) != str(value):
                             edits[f"{key}.value"] = value
                             edits[f"{key}.locked"] = 1
+                            logger.info(f"Detail: {name} updated to {value}")
                     else:
                         logger.error(f"Metadata Error: {name} attribute is blank")
             add_edit("title", item.title, self.metadata[m], value=title)
