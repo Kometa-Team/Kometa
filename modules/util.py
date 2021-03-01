@@ -264,6 +264,7 @@ collectionless_lists = [
     "name_mapping", "label", "label_sync_mode"
 ]
 other_attributes = [
+    "run_again",
     "schedule",
     "sync_mode",
     "template",

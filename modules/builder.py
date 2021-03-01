@@ -2,6 +2,8 @@ import glob, logging, os, re
 from datetime import datetime, timedelta
 from modules import util
 from modules.util import Failed
+from plexapi.collection import Collections
+from plexapi.exceptions import BadRequest, NotFound
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -17,12 +19,15 @@ class CollectionBuilder:
             "show_missing": library.show_missing,
             "save_missing": library.save_missing
         }
+        self.missing_movies = []
+        self.missing_shows = []
         self.methods = []
         self.filters = []
         self.posters = {}
         self.backgrounds = {}
         self.summaries = {}
         self.schedule = ""
+        self.rating_key_map = {}
         current_time = datetime.now()
         current_year = current_time.year
 
@@ -168,12 +173,7 @@ class CollectionBuilder:
         logger.info(f"Scanning {self.name} Collection")
 
         self.collectionless = "plex_collectionless" in data
-
-        self.sync = self.library.sync_mode == "sync"
-        if "sync_mode" in data:
-            if not data["sync_mode"]:                                       logger.warning(f"Collection Warning: sync_mode attribute is blank using general: {self.library.sync_mode}")
-            elif data["sync_mode"] not in ["append", "sync"]:               logger.warning(f"Collection Warning: {self.library.sync_mode} sync_mode invalid using general: {data['sync_mode']}")
-            else:                                                           self.sync = data["sync_mode"] == "sync"
+        self.run_again = "run_again" in data
 
         if "tmdb_person" in data:
             if data["tmdb_person"]:
@@ -252,6 +252,9 @@ class CollectionBuilder:
                 elif method_name == "label_sync_mode":
                     if data[m] in ["append", "sync"]:                           self.details[method_name] = data[m]
                     else:                                                       raise Failed("Collection Error: label_sync_mode attribute must be either 'append' or 'sync'")
+                elif method_name == "sync_mode":
+                    if data[m] in ["append", "sync"]:                           self.details[method_name] = data[m]
+                    else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
                 elif method_name in ["arr_tag", "label"]:
                     self.details[method_name] = util.get_list(data[m])
                 elif method_name in util.boolean_details:
@@ -524,6 +527,12 @@ class CollectionBuilder:
             else:
                 raise Failed(f"Collection Error: {m} attribute is blank")
 
+        self.sync = self.library.sync_mode == "sync"
+        if "sync_mode" in data:
+            if not data["sync_mode"]:                                       logger.warning(f"Collection Warning: sync_mode attribute is blank using general: {self.library.sync_mode}")
+            elif data["sync_mode"] not in ["append", "sync"]:               logger.warning(f"Collection Warning: {self.library.sync_mode} sync_mode invalid using general: {data['sync_mode']}")
+            else:                                                           self.sync = data["sync_mode"] == "sync"
+
         self.do_arr = False
         if self.library.Radarr:
             self.do_arr = self.details["add_to_arr"] if "add_to_arr" in self.details else self.library.Radarr.add
@@ -654,6 +663,8 @@ class CollectionBuilder:
                             self.library.add_missing(collection_name, missing_movies_with_names, True)
                         if self.do_arr and self.library.Radarr:
                             self.library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], tag=self.details["arr_tag"])
+                        if self.run_again:
+                            self.missing_movies.extend([missing_id for title, missing_id in missing_movies_with_names])
                     if len(missing_shows) > 0 and self.library.is_show:
                         missing_shows_with_names = []
                         for missing_id in missing_shows:
@@ -675,12 +686,14 @@ class CollectionBuilder:
                                 if self.details["show_missing"] is True:
                                     logger.info(f"{collection_name} Collection | ? | {title} (TVDB: {missing_id})")
                             elif self.details["show_filtered"] is True:
-                                logger.info(f"{collection_name} Collection | X | {title} (TMDb: {missing_id})")
+                                logger.info(f"{collection_name} Collection | X | {title} (TVDb: {missing_id})")
                         logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_shows_with_names, False)
                         if self.do_arr and self.library.Sonarr:
                             self.library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tag=self.details["arr_tag"])
+                        if self.run_again:
+                            self.missing_shows.extend([missing_id for title, missing_id in missing_shows_with_names])
 
         if self.sync and items_found > 0:
             logger.info("")
@@ -786,12 +799,12 @@ class CollectionBuilder:
 
         def set_image(image_method, images, is_background=False):
             if image_method in ['file_poster', 'asset_directory']:
-                if is_background:                                   collection.uploadArt(url=images[image_method])
-                else:                                               collection.uploadPoster(url=images[image_method])
-                image_location = "File"
-            else:
                 if is_background:                                   collection.uploadArt(filepath=images[image_method])
                 else:                                               collection.uploadPoster(filepath=images[image_method])
+                image_location = "File"
+            else:
+                if is_background:                                   collection.uploadArt(url=images[image_method])
+                else:                                               collection.uploadPoster(url=images[image_method])
                 image_location = "URL"
             logger.info(f"Detail: {image_method} updated collection {'background' if is_background else 'poster'} to [{image_location}] {images[image_method]}")
 
@@ -826,3 +839,51 @@ class CollectionBuilder:
         elif "tmdb_movie_details" in self.backgrounds:      set_image("tmdb_movie", self.backgrounds, is_background=True)
         elif "tmdb_show_details" in self.backgrounds:       set_image("tmdb_show", self.backgrounds, is_background=True)
         else:                                               logger.info("No background to update")
+
+    def run_collections_again(self, library, collection_obj, movie_map, show_map):
+        collection_items = collection_obj.items() if isinstance(collection_obj, Collections) else []
+        name = collection_obj.title if isinstance(collection_obj, Collections) else collection_obj
+        rating_keys = [movie_map[mm] for mm in self.missing_movies if mm in movie_map]
+        if library.is_show:
+            rating_keys.extend([show_map[sm] for sm in self.missing_shows if sm in show_map])
+
+        if len(rating_keys) > 0:
+            for rating_key in rating_keys:
+                try:
+                    current = library.fetchItem(int(rating_key))
+                except (BadRequest, NotFound):
+                    logger.error(f"Plex Error: Item {rating_key} not found")
+                    continue
+                if current in collection_items:
+                    logger.info(f"{name} Collection | = | {current.title}")
+                else:
+                    current.addCollection(name)
+                    logger.info(f"{name} Collection | + | {current.title}")
+            logger.info(f"{len(rating_keys)} {'Movie' if library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
+
+        if len(self.missing_movies) > 0:
+            logger.info("")
+            for missing_id in self.missing_movies:
+                if missing_id not in movie_map:
+                    try:
+                        movie = self.config.TMDb.get_movie(missing_id)
+                    except Failed as e:
+                        logger.error(e)
+                        continue
+                    if self.details["show_missing"] is True:
+                        logger.info(f"{name} Collection | ? | {movie.title} (TMDb: {missing_id})")
+            logger.info("")
+            logger.info(f"{len(self.missing_movies)} Movie{'s' if len(self.missing_movies) > 1 else ''} Missing")
+
+        if len(self.missing_shows) > 0 and library.is_show:
+            logger.info("")
+            for missing_id in self.missing_shows:
+                if missing_id not in show_map:
+                    try:
+                        title = str(self.config.TVDb.get_series(self.library.Plex.language, tvdb_id=missing_id).title.encode("ascii", "replace").decode())
+                    except Failed as e:
+                        logger.error(e)
+                        continue
+                    if self.details["show_missing"] is True:
+                        logger.info(f"{name} Collection | ? | {title} (TVDb: {missing_id})")
+            logger.info(f"{len(self.missing_shows)} Show{'s' if len(self.missing_shows) > 1 else ''} Missing")

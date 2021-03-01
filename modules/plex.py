@@ -63,6 +63,7 @@ class PlexAPI:
         self.plex = params["plex"]
         self.timeout = params["plex"]["timeout"]
         self.missing = {}
+        self.run_again = []
 
     def add_Radarr(self, Radarr):
         self.Radarr = Radarr
