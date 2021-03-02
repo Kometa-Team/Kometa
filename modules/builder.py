@@ -532,6 +532,12 @@ class CollectionBuilder:
                                 self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.backdrop_path}"
                             if hasattr(item, "poster_path") and item.poster_path:
                                 self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
+                        elif method_name in ["tmdb_actor_details", "tmdb_crew_details", "tmdb_director_details", "tmdb_producer_details", "tmdb_writer_details"]:
+                            item = config.TMDb.get_person(values[0])
+                            if hasattr(item, "biography") and item.biography:
+                                self.summaries[method_name] = item.biography
+                            if hasattr(item, "profile_path") and item.profile_path:
+                                self.posters[method_name] = f"{config.TMDb.image_url}{item.profile_path}"
                         else:
                             item = config.TMDb.get_list(values[0])
                             if hasattr(item, "description") and item.description:
@@ -737,6 +743,11 @@ class CollectionBuilder:
         elif "tmdb_person" in self.summaries:               summary = get_summary("tmdb_person", self.summaries)
         elif "tmdb_collection_details" in self.summaries:   summary = get_summary("tmdb_collection_details", self.summaries)
         elif "tmdb_list_details" in self.summaries:         summary = get_summary("tmdb_list_details", self.summaries)
+        elif "tmdb_actor_details" in self.summaries:        summary = get_summary("tmdb_actor_details", self.summaries)
+        elif "tmdb_crew_details" in self.summaries:         summary = get_summary("tmdb_crew_details", self.summaries)
+        elif "tmdb_director_details" in self.summaries:     summary = get_summary("tmdb_director_details", self.summaries)
+        elif "tmdb_producer_details" in self.summaries:     summary = get_summary("tmdb_producer_details", self.summaries)
+        elif "tmdb_writer_details" in self.summaries:       summary = get_summary("tmdb_writer_details", self.summaries)
         elif "tmdb_movie_details" in self.summaries:        summary = get_summary("tmdb_movie_details", self.summaries)
         elif "tmdb_show_details" in self.summaries:         summary = get_summary("tmdb_show_details", self.summaries)
         else:                                               summary = None
@@ -837,10 +848,15 @@ class CollectionBuilder:
         elif "tmdb_poster" in self.posters:                 set_image("tmdb_poster", self.posters)
         elif "tmdb_profile" in self.posters:                set_image("tmdb_profile", self.posters)
         elif "asset_directory" in self.posters:             set_image("asset_directory", self.posters)
+        elif "tmdb_person" in self.posters:                 set_image("tmdb_person", self.posters)
         elif "tmdb_collection_details" in self.posters:     set_image("tmdb_collection", self.posters)
+        elif "tmdb_actor_details" in self.posters:          set_image("tmdb_actor_details", self.posters)
+        elif "tmdb_crew_details" in self.posters:           set_image("tmdb_crew_details", self.posters)
+        elif "tmdb_director_details" in self.posters:       set_image("tmdb_director_details", self.posters)
+        elif "tmdb_producer_details" in self.posters:       set_image("tmdb_producer_details", self.posters)
+        elif "tmdb_writer_details" in self.posters:         set_image("tmdb_writer_details", self.posters)
         elif "tmdb_movie_details" in self.posters:          set_image("tmdb_movie", self.posters)
         elif "tmdb_show_details" in self.posters:           set_image("tmdb_show", self.posters)
-        elif "tmdb_person" in self.posters:                 set_image("tmdb_person", self.posters)
         else:                                               logger.info("No poster to update")
 
         logger.info("")
