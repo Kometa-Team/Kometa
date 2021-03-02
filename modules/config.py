@@ -205,7 +205,7 @@ class Config:
         else:
             logger.warning("mal attribute not found")
 
-        self.TVDb = TVDbAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
+        self.TVDb = TVDbAPI(self, Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
         self.IMDb = IMDbAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt, TVDb=self.TVDb) if self.TMDb or self.Trakt else None
         self.AniDB = AniDBAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
 
@@ -476,6 +476,60 @@ class Config:
                                 util.print_multiline(e, error=True)
                                 continue
                             builder.run_collections_again(library, collection_obj, movie_map, show_map)
+
+    def convert_from_imdb(self, imdb_id, language):
+        update_tmdb = False
+        update_tvdb = False
+        if self.Cache:
+            tmdb_id, tvdb_id = self.Cache.get_ids_from_imdb(imdb_id)
+            update_tmdb = False
+            if not tmdb_id:
+                tmdb_id, update_tmdb = self.Cache.get_tmdb_from_imdb(imdb_id)
+                if update_tmdb:
+                    tmdb_id = None
+            update_tvdb = False
+            if not tvdb_id:
+                tvdb_id, update_tvdb = self.Cache.get_tvdb_from_imdb(imdb_id)
+                if update_tvdb:
+                    tvdb_id = None
+        else:
+            tmdb_id = None
+            tvdb_id = None
+        from_cache = tmdb_id is not None or tvdb_id is not None
+
+        if not tmdb_id and not tvdb_id and self.TMDb:
+            try:
+                tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb_id)
+            except Failed:
+                pass
+        if not tmdb_id and not tvdb_id and self.TMDb:
+            try:
+                tvdb_id = self.TMDb.convert_imdb_to_tvdb(imdb_id)
+            except Failed:
+                pass
+        if not tmdb_id and not tvdb_id and self.Trakt:
+            try:
+                tmdb_id = self.Trakt.convert_imdb_to_tmdb(imdb_id)
+            except Failed:
+                pass
+        if not tmdb_id and not tvdb_id and self.Trakt:
+            try:
+                tvdb_id = self.Trakt.convert_imdb_to_tvdb(imdb_id)
+            except Failed:
+                pass
+        try:
+            if tmdb_id and not from_cache:              self.TMDb.get_movie(tmdb_id)
+        except Failed:                              tmdb_id = None
+        try:
+            if tvdb_id and not from_cache:              self.TVDb.get_series(language, tvdb_id=tvdb_id)
+        except Failed:                              tvdb_id = None
+        if not tmdb_id and not tvdb_id:             raise Failed(f"IMDb Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
+        if self.Cache:
+            if tmdb_id and update_tmdb is not False:
+                self.Cache.update_imdb("movie", update_tmdb, imdb_id, tmdb_id)
+            if tvdb_id and update_tvdb is not False:
+                self.Cache.update_imdb("show", update_tvdb, imdb_id, tvdb_id)
+        return tmdb_id, tvdb_id
 
     def map_guids(self, library):
         movie_map = {}

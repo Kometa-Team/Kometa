@@ -644,10 +644,10 @@ class CollectionBuilder:
                 elif "tautulli" in method:
                     items = self.library.Tautulli.get_items(self.library, time_range=value["list_days"], stats_count=value["list_size"], list_type=value["list_type"], stats_count_buffer=value["list_buffer"])
                     items_found += len(items)
-                elif "anidb" in method:                             items_found += check_map(self.config.AniDB.get_items(method, value, self.library.Plex.language))
+                elif "anidb" in method:                             items_found += check_map(self.config.AniDB.get_items(self.config, method, value, self.library.Plex.language))
                 elif "mal" in method:                               items_found += check_map(self.config.MyAnimeList.get_items(method, value))
                 elif "tvdb" in method:                              items_found += check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
-                elif "imdb" in method:                              items_found += check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language))
+                elif "imdb" in method:                              items_found += check_map(self.config.IMDb.get_items(self.config, method, value, self.library.Plex.language))
                 elif "tmdb" in method:                              items_found += check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
                 elif "trakt" in method:                             items_found += check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
