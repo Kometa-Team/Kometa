@@ -8,12 +8,12 @@ logger = logging.getLogger("Plex Meta Manager")
 class TautulliAPI:
     def __init__(self, params):
         try:
-            response = requests.get("{}/api/v2?apikey={}&cmd=get_library_names".format(params["url"], params["apikey"])).json()
-        except Exception as e:
+            response = requests.get(f"{params['url']}/api/v2?apikey={params['apikey']}&cmd=get_library_names").json()
+        except Exception:
             util.print_stacktrace()
             raise Failed("Tautulli Error: Invalid url")
         if response["response"]["result"] != "success":
-            raise Failed("Tautulli Error: {}".format(response["response"]["message"]))
+            raise Failed(f"Tautulli Error: {response['response']['message']}")
         self.url = params["url"]
         self.apikey = params["apikey"]
 
@@ -25,9 +25,9 @@ class TautulliAPI:
 
     def get_items(self, library, time_range=30, stats_count=20, list_type="popular", stats_count_buffer=20, status_message=True):
         if status_message:
-            logger.info("Processing Tautulli Most {}: {} {}".format("Popular" if list_type == "popular" else "Watched", stats_count, "Movies" if library.is_movie else "Shows"))
-        response = self.send_request("{}/api/v2?apikey={}&cmd=get_home_stats&time_range={}&stats_count={}".format(self.url, self.apikey, time_range, int(stats_count) + int(stats_count_buffer)))
-        stat_id = "{}_{}".format("popular" if list_type == "popular" else "top", "movies" if library.is_movie else "tv")
+            logger.info(f"Processing Tautulli Most {'Popular' if list_type == 'popular' else 'Watched'}: {stats_count} {'Movies' if library.is_movie else 'Shows'}")
+        response = self.send_request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_home_stats&time_range={time_range}&stats_count={int(stats_count) + int(stats_count_buffer)}")
+        stat_id = f"{'popular' if list_type == 'popular' else 'top'}_{'movies' if library.is_movie else 'tv'}"
 
         items = None
         for entry in response["response"]["data"]:
@@ -47,16 +47,16 @@ class TautulliAPI:
         return rating_keys
 
     def get_section_id(self, library_name):
-        response = self.send_request("{}/api/v2?apikey={}&cmd=get_library_names".format(self.url, self.apikey))
+        response = self.send_request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_library_names")
         section_id = None
         for entry in response["response"]["data"]:
             if entry["section_name"] == library_name:
                 section_id = entry["section_id"]
                 break
         if section_id:              return section_id
-        else:                       raise Failed("Tautulli Error: No Library named {} in the response".format(library_name))
+        else:                       raise Failed(f"Tautulli Error: No Library named {library_name} in the response")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url):
-        logger.debug("Tautulli URL: {}".format(url.replace(self.apikey, "################################")))
+        logger.debug(f"Tautulli URL: {url.replace(self.apikey, '################################')}")
         return requests.get(url).json()

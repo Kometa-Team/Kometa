@@ -7,8 +7,9 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.idea
 .Python
-/modules/test.py
+/test.py
 logs/
 config/*
 !config/*.template

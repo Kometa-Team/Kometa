@@ -1,4 +1,4 @@
-import logging, math, re, requests, time
+import logging, requests
 from lxml import html
 from modules import util
 from modules.util import Failed
@@ -14,20 +14,24 @@ class TVDbObj:
         elif is_movie and tvdb_url.startswith((TVDb.movies_url, TVDb.alt_movies_url, TVDb.movie_id_url)):
             self.media_type = "Movie"
         else:
-            raise Failed("TVDb Error: {} must begin with {}".format(tvdb_url, TVDb.movies_url if is_movie else TVDb.series_url))
+            raise Failed(f"TVDb Error: {tvdb_url} must begin with {TVDb.movies_url if is_movie else TVDb.series_url}")
 
         response = TVDb.send_request(tvdb_url, language)
-        results = response.xpath("//*[text()='TheTVDB.com {} ID']/parent::node()/span/text()".format(self.media_type))
+        results = response.xpath(f"//*[text()='TheTVDB.com {self.media_type} ID']/parent::node()/span/text()")
         if len(results) > 0:
             self.id = int(results[0])
+        elif tvdb_url.startswith(TVDb.movie_id_url):
+            raise Failed(f"TVDb Error: Could not find a TVDb Movie using TVDb Movie ID: {tvdb_url[len(TVDb.movie_id_url):]}")
+        elif tvdb_url.startswith(TVDb.series_id_url):
+            raise Failed(f"TVDb Error: Could not find a TVDb Series using TVDb Series ID: {tvdb_url[len(TVDb.series_id_url):]}")
         else:
-            raise Failed("TVDb Error: Could not find a TVDb {} ID at the URL {}".format(self.media_type, tvdb_url))
+            raise Failed(f"TVDb Error: Could not find a TVDb {self.media_type} ID at the URL {tvdb_url}")
 
         results = response.xpath("//div[@class='change_translation_text' and @data-language='eng']/@data-title")
         if len(results) > 0 and len(results[0]) > 0:
             self.title = results[0]
         else:
-            raise Failed("TVDb Error: Name not found from TVDb URL: {}".format(tvdb_url))
+            raise Failed(f"TVDb Error: Name not found from TVDb URL: {tvdb_url}")
 
         results = response.xpath("//div[@class='row hidden-xs hidden-sm']/div/img/@src")
         self.poster_path = results[0] if len(results) > 0 and len(results[0]) > 0 else None
@@ -41,7 +45,7 @@ class TVDbObj:
             if not tmdb_id:
                 results = response.xpath("//*[text()='IMDB']/@href")
                 if len(results) > 0:
-                    try:                                                tmdb_id = TVDb.convert_from_imdb(util.get_id_from_imdb_url(results[0]), language)
+                    try:                                                tmdb_id = TVDb.convert_from_imdb(util.get_id_from_imdb_url(results[0]))
                     except Failed as e:                                 logger.error(e)
         self.tmdb_id = tmdb_id
         self.tvdb_url = tvdb_url
@@ -56,27 +60,27 @@ class TVDbAPI:
         self.Trakt = Trakt
         self.site_url = "https://www.thetvdb.com"
         self.alt_site_url = "https://thetvdb.com"
-        self.list_url = "{}/lists/".format(self.site_url)
-        self.alt_list_url = "{}/lists/".format(self.alt_site_url)
-        self.series_url = "{}/series/".format(self.site_url)
-        self.alt_series_url = "{}/series/".format(self.alt_site_url)
-        self.movies_url = "{}/movies/".format(self.site_url)
-        self.alt_movies_url = "{}/movies/".format(self.alt_site_url)
-        self.series_id_url = "{}/dereferrer/series/".format(self.site_url)
-        self.movie_id_url = "{}/dereferrer/movie/".format(self.site_url)
+        self.list_url = f"{self.site_url}/lists/"
+        self.alt_list_url = f"{self.alt_site_url}/lists/"
+        self.series_url = f"{self.site_url}/series/"
+        self.alt_series_url = f"{self.alt_site_url}/series/"
+        self.movies_url = f"{self.site_url}/movies/"
+        self.alt_movies_url = f"{self.alt_site_url}/movies/"
+        self.series_id_url = f"{self.site_url}/dereferrer/series/"
+        self.movie_id_url = f"{self.site_url}/dereferrer/movie/"
 
     def get_series(self, language, tvdb_url=None, tvdb_id=None):
         if not tvdb_url and not tvdb_id:
-            raise Failed("TVDB Error: getget_seriesmove requires either tvdb_url or tvdb_id")
+            raise Failed("TVDB Error: get_series requires either tvdb_url or tvdb_id")
         elif not tvdb_url and tvdb_id:
-            tvdb_url = "{}{}".format(self.series_id_url, tvdb_id)
+            tvdb_url = f"{self.series_id_url}{tvdb_id}"
         return TVDbObj(tvdb_url, language, False, self)
 
     def get_movie(self, language, tvdb_url=None, tvdb_id=None):
         if not tvdb_url and not tvdb_id:
             raise Failed("TVDB Error: get_movie requires either tvdb_url or tvdb_id")
         elif not tvdb_url and tvdb_id:
-            tvdb_url = "{}{}".format(self.movie_id_url, tvdb_id)
+            tvdb_url = f"{self.movie_id_url}{tvdb_id}"
         return TVDbObj(tvdb_url, language, True, self)
 
     def get_tvdb_ids_from_url(self, tvdb_url, language):
@@ -90,25 +94,25 @@ class TVDbAPI:
                     title = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/text()")[0]
                     item_url = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/@href")[0]
                     if item_url.startswith("/series/"):
-                        try:                                                    show_ids.append(self.get_series(language, tvdb_url="{}{}".format(self.site_url, item_url)).id)
-                        except Failed as e:                                     logger.error("{} for series {}".format(e, title))
+                        try:                                                    show_ids.append(self.get_series(language, tvdb_url=f"{self.site_url}{item_url}").id)
+                        except Failed as e:                                     logger.error(f"{e} for series {title}")
                     elif item_url.startswith("/movies/"):
                         try:
-                            tmdb_id = self.get_movie(language, tvdb_url="{}{}".format(self.site_url, item_url)).tmdb_id
+                            tmdb_id = self.get_movie(language, tvdb_url=f"{self.site_url}{item_url}").tmdb_id
                             if tmdb_id:                                             movie_ids.append(tmdb_id)
-                            else:                                                   raise Failed("TVDb Error: TMDb ID not found from TVDb URL: {}".format(tvdb_url))
+                            else:                                                   raise Failed(f"TVDb Error: TMDb ID not found from TVDb URL: {tvdb_url}")
                         except Failed as e:
-                            logger.error("{} for series {}".format(e, title))
+                            logger.error(f"{e} for series {title}")
                     else:
-                        logger.error("TVDb Error: Skipping Movie: {}".format(title))
+                        logger.error(f"TVDb Error: Skipping Movie: {title}")
                 if len(show_ids) > 0 or len(movie_ids) > 0:
                     return movie_ids, show_ids
-                raise Failed("TVDb Error: No TVDb IDs found at {}".format(tvdb_url))
-            except requests.exceptions.MissingSchema as e:
+                raise Failed(f"TVDb Error: No TVDb IDs found at {tvdb_url}")
+            except requests.exceptions.MissingSchema:
                 util.print_stacktrace()
-                raise Failed("TVDb Error: URL Lookup Failed for {}".format(tvdb_url))
+                raise Failed(f"TVDb Error: URL Lookup Failed for {tvdb_url}")
         else:
-            raise Failed("TVDb Error: {} must begin with {}".format(tvdb_url, self.list_url))
+            raise Failed(f"TVDb Error: {tvdb_url} must begin with {self.list_url}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, language):
@@ -119,7 +123,7 @@ class TVDbAPI:
         show_ids = []
         movie_ids = []
         if status_message:
-            logger.info("Processing {}: {}".format(pretty, data))
+            logger.info(f"Processing {pretty}: {data}")
         if method == "tvdb_show":
             try:                                                    show_ids.append(self.get_series(language, tvdb_id=int(data)).id)
             except ValueError:                                      show_ids.append(self.get_series(language, tvdb_url=data).id)
@@ -131,16 +135,16 @@ class TVDbAPI:
             movie_ids.extend(tmdb_ids)
             show_ids.extend(tvdb_ids)
         else:
-            raise Failed("TVDb Error: Method {} not supported".format(method))
+            raise Failed(f"TVDb Error: Method {method} not supported")
         if status_message:
-            logger.debug("TMDb IDs Found: {}".format(movie_ids))
-            logger.debug("TVDb IDs Found: {}".format(show_ids))
+            logger.debug(f"TMDb IDs Found: {movie_ids}")
+            logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids
 
-    def convert_from_imdb(self, imdb_id, language):
+    def convert_from_imdb(self, imdb_id):
+        update = False
         if self.Cache:
             tmdb_id, tvdb_id = self.Cache.get_ids_from_imdb(imdb_id)
-            update = False
             if not tmdb_id:
                 tmdb_id, update = self.Cache.get_tmdb_from_imdb(imdb_id)
                 if update:
@@ -158,7 +162,7 @@ class TVDbAPI:
         try:
             if tmdb_id and not from_cache:              self.TMDb.get_movie(tmdb_id)
         except Failed:                              tmdb_id = None
-        if not tmdb_id:                             raise Failed("TVDb Error: No TMDb ID found for IMDb: {}".format(imdb_id))
+        if not tmdb_id:                             raise Failed(f"TVDb Error: No TMDb ID found for IMDb: {imdb_id}")
         if self.Cache and tmdb_id and update is not False:
             self.Cache.update_imdb("movie", update, imdb_id, tmdb_id)
         return tmdb_id
