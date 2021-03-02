@@ -45,7 +45,7 @@ class TVDbObj:
             if not tmdb_id:
                 results = response.xpath("//*[text()='IMDB']/@href")
                 if len(results) > 0:
-                    try:                                                tmdb_id = TVDb.convert_from_imdb(util.get_id_from_imdb_url(results[0]))
+                    try:                                                tmdb_id, _ = TVDb.config.convert_from_imdb(util.get_id_from_imdb_url(results[0]))
                     except Failed as e:                                 logger.error(e)
         self.tmdb_id = tmdb_id
         self.tvdb_url = tvdb_url
@@ -54,7 +54,8 @@ class TVDbObj:
         self.TVDb = TVDb
 
 class TVDbAPI:
-    def __init__(self, Cache=None, TMDb=None, Trakt=None):
+    def __init__(self, config, Cache=None, TMDb=None, Trakt=None):
+        self.config = config
         self.Cache = Cache
         self.TMDb = TMDb
         self.Trakt = Trakt
@@ -140,29 +141,3 @@ class TVDbAPI:
             logger.debug(f"TMDb IDs Found: {movie_ids}")
             logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids
-
-    def convert_from_imdb(self, imdb_id):
-        update = False
-        if self.Cache:
-            tmdb_id, tvdb_id = self.Cache.get_ids_from_imdb(imdb_id)
-            if not tmdb_id:
-                tmdb_id, update = self.Cache.get_tmdb_from_imdb(imdb_id)
-                if update:
-                    tmdb_id = None
-        else:
-            tmdb_id = None
-        from_cache = tmdb_id is not None
-
-        if not tmdb_id and self.TMDb:
-            try:                                        tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb_id)
-            except Failed:                              pass
-        if not tmdb_id and self.Trakt:
-            try:                                        tmdb_id = self.Trakt.convert_imdb_to_tmdb(imdb_id)
-            except Failed:                              pass
-        try:
-            if tmdb_id and not from_cache:              self.TMDb.get_movie(tmdb_id)
-        except Failed:                              tmdb_id = None
-        if not tmdb_id:                             raise Failed(f"TVDb Error: No TMDb ID found for IMDb: {imdb_id}")
-        if self.Cache and tmdb_id and update is not False:
-            self.Cache.update_imdb("movie", update, imdb_id, tmdb_id)
-        return tmdb_id
