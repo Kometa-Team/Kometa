@@ -1,4 +1,4 @@
-import glob, logging, os, re, requests
+import logging, os, re, requests, time
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.builder import CollectionBuilder
@@ -11,7 +11,7 @@ from modules.radarr import RadarrAPI
 from modules.sonarr import SonarrAPI
 from modules.tautulli import TautulliAPI
 from modules.tmdb import TMDbAPI
-from modules.trakt import TraktAPI
+from modules.trakttv import TraktAPI
 from modules.tvdb import TVDbAPI
 from modules.util import Failed
 from plexapi.exceptions import BadRequest
@@ -23,10 +23,10 @@ class Config:
     def __init__(self, default_dir, config_path=None):
         logger.info("Locating config...")
         if config_path and os.path.exists(config_path):                     self.config_path = os.path.abspath(config_path)
-        elif config_path and not os.path.exists(config_path):               raise Failed("Config Error: config not found at {}".format(os.path.abspath(config_path)))
+        elif config_path and not os.path.exists(config_path):               raise Failed(f"Config Error: config not found at {os.path.abspath(config_path)}")
         elif os.path.exists(os.path.join(default_dir, "config.yml")):       self.config_path = os.path.abspath(os.path.join(default_dir, "config.yml"))
-        else:                                                               raise Failed("Config Error: config not found at {}".format(os.path.abspath(default_dir)))
-        logger.info("Using {} as config".format(self.config_path))
+        else:                                                               raise Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
+        logger.info(f"Using {self.config_path} as config")
 
         yaml.YAML().allow_duplicate_keys = True
         try:
@@ -74,10 +74,9 @@ class Config:
             yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
-            raise Failed("YAML Error: {}".format(str(e).replace("\n", "\n|\t      ")))
+            raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
 
         def check_for_attribute(data, attribute, parent=None, test_list=None, options="", default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
-            message = ""
             endline = ""
             if parent is not None:
                 if parent in data:
@@ -86,53 +85,55 @@ class Config:
                     data = None
                     do_print = False
                     save = False
-            text = "{} attribute".format(attribute) if parent is None else "{} sub-attribute {}".format(parent, attribute)
+            text = f"{attribute} attribute" if parent is None else f"{parent} sub-attribute {attribute}"
             if data is None or attribute not in data:
-                message = "{} not found".format(text)
+                message = f"{text} not found"
                 if parent and save is True:
-                    new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
-                    endline = "\n{} sub-attribute {} added to config".format(parent, attribute)
-                    if parent not in new_config:                                        new_config = {parent: {attribute: default}}
-                    elif not new_config[parent]:                                        new_config[parent] = {attribute: default}
-                    elif attribute not in new_config[parent]:                           new_config[parent][attribute] = default
-                    else:                                                               endLine = ""
-                    yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
-            elif not data[attribute] and data[attribute] != False:
+                    loaded_config, ind_in, bsi_in = yaml.util.load_yaml_guess_indent(open(self.config_path))
+                    endline = f"\n{parent} sub-attribute {attribute} added to config"
+                    if parent not in loaded_config or not loaded_config[parent]:        loaded_config[parent] = {attribute: default}
+                    elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
+                    else:                                                               endline = ""
+                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=ind_in, block_seq_indent=bsi_in)
+            elif not data[attribute] and data[attribute] is not False:
                 if default_is_none is True:                                         return None
-                else:                                                               message = "{} is blank".format(text)
+                else:                                                               message = f"{text} is blank"
             elif var_type == "bool":
                 if isinstance(data[attribute], bool):                               return data[attribute]
-                else:                                                               message = "{} must be either true or false".format(text)
+                else:                                                               message = f"{text} must be either true or false"
             elif var_type == "int":
                 if isinstance(data[attribute], int) and data[attribute] > 0:        return data[attribute]
-                else:                                                               message = "{} must an integer > 0".format(text)
+                else:                                                               message = f"{text} must an integer > 0"
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
-                else:                                                               message = "Path {} does not exist".format(os.path.abspath(data[attribute]))
+                else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
             elif var_type == "list":                                            return util.get_list(data[attribute])
-            elif var_type == "listpath":
+            elif var_type == "list_path":
                 temp_list = [path for path in util.get_list(data[attribute], split=True) if os.path.exists(os.path.abspath(path))]
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
-            elif var_type == "lowerlist":                                       return util.get_list(data[attribute], lower=True)
+            elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
             elif test_list is None or data[attribute] in test_list:             return data[attribute]
-            else:                                                               message = "{}: {} is an invalid input".format(text, data[attribute])
+            else:                                                               message = f"{text}: {data[attribute]} is an invalid input"
             if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
                 return default
             elif var_type == "path" and default:
                 default = None
-                message = "neither {} or the default path {} could be found".format(data[attribute], default)
+                if attribute in data and data[attribute]:
+                    message = f"neither {data[attribute]} or the default path {default} could be found"
+                else:
+                    message = f"no {text} found and the default path {default} could be found"
             if default is not None or default_is_none:
-                message = message + " using {} as default".format(default)
+                message = message + f" using {default} as default"
             message = message + endline
             if req_default and default is None:
-                raise Failed("Config Error: {} attribute must be set under {} globally or under this specific Library".format(attribute, parent))
+                raise Failed(f"Config Error: {attribute} attribute must be set under {parent} globally or under this specific Library")
             if (default is None and not default_is_none) or throw:
                 if len(options) > 0:
                     message = message + "\n" + options
-                raise Failed("Config Error: {}".format(message))
+                raise Failed(f"Config Error: {message}")
             if do_print:
-                util.print_multiline("Config Warning: {}".format(message))
+                util.print_multiline(f"Config Warning: {message}")
                 if attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
                     util.print_multiline(options)
             return default
@@ -141,18 +142,19 @@ class Config:
         self.general["cache"] = check_for_attribute(self.data, "cache", parent="settings", options="    true (Create a cache to store ids)\n    false (Do not create a cache to store ids)", var_type="bool", default=True)
         self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
         if self.general["cache"]:
-            util.seperator()
+            util.separator()
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
-        self.general["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="settings", var_type="listpath", default=[os.path.join(default_dir, "assets")])
+        self.general["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")])
         self.general["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)")
+        self.general["run_again_delay"] = check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0)
         self.general["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True)
         self.general["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False)
         self.general["show_missing"] = check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True)
         self.general["save_missing"] = check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True)
 
-        util.seperator()
+        util.separator()
 
         self.TMDb = None
         if "tmdb" in self.data:
@@ -162,11 +164,11 @@ class Config:
             except Failed as e:                 raise Failed(e)
             self.tmdb["language"] = check_for_attribute(self.data, "language", parent="tmdb", default="en")
             self.TMDb = TMDbAPI(self.tmdb)
-            logger.info("TMDb Connection {}".format("Failed" if self.TMDb is None else "Successful"))
+            logger.info(f"TMDb Connection {'Failed' if self.TMDb is None else 'Successful'}")
         else:
             raise Failed("Config Error: tmdb attribute not found")
 
-        util.seperator()
+        util.separator()
 
         self.Trakt = None
         if "trakt" in self.data:
@@ -180,11 +182,11 @@ class Config:
                 self.Trakt = TraktAPI(self.trakt, authorization)
             except Failed as e:
                 logger.error(e)
-            logger.info("Trakt Connection {}".format("Failed" if self.Trakt is None else "Successful"))
+            logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
         else:
             logger.warning("trakt attribute not found")
 
-        util.seperator()
+        util.separator()
 
         self.MyAnimeList = None
         self.MyAnimeListIDList = MyAnimeListIDList()
@@ -199,7 +201,7 @@ class Config:
                 self.MyAnimeList = MyAnimeListAPI(self.mal, self.MyAnimeListIDList, authorization)
             except Failed as e:
                 logger.error(e)
-            logger.info("My Anime List Connection {}".format("Failed" if self.MyAnimeList is None else "Successful"))
+            logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
         else:
             logger.warning("mal attribute not found")
 
@@ -207,7 +209,7 @@ class Config:
         self.IMDb = IMDbAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt, TVDb=self.TVDb) if self.TMDb or self.Trakt else None
         self.AniDB = AniDBAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
 
-        util.seperator()
+        util.separator()
 
         logger.info("Connecting to Plex Libraries...")
 
@@ -224,7 +226,7 @@ class Config:
         self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True)
         self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False)
         self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
-        self.general["radarr"]["tag"] = check_for_attribute(self.data, "tag", parent="radarr", var_type="lowerlist", default_is_none=True)
+        self.general["radarr"]["tag"] = check_for_attribute(self.data, "tag", parent="radarr", var_type="lower_list", default_is_none=True)
 
         self.general["sonarr"] = {}
         self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", default_is_none=True)
@@ -234,7 +236,8 @@ class Config:
         self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True)
         self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False)
         self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False)
-        self.general["sonarr"]["tag"] = check_for_attribute(self.data, "tag", parent="sonarr", var_type="lowerlist", default_is_none=True)
+        self.general["sonarr"]["season_folder"] = check_for_attribute(self.data, "season_folder", parent="sonarr", var_type="bool", default=True)
+        self.general["sonarr"]["tag"] = check_for_attribute(self.data, "tag", parent="sonarr", var_type="lower_list", default_is_none=True)
 
         self.general["tautulli"] = {}
         self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True)
@@ -244,17 +247,16 @@ class Config:
         try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
         except Failed as e:             raise Failed(e)
         for lib in libs:
-            util.seperator()
+            util.separator()
             params = {}
             if "library_name" in libs[lib] and libs[lib]["library_name"]:
                 params["name"] = str(libs[lib]["library_name"])
-                logger.info("Connecting to {} ({}) Library...".format(params["name"], lib))
+                logger.info(f"Connecting to {params['name']} ({lib}) Library...")
             else:
                 params["name"] = str(lib)
-                logger.info("Connecting to {} Library...".format(params["name"]))
-            default_lib = os.path.join(default_dir, "{}.yml".format(lib))
+                logger.info(f"Connecting to {params['name']} Library...")
 
-            params["asset_directory"] = check_for_attribute(libs[lib], "asset_directory", parent="settings", var_type="listpath", default=self.general["asset_directory"], default_is_none=True, save=False)
+            params["asset_directory"] = check_for_attribute(libs[lib], "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
             if params["asset_directory"] is None:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
@@ -265,21 +267,21 @@ class Config:
             params["save_missing"] = check_for_attribute(libs[lib], "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], save=False)
 
             try:
-                params["metadata_path"] = check_for_attribute(libs[lib], "metadata_path", var_type="path", default=os.path.join(default_dir, "{}.yml".format(lib)), throw=True)
+                params["metadata_path"] = check_for_attribute(libs[lib], "metadata_path", var_type="path", default=os.path.join(default_dir, f"{lib}.yml"), throw=True)
                 params["library_type"] = check_for_attribute(libs[lib], "library_type", test_list=["movie", "show"], options="    movie (For Movie Libraries)\n    show (For Show Libraries)", throw=True)
                 params["plex"] = {}
                 params["plex"]["url"] = check_for_attribute(libs[lib], "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(libs[lib], "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
                 params["plex"]["timeout"] = check_for_attribute(libs[lib], "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False)
                 library = PlexAPI(params, self.TMDb, self.TVDb)
-                logger.info("{} Library Connection Successful".format(params["name"]))
+                logger.info(f"{params['name']} Library Connection Successful")
             except Failed as e:
                 util.print_multiline(e)
-                logger.info("{} Library Connection Failed".format(params["name"]))
+                logger.info(f"{params['name']} Library Connection Failed")
                 continue
 
             if self.general["radarr"]["url"] or "radarr" in libs[lib]:
-                logger.info("Connecting to {} library's Radarr...".format(params["name"]))
+                logger.info(f"Connecting to {params['name']} library's Radarr...")
                 radarr_params = {}
                 try:
                     radarr_params["url"] = check_for_attribute(libs[lib], "url", parent="radarr", default=self.general["radarr"]["url"], req_default=True, save=False)
@@ -289,14 +291,14 @@ class Config:
                     radarr_params["root_folder_path"] = check_for_attribute(libs[lib], "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
                     radarr_params["add"] = check_for_attribute(libs[lib], "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
                     radarr_params["search"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
-                    radarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="lowerlist", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
+                    radarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
                     library.add_Radarr(RadarrAPI(self.TMDb, radarr_params))
                 except Failed as e:
                     util.print_multiline(e)
-                logger.info("{} library's Radarr Connection {}".format(params["name"], "Failed" if library.Radarr is None else "Successful"))
+                logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
             if self.general["sonarr"]["url"] or "sonarr" in libs[lib]:
-                logger.info("Connecting to {} library's Sonarr...".format(params["name"]))
+                logger.info(f"Connecting to {params['name']} library's Sonarr...")
                 sonarr_params = {}
                 try:
                     sonarr_params["url"] = check_for_attribute(libs[lib], "url", parent="sonarr", default=self.general["sonarr"]["url"], req_default=True, save=False)
@@ -306,14 +308,15 @@ class Config:
                     sonarr_params["root_folder_path"] = check_for_attribute(libs[lib], "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
                     sonarr_params["add"] = check_for_attribute(libs[lib], "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
                     sonarr_params["search"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
-                    sonarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="lowerlist", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
+                    sonarr_params["season_folder"] = check_for_attribute(libs[lib], "season_folder", parent="sonarr", var_type="bool", default=self.general["sonarr"]["season_folder"], save=False)
+                    sonarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
                     library.add_Sonarr(SonarrAPI(self.TVDb, sonarr_params, library.Plex.language))
                 except Failed as e:
                     util.print_multiline(e)
-                logger.info("{} library's Sonarr Connection {}".format(params["name"], "Failed" if library.Sonarr is None else "Successful"))
+                logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
             if self.general["tautulli"]["url"] or "tautulli" in libs[lib]:
-                logger.info("Connecting to {} library's Tautulli...".format(params["name"]))
+                logger.info(f"Connecting to {params['name']} library's Tautulli...")
                 tautulli_params = {}
                 try:
                     tautulli_params["url"] = check_for_attribute(libs[lib], "url", parent="tautulli", default=self.general["tautulli"]["url"], req_default=True, save=False)
@@ -321,32 +324,32 @@ class Config:
                     library.add_Tautulli(TautulliAPI(tautulli_params))
                 except Failed as e:
                     util.print_multiline(e)
-                logger.info("{} library's Tautulli Connection {}".format(params["name"], "Failed" if library.Tautulli is None else "Successful"))
+                logger.info(f"{params['name']} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
             self.libraries.append(library)
 
-        util.seperator()
+        util.separator()
 
         if len(self.libraries) > 0:
-            logger.info("{} Plex Library Connection{} Successful".format(len(self.libraries), "s" if len(self.libraries) > 1 else ""))
+            logger.info(f"{len(self.libraries)} Plex Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
         else:
             raise Failed("Plex Error: No Plex libraries were found")
 
-        util.seperator()
+        util.separator()
 
     def update_libraries(self, test, requested_collections):
         for library in self.libraries:
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
-            util.seperator("{} Library".format(library.name))
+            util.separator(f"{library.name} Library")
             try:                        library.update_metadata(self.TMDb, test)
             except Failed as e:         logger.error(e)
             logger.info("")
-            util.seperator("{} Library {}Collections".format(library.name, "Test " if test else ""))
+            util.separator(f"{library.name} Library {'Test ' if test else ''}Collections")
             collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
             if collections:
                 logger.info("")
-                util.seperator("Mapping {} Library".format(library.name))
+                util.separator(f"Mapping {library.name} Library")
                 logger.info("")
                 movie_map, show_map = self.map_guids(library)
                 for c in collections:
@@ -355,53 +358,56 @@ class Config:
                         if "template" in collections[c] and collections[c]["template"]:
                             for data_template in util.get_list(collections[c]["template"], split=False):
                                 if "name" in data_template \
-                                and data_template["name"] \
-                                and library.templates \
-                                and data_template["name"] in self.library.templates \
-                                and self.library.templates[data_template["name"]] \
-                                and "test" in self.library.templates[data_template["name"]] \
-                                and self.library.templates[data_template["name"]]["test"] == True:
+                                    and data_template["name"] \
+                                    and library.templates \
+                                    and data_template["name"] in library.templates \
+                                    and library.templates[data_template["name"]] \
+                                    and "test" in library.templates[data_template["name"]] \
+                                    and library.templates[data_template["name"]]["test"] is True:
                                     no_template_test = False
                         if no_template_test:
                             continue
                     try:
                         logger.info("")
-                        util.seperator("{} Collection".format(c))
+                        util.separator(f"{c} Collection")
                         logger.info("")
 
-                        map = {}
+                        rating_key_map = {}
                         try:
                             builder = CollectionBuilder(self, library, c, collections[c])
-                        except Exception as e:
+                        except Failed as ef:
+                            util.print_multiline(ef, error=True)
+                            continue
+                        except Exception as ee:
                             util.print_stacktrace()
-                            logger.error(e)
+                            logger.error(ee)
                             continue
 
                         try:
                             collection_obj = library.get_collection(c)
                             collection_name = collection_obj.title
-                        except Failed as e:
+                        except Failed:
                             collection_obj = None
                             collection_name = c
 
-                        if builder.schedule is not None:
-                            print_multiline(builder.schedule, info=True)
+                        if len(builder.schedule) > 0:
+                            util.print_multiline(builder.schedule, info=True)
 
                         logger.info("")
                         if builder.sync:
                             logger.info("Sync Mode: sync")
                             if collection_obj:
                                 for item in collection_obj.items():
-                                    map[item.ratingKey] = item
+                                    rating_key_map[item.ratingKey] = item
                         else:
                             logger.info("Sync Mode: append")
 
                         for i, f in enumerate(builder.filters):
                             if i == 0:
                                 logger.info("")
-                            logger.info("Collection Filter {}: {}".format(f[0], f[1]))
+                            logger.info(f"Collection Filter {f[0]}: {f[1]}")
 
-                        builder.run_methods(collection_obj, collection_name, map, movie_map, show_map)
+                        builder.run_methods(collection_obj, collection_name, rating_key_map, movie_map, show_map)
 
                         try:
                             plex_collection = library.get_collection(collection_name)
@@ -411,38 +417,79 @@ class Config:
 
                         builder.update_details(plex_collection)
 
+                        if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                            library.run_again.append(builder)
+
                     except Exception as e:
                         util.print_stacktrace()
-                        logger.error("Unknown Error: {}".format(e))
+                        logger.error(f"Unknown Error: {e}")
+
                 if library.show_unmanaged is True and not test and not requested_collections:
                     logger.info("")
-                    util.seperator("Unmanaged Collections in {} Library".format(library.name))
+                    util.separator(f"Unmanaged Collections in {library.name} Library")
                     logger.info("")
                     unmanaged_count = 0
-                    collections_in_plex = [str(pcol) for pcol in collections]
+                    collections_in_plex = [str(plex_col) for plex_col in collections]
                     for col in library.get_all_collections():
-                         if col.title not in collections_in_plex:
-                             logger.info(col.title)
-                             unmanaged_count += 1
+                        if col.title not in collections_in_plex:
+                            logger.info(col.title)
+                            unmanaged_count += 1
                     logger.info("{} Unmanaged Collections".format(unmanaged_count))
             else:
                 logger.info("")
                 logger.error("No collection to update")
 
+        has_run_again = False
+        for library in self.libraries:
+            if library.run_again:
+                has_run_again = True
+                break
+
+        if has_run_again:
+            logger.info("")
+            util.separator("Run Again")
+            logger.info("")
+            length = 0
+            for x in range(1, self.general["run_again_delay"] + 1):
+                length = util.print_return(length, f"Waiting to run again in {self.general['run_again_delay'] - x + 1} minutes")
+                for y in range(60):
+                    time.sleep(1)
+            util.print_end(length)
+            for library in self.libraries:
+                if library.run_again:
+                    os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
+                    logger.info("")
+                    util.separator(f"{library.name} Library Run Again")
+                    logger.info("")
+                    collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
+                    if collections:
+                        util.separator(f"Mapping {library.name} Library")
+                        logger.info("")
+                        movie_map, show_map = self.map_guids(library)
+                        for builder in library.run_again:
+                            logger.info("")
+                            util.separator(f"{builder.name} Collection")
+                            logger.info("")
+                            try:
+                                collection_obj = library.get_collection(builder.name)
+                            except Failed as e:
+                                util.print_multiline(e, error=True)
+                                continue
+                            builder.run_collections_again(library, collection_obj, movie_map, show_map)
+
     def map_guids(self, library):
         movie_map = {}
         show_map = {}
         length = 0
-        count = 0
-        logger.info("Mapping {} Library: {}".format("Movie" if library.is_movie else "Show", library.name))
+        logger.info(f"Mapping {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
         items = library.Plex.all()
         for i, item in enumerate(items, 1):
-            length = util.print_return(length, "Processing: {}/{} {}".format(i, len(items), item.title))
+            length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
             try:
                 id_type, main_id = self.get_id(item, library, length)
             except BadRequest:
                 util.print_stacktrace()
-                util.print_end(length, "{} {:<46} | {} for {}".format("Cache | ! |" if self.Cache else "Mapping Error:", item.guid, error_message, item.title))
+                util.print_end(length, f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} | {item.guid} for {item.title} not found")
                 continue
             if isinstance(main_id, list):
                 if id_type == "movie":
@@ -452,7 +499,7 @@ class Config:
             else:
                 if id_type == "movie":                          movie_map[main_id] = item.ratingKey
                 elif id_type == "show":                         show_map[main_id] = item.ratingKey
-        util.print_end(length, "Processed {} {}".format(len(items), "Movies" if library.is_movie else "Shows"))
+        util.print_end(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}")
         return movie_map, show_map
 
     def get_id(self, item, library, length):
@@ -485,10 +532,10 @@ class Config:
             elif item_type == "hama":
                 if check_id.startswith("tvdb"):             tvdb_id = int(re.search("-(.*)", check_id).group(1))
                 elif check_id.startswith("anidb"):          anidb_id = re.search("-(.*)", check_id).group(1)
-                else:                                       error_message = "Hama Agent ID: {} not supported".format(check_id)
+                else:                                       error_message = f"Hama Agent ID: {check_id} not supported"
             elif item_type == "myanimelist":                mal_id = check_id
             elif item_type == "local":                      error_message = "No match in Plex"
-            else:                                           error_message = "Agent {} not supported".format(item_type)
+            else:                                           error_message = f"Agent {item_type} not supported"
 
             if not error_message:
                 if anidb_id and not tvdb_id:
@@ -502,7 +549,7 @@ class Config:
                         ids = self.MyAnimeListIDList.find_mal_ids(mal_id)
                         if "thetvdb_id" in ids and int(ids["thetvdb_id"]) > 0:                  tvdb_id = int(ids["thetvdb_id"])
                         elif "themoviedb_id" in ids and int(ids["themoviedb_id"]) > 0:          tmdb_id = int(ids["themoviedb_id"])
-                        else:                                                                   raise Failed("MyAnimeList Error: MyAnimeList ID: {} has no other IDs associated with it".format(mal_id))
+                        else:                                                                   raise Failed(f"MyAnimeList Error: MyAnimeList ID: {mal_id} has no other IDs associated with it")
                     except Failed:
                         pass
                 if mal_id and not tvdb_id:
@@ -561,29 +608,29 @@ class Config:
                     elif self.Trakt:                                api_name = "Trakt"
                     else:                                           api_name = None
 
-                    if tmdb_id and imdb_id:                         id_name = "TMDb ID: {} or IMDb ID: {}".format(tmdb_id, imdb_id)
-                    elif imdb_id and tvdb_id:                       id_name = "IMDb ID: {} or TVDb ID: {}".format(imdb_id, tvdb_id)
-                    elif tmdb_id:                                   id_name = "TMDb ID: {}".format(tmdb_id)
-                    elif imdb_id:                                   id_name = "IMDb ID: {}".format(imdb_id)
-                    elif tvdb_id:                                   id_name = "TVDb ID: {}".format(tvdb_id)
+                    if tmdb_id and imdb_id:                         id_name = f"TMDb ID: {tmdb_id} or IMDb ID: {imdb_id}"
+                    elif imdb_id and tvdb_id:                       id_name = f"IMDb ID: {imdb_id} or TVDb ID: {tvdb_id}"
+                    elif tmdb_id:                                   id_name = f"TMDb ID: {tmdb_id}"
+                    elif imdb_id:                                   id_name = f"IMDb ID: {imdb_id}"
+                    elif tvdb_id:                                   id_name = f"TVDb ID: {tvdb_id}"
                     else:                                           id_name = None
 
-                    if anidb_id and not tmdb_id and not tvdb_id:    error_message = "Unable to convert AniDb ID: {} to TMDb ID or TVDb ID".format(anidb_id)
-                    elif mal_id and not tmdb_id and not tvdb_id:    error_message = "Unable to convert MyAnimeList ID: {} to TMDb ID or TVDb ID".format(mal_id)
-                    elif id_name and api_name:                      error_message = "Unable to convert {} to {} using {}".format(id_name, service_name, api_name)
-                    elif id_name:                                   error_message = "Configure TMDb or Trakt to covert {} to {}".format(id_name, service_name)
-                    else:                                           error_message = "No ID to convert to {}".format(service_name)
+                    if anidb_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert AniDb ID: {anidb_id} to TMDb ID or TVDb ID"
+                    elif mal_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert MyAnimeList ID: {mal_id} to TMDb ID or TVDb ID"
+                    elif id_name and api_name:                      error_message = f"Unable to convert {id_name} to {service_name} using {api_name}"
+                    elif id_name:                                   error_message = f"Configure TMDb or Trakt to covert {id_name} to {service_name}"
+                    else:                                           error_message = f"No ID to convert to {service_name}"
             if self.Cache and (tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show):
                 if isinstance(tmdb_id, list):
                     for i in range(len(tmdb_id)):
-                        util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id[i] if tmdb_id[i] else "None", imdb_id[i] if imdb_id[i] else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
+                        util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_id[i] if imdb_id[i] else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
                         self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_id[i], tvdb_id, anidb_id, mal_id, expired)
                 else:
-                    util.print_end(length, "Cache | {} | {:<46} | {:<6} | {:<10} | {:<6} | {:<5} | {:<5} | {}".format("^" if expired is True else "+", item.guid, tmdb_id if tmdb_id else "None", imdb_id if imdb_id else "None", tvdb_id if tvdb_id else "None", anidb_id if anidb_id else "None", mal_id if mal_id else "None", item.title))
+                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id if tmdb_id else 'None':<6} | {imdb_id if imdb_id else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
                     self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expired)
         if tmdb_id and library.is_movie:                return "movie", tmdb_id
         elif tvdb_id and library.is_show:               return "show", tvdb_id
         elif (anidb_id or mal_id) and tmdb_id:          return "movie", tmdb_id
         else:
-            util.print_end(length, "{} {:<46} | {} for {}".format("Cache | ! |" if self.Cache else "Mapping Error:", item.guid, error_message, item.title))
+            util.print_end(length, f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | {error_message} for {item.title}")
             return None, None

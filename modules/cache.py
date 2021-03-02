@@ -6,13 +6,13 @@ logger = logging.getLogger("Plex Meta Manager")
 
 class Cache:
     def __init__(self, config_path, expiration):
-        cache = "{}.cache".format(os.path.splitext(config_path)[0])
+        cache = f"{os.path.splitext(config_path)[0]}.cache"
         with sqlite3.connect(cache) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='guids'")
                 if cursor.fetchone()[0] == 0:
-                    logger.info("Initializing cache database at {}".format(cache))
+                    logger.info(f"Initializing cache database at {cache}")
                     cursor.execute(
                         """CREATE TABLE IF NOT EXISTS guids (
                         INTEGER PRIMARY KEY,
@@ -34,7 +34,7 @@ class Cache:
                         media_type TEXT)"""
                     )
                 else:
-                    logger.info("Using cache database at {}".format(cache))
+                    logger.info(f"Using cache database at {cache}")
         self.expiration = expiration
         self.cache_path = cache
 
@@ -73,7 +73,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM guids WHERE {} = ? AND media_type = ?".format(from_id), (key, media_type))
+                cursor.execute(f"SELECT * FROM guids WHERE {from_id} = ? AND media_type = ?", (key, media_type))
                 row = cursor.fetchone()
                 if row and row[to_id]:
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")

@@ -1,4 +1,5 @@
-import datetime, logging, re, signal, sys, time, traceback
+import logging, re, signal, sys, time, traceback
+from datetime import datetime
 
 try:
     import msvcrt
@@ -18,7 +19,7 @@ class Failed(Exception):
 def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)
 
-seperating_character = "="
+separating_character = "="
 screen_width = 100
 
 method_alias = {
@@ -47,6 +48,7 @@ filter_alias = {
     "rating": "rating",
     "studio": "studio",
     "subtitle_language": "subtitle_language",
+    "tmdb_vote_count": "vote_count",
     "writer": "writers",
     "video_resolution": "video_resolution",
     "year": "year"
@@ -113,9 +115,15 @@ pretty_names = {
     "plex_search": "Plex Search",
     "tautulli_popular": "Tautulli Popular",
     "tautulli_watched": "Tautulli Watched",
+    "tmdb_actor": "TMDb Actor",
+    "tmdb_actor_details": "TMDb Actor",
     "tmdb_collection": "TMDb Collection",
     "tmdb_collection_details": "TMDb Collection",
     "tmdb_company": "TMDb Company",
+    "tmdb_crew": "TMDb Crew",
+    "tmdb_crew_details": "TMDb Crew",
+    "tmdb_director": "TMDb Director",
+    "tmdb_director_details": "TMDb Director",
     "tmdb_discover": "TMDb Discover",
     "tmdb_keyword": "TMDb Keyword",
     "tmdb_list": "TMDb List",
@@ -126,11 +134,15 @@ pretty_names = {
     "tmdb_now_playing": "TMDb Now Playing",
     "tmdb_person": "TMDb Person",
     "tmdb_popular": "TMDb Popular",
+    "tmdb_producer": "TMDb Producer",
+    "tmdb_producer_details": "TMDb Producer",
     "tmdb_show": "TMDb Show",
     "tmdb_show_details": "TMDb Show",
     "tmdb_top_rated": "TMDb Top Rated",
     "tmdb_trending_daily": "TMDb Trending Daily",
     "tmdb_trending_weekly": "TMDb Trending Weekly",
+    "tmdb_writer": "TMDb Writer",
+    "tmdb_writer_details": "TMDb Writer",
     "trakt_list": "Trakt List",
     "trakt_trending": "Trakt Trending",
     "trakt_watchlist": "Trakt Watchlist",
@@ -219,9 +231,15 @@ all_lists = [
     "plex_search",
     "tautulli_popular",
     "tautulli_watched",
+    "tmdb_actor",
+    "tmdb_actor_details",
     "tmdb_collection",
     "tmdb_collection_details",
     "tmdb_company",
+    "tmdb_crew",
+    "tmdb_crew_details",
+    "tmdb_director",
+    "tmdb_director_details",
     "tmdb_discover",
     "tmdb_keyword",
     "tmdb_list",
@@ -231,11 +249,15 @@ all_lists = [
     "tmdb_network",
     "tmdb_now_playing",
     "tmdb_popular",
+    "tmdb_producer",
+    "tmdb_producer_details",
     "tmdb_show",
     "tmdb_show_details",
     "tmdb_top_rated",
     "tmdb_trending_daily",
     "tmdb_trending_weekly",
+    "tmdb_writer",
+    "tmdb_writer_details",
     "trakt_list",
     "trakt_trending",
     "trakt_watchlist",
@@ -252,6 +274,7 @@ collectionless_lists = [
     "name_mapping", "label", "label_sync_mode"
 ]
 other_attributes = [
+    "run_again",
     "schedule",
     "sync_mode",
     "template",
@@ -327,9 +350,15 @@ count_lists = [
     "trakt_trending"
 ]
 tmdb_lists = [
+    "tmdb_actor",
+    "tmdb_actor_details",
     "tmdb_collection",
     "tmdb_collection_details",
     "tmdb_company",
+    "tmdb_crew",
+    "tmdb_crew_details",
+    "tmdb_director",
+    "tmdb_director_details",
     "tmdb_discover",
     "tmdb_keyword",
     "tmdb_list",
@@ -339,16 +368,26 @@ tmdb_lists = [
     "tmdb_network",
     "tmdb_now_playing",
     "tmdb_popular",
+    "tmdb_producer",
+    "tmdb_producer_details",
     "tmdb_show",
     "tmdb_show_details",
     "tmdb_top_rated",
     "tmdb_trending_daily",
-    "tmdb_trending_weekly"
+    "tmdb_trending_weekly",
+    "tmdb_writer",
+    "tmdb_writer_details"
 ]
 tmdb_type = {
+    "tmdb_actor": "Person",
+    "tmdb_actor_details": "Person",
     "tmdb_collection": "Collection",
     "tmdb_collection_details": "Collection",
     "tmdb_company": "Company",
+    "tmdb_crew": "Person",
+    "tmdb_crew_details": "Person",
+    "tmdb_director": "Person",
+    "tmdb_director_details": "Person",
     "tmdb_keyword": "Keyword",
     "tmdb_list": "List",
     "tmdb_list_details": "List",
@@ -356,8 +395,12 @@ tmdb_type = {
     "tmdb_movie_details": "Movie",
     "tmdb_network": "Network",
     "tmdb_person": "Person",
+    "tmdb_producer": "Person",
+    "tmdb_producer_details": "Person",
     "tmdb_show": "Show",
-    "tmdb_show_details": "Show"
+    "tmdb_show_details": "Show",
+    "tmdb_writer": "Person",
+    "tmdb_writer_details": "Person"
 }
 all_filters = [
     "actor", "actor.not",
@@ -369,6 +412,8 @@ all_filters = [
     "genre", "genre.not",
     "max_age",
     "originally_available.gte", "originally_available.lte",
+    "tmdb_vote_count.gte", "tmdb_vote_count.lte",
+    "duration.gte", "duration.lte",
     "original_language", "original_language.not",
     "rating.gte", "rating.lte",
     "studio", "studio.not",
@@ -381,6 +426,7 @@ movie_only_filters = [
     "audio_language", "audio_language.not",
     "country", "country.not",
     "director", "director.not",
+    "duration.gte", "duration.lte",
     "original_language", "original_language.not",
     "subtitle_language", "subtitle_language.not",
     "video_resolution", "video_resolution.not",
@@ -443,6 +489,9 @@ discover_tv_sort = [
     "popularity.desc", "popularity.asc"
 ]
 
+def tab_new_lines(data):
+    return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
+
 def adjust_space(old_length, display_title):
     display_title = str(display_title)
     space_length = old_length - len(display_title)
@@ -461,31 +510,32 @@ def choose_from_list(datalist, description, data=None, list_type="title", exact=
     if len(datalist) > 0:
         if len(datalist) == 1 and (description != "collection" or datalist[0].title == data):
             return datalist[0]
-        message = "Multiple {}s Found\n0) {}".format(description, "Create New Collection: {}".format(data) if description == "collection" else "Do Nothing")
+        zero_option = f"Create New Collection: {data}" if description == "collection" else "Do Nothing"
+        message = f"Multiple {description}s Found\n0) {zero_option}"
         for i, d in enumerate(datalist, 1):
             if list_type == "title":
                 if d.title == data:
                     return d
-                message += "\n{}) {}".format(i, d.title)
+                message += f"\n{i}) {d.title}"
             else:
-                message += "\n{}) [{}] {}".format(i, d[0], d[1])
+                message += f"\n{i}) [{d[0]}] {d[1]}"
         if exact:
             return None
         print_multiline(message, info=True)
         while True:
             try:
-                selection = int(logger_input("Choose {} number".format(description))) - 1
+                selection = int(logger_input(f"Choose {description} number")) - 1
                 if selection >= 0:                                          return datalist[selection]
                 elif selection == -1:                                       return None
-                else:                                                       logger.info("Invalid {} number".format(description))
-            except IndexError:                                          logger.info("Invalid {} number".format(description))
+                else:                                                       logger.info(f"Invalid {description} number")
+            except IndexError:                                          logger.info(f"Invalid {description} number")
             except TimeoutExpired:
                 if list_type == "title":
-                    logger.warning("Input Timeout: using {}".format(data))
+                    logger.warning(f"Input Timeout: using {data}")
                     return None
                 else:
-                    logger.warning("Input Timeout: using {}".format(datalist[0][1]))
-                    return datalist[0][1]
+                    logger.warning(f"Input Timeout: using {datalist[0][1]}")
+                    return datalist[0]
     else:
         return None
 
@@ -507,32 +557,48 @@ def get_int_list(data, id_type):
 def get_year_list(data, method):
     values = get_list(data)
     final_years = []
-    current_year = datetime.datetime.now().year
+    current_year = datetime.now().year
     for value in values:
         try:
             if "-" in value:
                 year_range = re.search("(\\d{4})-(\\d{4}|NOW)", str(value))
-                start = year_range.group(1)
-                end = year_range.group(2)
-                if end == "NOW":
-                    end = current_year
-                if int(start) < 1800 or int(start) > current_year:      logger.error("Collection Error: Skipping {} starting year {} must be between 1800 and {}".format(method, start, current_year))
-                elif int(end) < 1800 or int(end) > current_year:        logger.error("Collection Error: Skipping {} ending year {} must be between 1800 and {}".format(method, end, current_year))
-                elif int(start) > int(end):                             logger.error("Collection Error: Skipping {} starting year {} cannot be greater then ending year {}".format(method, start, end))
+                start = check_year(year_range.group(1), current_year, method)
+                end = current_year if year_range.group(2) == "NOW" else check_year(year_range.group(2), current_year, method)
+                if int(start) > int(end):
+                    raise Failed(f"Collection Error: {method} starting year: {start} cannot be greater then ending year {end}")
                 else:
                     for i in range(int(start), int(end) + 1):
-                        final_years.append(i)
+                        final_years.append(int(i))
             else:
-                year = re.search("(\\d+)", str(value)).group(1)
-                if int(start) < 1800 or int(start) > current_year:
-                    logger.error("Collection Error: Skipping {} year {} must be between 1800 and {}".format(method, year, current_year))
-                else:
-                    if len(str(year)) != len(str(value)):
-                        logger.warning("Collection Warning: {} can be replaced with {}".format(value, year))
-                    final_years.append(year)
+                final_years.append(check_year(value, current_year, method))
         except AttributeError:
-            logger.error("Collection Error: Skipping {} failed to parse year from {}".format(method, value))
+            raise Failed(f"Collection Error: {method} failed to parse year from {value}")
     return final_years
+
+def check_year(year, current_year, method):
+    return check_number(year, method, minimum=1800, maximum=current_year)
+
+def check_number(value, method, number_type="int", minimum=None, maximum=None):
+    if number_type == "int":
+        try:                                                    num_value = int(str(value))
+        except ValueError:                                      raise Failed(f"Collection Error: {method}: {value} must be an integer")
+    elif number_type == "float":
+        try:                                                    num_value = float(str(value))
+        except ValueError:                                      raise Failed(f"Collection Error: {method}: {value} must be a number")
+    else:                                                   raise Failed(f"Number Type: {number_type} invalid")
+    if minimum is not None and maximum is not None and (num_value < minimum or num_value > maximum):
+        raise Failed(f"Collection Error: {method}: {num_value} must be between {minimum} and {maximum}")
+    elif minimum is not None and num_value < minimum:
+        raise Failed(f"Collection Error: {method}: {num_value} is less then  {minimum}")
+    elif maximum is not None and num_value > maximum:
+        raise Failed(f"Collection Error: {method}: {num_value} is greater then  {maximum}")
+    else:
+        return num_value
+
+def check_date(date_text, method, return_string=False):
+    try:                                    date_obg = datetime.strptime(str(date_text), "%m/%d/%Y")
+    except ValueError:                      raise Failed(f"Collection Error: {method}: {date_text} must match pattern MM/DD/YYYY e.g. 12/25/2020")
+    return str(date_text) if return_string else date_obg
 
 def logger_input(prompt, timeout=60):
     if windows:                             return windows_input(prompt, timeout)
@@ -543,14 +609,14 @@ def alarm_handler(signum, frame):
     raise TimeoutExpired
 
 def unix_input(prompt, timeout=60):
-    prompt = "| {}: ".format(prompt)
+    prompt = f"| {prompt}: "
     signal.signal(signal.SIGALRM, alarm_handler)
     signal.alarm(timeout)
     try:            return input(prompt)
     finally:        signal.alarm(0)
 
 def old_windows_input(prompt, timeout=60, timer=time.monotonic):
-    prompt = "| {}: ".format(prompt)
+    prompt = f"| {prompt}: "
     sys.stdout.write(prompt)
     sys.stdout.flush()
     endtime = timer() + timeout
@@ -560,26 +626,26 @@ def old_windows_input(prompt, timeout=60, timer=time.monotonic):
             result.append(msvcrt.getwche())
             if result[-1] == "\n":
                 out = "".join(result[:-1])
-                logger.debug("{}{}".format(prompt[2:], out))
+                logger.debug(f"{prompt[2:]}{out}")
                 return out
         time.sleep(0.04)
     raise TimeoutExpired
 
 def windows_input(prompt, timeout=5):
-    sys.stdout.write("| {}: ".format(prompt))
+    sys.stdout.write(f"| {prompt}: ")
     sys.stdout.flush()
     result = []
     start_time = time.time()
     while True:
         if msvcrt.kbhit():
-            chr = msvcrt.getwche()
-            if ord(chr) == 13: # enter_key
+            char = msvcrt.getwche()
+            if ord(char) == 13: # enter_key
                 out = "".join(result)
                 print("")
-                logger.debug("{}: {}".format(prompt, out))
+                logger.debug(f"{prompt}: {out}")
                 return out
-            elif ord(chr) >= 32: #space_char
-                result.append(chr)
+            elif ord(char) >= 32: #space_char
+                result.append(char)
         if (time.time() - start_time) > timeout:
             print("")
             raise TimeoutExpired
@@ -606,17 +672,17 @@ def my_except_hook(exctype, value, tb):
 def get_id_from_imdb_url(imdb_url):
     match = re.search("(tt\\d+)", str(imdb_url))
     if match:           return match.group(1)
-    else:               raise Failed("Regex Error: Failed to parse IMDb ID from IMDb URL: {}".format(imdb_url))
+    else:               raise Failed(f"Regex Error: Failed to parse IMDb ID from IMDb URL: {imdb_url}")
 
 def regex_first_int(data, id_type, default=None):
     match = re.search("(\\d+)", str(data))
     if match:
         return int(match.group(1))
     elif default:
-        logger.warning("Regex Warning: Failed to parse {} from {} using {} as default".format(id_type, data, default))
+        logger.warning(f"Regex Warning: Failed to parse {id_type} from {data} using {default} as default")
         return int(default)
     else:
-        raise Failed("Regex Error: Failed to parse {} from {}".format(id_type, data))
+        raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
 def remove_not(method):
     return method[:-4] if method.endswith(".not") else method
@@ -629,20 +695,22 @@ def get_centered_text(text):
         text += " "
         space -= 1
     side = int(space / 2)
-    return "{}{}{}".format(" " * side, text, " " * side)
+    return f"{' ' * side}{text}{' ' * side}"
 
-def seperator(text=None):
-    logger.handlers[0].setFormatter(logging.Formatter("%(message)-{}s".format(screen_width - 2)))
-    logger.handlers[1].setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s %(message)-{}s".format(screen_width - 2)))
-    logger.info("|{}|".format(seperating_character * screen_width))
+def separator(text=None):
+    logger.handlers[0].setFormatter(logging.Formatter(f"%(message)-{screen_width - 2}s"))
+    logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s %(message)-{screen_width - 2}s"))
+    logger.info(f"|{separating_character * screen_width}|")
     if text:
-        logger.info("| {} |".format(get_centered_text(text)))
-        logger.info("|{}|".format(seperating_character * screen_width))
-    logger.handlers[0].setFormatter(logging.Formatter("| %(message)-{}s |".format(screen_width - 2)))
-    logger.handlers[1].setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{}s |".format(screen_width - 2)))
+        text_list = text.split("\n")
+        for t in text_list:
+            logger.info(f"| {get_centered_text(t)} |")
+        logger.info(f"|{separating_character * screen_width}|")
+    logger.handlers[0].setFormatter(logging.Formatter(f"| %(message)-{screen_width - 2}s |"))
+    logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{screen_width - 2}s |"))
 
 def print_return(length, text):
-    print(adjust_space(length, "| {}".format(text)), end="\r")
+    print(adjust_space(length, f"| {text}"), end="\r")
     return len(text) + 2
 
 def print_end(length, text=None):
