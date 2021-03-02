@@ -55,22 +55,43 @@ class CollectionBuilder:
 
                         template_name = data_template["name"]
                         template = self.library.templates[template_name]
+
                         default = {}
                         if "default" in template:
                             if template["default"]:
                                 if isinstance(template["default"], dict):
                                     for dv in template["default"]:
-                                        default[dv] = template["default"][dv]
+                                        if template["default"][dv]:
+                                            default[dv] = template["default"][dv]
+                                        else:
+                                            raise Failed(f"Collection Error: template default sub-attribute {dv} is blank")
                                 else:
                                     raise Failed("Collection Error: template sub-attribute default is not a dictionary")
                             else:
                                 raise Failed("Collection Error: template sub-attribute default is blank")
 
+                        optional = []
+                        if "optional" in template:
+                            if template["optional"]:
+                                if isinstance(template["optional"], list):
+                                    for op in template["optional"]:
+                                        if op not in default:
+                                            optional.append(op)
+                                        else:
+                                            logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
+                                else:
+                                    optional.append(str(template["optional"]))
+                            else:
+                                raise Failed("Collection Error: template sub-attribute optional is blank")
+
                         for m in template:
-                            if m not in self.data and m != "default":
+                            if m not in self.data and m not in ["default", "optional"]:
                                 if template[m]:
                                     def replace_txt(txt):
                                         txt = str(txt)
+                                        for option in optional:
+                                            if option not in data_template and f"<<{option}>>" in txt:
+                                                raise Failed("remove attribute")
                                         for template_method in data_template:
                                             if template_method != "name" and f"<<{template_method}>>" in txt:
                                                 txt = txt.replace(f"<<{template_method}>>", str(data_template[template_method]))
