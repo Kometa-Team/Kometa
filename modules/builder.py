@@ -99,8 +99,6 @@ class CollectionBuilder:
                                             txt = txt.replace("<<collection_name>>", str(self.name))
                                         for dm in default:
                                             if f"<<{dm}>>" in txt:
-                                                if default[dm] is None:
-                                                    raise Failed(f"template default {dm} is blank")
                                                 txt = txt.replace(f"<<{dm}>>", str(default[dm]))
                                         if txt in ["true", "True"]:                     return True
                                         elif txt in ["false", "False"]:                 return False
