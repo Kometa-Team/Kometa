@@ -15,6 +15,7 @@ from modules.trakttv import TraktAPI
 from modules.tvdb import TVDbAPI
 from modules.util import Failed
 from plexapi.exceptions import BadRequest
+from plexapi.media import Guid
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -575,11 +576,17 @@ class Config:
             item_type = guid.scheme.split(".")[-1]
             check_id = guid.netloc
 
-            if item_type == "plex" and library.is_movie:
+            if item_type == "plex" and check_id == "movie":
                 for guid_tag in item.guids:
                     url_parsed = requests.utils.urlparse(guid_tag.id)
                     if url_parsed.scheme == "tmdb":                 tmdb_id = int(url_parsed.netloc)
                     elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
+            elif item_type == "plex" and check_id == "show":
+                for guid_tag in item.findItems(item._data, Guid):
+                    url_parsed = requests.utils.urlparse(guid_tag.id)
+                    if url_parsed.scheme == "tvdb":                 tvdb_id = int(url_parsed.netloc)
+                    elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
+                    elif url_parsed.scheme == "tmdb":               tmdb_id = int(url_parsed.netloc)
             elif item_type == "imdb":                       imdb_id = check_id
             elif item_type == "thetvdb":                    tvdb_id = int(check_id)
             elif item_type == "themoviedb":                 tmdb_id = int(check_id)
