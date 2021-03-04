@@ -327,6 +327,8 @@ class CollectionBuilder:
                             list_count = 0
                         new_list.append({"url": imdb_url, "limit": list_count})
                     self.methods.append((method_name, new_list))
+                elif method_name == "letterboxd_list":
+                    self.methods.append((method_name, util.get_list(data[m], split=False)))
                 elif method_name in util.dictionary_lists:
                     if isinstance(data[m], dict):
                         def get_int(parent, method, data_in, default_in, minimum=1, maximum=None):
@@ -648,6 +650,7 @@ class CollectionBuilder:
                 elif "mal" in method:                               items_found += check_map(self.config.MyAnimeList.get_items(method, value))
                 elif "tvdb" in method:                              items_found += check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
                 elif "imdb" in method:                              items_found += check_map(self.config.IMDb.get_items(self.config, method, value, self.library.Plex.language))
+                elif "letterboxd" in method:                        items_found += check_map(self.config.Letterboxd.get_items(method, value, self.library.Plex.language))
                 elif "tmdb" in method:                              items_found += check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
                 elif "trakt" in method:                             items_found += check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
