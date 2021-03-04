@@ -1,7 +1,12 @@
-import argparse, logging, os, re, schedule, sys, time
+import argparse, logging, os, re, sys, time
 from datetime import datetime
-from modules import tests, util
-from modules.config import Config
+try:
+    import schedule
+    from modules import tests, util
+    from modules.config import Config
+except ModuleNotFoundError:
+    print("Error: Requirements are not installed")
+    sys.exit(0)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--my-tests", dest="tests", help=argparse.SUPPRESS, action="store_true", default=False)
