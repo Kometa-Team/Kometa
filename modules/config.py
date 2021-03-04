@@ -4,6 +4,7 @@ from modules.anidb import AniDBAPI
 from modules.builder import CollectionBuilder
 from modules.cache import Cache
 from modules.imdb import IMDbAPI
+from modules.letterboxd import LetterboxdAPI
 from modules.mal import MyAnimeListAPI
 from modules.mal import MyAnimeListIDList
 from modules.plex import PlexAPI
@@ -209,6 +210,7 @@ class Config:
         self.TVDb = TVDbAPI(self, Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
         self.IMDb = IMDbAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt, TVDb=self.TVDb) if self.TMDb or self.Trakt else None
         self.AniDB = AniDBAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
+        self.Letterboxd = LetterboxdAPI()
 
         util.separator()
 

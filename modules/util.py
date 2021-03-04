@@ -97,6 +97,7 @@ pretty_names = {
     "anidb_popular": "AniDB Popular",
     "imdb_list": "IMDb List",
     "imdb_id": "IMDb ID",
+    "letterboxd_list": "Letterboxd List",
     "mal_id": "MyAnimeList ID",
     "mal_all": "MyAnimeList All",
     "mal_airing": "MyAnimeList Airing",
@@ -214,6 +215,7 @@ all_lists = [
     "anidb_popular",
     "imdb_list",
     "imdb_id",
+    "letterboxd_list",
     "mal_id",
     "mal_all",
     "mal_airing",
@@ -309,6 +311,7 @@ show_only_lists = [
     "tvdb_show"
 ]
 movie_only_lists = [
+    "letterboxd_list",
     "tmdb_collection",
     "tmdb_collection_details",
     "tmdb_movie",
