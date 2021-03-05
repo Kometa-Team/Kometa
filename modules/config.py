@@ -180,8 +180,8 @@ class Config:
             self.omdb = {}
             try:
                 self.omdb["apikey"] = check_for_attribute(self.data, "apikey", parent="omdb", throw=True)
-                self.omdb["omdb_cache"] = check_for_attribute(self.data, "omdb_cache", parent="omdb", options="    true (Use a cache to store data)\n    false (Do not use a cache to store data)", var_type="bool", default=True)
-                self.omdb["omdb_cache_expiration"] = check_for_attribute(self.data, "omdb_cache_expiration", parent="omdb", var_type="int", default=60)
+                self.omdb["omdb_cache"] = check_for_attribute(self.data, "omdb_cache", parent="omdb", options="    true (Use a cache to store data)\n    false (Do not use a cache to store data)", var_type="bool", default=self.general["cache"])
+                self.omdb["omdb_cache_expiration"] = check_for_attribute(self.data, "omdb_cache_expiration", parent="omdb", var_type="int", default=self.general["cache_expiration"])
                 self.OMDb = OMDbAPI(self.omdb, Cache=self.Cache)
             except Failed as e:
                 logger.error(e)
@@ -311,6 +311,11 @@ class Config:
                 params["mass_genre_update"] = check_for_attribute(libs[lib], "mass_genre_update", test_list=["tmdb", "omdb"], options="    tmdb (Use TMDb Metadata)\n    omdb (Use IMDb Metadata through OMDb)", default_is_none=True, save=False)
             else:
                 params["mass_genre_update"] = None
+
+            if params["mass_genre_update"] == "omdb" and self.OMDb is None:
+                params["mass_genre_update"] = None
+                logger.error("Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection")
+
             try:
                 params["metadata_path"] = check_for_attribute(libs[lib], "metadata_path", var_type="path", default=os.path.join(default_dir, f"{lib}.yml"), throw=True)
                 params["library_type"] = check_for_attribute(libs[lib], "library_type", test_list=["movie", "show"], options="    movie (For Movie Libraries)\n    show (For Show Libraries)", throw=True)
