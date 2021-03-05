@@ -54,11 +54,8 @@ class TVDbObj:
         self.TVDb = TVDb
 
 class TVDbAPI:
-    def __init__(self, config, Cache=None, TMDb=None, Trakt=None):
+    def __init__(self, config):
         self.config = config
-        self.Cache = Cache
-        self.TMDb = TMDb
-        self.Trakt = Trakt
         self.site_url = "https://www.thetvdb.com"
         self.alt_site_url = "https://thetvdb.com"
         self.list_url = f"{self.site_url}/lists/"

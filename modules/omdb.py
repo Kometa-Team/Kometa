@@ -36,24 +36,21 @@ class OMDbAPI:
     def __init__(self, params, Cache=None):
         self.url = "http://www.omdbapi.com/"
         self.apikey = params["apikey"]
-        self.cache = params["omdb_cache"]
-        self.cache_expiration = params["omdb_cache_expiration"]
         self.limit = False
-        Cache.omdb_expiration = self.cache_expiration
         self.Cache = Cache
         self.get_omdb("tt0080684")
 
-    #@retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_omdb(self, imdb_id):
         expired = None
-        if self.cache and self.Cache:
+        if self.Cache:
             omdb_dict, expired = self.Cache.query_omdb(imdb_id)
             if omdb_dict and expired is False:
                 return OMDbObj(omdb_dict)
         response = requests.get(self.url, params={"i": imdb_id, "apikey": self.apikey})
         if response.status_code < 400:
             omdb = OMDbObj(response.json())
-            if self.cache and self.Cache:
+            if self.Cache:
                 self.Cache.update_omdb(expired, omdb)
             return omdb
         else:

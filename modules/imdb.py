@@ -7,23 +7,22 @@ from retrying import retry
 logger = logging.getLogger("Plex Meta Manager")
 
 class IMDbAPI:
-    def __init__(self, Cache=None, TMDb=None, Trakt=None, TVDb=None):
-        if TMDb is None and Trakt is None:
-            raise Failed("IMDb Error: IMDb requires either TMDb or Trakt")
-        self.Cache = Cache
-        self.TMDb = TMDb
-        self.Trakt = Trakt
-        self.TVDb = TVDb
+    def __init__(self, config):
+        self.config = config
+        self.urls = {
+            "list": "https://www.imdb.com/list/ls",
+            "search": "https://www.imdb.com/search/title/?"
+        }
 
     def get_imdb_ids_from_url(self, imdb_url, language, limit):
         imdb_url = imdb_url.strip()
-        if not imdb_url.startswith("https://www.imdb.com/list/ls") and not imdb_url.startswith("https://www.imdb.com/search/title/?"):
-            raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n| https://www.imdb.com/list/ls (For Lists)\n| https://www.imdb.com/search/title/? (For Searches)")
+        if not imdb_url.startswith(self.urls["list"]) and not imdb_url.startswith(self.urls["search"]):
+            raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n| {self.urls['list']} (For Lists)\n| {self.urls['search']} (For Searches)")
 
-        if imdb_url.startswith("https://www.imdb.com/list/ls"):
+        if imdb_url.startswith(self.urls["list"]):
             try:                                list_id = re.search("(\\d+)", str(imdb_url)).group(1)
             except AttributeError:              raise Failed(f"IMDb Error: Failed to parse List ID from {imdb_url}")
-            current_url = f"https://www.imdb.com/search/title/?lists=ls{list_id}"
+            current_url = f"{self.urls['search']}lists=ls{list_id}"
         else:
             current_url = imdb_url
         header = {"Accept-Language": language}
@@ -52,7 +51,7 @@ class IMDbAPI:
     def send_request(self, url, header):
         return html.fromstring(requests.get(url, headers=header).content)
 
-    def get_items(self, config, method, data, language, status_message=True):
+    def get_items(self, method, data, language, status_message=True):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if status_message:
             logger.debug(f"Data: {data}")
@@ -61,7 +60,7 @@ class IMDbAPI:
         if method == "imdb_id":
             if status_message:
                 logger.info(f"Processing {pretty}: {data}")
-            tmdb_id, tvdb_id = config.convert_from_imdb(data, language)
+            tmdb_id, tvdb_id = self.config.convert_from_imdb(data, language)
             if tmdb_id:                     movie_ids.append(tmdb_id)
             if tvdb_id:                     show_ids.append(tvdb_id)
         elif method == "imdb_list":
@@ -74,7 +73,7 @@ class IMDbAPI:
             for i, imdb_id in enumerate(imdb_ids, 1):
                 length = util.print_return(length, f"Converting IMDb ID {i}/{total_ids}")
                 try:
-                    tmdb_id, tvdb_id = config.convert_from_imdb(imdb_id, language)
+                    tmdb_id, tvdb_id = self.config.convert_from_imdb(imdb_id, language)
                     if tmdb_id:                     movie_ids.append(tmdb_id)
                     if tvdb_id:                     show_ids.append(tvdb_id)
                 except Failed as e:             logger.warning(e)

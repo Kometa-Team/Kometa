@@ -52,7 +52,6 @@ class Cache:
                 )
         self.expiration = expiration
         self.cache_path = cache
-        self.omdb_expiration = expiration
 
     def get_ids_from_imdb(self, imdb_id):
         tmdb_id, tmdb_expired = self.get_tmdb_id("movie", imdb_id=imdb_id)
@@ -197,11 +196,11 @@ class Cache:
                     omdb_dict["Type"] = row["type"] if row["type"] else None
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
-                    expired = time_between_insertion.days > self.omdb_expiration
+                    expired = time_between_insertion.days > self.expiration
         return omdb_dict, expired
 
     def update_omdb(self, expired, omdb):
-        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.omdb_expiration)))
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
