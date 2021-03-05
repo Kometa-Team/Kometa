@@ -878,17 +878,17 @@ class CollectionBuilder:
         elif "tmdb_show_details" in self.backgrounds:       set_image("tmdb_show", self.backgrounds, is_background=True)
         else:                                               logger.info("No background to update")
 
-    def run_collections_again(self, library, collection_obj, movie_map, show_map):
+    def run_collections_again(self, collection_obj, movie_map, show_map):
         collection_items = collection_obj.items() if isinstance(collection_obj, Collections) else []
         name = collection_obj.title if isinstance(collection_obj, Collections) else collection_obj
         rating_keys = [movie_map[mm] for mm in self.missing_movies if mm in movie_map]
-        if library.is_show:
+        if self.library.is_show:
             rating_keys.extend([show_map[sm] for sm in self.missing_shows if sm in show_map])
 
         if len(rating_keys) > 0:
             for rating_key in rating_keys:
                 try:
-                    current = library.fetchItem(int(rating_key))
+                    current = self.library.fetchItem(int(rating_key))
                 except (BadRequest, NotFound):
                     logger.error(f"Plex Error: Item {rating_key} not found")
                     continue
@@ -897,7 +897,7 @@ class CollectionBuilder:
                 else:
                     current.addCollection(name)
                     logger.info(f"{name} Collection | + | {current.title}")
-            logger.info(f"{len(rating_keys)} {'Movie' if library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
+            logger.info(f"{len(rating_keys)} {'Movie' if self.library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
 
         if len(self.missing_movies) > 0:
             logger.info("")
@@ -913,7 +913,7 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"{len(self.missing_movies)} Movie{'s' if len(self.missing_movies) > 1 else ''} Missing")
 
-        if len(self.missing_shows) > 0 and library.is_show:
+        if len(self.missing_shows) > 0 and self.library.is_show:
             logger.info("")
             for missing_id in self.missing_shows:
                 if missing_id not in show_map:

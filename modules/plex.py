@@ -60,19 +60,11 @@ class PlexAPI:
         self.show_filtered = params["show_filtered"]
         self.show_missing = params["show_missing"]
         self.save_missing = params["save_missing"]
+        self.mass_genre_update = params["mass_genre_update"]
         self.plex = params["plex"]
         self.timeout = params["plex"]["timeout"]
         self.missing = {}
         self.run_again = []
-
-    def add_Radarr(self, Radarr):
-        self.Radarr = Radarr
-
-    def add_Sonarr(self, Sonarr):
-        self.Sonarr = Sonarr
-
-    def add_Tautulli(self, Tautulli):
-        self.Tautulli = Tautulli
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def search(self, title, libtype=None, year=None):
