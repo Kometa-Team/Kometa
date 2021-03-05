@@ -551,8 +551,10 @@ class CollectionBuilder:
                     self.methods.append((method_name, util.get_list(data[m])))
                 elif method_name not in util.other_attributes:
                     raise Failed(f"Collection Error: {method_name} attribute not supported")
-            else:
+            elif m in util.all_lists or m in util.method_alias or m in util.plex_searches:
                 raise Failed(f"Collection Error: {m} attribute is blank")
+            else:
+                logger.warning(f"Collection Warning: {m} attribute is blank")
 
         self.sync = self.library.sync_mode == "sync"
         if "sync_mode" in data:
