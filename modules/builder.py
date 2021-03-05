@@ -813,7 +813,7 @@ class CollectionBuilder:
                 dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
                 if len(dirs) > 0:
                     for item in collection.items():
-                        folder = os.path.basename(os.path.dirname(item.locations[0]))
+                        folder = os.path.basename(os.path.dirname(item.locations[0]) if self.library.is_movie else item.locations[0])
                         if folder in dirs:
                             matches = glob.glob(os.path.join(path, folder, "poster.*"))
                             poster_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
