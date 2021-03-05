@@ -679,6 +679,7 @@ class Config:
                     if url_parsed.scheme == "tmdb":                 tmdb_id = int(url_parsed.netloc)
                     elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
             elif item_type == "plex" and check_id == "show":
+                item.reload()
                 for guid_tag in item.findItems(item._data, Guid):
                     url_parsed = requests.utils.urlparse(guid_tag.id)
                     if url_parsed.scheme == "tvdb":                 tvdb_id = int(url_parsed.netloc)
