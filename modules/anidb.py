@@ -7,10 +7,8 @@ from retrying import retry
 logger = logging.getLogger("Plex Meta Manager")
 
 class AniDBAPI:
-    def __init__(self, Cache=None, TMDb=None, Trakt=None):
-        self.Cache = Cache
-        self.TMDb = TMDb
-        self.Trakt = Trakt
+    def __init__(self, config):
+        self.config = config
         self.urls = {
             "anime": "https://anidb.net/anime",
             "popular": "https://anidb.net/latest/anime/popular/?h=1",
@@ -62,7 +60,7 @@ class AniDBAPI:
             return anidb_values
         raise Failed(f"AniDB Error: No valid AniDB IDs in {anidb_list}")
 
-    def get_items(self, config, method, data, language, status_message=True):
+    def get_items(self, method, data, language, status_message=True):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if status_message:
             logger.debug(f"Data: {data}")
@@ -81,7 +79,7 @@ class AniDBAPI:
         for anidb_id in anime_ids:
             try:
                 for imdb_id in self.convert_anidb_to_imdb(anidb_id):
-                    tmdb_id, _ = config.convert_from_imdb(imdb_id, language)
+                    tmdb_id, _ = self.config.convert_from_imdb(imdb_id, language)
                     if tmdb_id:                                         movie_ids.append(tmdb_id)
                     else:                                               raise Failed
             except Failed:

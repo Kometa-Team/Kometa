@@ -180,8 +180,6 @@ class Config:
             self.omdb = {}
             try:
                 self.omdb["apikey"] = check_for_attribute(self.data, "apikey", parent="omdb", throw=True)
-                self.omdb["omdb_cache"] = check_for_attribute(self.data, "omdb_cache", parent="omdb", options="    true (Use a cache to store data)\n    false (Do not use a cache to store data)", var_type="bool", default=self.general["cache"])
-                self.omdb["omdb_cache_expiration"] = check_for_attribute(self.data, "omdb_cache_expiration", parent="omdb", var_type="int", default=self.general["cache_expiration"])
                 self.OMDb = OMDbAPI(self.omdb, Cache=self.Cache)
             except Failed as e:
                 logger.error(e)
@@ -226,9 +224,9 @@ class Config:
         else:
             logger.warning("mal attribute not found")
 
-        self.TVDb = TVDbAPI(self, Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
-        self.IMDb = IMDbAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt, TVDb=self.TVDb) if self.TMDb or self.Trakt else None
-        self.AniDB = AniDBAPI(Cache=self.Cache, TMDb=self.TMDb, Trakt=self.Trakt)
+        self.TVDb = TVDbAPI(self)
+        self.IMDb = IMDbAPI(self)
+        self.AniDB = AniDBAPI(self)
         self.Letterboxd = LetterboxdAPI()
 
         util.separator()
