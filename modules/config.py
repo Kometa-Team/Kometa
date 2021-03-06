@@ -396,7 +396,7 @@ class Config:
             movie_map, show_map = self.map_guids(library)
             if not test:
                 if library.mass_genre_update:
-                    self.mass_metadata(library)
+                    self.mass_metadata(library, movie_map, show_map)
                 try:                        library.update_metadata(self.TMDb, test)
                 except Failed as e:         logger.error(e)
             logger.info("")
@@ -582,7 +582,7 @@ class Config:
                 self.Cache.update_imdb("show", update_tvdb, imdb_id, tvdb_id)
         return tmdb_id, tvdb_id
 
-    def mass_metadata(self, library):
+    def mass_metadata(self, library, movie_map, show_map):
         length = 0
         logger.info("")
         util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
@@ -590,7 +590,20 @@ class Config:
         items = library.Plex.all()
         for i, item in enumerate(items, 1):
             length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
-            ids, expired = self.Cache.get_ids("movie" if library.is_movie else "show", plex_guid=item.guid)
+            ids = {}
+            if self.Cache:
+                ids, expired = self.Cache.get_ids("movie" if library.is_movie else "show", plex_guid=item.guid)
+            elif library.is_movie:
+                for tmdb in movie_map:
+                    if movie_map[tmdb] == item.ratingKey:
+                        ids["tmdb"] = tmdb
+                        break
+            else:
+                for tvdb in show_map:
+                    if show_map[tvdb] == item.ratingKey:
+                        ids["tvdb"] = tvdb
+                        break
+
             if library.mass_genre_update:
                 if library.mass_genre_update == "tmdb":
                     if "tmdb" not in ids:
@@ -777,7 +790,7 @@ class Config:
                     elif id_name and api_name:                      error_message = f"Unable to convert {id_name} to {service_name} using {api_name}"
                     elif id_name:                                   error_message = f"Configure TMDb or Trakt to covert {id_name} to {service_name}"
                     else:                                           error_message = f"No ID to convert to {service_name}"
-            if self.Cache and (tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show):
+            if self.Cache and ((tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show)):
                 if isinstance(tmdb_id, list):
                     for i in range(len(tmdb_id)):
                         util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_id[i] if imdb_id[i] else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
