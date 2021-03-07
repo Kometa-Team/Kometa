@@ -123,7 +123,10 @@ class TMDbAPI:
                 if credit.media_type == "movie":
                     movie_ids.append(credit.id)
                 elif credit.media_type == "tv":
-                    show_ids.append(credit.id)
+                    try:
+                        show_ids.append(self.convert_tmdb_to_tvdb(credit.id))
+                    except Failed as e:
+                        logger.warning(e)
         return movie_ids, show_ids
 
     def get_pagenation(self, method, amount, is_movie):
