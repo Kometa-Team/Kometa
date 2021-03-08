@@ -313,6 +313,12 @@ class CollectionBuilder:
                     self.methods.append((method_name, config.AniDB.validate_anidb_list(util.get_int_list(data[m], "AniDB ID"), self.library.Plex.language)))
                 elif method_name == "trakt_list":
                     self.methods.append((method_name, config.Trakt.validate_trakt_list(util.get_list(data[m]))))
+                elif method_name == "trakt_list_details":
+                    valid_list = config.Trakt.validate_trakt_list(util.get_list(data[m]))
+                    item = config.Trakt.standard_list(valid_list[0])
+                    if hasattr(item, "description") and item.description:
+                        self.summaries[method_name] = item.description
+                    self.methods.append((method_name[:-8], valid_list))
                 elif method_name == "trakt_watchlist":
                     self.methods.append((method_name, config.Trakt.validate_trakt_watchlist(util.get_list(data[m]), self.library.is_movie)))
                 elif method_name == "imdb_list":
@@ -747,6 +753,7 @@ class CollectionBuilder:
         elif "tmdb_biography" in self.summaries:            summary = get_summary("tmdb_biography", self.summaries)
         elif "tmdb_person" in self.summaries:               summary = get_summary("tmdb_person", self.summaries)
         elif "tmdb_collection_details" in self.summaries:   summary = get_summary("tmdb_collection_details", self.summaries)
+        elif "trakt_list_details" in self.summaries:        summary = get_summary("trakt_list_details", self.summaries)
         elif "tmdb_list_details" in self.summaries:         summary = get_summary("tmdb_list_details", self.summaries)
         elif "tmdb_actor_details" in self.summaries:        summary = get_summary("tmdb_actor_details", self.summaries)
         elif "tmdb_crew_details" in self.summaries:         summary = get_summary("tmdb_crew_details", self.summaries)
