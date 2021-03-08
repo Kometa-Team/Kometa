@@ -98,6 +98,7 @@ pretty_names = {
     "imdb_list": "IMDb List",
     "imdb_id": "IMDb ID",
     "letterboxd_list": "Letterboxd List",
+    "letterboxd_list_details": "Letterboxd List",
     "mal_id": "MyAnimeList ID",
     "mal_all": "MyAnimeList All",
     "mal_airing": "MyAnimeList Airing",
@@ -220,6 +221,7 @@ all_lists = [
     "imdb_list",
     "imdb_id",
     "letterboxd_list",
+    "letterboxd_list_details",
     "mal_id",
     "mal_all",
     "mal_airing",
@@ -322,6 +324,7 @@ show_only_lists = [
 ]
 movie_only_lists = [
     "letterboxd_list",
+    "letterboxd_list_details",
     "tmdb_collection",
     "tmdb_collection_details",
     "tmdb_movie",
@@ -454,7 +457,7 @@ boolean_details = [
 ]
 all_details = [
     "sort_title", "content_rating",
-    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary", "tvdb_description", "trakt_description",
+    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary", "tvdb_description", "trakt_description", "letterboxd_description",
     "collection_mode", "collection_order",
     "url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster",
     "url_background", "tmdb_background", "tvdb_background", "file_background",

@@ -11,11 +11,15 @@ class LetterboxdAPI:
         self.url = "https://letterboxd.com"
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_request(self, url, header):
-        return html.fromstring(requests.get(url, headers=header).content)
+    def send_request(self, url, language):
+        return html.fromstring(requests.get(url, header={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}).content)
+
+    def get_list_description(self, list_url, language):
+        descriptions = self.send_request(list_url, language).xpath("//meta[@property='og:description']/@content")
+        return descriptions[0] if len(descriptions) > 0 and len(descriptions[0]) > 0 else None
 
     def parse_list_for_slugs(self, list_url, language):
-        response = self.send_request(list_url, header={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"})
+        response = self.send_request(list_url, language)
         slugs = response.xpath("//div[@class='poster film-poster really-lazy-load']/@data-film-slug")
         next_url = response.xpath("//a[@class='next']/@href")
         if len(next_url) > 0:
@@ -26,7 +30,7 @@ class LetterboxdAPI:
         return self.get_tmdb(f"{self.url}{slug}", language)
 
     def get_tmdb(self, letterboxd_url, language):
-        response = self.send_request(letterboxd_url, header={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"})
+        response = self.send_request(letterboxd_url, language)
         ids = response.xpath("//body/@data-tmdb-id")
         if len(ids) > 0:
             return int(ids[0])
