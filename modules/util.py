@@ -453,10 +453,10 @@ boolean_details = [
 ]
 all_details = [
     "sort_title", "content_rating",
-    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography",
+    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary", "tvdb_description", "trakt_description",
     "collection_mode", "collection_order",
-    "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
-    "url_background", "file_background",
+    "url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster",
+    "url_background", "tmdb_background", "tvdb_background", "file_background",
     "name_mapping", "add_to_arr", "arr_tag", "label",
     "show_filtered", "show_missing", "save_missing"
 ]
