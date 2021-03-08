@@ -246,6 +246,8 @@ class CollectionBuilder:
                     self.summaries[method_name] = config.TVDb.get_list_description(data[m], self.library.Plex.language)
                 elif method_name == "trakt_description":
                     self.summaries[method_name] = config.Trakt.standard_list(config.Trakt.validate_trakt_list(util.get_list(data[m]))[0]).description
+                elif method_name == "letterboxd_description":
+                    self.summaries[method_name] = config.Letterboxd.get_list_description(data[m], self.library.Plex.language)
                 elif method_name == "collection_mode":
                     if data[m] in ["default", "hide", "hide_items", "show_items", "hideItems", "showItems"]:
                         if data[m] == "hide_items":                                 self.details[method_name] = "hideItems"
@@ -347,6 +349,10 @@ class CollectionBuilder:
                     self.methods.append((method_name, new_list))
                 elif method_name == "letterboxd_list":
                     self.methods.append((method_name, util.get_list(data[m], split=False)))
+                elif method_name == "letterboxd_list_details":
+                    values = util.get_list(data[m], split=False)
+                    self.summaries[method_name] = config.Letterboxd.get_list_description(values[0], self.library.Plex.language)
+                    self.methods.append((method_name[:-8], values))
                 elif method_name in util.dictionary_lists:
                     if isinstance(data[m], dict):
                         def get_int(parent, method, data_in, default_in, minimum=1, maximum=None):
@@ -803,6 +809,7 @@ class CollectionBuilder:
             return summaries[summary_method]
         if "summary" in self.summaries:                     summary = get_summary("summary", self.summaries)
         elif "tmdb_description" in self.summaries:          summary = get_summary("tmdb_description", self.summaries)
+        elif "letterboxd_description" in self.summaries:    summary = get_summary("letterboxd_description", self.summaries)
         elif "tmdb_summary" in self.summaries:              summary = get_summary("tmdb_summary", self.summaries)
         elif "tvdb_summary" in self.summaries:              summary = get_summary("tvdb_summary", self.summaries)
         elif "tmdb_biography" in self.summaries:            summary = get_summary("tmdb_biography", self.summaries)
