@@ -572,7 +572,7 @@ class Config:
             if tmdb_id and not from_cache:              self.TMDb.get_movie(tmdb_id)
         except Failed:                              tmdb_id = None
         try:
-            if tvdb_id and not from_cache:              self.TVDb.get_series(language, tvdb_id=tvdb_id)
+            if tvdb_id and not from_cache:              self.TVDb.get_series(language, tvdb_id)
         except Failed:                              tvdb_id = None
         if not tmdb_id and not tvdb_id:             raise Failed(f"IMDb Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
         if self.Cache:

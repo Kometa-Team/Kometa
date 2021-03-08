@@ -40,7 +40,7 @@ class TVDbObj:
         self.background_path = results[0] if len(results) > 0 and len(results[0]) > 0 else None
 
         results = response.xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
-        self.description = results[0] if len(results) > 0 and len(results[0]) > 0 else None
+        self.summary = results[0] if len(results) > 0 and len(results[0]) > 0 else None
 
         tmdb_id = None
         if is_movie:
@@ -73,21 +73,24 @@ class TVDbAPI:
         self.series_id_url = f"{self.site_url}/dereferrer/series/"
         self.movie_id_url = f"{self.site_url}/dereferrer/movie/"
 
-    def get_series(self, language, tvdb_url=None, tvdb_id=None):
-        if not tvdb_url and not tvdb_id:
-            raise Failed("TVDB Error: get_series requires either tvdb_url or tvdb_id")
-        elif not tvdb_url and tvdb_id:
-            tvdb_url = f"{self.series_id_url}{tvdb_id}"
+    def get_movie_or_series(self, language, tvdb_url, is_movie):
+        return self.get_movie(language, tvdb_url) if is_movie else self.get_series(language, tvdb_url)
+
+    def get_series(self, language, tvdb_url):
+        try:
+            tvdb_url = f"{self.series_id_url}{int(tvdb_url)}"
+        except ValueError:
+            pass
         return TVDbObj(tvdb_url, language, False, self)
 
-    def get_movie(self, language, tvdb_url=None, tvdb_id=None):
-        if not tvdb_url and not tvdb_id:
-            raise Failed("TVDB Error: get_movie requires either tvdb_url or tvdb_id")
-        elif not tvdb_url and tvdb_id:
-            tvdb_url = f"{self.movie_id_url}{tvdb_id}"
+    def get_movie(self, language, tvdb_url):
+        try:
+            tvdb_url = f"{self.movie_id_url}{int(tvdb_url)}"
+        except ValueError:
+            pass
         return TVDbObj(tvdb_url, language, True, self)
 
-    def get_list_description(self, language, tvdb_url):
+    def get_list_description(self, tvdb_url, language):
         description = self.send_request(tvdb_url, language).xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
         return description[0] if len(description) > 0 and len(description[0]) > 0 else ""
 
@@ -102,11 +105,11 @@ class TVDbAPI:
                     title = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/text()")[0]
                     item_url = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/@href")[0]
                     if item_url.startswith("/series/"):
-                        try:                                                    show_ids.append(self.get_series(language, tvdb_url=f"{self.site_url}{item_url}").id)
+                        try:                                                    show_ids.append(self.get_series(language, f"{self.site_url}{item_url}").id)
                         except Failed as e:                                     logger.error(f"{e} for series {title}")
                     elif item_url.startswith("/movies/"):
                         try:
-                            tmdb_id = self.get_movie(language, tvdb_url=f"{self.site_url}{item_url}").tmdb_id
+                            tmdb_id = self.get_movie(language, f"{self.site_url}{item_url}").tmdb_id
                             if tmdb_id:                                             movie_ids.append(tmdb_id)
                             else:                                                   raise Failed(f"TVDb Error: TMDb ID not found from TVDb URL: {tvdb_url}")
                         except Failed as e:
@@ -133,11 +136,9 @@ class TVDbAPI:
         if status_message:
             logger.info(f"Processing {pretty}: {data}")
         if method == "tvdb_show":
-            try:                                                    show_ids.append(self.get_series(language, tvdb_id=int(data)).id)
-            except ValueError:                                      show_ids.append(self.get_series(language, tvdb_url=data).id)
+            show_ids.append(self.get_series(language, data).id)
         elif method == "tvdb_movie":
-            try:                                                    movie_ids.append(self.get_movie(language, tvdb_id=int(data)).id)
-            except ValueError:                                      movie_ids.append(self.get_movie(language, tvdb_url=data).id)
+            movie_ids.append(self.get_movie(language, data).id)
         elif method == "tvdb_list":
             tmdb_ids, tvdb_ids = self.get_tvdb_ids_from_url(data, language)
             movie_ids.extend(tmdb_ids)

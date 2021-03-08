@@ -57,7 +57,7 @@ class SonarrAPI:
                     tag_nums.append(tag_cache[label])
         for tvdb_id in tvdb_ids:
             try:
-                show = self.tvdb.get_series(self.language, tvdb_id=tvdb_id)
+                show = self.tvdb.get_series(self.language, tvdb_id)
             except Failed as e:
                 logger.error(e)
                 continue
