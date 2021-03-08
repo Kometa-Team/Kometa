@@ -309,6 +309,7 @@ plex_searches = [
     "genre", #"genre.not",
     "producer", #"producer.not",
     "studio", #"studio.not",
+    "title",
     "writer", #"writer.not"
     "year" #"year.not",
 ]
