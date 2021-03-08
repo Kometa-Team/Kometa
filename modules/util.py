@@ -145,11 +145,15 @@ pretty_names = {
     "tmdb_writer": "TMDb Writer",
     "tmdb_writer_details": "TMDb Writer",
     "trakt_list": "Trakt List",
+    "trakt_list_details": "Trakt List",
     "trakt_trending": "Trakt Trending",
     "trakt_watchlist": "Trakt Watchlist",
     "tvdb_list": "TVDb List",
+    "tvdb_list_details": "TVDb List",
     "tvdb_movie": "TVDb Movie",
-    "tvdb_show": "TVDb Show"
+    "tvdb_movie_details": "TVDb Movie",
+    "tvdb_show": "TVDb Show",
+    "tvdb_show_details": "TVDb Show"
 }
 mal_ranked_name = {
     "mal_all": "all",
@@ -261,11 +265,15 @@ all_lists = [
     "tmdb_writer",
     "tmdb_writer_details",
     "trakt_list",
+    "trakt_list_details",
     "trakt_trending",
     "trakt_watchlist",
     "tvdb_list",
+    "tvdb_list_details",
     "tvdb_movie",
-    "tvdb_show"
+    "tvdb_movie_details",
+    "tvdb_show",
+    "tvdb_show_details"
 ]
 collectionless_lists = [
     "sort_title", "content_rating",
@@ -308,7 +316,8 @@ show_only_lists = [
     "tmdb_network",
     "tmdb_show",
     "tmdb_show_details",
-    "tvdb_show"
+    "tvdb_show",
+    "tvdb_show_details"
 ]
 movie_only_lists = [
     "letterboxd_list",
@@ -317,7 +326,8 @@ movie_only_lists = [
     "tmdb_movie",
     "tmdb_movie_details",
     "tmdb_now_playing",
-    "tvdb_movie"
+    "tvdb_movie",
+    "tvdb_movie_details"
 ]
 movie_only_searches = [
     "actor", "actor.not",

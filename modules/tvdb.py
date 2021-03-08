@@ -36,6 +36,12 @@ class TVDbObj:
         results = response.xpath("//div[@class='row hidden-xs hidden-sm']/div/img/@src")
         self.poster_path = results[0] if len(results) > 0 and len(results[0]) > 0 else None
 
+        results = response.xpath("(//h2[@class='mt-4' and text()='Backgrounds']/following::div/a/@href)[1]")
+        self.background_path = results[0] if len(results) > 0 and len(results[0]) > 0 else None
+
+        results = response.xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
+        self.description = results[0] if len(results) > 0 and len(results[0]) > 0 else None
+
         tmdb_id = None
         if is_movie:
             results = response.xpath("//*[text()='TheMovieDB.com']/@href")
@@ -80,6 +86,10 @@ class TVDbAPI:
         elif not tvdb_url and tvdb_id:
             tvdb_url = f"{self.movie_id_url}{tvdb_id}"
         return TVDbObj(tvdb_url, language, True, self)
+
+    def get_list_description(self, language, tvdb_url):
+        description = self.send_request(tvdb_url, language).xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
+        return description[0] if len(description) > 0 and len(description[0]) > 0 else ""
 
     def get_tvdb_ids_from_url(self, tvdb_url, language):
         show_ids = []
