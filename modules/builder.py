@@ -873,6 +873,13 @@ class CollectionBuilder:
                                 logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_path}")
                             if poster_path is None and background_path is None:
                                 logger.warning(f"No Files Found: {os.path.join(path, folder)}")
+                            if self.library.is_show:
+                                for season in item.seasons():
+                                    matches = glob.glob(os.path.join(path, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
+                                    if len(matches) > 0:
+                                        season_path = os.path.abspath(matches[0])
+                                        season.uploadPoster(filepath=season_path)
+                                        logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
                         else:
                             logger.warning(f"No Folder: {os.path.join(path, folder)}")
 
