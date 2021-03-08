@@ -304,6 +304,8 @@ class CollectionBuilder:
                         else:
                             final_values.append(value)
                     self.methods.append(("plex_search", [[(method_name, final_values)]]))
+                elif method_name == "title":
+                    self.methods.append(("plex_search", [[(method_name, data[m])]]))
                 elif method_name in util.plex_searches:
                     self.methods.append(("plex_search", [[(method_name, util.get_list(data[m]))]]))
                 elif method_name == "plex_all":
@@ -420,6 +422,9 @@ class CollectionBuilder:
                                     if len(years) > 0:
                                         used.append(util.remove_not(search))
                                         searches.append((search, util.get_int_list(data[m][s], util.remove_not(search))))
+                                elif search == "title":
+                                    used.append(util.remove_not(search))
+                                    searches.append((search, data[m][s]))
                                 elif search in util.plex_searches:
                                     used.append(util.remove_not(search))
                                     searches.append((search, util.get_list(data[m][s])))
@@ -644,18 +649,33 @@ class CollectionBuilder:
                     items_found += len(items)
                 elif method == "plex_search":
                     search_terms = {}
-                    for i, attr_pair in enumerate(value):
-                        search_list = attr_pair[1]
-                        final_method = attr_pair[0][:-4] + "!" if attr_pair[0][-4:] == ".not" else attr_pair[0]
-                        if self.library.is_show:
-                            final_method = "show." + final_method
-                        search_terms[final_method] = search_list
-                        ors = ""
-                        for o, param in enumerate(attr_pair[1]):
-                            or_des = " OR " if o > 0 else f"{attr_pair[0]}("
-                            ors += f"{or_des}{param}"
-                        logger.info(f"\t\t      AND {ors})" if i > 0 else f"Processing {pretty}: {ors})")
-                    items = self.library.Plex.search(**search_terms)
+                    title_search = None
+                    has_processed = False
+                    for search_method, search_data in value:
+                        if search_method == "title":
+                            title_search = search_data
+                            logger.info(f"Processing {pretty}: title({title_search})")
+                            has_processed = True
+
+                    for search_method, search_list in value:
+                        if search_method != "title":
+                            final_method = search_method[:-4] + "!" if search_method[-4:] == ".not" else search_method
+                            if self.library.is_show:
+                                final_method = "show." + final_method
+                            search_terms[final_method] = search_list
+                            ors = ""
+                            for o, param in enumerate(search_list):
+                                or_des = " OR " if o > 0 else f"{search_method}("
+                                ors += f"{or_des}{param}"
+                            if title_search or has_processed:
+                                logger.info(f"\t\t      AND {ors})")
+                            else:
+                                logger.info(f"Processing {pretty}: {ors})")
+                                has_processed = True
+                    if title_search:
+                        items = self.library.Plex.search(title_search, **search_terms)
+                    else:
+                        items = self.library.Plex.search(**search_terms)
                     items_found += len(items)
                 elif method == "plex_collectionless":
                     good_collections = []
