@@ -529,6 +529,38 @@ class CollectionBuilder:
                         logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 20")
                         list_count = 20
                     self.methods.append((method_name, [list_count]))
+                elif "tvdb" in method_name:
+                    values = util.get_list(data[m])
+                    if method_name[-8:] == "_details":
+                        if method_name == "tvdb_movie_details":
+                            try:
+                                item = config.TVDb.get_movie(self.library.Plex.language, tvdb_id=int(values[0])).id
+                            except ValueError:
+                                item = config.TVDb.get_movie(self.library.Plex.language, tvdb_url=values[0]).id
+                            if hasattr(item, "description") and item.description:
+                                self.summaries[method_name] = item.description
+                            if hasattr(item, "background_path") and item.background_path:
+                                self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.background_path}"
+                            if hasattr(item, "poster_path") and item.poster_path:
+                                self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
+                        elif method_name == "tvdb_show_details":
+                            try:
+                                item = config.TVDb.get_series(self.library.Plex.language, tvdb_id=int(values[0])).id
+                            except ValueError:
+                                item = config.TVDb.get_series(self.library.Plex.language, tvdb_url=values[0]).id
+                            if hasattr(item, "description") and item.description:
+                                self.summaries[method_name] = item.description
+                            if hasattr(item, "background_path") and item.background_path:
+                                self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.background_path}"
+                            if hasattr(item, "poster_path") and item.poster_path:
+                                self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
+                        elif method_name == "tvdb_list_details":
+                            description = config.TVDb.get_list_description(self.library.Plex.language, values[0])
+                            if description and len(description) > 0:
+                                self.summaries[method_name] = description
+                        self.methods.append((method_name[:-8], values))
+                    else:
+                        self.methods.append((method_name, values))
                 elif method_name in util.tmdb_lists:
                     values = config.TMDb.validate_tmdb_list(util.get_int_list(data[m], f"TMDb {util.tmdb_type[method_name]} ID"), util.tmdb_type[method_name])
                     if method_name[-8:] == "_details":
@@ -761,6 +793,8 @@ class CollectionBuilder:
         elif "tmdb_producer_details" in self.summaries:     summary = get_summary("tmdb_producer_details", self.summaries)
         elif "tmdb_writer_details" in self.summaries:       summary = get_summary("tmdb_writer_details", self.summaries)
         elif "tmdb_movie_details" in self.summaries:        summary = get_summary("tmdb_movie_details", self.summaries)
+        elif "tvdb_movie_details" in self.summaries:        summary = get_summary("tvdb_movie_details", self.summaries)
+        elif "tvdb_show_details" in self.summaries:         summary = get_summary("tvdb_show_details", self.summaries)
         elif "tmdb_show_details" in self.summaries:         summary = get_summary("tmdb_show_details", self.summaries)
         else:                                               summary = None
         if summary:
@@ -868,6 +902,8 @@ class CollectionBuilder:
         elif "tmdb_producer_details" in self.posters:       set_image("tmdb_producer_details", self.posters)
         elif "tmdb_writer_details" in self.posters:         set_image("tmdb_writer_details", self.posters)
         elif "tmdb_movie_details" in self.posters:          set_image("tmdb_movie_details", self.posters)
+        elif "tvdb_movie_details" in self.posters:          set_image("tvdb_movie_details", self.posters)
+        elif "tvdb_show_details" in self.posters:           set_image("tvdb_show_details", self.posters)
         elif "tmdb_show_details" in self.posters:           set_image("tmdb_show_details", self.posters)
         else:                                               logger.info("No poster to update")
 
@@ -884,6 +920,8 @@ class CollectionBuilder:
         elif "asset_directory" in self.backgrounds:         set_image("asset_directory", self.backgrounds, is_background=True)
         elif "tmdb_collection_details" in self.backgrounds: set_image("tmdb_collection_details", self.backgrounds, is_background=True)
         elif "tmdb_movie_details" in self.backgrounds:      set_image("tmdb_movie_details", self.backgrounds, is_background=True)
+        elif "tvdb_movie_details" in self.backgrounds:      set_image("tvdb_movie_details", self.backgrounds, is_background=True)
+        elif "tvdb_show_details" in self.backgrounds:       set_image("tvdb_show_details", self.backgrounds, is_background=True)
         elif "tmdb_show_details" in self.backgrounds:       set_image("tmdb_show_details", self.backgrounds, is_background=True)
         else:                                               logger.info("No background to update")
 
