@@ -545,10 +545,10 @@ class CollectionBuilder:
                     else:
                         raise Failed(f"Collection Error: {m} attribute is not a dictionary: {data[m]}")
                 elif method_name in util.count_lists:
-                    list_count = util.regex_first_int(data[m], "List Size", default=20)
+                    list_count = util.regex_first_int(data[m], "List Size", default=10)
                     if list_count < 1:
-                        logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 20")
-                        list_count = 20
+                        logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 10")
+                        list_count = 10
                     self.methods.append((method_name, [list_count]))
                 elif "tvdb" in method_name:
                     values = util.get_list(data[m])

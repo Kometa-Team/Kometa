@@ -23,17 +23,17 @@ separating_character = "="
 screen_width = 100
 
 method_alias = {
-        "actors": "actor", "role": "actor", "roles": "actor",
-        "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
-        "countries": "country",
-        "decades": "decade",
-        "directors": "director",
-        "genres": "genre",
-        "studios": "studio", "network": "studio", "networks": "studio",
-        "producers": "producer",
-        "writers": "writer",
-        "years": "year"
-    }
+    "actors": "actor", "role": "actor", "roles": "actor",
+    "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
+    "countries": "country",
+    "decades": "decade",
+    "directors": "director",
+    "genres": "genre",
+    "studios": "studio", "network": "studio", "networks": "studio",
+    "producers": "producer",
+    "writers": "writer",
+    "years": "year"
+}
 filter_alias = {
     "actor": "actors",
     "audio_language": "audio_language",
@@ -145,9 +145,14 @@ pretty_names = {
     "tmdb_trending_weekly": "TMDb Trending Weekly",
     "tmdb_writer": "TMDb Writer",
     "tmdb_writer_details": "TMDb Writer",
+    "trakt_collected": "Trakt Collected",
     "trakt_list": "Trakt List",
     "trakt_list_details": "Trakt List",
+    "trakt_played": "Trakt Played",
+    "trakt_popular": "Trakt Popular",
+    "trakt_recommended": "Trakt Recommended",
     "trakt_trending": "Trakt Trending",
+    "trakt_watched": "Trakt Watched",
     "trakt_watchlist": "Trakt Watchlist",
     "tvdb_list": "TVDb List",
     "tvdb_list_details": "TVDb List",
@@ -266,9 +271,14 @@ all_lists = [
     "tmdb_trending_weekly",
     "tmdb_writer",
     "tmdb_writer_details",
+    "trakt_collected",
     "trakt_list",
     "trakt_list_details",
+    "trakt_played",
+    "trakt_popular",
+    "trakt_recommended",
     "trakt_trending",
+    "trakt_watched",
     "trakt_watchlist",
     "tvdb_list",
     "tvdb_list_details",
@@ -364,7 +374,12 @@ count_lists = [
     "tmdb_now_playing",
     "tmdb_trending_daily",
     "tmdb_trending_weekly",
-    "trakt_trending"
+    "trakt_trending",
+    "trakt_popular",
+    "trakt_recommended",
+    "trakt_played",
+    "trakt_watched",
+    "trakt_collected"
 ]
 tmdb_lists = [
     "tmdb_actor",
