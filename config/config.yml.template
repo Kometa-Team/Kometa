@@ -43,6 +43,8 @@ sonarr:                                         # Can be individually specified 
   root_folder_path: "S:/TV Shows"
   add: false
   search: false
+omdb:
+  apikey: ########
 trakt:
   client_id: ################################################################
   client_secret: ################################################################

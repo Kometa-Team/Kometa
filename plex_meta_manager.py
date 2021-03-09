@@ -1,7 +1,12 @@
-import argparse, logging, os, re, schedule, sys, time
+import argparse, logging, os, re, sys, time
 from datetime import datetime
-from modules import tests, util
-from modules.config import Config
+try:
+    import schedule
+    from modules import tests, util
+    from modules.config import Config
+except ModuleNotFoundError:
+    print("Error: Requirements are not installed")
+    sys.exit(0)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--my-tests", dest="tests", help=argparse.SUPPRESS, action="store_true", default=False)
@@ -60,7 +65,7 @@ logger.info(util.get_centered_text("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _`
 logger.info(util.get_centered_text("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
 logger.info(util.get_centered_text("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
 logger.info(util.get_centered_text("                                                                     |___/           "))
-logger.info(util.get_centered_text("    Version: 1.3.0                                                                   "))
+logger.info(util.get_centered_text("    Version: 1.4.0                                                                   "))
 util.separator()
 
 if args.tests:

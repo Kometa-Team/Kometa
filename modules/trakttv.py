@@ -105,10 +105,10 @@ class TraktAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def standard_list(self, data):
-        try:                                items = Trakt[requests.utils.urlparse(data).path].items()
-        except AttributeError:              items = None
-        if items is None:                   raise Failed("Trakt Error: No List found")
-        else:                               return items
+        try:                                trakt_list = Trakt[requests.utils.urlparse(data).path].get()
+        except AttributeError:              trakt_list = None
+        if trakt_list is None:              raise Failed("Trakt Error: No List found")
+        else:                               return trakt_list
 
     def validate_trakt_list(self, values):
         trakt_values = []
@@ -145,7 +145,7 @@ class TraktAPI:
                 logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
         else:
             if method == "trakt_watchlist":             trakt_items = self.watchlist(data, is_movie)
-            elif method == "trakt_list":                trakt_items = self.standard_list(data)
+            elif method == "trakt_list":                trakt_items = self.standard_list(data).items()
             else:                                       raise Failed(f"Trakt Error: Method {method} not supported")
             if status_message:                          logger.info(f"Processing {pretty}: {data}")
         show_ids = []
