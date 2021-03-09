@@ -97,6 +97,8 @@ pretty_names = {
     "anidb_popular": "AniDB Popular",
     "imdb_list": "IMDb List",
     "imdb_id": "IMDb ID",
+    "letterboxd_list": "Letterboxd List",
+    "letterboxd_list_details": "Letterboxd List",
     "mal_id": "MyAnimeList ID",
     "mal_all": "MyAnimeList All",
     "mal_airing": "MyAnimeList Airing",
@@ -144,11 +146,15 @@ pretty_names = {
     "tmdb_writer": "TMDb Writer",
     "tmdb_writer_details": "TMDb Writer",
     "trakt_list": "Trakt List",
+    "trakt_list_details": "Trakt List",
     "trakt_trending": "Trakt Trending",
     "trakt_watchlist": "Trakt Watchlist",
     "tvdb_list": "TVDb List",
+    "tvdb_list_details": "TVDb List",
     "tvdb_movie": "TVDb Movie",
-    "tvdb_show": "TVDb Show"
+    "tvdb_movie_details": "TVDb Movie",
+    "tvdb_show": "TVDb Show",
+    "tvdb_show_details": "TVDb Show"
 }
 mal_ranked_name = {
     "mal_all": "all",
@@ -214,6 +220,8 @@ all_lists = [
     "anidb_popular",
     "imdb_list",
     "imdb_id",
+    "letterboxd_list",
+    "letterboxd_list_details",
     "mal_id",
     "mal_all",
     "mal_airing",
@@ -259,11 +267,15 @@ all_lists = [
     "tmdb_writer",
     "tmdb_writer_details",
     "trakt_list",
+    "trakt_list_details",
     "trakt_trending",
     "trakt_watchlist",
     "tvdb_list",
+    "tvdb_list_details",
     "tvdb_movie",
-    "tvdb_show"
+    "tvdb_movie_details",
+    "tvdb_show",
+    "tvdb_show_details"
 ]
 collectionless_lists = [
     "sort_title", "content_rating",
@@ -299,6 +311,7 @@ plex_searches = [
     "genre", #"genre.not",
     "producer", #"producer.not",
     "studio", #"studio.not",
+    "title",
     "writer", #"writer.not"
     "year" #"year.not",
 ]
@@ -306,15 +319,19 @@ show_only_lists = [
     "tmdb_network",
     "tmdb_show",
     "tmdb_show_details",
-    "tvdb_show"
+    "tvdb_show",
+    "tvdb_show_details"
 ]
 movie_only_lists = [
+    "letterboxd_list",
+    "letterboxd_list_details",
     "tmdb_collection",
     "tmdb_collection_details",
     "tmdb_movie",
     "tmdb_movie_details",
     "tmdb_now_playing",
-    "tvdb_movie"
+    "tvdb_movie",
+    "tvdb_movie_details"
 ]
 movie_only_searches = [
     "actor", "actor.not",
@@ -440,10 +457,10 @@ boolean_details = [
 ]
 all_details = [
     "sort_title", "content_rating",
-    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography",
+    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary", "tvdb_description", "trakt_description", "letterboxd_description",
     "collection_mode", "collection_order",
-    "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
-    "url_background", "file_background",
+    "url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster",
+    "url_background", "tmdb_background", "tvdb_background", "file_background",
     "name_mapping", "add_to_arr", "arr_tag", "label",
     "show_filtered", "show_missing", "save_missing"
 ]

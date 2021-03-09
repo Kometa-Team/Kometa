@@ -240,6 +240,14 @@ class CollectionBuilder:
                     self.summaries[method_name] = config.TMDb.get_list(util.regex_first_int(data[m], "TMDb List ID")).description
                 elif method_name == "tmdb_biography":
                     self.summaries[method_name] = config.TMDb.get_person(util.regex_first_int(data[m], "TMDb Person ID")).biography
+                elif method_name == "tvdb_summary":
+                    self.summaries[method_name] = config.TVDb.get_movie_or_show(data[m], self.library.Plex.language, self.library.is_movie).summary
+                elif method_name == "tvdb_description":
+                    self.summaries[method_name] = config.TVDb.get_list_description(data[m], self.library.Plex.language)
+                elif method_name == "trakt_description":
+                    self.summaries[method_name] = config.Trakt.standard_list(config.Trakt.validate_trakt_list(util.get_list(data[m]))[0]).description
+                elif method_name == "letterboxd_description":
+                    self.summaries[method_name] = config.Letterboxd.get_list_description(data[m], self.library.Plex.language)
                 elif method_name == "collection_mode":
                     if data[m] in ["default", "hide", "hide_items", "show_items", "hideItems", "showItems"]:
                         if data[m] == "hide_items":                                 self.details[method_name] = "hideItems"
@@ -258,6 +266,8 @@ class CollectionBuilder:
                     self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], 'TMDb ID'), self.library.is_movie).poster_path}"
                 elif method_name == "tmdb_profile":
                     self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_person(util.regex_first_int(data[m], 'TMDb Person ID')).profile_path}"
+                elif method_name == "tvdb_poster":
+                    self.posters[method_name] = f"{config.TVDb.get_movie_or_series(data[m], self.library.Plex.language, self.library.is_movie).poster_path}"
                 elif method_name == "file_poster":
                     if os.path.exists(data[m]):                                 self.posters[method_name] = os.path.abspath(data[m])
                     else:                                                       raise Failed(f"Collection Error: Poster Path Does Not Exist: {os.path.abspath(data[m])}")
@@ -265,6 +275,8 @@ class CollectionBuilder:
                     self.backgrounds[method_name] = data[m]
                 elif method_name == "tmdb_background":
                     self.backgrounds[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], 'TMDb ID'), self.library.is_movie).poster_path}"
+                elif method_name == "tvdb_background":
+                    self.posters[method_name] = f"{config.TVDb.get_movie_or_series(data[m], self.library.Plex.language, self.library.is_movie).background_path}"
                 elif method_name == "file_background":
                     if os.path.exists(data[m]):                                 self.backgrounds[method_name] = os.path.abspath(data[m])
                     else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(data[m])}")
@@ -294,6 +306,8 @@ class CollectionBuilder:
                         else:
                             final_values.append(value)
                     self.methods.append(("plex_search", [[(method_name, final_values)]]))
+                elif method_name == "title":
+                    self.methods.append(("plex_search", [[(method_name, data[m])]]))
                 elif method_name in util.plex_searches:
                     self.methods.append(("plex_search", [[(method_name, util.get_list(data[m]))]]))
                 elif method_name == "plex_all":
@@ -313,6 +327,12 @@ class CollectionBuilder:
                     self.methods.append((method_name, config.AniDB.validate_anidb_list(util.get_int_list(data[m], "AniDB ID"), self.library.Plex.language)))
                 elif method_name == "trakt_list":
                     self.methods.append((method_name, config.Trakt.validate_trakt_list(util.get_list(data[m]))))
+                elif method_name == "trakt_list_details":
+                    valid_list = config.Trakt.validate_trakt_list(util.get_list(data[m]))
+                    item = config.Trakt.standard_list(valid_list[0])
+                    if hasattr(item, "description") and item.description:
+                        self.summaries[method_name] = item.description
+                    self.methods.append((method_name[:-8], valid_list))
                 elif method_name == "trakt_watchlist":
                     self.methods.append((method_name, config.Trakt.validate_trakt_watchlist(util.get_list(data[m]), self.library.is_movie)))
                 elif method_name == "imdb_list":
@@ -327,6 +347,12 @@ class CollectionBuilder:
                             list_count = 0
                         new_list.append({"url": imdb_url, "limit": list_count})
                     self.methods.append((method_name, new_list))
+                elif method_name == "letterboxd_list":
+                    self.methods.append((method_name, util.get_list(data[m], split=False)))
+                elif method_name == "letterboxd_list_details":
+                    values = util.get_list(data[m], split=False)
+                    self.summaries[method_name] = config.Letterboxd.get_list_description(values[0], self.library.Plex.language)
+                    self.methods.append((method_name[:-8], values))
                 elif method_name in util.dictionary_lists:
                     if isinstance(data[m], dict):
                         def get_int(parent, method, data_in, default_in, minimum=1, maximum=None):
@@ -402,6 +428,9 @@ class CollectionBuilder:
                                     if len(years) > 0:
                                         used.append(util.remove_not(search))
                                         searches.append((search, util.get_int_list(data[m][s], util.remove_not(search))))
+                                elif search == "title":
+                                    used.append(util.remove_not(search))
+                                    searches.append((search, data[m][s]))
                                 elif search in util.plex_searches:
                                     used.append(util.remove_not(search))
                                     searches.append((search, util.get_list(data[m][s])))
@@ -521,6 +550,30 @@ class CollectionBuilder:
                         logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 20")
                         list_count = 20
                     self.methods.append((method_name, [list_count]))
+                elif "tvdb" in method_name:
+                    values = util.get_list(data[m])
+                    if method_name[-8:] == "_details":
+                        if method_name == "tvdb_movie_details":
+                            item = config.TVDb.get_movie(self.library.Plex.language, values[0])
+                            if hasattr(item, "description") and item.description:
+                                self.summaries[method_name] = item.description
+                            if hasattr(item, "background_path") and item.background_path:
+                                self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.background_path}"
+                            if hasattr(item, "poster_path") and item.poster_path:
+                                self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
+                        elif method_name == "tvdb_show_details":
+                            item = config.TVDb.get_series(self.library.Plex.language, values[0])
+                            if hasattr(item, "description") and item.description:
+                                self.summaries[method_name] = item.description
+                            if hasattr(item, "background_path") and item.background_path:
+                                self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.background_path}"
+                            if hasattr(item, "poster_path") and item.poster_path:
+                                self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
+                        elif method_name == "tvdb_list_details":
+                            self.summaries[method_name] = config.TVDb.get_list_description(values[0], self.library.Plex.language)
+                        self.methods.append((method_name[:-8], values))
+                    else:
+                        self.methods.append((method_name, values))
                 elif method_name in util.tmdb_lists:
                     values = config.TMDb.validate_tmdb_list(util.get_int_list(data[m], f"TMDb {util.tmdb_type[method_name]} ID"), util.tmdb_type[method_name])
                     if method_name[-8:] == "_details":
@@ -549,8 +602,10 @@ class CollectionBuilder:
                     self.methods.append((method_name, util.get_list(data[m])))
                 elif method_name not in util.other_attributes:
                     raise Failed(f"Collection Error: {method_name} attribute not supported")
-            else:
+            elif m in util.all_lists or m in util.method_alias or m in util.plex_searches:
                 raise Failed(f"Collection Error: {m} attribute is blank")
+            else:
+                logger.warning(f"Collection Warning: {m} attribute is blank")
 
         self.sync = self.library.sync_mode == "sync"
         if "sync_mode" in data:
@@ -600,18 +655,33 @@ class CollectionBuilder:
                     items_found += len(items)
                 elif method == "plex_search":
                     search_terms = {}
-                    for i, attr_pair in enumerate(value):
-                        search_list = attr_pair[1]
-                        final_method = attr_pair[0][:-4] + "!" if attr_pair[0][-4:] == ".not" else attr_pair[0]
-                        if self.library.is_show:
-                            final_method = "show." + final_method
-                        search_terms[final_method] = search_list
-                        ors = ""
-                        for o, param in enumerate(attr_pair[1]):
-                            or_des = " OR " if o > 0 else f"{attr_pair[0]}("
-                            ors += f"{or_des}{param}"
-                        logger.info(f"\t\t      AND {ors})" if i > 0 else f"Processing {pretty}: {ors})")
-                    items = self.library.Plex.search(**search_terms)
+                    title_search = None
+                    has_processed = False
+                    for search_method, search_data in value:
+                        if search_method == "title":
+                            title_search = search_data
+                            logger.info(f"Processing {pretty}: title({title_search})")
+                            has_processed = True
+
+                    for search_method, search_list in value:
+                        if search_method != "title":
+                            final_method = search_method[:-4] + "!" if search_method[-4:] == ".not" else search_method
+                            if self.library.is_show:
+                                final_method = "show." + final_method
+                            search_terms[final_method] = search_list
+                            ors = ""
+                            for o, param in enumerate(search_list):
+                                or_des = " OR " if o > 0 else f"{search_method}("
+                                ors += f"{or_des}{param}"
+                            if title_search or has_processed:
+                                logger.info(f"\t\t      AND {ors})")
+                            else:
+                                logger.info(f"Processing {pretty}: {ors})")
+                                has_processed = True
+                    if title_search:
+                        items = self.library.Plex.search(title_search, **search_terms)
+                    else:
+                        items = self.library.Plex.search(**search_terms)
                     items_found += len(items)
                 elif method == "plex_collectionless":
                     good_collections = []
@@ -648,6 +718,7 @@ class CollectionBuilder:
                 elif "mal" in method:                               items_found += check_map(self.config.MyAnimeList.get_items(method, value))
                 elif "tvdb" in method:                              items_found += check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
                 elif "imdb" in method:                              items_found += check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language))
+                elif "letterboxd" in method:                        items_found += check_map(self.config.Letterboxd.get_items(method, value, self.library.Plex.language))
                 elif "tmdb" in method:                              items_found += check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
                 elif "trakt" in method:                             items_found += check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
@@ -694,7 +765,7 @@ class CollectionBuilder:
                         missing_shows_with_names = []
                         for missing_id in missing_shows:
                             try:
-                                title = str(self.config.TVDb.get_series(self.library.Plex.language, tvdb_id=missing_id).title.encode("ascii", "replace").decode())
+                                title = str(self.config.TVDb.get_series(self.library.Plex.language, missing_id).title.encode("ascii", "replace").decode())
                             except Failed as e:
                                 logger.error(e)
                                 continue
@@ -738,10 +809,13 @@ class CollectionBuilder:
             return summaries[summary_method]
         if "summary" in self.summaries:                     summary = get_summary("summary", self.summaries)
         elif "tmdb_description" in self.summaries:          summary = get_summary("tmdb_description", self.summaries)
+        elif "letterboxd_description" in self.summaries:    summary = get_summary("letterboxd_description", self.summaries)
         elif "tmdb_summary" in self.summaries:              summary = get_summary("tmdb_summary", self.summaries)
+        elif "tvdb_summary" in self.summaries:              summary = get_summary("tvdb_summary", self.summaries)
         elif "tmdb_biography" in self.summaries:            summary = get_summary("tmdb_biography", self.summaries)
         elif "tmdb_person" in self.summaries:               summary = get_summary("tmdb_person", self.summaries)
         elif "tmdb_collection_details" in self.summaries:   summary = get_summary("tmdb_collection_details", self.summaries)
+        elif "trakt_list_details" in self.summaries:        summary = get_summary("trakt_list_details", self.summaries)
         elif "tmdb_list_details" in self.summaries:         summary = get_summary("tmdb_list_details", self.summaries)
         elif "tmdb_actor_details" in self.summaries:        summary = get_summary("tmdb_actor_details", self.summaries)
         elif "tmdb_crew_details" in self.summaries:         summary = get_summary("tmdb_crew_details", self.summaries)
@@ -749,6 +823,8 @@ class CollectionBuilder:
         elif "tmdb_producer_details" in self.summaries:     summary = get_summary("tmdb_producer_details", self.summaries)
         elif "tmdb_writer_details" in self.summaries:       summary = get_summary("tmdb_writer_details", self.summaries)
         elif "tmdb_movie_details" in self.summaries:        summary = get_summary("tmdb_movie_details", self.summaries)
+        elif "tvdb_movie_details" in self.summaries:        summary = get_summary("tvdb_movie_details", self.summaries)
+        elif "tvdb_show_details" in self.summaries:         summary = get_summary("tvdb_show_details", self.summaries)
         elif "tmdb_show_details" in self.summaries:         summary = get_summary("tmdb_show_details", self.summaries)
         else:                                               summary = None
         if summary:
@@ -810,7 +886,7 @@ class CollectionBuilder:
                 dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
                 if len(dirs) > 0:
                     for item in collection.items():
-                        folder = os.path.basename(os.path.dirname(item.locations[0]))
+                        folder = os.path.basename(os.path.dirname(item.locations[0]) if self.library.is_movie else item.locations[0])
                         if folder in dirs:
                             matches = glob.glob(os.path.join(path, folder, "poster.*"))
                             poster_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
@@ -824,6 +900,13 @@ class CollectionBuilder:
                                 logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_path}")
                             if poster_path is None and background_path is None:
                                 logger.warning(f"No Files Found: {os.path.join(path, folder)}")
+                            if self.library.is_show:
+                                for season in item.seasons():
+                                    matches = glob.glob(os.path.join(path, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
+                                    if len(matches) > 0:
+                                        season_path = os.path.abspath(matches[0])
+                                        season.uploadPoster(filepath=season_path)
+                                        logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
                         else:
                             logger.warning(f"No Folder: {os.path.join(path, folder)}")
 
@@ -847,16 +930,19 @@ class CollectionBuilder:
         elif "file_poster" in self.posters:                 set_image("file_poster", self.posters)
         elif "tmdb_poster" in self.posters:                 set_image("tmdb_poster", self.posters)
         elif "tmdb_profile" in self.posters:                set_image("tmdb_profile", self.posters)
+        elif "tvdb_poster" in self.posters:                 set_image("tvdb_poster", self.posters)
         elif "asset_directory" in self.posters:             set_image("asset_directory", self.posters)
         elif "tmdb_person" in self.posters:                 set_image("tmdb_person", self.posters)
-        elif "tmdb_collection_details" in self.posters:     set_image("tmdb_collection", self.posters)
+        elif "tmdb_collection_details" in self.posters:     set_image("tmdb_collection_details", self.posters)
         elif "tmdb_actor_details" in self.posters:          set_image("tmdb_actor_details", self.posters)
         elif "tmdb_crew_details" in self.posters:           set_image("tmdb_crew_details", self.posters)
         elif "tmdb_director_details" in self.posters:       set_image("tmdb_director_details", self.posters)
         elif "tmdb_producer_details" in self.posters:       set_image("tmdb_producer_details", self.posters)
         elif "tmdb_writer_details" in self.posters:         set_image("tmdb_writer_details", self.posters)
-        elif "tmdb_movie_details" in self.posters:          set_image("tmdb_movie", self.posters)
-        elif "tmdb_show_details" in self.posters:           set_image("tmdb_show", self.posters)
+        elif "tmdb_movie_details" in self.posters:          set_image("tmdb_movie_details", self.posters)
+        elif "tvdb_movie_details" in self.posters:          set_image("tvdb_movie_details", self.posters)
+        elif "tvdb_show_details" in self.posters:           set_image("tvdb_show_details", self.posters)
+        elif "tmdb_show_details" in self.posters:           set_image("tmdb_show_details", self.posters)
         else:                                               logger.info("No poster to update")
 
         logger.info("")
@@ -867,25 +953,28 @@ class CollectionBuilder:
                 logger.info(f"Method: {b} Background: {self.backgrounds[b]}")
 
         if "url_background" in self.backgrounds:            set_image("url_background", self.backgrounds, is_background=True)
-        elif "file_background" in self.backgrounds:         set_image("file_poster", self.backgrounds, is_background=True)
-        elif "tmdb_background" in self.backgrounds:         set_image("tmdb_poster", self.backgrounds, is_background=True)
+        elif "file_background" in self.backgrounds:         set_image("file_background", self.backgrounds, is_background=True)
+        elif "tmdb_background" in self.backgrounds:         set_image("tmdb_background", self.backgrounds, is_background=True)
+        elif "tvdb_background" in self.backgrounds:         set_image("tvdb_background", self.backgrounds, is_background=True)
         elif "asset_directory" in self.backgrounds:         set_image("asset_directory", self.backgrounds, is_background=True)
-        elif "tmdb_collection_details" in self.backgrounds: set_image("tmdb_collection", self.backgrounds, is_background=True)
-        elif "tmdb_movie_details" in self.backgrounds:      set_image("tmdb_movie", self.backgrounds, is_background=True)
-        elif "tmdb_show_details" in self.backgrounds:       set_image("tmdb_show", self.backgrounds, is_background=True)
+        elif "tmdb_collection_details" in self.backgrounds: set_image("tmdb_collection_details", self.backgrounds, is_background=True)
+        elif "tmdb_movie_details" in self.backgrounds:      set_image("tmdb_movie_details", self.backgrounds, is_background=True)
+        elif "tvdb_movie_details" in self.backgrounds:      set_image("tvdb_movie_details", self.backgrounds, is_background=True)
+        elif "tvdb_show_details" in self.backgrounds:       set_image("tvdb_show_details", self.backgrounds, is_background=True)
+        elif "tmdb_show_details" in self.backgrounds:       set_image("tmdb_show_details", self.backgrounds, is_background=True)
         else:                                               logger.info("No background to update")
 
-    def run_collections_again(self, library, collection_obj, movie_map, show_map):
+    def run_collections_again(self, collection_obj, movie_map, show_map):
         collection_items = collection_obj.items() if isinstance(collection_obj, Collections) else []
         name = collection_obj.title if isinstance(collection_obj, Collections) else collection_obj
         rating_keys = [movie_map[mm] for mm in self.missing_movies if mm in movie_map]
-        if library.is_show:
+        if self.library.is_show:
             rating_keys.extend([show_map[sm] for sm in self.missing_shows if sm in show_map])
 
         if len(rating_keys) > 0:
             for rating_key in rating_keys:
                 try:
-                    current = library.fetchItem(int(rating_key))
+                    current = self.library.fetchItem(int(rating_key))
                 except (BadRequest, NotFound):
                     logger.error(f"Plex Error: Item {rating_key} not found")
                     continue
@@ -894,7 +983,7 @@ class CollectionBuilder:
                 else:
                     current.addCollection(name)
                     logger.info(f"{name} Collection | + | {current.title}")
-            logger.info(f"{len(rating_keys)} {'Movie' if library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
+            logger.info(f"{len(rating_keys)} {'Movie' if self.library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
 
         if len(self.missing_movies) > 0:
             logger.info("")
@@ -910,12 +999,12 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"{len(self.missing_movies)} Movie{'s' if len(self.missing_movies) > 1 else ''} Missing")
 
-        if len(self.missing_shows) > 0 and library.is_show:
+        if len(self.missing_shows) > 0 and self.library.is_show:
             logger.info("")
             for missing_id in self.missing_shows:
                 if missing_id not in show_map:
                     try:
-                        title = str(self.config.TVDb.get_series(self.library.Plex.language, tvdb_id=missing_id).title.encode("ascii", "replace").decode())
+                        title = str(self.config.TVDb.get_series(self.library.Plex.language, missing_id).title.encode("ascii", "replace").decode())
                     except Failed as e:
                         logger.error(e)
                         continue
