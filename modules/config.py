@@ -326,7 +326,7 @@ class Config:
                 library = PlexAPI(params, self.TMDb, self.TVDb)
                 logger.info(f"{params['name']} Library Connection Successful")
             except Failed as e:
-                util.print_multiline(e)
+                logger.error(e)
                 logger.info(f"{params['name']} Library Connection Failed")
                 continue
 
