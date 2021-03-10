@@ -453,6 +453,7 @@ tmdb_type = {
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
+    "audio_track_title", "audio_track_title.not",
     "collection", "collection.not",
     "content_rating", "content_rating.not",
     "country", "country.not",
@@ -472,6 +473,7 @@ all_filters = [
 ]
 movie_only_filters = [
     "audio_language", "audio_language.not",
+    "audio_track_title", "audio_track_title.not",
     "country", "country.not",
     "director", "director.not",
     "duration.gte", "duration.lte",

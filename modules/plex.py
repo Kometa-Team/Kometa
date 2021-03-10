@@ -151,6 +151,18 @@ class PlexAPI:
                         if (modifier == ".not" and movie.original_language in filter_data) or (modifier != ".not" and movie.original_language not in filter_data):
                             match = False
                             break
+                    elif method == "audio_track_title":
+                        for media in current.media:
+                            for part in media.parts:
+                                for audio in part.audioStreams():
+                                    for check_title in filter_data:
+                                        if (modifier == ".not" and check_title.lower() in audio.title.lower()) or (modifier != ".not" and check_title.lower() not in audio.title.lower()):
+                                            match = False
+                                            break
+                                    if match is False: break
+                                if match is False: break
+                            if match is False: break
+                        if match is False: break
                     elif modifier in [".gte", ".lte"]:
                         if method == "vote_count":
                             tmdb_item = None
@@ -174,10 +186,10 @@ class PlexAPI:
                         attrs = []
                         if method in ["video_resolution", "audio_language", "subtitle_language"]:
                             for media in current.media:
-                                if method == "video_resolution":                                                                attrs = [media.videoResolution]
+                                if method == "video_resolution":                                                                attrs.extend([media.videoResolution])
                                 for part in media.parts:
-                                    if method == "audio_language":                                                                  attrs = ([a.language for a in part.audioStreams()])
-                                    if method == "subtitle_language":                                                               attrs = ([s.language for s in part.subtitleStreams()])
+                                    if method == "audio_language":                                                                  attrs.extend([a.language for a in part.audioStreams()])
+                                    if method == "subtitle_language":                                                               attrs.extend([s.language for s in part.subtitleStreams()])
                         elif method in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:          attrs = [str(getattr(current, method))]
                         elif method in ["actors", "countries", "directors", "genres", "writers", "collections"]:        attrs = [getattr(x, "tag") for x in getattr(current, method)]
 

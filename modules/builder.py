@@ -562,7 +562,7 @@ class CollectionBuilder:
                             else:                                                   new_dictionary["season"] = data[m]["season"]
 
                             new_dictionary["year"] = get_int(method_name, "year", data[m], current_time.year, minimum=1917, maximum=current_time.year + 1)
-                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, maximum=500)
+                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 0, maximum=500)
                             self.methods.append((method_name, [new_dictionary]))
                     else:
                         raise Failed(f"Collection Error: {m} attribute is not a dictionary: {data[m]}")
