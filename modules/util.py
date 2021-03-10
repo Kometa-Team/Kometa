@@ -154,7 +154,6 @@ pretty_names = {
     "trakt_collected": "Trakt Collected",
     "trakt_list": "Trakt List",
     "trakt_list_details": "Trakt List",
-    "trakt_played": "Trakt Played",
     "trakt_popular": "Trakt Popular",
     "trakt_recommended": "Trakt Recommended",
     "trakt_trending": "Trakt Trending",
@@ -290,7 +289,6 @@ all_lists = [
     "trakt_collected",
     "trakt_list",
     "trakt_list_details",
-    "trakt_played",
     "trakt_popular",
     "trakt_recommended",
     "trakt_trending",
@@ -396,7 +394,6 @@ count_lists = [
     "trakt_trending",
     "trakt_popular",
     "trakt_recommended",
-    "trakt_played",
     "trakt_watched",
     "trakt_collected"
 ]
