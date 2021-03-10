@@ -113,8 +113,8 @@ class TraktAPI:
 
     def get_pagenation(self, pagenation, amount, is_movie):
         items = self.send_request(f"{self.base_url}/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
-        if is_movie:            return [item["ids"]["tmdb" if is_movie else "tvdb"] for item in items], []
-        else:                   return [], [item["ids"]["tmdb" if is_movie else "tvdb"] for item in items]
+        if is_movie:            return [item["ids"]["tmdb"] for item in items], []
+        else:                   return [], [item["ids"]["tvdb"] for item in items]
 
     def validate_trakt_list(self, values):
         trakt_values = []
@@ -145,7 +145,7 @@ class TraktAPI:
             logger.debug(f"Data: {data}")
         pretty = self.aliases[method] if method in self.aliases else method
         media_type = "Movie" if is_movie else "Show"
-        if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_played", "trakt_watched", "trakt_collected"]:
+        if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
             movie_ids, show_ids = self.get_pagenation(method[6:], data, is_movie)
             if status_message:
                 logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
