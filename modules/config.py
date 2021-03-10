@@ -1,6 +1,7 @@
 import logging, os, re, requests, time
 from modules import util
 from modules.anidb import AniDBAPI
+from modules.anilist import AniListAPI
 from modules.builder import CollectionBuilder
 from modules.cache import Cache
 from modules.imdb import IMDbAPI
@@ -227,6 +228,7 @@ class Config:
         self.TVDb = TVDbAPI(self)
         self.IMDb = IMDbAPI(self)
         self.AniDB = AniDBAPI(self)
+        self.AniList = AniListAPI(self)
         self.Letterboxd = LetterboxdAPI()
 
         util.separator()

@@ -1,4 +1,4 @@
-import logging, math, re, requests
+import logging, requests
 from lxml import html
 from modules import util
 from modules.util import Failed

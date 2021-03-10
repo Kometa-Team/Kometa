@@ -123,32 +123,29 @@ class MyAnimeListAPI:
         if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
         else:                           return response
 
-    def parse_mal_ids(self, data):
-        mal_ids = []
-        if "data" in data:
-            for d in data["data"]:
-                mal_ids.append(d["node"]["id"])
-        return mal_ids
+    def request_and_parse_mal_ids(self, url):
+        data = self.send_request(url)
+        return [d["node"]["id"] for d in data["data"]] if "data" in data else []
 
     def get_username(self):
         return self.send_request(f"{self.urls['user']}/@me")["name"]
 
     def get_ranked(self, ranking_type, limit):
         url = f"{self.urls['ranking']}?ranking_type={ranking_type}&limit={limit}"
-        return self.parse_mal_ids(self.send_request(url))
+        return self.request_and_parse_mal_ids(url)
 
     def get_season(self, season, year, sort_by, limit):
         url = f"{self.urls['season']}/{year}/{season}?sort={sort_by}&limit={limit}"
-        return self.parse_mal_ids(self.send_request(url))
+        return self.request_and_parse_mal_ids(url)
 
     def get_suggestions(self, limit):
         url = f"{self.urls['suggestions']}?limit={limit}"
-        return self.parse_mal_ids(self.send_request(url))
+        return self.request_and_parse_mal_ids(url)
 
     def get_userlist(self, username, status, sort_by, limit):
         final_status = "" if status == "all" else f"status={status}&"
         url = f"{self.urls['user']}/{username}/animelist?{final_status}sort={sort_by}&limit={limit}"
-        return self.parse_mal_ids(self.send_request(url))
+        return self.request_and_parse_mal_ids(url)
 
     def get_items(self, method, data, status_message=True):
         if status_message:

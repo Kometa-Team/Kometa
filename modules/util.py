@@ -95,6 +95,12 @@ pretty_names = {
     "anidb_id": "AniDB ID",
     "anidb_relation": "AniDB Relation",
     "anidb_popular": "AniDB Popular",
+    "anilist_id": "AniList ID",
+    "anilist_popular": "AniList Popular",
+    "anilist_relations": "AniList Relations",
+    "anilist_season": "AniList Season",
+    "anilist_studio": "AniList Studio",
+    "anilist_top_rated": "AniList Top Rated",
     "imdb_list": "IMDb List",
     "imdb_id": "IMDb ID",
     "letterboxd_list": "Letterboxd List",
@@ -211,6 +217,10 @@ mal_userlist_status = [
     "dropped",
     "plan_to_watch"
 ]
+anilist_pretty = {
+    "score": "Average Score",
+    "popular": "Popularity"
+}
 pretty_ids = {
     "anidbid": "AniDB",
     "imdbid": "IMDb",
@@ -223,6 +233,12 @@ all_lists = [
     "anidb_id",
     "anidb_relation",
     "anidb_popular",
+    "anilist_id",
+    "anilist_popular",
+    "anilist_relations",
+    "anilist_season",
+    "anilist_studio",
+    "anilist_top_rated",
     "imdb_list",
     "imdb_id",
     "letterboxd_list",
@@ -305,6 +321,7 @@ other_attributes = [
 ]
 dictionary_lists = [
     "filters",
+    "anilist_season",
     "mal_season",
     "mal_userlist",
     "plex_collectionless",
@@ -359,6 +376,8 @@ tmdb_searches = [
 ]
 count_lists = [
     "anidb_popular",
+    "anilist_popular",
+    "anilist_top_rated",
     "mal_all",
     "mal_airing",
     "mal_upcoming",
