@@ -1,5 +1,4 @@
-import logging, math, re, requests
-from lxml import html
+import logging, requests
 from modules import util
 from modules.util import Failed
 from retrying import retry

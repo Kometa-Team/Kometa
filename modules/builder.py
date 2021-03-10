@@ -325,6 +325,8 @@ class CollectionBuilder:
                     self.methods.append((method_name, util.get_int_list(data[m], "MyAnimeList ID")))
                 elif method_name in ["anidb_id", "anidb_relation"]:
                     self.methods.append((method_name, config.AniDB.validate_anidb_list(util.get_int_list(data[m], "AniDB ID"), self.library.Plex.language)))
+                elif method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
+                    self.methods.append((method_name, config.AniList.validate_anilist_ids(util.get_int_list(data[m], "AniList ID"), studio=method_name == "anilist_studio")))
                 elif method_name == "trakt_list":
                     self.methods.append((method_name, config.Trakt.validate_trakt_list(util.get_list(data[m]))))
                 elif method_name == "trakt_list_details":
@@ -541,6 +543,26 @@ class CollectionBuilder:
                             else:                                                   new_dictionary["sort_by"] = util.mal_userlist_sort[data[m]["sort_by"]]
 
                             new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, maximum=1000)
+                            self.methods.append((method_name, [new_dictionary]))
+                        elif method_name == "anilist_season":
+                            new_dictionary = {"sort_by": "score"}
+                            if "sort_by" not in data[m]:                            logger.warning("Collection Warning: anilist_season sort_by attribute not found using score as default")
+                            elif not data[m]["sort_by"]:                            logger.warning("Collection Warning: anilist_season sort_by attribute is blank using score as default")
+                            elif data[m]["sort_by"] not in ["score", "popular"]:    logger.warning(f"Collection Warning: anilist_season sort_by attribute {data[m]['sort_by']} invalid must be either 'score' or 'popular' using score as default")
+                            else:                                                   new_dictionary["sort_by"] = data[m]["sort_by"]
+
+                            if current_time.month in [12, 1, 2]:                    new_dictionary["season"] = "winter"
+                            elif current_time.month in [3, 4, 5]:                   new_dictionary["season"] = "spring"
+                            elif current_time.month in [6, 7, 8]:                   new_dictionary["season"] = "summer"
+                            elif current_time.month in [9, 10, 11]:                 new_dictionary["season"] = "fall"
+
+                            if "season" not in data[m]:                             logger.warning(f"Collection Warning: anilist_season season attribute not found using the current season: {new_dictionary['season']} as default")
+                            elif not data[m]["season"]:                             logger.warning(f"Collection Warning: anilist_season season attribute is blank using the current season: {new_dictionary['season']} as default")
+                            elif data[m]["season"] not in util.pretty_seasons:      logger.warning(f"Collection Warning: anilist_season season attribute {data[m]['season']} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
+                            else:                                                   new_dictionary["season"] = data[m]["season"]
+
+                            new_dictionary["year"] = get_int(method_name, "year", data[m], current_time.year, minimum=1917, maximum=current_time.year + 1)
+                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, maximum=500)
                             self.methods.append((method_name, [new_dictionary]))
                     else:
                         raise Failed(f"Collection Error: {m} attribute is not a dictionary: {data[m]}")
