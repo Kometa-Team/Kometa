@@ -36,23 +36,14 @@ method_alias = {
 }
 filter_alias = {
     "actor": "actors",
-    "audio_language": "audio_language",
-    "audio_track_title": "audio_track_title",
     "collection": "collections",
     "content_rating": "contentRating",
     "country": "countries",
     "director": "directors",
     "genre": "genres",
-    "max_age": "max_age",
     "originally_available": "originallyAvailableAt",
-    "original_language": "original_language",
-    "rating": "rating",
-    "studio": "studio",
-    "subtitle_language": "subtitle_language",
     "tmdb_vote_count": "vote_count",
-    "writer": "writers",
-    "video_resolution": "video_resolution",
-    "year": "year"
+    "writer": "writers"
 }
 days_alias = {
     "monday": 0, "mon": 0, "m": 0,
