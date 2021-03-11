@@ -136,7 +136,6 @@ class PlexAPI:
                         logger.warning(f"Collection Warning: {method} attribute will run as {method_name}")
                     else:
                         method_name = method
-                    method_name = util.filter_alias[filter_method[:-4]] if modifier in [".not", ".lte", ".gte"] else util.filter_alias[filter_method]
                     if method_name == "max_age":
                         threshold_date = datetime.now() - timedelta(days=filter_data)
                         if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
