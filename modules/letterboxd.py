@@ -34,7 +34,7 @@ class LetterboxdAPI:
         ids = response.xpath("//body/@data-tmdb-id")
         if len(ids) > 0 and ids[0]:
             return int(ids[0])
-        raise Failed(f"Letterboxd Error: TMDb ID not found at {letterboxd_url}")
+        raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {letterboxd_url}")
 
     def get_items(self, method, data, language, status_message=True):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
