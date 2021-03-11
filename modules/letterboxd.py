@@ -12,7 +12,7 @@ class LetterboxdAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, language):
-        return html.fromstring(requests.get(url, header={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}).content)
+        return html.fromstring(requests.get(url, headers={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}).content)
 
     def get_list_description(self, list_url, language):
         descriptions = self.send_request(list_url, language).xpath("//meta[@property='og:description']/@content")
@@ -32,7 +32,7 @@ class LetterboxdAPI:
     def get_tmdb(self, letterboxd_url, language):
         response = self.send_request(letterboxd_url, language)
         ids = response.xpath("//body/@data-tmdb-id")
-        if len(ids) > 0:
+        if len(ids) > 0 and ids[0]:
             return int(ids[0])
         raise Failed(f"Letterboxd Error: TMDb ID not found at {letterboxd_url}")
 
@@ -49,7 +49,7 @@ class LetterboxdAPI:
         for i, slug in enumerate(slugs, 1):
             length = util.print_return(length, f"Finding TMDb ID {i}/{total_slugs}")
             try:
-                movie_ids.append(self.get_tmdb(slug, language))
+                movie_ids.append(self.get_tmdb_from_slug(slug, language))
             except Failed as e:
                 logger.error(e)
         util.print_end(length, f"Processed {total_slugs} TMDb IDs")
