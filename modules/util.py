@@ -37,6 +37,7 @@ method_alias = {
 filter_alias = {
     "actor": "actors",
     "audio_language": "audio_language",
+    "audio_track_title": "audio_track_title",
     "collection": "collections",
     "content_rating": "contentRating",
     "country": "countries",

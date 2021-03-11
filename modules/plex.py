@@ -152,17 +152,21 @@ class PlexAPI:
                             match = False
                             break
                     elif method == "audio_track_title":
+                        jailbreak = False
                         for media in current.media:
                             for part in media.parts:
                                 for audio in part.audioStreams():
                                     for check_title in filter_data:
-                                        if (modifier == ".not" and check_title.lower() in audio.title.lower()) or (modifier != ".not" and check_title.lower() not in audio.title.lower()):
-                                            match = False
+                                        title = audio.title if audio.title else ""
+                                        if check_title.lower() in title.lower():
+                                            jailbreak = True
                                             break
-                                    if match is False: break
-                                if match is False: break
-                            if match is False: break
-                        if match is False: break
+                                    if jailbreak: break
+                                if jailbreak: break
+                            if jailbreak: break
+                        if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
+                            match = False
+                            break
                     elif modifier in [".gte", ".lte"]:
                         if method == "vote_count":
                             tmdb_item = None
