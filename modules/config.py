@@ -793,13 +793,14 @@ class Config:
                     elif id_name:                                   error_message = f"Configure TMDb or Trakt to covert {id_name} to {service_name}"
                     else:                                           error_message = f"No ID to convert to {service_name}"
             if self.Cache and ((tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show)):
-                if isinstance(tmdb_id, list):
-                    for i in range(len(tmdb_id)):
-                        util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_id[i] if imdb_id[i] else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
-                        self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_id[i], tvdb_id, anidb_id, mal_id, expired)
-                else:
-                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id if tmdb_id else 'None':<6} | {imdb_id if imdb_id else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
-                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expired)
+                if not isinstance(tmdb_id, list):               tmdb_id = [tmdb_id]
+                if not isinstance(imdb_id, list):               imdb_id = [imdb_id]
+                for i in range(len(tmdb_id)):
+                    try:                                            imdb_value = imdb_id[i]
+                    except IndexError:                              imdb_value = None
+                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_value if imdb_value else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
+                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_value, tvdb_id, anidb_id, mal_id, expired)
+
         if tmdb_id and library.is_movie:                return "movie", tmdb_id
         elif tvdb_id and library.is_show:               return "show", tvdb_id
         elif (anidb_id or mal_id) and tmdb_id:          return "movie", tmdb_id
