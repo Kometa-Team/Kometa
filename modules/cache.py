@@ -37,6 +37,13 @@ class Cache:
                     media_type TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS letterboxd_map (
+                    INTEGER PRIMARY KEY,
+                    letterboxd_id TEXT UNIQUE,
+                    tmdb_id TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS omdb_data (
                     INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
@@ -175,6 +182,29 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO imdb_map(imdb_id) VALUES(?)", (imdb_id,))
                 cursor.execute("UPDATE imdb_map SET t_id = ?, expiration_date = ?, media_type = ? WHERE imdb_id = ?", (t_id, expiration_date.strftime("%Y-%m-%d"), media_type, imdb_id))
+
+    def query_letterboxd_map(self, letterboxd_id):
+        tmdb_id = None
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM letterboxd_map WHERE letterboxd_id = ?", (letterboxd_id, ))
+                row = cursor.fetchone()
+                if row and row["tmdb_id"]:
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    tmdb_id = int(row["tmdb_id"])
+                    expired = time_between_insertion.days > self.expiration
+        return tmdb_id, expired
+
+    def update_letterboxd(self, expired, letterboxd_id, tmdb_id):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO letterboxd_map(letterboxd_id) VALUES(?)", (letterboxd_id,))
+                cursor.execute("UPDATE letterboxd_map SET tmdb_id = ?, expiration_date = ? WHERE letterboxd_id = ?", (tmdb_id, expiration_date.strftime("%Y-%m-%d"), letterboxd_id))
 
     def query_omdb(self, imdb_id):
         omdb_dict = {}
