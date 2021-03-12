@@ -7,9 +7,9 @@ from retrying import retry
 logger = logging.getLogger("Plex Meta Manager")
 
 class LetterboxdAPI:
-    def __init__(self, Cache=None):
+    def __init__(self, config):
+        self.config = config
         self.url = "https://letterboxd.com"
-        self.Cache = Cache
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, language):
@@ -57,16 +57,16 @@ class LetterboxdAPI:
             length = util.print_return(length, f"Finding TMDb ID {i}/{total_items}")
             tmdb_id = None
             expired = None
-            if self.Cache:
-                tmdb_id, expired = self.Cache.query_letterboxd_map(item[0])
+            if self.config.Cache:
+                tmdb_id, expired = self.config.Cache.query_letterboxd_map(item[0])
             if not tmdb_id or expired is not False:
                 try:
                     tmdb_id = self.get_tmdb_from_slug(item[1], language)
                 except Failed as e:
                     logger.error(e)
                     continue
-                if self.Cache:
-                    self.Cache.update_letterboxd(expired, item[0], tmdb_id)
+                if self.config.ache:
+                    self.config.Cache.update_letterboxd(expired, item[0], tmdb_id)
             movie_ids.append(tmdb_id)
         util.print_end(length, f"Processed {total_items} TMDb IDs")
         if status_message:

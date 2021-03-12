@@ -229,7 +229,7 @@ class Config:
         self.IMDb = IMDbAPI(self)
         self.AniDB = AniDBAPI(self)
         self.AniList = AniListAPI(self)
-        self.Letterboxd = LetterboxdAPI()
+        self.Letterboxd = LetterboxdAPI(self)
 
         util.separator()
 
