@@ -62,10 +62,11 @@ class LetterboxdAPI:
             if not tmdb_id or expired is not False:
                 try:
                     tmdb_id = self.get_tmdb_from_slug(item[1], language)
-                    if self.Cache:
-                        self.Cache.update_letterboxd(expired, item[0], tmdb_id)
                 except Failed as e:
                     logger.error(e)
+                    continue
+                if self.Cache:
+                    self.Cache.update_letterboxd(expired, item[0], tmdb_id)
             movie_ids.append(tmdb_id)
         util.print_end(length, f"Processed {total_items} TMDb IDs")
         if status_message:
