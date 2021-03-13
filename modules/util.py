@@ -299,7 +299,7 @@ collectionless_lists = [
     "collection_order", "plex_collectionless",
     "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
     "url_background", "file_background",
-    "name_mapping", "label", "label_sync_mode"
+    "name_mapping", "label", "label_sync_mode", "test"
 ]
 other_attributes = [
     "run_again",
