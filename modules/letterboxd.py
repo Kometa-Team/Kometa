@@ -65,7 +65,7 @@ class LetterboxdAPI:
                 except Failed as e:
                     logger.error(e)
                     continue
-                if self.config.ache:
+                if self.config.Cache:
                     self.config.Cache.update_letterboxd(expired, item[0], tmdb_id)
             movie_ids.append(tmdb_id)
         util.print_end(length, f"Processed {total_items} TMDb IDs")
