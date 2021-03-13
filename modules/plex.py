@@ -295,8 +295,7 @@ class PlexAPI:
             add_edit("content_rating", item.contentRating, self.metadata[m], key="contentRating")
             add_edit("original_title", item.originalTitle, self.metadata[m], key="originalTitle", value=original_title)
             add_edit("studio", item.studio, self.metadata[m], value=studio)
-            item_tagline = item.tagline if self.is_movie else item._data.attrib.get("tagline")
-            add_edit("tagline", item_tagline, self.metadata[m], value=tagline)
+            add_edit("tagline", item.tagline, self.metadata[m], value=tagline)
             add_edit("summary", item.summary, self.metadata[m], value=summary)
             if len(edits) > 0:
                 logger.debug(f"Details Update: {edits}")
