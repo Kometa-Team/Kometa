@@ -13,6 +13,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 class TraktAPI:
     def __init__(self, params, authorization=None):
+        self.base_url = "https://api.trakt.tv"
         self.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
         self.aliases = {
             "trakt_trending": "Trakt Trending",
@@ -93,10 +94,6 @@ class TraktAPI:
                 return lookup.get_key(to_source) if to_source == "imdb" else int(lookup.get_key(to_source))
         raise Failed(f"No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID {external_id}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def trending(self, amount, is_movie):
-        return Trakt["movies" if is_movie else "shows"].trending(per_page=amount)
-
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def watchlist(self, data, is_movie):
         items = Trakt[f"users/{data}/watchlist"].movies() if is_movie else Trakt[f"users/{data}/watchlist"].shows()
@@ -109,6 +106,15 @@ class TraktAPI:
         except AttributeError:              trakt_list = None
         if trakt_list is None:              raise Failed("Trakt Error: No List found")
         else:                               return trakt_list
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def send_request(self, url):
+        return requests.get(url, headers={"Content-Type": "application/json", "trakt-api-version": "2", "trakt-api-key": self.client_id}).json()
+
+    def get_pagenation(self, pagenation, amount, is_movie):
+        items = self.send_request(f"{self.base_url}/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
+        if is_movie:            return [item["ids"]["tmdb"] for item in items], []
+        else:                   return [], [item["ids"]["tvdb"] for item in items]
 
     def validate_trakt_list(self, values):
         trakt_values = []
@@ -139,23 +145,24 @@ class TraktAPI:
             logger.debug(f"Data: {data}")
         pretty = self.aliases[method] if method in self.aliases else method
         media_type = "Movie" if is_movie else "Show"
-        if method == "trakt_trending":
-            trakt_items = self.trending(int(data), is_movie)
+        if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
+            movie_ids, show_ids = self.get_pagenation(method[6:], data, is_movie)
             if status_message:
                 logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
         else:
+            show_ids = []
+            movie_ids = []
             if method == "trakt_watchlist":             trakt_items = self.watchlist(data, is_movie)
             elif method == "trakt_list":                trakt_items = self.standard_list(data).items()
             else:                                       raise Failed(f"Trakt Error: Method {method} not supported")
             if status_message:                          logger.info(f"Processing {pretty}: {data}")
-        show_ids = []
-        movie_ids = []
-        for trakt_item in trakt_items:
-            if isinstance(trakt_item, Movie):                                                                movie_ids.append(int(trakt_item.get_key("tmdb")))
-            elif isinstance(trakt_item, Show) and trakt_item.pk[1] not in show_ids:                          show_ids.append(int(trakt_item.pk[1]))
-            elif (isinstance(trakt_item, (Season, Episode))) and trakt_item.show.pk[1] not in show_ids:      show_ids.append(int(trakt_item.show.pk[1]))
+            for trakt_item in trakt_items:
+                if isinstance(trakt_item, Movie):                                                                movie_ids.append(int(trakt_item.get_key("tmdb")))
+                elif isinstance(trakt_item, Show) and trakt_item.pk[1] not in show_ids:                          show_ids.append(int(trakt_item.pk[1]))
+                elif (isinstance(trakt_item, (Season, Episode))) and trakt_item.show.pk[1] not in show_ids:      show_ids.append(int(trakt_item.show.pk[1]))
+            if status_message:
+                logger.debug(f"Trakt {media_type} Found: {trakt_items}")
         if status_message:
-            logger.debug(f"Trakt {media_type} Found: {trakt_items}")
             logger.debug(f"TMDb IDs Found: {movie_ids}")
             logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids
