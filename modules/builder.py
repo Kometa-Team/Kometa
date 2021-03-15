@@ -307,7 +307,7 @@ class CollectionBuilder:
                             final_values.append(value)
                     self.methods.append(("plex_search", [[(method_name, final_values)]]))
                 elif method_name == "title":
-                    self.methods.append(("plex_search", [[(method_name, data[m])]]))
+                    self.methods.append(("plex_search", [[(method_name, util.get_list(data[m], split=False))]]))
                 elif method_name in util.plex_searches:
                     self.methods.append(("plex_search", [[(method_name, util.get_list(data[m]))]]))
                 elif method_name == "plex_all":
@@ -325,6 +325,8 @@ class CollectionBuilder:
                     self.methods.append((method_name, util.get_int_list(data[m], "MyAnimeList ID")))
                 elif method_name in ["anidb_id", "anidb_relation"]:
                     self.methods.append((method_name, config.AniDB.validate_anidb_list(util.get_int_list(data[m], "AniDB ID"), self.library.Plex.language)))
+                elif method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
+                    self.methods.append((method_name, config.AniList.validate_anilist_ids(util.get_int_list(data[m], "AniList ID"), studio=method_name == "anilist_studio")))
                 elif method_name == "trakt_list":
                     self.methods.append((method_name, config.Trakt.validate_trakt_list(util.get_list(data[m]))))
                 elif method_name == "trakt_list_details":
@@ -430,7 +432,7 @@ class CollectionBuilder:
                                         searches.append((search, util.get_int_list(data[m][s], util.remove_not(search))))
                                 elif search == "title":
                                     used.append(util.remove_not(search))
-                                    searches.append((search, data[m][s]))
+                                    searches.append((search, util.get_list(data[m][s], split=False)))
                                 elif search in util.plex_searches:
                                     used.append(util.remove_not(search))
                                     searches.append((search, util.get_list(data[m][s])))
@@ -542,13 +544,33 @@ class CollectionBuilder:
 
                             new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, maximum=1000)
                             self.methods.append((method_name, [new_dictionary]))
+                        elif method_name == "anilist_season":
+                            new_dictionary = {"sort_by": "score"}
+                            if "sort_by" not in data[m]:                            logger.warning("Collection Warning: anilist_season sort_by attribute not found using score as default")
+                            elif not data[m]["sort_by"]:                            logger.warning("Collection Warning: anilist_season sort_by attribute is blank using score as default")
+                            elif data[m]["sort_by"] not in ["score", "popular"]:    logger.warning(f"Collection Warning: anilist_season sort_by attribute {data[m]['sort_by']} invalid must be either 'score' or 'popular' using score as default")
+                            else:                                                   new_dictionary["sort_by"] = data[m]["sort_by"]
+
+                            if current_time.month in [12, 1, 2]:                    new_dictionary["season"] = "winter"
+                            elif current_time.month in [3, 4, 5]:                   new_dictionary["season"] = "spring"
+                            elif current_time.month in [6, 7, 8]:                   new_dictionary["season"] = "summer"
+                            elif current_time.month in [9, 10, 11]:                 new_dictionary["season"] = "fall"
+
+                            if "season" not in data[m]:                             logger.warning(f"Collection Warning: anilist_season season attribute not found using the current season: {new_dictionary['season']} as default")
+                            elif not data[m]["season"]:                             logger.warning(f"Collection Warning: anilist_season season attribute is blank using the current season: {new_dictionary['season']} as default")
+                            elif data[m]["season"] not in util.pretty_seasons:      logger.warning(f"Collection Warning: anilist_season season attribute {data[m]['season']} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
+                            else:                                                   new_dictionary["season"] = data[m]["season"]
+
+                            new_dictionary["year"] = get_int(method_name, "year", data[m], current_time.year, minimum=1917, maximum=current_time.year + 1)
+                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 0, maximum=500)
+                            self.methods.append((method_name, [new_dictionary]))
                     else:
                         raise Failed(f"Collection Error: {m} attribute is not a dictionary: {data[m]}")
                 elif method_name in util.count_lists:
-                    list_count = util.regex_first_int(data[m], "List Size", default=20)
+                    list_count = util.regex_first_int(data[m], "List Size", default=10)
                     if list_count < 1:
-                        logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 20")
-                        list_count = 20
+                        logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 10")
+                        list_count = 10
                     self.methods.append((method_name, [list_count]))
                 elif "tvdb" in method_name:
                     values = util.get_list(data[m])
@@ -655,14 +677,17 @@ class CollectionBuilder:
                     items_found += len(items)
                 elif method == "plex_search":
                     search_terms = {}
-                    title_search = None
+                    title_searches = None
                     has_processed = False
-                    for search_method, search_data in value:
+                    for search_method, search_list in value:
                         if search_method == "title":
-                            title_search = search_data
-                            logger.info(f"Processing {pretty}: title({title_search})")
+                            ors = ""
+                            for o, param in enumerate(search_list):
+                                ors += f"{' OR ' if o > 0 else ''}{param}"
+                            title_searches = search_list
+                            logger.info(f"Processing {pretty}: title({ors})")
                             has_processed = True
-
+                            break
                     for search_method, search_list in value:
                         if search_method != "title":
                             final_method = search_method[:-4] + "!" if search_method[-4:] == ".not" else search_method
@@ -673,13 +698,15 @@ class CollectionBuilder:
                             for o, param in enumerate(search_list):
                                 or_des = " OR " if o > 0 else f"{search_method}("
                                 ors += f"{or_des}{param}"
-                            if title_search or has_processed:
+                            if has_processed:
                                 logger.info(f"\t\t      AND {ors})")
                             else:
                                 logger.info(f"Processing {pretty}: {ors})")
                                 has_processed = True
-                    if title_search:
-                        items = self.library.Plex.search(title_search, **search_terms)
+                    if title_searches:
+                        items = []
+                        for title_search in title_searches:
+                            items.extend(self.library.Plex.search(title_search, **search_terms))
                     else:
                         items = self.library.Plex.search(**search_terms)
                     items_found += len(items)
@@ -715,6 +742,7 @@ class CollectionBuilder:
                     items = self.library.Tautulli.get_items(self.library, time_range=value["list_days"], stats_count=value["list_size"], list_type=value["list_type"], stats_count_buffer=value["list_buffer"])
                     items_found += len(items)
                 elif "anidb" in method:                             items_found += check_map(self.config.AniDB.get_items(method, value, self.library.Plex.language))
+                elif "anilist" in method:                           items_found += check_map(self.config.AniList.get_items(method, value))
                 elif "mal" in method:                               items_found += check_map(self.config.MyAnimeList.get_items(method, value))
                 elif "tvdb" in method:                              items_found += check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
                 elif "imdb" in method:                              items_found += check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language))

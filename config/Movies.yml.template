@@ -1,5 +1,3 @@
-## This file is a template remove the .template to use the file
-
 templates:
   Chart Alpha:
     sort_title: ++++_<<num>><<collection_name>>
@@ -16,11 +14,9 @@ templates:
     summary: Rotten Tomatoes Best Movies of <<year>>
     collection_order: release
   Studio:
+    optional:
+      - company
     tmdb_company: <<company>>
-    sort_title: +++_<<collection_name>>
-    sync_mode: sync
-    collection_order: alpha
-  Studio Alpha:
     sort_title: +++_<<collection_name>>
     sync_mode: sync
     collection_order: alpha
@@ -88,15 +84,11 @@ templates:
     sync_mode: sync
     collection_order: release
   Collection:
-    tmdb_collection_details: <<collection>>
-    sync_mode: sync
-    collection_order: release
-  Collection Movie:
+    optional:
+      - collection
+      - movie
     tmdb_collection_details: <<collection>>
     tmdb_movie: <<movie>>
-    sync_mode: sync
-    collection_order: release
-  Other Collection:
     sync_mode: sync
     collection_order: release
 
@@ -187,11 +179,11 @@ collections:
     template: {name: Studio, company: 25120}
     summary: The Warner Animation Group (WAG) is an American animation studio that is the feature animation division of Warner Bros. Entertainment. Established on January 7, 2013, the studio is the successor to the dissolved 2D traditional hand-drawn animation studio Warner Bros. Feature Animation, which shut down in 2003 and the dissolved family film division Warner Bros. Family Entertainment, which shut down in 2009. The entity is also a sister animation studio of the regular animation studio Warner Bros. Animation
   Walt Disney Animation Studios:
-    template: {name: Studio Alpha}
+    template: {name: Studio}
     imdb_list: https://www.imdb.com/list/ls059383351/
     summary: Walt Disney Animation Studios (WDAS), sometimes shortened to Disney Animation, is an American animation studio that creates animated features and short films for The Walt Disney Company. Founded on October 16, 1923 by brothers Walt Disney and Roy O. Disney, it is one of the oldest-running animation studios in the world. It is currently organized as a division of Walt Disney Studios and is headquartered at the Roy E. Disney Animation Building at the Walt Disney Studios lot in Burbank, California.
   Walt Disney Pictures:
-    template: {name: Studio Alpha}
+    template: {name: Studio}
     imdb_list: https://www.imdb.com/list/ls077114097/
     summary: Walt Disney Pictures is an American film production studio of The Walt Disney Studios, which is owned by The Walt Disney Company. The studio is the flagship producer of live-action feature films within the Walt Disney Studios unit, and is based at the Walt Disney Studios in Burbank, California. Animated films produced by Walt Disney Animation Studios and Pixar Animation Studios are also released under this brand. Walt Disney Studios Motion Pictures distributes and markets the films produced by Walt Disney Pictures.
 
@@ -280,7 +272,6 @@ collections:
     summary: Romantic Comedy is a genre that attempts to catch the viewer’s heart with the combination of love and humor. This sub-genre is light-hearted and usually places the two protagonists in humorus situation. Romantic-Comedy film revolves around a romantic ideal, such as true love. In the end, the ideal triumphs over the situation or obstacle, thus creating a happy ending.
     filters:
       genre: Comedy
-    test: true
   Romantic Drama:
     template: {name: IMDb Genre, genre: "romance,drama", limit: 200}
     summary: Romantic Drama film is a genre that explores the complex side of love. The plot usually centers around an obstacle that is preventing love between two people. The obstacles in Romantic Drama film can range from a family's disapproval, to forbidden love, to one's own psychological restraints. Many Romantic Dramas end with the lovers separating because of the enormity of the obstacle, the realization of incompatibility, or simply because of fate.
@@ -440,7 +431,7 @@ collections:
     template: {name: Actor, person: 17051}
   Jamie Foxx:
     template: {name: Actor, person: 134}
-  Jason Bateman::
+  Jason Bateman:
     template: {name: Actor, person: 23532}
   Jason Statham:
     template: {name: Actor, person: 976}
@@ -633,7 +624,7 @@ collections:
   An American Tail:
     template: {name: Collection, collection: 8783}
   Anaconda:
-    template: {name: Collection Movie, collection: 105995, movie: 336560}
+    template: {name: Collection, collection: 105995, movie: 336560}
   Anchorman:
     template: {name: Collection, collection: 93791}
   Angels in the ...:
@@ -672,7 +663,7 @@ collections:
   Bambi:
     template: {name: Collection, collection: 87250}
   Barbershop:
-    template: {name: Collection Movie, collection: 176097, movie: 14177}
+    template: {name: Collection, collection: 176097, movie: 14177}
   Batman:
     template: {name: Collection, collection: 120794}
   Batman (Adam West) Animation:
@@ -710,7 +701,7 @@ collections:
   Cars:
     template: {name: Collection, collection: 87118}
   Charlie Brown:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls054850259/
     summary: Collection of Movies and TV Specials with the beloved Peanuts characters.
   Charlie's Angels:
@@ -734,13 +725,13 @@ collections:
   Cloudy with a Chance of Meatballs:
     template: {name: Collection, collection: 177467}
   Cloverfield:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls021933730/
     summary: Cloverfield is an American science fiction anthology film series and media franchise created and produced by J. J. Abrams consisting of three films, viral marketing websites linking the films together, and a tie-in manga to the first film titled Cloverfield/Kishin (2008), all set in a shared fictional universe referred to as the "Cloververse". The franchise as a whole deals with creatures from other dimensions attacking Earth throughout various decades, all as a repercussion of an experiment by an astronaut team aboard the Cloverfield Station in outer-space. Each film depicts the reality-altering effects of their study, which was meant to find a new energy source replacing the planet's depleted resources, only to open portals for assault from various beasts from deep space.
   The Conjuring:
     template: {name: Collection, collection: 313086}
   Cornetto Trilogy:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls068623110/
     summary: An anthology series of British comedic genre films directed by Edgar Wright, written by Wright and Simon Pegg, produced by Nira Park, and starring Pegg and Nick Frost. The trilogy consists of Shaun of the Dead (2004), Hot Fuzz (2007), and The World's End (2013).
   Creed:
@@ -758,7 +749,7 @@ collections:
   DC Super Hero Girls:
     template: {name: Collection, collection: "477208, 557495"}
   Deadpool:
-    template: {name: Collection Movie, collection: 448150, movie: 567604}
+    template: {name: Collection, collection: 448150, movie: 567604}
   Death Note:
     template: {name: Collection, collection: 102019}
   Death Race:
@@ -808,7 +799,7 @@ collections:
   Final Destination:
     template: {name: Collection, collection: 8864}
   Final Fantasy:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls022264056/
     summary: A collection of films based off or closely associated with the Final Fantasy video games.
   Finding Nemo:
@@ -822,19 +813,19 @@ collections:
   Friday:
     template: {name: Collection, collection: 43563}
   Friday the 13th:
-    template: {name: Collection Movie, collection: 9735, movie: "6466, 222724"}
+    template: {name: Collection, collection: 9735, movie: "6466, 222724"}
   Frozen:
-    template: {name: Collection Movie, collection: 386382, movie: "326359, 460793"}
+    template: {name: Collection, collection: 386382, movie: "326359, 460793"}
   G.I. Joe:
     template: {name: Collection, collection: 135468}
   Garfield:
     template: {name: Collection, collection: "86115, 373918"}
   George Carlin Stand Up:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls070221411/
     summary: Collection of George Carlin's Stand Up Comedy HBO Specials
   George Lopez Stand Up:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls086584751/
     summary: Collection of George Lopez's Stand Up Comedy Specials
   George of the Jungle:
@@ -844,13 +835,13 @@ collections:
   Ghost Rider:
     template: {name: Collection, collection: 90306}
   Ghostbusters:
-    template: {name: Collection Movie, collection: 2980, movie: 43074}
+    template: {name: Collection, collection: 2980, movie: 43074}
   The Girl - Millennium:
     template: {name: Collection, collection: 575987}
   The Godfather:
     template: {name: Collection, collection: 230}
   Godzilla (Showa):
-    template: {name: Collection Movie, collection: 374509, movie: 18983}
+    template: {name: Collection, collection: 374509, movie: 18983}
     sort_title: Godzilla 01 (Showa)
   Godzilla (Heisei):
     template: {name: Collection, collection: 374511, movie: 39256}
@@ -877,12 +868,12 @@ collections:
   Halloween:
     template: {name: Collection, collection: "91361, 126209"}
   Halo:
-    template: {name: Other Collection}
+    template: {name: Collection}
     tmdb_list_details: 7070832
   The Hangover:
     template: {name: Collection, collection: 86119}
   Hannibal Lecter:
-    template: {name: Collection Movie, collection: 9743, movie: 11454}
+    template: {name: Collection, collection: 9743, movie: 11454}
   Happy Death Day:
     template: {name: Collection, collection: 526380}
   Happy Feet:
@@ -892,10 +883,10 @@ collections:
   Harry Potter:
     template: {name: Collection, collection: 1241}
   ... Has Fallen:
-    template: {name: Collection, collection: 508783}
+    template: {name: Collection, collection: 386534}
     name_mapping: Has Fallen
   Hellboy:
-    template: {name: Collection, collection: 508783}
+    template: {name: Collection, collection: 17235}
   Hellboy (Animated):
     template: {name: Collection, collection: 123203}
   High School Musical:
@@ -927,7 +918,7 @@ collections:
   The Huntsman:
     template: {name: Collection, collection: 393379}
   Ice Age:
-    template: {name: Collection Movie, collection: 8354, movie: "79218, 717095, 387893"}
+    template: {name: Collection, collection: 8354, movie: "79218, 717095, 387893"}
   The Incredibles:
     template: {name: Collection, collection: 468222}
   Independence Day:
@@ -935,7 +926,7 @@ collections:
   Indiana Jones:
     template: {name: Collection, collection: 84}
   Ip Man:
-    template: {name: Collection Movie, collection: 70068, movie: "658009, 643413, 450001, 751391, 44249, 182127, 44865"}
+    template: {name: Collection, collection: 70068, movie: "658009, 643413, 450001, 751391, 44249, 182127, 44865"}
     collection_order: alpha
   Iron Man:
     template: {name: Collection, collection: 131292}
@@ -948,7 +939,7 @@ collections:
   Jay and Silent Bob:
     template: {name: Collection, collection: 726870}
   Jeff Dunham Stand Up:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls086022668/
     summary: Collection of Jeff Dunham's Stand Up Comedy Specials
   John Wick:
@@ -962,11 +953,11 @@ collections:
   The Jungle Book:
     template: {name: Collection, collection: 97459}
   Jurassic Park:
-    template: {name: Collection Movie, collection: 328, movie: 630322}
+    template: {name: Collection, collection: 328, movie: 630322}
   The Karate Kid:
-    template: {name: Collection Movie, collection: 8580, movie: 38575}
+    template: {name: Collection, collection: 8580, movie: 38575}
   Kevin Hart Stand Up:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls049792208/
     summary: Collection of Kevin Hart's Stand Up Comedy Specials
   Kick-Ass:
@@ -1012,13 +1003,13 @@ collections:
   Mall Cop:
     template: {name: Collection, collection: 328372}
   The Man with No Name:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls023916334/
     summary: An Italian film series consisting of three Spaghetti Western films directed by Sergio Leone. The films are titled A Fistful of Dollars (1964), For a Few Dollars More (1965) and The Good, the Bad and the Ugly (1966). The series has become known for establishing the Spaghetti Western genre, and inspiring the creation of many more Spaghetti Western films. The three films are consistently listed among the best rated Western films in history.
   Marvel Rising:
     template: {name: Collection, collection: 627234}
   Marx Brothers:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls068486735/
     summary: The Marx Brothers were an American family comedy act that was successful in vaudeville, on Broadway, and in motion pictures from 1905 to 1949. Five of the Marx Brothers' thirteen feature films were selected by the American Film Institute (AFI) as among the top 100 comedy films, with two of them, Duck Soup (1933) and A Night at the Opera (1935), in the top fifteen. They are widely considered by critics, scholars, and fans to be among the greatest and most influential comedians of the 20th century.
   Mary Poppins:
@@ -1045,13 +1036,13 @@ collections:
   Monsters, Inc.:
     template: {name: Collection, collection: 137696}
   Monty Python:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls072012494/
     summary: Monty Python is a British surreal comedy troupe who created sketch comedy television shows and movies
   Mortal Kombat:
-    template: {name: Collection Movie, collection: 9818, movie: 664767}
+    template: {name: Collection, collection: 9818, movie: 664767}
   Mothra:
-    template: {name: Collection Movie, collection: 171732, movie: 39410}
+    template: {name: Collection, collection: 171732, movie: 39410}
   Mulan:
     template: {name: Collection, collection: 87236}
   The Mummy:
@@ -1067,7 +1058,7 @@ collections:
   Night at the Museum:
     template: {name: Collection, collection: 85943}
   A Nightmare on Elm Street:
-    template: {name: Collection Movie, collection: 8581, movie: "6466, 23437"}
+    template: {name: Collection, collection: 8581, movie: "6466, 23437"}
   Now You See Me:
     template: {name: Collection, collection: 382685}
   Ocean's:
@@ -1075,7 +1066,7 @@ collections:
   Ong Bak:
     template: {name: Collection, collection: 94589}
   Oz:
-    template: {name: Collection Movie, collection: 627517, movie: "13155, 68728"}
+    template: {name: Collection, collection: 627517, movie: "13155, 68728"}
   Pacific Rim:
     template: {name: Collection, collection: 363369}
   Paddington:
@@ -1085,7 +1076,7 @@ collections:
   Percy Jackson:
     template: {name: Collection, collection: 179919}
   Pet Sematary:
-    template: {name: Collection Movie, collection: 10789, movie: 157433}
+    template: {name: Collection, collection: 10789, movie: 157433}
   Peter Pan:
     template: {name: Collection, collection: 55422}
   Pirates of the Caribbean:
@@ -1099,13 +1090,13 @@ collections:
   Pocahontas:
     template: {name: Collection, collection: 136214}
   Pokémon:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls062687939/
     summary: Pokémon is a media franchise created by video game designer Satoshi Tajiri that centers on fictional creatures called Pokémon. As of 2020, there have been 23 animated films and one live action film. The first nineteen animated films are based on the anime television series of the same name, with the original film being remade into the 22nd. The 20th, 21st and 23rd animated films are set in an alternate continuity to the anime.
   Police Story:
     template: {name: Collection, collection: 269098}
   Power Rangers:
-    template: {name: Collection Movie, collection: 708816, movie: "305470, 306264"}
+    template: {name: Collection, collection: 708816, movie: "305470, 306264"}
   Predator:
     template: {name: Collection, collection: 399}
   The Princess Diaries:
@@ -1119,7 +1110,7 @@ collections:
   Red Cliff:
     template: {name: Collection, collection: 96677}
   Rent:
-    template: {name: Other Collection}
+    template: {name: Collection}
     tmdb_list_details: 7072241
   The Rescuers:
     template: {name: Collection, collection: 57971}
@@ -1197,14 +1188,14 @@ collections:
     template: {name: Collection, collection: 10}
     name_mapping: Star Wars Skywalker Saga
   "Star Wars: Legends":
-    template: {name: Other Collection}
+    template: {name: Collection}
     tmdb_movie: 348350, 330459
     summary: "Star Wars Anthology Films and other Star Wars Movies"
     name_mapping: Star Wars Legends
   Step Up:
     template: {name: Collection, collection: 86092}
   Street Fighter:
-    template: {name: Collection Movie, collection: 190435, movie: "687354, 11667"}
+    template: {name: Collection, collection: 190435, movie: "687354, 11667"}
   Stuart Little:
     template: {name: Collection, collection: 99727}
   Super Troopers:
@@ -1220,7 +1211,7 @@ collections:
   Ted:
     template: {name: Collection, collection: 266672}
   Teenage Mutant Ninja Turtles:
-    template: {name: Collection Movie, collection: "1582, 401562", movie: 1273}
+    template: {name: Collection, collection: "1582, 401562", movie: 1273}
   Tekken:
     template: {name: Collection, collection: 294172}
   The Terminator:
@@ -1230,7 +1221,7 @@ collections:
   Thor:
     template: {name: Collection, collection: 131296}
   The Three Stooges:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls075972675/
     tmdb_movie: 76489
     summary: The Three Stooges were an American vaudeville and comedy team active from 1922 until 1970, best known for their 190 short subject films by Columbia Pictures that have been regularly airing on television since 1958.
@@ -1239,7 +1230,7 @@ collections:
   Tokyo Ghoul:
     template: {name: Collection, collection: 551278}
   Tom and Jerry:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls022966050/
     summary: Tom and Jerry's animated feature-length films based on the series.
   Tomb Raider:
@@ -1247,7 +1238,7 @@ collections:
   Tomie:
     template: {name: Collection, collection: 139394}
   Toy Story:
-    template: {name: Collection Movie, collection: 10194, movie: 130925}
+    template: {name: Collection, collection: 10194, movie: 130925}
   Trainspotting:
     template: {name: Collection, collection: 424202}
   Transformers:
@@ -1259,9 +1250,9 @@ collections:
   Trolls:
     template: {name: Collection, collection: 489724}
   TRON:
-    template: {name: Collection Movie, collection: 63043, movie: 73362}
+    template: {name: Collection, collection: 63043, movie: 73362}
   Unbreakable:
-    template: {name: Other Collection}
+    template: {name: Collection}
     imdb_list: https://www.imdb.com/list/ls022101006/
     summary: The Unbreakable trilogy, officially known as the Eastrail 177 Trilogy, is an American superhero thriller and psychological horror film series. The films were written, produced, and directed by M. Night Shyamalan. The trilogy consists of Unbreakable (2000), Split (2016), and Glass (2019).
   Underworld:
@@ -1279,7 +1270,7 @@ collections:
   Wreck-It Ralph:
     template: {name: Collection, collection: 404825}
   X-Men:
-    template: {name: Collection Movie, collection: "748, 453993, 448150", movie: 567604}
+    template: {name: Collection, collection: "748, 453993, 448150", movie: 567604}
   xXx:
     template: {name: Collection, collection: 52785}
   Zenon:
@@ -1302,374 +1293,4 @@ collections:
         - "~"
     sort_title: ~_Collectionless
     collection_order: alpha
-
-######################################################
-#                  Metadata Edits                    #
-######################################################
-
-metadata:
-  The Adventures of Ichabod and Mr. Toad:
-    content_rating: G
-  All Monsters Attack:
-    content_rating: G
-    originally_available: 1969-12-08
-  The Amazing Panda Adventure:
-    content_rating: G
-  American Pie:
-    content_rating: R
-  American Psycho:
-    content_rating: R
-  American Wedding:
-    content_rating: R
-  Angels in the Endzone:
-    content_rating: PG-13
-  Appleseed (1997):
-    title: Appleseed
-    year: 1997
-    content_rating: R
-  Appleseed (2004):
-    title: Appleseed
-    year: 2004
-    content_rating: R
-  "Appleseed XIII: Ouranos":
-    content_rating: PG-13
-  "Appleseed XIII: Tartaros":
-    content_rating: PG-13
-  "Arthur & Merlin: Knights of Camelot":
-    content_rating: R
-  "Assassin's Creed: Lineage":
-    content_rating: R
-  The Assistant:
-    content_rating: R
-  Attack on Titan:
-    content_rating: R
-  "Attack on Titan II: End of the World":
-    content_rating: R
-  August Rush:
-    content_rating: PG
-  "Aura: Koga Maryuin's Last War":
-    content_rating: R
-  Bad Education:
-    content_rating: R
-  Bad Grandpa:
-    alt_title: "Jackass Presents: Bad Grandpa"
-  Batman & Bill:
-    content_rating: PG-13
-  "Batman & Mr. Freeze: SubZero":
-    content_rating: PG
-  Battle at Big Rock:
-    content_rating: PG-13
-  "Black Water: Abyss":
-    content_rating: R
-  Blade of the Phantom Master:
-    content_rating: R
-  Blue Story:
-    content_rating: R
-  Bon Voyage, Charlie Brown (and Don't Come Back!):
-    content_rating: G
-  A Boy Named Charlie Brown:
-    content_rating: G
-  Bright:
-    content_rating: PG
-  "Bring It On: All or Nothing":
-    content_rating: PG
-  Canada Russia '72:
-    content_rating: PG-13
-  Cast Away:
-    content_rating: PG-13
-  Castle in the Sky:
-    content_rating: PG
-    originally_available: 1986-04-01
-  Catwoman:
-    content_rating: PG-13
-  A Charlie Brown Christmas:
-    content_rating: G
-  A Charlie Brown Thanksgiving:
-    content_rating: G
-  A Christmas Carol:
-    content_rating: PG
-  "The Chronicles of Riddick: Dark Fury":
-    content_rating: R
-  "A Cinderella Story: If the Shoe Fits":
-    content_rating: PG
-  Class Action Park:
-    content_rating: PG-13
-  The Cocoanuts:
-    content_rating: PG
-  Color Out of Space:
-    content_rating: R
-  "Constantine: City of Demons":
-    content_rating: R
-  Coogan's Bluff:
-    content_rating: R
-  "Crystal Lake Memories: The Complete History of Friday the 13th":
-    content_rating: R
-  "DC Super Hero Girls: Legends of Atlantis":
-    content_rating: G
-  "DC Super Hero Girls: Intergalactic Games":
-    content_rating: G
-  "DC Super Hero Girls: Super Hero High":
-    content_rating: G
-  Death Note:
-    content_rating: R
-  Death Proof:
-    content_rating: R
-  Destroy All Monsters:
-    content_rating: G
-    originally_available: 1968-05-23
-  Duck Soup:
-    content_rating: PG
-  "Dungeons & Dragons: Wrath of the Dragon God":
-    content_rating: PG-13
-  Ebirah, Horror of the Deep:
-    content_rating: G
-    originally_available: 1966-01-01
-  "Evangelion: 2.0 You Can (Not) Advance":
-    content_rating: PG-13
-  "Evangelion: 3.0 You Can (Not) Redo":
-    content_rating: PG-13
-  A Fistful of Dollars:
-    content_rating: R
-  "The Flintstones & WWE: Stone Age SmackDown!":
-    content_rating: PG
-  From Up on Poppy Hill:
-    originally_available: 2011-11-16
-  Ghidorah, the Three-Headed Monster:
-    content_rating: G
-    originally_available: 1964-10-13
-  Ghost in the Shell:
-    content_rating: PG-13
-  Ghost in the Shell 2.0:
-    content_rating: PG-13
-  Godzilla (1954):
-    title: Godzilla
-    year: 1954
-    content_rating: R
-  Godzilla (1998):
-    title: Godzilla
-    year: 1998
-    sort_title: Godzilla 03
-    content_rating: PG-13
-  Shin Godzilla:
-    sort_title: Godzilla 06
-    content_rating: R
-  Godzilla 1985:
-    content_rating: PG
-  "Godzilla 2000: Millennium":
-    originally_available: 1999-08-18
-  Godzilla Against MechaGodzilla:
-    originally_available: 2002-03-23
-  Godzilla Raids Again:
-    content_rating: G
-    originally_available: 1955-05-21
-  Godzilla vs. Biollante:
-    content_rating: PG
-  Godzilla vs. Destoroyah:
-    content_rating: PG
-    originally_available: 1995-01-19
-  Godzilla vs. Gigan:
-    content_rating: G
-    originally_available: 1972-09-14
-  Godzilla vs. Hedorah:
-    content_rating: G
-    originally_available: 1971-04-01
-  Godzilla vs. King Ghidorah:
-    content_rating: PG
-    originally_available: 1991-04-28
-  Godzilla vs. Mechagodzilla:
-    content_rating: G
-    originally_available: 1974-03-24
-  Godzilla vs. Mechagodzilla II:
-    content_rating: PG
-  Godzilla vs. Megaguirus:
-    content_rating: PG
-    originally_available: 2000-08-31
-  Godzilla vs. Megalon:
-    content_rating: G
-    originally_available: 1973-03-17
-  Godzilla vs. Mothra:
-    content_rating: PG
-    originally_available: 1992-04-28
-  Godzilla vs. SpaceGodzilla:
-    content_rating: PG
-    originally_available: 1994-01-19
-  Godzilla, King of the Monsters!:
-    content_rating: G
-  "Godzilla, Mothra and King Ghidorah: Giant Monsters All-Out Attack":
-    content_rating: PG
-    originally_available: 2001-08-31
-  "Godzilla: Final Wars":
-    content_rating: PG
-    originally_available: 2004-12-13
-  "Godzilla: Tokyo S.O.S.":
-    originally_available: 2003-12-14
-  Halloween (Rob Zombie):
-    alt_title: Halloween
-    year: 2007
-  "Halo 4: Forward Unto Dawn":
-    alt_title: Halo 4 Forward Unto Dawn
-    tmdb_id: 56295
-    content_rating: R
-  Harold & Kumar Go to White Castle:
-    content_rating: R
-  "Hellboy Animated: Blood and Iron":
-    content_rating: PG
-  Holidays:
-    content_rating: R
-  Horse Feathers:
-    content_rating: PG
-  Howl's Moving Castle:
-    originally_available: 2004-06-10
-  Hulk Vs.:
-    content_rating: PG-13
-  "Ice Age: The Great Egg-Scapade":
-    content_rating: PG
-  Invasion of Astro-Monster:
-    content_rating: G
-    originally_available: 1965-07-29
-  Ip Man:
-    originally_available: 2008-10-01
-  Ip Man 2:
-    originally_available: 2010-01-28
-  Ip Man 3:
-    originally_available: 2015-01-22
-  "Iron Man & Captain America: Heroes United":
-    content_rating: PG-13
-  IT:
-    alt_title: It (1990)
-    tmdb_id: 19614
-    content_rating: PG-13
-  It's Christmastime Again, Charlie Brown:
-    content_rating: G
-  It's Magic, Charlie Brown:
-    content_rating: G
-  It's the Great Pumpkin, Charlie Brown:
-    content_rating: G
-  Kelly's Heroes:
-    content_rating: R
-  Kiki's Delivery Service:
-    originally_available: 1989-12-31
-  King Kong vs. Godzilla:
-    content_rating: G
-    originally_available: 1962-06-03
-  "The Last Sharknado: It's About Time":
-    content_rating: PG-13
-  "Lego Batman: The Movie - DC Super HeroesUnite":
-    content_rating: PG
-  "Lego DC Batman: Family Matters":
-    content_rating: PG
-  "Lego DC Comics Super Heroes: Justice League  Attack of the Legion of Doom!":
-    content_rating: PG
-  "LEGO DC Comics Super Heroes: Justice League - Gotham City Breakout":
-    content_rating: PG
-  "LEGO DC Comics Super Heroes: Justice League vs. Bizarro League":
-    content_rating: PG
-  "LEGO DC Comics Super Heroes: Justice League: Cosmic Clash":
-    content_rating: PG
-  "Lego DC Comics Super Heroes: The Flash":
-    content_rating: PG
-  "LEGO DC Super Hero Girls: Brain Drain":
-    content_rating: G
-  "LEGO DC Super Hero Girls: Super-Villain High":
-    content_rating: G
-  "LEGO DC Super Heroes - Aquaman: Rage Of Atlantis":
-    content_rating: PG
-  "LEGO DC: Shazam! Magic and Monsters":
-    content_rating: PG
-  "Master Z: Ip Man Legacy":
-    originally_available: 2018-04-12
-  The Mayflower Voyagers:
-    content_rating: G
-  Monkey Business:
-    content_rating: PG
-  Mothra:
-    originally_available: 1961-05-10
-  Mothra vs. Godzilla:
-    content_rating: G
-  My Neighbor Totoro:
-    originally_available: 1988-12-11
-  My Neighbors the Yamadas:
-    originally_available: 1999-08-16
-  Nausicaä of the Valley of the Wind:
-    originally_available: 1984-06-13
-  Ocean Waves:
-    originally_available: 1993-04-18
-  Only Yesterday:
-    originally_available: 1991-08-01
-  "Parasyte: Part 1":
-    content_rating: R
-  Pirates of Silicon Valley:
-    content_rating: PG-13
-  Pom Poko:
-    originally_available: 1994-08-16
-  Ponyo:
-    originally_available: 2008-08-14
-  Princess Mononoke:
-    originally_available: 1997-10-29
-  Race for Your Life, Charlie Brown:
-    content_rating: G
-  Rebirth of Mothra:
-    originally_available: 1996-08-03
-  Rebirth of Mothra III:
-    originally_available: 1998-04-30
-  Red Cliff:
-    originally_available: 2008-07-02
-  The Red Turtle:
-    originally_available: 2016-01-20
-  Reign of the Supermen:
-    sort_title: Superman Reign of the
-  Rent:
-    content_rating: PG-13
-  "Rent: Filmed Live on Broadway":
-    content_rating: PG-13
-  The Return of Godzilla:
-    content_rating: PG
-    originally_available: 1984-09-13
-  The Return of the King:
-    content_rating: PG
-  "Riddick: Blindsided":
-    content_rating: R
-  The Secret World of Arrietty:
-    originally_available: 2010-02-17
-  Sharknado:
-    content_rating: PG-13
-  "Sharknado 2: The Second One":
-    content_rating: PG-13
-  "Sharknado 3: Oh Hell No!":
-    content_rating: PG-13
-  "Sharknado 4: The 4th Awakens":
-    content_rating: PG-13
-  "Sharknado 5: Global Swarming":
-    content_rating: PG-13
-  Snow White and the Three Stooges:
-    content_rating: PG
-  Son of Godzilla:
-    content_rating: G
-    originally_available: 1967-01-01
-  Spirited Away:
-    originally_available: 2001-06-16
-  "Star Wars: Clone Wars Volume Two":
-    originally_available: 2005-05-06
-  "Super Hero Girls: Hero of the Year":
-    content_rating: G
-  All Star Superman:
-    sort_title: Superman All Star
-  Sword of the Stranger:
-    content_rating: R
-  The Tale of the Princess Kaguya:
-    originally_available: 2013-10-17
-  Tales from Earthsea:
-    originally_available: 2006-08-13
-  Terror of Mechagodzilla:
-    content_rating: G
-    originally_available: 1975-03-24
-  The Three Stooges Go Around the World in a Daze:
-    content_rating: PG
-  The Three Stooges in Orbit:
-    content_rating: PG
-  Tokyo Ghoul:
-    content_rating: R
-  When Marnie Was There:
-    originally_available: 2014-05-22
-  The Wind Rises:
-    originally_available: 2013-02-21
+    collection_order: alpha

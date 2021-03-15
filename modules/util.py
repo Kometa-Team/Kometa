@@ -23,35 +23,27 @@ separating_character = "="
 screen_width = 100
 
 method_alias = {
-        "actors": "actor", "role": "actor", "roles": "actor",
-        "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
-        "countries": "country",
-        "decades": "decade",
-        "directors": "director",
-        "genres": "genre",
-        "studios": "studio", "network": "studio", "networks": "studio",
-        "producers": "producer",
-        "writers": "writer",
-        "years": "year"
-    }
+    "actors": "actor", "role": "actor", "roles": "actor",
+    "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
+    "countries": "country",
+    "decades": "decade",
+    "directors": "director",
+    "genres": "genre",
+    "studios": "studio", "network": "studio", "networks": "studio",
+    "producers": "producer",
+    "writers": "writer",
+    "years": "year"
+}
 filter_alias = {
     "actor": "actors",
-    "audio_language": "audio_language",
     "collection": "collections",
     "content_rating": "contentRating",
     "country": "countries",
     "director": "directors",
     "genre": "genres",
-    "max_age": "max_age",
     "originally_available": "originallyAvailableAt",
-    "original_language": "original_language",
-    "rating": "rating",
-    "studio": "studio",
-    "subtitle_language": "subtitle_language",
     "tmdb_vote_count": "vote_count",
-    "writer": "writers",
-    "video_resolution": "video_resolution",
-    "year": "year"
+    "writer": "writers"
 }
 days_alias = {
     "monday": 0, "mon": 0, "m": 0,
@@ -95,6 +87,12 @@ pretty_names = {
     "anidb_id": "AniDB ID",
     "anidb_relation": "AniDB Relation",
     "anidb_popular": "AniDB Popular",
+    "anilist_id": "AniList ID",
+    "anilist_popular": "AniList Popular",
+    "anilist_relations": "AniList Relations",
+    "anilist_season": "AniList Season",
+    "anilist_studio": "AniList Studio",
+    "anilist_top_rated": "AniList Top Rated",
     "imdb_list": "IMDb List",
     "imdb_id": "IMDb ID",
     "letterboxd_list": "Letterboxd List",
@@ -145,9 +143,13 @@ pretty_names = {
     "tmdb_trending_weekly": "TMDb Trending Weekly",
     "tmdb_writer": "TMDb Writer",
     "tmdb_writer_details": "TMDb Writer",
+    "trakt_collected": "Trakt Collected",
     "trakt_list": "Trakt List",
     "trakt_list_details": "Trakt List",
+    "trakt_popular": "Trakt Popular",
+    "trakt_recommended": "Trakt Recommended",
     "trakt_trending": "Trakt Trending",
+    "trakt_watched": "Trakt Watched",
     "trakt_watchlist": "Trakt Watchlist",
     "tvdb_list": "TVDb List",
     "tvdb_list_details": "TVDb List",
@@ -206,6 +208,10 @@ mal_userlist_status = [
     "dropped",
     "plan_to_watch"
 ]
+anilist_pretty = {
+    "score": "Average Score",
+    "popular": "Popularity"
+}
 pretty_ids = {
     "anidbid": "AniDB",
     "imdbid": "IMDb",
@@ -218,6 +224,12 @@ all_lists = [
     "anidb_id",
     "anidb_relation",
     "anidb_popular",
+    "anilist_id",
+    "anilist_popular",
+    "anilist_relations",
+    "anilist_season",
+    "anilist_studio",
+    "anilist_top_rated",
     "imdb_list",
     "imdb_id",
     "letterboxd_list",
@@ -266,9 +278,13 @@ all_lists = [
     "tmdb_trending_weekly",
     "tmdb_writer",
     "tmdb_writer_details",
+    "trakt_collected",
     "trakt_list",
     "trakt_list_details",
+    "trakt_popular",
+    "trakt_recommended",
     "trakt_trending",
+    "trakt_watched",
     "trakt_watchlist",
     "tvdb_list",
     "tvdb_list_details",
@@ -283,7 +299,7 @@ collectionless_lists = [
     "collection_order", "plex_collectionless",
     "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
     "url_background", "file_background",
-    "name_mapping", "label", "label_sync_mode"
+    "name_mapping", "label", "label_sync_mode", "test"
 ]
 other_attributes = [
     "run_again",
@@ -295,6 +311,7 @@ other_attributes = [
 ]
 dictionary_lists = [
     "filters",
+    "anilist_season",
     "mal_season",
     "mal_userlist",
     "plex_collectionless",
@@ -349,6 +366,8 @@ tmdb_searches = [
 ]
 count_lists = [
     "anidb_popular",
+    "anilist_popular",
+    "anilist_top_rated",
     "mal_all",
     "mal_airing",
     "mal_upcoming",
@@ -364,7 +383,11 @@ count_lists = [
     "tmdb_now_playing",
     "tmdb_trending_daily",
     "tmdb_trending_weekly",
-    "trakt_trending"
+    "trakt_trending",
+    "trakt_popular",
+    "trakt_recommended",
+    "trakt_watched",
+    "trakt_collected"
 ]
 tmdb_lists = [
     "tmdb_actor",
@@ -422,6 +445,7 @@ tmdb_type = {
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
+    "audio_track_title", "audio_track_title.not",
     "collection", "collection.not",
     "content_rating", "content_rating.not",
     "country", "country.not",
@@ -441,6 +465,7 @@ all_filters = [
 ]
 movie_only_filters = [
     "audio_language", "audio_language.not",
+    "audio_track_title", "audio_track_title.not",
     "country", "country.not",
     "director", "director.not",
     "duration.gte", "duration.lte",

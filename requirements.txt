@@ -1,6 +1,6 @@
 # Remove
 # Less common, pinned
-PlexAPI==4.4.0
+PlexAPI==4.4.1
 tmdbv3api==1.7.5
 trakt.py==4.2.0
 # More common, flexible

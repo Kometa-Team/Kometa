@@ -130,13 +130,18 @@ class PlexAPI:
                 length = util.print_return(length, f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
                 for filter_method, filter_data in filters:
                     modifier = filter_method[-4:]
-                    method = util.filter_alias[filter_method[:-4]] if modifier in [".not", ".lte", ".gte"] else util.filter_alias[filter_method]
-                    if method == "max_age":
+                    method = filter_method[:-4] if modifier in [".not", ".lte", ".gte"] else filter_method
+                    if method in util.method_alias:
+                        method_name = util.method_alias[method]
+                        logger.warning(f"Collection Warning: {method} attribute will run as {method_name}")
+                    else:
+                        method_name = method
+                    if method_name == "max_age":
                         threshold_date = datetime.now() - timedelta(days=filter_data)
                         if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
                             match = False
                             break
-                    elif method == "original_language":
+                    elif method_name == "original_language":
                         movie = None
                         for key, value in movie_map.items():
                             if current.ratingKey == value:
@@ -151,8 +156,24 @@ class PlexAPI:
                         if (modifier == ".not" and movie.original_language in filter_data) or (modifier != ".not" and movie.original_language not in filter_data):
                             match = False
                             break
+                    elif method_name == "audio_track_title":
+                        jailbreak = False
+                        for media in current.media:
+                            for part in media.parts:
+                                for audio in part.audioStreams():
+                                    for check_title in filter_data:
+                                        title = audio.title if audio.title else ""
+                                        if check_title.lower() in title.lower():
+                                            jailbreak = True
+                                            break
+                                    if jailbreak: break
+                                if jailbreak: break
+                            if jailbreak: break
+                        if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
+                            match = False
+                            break
                     elif modifier in [".gte", ".lte"]:
-                        if method == "vote_count":
+                        if method_name == "vote_count":
                             tmdb_item = None
                             for key, value in movie_map.items():
                                 if current.ratingKey == value:
@@ -166,20 +187,20 @@ class PlexAPI:
                                 continue
                             attr = tmdb_item.vote_count
                         else:
-                            attr = getattr(current, method) / 60000 if method == "duration" else getattr(current, method)
+                            attr = getattr(current, method_name) / 60000 if method_name == "duration" else getattr(current, method_name)
                         if (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
                             match = False
                             break
                     else:
                         attrs = []
-                        if method in ["video_resolution", "audio_language", "subtitle_language"]:
+                        if method_name in ["video_resolution", "audio_language", "subtitle_language"]:
                             for media in current.media:
-                                if method == "video_resolution":                                                                attrs = [media.videoResolution]
+                                if method_name == "video_resolution":                                                           attrs.extend([media.videoResolution])
                                 for part in media.parts:
-                                    if method == "audio_language":                                                                  attrs = ([a.language for a in part.audioStreams()])
-                                    if method == "subtitle_language":                                                               attrs = ([s.language for s in part.subtitleStreams()])
-                        elif method in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:          attrs = [str(getattr(current, method))]
-                        elif method in ["actors", "countries", "directors", "genres", "writers", "collections"]:        attrs = [getattr(x, "tag") for x in getattr(current, method)]
+                                    if method_name == "audio_language":                                                             attrs.extend([a.language for a in part.audioStreams()])
+                                    if method_name == "subtitle_language":                                                          attrs.extend([s.language for s in part.subtitleStreams()])
+                        elif method_name in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:     attrs = [str(getattr(current, method_name))]
+                        elif method_name in ["actors", "countries", "directors", "genres", "writers", "collections"]:   attrs = [getattr(x, "tag") for x in getattr(current, method_name)]
 
                         if (not list(set(filter_data) & set(attrs)) and modifier != ".not") or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             match = False
@@ -274,8 +295,7 @@ class PlexAPI:
             add_edit("content_rating", item.contentRating, self.metadata[m], key="contentRating")
             add_edit("original_title", item.originalTitle, self.metadata[m], key="originalTitle", value=original_title)
             add_edit("studio", item.studio, self.metadata[m], value=studio)
-            item_tagline = item.tagline if self.is_movie else item._data.attrib.get("tagline")
-            add_edit("tagline", item_tagline, self.metadata[m], value=tagline)
+            add_edit("tagline", item.tagline, self.metadata[m], value=tagline)
             add_edit("summary", item.summary, self.metadata[m], value=summary)
             if len(edits) > 0:
                 logger.debug(f"Details Update: {edits}")
