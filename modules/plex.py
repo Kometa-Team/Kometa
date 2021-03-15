@@ -122,6 +122,8 @@ class PlexAPI:
         for i, item in enumerate(items, 1):
             try:
                 current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
+                if not isinstance(current, (Movie, Show)):
+                    raise NotFound
             except (BadRequest, NotFound):
                 logger.error(f"Plex Error: Item {item} not found")
                 continue
