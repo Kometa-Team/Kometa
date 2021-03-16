@@ -20,10 +20,22 @@ parser.add_argument("-d", "--divider", dest="divider", help="Character that divi
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
 
-my_tests = os.environ.get("PMM_TESTS") if os.environ.get("PMM_TESTS") else args.tests
-test = os.environ.get("PMM_TEST") if os.environ.get("PMM_TEST") else args.test
-debug = os.environ.get("PMM_DEBUG") if os.environ.get("PMM_DEBUG") else args.debug
-run = os.environ.get("PMM_RUN") if os.environ.get("PMM_RUN") else args.run
+def check_bool(env_str, default):
+    env_var = os.environ.get(env_str)
+    if env_var is not None:
+        if env_var is True or env_var is False:
+            return env_var
+        elif env_var.lower() in ["t", "true"]:
+            return True
+        else:
+            return False
+    else:
+        return default
+
+my_tests = check_bool("PMM_TESTS", args.tests)
+test = check_bool("PMM_TEST", args.test)
+debug = check_bool("PMM_DEBUG", args.debug)
+run = check_bool("PMM_RUN", args.run)
 collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
 
 time_to_run = os.environ.get("PMM_TIME") if os.environ.get("PMM_TIME") else args.time
