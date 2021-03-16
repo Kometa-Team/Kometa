@@ -726,8 +726,7 @@ class CollectionBuilder:
                                     keep_collection = False
                                     break
                         if keep_collection:
-                            good_collections.append(col.title.lower())
-
+                            good_collections.append(col.index)
                     all_items = self.library.Plex.all()
                     length = 0
                     for i, item in enumerate(all_items, 1):
@@ -735,7 +734,7 @@ class CollectionBuilder:
                         add_item = True
                         item.reload()
                         for collection in item.collections:
-                            if collection.tag.lower() in good_collections:
+                            if collection.id in good_collections:
                                 add_item = False
                                 break
                         if add_item:
