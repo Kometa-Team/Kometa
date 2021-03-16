@@ -718,10 +718,11 @@ class CollectionBuilder:
                             if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
                                 keep_collection = False
                                 break
-                        for ext in value["exclude"]:
-                            if col.title == ext or (col.titleSort and col.titleSort == ext):
-                                keep_collection = False
-                                break
+                        if keep_collection:
+                            for ext in value["exclude"]:
+                                if col.title == ext or (col.titleSort and col.titleSort == ext):
+                                    keep_collection = False
+                                    break
                         if keep_collection:
                             good_collections.append(col.title.lower())
 
@@ -730,6 +731,7 @@ class CollectionBuilder:
                     for i, item in enumerate(all_items, 1):
                         length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
                         add_item = True
+                        item.reload()
                         for collection in item.collections:
                             if collection.tag.lower() in good_collections:
                                 add_item = False
