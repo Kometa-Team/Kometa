@@ -406,9 +406,6 @@ class CollectionBuilder:
                                 if isinstance(data[m]["exclude"], list):                    exact_list.extend(data[m]["exclude"])
                                 else:                                                       exact_list.append(str(data[m]["exclude"]))
                             if len(prefix_list) == 0 and len(exact_list) == 0:              raise Failed("Collection Error: you must have at least one exclusion")
-                            self.details["add_to_arr"] = False
-                            self.details["collection_mode"] = "hide"
-                            self.sync = True
                             new_dictionary["exclude_prefix"] = prefix_list
                             new_dictionary["exclude"] = exact_list
                             self.methods.append((method_name, [new_dictionary]))
@@ -640,6 +637,11 @@ class CollectionBuilder:
             self.do_arr = self.details["add_to_arr"] if "add_to_arr" in self.details else self.library.Radarr.add
         if self.library.Sonarr:
             self.do_arr = self.details["add_to_arr"] if "add_to_arr" in self.details else self.library.Sonarr.add
+
+        if self.collectionless:
+            self.details["add_to_arr"] = False
+            self.details["collection_mode"] = "hide"
+            self.sync = True
 
     def run_methods(self, collection_obj, collection_name, rating_key_map, movie_map, show_map):
         items_found = 0
