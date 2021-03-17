@@ -41,12 +41,11 @@ class AniListAPI:
         count = 0
         page_num = 0
         if variables is None:
-            variables = {"page": page_num}
-        else:
-            variables["page"] = page_num
+            variables = {}
         next_page = True
         while next_page:
             page_num += 1
+            variables["page"] = page_num
             json_obj = self.send_request(query, variables)
             next_page = json_obj["data"]["Page"]["pageInfo"]["hasNextPage"]
             for media in json_obj["data"]["Page"]["media"]:
@@ -84,7 +83,7 @@ class AniListAPI:
 
     def season(self, season, year, sort, limit):
         query = """
-            query ($page: Int, $season: String, $year: Int, $sort: String) {
+            query ($page: Int, $season: MediaSeason, $year: Int, $sort: [MediaSort]) {
               Page(page: $page){
                 pageInfo {hasNextPage}
                 media(season: $season, seasonYear: $year, type: ANIME, sort: $sort){idMal}
