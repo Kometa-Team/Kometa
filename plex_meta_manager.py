@@ -15,23 +15,45 @@ parser.add_argument("-c", "--config", dest="config", help="Run with desired *.ym
 parser.add_argument("-t", "--time", dest="time", help="Time to update each day use format HH:MM (Default: 03:00)", default="03:00", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
-parser.add_argument("-cl", "--collection", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str, default="")
+parser.add_argument("-cl", "--collection", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
 
-if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args.time):
-    raise util.Failed(f"Argument Error: time argument invalid: {args.time} must be in the HH:MM format")
+def check_bool(env_str, default):
+    env_var = os.environ.get(env_str)
+    if env_var is not None:
+        if env_var is True or env_var is False:
+            return env_var
+        elif env_var.lower() in ["t", "true"]:
+            return True
+        else:
+            return False
+    else:
+        return default
 
-util.separating_character = args.divider[0]
-if 90 <= args.width <= 300:
-    util.screen_width = args.width
+my_tests = check_bool("PMM_TESTS", args.tests)
+test = check_bool("PMM_TEST", args.test)
+debug = check_bool("PMM_DEBUG", args.debug)
+run = check_bool("PMM_RUN", args.run)
+collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
+
+time_to_run = os.environ.get("PMM_TIME") if os.environ.get("PMM_TIME") else args.time
+if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", time_to_run):
+    raise util.Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format")
+
+util.separating_character = os.environ.get("PMM_DIVIDER")[0] if os.environ.get("PMM_DIVIDER") else args.divider[0]
+
+screen_width = os.environ.get("PMM_WIDTH") if os.environ.get("PMM_WIDTH") else args.width
+if 90 <= screen_width <= 300:
+    util.screen_width = screen_width
 else:
-    raise util.Failed(f"Argument Error: width argument invalid: {args.width} must be an integer between 90 and 300")
+    raise util.Failed(f"Argument Error: width argument invalid: {screen_width} must be an integer between 90 and 300")
 
+config_file = os.environ.get("PMM_CONFIG") if os.environ.get("PMM_CONFIG") else args.config
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
-if args.config and os.path.exists(args.config):                     default_dir = os.path.join(os.path.dirname(os.path.abspath(args.config)))
-elif args.config and not os.path.exists(args.config):               raise util.Failed(f"Config Error: config not found at {os.path.abspath(args.config)}")
+if config_file and os.path.exists(config_file):                     default_dir = os.path.join(os.path.dirname(os.path.abspath(config_file)))
+elif config_file and not os.path.exists(config_file):               raise util.Failed(f"Config Error: config not found at {os.path.abspath(config_file)}")
 elif not os.path.exists(os.path.join(default_dir, "config.yml")):   raise util.Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
 
 os.makedirs(os.path.join(default_dir, "logs"), exist_ok=True)
@@ -50,7 +72,7 @@ file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(lev
 
 cmd_handler = logging.StreamHandler()
 cmd_handler.setFormatter(logging.Formatter("| %(message)-100s |"))
-cmd_handler.setLevel(logging.DEBUG if args.tests or args.test or args.debug else logging.INFO)
+cmd_handler.setLevel(logging.DEBUG if tests or test or debug else logging.INFO)
 
 logger.addHandler(cmd_handler)
 logger.addHandler(file_handler)
@@ -65,23 +87,23 @@ logger.info(util.get_centered_text("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _`
 logger.info(util.get_centered_text("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
 logger.info(util.get_centered_text("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
 logger.info(util.get_centered_text("                                                                     |___/           "))
-logger.info(util.get_centered_text("    Version: 1.5.0                                                                   "))
+logger.info(util.get_centered_text("    Version: 1.5.1                                                                   "))
 util.separator()
 
-if args.tests:
+if my_tests:
     tests.run_tests(default_dir)
     sys.exit(0)
 
-def start(config_path, test, daily, collections):
+def start(config_path, is_test, daily, collections):
     if daily:               start_type = "Daily "
-    elif test:              start_type = "Test "
+    elif is_test:           start_type = "Test "
     elif collections:       start_type = "Collections "
     else:                   start_type = ""
     start_time = datetime.now()
     util.separator(f"Starting {start_type}Run")
     try:
         config = Config(default_dir, config_path)
-        config.update_libraries(test, collections)
+        config.update_libraries(is_test, collections)
     except Exception as e:
         util.print_stacktrace()
         logger.critical(e)
@@ -89,15 +111,15 @@ def start(config_path, test, daily, collections):
     util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
 
 try:
-    if args.run or args.test or args.collections:
-        start(args.config, args.test, False, args.collections)
+    if run or test or collections:
+        start(config_file, test, False, collections)
     else:
         length = 0
-        schedule.every().day.at(args.time).do(start, args.config, False, True, None)
+        schedule.every().day.at(time_to_run).do(start, config_file, False, True, None)
         while True:
             schedule.run_pending()
             current = datetime.now().strftime("%H:%M")
-            seconds = (datetime.strptime(args.time, "%H:%M") - datetime.strptime(current, "%H:%M")).total_seconds()
+            seconds = (datetime.strptime(time_to_run, "%H:%M") - datetime.strptime(current, "%H:%M")).total_seconds()
             hours = int(seconds // 3600)
             if hours < 0:
                 hours += 24
@@ -105,7 +127,7 @@ try:
             time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
             time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
 
-            length = util.print_return(length, f"Current Time: {current} | {time_str} until the daily run at {args.time}")
+            length = util.print_return(length, f"Current Time: {current} | {time_str} until the daily run at {time_to_run}")
             time.sleep(1)
 except KeyboardInterrupt:
     util.separator("Exiting Plex Meta Manager")

@@ -358,12 +358,12 @@ class CollectionBuilder:
                 elif method_name in util.dictionary_lists:
                     if isinstance(data[m], dict):
                         def get_int(parent, method, data_in, default_in, minimum=1, maximum=None):
-                            if method not in data_in:                                   logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default} as default")
-                            elif not data_in[method]:                                   logger.warning(f"Collection Warning: {parent} {method} attribute is blank using {default} as default")
+                            if method not in data_in:                                   logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default_in} as default")
+                            elif not data_in[method]:                                   logger.warning(f"Collection Warning: {parent} {method} attribute is blank using {default_in} as default")
                             elif isinstance(data_in[method], int) and data_in[method] >= minimum:
                                 if maximum is None or data_in[method] <= maximum:           return data_in[method]
-                                else:                                                       logger.warning(f"Collection Warning: {parent} {method} attribute {data_in[method]} invalid must an integer <= {maximum} using {default} as default")
-                            else:                                                       logger.warning(f"Collection Warning: {parent} {method} attribute {data_in[method]} invalid must an integer >= {minimum} using {default} as default")
+                                else:                                                       logger.warning(f"Collection Warning: {parent} {method} attribute {data_in[method]} invalid must an integer <= {maximum} using {default_in} as default")
+                            else:                                                       logger.warning(f"Collection Warning: {parent} {method} attribute {data_in[method]} invalid must an integer >= {minimum} using {default_in} as default")
                             return default_in
                         if method_name == "filters":
                             for f in data[m]:
@@ -406,9 +406,6 @@ class CollectionBuilder:
                                 if isinstance(data[m]["exclude"], list):                    exact_list.extend(data[m]["exclude"])
                                 else:                                                       exact_list.append(str(data[m]["exclude"]))
                             if len(prefix_list) == 0 and len(exact_list) == 0:              raise Failed("Collection Error: you must have at least one exclusion")
-                            self.details["add_to_arr"] = False
-                            self.details["collection_mode"] = "hide"
-                            self.sync = True
                             new_dictionary["exclude_prefix"] = prefix_list
                             new_dictionary["exclude"] = exact_list
                             self.methods.append((method_name, [new_dictionary]))
@@ -641,6 +638,11 @@ class CollectionBuilder:
         if self.library.Sonarr:
             self.do_arr = self.details["add_to_arr"] if "add_to_arr" in self.details else self.library.Sonarr.add
 
+        if self.collectionless:
+            self.details["add_to_arr"] = False
+            self.details["collection_mode"] = "hide"
+            self.sync = True
+
     def run_methods(self, collection_obj, collection_name, rating_key_map, movie_map, show_map):
         items_found = 0
         for method, values in self.methods:
@@ -718,20 +720,21 @@ class CollectionBuilder:
                             if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
                                 keep_collection = False
                                 break
-                        for ext in value["exclude"]:
-                            if col.title == ext or (col.titleSort and col.titleSort == ext):
-                                keep_collection = False
-                                break
                         if keep_collection:
-                            good_collections.append(col.title.lower())
-
+                            for ext in value["exclude"]:
+                                if col.title == ext or (col.titleSort and col.titleSort == ext):
+                                    keep_collection = False
+                                    break
+                        if keep_collection:
+                            good_collections.append(col.index)
                     all_items = self.library.Plex.all()
                     length = 0
                     for i, item in enumerate(all_items, 1):
                         length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
                         add_item = True
+                        item.reload()
                         for collection in item.collections:
-                            if collection.tag.lower() in good_collections:
+                            if collection.id in good_collections:
                                 add_item = False
                                 break
                         if add_item:
