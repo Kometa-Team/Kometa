@@ -122,6 +122,8 @@ class PlexAPI:
         for i, item in enumerate(items, 1):
             try:
                 current = self.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
+                if not isinstance(current, (Movie, Show)):
+                    raise NotFound
             except (BadRequest, NotFound):
                 logger.error(f"Plex Error: Item {item} not found")
                 continue
@@ -397,7 +399,7 @@ class PlexAPI:
                         logger.info("")
                         match = re.search("[Ss]\\d+[Ee]\\d+", episode_str)
                         if match:
-                            output = match.group(0)[1:].split("E" if "E" in m.group(0) else "e")
+                            output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
                             episode_id = int(output[0])
                             season_id = int(output[1])
                             logger.info(f"Updating episode S{episode_id}E{season_id} of {m}...")
