@@ -113,8 +113,8 @@ class TraktAPI:
 
     def get_pagenation(self, pagenation, amount, is_movie):
         items = self.send_request(f"{self.base_url}/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
-        if is_movie:            return [item["ids"]["tmdb"] for item in items], []
-        else:                   return [], [item["ids"]["tvdb"] for item in items]
+        if is_movie:            return [item["movie"]["ids"]["tmdb"] for item in items], []
+        else:                   return [], [item["show"]["ids"]["tvdb"] for item in items]
 
     def validate_trakt_list(self, values):
         trakt_values = []
