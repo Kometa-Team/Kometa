@@ -470,7 +470,7 @@ class CollectionBuilder:
                                         elif attr in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
                                             if attr_data is True:
                                                 new_dictionary[attr] = attr_data
-                                        elif attr in ["primary_release_date.gte", "primary_release_date.lte", "release_date.gte", "release_date.lte", "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte"]:
+                                        elif attr in util.discover_dates:
                                             new_dictionary[attr] = util.check_date(attr_data, f"{m} attribute {attr}", return_string=True)
                                         elif attr in ["primary_release_year", "year", "first_air_date_year"]:
                                             new_dictionary[attr] = util.check_number(attr_data, f"{m} attribute {attr}", minimum=1800, maximum=current_year + 1)

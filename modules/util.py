@@ -516,6 +516,12 @@ discover_tv = [
     "include_null_first_air_dates",
     "screened_theatrically"
 ]
+discover_dates = [
+    "primary_release_date.gte", "primary_release_date.lte",
+    "release_date.gte", "release_date.lte",
+    "air_date.gte", "air_date.lte",
+    "first_air_date.gte", "first_air_date.lte"
+]
 discover_movie_sort = [
     "popularity.asc", "popularity.desc",
     "release_date.asc", "release_date.desc",
