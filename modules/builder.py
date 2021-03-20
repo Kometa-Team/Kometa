@@ -953,7 +953,7 @@ class CollectionBuilder:
                             logger.warning(f"No Folder: {os.path.join(path, folder)}")
 
         def set_image(image_method, images, is_background=False):
-            if image_method in ['file_poster', 'asset_directory']:
+            if image_method in ["file_poster", "file_background", "asset_directory"]:
                 if is_background:                                   collection.uploadArt(filepath=images[image_method])
                 else:                                               collection.uploadPoster(filepath=images[image_method])
                 image_location = "File"
