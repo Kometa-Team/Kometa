@@ -31,13 +31,15 @@ class CollectionBuilder:
         current_time = datetime.now()
         current_year = current_time.year
 
-        if "template" in data:
+        methods = {m.lower(): m for m in self.data}
+
+        if "template" in methods:
             if not self.library.templates:
                 raise Failed("Collection Error: No templates found")
-            elif not data["template"]:
+            elif not self.data[methods["template"]]:
                 raise Failed("Collection Error: template attribute is blank")
             else:
-                for data_template in util.get_list(data["template"], split=False):
+                for data_template in util.get_list(self.data[methods["template"]], split=False):
                     if not isinstance(data_template, dict):
                         raise Failed("Collection Error: template attribute is not a dictionary")
                     elif "name" not in data_template:
@@ -107,41 +109,41 @@ class CollectionBuilder:
                                             except ValueError:                              return txt
                                     try:
                                         if isinstance(template[m], dict):
-                                            attr = {}
+                                            a = {}
                                             for sm in template[m]:
                                                 if isinstance(template[m][sm], list):
                                                     temp_list = []
                                                     for li in template[m][sm]:
                                                         temp_list.append(replace_txt(li))
-                                                    attr[sm] = temp_list
+                                                    a[sm] = temp_list
                                                 else:
-                                                    attr[sm] = replace_txt(template[m][sm])
+                                                    a[sm] = replace_txt(template[m][sm])
                                         elif isinstance(template[m], list):
-                                            attr = []
+                                            a = []
                                             for li in template[m]:
                                                 if isinstance(li, dict):
                                                     temp_dict = {}
                                                     for sm in li:
                                                         temp_dict[sm] = replace_txt(li[sm])
-                                                    attr.append(temp_dict)
+                                                    a.append(temp_dict)
                                                 else:
-                                                    attr.append(replace_txt(li))
+                                                    a.append(replace_txt(li))
                                         else:
-                                            attr = replace_txt(template[m])
+                                            a = replace_txt(template[m])
                                     except Failed:
                                         continue
-                                    self.data[m] = attr
+                                    self.data[m] = a
                                 else:
                                     raise Failed(f"Collection Error: template attribute {m} is blank")
 
         skip_collection = True
-        if "schedule" not in data:
+        if "schedule" not in methods:
             skip_collection = False
-        elif not data["schedule"]:
+        elif not self.data[methods["schedule"]]:
             logger.error("Collection Error: schedule attribute is blank. Running daily")
             skip_collection = False
         else:
-            schedule_list = util.get_list(data["schedule"])
+            schedule_list = util.get_list(self.data[methods["schedule"]])
             next_month = current_time.replace(day=28) + timedelta(days=4)
             last_day = next_month - timedelta(days=next_month.day)
             for schedule in schedule_list:
@@ -191,13 +193,13 @@ class CollectionBuilder:
 
         logger.info(f"Scanning {self.name} Collection")
 
-        self.collectionless = "plex_collectionless" in data
-        self.run_again = "run_again" in data
+        self.collectionless = "plex_collectionless" in methods
+        self.run_again = "run_again" in methods
 
-        if "tmdb_person" in data:
-            if data["tmdb_person"]:
+        if "tmdb_person" in methods:
+            if self.data[methods["tmdb_person"]]:
                 valid_names = []
-                for tmdb_id in util.get_int_list(data["tmdb_person"], "TMDb Person ID"):
+                for tmdb_id in util.get_int_list(self.data[methods["tmdb_person"]], "TMDb Person ID"):
                     person = config.TMDb.get_person(tmdb_id)
                     valid_names.append(person.name)
                     if hasattr(person, "biography") and person.biography:
@@ -205,25 +207,25 @@ class CollectionBuilder:
                     if hasattr(person, "profile_path") and person.profile_path:
                         self.posters["tmdb_person"] = f"{config.TMDb.image_url}{person.profile_path}"
                 if len(valid_names) > 0:                                        self.details["tmdb_person"] = valid_names
-                else:                                                           raise Failed(f"Collection Error: No valid TMDb Person IDs in {data['tmdb_person']}")
+                else:                                                           raise Failed(f"Collection Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
             else:
                 raise Failed("Collection Error: tmdb_person attribute is blank")
 
-        for m in data:
-            if "tmdb" in m and not config.TMDb:                             raise Failed(f"Collection Error: {m} requires TMDb to be configured")
-            elif "trakt" in m and not config.Trakt:                         raise Failed(f"Collection Error: {m} requires Trakt todo be configured")
-            elif "imdb" in m and not config.IMDb:                           raise Failed(f"Collection Error: {m} requires TMDb or Trakt to be configured")
-            elif "tautulli" in m and not self.library.Tautulli:             raise Failed(f"Collection Error: {m} requires Tautulli to be configured")
-            elif "mal" in m and not config.MyAnimeList:                     raise Failed(f"Collection Error: {m} requires MyAnimeList to be configured")
-            elif data[m] is not None:
+        for m in self.data:
+            if "tmdb" in m.lower() and not config.TMDb:                     raise Failed(f"Collection Error: {m} requires TMDb to be configured")
+            elif "trakt" in m.lower() and not config.Trakt:                 raise Failed(f"Collection Error: {m} requires Trakt todo be configured")
+            elif "imdb" in m.lower() and not config.IMDb:                   raise Failed(f"Collection Error: {m} requires TMDb or Trakt to be configured")
+            elif "tautulli" in m.lower() and not self.library.Tautulli:     raise Failed(f"Collection Error: {m} requires Tautulli to be configured")
+            elif "mal" in m.lower() and not config.MyAnimeList:             raise Failed(f"Collection Error: {m} requires MyAnimeList to be configured")
+            elif self.data[m] is not None:
                 logger.debug("")
                 logger.debug(f"Method: {m}")
-                logger.debug(f"Value: {data[m]}")
-                if m in util.method_alias:
-                    method_name = util.method_alias[m]
+                logger.debug(f"Value: {self.data[m]}")
+                if m.lower() in util.method_alias:
+                    method_name = util.method_alias[m.lower()]
                     logger.warning(f"Collection Warning: {m} attribute will run as {method_name}")
                 else:
-                    method_name = m
+                    method_name = m.lower()
                 if method_name in util.show_only_lists and self.library.is_movie:
                     raise Failed(f"Collection Error: {method_name} attribute only works for show libraries")
                 elif method_name in util.movie_only_lists and self.library.is_show:
@@ -233,73 +235,83 @@ class CollectionBuilder:
                 elif method_name not in util.collectionless_lists and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
                 elif method_name == "summary":
-                    self.summaries[method_name] = data[m]
+                    self.summaries[method_name] = self.data[m]
                 elif method_name == "tmdb_summary":
-                    self.summaries[method_name] = config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], "TMDb ID"), self.library.is_movie).overview
+                    self.summaries[method_name] = config.TMDb.get_movie_show_or_collection(util.regex_first_int(self.data[m], "TMDb ID"), self.library.is_movie).overview
                 elif method_name == "tmdb_description":
-                    self.summaries[method_name] = config.TMDb.get_list(util.regex_first_int(data[m], "TMDb List ID")).description
+                    self.summaries[method_name] = config.TMDb.get_list(util.regex_first_int(self.data[m], "TMDb List ID")).description
                 elif method_name == "tmdb_biography":
-                    self.summaries[method_name] = config.TMDb.get_person(util.regex_first_int(data[m], "TMDb Person ID")).biography
+                    self.summaries[method_name] = config.TMDb.get_person(util.regex_first_int(self.data[m], "TMDb Person ID")).biography
                 elif method_name == "tvdb_summary":
-                    self.summaries[method_name] = config.TVDb.get_movie_or_show(data[m], self.library.Plex.language, self.library.is_movie).summary
+                    self.summaries[method_name] = config.TVDb.get_movie_or_show(self.data[m], self.library.Plex.language, self.library.is_movie).summary
                 elif method_name == "tvdb_description":
-                    self.summaries[method_name] = config.TVDb.get_list_description(data[m], self.library.Plex.language)
+                    self.summaries[method_name] = config.TVDb.get_list_description(self.data[m], self.library.Plex.language)
                 elif method_name == "trakt_description":
-                    self.summaries[method_name] = config.Trakt.standard_list(config.Trakt.validate_trakt_list(util.get_list(data[m]))[0]).description
+                    self.summaries[method_name] = config.Trakt.standard_list(config.Trakt.validate_trakt_list(util.get_list(self.data[m]))[0]).description
                 elif method_name == "letterboxd_description":
-                    self.summaries[method_name] = config.Letterboxd.get_list_description(data[m], self.library.Plex.language)
+                    self.summaries[method_name] = config.Letterboxd.get_list_description(self.data[m], self.library.Plex.language)
                 elif method_name == "collection_mode":
-                    if data[m] in ["default", "hide", "hide_items", "show_items", "hideItems", "showItems"]:
-                        if data[m] == "hide_items":                                 self.details[method_name] = "hideItems"
-                        elif data[m] == "show_items":                               self.details[method_name] = "showItems"
-                        else:                                                       self.details[method_name] = data[m]
+                    if str(self.data[m]).lower() == "default":
+                        self.details[method_name] = "default"
+                    elif str(self.data[m]).lower() == "hide":
+                        self.details[method_name] = "hide"
+                    elif str(self.data[m]).lower() in ["hide_items", "hideitems"]:
+                        self.details[method_name] = "hideItems"
+                    elif str(self.data[m]).lower() in ["show_items", "showitems"]:
+                        self.details[method_name] = "showItems"
                     else:
-                        raise Failed(f"Collection Error: {data[m]} collection_mode Invalid\n| \tdefault (Library default)\n| \thide (Hide Collection)\n| \thide_items (Hide Items in this Collection)\n| \tshow_items (Show this Collection and its Items)")
+                        raise Failed(f"Collection Error: {self.data[m]} collection_mode Invalid\n| \tdefault (Library default)\n| \thide (Hide Collection)\n| \thide_items (Hide Items in this Collection)\n| \tshow_items (Show this Collection and its Items)")
                 elif method_name == "collection_order":
-                    if data[m] in ["release", "alpha"]:
-                        self.details[method_name] = data[m]
+                    if str(self.data[m]).lower() == "release":
+                        self.details[method_name] = "release"
+                    elif str(self.data[m]).lower() == "alpha":
+                        self.details[method_name] = "release"
                     else:
-                        raise Failed(f"Collection Error: {data[m]} collection_order Invalid\n| \trelease (Order Collection by release dates)\n| \talpha (Order Collection Alphabetically)")
+                        raise Failed(f"Collection Error: {self.data[m]} collection_order Invalid\n| \trelease (Order Collection by release dates)\n| \talpha (Order Collection Alphabetically)")
                 elif method_name == "url_poster":
-                    self.posters[method_name] = data[m]
+                    self.posters[method_name] = self.data[m]
                 elif method_name == "tmdb_poster":
-                    self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], 'TMDb ID'), self.library.is_movie).poster_path}"
+                    self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(self.data[m], 'TMDb ID'), self.library.is_movie).poster_path}"
                 elif method_name == "tmdb_profile":
-                    self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_person(util.regex_first_int(data[m], 'TMDb Person ID')).profile_path}"
+                    self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_person(util.regex_first_int(self.data[m], 'TMDb Person ID')).profile_path}"
                 elif method_name == "tvdb_poster":
-                    self.posters[method_name] = f"{config.TVDb.get_movie_or_series(data[m], self.library.Plex.language, self.library.is_movie).poster_path}"
+                    self.posters[method_name] = f"{config.TVDb.get_movie_or_series(self.data[m], self.library.Plex.language, self.library.is_movie).poster_path}"
                 elif method_name == "file_poster":
-                    if os.path.exists(data[m]):                                 self.posters[method_name] = os.path.abspath(data[m])
-                    else:                                                       raise Failed(f"Collection Error: Poster Path Does Not Exist: {os.path.abspath(data[m])}")
+                    if os.path.exists(self.data[m]):
+                        self.posters[method_name] = os.path.abspath(self.data[m])
+                    else:
+                        raise Failed(f"Collection Error: Poster Path Does Not Exist: {os.path.abspath(self.data[m])}")
                 elif method_name == "url_background":
-                    self.backgrounds[method_name] = data[m]
+                    self.backgrounds[method_name] = self.data[m]
                 elif method_name == "tmdb_background":
-                    self.backgrounds[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(data[m], 'TMDb ID'), self.library.is_movie).poster_path}"
+                    self.backgrounds[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(self.data[m], 'TMDb ID'), self.library.is_movie).poster_path}"
                 elif method_name == "tvdb_background":
-                    self.posters[method_name] = f"{config.TVDb.get_movie_or_series(data[m], self.library.Plex.language, self.library.is_movie).background_path}"
+                    self.posters[method_name] = f"{config.TVDb.get_movie_or_series(self.data[m], self.library.Plex.language, self.library.is_movie).background_path}"
                 elif method_name == "file_background":
-                    if os.path.exists(data[m]):                                 self.backgrounds[method_name] = os.path.abspath(data[m])
-                    else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(data[m])}")
+                    if os.path.exists(self.data[m]):                            self.backgrounds[method_name] = os.path.abspath(self.data[m])
+                    else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(self.data[m])}")
                 elif method_name == "label_sync_mode":
-                    if data[m] in ["append", "sync"]:                           self.details[method_name] = data[m]
+                    if self.data[m].lower() in ["append", "sync"]:              self.details[method_name] = self.data[m].lower()
                     else:                                                       raise Failed("Collection Error: label_sync_mode attribute must be either 'append' or 'sync'")
                 elif method_name == "sync_mode":
-                    if data[m] in ["append", "sync"]:                           self.details[method_name] = data[m]
+                    if self.data[m].lower() in ["append", "sync"]:              self.details[method_name] = self.data[m].lower()
                     else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
                 elif method_name in ["arr_tag", "label"]:
-                    self.details[method_name] = util.get_list(data[m])
+                    self.details[method_name] = util.get_list(self.data[m])
                 elif method_name in util.boolean_details:
-                    if isinstance(data[m], bool):                               self.details[method_name] = data[m]
+                    if isinstance(self.data[m], bool):                          self.details[method_name] = self.data[m]
+                    elif str(self.data[m]).lower() in ["t", "true"]:            self.details[method_name] = True
+                    elif str(self.data[m]).lower() in ["f", "false"]:           self.details[method_name] = False
                     else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
                 elif method_name in util.all_details:
-                    self.details[method_name] = data[m]
+                    self.details[method_name] = self.data[m]
                 elif method_name in ["year", "year.not"]:
-                    self.methods.append(("plex_search", [[(method_name, util.get_year_list(data[m], method_name))]]))
+                    self.methods.append(("plex_search", [[(method_name, util.get_year_list(self.data[m], method_name))]]))
                 elif method_name in ["decade", "decade.not"]:
-                    self.methods.append(("plex_search", [[(method_name, util.get_int_list(data[m], util.remove_not(method_name)))]]))
+                    self.methods.append(("plex_search", [[(method_name, util.get_int_list(self.data[m], util.remove_not(method_name)))]]))
                 elif method_name in util.tmdb_searches:
                     final_values = []
-                    for value in util.get_list(data[m]):
+                    for value in util.get_list(self.data[m]):
                         if value.lower() == "tmdb" and "tmdb_person" in self.details:
                             for name in self.details["tmdb_person"]:
                                 final_values.append(name)
@@ -307,112 +319,126 @@ class CollectionBuilder:
                             final_values.append(value)
                     self.methods.append(("plex_search", [[(method_name, final_values)]]))
                 elif method_name == "title":
-                    self.methods.append(("plex_search", [[(method_name, util.get_list(data[m], split=False))]]))
+                    self.methods.append(("plex_search", [[(method_name, util.get_list(self.data[m], split=False))]]))
                 elif method_name in util.plex_searches:
-                    self.methods.append(("plex_search", [[(method_name, util.get_list(data[m]))]]))
+                    self.methods.append(("plex_search", [[(method_name, util.get_list(self.data[m]))]]))
                 elif method_name == "plex_all":
                     self.methods.append((method_name, [""]))
                 elif method_name == "plex_collection":
-                    self.methods.append((method_name, self.library.validate_collections(data[m] if isinstance(data[m], list) else [data[m]])))
+                    self.methods.append((method_name, self.library.validate_collections(self.data[m] if isinstance(self.data[m], list) else [self.data[m]])))
                 elif method_name == "anidb_popular":
-                    list_count = util.regex_first_int(data[m], "List Size", default=40)
+                    list_count = util.regex_first_int(self.data[m], "List Size", default=40)
                     if 1 <= list_count <= 30:
                         self.methods.append((method_name, [list_count]))
                     else:
                         logger.warning("Collection Error: anidb_popular must be an integer between 1 and 30 defaulting to 30")
                         self.methods.append((method_name, [30]))
                 elif method_name == "mal_id":
-                    self.methods.append((method_name, util.get_int_list(data[m], "MyAnimeList ID")))
+                    self.methods.append((method_name, util.get_int_list(self.data[m], "MyAnimeList ID")))
                 elif method_name in ["anidb_id", "anidb_relation"]:
-                    self.methods.append((method_name, config.AniDB.validate_anidb_list(util.get_int_list(data[m], "AniDB ID"), self.library.Plex.language)))
+                    self.methods.append((method_name, config.AniDB.validate_anidb_list(util.get_int_list(self.data[m], "AniDB ID"), self.library.Plex.language)))
                 elif method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
-                    self.methods.append((method_name, config.AniList.validate_anilist_ids(util.get_int_list(data[m], "AniList ID"), studio=method_name == "anilist_studio")))
+                    self.methods.append((method_name, config.AniList.validate_anilist_ids(util.get_int_list(self.data[m], "AniList ID"), studio=method_name == "anilist_studio")))
                 elif method_name == "trakt_list":
-                    self.methods.append((method_name, config.Trakt.validate_trakt_list(util.get_list(data[m]))))
+                    self.methods.append((method_name, config.Trakt.validate_trakt_list(util.get_list(self.data[m]))))
                 elif method_name == "trakt_list_details":
-                    valid_list = config.Trakt.validate_trakt_list(util.get_list(data[m]))
+                    valid_list = config.Trakt.validate_trakt_list(util.get_list(self.data[m]))
                     item = config.Trakt.standard_list(valid_list[0])
                     if hasattr(item, "description") and item.description:
                         self.summaries[method_name] = item.description
                     self.methods.append((method_name[:-8], valid_list))
                 elif method_name == "trakt_watchlist":
-                    self.methods.append((method_name, config.Trakt.validate_trakt_watchlist(util.get_list(data[m]), self.library.is_movie)))
+                    self.methods.append((method_name, config.Trakt.validate_trakt_watchlist(util.get_list(self.data[m]), self.library.is_movie)))
                 elif method_name == "imdb_list":
                     new_list = []
-                    for imdb_list in util.get_list(data[m], split=False):
+                    for imdb_list in util.get_list(self.data[m], split=False):
                         if isinstance(imdb_list, dict):
-                            if "url" in imdb_list and imdb_list["url"]:                 imdb_url = imdb_list["url"]
-                            else:                                                       raise Failed("Collection Error: imdb_list attribute url is required")
-                            list_count = util.regex_first_int(imdb_list["limit"], "List Limit", default=0) if "limit" in imdb_list and imdb_list["limit"] else 0
+                            dict_methods = {dm.lower(): dm for dm in imdb_list}
+                            if "url" in dict_methods and imdb_list[dict_methods["url"]]:
+                                imdb_url = imdb_list[dict_methods["url"]]
+                            else:
+                                raise Failed("Collection Error: imdb_list attribute url is required")
+                            list_count = util.regex_first_int(imdb_list[dict_methods["limit"]], "List Limit", default=0) if "limit" in dict_methods and imdb_list[dict_methods["limit"]] else 0
                         else:
                             imdb_url = str(imdb_list)
                             list_count = 0
                         new_list.append({"url": imdb_url, "limit": list_count})
                     self.methods.append((method_name, new_list))
                 elif method_name == "letterboxd_list":
-                    self.methods.append((method_name, util.get_list(data[m], split=False)))
+                    self.methods.append((method_name, util.get_list(self.data[m], split=False)))
                 elif method_name == "letterboxd_list_details":
-                    values = util.get_list(data[m], split=False)
+                    values = util.get_list(self.data[m], split=False)
                     self.summaries[method_name] = config.Letterboxd.get_list_description(values[0], self.library.Plex.language)
                     self.methods.append((method_name[:-8], values))
                 elif method_name in util.dictionary_lists:
-                    if isinstance(data[m], dict):
-                        def get_int(parent, method, data_in, default_in, minimum=1, maximum=None):
-                            if method not in data_in:                                   logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default_in} as default")
-                            elif not data_in[method]:                                   logger.warning(f"Collection Warning: {parent} {method} attribute is blank using {default_in} as default")
-                            elif isinstance(data_in[method], int) and data_in[method] >= minimum:
-                                if maximum is None or data_in[method] <= maximum:           return data_in[method]
-                                else:                                                       logger.warning(f"Collection Warning: {parent} {method} attribute {data_in[method]} invalid must an integer <= {maximum} using {default_in} as default")
-                            else:                                                       logger.warning(f"Collection Warning: {parent} {method} attribute {data_in[method]} invalid must an integer >= {minimum} using {default_in} as default")
+                    if isinstance(self.data[m], dict):
+                        def get_int(parent, method, data_in, methods_in, default_in, minimum=1, maximum=None):
+                            if method not in methods_in:
+                                logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute not found using {default_in} as default")
+                            elif not data_in[methods_in[method]]:
+                                logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute is blank using {default_in} as default")
+                            elif isinstance(data_in[methods_in[method]], int) and data_in[methods_in[method]] >= minimum:
+                                if maximum is None or data_in[methods_in[method]] <= maximum:
+                                    return data_in[methods_in[method]]
+                                else:
+                                    logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute {data_in[methods_in[method]]} invalid must an integer <= {maximum} using {default_in} as default")
+                            else:
+                                logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute {data_in[methods_in[method]]} invalid must an integer >= {minimum} using {default_in} as default")
                             return default_in
                         if method_name == "filters":
-                            for f in data[m]:
-                                if f in util.method_alias or (f.endswith(".not") and f[:-4] in util.method_alias):
-                                    filter_method = (util.method_alias[f[:-4]] + f[-4:]) if f.endswith(".not") else util.method_alias[f]
+                            for f in self.data[m]:
+                                if f.lower() in util.method_alias or (f.lower().endswith(".not") and f.lower()[:-4] in util.method_alias):
+                                    filter_method = (util.method_alias[f.lower()[:-4]] + f.lower()[-4:]) if f.lower().endswith(".not") else util.method_alias[f.lower()]
                                     logger.warning(f"Collection Warning: {f} filter will run as {filter_method}")
                                 else:
-                                    filter_method = f
+                                    filter_method = f.lower()
                                 if filter_method in util.movie_only_filters and self.library.is_show:
                                     raise Failed(f"Collection Error: {filter_method} filter only works for movie libraries")
-                                elif data[m][f] is None:
+                                elif self.data[m][f] is None:
                                     raise Failed(f"Collection Error: {filter_method} filter is blank")
                                 elif filter_method == "year":
-                                    filter_data = util.get_year_list(data[m][f], f"{filter_method} filter")
+                                    filter_data = util.get_year_list(self.data[m][f], f"{filter_method} filter")
                                 elif filter_method in ["max_age", "duration.gte", "duration.lte", "tmdb_vote_count.gte", "tmdb_vote_count.lte"]:
-                                    filter_data = util.check_number(data[m][f], f"{filter_method} filter", minimum=1)
+                                    filter_data = util.check_number(self.data[m][f], f"{filter_method} filter", minimum=1)
                                 elif filter_method in ["year.gte", "year.lte"]:
-                                    filter_data = util.check_number(data[m][f], f"{filter_method} filter", minimum=1800, maximum=current_year)
+                                    filter_data = util.check_number(self.data[m][f], f"{filter_method} filter", minimum=1800, maximum=current_year)
                                 elif filter_method in ["rating.gte", "rating.lte"]:
-                                    filter_data = util.check_number(data[m][f], f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)
+                                    filter_data = util.check_number(self.data[m][f], f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)
                                 elif filter_method in ["originally_available.gte", "originally_available.lte"]:
-                                    filter_data = util.check_date(data[m][f], f"{filter_method} filter")
+                                    filter_data = util.check_date(self.data[m][f], f"{filter_method} filter")
                                 elif filter_method == "original_language":
-                                    filter_data = util.get_list(data[m][f], lower=True)
+                                    filter_data = util.get_list(self.data[m][f], lower=True)
                                 elif filter_method == "collection":
-                                    filter_data = data[m][f] if isinstance(data[m][f], list) else [data[m][f]]
+                                    filter_data = self.data[m][f] if isinstance(self.data[m][f], list) else [self.data[m][f]]
                                 elif filter_method in util.all_filters:
-                                    filter_data = util.get_list(data[m][f])
+                                    filter_data = util.get_list(self.data[m][f])
                                 else:
                                     raise Failed(f"Collection Error: {filter_method} filter not supported")
                                 self.filters.append((filter_method, filter_data))
                         elif method_name == "plex_collectionless":
                             new_dictionary = {}
+                            dict_methods = {dm.lower(): dm for dm in self.data[m]}
                             prefix_list = []
-                            if "exclude_prefix" in data[m] and data[m]["exclude_prefix"]:
-                                if isinstance(data[m]["exclude_prefix"], list):             prefix_list.extend(data[m]["exclude_prefix"])
-                                else:                                                       prefix_list.append(str(data[m]["exclude_prefix"]))
+                            if "exclude_prefix" in dict_methods and self.data[m][dict_methods["exclude_prefix"]]:
+                                if isinstance(self.data[m][dict_methods["exclude_prefix"]], list):
+                                    prefix_list.extend(self.data[m][dict_methods["exclude_prefix"]])
+                                else:
+                                    prefix_list.append(str(self.data[m][dict_methods["exclude_prefix"]]))
                             exact_list = []
-                            if "exclude" in data[m] and data[m]["exclude"]:
-                                if isinstance(data[m]["exclude"], list):                    exact_list.extend(data[m]["exclude"])
-                                else:                                                       exact_list.append(str(data[m]["exclude"]))
-                            if len(prefix_list) == 0 and len(exact_list) == 0:              raise Failed("Collection Error: you must have at least one exclusion")
+                            if "exclude" in dict_methods and self.data[m][dict_methods["exclude"]]:
+                                if isinstance(self.data[m][dict_methods["exclude"]], list):
+                                    exact_list.extend(self.data[m][dict_methods["exclude"]])
+                                else:
+                                    exact_list.append(str(self.data[m][dict_methods["exclude"]]))
+                            if len(prefix_list) == 0 and len(exact_list) == 0:
+                                raise Failed("Collection Error: you must have at least one exclusion")
                             new_dictionary["exclude_prefix"] = prefix_list
                             new_dictionary["exclude"] = exact_list
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "plex_search":
                             searches = []
                             used = []
-                            for s in data[m]:
+                            for s in self.data[m]:
                                 if s in util.method_alias or (s.endswith(".not") and s[:-4] in util.method_alias):
                                     search = (util.method_alias[s[:-4]] + s[-4:]) if s.endswith(".not") else util.method_alias[s]
                                     logger.warning(f"Collection Warning: {s} plex search attribute will run as {search}")
@@ -423,165 +449,204 @@ class CollectionBuilder:
                                 elif util.remove_not(search) in used:
                                     raise Failed(f"Collection Error: Only one instance of {search} can be used try using it as a filter instead")
                                 elif search in ["year", "year.not"]:
-                                    years = util.get_year_list(data[m][s], search)
+                                    years = util.get_year_list(self.data[m][s], search)
                                     if len(years) > 0:
                                         used.append(util.remove_not(search))
-                                        searches.append((search, util.get_int_list(data[m][s], util.remove_not(search))))
+                                        searches.append((search, util.get_int_list(self.data[m][s], util.remove_not(search))))
                                 elif search == "title":
                                     used.append(util.remove_not(search))
-                                    searches.append((search, util.get_list(data[m][s], split=False)))
+                                    searches.append((search, util.get_list(self.data[m][s], split=False)))
                                 elif search in util.plex_searches:
                                     used.append(util.remove_not(search))
-                                    searches.append((search, util.get_list(data[m][s])))
+                                    searches.append((search, util.get_list(self.data[m][s])))
                                 else:
                                     logger.error(f"Collection Error: {search} plex search attribute not supported")
                             self.methods.append((method_name, [searches]))
                         elif method_name == "tmdb_discover":
                             new_dictionary = {"limit": 100}
-                            for attr in data[m]:
-                                if data[m][attr]:
-                                    attr_data = data[m][attr]
-                                    if (self.library.is_movie and attr in util.discover_movie) or (self.library.is_show and attr in util.discover_tv):
-                                        if attr == "language":
-                                            if re.compile("([a-z]{2})-([A-Z]{2})").match(str(attr_data)):
-                                                new_dictionary[attr] = str(attr_data)
+                            for a in self.data[m]:
+                                a_name = a.lower()
+                                if self.data[m][a]:
+                                    if (self.library.is_movie and a_name in util.discover_movie) or (self.library.is_show and a_name in util.discover_tv):
+                                        if a_name == "language":
+                                            if re.compile("([a-z]{2})-([A-Z]{2})").match(str(self.data[m][a])):
+                                                new_dictionary[a_name] = str(self.data[m][a])
                                             else:
-                                                raise Failed(f"Collection Error: {m} attribute {attr}: {attr_data} must match pattern ([a-z]{{2}})-([A-Z]{{2}}) e.g. en-US")
-                                        elif attr == "region":
-                                            if re.compile("^[A-Z]{2}$").match(str(attr_data)):
-                                                new_dictionary[attr] = str(attr_data)
+                                                raise Failed(f"Collection Error: {m} attribute {a_name}: {self.data[m][a]} must match pattern ([a-z]{{2}})-([A-Z]{{2}}) e.g. en-US")
+                                        elif a_name == "region":
+                                            if re.compile("^[A-Z]{2}$").match(str(self.data[m][a])):
+                                                new_dictionary[a_name] = str(self.data[m][a])
                                             else:
-                                                raise Failed(f"Collection Error: {m} attribute {attr}: {attr_data} must match pattern ^[A-Z]{{2}}$ e.g. US")
-                                        elif attr == "sort_by":
-                                            if (self.library.is_movie and attr_data in util.discover_movie_sort) or (self.library.is_show and attr_data in util.discover_tv_sort):
-                                                new_dictionary[attr] = attr_data
+                                                raise Failed(f"Collection Error: {m} attribute {a_name}: {self.data[m][a]} must match pattern ^[A-Z]{{2}}$ e.g. US")
+                                        elif a_name == "sort_by":
+                                            if (self.library.is_movie and self.data[m][a] in util.discover_movie_sort) or (self.library.is_show and self.data[m][a] in util.discover_tv_sort):
+                                                new_dictionary[a_name] = self.data[m][a]
                                             else:
-                                                raise Failed(f"Collection Error: {m} attribute {attr}: {attr_data} is invalid")
-                                        elif attr == "certification_country":
-                                            if "certification" in data[m] or "certification.lte" in data[m] or "certification.gte" in data[m]:
-                                                new_dictionary[attr] = attr_data
+                                                raise Failed(f"Collection Error: {m} attribute {a_name}: {self.data[m][a]} is invalid")
+                                        elif a_name == "certification_country":
+                                            if "certification" in self.data[m] or "certification.lte" in self.data[m] or "certification.gte" in self.data[m]:
+                                                new_dictionary[a_name] = self.data[m][a]
                                             else:
-                                                raise Failed(f"Collection Error: {m} attribute {attr}: must be used with either certification, certification.lte, or certification.gte")
-                                        elif attr in ["certification", "certification.lte", "certification.gte"]:
-                                            if "certification_country" in data[m]:
-                                                new_dictionary[attr] = attr_data
+                                                raise Failed(f"Collection Error: {m} attribute {a_name}: must be used with either certification, certification.lte, or certification.gte")
+                                        elif a_name in ["certification", "certification.lte", "certification.gte"]:
+                                            if "certification_country" in self.data[m]:
+                                                new_dictionary[a_name] = self.data[m][a]
                                             else:
-                                                raise Failed(f"Collection Error: {m} attribute {attr}: must be used with certification_country")
-                                        elif attr in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
-                                            if attr_data is True:
-                                                new_dictionary[attr] = attr_data
-                                        elif attr in util.discover_dates:
-                                            new_dictionary[attr] = util.check_date(attr_data, f"{m} attribute {attr}", return_string=True)
-                                        elif attr in ["primary_release_year", "year", "first_air_date_year"]:
-                                            new_dictionary[attr] = util.check_number(attr_data, f"{m} attribute {attr}", minimum=1800, maximum=current_year + 1)
-                                        elif attr in ["vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte"]:
-                                            new_dictionary[attr] = util.check_number(attr_data, f"{m} attribute {attr}", minimum=1)
-                                        elif attr in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
-                                            new_dictionary[attr] = attr_data
+                                                raise Failed(f"Collection Error: {m} attribute {a_name}: must be used with certification_country")
+                                        elif a_name in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
+                                            if self.data[m][a] is True:
+                                                new_dictionary[a_name] = self.data[m][a]
+                                        elif a_name in util.discover_dates:
+                                            new_dictionary[a_name] = util.check_date(self.data[m][a], f"{m} attribute {a_name}", return_string=True)
+                                        elif a_name in ["primary_release_year", "year", "first_air_date_year"]:
+                                            new_dictionary[a_name] = util.check_number(self.data[m][a], f"{m} attribute {a_name}", minimum=1800, maximum=current_year + 1)
+                                        elif a_name in ["vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte"]:
+                                            new_dictionary[a_name] = util.check_number(self.data[m][a], f"{m} attribute {a_name}", minimum=1)
+                                        elif a_name in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
+                                            new_dictionary[a_name] = self.data[m][a]
                                         else:
-                                            raise Failed(f"Collection Error: {m} attribute {attr} not supported")
-                                    elif attr == "limit":
-                                        if isinstance(attr_data, int) and attr_data > 0:
-                                            new_dictionary[attr] = attr_data
+                                            raise Failed(f"Collection Error: {m} attribute {a_name} not supported")
+                                    elif a_name == "limit":
+                                        if isinstance(self.data[m][a], int) and self.data[m][a] > 0:
+                                            new_dictionary[a_name] = self.data[m][a]
                                         else:
-                                            raise Failed(f"Collection Error: {m} attribute {attr}: must be a valid number greater then 0")
+                                            raise Failed(f"Collection Error: {m} attribute {a_name}: must be a valid number greater then 0")
                                     else:
-                                        raise Failed(f"Collection Error: {m} attribute {attr} not supported")
+                                        raise Failed(f"Collection Error: {m} attribute {a_name} not supported")
                                 else:
-                                    raise Failed(f"Collection Error: {m} parameter {attr} is blank")
+                                    raise Failed(f"Collection Error: {m} parameter {a_name} is blank")
                             if len(new_dictionary) > 1:
                                 self.methods.append((method_name, [new_dictionary]))
                             else:
                                 raise Failed(f"Collection Error: {m} had no valid fields")
                         elif "tautulli" in method_name:
                             new_dictionary = {}
-                            if method_name == "tautulli_popular":                   new_dictionary["list_type"] = "popular"
-                            elif method_name == "tautulli_watched":                 new_dictionary["list_type"] = "watched"
-                            else:                                                   raise Failed(f"Collection Error: {method_name} attribute not supported")
-
-                            new_dictionary["list_days"] = get_int(method_name, "list_days", data[m], 30)
-                            new_dictionary["list_size"] = get_int(method_name, "list_size", data[m], 10)
-                            new_dictionary["list_buffer"] = get_int(method_name, "list_buffer", data[m], 20)
+                            if method_name == "tautulli_popular":
+                                new_dictionary["list_type"] = "popular"
+                            elif method_name == "tautulli_watched":
+                                new_dictionary["list_type"] = "watched"
+                            else:
+                                raise Failed(f"Collection Error: {method_name} attribute not supported")
+                            dict_methods = {dm.lower(): dm for dm in self.data[m]}
+                            new_dictionary["list_days"] = get_int(method_name, "list_days", self.data[m], dict_methods, 30)
+                            new_dictionary["list_size"] = get_int(method_name, "list_size", self.data[m], dict_methods, 10)
+                            new_dictionary["list_buffer"] = get_int(method_name, "list_buffer", self.data[m], dict_methods, 20)
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "mal_season":
                             new_dictionary = {"sort_by": "anime_num_list_users"}
-                            if "sort_by" not in data[m]:                            logger.warning("Collection Warning: mal_season sort_by attribute not found using members as default")
-                            elif not data[m]["sort_by"]:                            logger.warning("Collection Warning: mal_season sort_by attribute is blank using members as default")
-                            elif data[m]["sort_by"] not in util.mal_season_sort:    logger.warning(f"Collection Warning: mal_season sort_by attribute {data[m]['sort_by']} invalid must be either 'members' or 'score' using members as default")
-                            else:                                                   new_dictionary["sort_by"] = util.mal_season_sort[data[m]["sort_by"]]
+                            dict_methods = {dm.lower(): dm for dm in self.data[m]}
+                            if "sort_by" not in dict_methods:
+                                logger.warning("Collection Warning: mal_season sort_by attribute not found using members as default")
+                            elif not self.data[m][dict_methods["sort_by"]]:
+                                logger.warning("Collection Warning: mal_season sort_by attribute is blank using members as default")
+                            elif self.data[m][dict_methods["sort_by"]] not in util.mal_season_sort:
+                                logger.warning(f"Collection Warning: mal_season sort_by attribute {self.data[m][dict_methods['sort_by']]} invalid must be either 'members' or 'score' using members as default")
+                            else:
+                                new_dictionary["sort_by"] = util.mal_season_sort[self.data[m][dict_methods["sort_by"]]]
 
                             if current_time.month in [1, 2, 3]:                     new_dictionary["season"] = "winter"
                             elif current_time.month in [4, 5, 6]:                   new_dictionary["season"] = "spring"
                             elif current_time.month in [7, 8, 9]:                   new_dictionary["season"] = "summer"
                             elif current_time.month in [10, 11, 12]:                new_dictionary["season"] = "fall"
 
-                            if "season" not in data[m]:                             logger.warning(f"Collection Warning: mal_season season attribute not found using the current season: {new_dictionary['season']} as default")
-                            elif not data[m]["season"]:                             logger.warning(f"Collection Warning: mal_season season attribute is blank using the current season: {new_dictionary['season']} as default")
-                            elif data[m]["season"] not in util.pretty_seasons:      logger.warning(f"Collection Warning: mal_season season attribute {data[m]['season']} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
-                            else:                                                   new_dictionary["season"] = data[m]["season"]
+                            if "season" not in dict_methods:
+                                logger.warning(f"Collection Warning: mal_season season attribute not found using the current season: {new_dictionary['season']} as default")
+                            elif not self.data[m][dict_methods["season"]]:
+                                logger.warning(f"Collection Warning: mal_season season attribute is blank using the current season: {new_dictionary['season']} as default")
+                            elif self.data[m][dict_methods["season"]] not in util.pretty_seasons:
+                                logger.warning(f"Collection Warning: mal_season season attribute {self.data[m][dict_methods['season']]} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
+                            else:
+                                new_dictionary["season"] = self.data[m][dict_methods["season"]]
 
-                            new_dictionary["year"] = get_int(method_name, "year", data[m], current_time.year, minimum=1917, maximum=current_time.year + 1)
-                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, maximum=500)
+                            new_dictionary["year"] = get_int(method_name, "year", self.data[m], dict_methods, current_time.year, minimum=1917, maximum=current_time.year + 1)
+                            new_dictionary["limit"] = get_int(method_name, "limit", self.data[m], dict_methods, 100, maximum=500)
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "mal_userlist":
                             new_dictionary = {"status": "all", "sort_by": "list_score"}
-                            if "username" not in data[m]:                           raise Failed("Collection Error: mal_userlist username attribute is required")
-                            elif not data[m]["username"]:                           raise Failed("Collection Error: mal_userlist username attribute is blank")
-                            else:                                                   new_dictionary["username"] = data[m]["username"]
+                            dict_methods = {dm.lower(): dm for dm in self.data[m]}
+                            if "username" not in dict_methods:
+                                raise Failed("Collection Error: mal_userlist username attribute is required")
+                            elif not self.data[m][dict_methods["username"]]:
+                                raise Failed("Collection Error: mal_userlist username attribute is blank")
+                            else:
+                                new_dictionary["username"] = self.data[m][dict_methods["username"]]
 
-                            if "status" not in data[m]:                             logger.warning("Collection Warning: mal_season status attribute not found using all as default")
-                            elif not data[m]["status"]:                             logger.warning("Collection Warning: mal_season status attribute is blank using all as default")
-                            elif data[m]["status"] not in util.mal_userlist_status: logger.warning(f"Collection Warning: mal_season status attribute {data[m]['status']} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default")
-                            else:                                                   new_dictionary["status"] = util.mal_userlist_status[data[m]["status"]]
+                            if "status" not in dict_methods:
+                                logger.warning("Collection Warning: mal_season status attribute not found using all as default")
+                            elif not self.data[m][dict_methods["status"]]:
+                                logger.warning("Collection Warning: mal_season status attribute is blank using all as default")
+                            elif self.data[m][dict_methods["status"]] not in util.mal_userlist_status:
+                                logger.warning(f"Collection Warning: mal_season status attribute {self.data[m][dict_methods['status']]} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default")
+                            else:
+                                new_dictionary["status"] = util.mal_userlist_status[self.data[m][dict_methods["status"]]]
 
-                            if "sort_by" not in data[m]:                            logger.warning("Collection Warning: mal_season sort_by attribute not found using score as default")
-                            elif not data[m]["sort_by"]:                            logger.warning("Collection Warning: mal_season sort_by attribute is blank using score as default")
-                            elif data[m]["sort_by"] not in util.mal_userlist_sort:  logger.warning(f"Collection Warning: mal_season sort_by attribute {data[m]['sort_by']} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default")
-                            else:                                                   new_dictionary["sort_by"] = util.mal_userlist_sort[data[m]["sort_by"]]
+                            if "sort_by" not in dict_methods:
+                                logger.warning("Collection Warning: mal_season sort_by attribute not found using score as default")
+                            elif not self.data[m][dict_methods["sort_by"]]:
+                                logger.warning("Collection Warning: mal_season sort_by attribute is blank using score as default")
+                            elif self.data[m][dict_methods["sort_by"]] not in util.mal_userlist_sort:
+                                logger.warning(f"Collection Warning: mal_season sort_by attribute {self.data[m][dict_methods['sort_by']]} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default")
+                            else:
+                                new_dictionary["sort_by"] = util.mal_userlist_sort[self.data[m][dict_methods["sort_by"]]]
 
-                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 100, maximum=1000)
+                            new_dictionary["limit"] = get_int(method_name, "limit", self.data[m], dict_methods, 100, maximum=1000)
                             self.methods.append((method_name, [new_dictionary]))
                         elif "anilist" in method_name:
                             new_dictionary = {"sort_by": "score"}
+                            dict_methods = {dm.lower(): dm for dm in self.data[m]}
                             if method_name == "anilist_season":
                                 if current_time.month in [12, 1, 2]:                    new_dictionary["season"] = "winter"
                                 elif current_time.month in [3, 4, 5]:                   new_dictionary["season"] = "spring"
                                 elif current_time.month in [6, 7, 8]:                   new_dictionary["season"] = "summer"
                                 elif current_time.month in [9, 10, 11]:                 new_dictionary["season"] = "fall"
 
-                                if "season" not in data[m]:                             logger.warning(f"Collection Warning: anilist_season season attribute not found using the current season: {new_dictionary['season']} as default")
-                                elif not data[m]["season"]:                             logger.warning(f"Collection Warning: anilist_season season attribute is blank using the current season: {new_dictionary['season']} as default")
-                                elif data[m]["season"] not in util.pretty_seasons:      logger.warning(f"Collection Warning: anilist_season season attribute {data[m]['season']} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
-                                else:                                                   new_dictionary["season"] = data[m]["season"]
+                                if "season" not in dict_methods:
+                                    logger.warning(f"Collection Warning: anilist_season season attribute not found using the current season: {new_dictionary['season']} as default")
+                                elif not self.data[m][dict_methods["season"]]:
+                                    logger.warning(f"Collection Warning: anilist_season season attribute is blank using the current season: {new_dictionary['season']} as default")
+                                elif self.data[m][dict_methods["season"]] not in util.pretty_seasons:
+                                    logger.warning(f"Collection Warning: anilist_season season attribute {self.data[m][dict_methods['season']]} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
+                                else:
+                                    new_dictionary["season"] = self.data[m][dict_methods["season"]]
 
-                                new_dictionary["year"] = get_int(method_name, "year", data[m], current_time.year, minimum=1917, maximum=current_time.year + 1)
+                                new_dictionary["year"] = get_int(method_name, "year", self.data[m], dict_methods, current_time.year, minimum=1917, maximum=current_time.year + 1)
                             elif method_name == "anilist_genre":
-                                if "genre" not in data[m]:                              raise Failed(f"Collection Warning: anilist_genre genre attribute not found")
-                                elif not data[m]["genre"]:                              raise Failed(f"Collection Warning: anilist_genre genre attribute is blank")
-                                else:                                                   new_dictionary["genre"] = self.config.AniList.validate_genre(data[m]["genre"])
+                                if "genre" not in dict_methods:
+                                    raise Failed(f"Collection Warning: anilist_genre genre attribute not found")
+                                elif not self.data[m][dict_methods["genre"]]:
+                                    raise Failed(f"Collection Warning: anilist_genre genre attribute is blank")
+                                else:
+                                    new_dictionary["genre"] = self.config.AniList.validate_genre(self.data[m][dict_methods["genre"]])
                             elif method_name == "anilist_tag":
-                                if "tag" not in data[m]:                                raise Failed(f"Collection Warning: anilist_tag tag attribute not found")
-                                elif not data[m]["tag"]:                                raise Failed(f"Collection Warning: anilist_tag tag attribute is blank")
-                                else:                                                   new_dictionary["tag"] = self.config.AniList.validate_tag(data[m]["tag"])
+                                if "tag" not in dict_methods:
+                                    raise Failed(f"Collection Warning: anilist_tag tag attribute not found")
+                                elif not self.data[m][dict_methods["tag"]]:
+                                    raise Failed(f"Collection Warning: anilist_tag tag attribute is blank")
+                                else:
+                                    new_dictionary["tag"] = self.config.AniList.validate_tag(self.data[m][dict_methods["tag"]])
 
-                            if "sort_by" not in data[m]:                            logger.warning(f"Collection Warning: {method_name} sort_by attribute not found using score as default")
-                            elif not data[m]["sort_by"]:                            logger.warning(f"Collection Warning: {method_name} sort_by attribute is blank using score as default")
-                            elif data[m]["sort_by"] not in ["score", "popular"]:    logger.warning(f"Collection Warning: {method_name} sort_by attribute {data[m]['sort_by']} invalid must be either 'score' or 'popular' using score as default")
-                            else:                                                   new_dictionary["sort_by"] = data[m]["sort_by"]
+                            if "sort_by" not in dict_methods:
+                                logger.warning(f"Collection Warning: {method_name} sort_by attribute not found using score as default")
+                            elif not self.data[m][dict_methods["sort_by"]]:
+                                logger.warning(f"Collection Warning: {method_name} sort_by attribute is blank using score as default")
+                            elif str(self.data[m][dict_methods["sort_by"]]).lower() not in ["score", "popular"]:
+                                logger.warning(f"Collection Warning: {method_name} sort_by attribute {self.data[m][dict_methods['sort_by']]} invalid must be either 'score' or 'popular' using score as default")
+                            else:
+                                new_dictionary["sort_by"] = self.data[m][dict_methods["sort_by"]]
 
-                            new_dictionary["limit"] = get_int(method_name, "limit", data[m], 0, maximum=500)
+                            new_dictionary["limit"] = get_int(method_name, "limit", self.data[m], dict_methods, 0, maximum=500)
 
                             self.methods.append((method_name, [new_dictionary]))
                     else:
-                        raise Failed(f"Collection Error: {m} attribute is not a dictionary: {data[m]}")
+                        raise Failed(f"Collection Error: {m} attribute is not a dictionary: {self.data[m]}")
                 elif method_name in util.count_lists:
-                    list_count = util.regex_first_int(data[m], "List Size", default=10)
+                    list_count = util.regex_first_int(self.data[m], "List Size", default=10)
                     if list_count < 1:
                         logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 10")
                         list_count = 10
                     self.methods.append((method_name, [list_count]))
                 elif "tvdb" in method_name:
-                    values = util.get_list(data[m])
+                    values = util.get_list(self.data[m])
                     if method_name[-8:] == "_details":
                         if method_name == "tvdb_movie_details":
                             item = config.TVDb.get_movie(self.library.Plex.language, values[0])
@@ -605,7 +670,7 @@ class CollectionBuilder:
                     else:
                         self.methods.append((method_name, values))
                 elif method_name in util.tmdb_lists:
-                    values = config.TMDb.validate_tmdb_list(util.get_int_list(data[m], f"TMDb {util.tmdb_type[method_name]} ID"), util.tmdb_type[method_name])
+                    values = config.TMDb.validate_tmdb_list(util.get_int_list(self.data[m], f"TMDb {util.tmdb_type[method_name]} ID"), util.tmdb_type[method_name])
                     if method_name[-8:] == "_details":
                         if method_name in ["tmdb_collection_details", "tmdb_movie_details", "tmdb_show_details"]:
                             item = config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
@@ -629,7 +694,7 @@ class CollectionBuilder:
                     else:
                         self.methods.append((method_name, values))
                 elif method_name in util.all_lists:
-                    self.methods.append((method_name, util.get_list(data[m])))
+                    self.methods.append((method_name, util.get_list(self.data[m])))
                 elif method_name not in util.other_attributes:
                     raise Failed(f"Collection Error: {method_name} attribute not supported")
             elif m in util.all_lists or m in util.method_alias or m in util.plex_searches:
@@ -638,10 +703,13 @@ class CollectionBuilder:
                 logger.warning(f"Collection Warning: {m} attribute is blank")
 
         self.sync = self.library.sync_mode == "sync"
-        if "sync_mode" in data:
-            if not data["sync_mode"]:                                       logger.warning(f"Collection Warning: sync_mode attribute is blank using general: {self.library.sync_mode}")
-            elif data["sync_mode"] not in ["append", "sync"]:               logger.warning(f"Collection Warning: {self.library.sync_mode} sync_mode invalid using general: {data['sync_mode']}")
-            else:                                                           self.sync = data["sync_mode"] == "sync"
+        if "sync_mode" in methods:
+            if not self.data[methods["sync_mode"]]:
+                logger.warning(f"Collection Warning: sync_mode attribute is blank using general: {self.library.sync_mode}")
+            elif self.data[methods["sync_mode"]].lower() not in ["append", "sync"]:
+                logger.warning(f"Collection Warning: {self.data[methods['sync_mode']]} sync_mode invalid using general: {self.library.sync_mode}")
+            else:
+                self.sync = self.data[methods["sync_mode"]].lower() == "sync"
 
         self.do_arr = False
         if self.library.Radarr:
