@@ -80,14 +80,14 @@ logger.addHandler(file_handler)
 sys.excepthook = util.my_except_hook
 
 util.separator()
-logger.info(util.get_centered_text("                                                                                     "))
-logger.info(util.get_centered_text(" ____  _             __  __      _          __  __                                   "))
-logger.info(util.get_centered_text("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ "))
-logger.info(util.get_centered_text("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|"))
-logger.info(util.get_centered_text("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
-logger.info(util.get_centered_text("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
-logger.info(util.get_centered_text("                                                                     |___/           "))
-logger.info(util.get_centered_text("    Version: 1.5.1-Beta.2                                                            "))
+util.centered("                                                                                     ")
+util.centered(" ____  _             __  __      _          __  __                                   ")
+util.centered("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ ")
+util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|")
+util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
+util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
+util.centered("                                                                     |___/           ")
+util.centered("    Version: 1.5.1-Beta.2                                                            ")
 util.separator()
 
 if my_tests:

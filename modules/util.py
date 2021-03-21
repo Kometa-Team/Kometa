@@ -741,7 +741,7 @@ def regex_first_int(data, id_type, default=None):
 def remove_not(method):
     return method[:-4] if method.endswith(".not") else method
 
-def get_centered_text(text):
+def centered(text, do_print=True):
     if len(text) > screen_width - 2:
         raise Failed("text must be shorter then screen_width")
     space = screen_width - len(text) - 2
@@ -749,7 +749,10 @@ def get_centered_text(text):
         text += " "
         space -= 1
     side = int(space / 2)
-    return f"{' ' * side}{text}{' ' * side}"
+    final_text = f"{' ' * side}{text}{' ' * side}"
+    if do_print:
+        logger.info(final_text)
+    return final_text
 
 def separator(text=None):
     logger.handlers[0].setFormatter(logging.Formatter(f"%(message)-{screen_width - 2}s"))
@@ -758,7 +761,7 @@ def separator(text=None):
     if text:
         text_list = text.split("\n")
         for t in text_list:
-            logger.info(f"| {get_centered_text(t)} |")
+            logger.info(f"| {centered(t, do_print=False)} |")
         logger.info(f"|{separating_character * screen_width}|")
     logger.handlers[0].setFormatter(logging.Formatter(f"| %(message)-{screen_width - 2}s |"))
     logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{screen_width - 2}s |"))
