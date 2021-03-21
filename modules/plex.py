@@ -193,12 +193,19 @@ class PlexAPI:
                         attrs = []
                         if method_name in ["video_resolution", "audio_language", "subtitle_language"]:
                             for media in current.media:
-                                if method_name == "video_resolution":                                                           attrs.extend([media.videoResolution])
+                                if method_name == "video_resolution":
+                                    attrs.extend([media.videoResolution])
                                 for part in media.parts:
-                                    if method_name == "audio_language":                                                             attrs.extend([a.language for a in part.audioStreams()])
-                                    if method_name == "subtitle_language":                                                          attrs.extend([s.language for s in part.subtitleStreams()])
-                        elif method_name in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:     attrs = [str(getattr(current, method_name))]
-                        elif method_name in ["actors", "countries", "directors", "genres", "writers", "collections"]:   attrs = [getattr(x, "tag") for x in getattr(current, method_name)]
+                                    if method_name == "audio_language":
+                                        attrs.extend([a.language for a in part.audioStreams()])
+                                    if method_name == "subtitle_language":
+                                        attrs.extend([s.language for s in part.subtitleStreams()])
+                        elif method_name in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:
+                            attrs = [str(getattr(current, method_name))]
+                        elif method_name in ["actors", "countries", "directors", "genres", "writers", "collections"]:
+                            attrs = [getattr(x, "tag") for x in getattr(current, method_name)]
+                        else:
+                            raise Failed(f"Filter Error: filter: {method_name} not supported")
 
                         if (not list(set(filter_data) & set(attrs)) and modifier != ".not") or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             match = False
