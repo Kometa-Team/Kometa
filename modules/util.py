@@ -160,6 +160,10 @@ pretty_names = {
     "tvdb_show": "TVDb Show",
     "tvdb_show_details": "TVDb Show"
 }
+plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US", "es-ES",
+                     "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID", "it-IT",
+                     "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO", "ru-RU",
+                     "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"]
 mal_ranked_name = {
     "mal_all": "all",
     "mal_airing": "airing",
@@ -703,7 +707,6 @@ def windows_input(prompt, timeout=5):
         if (time.time() - start_time) > timeout:
             print("")
             raise TimeoutExpired
-
 
 def print_multiline(lines, info=False, warning=False, error=False, critical=False):
     for i, line in enumerate(str(lines).split("\n")):

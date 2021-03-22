@@ -260,14 +260,14 @@ class CollectionBuilder:
                     elif str(self.data[m]).lower() in ["show_items", "showitems"]:
                         self.details[method_name] = "showItems"
                     else:
-                        raise Failed(f"Collection Error: {self.data[m]} collection_mode Invalid\n| \tdefault (Library default)\n| \thide (Hide Collection)\n| \thide_items (Hide Items in this Collection)\n| \tshow_items (Show this Collection and its Items)")
+                        raise Failed(f"Collection Error: {self.data[m]} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
                 elif method_name == "collection_order":
                     if str(self.data[m]).lower() == "release":
                         self.details[method_name] = "release"
                     elif str(self.data[m]).lower() == "alpha":
                         self.details[method_name] = "release"
                     else:
-                        raise Failed(f"Collection Error: {self.data[m]} collection_order Invalid\n| \trelease (Order Collection by release dates)\n| \talpha (Order Collection Alphabetically)")
+                        raise Failed(f"Collection Error: {self.data[m]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)")
                 elif method_name == "url_poster":
                     self.posters[method_name] = self.data[m]
                 elif method_name == "tmdb_poster":
@@ -962,7 +962,7 @@ class CollectionBuilder:
         if "label" in self.details:
             item_labels = [label.tag for label in collection.labels]
             labels = util.get_list(self.details["label"])
-            if "label_sync_mode" in self.details and self.details["label_sync_mode"] == "sync":
+            if "label_sync_mode" in self.details and str(self.details["label_sync_mode"]).lower() == "sync":
                 for label in (la for la in item_labels if la not in labels):
                     collection.removeLabel(label)
                     logger.info(f"Detail: Label {label} removed")
