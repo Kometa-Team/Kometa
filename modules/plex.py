@@ -315,17 +315,174 @@ class PlexAPI:
             else:
                 logger.info(f"{item_type}: {m} Details Update Not Needed")
 
-            genres = []
+            if self.is_show:
+                advance_edits = {}
 
+                if "episode_sorting" in methods:
+                    if self.metadata[m][methods["episode_sorting"]]:
+                        method_data = str(self.metadata[m][methods["episode_sorting"]]).lower()
+                        if method_data in ["default", "oldest", "newest"]:
+                            if method_data == "default" and item.episodeSort != "-1":
+                                advance_edits["episodeSort"] = "-1"
+                            elif method_data == "oldest" and item.episodeSort != "0":
+                                advance_edits["episodeSort"] = "0"
+                            elif method_data == "newest" and item.episodeSort != "1":
+                                advance_edits["episodeSort"] = "1"
+                            if "episodeSort" in advance_edits:
+                                logger.info(f"Detail: episode_sorting updated to {method_data}")
+                        else:
+                            logger.error(f"Metadata Error: {self.metadata[m][methods['episode_sorting']]} episode_sorting attribute invalid")
+                    else:
+                        logger.error(f"Metadata Error: episode_sorting attribute is blank")
+
+                if "keep_episodes" in methods:
+                    if self.metadata[m][methods["keep_episodes"]]:
+                        method_data = str(self.metadata[m][methods["keep_episodes"]]).lower()
+                        if method_data in ["all", "5_latest", "3_latest", "latest", "past_3", "past_7", "past_30"]:
+                            if method_data == "all" and item.autoDeletionItemPolicyUnwatchedLibrary != 0:
+                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = 0
+                            elif method_data == "5_latest" and item.autoDeletionItemPolicyUnwatchedLibrary != 5:
+                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = 5
+                            elif method_data == "3_latest" and item.autoDeletionItemPolicyUnwatchedLibrary != 3:
+                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = 3
+                            elif method_data == "latest" and item.autoDeletionItemPolicyUnwatchedLibrary != 1:
+                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = 1
+                            elif method_data == "past_3" and item.autoDeletionItemPolicyUnwatchedLibrary != -3:
+                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = -3
+                            elif method_data == "past_7" and item.autoDeletionItemPolicyUnwatchedLibrary != -7:
+                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = -7
+                            elif method_data == "past_30" and item.autoDeletionItemPolicyUnwatchedLibrary != -30:
+                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = -30
+                            if "autoDeletionItemPolicyUnwatchedLibrary" in advance_edits:
+                                logger.info(f"Detail: keep_episodes updated to {method_data}")
+                        else:
+                            logger.error(f"Metadata Error: {self.metadata[m][methods['keep_episodes']]} keep_episodes attribute invalid")
+                    else:
+                        logger.error(f"Metadata Error: keep_episodes attribute is blank")
+
+                if "delete_episodes" in methods:
+                    if self.metadata[m][methods["delete_episodes"]]:
+                        method_data = str(self.metadata[m][methods["delete_episodes"]]).lower()
+                        if method_data in ["never", "day", "week", "refresh"]:
+                            if method_data == "never" and item.autoDeletionItemPolicyWatchedLibrary != 0:
+                                advance_edits["autoDeletionItemPolicyWatchedLibrary"] = 0
+                            elif method_data == "day" and item.autoDeletionItemPolicyWatchedLibrary != 1:
+                                advance_edits["autoDeletionItemPolicyWatchedLibrary"] = 1
+                            elif method_data == "week" and item.autoDeletionItemPolicyWatchedLibrary != 7:
+                                advance_edits["autoDeletionItemPolicyWatchedLibrary"] = 7
+                            elif method_data == "refresh" and item.autoDeletionItemPolicyWatchedLibrary != 100:
+                                advance_edits["autoDeletionItemPolicyWatchedLibrary"] = 100
+                            if "autoDeletionItemPolicyWatchedLibrary" in advance_edits:
+                                logger.info(f"Detail: delete_episodes updated to {method_data}")
+                        else:
+                            logger.error(f"Metadata Error: {self.metadata[m][methods['delete_episodes']]} delete_episodes attribute invalid")
+                    else:
+                        logger.error(f"Metadata Error: delete_episodes attribute is blank")
+
+                if "season_display" in methods:
+                    if self.metadata[m][methods["season_display"]]:
+                        method_data = str(self.metadata[m][methods["season_display"]]).lower()
+                        if method_data in ["default", "hide", "show"]:
+                            if method_data == "default" and item.flattenSeasons != -1:
+                                advance_edits["flattenSeasons"] = -1
+                            elif method_data == "hide" and item.flattenSeasons != 0:
+                                advance_edits["flattenSeasons"] = 0
+                            elif method_data == "show" and item.flattenSeasons != 1:
+                                advance_edits["flattenSeasons"] = 1
+                            if "flattenSeasons" in advance_edits:
+                                logger.info(f"Detail: season_display updated to {method_data}")
+                        else:
+                            logger.error(f"Metadata Error: {self.metadata[m][methods['season_display']]} season_display attribute invalid")
+                    else:
+                        logger.error(f"Metadata Error: season_display attribute is blank")
+
+                if "episode_ordering" in methods:
+                    if self.metadata[m][methods["episode_ordering"]]:
+                        method_data = str(self.metadata[m][methods["episode_ordering"]]).lower()
+                        if method_data in ["default", "tmdb_aired", "tvdb_aired", "tvdb_dvd", "tvdb_absolute"]:
+                            if method_data == "default" and item.showOrdering is not None:
+                                advance_edits["showOrdering"] = None
+                            elif method_data == "tmdb_aired" and item.showOrdering != "tmdbAiring":
+                                advance_edits["showOrdering"] = "tmdbAiring"
+                            elif method_data == "tvdb_aired" and item.showOrdering != "airing":
+                                advance_edits["showOrdering"] = "airing"
+                            elif method_data == "tvdb_dvd" and item.showOrdering != "dvd":
+                                advance_edits["showOrdering"] = "dvd"
+                            elif method_data == "tvdb_absolute" and item.showOrdering != "absolute":
+                                advance_edits["showOrdering"] = "absolute"
+                            if "showOrdering" in advance_edits:
+                                logger.info(f"Detail: episode_ordering updated to {method_data}")
+                        else:
+                            logger.error(f"Metadata Error: {self.metadata[m][methods['episode_ordering']]} episode_ordering attribute invalid")
+                    else:
+                        logger.error(f"Metadata Error: episode_ordering attribute is blank")
+
+                if len(advance_edits) > 0:
+                    logger.debug(f"Details Update: {advance_edits}")
+                    try:
+                        item.editAdvanced(**advance_edits)
+                        item.reload()
+                        logger.info(f"{item_type}: {m} Advanced Details Update Successful")
+                    except BadRequest:
+                        util.print_stacktrace()
+                        logger.error(f"{item_type}: {m} Details Update Failed")
+                else:
+                    logger.info(f"{item_type}: {m} Details Update Not Needed")
+
+            advance_edits = {}
+            if "metadata_language" in methods:
+                if self.metadata[m][methods["metadata_language"]]:
+                    method_data = str(self.metadata[m][methods["metadata_language"]]).lower()
+                    lower_languages = {la.lower(): la for la in util.plex_languages}
+                    if method_data in lower_languages:
+                        if method_data == "default" and item.languageOverride is None:
+                            advance_edits["languageOverride"] = None
+                        elif str(item.languageOverride).lower() != lower_languages[method_data]:
+                            advance_edits["languageOverride"] = lower_languages[method_data]
+                        if "languageOverride" in advance_edits:
+                            logger.info(f"Detail: metadata_language updated to {method_data}")
+                    else:
+                        logger.error(f"Metadata Error: {self.metadata[m][methods['metadata_language']]} metadata_language attribute invalid")
+                else:
+                    logger.error(f"Metadata Error: metadata_language attribute is blank")
+
+            if "use_original_title" in methods:
+                if self.metadata[m][methods["use_original_title"]]:
+                    method_data = str(self.metadata[m][methods["use_original_title"]]).lower()
+                    if method_data in ["default", "no", "yes"]:
+                        if method_data == "default" and item.useOriginalTitle != -1:
+                            advance_edits["useOriginalTitle"] = -1
+                        elif method_data == "no" and item.useOriginalTitle != 0:
+                            advance_edits["useOriginalTitle"] = 0
+                        elif method_data == "yes" and item.useOriginalTitle != 1:
+                            advance_edits["useOriginalTitle"] = 1
+                        if "useOriginalTitle" in advance_edits:
+                            logger.info(f"Detail: use_original_title updated to {method_data}")
+                    else:
+                        logger.error(f"Metadata Error: {self.metadata[m][methods['use_original_title']]} use_original_title attribute invalid")
+                else:
+                    logger.error(f"Metadata Error: use_original_title attribute is blank")
+
+            if len(advance_edits) > 0:
+                logger.debug(f"Details Update: {advance_edits}")
+                try:
+                    item.editAdvanced(**advance_edits)
+                    item.reload()
+                    logger.info(f"{item_type}: {m} Advanced Details Update Successful")
+                except BadRequest:
+                    util.print_stacktrace()
+                    logger.error(f"{item_type}: {m} Details Update Failed")
+            else:
+                logger.info(f"{item_type}: {m} Details Update Not Needed")
+
+            genres = []
             if tmdb_item:
                 genres.extend([genre.name for genre in tmdb_item.genres])
-
             if "genre" in methods:
                 if self.metadata[m][methods["genre"]]:
                     genres.extend(util.get_list(self.metadata[m][methods["genre"]]))
                 else:
                     logger.error("Metadata Error: genre attribute is blank")
-
             if len(genres) > 0:
                 item_genres = [genre.tag for genre in item.genres]
                 if "genre_sync_mode" in methods:
