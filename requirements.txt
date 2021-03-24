@@ -1,8 +1,8 @@
 # Remove
 # Less common, pinned
-PlexAPI==4.4.1
+PlexAPI==4.5.0
 tmdbv3api==1.7.5
-trakt.py==4.2.0
+trakt.py==4.3.0
 # More common, flexible
 lxml
 requests>=2.4.2
