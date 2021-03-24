@@ -453,6 +453,8 @@ class PlexAPI:
             if len(advance_edits) > 0:
                 logger.debug(f"Details Update: {advance_edits}")
                 try:
+                    check_dict = {pref.id: list(pref.enumValues.keys()) for pref in item.preferences()}
+                    logger.info(check_dict)
                     item.editAdvanced(**advance_edits)
                     item.reload()
                     logger.info(f"{item_type}: {m} Advanced Details Update Successful")
