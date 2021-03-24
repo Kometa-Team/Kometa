@@ -315,8 +315,8 @@ class PlexAPI:
             else:
                 logger.info(f"{item_type}: {m} Details Update Not Needed")
 
+            advance_edits = {}
             if self.is_show:
-                advance_edits = {}
 
                 if "episode_sorting" in methods:
                     if self.metadata[m][methods["episode_sorting"]]:
@@ -385,9 +385,9 @@ class PlexAPI:
                         if method_data in ["default", "hide", "show"]:
                             if method_data == "default" and item.flattenSeasons != -1:
                                 advance_edits["flattenSeasons"] = -1
-                            elif method_data == "hide" and item.flattenSeasons != 0:
+                            elif method_data == "show" and item.flattenSeasons != 0:
                                 advance_edits["flattenSeasons"] = 0
-                            elif method_data == "show" and item.flattenSeasons != 1:
+                            elif method_data == "hide" and item.flattenSeasons != 1:
                                 advance_edits["flattenSeasons"] = 1
                             if "flattenSeasons" in advance_edits:
                                 logger.info(f"Detail: season_display updated to {method_data}")
@@ -417,19 +417,6 @@ class PlexAPI:
                     else:
                         logger.error(f"Metadata Error: episode_ordering attribute is blank")
 
-                if len(advance_edits) > 0:
-                    logger.debug(f"Details Update: {advance_edits}")
-                    try:
-                        item.editAdvanced(**advance_edits)
-                        item.reload()
-                        logger.info(f"{item_type}: {m} Advanced Details Update Successful")
-                    except BadRequest:
-                        util.print_stacktrace()
-                        logger.error(f"{item_type}: {m} Details Update Failed")
-                else:
-                    logger.info(f"{item_type}: {m} Details Update Not Needed")
-
-            advance_edits = {}
             if "metadata_language" in methods:
                 if self.metadata[m][methods["metadata_language"]]:
                     method_data = str(self.metadata[m][methods["metadata_language"]]).lower()
