@@ -267,47 +267,47 @@ class Config:
         self.libraries = []
         try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
         except Failed as e:             raise Failed(e)
-        for lib in libs:
+        for library_name, lib in libs.items():
             util.separator()
             params = {}
-            if "library_name" in libs[lib] and libs[lib]["library_name"]:
-                params["name"] = str(libs[lib]["library_name"])
-                logger.info(f"Connecting to {params['name']} ({lib}) Library...")
+            if "library_name" in lib and lib["library_name"]:
+                params["name"] = str(lib["library_name"])
+                logger.info(f"Connecting to {params['name']} ({library_name}) Library...")
             else:
-                params["name"] = str(lib)
+                params["name"] = str(library_name)
                 logger.info(f"Connecting to {params['name']} Library...")
 
-            params["asset_directory"] = check_for_attribute(libs[lib], "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
+            params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
             if params["asset_directory"] is None:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
-            if "settings" in libs[lib] and libs[lib]["settings"] and "sync_mode" in libs[lib]["settings"]:
-                params["sync_mode"] = check_for_attribute(libs[lib], "sync_mode", parent="settings", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], do_print=False, save=False)
+            if "settings" in lib and lib["settings"] and "sync_mode" in lib["settings"]:
+                params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], do_print=False, save=False)
             else:
-                params["sync_mode"] = check_for_attribute(libs[lib], "sync_mode", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], do_print=False, save=False)
+                params["sync_mode"] = check_for_attribute(lib, "sync_mode", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], do_print=False, save=False)
 
-            if "settings" in libs[lib] and libs[lib]["settings"] and "show_unmanaged" in libs[lib]["settings"]:
-                params["show_unmanaged"] = check_for_attribute(libs[lib], "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
+            if "settings" in lib and lib["settings"] and "show_unmanaged" in lib["settings"]:
+                params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
             else:
-                params["show_unmanaged"] = check_for_attribute(libs[lib], "show_unmanaged", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
+                params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
 
-            if "settings" in libs[lib] and libs[lib]["settings"] and "show_filtered" in libs[lib]["settings"]:
-                params["show_filtered"] = check_for_attribute(libs[lib], "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
+            if "settings" in lib and lib["settings"] and "show_filtered" in lib["settings"]:
+                params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
             else:
-                params["show_filtered"] = check_for_attribute(libs[lib], "show_filtered", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
+                params["show_filtered"] = check_for_attribute(lib, "show_filtered", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
 
-            if "settings" in libs[lib] and libs[lib]["settings"] and "show_missing" in libs[lib]["settings"]:
-                params["show_missing"] = check_for_attribute(libs[lib], "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
+            if "settings" in lib and lib["settings"] and "show_missing" in lib["settings"]:
+                params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
             else:
-                params["show_missing"] = check_for_attribute(libs[lib], "show_missing", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
+                params["show_missing"] = check_for_attribute(lib, "show_missing", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
 
-            if "settings" in libs[lib] and libs[lib]["settings"] and "save_missing" in libs[lib]["settings"]:
-                params["save_missing"] = check_for_attribute(libs[lib], "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
+            if "settings" in lib and lib["settings"] and "save_missing" in lib["settings"]:
+                params["save_missing"] = check_for_attribute(lib, "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
             else:
-                params["save_missing"] = check_for_attribute(libs[lib], "save_missing", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
+                params["save_missing"] = check_for_attribute(lib, "save_missing", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
 
-            if "mass_genre_update" in libs[lib] and libs[lib]["mass_genre_update"]:
-                params["mass_genre_update"] = check_for_attribute(libs[lib], "mass_genre_update", test_list=["tmdb", "omdb"], options="    tmdb (Use TMDb Metadata)\n    omdb (Use IMDb Metadata through OMDb)", default_is_none=True, save=False)
+            if "mass_genre_update" in lib and lib["mass_genre_update"]:
+                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=["tmdb", "omdb"], options="    tmdb (Use TMDb Metadata)\n    omdb (Use IMDb Metadata through OMDb)", default_is_none=True, save=False)
             else:
                 params["mass_genre_update"] = None
 
@@ -316,12 +316,12 @@ class Config:
                 logger.error("Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection")
 
             try:
-                params["metadata_path"] = check_for_attribute(libs[lib], "metadata_path", var_type="path", default=os.path.join(default_dir, f"{lib}.yml"), throw=True)
-                params["library_type"] = check_for_attribute(libs[lib], "library_type", test_list=["movie", "show"], options="    movie (For Movie Libraries)\n    show (For Show Libraries)", throw=True)
+                params["metadata_path"] = check_for_attribute(lib, "metadata_path", var_type="path", default=os.path.join(default_dir, f"{library_name}.yml"), throw=True)
+                params["library_type"] = check_for_attribute(lib, "library_type", test_list=["movie", "show"], options="    movie (For Movie Libraries)\n    show (For Show Libraries)", throw=True)
                 params["plex"] = {}
-                params["plex"]["url"] = check_for_attribute(libs[lib], "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
-                params["plex"]["token"] = check_for_attribute(libs[lib], "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
-                params["plex"]["timeout"] = check_for_attribute(libs[lib], "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False)
+                params["plex"]["url"] = check_for_attribute(lib, "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
+                params["plex"]["token"] = check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
+                params["plex"]["timeout"] = check_for_attribute(lib, "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False)
                 library = PlexAPI(params, self.TMDb, self.TVDb)
                 logger.info(f"{params['name']} Library Connection Successful")
             except Failed as e:
@@ -329,47 +329,47 @@ class Config:
                 logger.info(f"{params['name']} Library Connection Failed")
                 continue
 
-            if self.general["radarr"]["url"] or "radarr" in libs[lib]:
+            if self.general["radarr"]["url"] or "radarr" in lib:
                 logger.info(f"Connecting to {params['name']} library's Radarr...")
                 radarr_params = {}
                 try:
-                    radarr_params["url"] = check_for_attribute(libs[lib], "url", parent="radarr", default=self.general["radarr"]["url"], req_default=True, save=False)
-                    radarr_params["token"] = check_for_attribute(libs[lib], "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False)
-                    radarr_params["version"] = check_for_attribute(libs[lib], "version", parent="radarr", test_list=["v2", "v3"], options="    v2 (For Radarr 0.2)\n    v3 (For Radarr 3.0)", default=self.general["radarr"]["version"], save=False)
-                    radarr_params["quality_profile"] = check_for_attribute(libs[lib], "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False)
-                    radarr_params["root_folder_path"] = check_for_attribute(libs[lib], "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
-                    radarr_params["add"] = check_for_attribute(libs[lib], "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
-                    radarr_params["search"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
-                    radarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
+                    radarr_params["url"] = check_for_attribute(lib, "url", parent="radarr", default=self.general["radarr"]["url"], req_default=True, save=False)
+                    radarr_params["token"] = check_for_attribute(lib, "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False)
+                    radarr_params["version"] = check_for_attribute(lib, "version", parent="radarr", test_list=["v2", "v3"], options="    v2 (For Radarr 0.2)\n    v3 (For Radarr 3.0)", default=self.general["radarr"]["version"], save=False)
+                    radarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False)
+                    radarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
+                    radarr_params["add"] = check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
+                    radarr_params["search"] = check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
+                    radarr_params["tag"] = check_for_attribute(lib, "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
                     library.Radarr = RadarrAPI(self.TMDb, radarr_params)
                 except Failed as e:
                     util.print_multiline(e)
                 logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
-            if self.general["sonarr"]["url"] or "sonarr" in libs[lib]:
+            if self.general["sonarr"]["url"] or "sonarr" in lib:
                 logger.info(f"Connecting to {params['name']} library's Sonarr...")
                 sonarr_params = {}
                 try:
-                    sonarr_params["url"] = check_for_attribute(libs[lib], "url", parent="sonarr", default=self.general["sonarr"]["url"], req_default=True, save=False)
-                    sonarr_params["token"] = check_for_attribute(libs[lib], "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False)
-                    sonarr_params["version"] = check_for_attribute(libs[lib], "version", parent="sonarr", test_list=["v2", "v3"], options="    v2 (For Sonarr 0.2)\n    v3 (For Sonarr 3.0)", default=self.general["sonarr"]["version"], save=False)
-                    sonarr_params["quality_profile"] = check_for_attribute(libs[lib], "quality_profile", parent="sonarr", default=self.general["sonarr"]["quality_profile"], req_default=True, save=False)
-                    sonarr_params["root_folder_path"] = check_for_attribute(libs[lib], "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
-                    sonarr_params["add"] = check_for_attribute(libs[lib], "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
-                    sonarr_params["search"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
-                    sonarr_params["season_folder"] = check_for_attribute(libs[lib], "season_folder", parent="sonarr", var_type="bool", default=self.general["sonarr"]["season_folder"], save=False)
-                    sonarr_params["tag"] = check_for_attribute(libs[lib], "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
+                    sonarr_params["url"] = check_for_attribute(lib, "url", parent="sonarr", default=self.general["sonarr"]["url"], req_default=True, save=False)
+                    sonarr_params["token"] = check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False)
+                    sonarr_params["version"] = check_for_attribute(lib, "version", parent="sonarr", test_list=["v2", "v3"], options="    v2 (For Sonarr 0.2)\n    v3 (For Sonarr 3.0)", default=self.general["sonarr"]["version"], save=False)
+                    sonarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="sonarr", default=self.general["sonarr"]["quality_profile"], req_default=True, save=False)
+                    sonarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
+                    sonarr_params["add"] = check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
+                    sonarr_params["search"] = check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
+                    sonarr_params["season_folder"] = check_for_attribute(lib, "season_folder", parent="sonarr", var_type="bool", default=self.general["sonarr"]["season_folder"], save=False)
+                    sonarr_params["tag"] = check_for_attribute(lib, "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
                     library.Sonarr = SonarrAPI(self.TVDb, sonarr_params, library.Plex.language)
                 except Failed as e:
                     util.print_multiline(e)
                 logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
-            if self.general["tautulli"]["url"] or "tautulli" in libs[lib]:
+            if self.general["tautulli"]["url"] or "tautulli" in lib:
                 logger.info(f"Connecting to {params['name']} library's Tautulli...")
                 tautulli_params = {}
                 try:
-                    tautulli_params["url"] = check_for_attribute(libs[lib], "url", parent="tautulli", default=self.general["tautulli"]["url"], req_default=True, save=False)
-                    tautulli_params["apikey"] = check_for_attribute(libs[lib], "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
+                    tautulli_params["url"] = check_for_attribute(lib, "url", parent="tautulli", default=self.general["tautulli"]["url"], req_default=True, save=False)
+                    tautulli_params["apikey"] = check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
                     library.Tautulli = TautulliAPI(tautulli_params)
                 except Failed as e:
                     util.print_multiline(e)
@@ -404,11 +404,11 @@ class Config:
             util.separator(f"{library.name} Library {'Test ' if test else ''}Collections")
             collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
             if collections:
-                for c in collections:
-                    if test and ("test" not in collections[c] or collections[c]["test"] is not True):
+                for mapping_name, collection_attrs in collections.items():
+                    if test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
                         no_template_test = True
-                        if "template" in collections[c] and collections[c]["template"]:
-                            for data_template in util.get_list(collections[c]["template"], split=False):
+                        if "template" in collection_attrs and collection_attrs["template"]:
+                            for data_template in util.get_list(collection_attrs["template"], split=False):
                                 if "name" in data_template \
                                     and data_template["name"] \
                                     and library.templates \
@@ -421,13 +421,14 @@ class Config:
                             continue
                     try:
                         logger.info("")
-                        util.separator(f"{c} Collection")
+                        util.separator(f"{mapping_name} Collection")
                         logger.info("")
 
                         rating_key_map = {}
                         try:
-                            builder = CollectionBuilder(self, library, c, collections[c])
+                            builder = CollectionBuilder(self, library, mapping_name, collection_attrs)
                         except Failed as ef:
+                            util.print_stacktrace()
                             util.print_multiline(ef, error=True)
                             continue
                         except Exception as ee:
@@ -436,11 +437,11 @@ class Config:
                             continue
 
                         try:
-                            collection_obj = library.get_collection(c)
+                            collection_obj = library.get_collection(mapping_name)
                             collection_name = collection_obj.title
                         except Failed:
                             collection_obj = None
-                            collection_name = c
+                            collection_name = mapping_name
 
                         if len(builder.schedule) > 0:
                             util.print_multiline(builder.schedule, info=True)
