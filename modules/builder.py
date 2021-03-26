@@ -450,7 +450,7 @@ class CollectionBuilder:
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "plex_search":
                             searches = {}
-                            for search_name, search_data in method_data:
+                            for search_name, search_data in method_data.items():
                                 search, modifier = os.path.splitext(str(search_name).lower())
                                 if search in util.method_alias:
                                     search = util.method_alias[search]
