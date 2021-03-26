@@ -85,8 +85,7 @@ class CollectionBuilder:
                                     optional.append(str(template["optional"]))
                             else:
                                 raise Failed("Collection Error: template sub-attribute optional is blank")
-
-                        for method_name, attr_data in template:
+                        for method_name, attr_data in template.items():
                             if method_name not in self.data and method_name not in ["default", "optional"]:
                                 if attr_data:
                                     def replace_txt(txt):
