@@ -428,7 +428,6 @@ class Config:
                         try:
                             builder = CollectionBuilder(self, library, mapping_name, collection_attrs)
                         except Failed as ef:
-                            util.print_stacktrace()
                             util.print_multiline(ef, error=True)
                             continue
                         except Exception as ee:

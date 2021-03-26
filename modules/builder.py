@@ -85,6 +85,7 @@ class CollectionBuilder:
                                     optional.append(str(template["optional"]))
                             else:
                                 raise Failed("Collection Error: template sub-attribute optional is blank")
+
                         for method_name, attr_data in template.items():
                             if method_name not in self.data and method_name not in ["default", "optional"]:
                                 if attr_data:
@@ -108,30 +109,31 @@ class CollectionBuilder:
                                             except ValueError:                              return txt
                                     try:
                                         if isinstance(attr_data, dict):
-                                            discover_name = {}
+                                            final_data = {}
                                             for sm in attr_data:
                                                 if isinstance(attr_data[sm], list):
                                                     temp_list = []
                                                     for li in attr_data[sm]:
                                                         temp_list.append(replace_txt(li))
-                                                    discover_name[sm] = temp_list
+                                                    final_data[sm] = temp_list
                                                 else:
-                                                    discover_name[sm] = replace_txt(attr_data[sm])
+                                                    final_data[sm] = replace_txt(attr_data[sm])
                                         elif isinstance(attr_data, list):
-                                            discover_name = []
+                                            final_data = []
                                             for li in attr_data:
                                                 if isinstance(li, dict):
                                                     temp_dict = {}
                                                     for sm in li:
                                                         temp_dict[sm] = replace_txt(li[sm])
-                                                    discover_name.append(temp_dict)
+                                                    final_data.append(temp_dict)
                                                 else:
-                                                    discover_name.append(replace_txt(li))
+                                                    final_data.append(replace_txt(li))
                                         else:
-                                            discover_name = replace_txt(attr_data)
+                                            final_data = replace_txt(attr_data)
                                     except Failed:
                                         continue
-                                    self.data[method_name] = discover_name
+                                    self.data[method_name] = final_data
+                                    methods[method_name.lower()] = method_name
                                 else:
                                     raise Failed(f"Collection Error: template attribute {method_name} is blank")
 
@@ -509,7 +511,7 @@ class CollectionBuilder:
                             self.methods.append((method_name, [searches]))
                         elif method_name == "tmdb_discover":
                             new_dictionary = {"limit": 100}
-                            for discover_name, discover_data in method_data:
+                            for discover_name, discover_data in method_data.items():
                                 discover_final = discover_name.lower()
                                 if discover_data:
                                     if (self.library.is_movie and discover_final in util.discover_movie) or (self.library.is_show and discover_final in util.discover_tv):
@@ -806,7 +808,7 @@ class CollectionBuilder:
                     has_processed = False
                     search_limit = None
                     search_sort = None
-                    for search_method, search_data in value:
+                    for search_method, search_data in value.items():
                         if search_method == "limit":
                             search_limit = search_data
                         elif search_method == "sort_by":
