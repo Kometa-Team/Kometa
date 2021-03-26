@@ -99,10 +99,10 @@ class PlexAPI:
         search_choices = self.get_search_choices(final_search, key=final_search.endswith("Language"))
         valid_list = []
         for value in util.get_list(data):
-            if str(value).lower in search_choices:
-                valid_list.append(search_choices[str(value).lower])
+            if str(value).lower() in search_choices:
+                valid_list.append(search_choices[str(value).lower()])
             else:
-                raise Failed(f"Plex Error: No {search_name}: {value} found")
+                raise Failed(f"Plex Error: {search_name}: {value} not found")
         return valid_list
 
     def get_all_collections(self):
