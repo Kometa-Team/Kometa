@@ -106,8 +106,8 @@ class Config:
                 if isinstance(data[attribute], bool):                               return data[attribute]
                 else:                                                               message = f"{text} must be either true or false"
             elif var_type == "int":
-                if isinstance(data[attribute], int) and data[attribute] > 0:        return data[attribute]
-                else:                                                               message = f"{text} must an integer > 0"
+                if isinstance(data[attribute], int) and data[attribute] >= 0:       return data[attribute]
+                else:                                                               message = f"{text} must an integer >= 0"
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"

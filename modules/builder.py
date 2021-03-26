@@ -305,23 +305,37 @@ class CollectionBuilder:
                     else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
                 elif method_name in util.all_details:
                     self.details[method_name] = method_data
+                elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
+                    self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
+                elif method_name in ["decade", "year.greater", "year.less"]:
+                    self.methods.append(("plex_search", [{method_name: util.check_year(method_data, current_year, method_name)}]))
+                elif method_name in ["added.before", "added.after", "originally_available.before", "originally_available.after"]:
+                    self.methods.append(("plex_search", [{method_name: util.check_date(method_data, method_name, return_string=True, plex_date=True)}]))
+                elif method_name in ["duration.greater", "duration.less", "rating.greater", "rating.less"]:
+                    self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=0)}]))
                 elif method_name in ["year", "year.not"]:
-                    self.methods.append(("plex_search", [[(method_name, util.get_year_list(self.data[m], method_name))]]))
-                elif method_name in ["decade", "decade.not"]:
-                    self.methods.append(("plex_search", [[(method_name, util.get_int_list(self.data[m], util.remove_not(method_name)))]]))
+                    self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
                 elif method_name in util.tmdb_searches:
                     final_values = []
-                    for value in util.get_list(self.data[m]):
+                    for value in util.get_list(method_data):
                         if value.lower() == "tmdb" and "tmdb_person" in self.details:
                             for name in self.details["tmdb_person"]:
                                 final_values.append(name)
                         else:
                             final_values.append(value)
-                    self.methods.append(("plex_search", [[(method_name, final_values)]]))
-                elif method_name == "title":
-                    self.methods.append(("plex_search", [[(method_name, util.get_list(self.data[m], split=False))]]))
+                    self.methods.append(("plex_search", [{method_name: self.library.validate_search_list(final_values, os.path.splitext(method_name)[0])}]))
                 elif method_name in util.plex_searches:
-                    self.methods.append(("plex_search", [[(method_name, util.get_list(self.data[m]))]]))
+                    if method_name in util.tmdb_searches:
+                        final_values = []
+                        for value in util.get_list(method_data):
+                            if value.lower() == "tmdb" and "tmdb_person" in self.details:
+                                for name in self.details["tmdb_person"]:
+                                    final_values.append(name)
+                            else:
+                                final_values.append(value)
+                    else:
+                        final_values = method_data
+                    self.methods.append(("plex_search", [{method_name: self.library.validate_search_list(final_values, os.path.splitext(method_name)[0])}]))
                 elif method_name == "plex_all":
                     self.methods.append((method_name, [""]))
                 elif method_name == "plex_collection":
@@ -436,31 +450,63 @@ class CollectionBuilder:
                             new_dictionary["exclude"] = exact_list
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "plex_search":
-                            searches = []
-                            used = []
-                            for s in self.data[m]:
-                                if s in util.method_alias or (s.endswith(".not") and s[:-4] in util.method_alias):
-                                    search = (util.method_alias[s[:-4]] + s[-4:]) if s.endswith(".not") else util.method_alias[s]
-                                    logger.warning(f"Collection Warning: {s} plex search attribute will run as {search}")
+                            searches = {}
+                            for search_name, search_data in method_data:
+                                search, modifier = os.path.splitext(str(search_name).lower())
+                                if search in util.method_alias:
+                                    search = util.method_alias[search]
+                                    logger.warning(f"Collection Warning: {str(search_name).lower()} plex search attribute will run as {search}{modifier if modifier else ''}")
+                                search_final = f"{search}{modifier}"
+                                if search_final in util.movie_only_searches and self.library.is_show:
+                                    raise Failed(f"Collection Error: {search_final} plex search attribute only works for movie libraries")
+                                elif search_data is None:
+                                    raise Failed(f"Collection Error: {search_final} plex search attribute is blank")
+                                elif search == "sort_by":
+                                    if str(search_data).lower() in util.plex_sort:
+                                        searches[search] = str(search_data).lower()
+                                    else:
+                                        logger.warning(f"Collection Error: {search_data} is not a valid plex search sort defaulting to title.asc")
+                                elif search == "limit":
+                                    if not search_data:
+                                        raise Failed(f"Collection Warning: plex search limit attribute is blank")
+                                    elif not isinstance(search_data, int) and search_data > 0:
+                                        raise Failed(f"Collection Warning: plex search limit attribute: {search_data} must be an integer greater then 0")
+                                    else:
+                                        searches[search] = search_data
+                                elif search == "title" and modifier in ["", ".and", ".not", ".begins", ".ends"]:
+                                    searches[search_final] = util.get_list(search_data, split=False)
+                                elif (search == "studio" and modifier in ["", ".and", ".not", ".begins", ".ends"]) \
+                                        or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "producer", "subtitle_language", "writer"] and modifier in ["", ".and", ".not"]) \
+                                        or (search == "resolution" and modifier in [""]):
+                                    if search_final in util.tmdb_searches:
+                                        final_values = []
+                                        for value in util.get_list(search_data):
+                                            if value.lower() == "tmdb" and "tmdb_person" in self.details:
+                                                for name in self.details["tmdb_person"]:
+                                                    final_values.append(name)
+                                            else:
+                                                final_values.append(value)
+                                    else:
+                                        final_values = search_data
+                                    searches[search_final] = self.library.validate_search_list(final_values, search)
+                                elif (search == "decade" and modifier in [""]) \
+                                        or (search == "year" and modifier in [".greater", ".less"]):
+                                    searches[search_final] = util.check_year(search_data, current_year, search_final)
+                                elif search in ["added", "originally_available"] and modifier in [".before", ".after"]:
+                                    searches[search_final] = util.check_date(search_data, search_final, return_string=True, plex_date=True)
+                                elif search in ["duration", "rating"] and modifier in [".greater", ".less"]:
+                                    searches[search_final] = util.check_number(search_data, search_final, minimum=0)
+                                elif search == "year" and modifier in ["", ".not"]:
+                                    searches[search_final] = util.get_year_list(search_data, current_year, search_final)
+                                elif (search in ["title", "studio"] and modifier not in ["", ".and", ".not", ".begins", ".ends"]) \
+                                        or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
+                                        or (search in ["resolution", "decade"] and modifier not in [""]) \
+                                        or (search in ["added", "originally_available"] and modifier not in [".before", ".after"]) \
+                                        or (search in ["duration", "rating"] and modifier not in [".greater", ".less"]) \
+                                        or (search in ["year"] and modifier not in ["", ".not", ".greater", ".less"]):
+                                    raise Failed(f"Collection Error: modifier: {modifier} not supported with the {search} plex search attribute")
                                 else:
-                                    search = s
-                                if search in util.movie_only_searches and self.library.is_show:
-                                    raise Failed(f"Collection Error: {search} plex search attribute only works for movie libraries")
-                                elif util.remove_not(search) in used:
-                                    raise Failed(f"Collection Error: Only one instance of {search} can be used try using it as a filter instead")
-                                elif search in ["year", "year.not"]:
-                                    years = util.get_year_list(self.data[m][s], search)
-                                    if len(years) > 0:
-                                        used.append(util.remove_not(search))
-                                        searches.append((search, util.get_int_list(self.data[m][s], util.remove_not(search))))
-                                elif search == "title":
-                                    used.append(util.remove_not(search))
-                                    searches.append((search, util.get_list(self.data[m][s], split=False)))
-                                elif search in util.plex_searches:
-                                    used.append(util.remove_not(search))
-                                    searches.append((search, util.get_list(self.data[m][s])))
-                                else:
-                                    logger.error(f"Collection Error: {search} plex search attribute not supported")
+                                    raise Failed(f"Collection Error: {search_final} plex search attribute not supported")
                             self.methods.append((method_name, [searches]))
                         elif method_name == "tmdb_discover":
                             new_dictionary = {"limit": 100}
@@ -758,38 +804,31 @@ class CollectionBuilder:
                     items_found += len(items)
                 elif method == "plex_search":
                     search_terms = {}
-                    title_searches = None
                     has_processed = False
-                    for search_method, search_list in value:
-                        if search_method == "title":
+                    search_limit = None
+                    search_sort = None
+                    for search_method, search_data in value:
+                        if search_method == "limit":
+                            search_limit = search_data
+                        elif search_method == "sort_by":
+                            search_sort = util.plex_sort[search_data]
+                        else:
+                            search, modifier = os.path.splitext(str(search_method).lower())
+                            final_search = util.search_alias[search] if search in util.search_alias else search
+                            final_mod = util.plex_modifiers[modifier] if modifier in util.plex_modifiers else ""
+                            final_method = f"{final_search}{final_mod}"
+                            search_terms[final_method] = search_data * 60000 if final_search == "duration" else search_data
                             ors = ""
-                            for o, param in enumerate(search_list):
-                                ors += f"{' OR ' if o > 0 else ''}{param}"
-                            title_searches = search_list
-                            logger.info(f"Processing {pretty}: title({ors})")
-                            has_processed = True
-                            break
-                    for search_method, search_list in value:
-                        if search_method != "title":
-                            final_method = search_method[:-4] + "!" if search_method[-4:] == ".not" else search_method
-                            if self.library.is_show:
-                                final_method = "show." + final_method
-                            search_terms[final_method] = search_list
-                            ors = ""
-                            for o, param in enumerate(search_list):
-                                or_des = " OR " if o > 0 else f"{search_method}("
+                            conjunction = " AND " if final_mod == "&" else " OR "
+                            for o, param in enumerate(search_data):
+                                or_des = conjunction if o > 0 else f"{search_method}("
                                 ors += f"{or_des}{param}"
                             if has_processed:
                                 logger.info(f"\t\t      AND {ors})")
                             else:
                                 logger.info(f"Processing {pretty}: {ors})")
                                 has_processed = True
-                    if title_searches:
-                        items = []
-                        for title_search in title_searches:
-                            items.extend(self.library.Plex.search(title_search, **search_terms))
-                    else:
-                        items = self.library.Plex.search(**search_terms)
+                    items = self.library.Plex.search(sort=search_sort, maxresults=search_limit, **search_terms)
                     items_found += len(items)
                 elif method == "plex_collectionless":
                     good_collections = []

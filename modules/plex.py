@@ -14,25 +14,34 @@ logger = logging.getLogger("Plex Meta Manager")
 
 class PlexAPI:
     def __init__(self, params, TMDb, TVDb):
-        try:                                                                    self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
-        except Unauthorized:                                                    raise Failed("Plex Error: Plex token is invalid")
-        except ValueError as e:                                                 raise Failed(f"Plex Error: {e}")
+        try:
+            self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
+        except Unauthorized:
+            raise Failed("Plex Error: Plex token is invalid")
+        except ValueError as e:
+            raise Failed(f"Plex Error: {e}")
         except requests.exceptions.ConnectionError:
             util.print_stacktrace()
             raise Failed("Plex Error: Plex url is invalid")
         self.is_movie = params["library_type"] == "movie"
         self.is_show = params["library_type"] == "show"
         self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"] and ((self.is_movie and isinstance(s, MovieSection)) or (self.is_show and isinstance(s, ShowSection)))), None)
-        if not self.Plex:                                                       raise Failed(f"Plex Error: Plex Library {params['name']} not found")
-        try:                                                                    self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(params["metadata_path"], encoding="utf-8"))
-        except yaml.scanner.ScannerError as e:                                  raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
+        if not self.Plex:
+            raise Failed(f"Plex Error: Plex Library {params['name']} not found")
+        try:
+            self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(params["metadata_path"], encoding="utf-8"))
+        except yaml.scanner.ScannerError as e:
+            raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
 
         def get_dict(attribute):
             if attribute in self.data:
                 if self.data[attribute]:
-                    if isinstance(self.data[attribute], dict):                              return self.data[attribute]
-                    else:                                                                   logger.warning(f"Config Warning: {attribute} must be a dictionary")
-                else:                                                                   logger.warning(f"Config Warning: {attribute} attribute is blank")
+                    if isinstance(self.data[attribute], dict):
+                        return self.data[attribute]
+                    else:
+                        logger.warning(f"Config Warning: {attribute} must be a dictionary")
+                else:
+                    logger.warning(f"Config Warning: {attribute} attribute is blank")
             return None
 
         self.metadata = get_dict("metadata")
@@ -80,6 +89,21 @@ class PlexAPI:
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def server_search(self, data):
         return self.PlexServer.search(data)
+
+    def get_search_choices(self, search_name, key=False):
+        if key:             return {c.key.lower(): c.key for c in self.Plex.listFilterChoices(search_name)}
+        else:               return {c.title.lower(): c.title for c in self.Plex.listFilterChoices(search_name)}
+
+    def validate_search_list(self, data, search_name):
+        final_search = util.search_alias[search_name] if search_name in util.search_alias else search_name
+        search_choices = self.get_search_choices(final_search, key=final_search.endswith("Language"))
+        valid_list = []
+        for value in util.get_list(data):
+            if str(value).lower in search_choices:
+                valid_list.append(search_choices[str(value).lower])
+            else:
+                raise Failed(f"Plex Error: No {search_name}: {value} found")
+        return valid_list
 
     def get_all_collections(self):
         return self.Plex.search(libtype="collection")
