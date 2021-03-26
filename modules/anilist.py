@@ -9,6 +9,13 @@ class AniListAPI:
     def __init__(self, config):
         self.config = config
         self.url = "https://graphql.anilist.co"
+        self.tags = {}
+        self.genres = {}
+
+        for tag in self.send_request("query{MediaTagCollection {name}}", {})["data"]["MediaTagCollection"]:
+            self.tags[tag["name"].lower()] = tag["name"]
+        for genre in self.send_request("query{GenreCollection}", {})["data"]["GenreCollection"]:
+            self.genres[genre.lower()] = genre
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def post(self, query, variables):
@@ -56,7 +63,6 @@ class AniListAPI:
                         break
             if 0 < limit == count:
                 break
-
         return mal_ids
 
     def top_rated(self, limit):
@@ -91,6 +97,30 @@ class AniListAPI:
             }
         """
         variables = {"season": season.upper(), "year": year, "sort": "SCORE_DESC" if sort == "score" else "POPULARITY_DESC"}
+        return self.get_pagenation(query, limit=limit, variables=variables)
+
+    def genre(self, genre, sort, limit):
+        query = """
+            query ($page: Int, $genre: String, $sort: [MediaSort]) {
+              Page(page: $page){
+                pageInfo {hasNextPage}
+                media(genre: $genre, sort: $sort){idMal}
+              }
+            }
+        """
+        variables = {"genre": genre, "sort": "SCORE_DESC" if sort == "score" else "POPULARITY_DESC"}
+        return self.get_pagenation(query, limit=limit, variables=variables)
+
+    def tag(self, tag, sort, limit):
+        query = """
+            query ($page: Int, $tag: String, $sort: [MediaSort]) {
+              Page(page: $page){
+                pageInfo {hasNextPage}
+                media(tag: $tag, sort: $sort){idMal}
+              }
+            }
+        """
+        variables = {"tag": tag, "sort": "SCORE_DESC" if sort == "score" else "POPULARITY_DESC"}
         return self.get_pagenation(query, limit=limit, variables=variables)
 
     def studio(self, studio_id):
@@ -154,6 +184,16 @@ class AniListAPI:
 
         return mal_ids, ignore_ids, name
 
+    def validate_genre(self, genre):
+        if genre.lower() in self.genres:
+            return self.genres[genre.lower()]
+        raise Failed(f"AniList Error: Genre: {genre} does not exist")
+
+    def validate_tag(self, tag):
+        if tag.lower() in self.tags:
+            return self.tags[tag.lower()]
+        raise Failed(f"AniList Error: Tag: {tag} does not exist")
+
     def validate_anilist_ids(self, anilist_ids, studio=False):
         anilist_values = []
         for anilist_id in anilist_ids:
@@ -183,7 +223,15 @@ class AniListAPI:
         elif method == "anilist_season":
             mal_ids = self.season(data["season"], data["year"], data["sort_by"], data["limit"])
             if status_message:
-                logger.info(f"Processing {pretty}: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {util.anilist_pretty[data['sort_by']]}")
+                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {util.anilist_pretty[data['sort_by']]}")
+        elif method == "anilist_genre":
+            mal_ids = self.genre(data["genre"], data["sort_by"], data["limit"])
+            if status_message:
+                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Genre: {data['genre']} sorted by {util.anilist_pretty[data['sort_by']]}")
+        elif method == "anilist_tag":
+            mal_ids = self.tag(data["tag"], data["sort_by"], data["limit"])
+            if status_message:
+                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag: {data['tag']} sorted by {util.anilist_pretty[data['sort_by']]}")
         elif method in ["anilist_studio", "anilist_relations"]:
             if method == "anilist_studio":          mal_ids, name = self.studio(data)
             else:                                   mal_ids, _, name = self.relations(data)

@@ -29,10 +29,19 @@ method_alias = {
     "decades": "decade",
     "directors": "director",
     "genres": "genre",
+    "labels": "label",
     "studios": "studio", "network": "studio", "networks": "studio",
     "producers": "producer",
     "writers": "writer",
     "years": "year"
+}
+search_alias = {
+    "audio_language": "audioLanguage",
+    "content_rating": "contentRating",
+    "subtitle_language": "subtitleLanguage",
+    "added": "addedAt",
+    "originally_available": "originallyAvailableAt",
+    "rating": "userRating"
 }
 filter_alias = {
     "actor": "actors",
@@ -87,11 +96,13 @@ pretty_names = {
     "anidb_id": "AniDB ID",
     "anidb_relation": "AniDB Relation",
     "anidb_popular": "AniDB Popular",
+    "anilist_genre": "AniList Genre",
     "anilist_id": "AniList ID",
     "anilist_popular": "AniList Popular",
     "anilist_relations": "AniList Relations",
     "anilist_season": "AniList Season",
     "anilist_studio": "AniList Studio",
+    "anilist_tag": "AniList Tag",
     "anilist_top_rated": "AniList Top Rated",
     "imdb_list": "IMDb List",
     "imdb_id": "IMDb ID",
@@ -158,6 +169,10 @@ pretty_names = {
     "tvdb_show": "TVDb Show",
     "tvdb_show_details": "TVDb Show"
 }
+plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US", "es-ES",
+                     "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID", "it-IT",
+                     "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO", "ru-RU",
+                     "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"]
 mal_ranked_name = {
     "mal_all": "all",
     "mal_airing": "airing",
@@ -224,11 +239,13 @@ all_lists = [
     "anidb_id",
     "anidb_relation",
     "anidb_popular",
+    "anilist_genre",
     "anilist_id",
     "anilist_popular",
     "anilist_relations",
     "anilist_season",
     "anilist_studio",
+    "anilist_tag",
     "anilist_top_rated",
     "imdb_list",
     "imdb_id",
@@ -311,7 +328,9 @@ other_attributes = [
 ]
 dictionary_lists = [
     "filters",
+    "anilist_genre",
     "anilist_season",
+    "anilist_tag",
     "mal_season",
     "mal_userlist",
     "plex_collectionless",
@@ -319,18 +338,6 @@ dictionary_lists = [
     "tautulli_popular",
     "tautulli_watched",
     "tmdb_discover"
-]
-plex_searches = [
-    "actor", #"actor.not", # Waiting on PlexAPI to fix issue
-    "country", #"country.not",
-    "decade", #"decade.not",
-    "director", #"director.not",
-    "genre", #"genre.not",
-    "producer", #"producer.not",
-    "studio", #"studio.not",
-    "title",
-    "writer", #"writer.not"
-    "year" #"year.not",
 ]
 show_only_lists = [
     "tmdb_network",
@@ -349,20 +356,6 @@ movie_only_lists = [
     "tmdb_now_playing",
     "tvdb_movie",
     "tvdb_movie_details"
-]
-movie_only_searches = [
-    "actor", "actor.not",
-    "country", "country.not",
-    "decade", "decade.not",
-    "director", "director.not",
-    "producer", "producer.not",
-    "writer", "writer.not"
-]
-tmdb_searches = [
-    "actor", "actor.not",
-    "director", "director.not",
-    "producer", "producer.not",
-    "writer", "writer.not"
 ]
 count_lists = [
     "anidb_popular",
@@ -442,6 +435,59 @@ tmdb_type = {
     "tmdb_writer": "Person",
     "tmdb_writer_details": "Person"
 }
+plex_searches = [
+    "title", "title.and", "title.not", "title.begins", "title.ends",
+    "studio", "studio.and", "studio.not", "studio.begins", "studio.ends",
+    "actor", "actor.and", "actor.not",
+    "audio_language", "audio_language.and", "audio_language.not",
+    "collection", "collection.and", "collection.not",
+    "content_rating", "content_rating.and", "content_rating.not",
+    "country", "country.and", "country.not",
+    "director", "director.and", "director.not",
+    "genre", "genre.and", "genre.not",
+    "label", "label.and", "label.not",
+    "producer", "producer.and", "producer.not",
+    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
+    "writer", "writer.and", "writer.not",
+    "decade", "resolution",
+    "added.before", "added.after",
+    "originally_available.before", "originally_available.after",
+    "duration.greater", "duration.less",
+    "rating.greater", "rating.less",
+    "year", "year.not", "year.greater", "year.less"
+]
+plex_sort = {
+    "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
+    "originally_available.asc": "originallyAvailableAt:asc", "originally_available.desc": "originallyAvailableAt:desc",
+    "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
+    "audience_rating.asc": "audienceRating:asc", "audience_rating.desc": "audienceRating:desc",
+    "duration.asc": "duration:asc", "duration.desc": "duration:desc",
+    "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
+}
+plex_modifiers = {
+    ".and": "&",
+    ".not": "!",
+    ".begins": "<",
+    ".ends": ">",
+    ".before": "<<",
+    ".after": ">>",
+    ".greater": ">>",
+    ".less": "<<"
+}
+movie_only_searches = [
+    "audio_language", "audio_language.and", "audio_language.not",
+    "country", "country.and", "country.not",
+    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
+    "decade", "resolution",
+    "originally_available.before", "originally_available.after",
+    "duration.greater", "duration.less"
+]
+tmdb_searches = [
+    "actor", "actor.and", "actor.not",
+    "director", "director.and", "director.not",
+    "producer", "producer.and", "producer.not",
+    "writer", "writer.and", "writer.not"
+]
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
@@ -515,6 +561,12 @@ discover_tv = [
     "with_runtime.gte", "with_runtime.lte",
     "include_null_first_air_dates",
     "screened_theatrically"
+]
+discover_dates = [
+    "primary_release_date.gte", "primary_release_date.lte",
+    "release_date.gte", "release_date.lte",
+    "air_date.gte", "air_date.lte",
+    "first_air_date.gte", "first_air_date.lte"
 ]
 discover_movie_sort = [
     "popularity.asc", "popularity.desc",
@@ -596,25 +648,11 @@ def get_int_list(data, id_type):
         except Failed as e:         logger.error(e)
     return int_values
 
-def get_year_list(data, method):
-    values = get_list(data)
+def get_year_list(data, current_year, method):
     final_years = []
-    current_year = datetime.now().year
+    values = get_list(data)
     for value in values:
-        try:
-            if "-" in value:
-                year_range = re.search("(\\d{4})-(\\d{4}|NOW)", str(value))
-                start = check_year(year_range.group(1), current_year, method)
-                end = current_year if year_range.group(2) == "NOW" else check_year(year_range.group(2), current_year, method)
-                if int(start) > int(end):
-                    raise Failed(f"Collection Error: {method} starting year: {start} cannot be greater then ending year {end}")
-                else:
-                    for i in range(int(start), int(end) + 1):
-                        final_years.append(int(i))
-            else:
-                final_years.append(check_year(value, current_year, method))
-        except AttributeError:
-            raise Failed(f"Collection Error: {method} failed to parse year from {value}")
+        final_years.append(check_year(value, current_year, method))
     return final_years
 
 def check_year(year, current_year, method):
@@ -637,9 +675,9 @@ def check_number(value, method, number_type="int", minimum=None, maximum=None):
     else:
         return num_value
 
-def check_date(date_text, method, return_string=False):
-    try:                                    date_obg = datetime.strptime(str(date_text), "%m/%d/%Y")
-    except ValueError:                      raise Failed(f"Collection Error: {method}: {date_text} must match pattern MM/DD/YYYY e.g. 12/25/2020")
+def check_date(date_text, method, return_string=False, plex_date=False):
+    try:                                    date_obg = datetime.strptime(str(date_text), "%Y/%m/%d" if plex_date else "%m/%d/%Y")
+    except ValueError:                      raise Failed(f"Collection Error: {method}: {date_text} must match pattern {'YYYY/MM/DD e.g. 2020/12/25' if plex_date else 'MM/DD/YYYY e.g. 12/25/2020'}")
     return str(date_text) if return_string else date_obg
 
 def logger_input(prompt, timeout=60):
@@ -692,7 +730,6 @@ def windows_input(prompt, timeout=5):
             print("")
             raise TimeoutExpired
 
-
 def print_multiline(lines, info=False, warning=False, error=False, critical=False):
     for i, line in enumerate(str(lines).split("\n")):
         if critical:        logger.critical(line)
@@ -729,7 +766,7 @@ def regex_first_int(data, id_type, default=None):
 def remove_not(method):
     return method[:-4] if method.endswith(".not") else method
 
-def get_centered_text(text):
+def centered(text, do_print=True):
     if len(text) > screen_width - 2:
         raise Failed("text must be shorter then screen_width")
     space = screen_width - len(text) - 2
@@ -737,7 +774,10 @@ def get_centered_text(text):
         text += " "
         space -= 1
     side = int(space / 2)
-    return f"{' ' * side}{text}{' ' * side}"
+    final_text = f"{' ' * side}{text}{' ' * side}"
+    if do_print:
+        logger.info(final_text)
+    return final_text
 
 def separator(text=None):
     logger.handlers[0].setFormatter(logging.Formatter(f"%(message)-{screen_width - 2}s"))
@@ -746,7 +786,7 @@ def separator(text=None):
     if text:
         text_list = text.split("\n")
         for t in text_list:
-            logger.info(f"| {get_centered_text(t)} |")
+            logger.info(f"| {centered(t, do_print=False)} |")
         logger.info(f"|{separating_character * screen_width}|")
     logger.handlers[0].setFormatter(logging.Formatter(f"| %(message)-{screen_width - 2}s |"))
     logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{screen_width - 2}s |"))
