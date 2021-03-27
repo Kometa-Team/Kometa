@@ -248,7 +248,7 @@ class CollectionBuilder:
                 elif method_name == "tvdb_description":
                     self.summaries[method_name] = config.TVDb.get_list_description(method_data, self.library.Plex.language)
                 elif method_name == "trakt_description":
-                    self.summaries[method_name] = config.Trakt.standard_list(config.Trakt.validate_trakt_list(util.get_list(method_data))[0]).description
+                    self.summaries[method_name] = config.Trakt.standard_list(config.Trakt.validate_trakt(util.get_list(method_data))[0]).description
                 elif method_name == "letterboxd_description":
                     self.summaries[method_name] = config.Letterboxd.get_list_description(method_data, self.library.Plex.language)
                 elif method_name == "collection_mode":
@@ -355,15 +355,15 @@ class CollectionBuilder:
                 elif method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
                     self.methods.append((method_name, config.AniList.validate_anilist_ids(util.get_int_list(method_data, "AniList ID"), studio=method_name == "anilist_studio")))
                 elif method_name == "trakt_list":
-                    self.methods.append((method_name, config.Trakt.validate_trakt_list(util.get_list(method_data))))
+                    self.methods.append((method_name, config.Trakt.validate_trakt(util.get_list(method_data))))
                 elif method_name == "trakt_list_details":
-                    valid_list = config.Trakt.validate_trakt_list(util.get_list(method_data))
+                    valid_list = config.Trakt.validate_trakt(util.get_list(method_data))
                     item = config.Trakt.standard_list(valid_list[0])
                     if hasattr(item, "description") and item.description:
                         self.summaries[method_name] = item.description
                     self.methods.append((method_name[:-8], valid_list))
-                elif method_name == "trakt_watchlist":
-                    self.methods.append((method_name, config.Trakt.validate_trakt_watchlist(util.get_list(method_data), self.library.is_movie)))
+                elif method_name in ["trakt_watchlist", "trakt_collection"]:
+                    self.methods.append((method_name, config.Trakt.validate_trakt(method_name[6:], util.get_list(method_data), self.library.is_movie)))
                 elif method_name == "imdb_list":
                     new_list = []
                     for imdb_list in util.get_list(method_data, split=False):
