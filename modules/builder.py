@@ -266,7 +266,7 @@ class CollectionBuilder:
                     if str(method_data).lower() == "release":
                         self.details[method_name] = "release"
                     elif str(method_data).lower() == "alpha":
-                        self.details[method_name] = "release"
+                        self.details[method_name] = "alpha"
                     else:
                         raise Failed(f"Collection Error: {method_data} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)")
                 elif method_name == "url_poster":
