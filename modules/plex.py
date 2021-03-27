@@ -306,6 +306,13 @@ class PlexAPI:
             tagline = tmdb_item.tagline if tmdb_item and len(tmdb_item.tagline) > 0 else None
             summary = tmdb_item.overview if tmdb_item else None
 
+            details_updated = False
+            advance_details_updated = False
+            genre_updated = False
+            label_updated = False
+            season_updated = False
+            episode_updated = False
+
             edits = {}
             def add_edit(name, current, group, alias, key=None, value=None):
                 if value or name in alias:
@@ -329,6 +336,7 @@ class PlexAPI:
             add_edit("summary", item.summary, meta, methods, value=summary)
             if len(edits) > 0:
                 logger.debug(f"Details Update: {edits}")
+                details_updated = True
                 try:
                     item.edit(**edits)
                     item.reload()
@@ -336,8 +344,6 @@ class PlexAPI:
                 except BadRequest:
                     util.print_stacktrace()
                     logger.error(f"{item_type}: {mapping_name} Details Update Failed")
-            else:
-                logger.info(f"{item_type}: {mapping_name} Details Update Not Needed")
 
             advance_edits = {}
             if self.is_show:
@@ -476,6 +482,7 @@ class PlexAPI:
 
             if len(advance_edits) > 0:
                 logger.debug(f"Details Update: {advance_edits}")
+                advance_details_updated = True
                 try:
                     check_dict = {pref.id: list(pref.enumValues.keys()) for pref in item.preferences()}
                     logger.info(check_dict)
@@ -484,9 +491,7 @@ class PlexAPI:
                     logger.info(f"{item_type}: {mapping_name} Advanced Details Update Successful")
                 except BadRequest:
                     util.print_stacktrace()
-                    logger.error(f"{item_type}: {mapping_name} Details Update Failed")
-            else:
-                logger.info(f"{item_type}: {mapping_name} Details Update Not Needed")
+                    logger.error(f"{item_type}: {mapping_name} Advanced Details Update Failed")
 
             genres = []
             if tmdb_item:
@@ -505,9 +510,11 @@ class PlexAPI:
                         logger.error("Metadata Error: genre_sync_mode attribute must be either 'append' or 'sync' defaulting to append")
                     elif str(meta["genre_sync_mode"]).lower() == "sync":
                         for genre in (g for g in item_genres if g not in genres):
+                            genre_updated = True
                             item.removeGenre(genre)
                             logger.info(f"Detail: Genre {genre} removed")
                 for genre in (g for g in genres if g not in item_genres):
+                    genre_updated = True
                     item.addGenre(genre)
                     logger.info(f"Detail: Genre {genre} added")
 
@@ -522,9 +529,11 @@ class PlexAPI:
                             logger.error("Metadata Error: label_sync_mode attribute must be either 'append' or 'sync' defaulting to append")
                         elif str(meta[methods["label_sync_mode"]]).lower() == "sync":
                             for label in (la for la in item_labels if la not in labels):
+                                label_updated = True
                                 item.removeLabel(label)
                                 logger.info(f"Detail: Label {label} removed")
                     for label in (la for la in labels if la not in item_labels):
+                        label_updated = True
                         item.addLabel(label)
                         logger.info(f"Detail: Label {label} added")
                 else:
@@ -561,6 +570,7 @@ class PlexAPI:
                                 add_edit("summary", season.summary, season_methods, season_dict)
                                 if len(edits) > 0:
                                     logger.debug(f"Season: {season_id} Details Update: {edits}")
+                                    season_updated = True
                                     try:
                                         season.edit(**edits)
                                         season.reload()
@@ -568,8 +578,6 @@ class PlexAPI:
                                     except BadRequest:
                                         util.print_stacktrace()
                                         logger.error(f"Season: {season_id} Details Update Failed")
-                                else:
-                                    logger.info(f"Season: {season_id} Details Update Not Needed")
                         else:
                             logger.error(f"Metadata Error: Season: {season_id} invalid, it must be an integer")
                 else:
@@ -612,6 +620,7 @@ class PlexAPI:
                                 add_edit("summary", episode.summary, episode_dict, episode_methods)
                                 if len(edits) > 0:
                                     logger.debug(f"Season: {season_id} Episode: {episode_id} Details Update: {edits}")
+                                    episode_updated = True
                                     try:
                                         episode.edit(**edits)
                                         episode.reload()
@@ -620,9 +629,10 @@ class PlexAPI:
                                     except BadRequest:
                                         util.print_stacktrace()
                                         logger.error(f"Season: {season_id} Episode: {episode_id} Details Update Failed")
-                                else:
-                                    logger.info(f"Season: {season_id} Episode: {episode_id} Details Update Not Needed")
                         else:
                             logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
                 else:
                     logger.error("Metadata Error: episodes attribute is blank")
+
+            if not details_updated and not advance_details_updated and not genre_updated and not label_updated and not season_updated and not episode_updated:
+                logger.info(f"{item_type}: {mapping_name} Details Update Not Needed")
