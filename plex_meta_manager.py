@@ -72,7 +72,7 @@ file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(lev
 
 cmd_handler = logging.StreamHandler()
 cmd_handler.setFormatter(logging.Formatter("| %(message)-100s |"))
-cmd_handler.setLevel(logging.DEBUG if tests or test or debug else logging.INFO)
+cmd_handler.setLevel(logging.DEBUG if my_tests or test or debug else logging.INFO)
 
 logger.addHandler(cmd_handler)
 logger.addHandler(file_handler)
@@ -94,16 +94,16 @@ if my_tests:
     tests.run_tests(default_dir)
     sys.exit(0)
 
-def start(config_path, is_test, daily, collections):
+def start(config_path, is_test, daily, collections_to_run):
     if daily:               start_type = "Daily "
     elif is_test:           start_type = "Test "
-    elif collections:       start_type = "Collections "
+    elif collections_to_run:       start_type = "Collections "
     else:                   start_type = ""
     start_time = datetime.now()
     util.separator(f"Starting {start_type}Run")
     try:
         config = Config(default_dir, config_path)
-        config.update_libraries(is_test, collections)
+        config.update_libraries(is_test, collections_to_run)
     except Exception as e:
         util.print_stacktrace()
         logger.critical(e)
