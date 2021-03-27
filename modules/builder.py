@@ -309,11 +309,11 @@ class CollectionBuilder:
                 elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
                     self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
                 elif method_name in ["decade", "year.greater", "year.less"]:
-                    self.methods.append(("plex_search", [{method_name: util.check_year(method_data, current_year, method_name)}]))
+                    self.methods.append(("plex_search", [{method_name: [util.check_year(method_data, current_year, method_name)]}]))
                 elif method_name in ["added.before", "added.after", "originally_available.before", "originally_available.after"]:
-                    self.methods.append(("plex_search", [{method_name: util.check_date(method_data, method_name, return_string=True, plex_date=True)}]))
+                    self.methods.append(("plex_search", [{method_name: [util.check_date(method_data, method_name, return_string=True, plex_date=True)]}]))
                 elif method_name in ["duration.greater", "duration.less", "rating.greater", "rating.less"]:
-                    self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=0)}]))
+                    self.methods.append(("plex_search", [{method_name: [util.check_number(method_data, method_name, minimum=0)]}]))
                 elif method_name in ["year", "year.not"]:
                     self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
                 elif method_name in util.tmdb_searches:
@@ -492,11 +492,11 @@ class CollectionBuilder:
                                     searches[search_final] = self.library.validate_search_list(final_values, search)
                                 elif (search == "decade" and modifier in [""]) \
                                         or (search == "year" and modifier in [".greater", ".less"]):
-                                    searches[search_final] = util.check_year(search_data, current_year, search_final)
+                                    searches[search_final] = [util.check_year(search_data, current_year, search_final)]
                                 elif search in ["added", "originally_available"] and modifier in [".before", ".after"]:
-                                    searches[search_final] = util.check_date(search_data, search_final, return_string=True, plex_date=True)
+                                    searches[search_final] = [util.check_date(search_data, search_final, return_string=True, plex_date=True)]
                                 elif search in ["duration", "rating"] and modifier in [".greater", ".less"]:
-                                    searches[search_final] = util.check_number(search_data, search_final, minimum=0)
+                                    searches[search_final] = [util.check_number(search_data, search_final, minimum=0)]
                                 elif search == "year" and modifier in ["", ".not"]:
                                     searches[search_final] = util.get_year_list(search_data, current_year, search_final)
                                 elif (search in ["title", "studio"] and modifier not in ["", ".and", ".not", ".begins", ".ends"]) \
