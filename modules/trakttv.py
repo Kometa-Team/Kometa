@@ -111,6 +111,11 @@ class TraktAPI:
     def send_request(self, url):
         return requests.get(url, headers={"Content-Type": "application/json", "trakt-api-version": "2", "trakt-api-key": self.client_id}).json()
 
+    def get_collection(self, username, is_movie):
+        items = self.send_request(f"{self.base_url}/users/{username}/collection/{'movies' if is_movie else 'shows'}")
+        if is_movie:                                return [item["movie"]["ids"]["tmdb"] for item in items], []
+        else:                                       return [], [item["show"]["ids"]["tvdb"] for item in items]
+
     def get_pagenation(self, pagenation, amount, is_movie):
         items = self.send_request(f"{self.base_url}/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
         if pagenation == "popular" and is_movie:    return [item["ids"]["tmdb"] for item in items], []
@@ -118,28 +123,26 @@ class TraktAPI:
         elif is_movie:                              return [item["movie"]["ids"]["tmdb"] for item in items], []
         else:                                       return [], [item["show"]["ids"]["tvdb"] for item in items]
 
-    def validate_trakt_list(self, values):
+    def validate_trakt(self, values, trakt_type=None, is_movie=None):
         trakt_values = []
         for value in values:
             try:
-                self.standard_list(value)
+                if trakt_type == "watchlist" and is_movie is not None:
+                    self.watchlist(value, is_movie)
+                elif trakt_type == "collection" and is_movie is not None:
+                    self.get_collection(value, is_movie)
+                else:
+                    self.standard_list(value)
                 trakt_values.append(value)
             except Failed as e:
                 logger.error(e)
         if len(trakt_values) == 0:
-            raise Failed(f"Trakt Error: No valid Trakt Lists in {values}")
-        return trakt_values
-
-    def validate_trakt_watchlist(self, values, is_movie):
-        trakt_values = []
-        for value in values:
-            try:
-                self.watchlist(value, is_movie)
-                trakt_values.append(value)
-            except Failed as e:
-                logger.error(e)
-        if len(trakt_values) == 0:
-            raise Failed(f"Trakt Error: No valid Trakt Watchlists in {values}")
+            if trakt_type == "watchlist" and is_movie is not None:
+                raise Failed(f"Trakt Error: No valid Trakt Watchlists in {values}")
+            elif trakt_type == "collection" and is_movie is not None:
+                raise Failed(f"Trakt Error: No valid Trakt Collections in {values}")
+            else:
+                raise Failed(f"Trakt Error: No valid Trakt Lists in {values}")
         return trakt_values
 
     def get_items(self, method, data, is_movie, status_message=True):
@@ -151,6 +154,10 @@ class TraktAPI:
             movie_ids, show_ids = self.get_pagenation(method[6:], data, is_movie)
             if status_message:
                 logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+        elif method == "trakt_collection":
+            movie_ids, show_ids = self.get_collection(data, is_movie)
+            if status_message:
+                logger.info(f"Processing {pretty} {media_type}s for {data}")
         else:
             show_ids = []
             movie_ids = []
