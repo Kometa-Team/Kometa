@@ -99,7 +99,7 @@ class Config:
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
                     else:                                                               endline = ""
                     yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=ind_in, block_seq_indent=bsi_in)
-            elif not data[attribute] and data[attribute] is not False:
+            elif data[attribute] is None:
                 if default_is_none is True:                                         return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "bool":
@@ -325,7 +325,7 @@ class Config:
                 library = PlexAPI(params, self.TMDb, self.TVDb)
                 logger.info(f"{params['name']} Library Connection Successful")
             except Failed as e:
-                logger.error(e)
+                util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} Library Connection Failed")
                 continue
 
@@ -343,7 +343,7 @@ class Config:
                     radarr_params["tag"] = check_for_attribute(lib, "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
                     library.Radarr = RadarrAPI(self.TMDb, radarr_params)
                 except Failed as e:
-                    util.print_multiline(e)
+                    util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
             if self.general["sonarr"]["url"] or "sonarr" in lib:
@@ -361,7 +361,7 @@ class Config:
                     sonarr_params["tag"] = check_for_attribute(lib, "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
                     library.Sonarr = SonarrAPI(self.TVDb, sonarr_params, library.Plex.language)
                 except Failed as e:
-                    util.print_multiline(e)
+                    util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
             if self.general["tautulli"]["url"] or "tautulli" in lib:
@@ -372,7 +372,7 @@ class Config:
                     tautulli_params["apikey"] = check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
                     library.Tautulli = TautulliAPI(tautulli_params)
                 except Failed as e:
-                    util.print_multiline(e)
+                    util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
             self.libraries.append(library)
