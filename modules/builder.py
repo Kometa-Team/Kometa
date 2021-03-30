@@ -213,14 +213,13 @@ class CollectionBuilder:
                 raise Failed("Collection Error: tmdb_person attribute is blank")
 
         for method_name, method_data in self.data.items():
-            if "tmdb" in method_name.lower() and not config.TMDb:                     raise Failed(f"Collection Error: {method_name} requires TMDb to be configured")
-            elif "trakt" in method_name.lower() and not config.Trakt:                 raise Failed(f"Collection Error: {method_name} requires Trakt todo be configured")
-            elif "imdb" in method_name.lower() and not config.IMDb:                   raise Failed(f"Collection Error: {method_name} requires TMDb or Trakt to be configured")
-            elif "tautulli" in method_name.lower() and not self.library.Tautulli:     raise Failed(f"Collection Error: {method_name} requires Tautulli to be configured")
-            elif "mal" in method_name.lower() and not config.MyAnimeList:             raise Failed(f"Collection Error: {method_name} requires MyAnimeList to be configured")
+            if "trakt" in method_name.lower() and not config.Trakt:                     raise Failed(f"Collection Error: {method_name} requires Trakt todo be configured")
+            elif "imdb" in method_name.lower() and not config.IMDb:                     raise Failed(f"Collection Error: {method_name} requires TMDb or Trakt to be configured")
+            elif "tautulli" in method_name.lower() and not self.library.Tautulli:       raise Failed(f"Collection Error: {method_name} requires Tautulli to be configured")
+            elif "mal" in method_name.lower() and not config.MyAnimeList:               raise Failed(f"Collection Error: {method_name} requires MyAnimeList to be configured")
             elif method_data is not None:
                 logger.debug("")
-                logger.debug(f"Method: {method_name}")
+                logger.debug(f"Validating Method: {method_name}")
                 logger.debug(f"Value: {method_data}")
                 if method_name.lower() in util.method_alias:
                     method_name = util.method_alias[method_name.lower()]
@@ -370,12 +369,15 @@ class CollectionBuilder:
                         if isinstance(imdb_list, dict):
                             dict_methods = {dm.lower(): dm for dm in imdb_list}
                             if "url" in dict_methods and imdb_list[dict_methods["url"]]:
-                                imdb_url = imdb_list[dict_methods["url"]]
+                                imdb_url = config.IMDb.validate_imdb_url(imdb_list[dict_methods["url"]])
                             else:
                                 raise Failed("Collection Error: imdb_list attribute url is required")
-                            list_count = util.regex_first_int(imdb_list[dict_methods["limit"]], "List Limit", default=0) if "limit" in dict_methods and imdb_list[dict_methods["limit"]] else 0
+                            if "limit" in dict_methods and imdb_list[dict_methods["limit"]]:
+                                list_count = util.regex_first_int(imdb_list[dict_methods["limit"]], "List Limit", default=0)
+                            else:
+                                list_count = 0
                         else:
-                            imdb_url = str(imdb_list)
+                            imdb_url = config.IMDb.validate_imdb_url(str(imdb_list))
                             list_count = 0
                         new_list.append({"url": imdb_url, "limit": list_count})
                     self.methods.append((method_name, new_list))
@@ -1061,15 +1063,19 @@ class CollectionBuilder:
                             logger.warning(f"No Folder: {os.path.join(path, folder)}")
 
         def set_image(image_method, images, is_background=False):
-            if image_method in ["file_poster", "file_background", "asset_directory"]:
-                if is_background:                                   collection.uploadArt(filepath=images[image_method])
-                else:                                               collection.uploadPoster(filepath=images[image_method])
-                image_location = "File"
-            else:
-                if is_background:                                   collection.uploadArt(url=images[image_method])
-                else:                                               collection.uploadPoster(url=images[image_method])
-                image_location = "URL"
-            logger.info(f"Detail: {image_method} updated collection {'background' if is_background else 'poster'} to [{image_location}] {images[image_method]}")
+            message = f"{'background' if is_background else 'poster'} to [{'File' if image_method in image_file_details else 'URL'}] {images[image_method]}"
+            try:
+                if image_method in image_file_details and is_background:
+                    collection.uploadArt(filepath=images[image_method])
+                elif image_method in image_file_details:
+                    collection.uploadPoster(filepath=images[image_method])
+                elif is_background:
+                    collection.uploadArt(url=images[image_method])
+                else:
+                    collection.uploadPoster(url=images[image_method])
+                logger.info(f"Detail: {image_method} updated collection {message}")
+            except BadRequest:
+                logger.error(f"Detail: {image_method} failed to update {message}")
 
         if len(self.posters) > 1:
             logger.info(f"{len(self.posters)} posters found:")

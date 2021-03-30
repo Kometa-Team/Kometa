@@ -678,8 +678,8 @@ def check_number(value, method, number_type="int", minimum=None, maximum=None):
         return num_value
 
 def check_date(date_text, method, return_string=False, plex_date=False):
-    try:                                    date_obg = datetime.strptime(str(date_text), "%Y/%m/%d" if plex_date else "%m/%d/%Y")
-    except ValueError:                      raise Failed(f"Collection Error: {method}: {date_text} must match pattern {'YYYY/MM/DD e.g. 2020/12/25' if plex_date else 'MM/DD/YYYY e.g. 12/25/2020'}")
+    try:                                    date_obg = datetime.strptime(str(date_text), "%Y-%m-%d" if plex_date else "%m/%d/%Y")
+    except ValueError:                      raise Failed(f"Collection Error: {method}: {date_text} must match pattern {'YYYY-MM-DD e.g. 2020-12-25' if plex_date else 'MM/DD/YYYY e.g. 12/25/2020'}")
     return str(date_text) if return_string else date_obg
 
 def logger_input(prompt, timeout=60):

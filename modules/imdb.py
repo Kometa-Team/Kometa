@@ -14,11 +14,13 @@ class IMDbAPI:
             "search": "https://www.imdb.com/search/title/?"
         }
 
-    def get_imdb_ids_from_url(self, imdb_url, language, limit):
+    def validate_imdb_url(self, imdb_url):
         imdb_url = imdb_url.strip()
         if not imdb_url.startswith(self.urls["list"]) and not imdb_url.startswith(self.urls["search"]):
-            raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n| {self.urls['list']} (For Lists)\n| {self.urls['search']} (For Searches)")
+            raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n{self.urls['list']} (For Lists)\n{self.urls['search']} (For Searches)")
+        return imdb_url
 
+    def get_imdb_ids_from_url(self, imdb_url, language, limit):
         if imdb_url.startswith(self.urls["list"]):
             try:                                list_id = re.search("(\\d+)", str(imdb_url)).group(1)
             except AttributeError:              raise Failed(f"IMDb Error: Failed to parse List ID from {imdb_url}")

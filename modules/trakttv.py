@@ -94,9 +94,15 @@ class TraktAPI:
                 return lookup.get_key(to_source) if to_source == "imdb" else int(lookup.get_key(to_source))
         raise Failed(f"No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID {external_id}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    def collection(self, data, is_movie):
+        return self.user_list("collection", data, is_movie)
+
     def watchlist(self, data, is_movie):
-        items = Trakt[f"users/{data}/watchlist"].movies() if is_movie else Trakt[f"users/{data}/watchlist"].shows()
+        return self.user_list("watchlist", data, is_movie)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    def user_list(self, list_type, data, is_movie):
+        items = Trakt[f"users/{data}/{list_type}"].movies() if is_movie else Trakt[f"users/{data}/{list_type}"].shows()
         if items is None:                   raise Failed("Trakt Error: No List found")
         else:                               return [i for i in items]
 
