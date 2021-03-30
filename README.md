@@ -13,7 +13,8 @@ The script is designed to work with most Metadata agents including the new Plex 
 
 * [Wiki](https://github.com/meisnate12/Plex-Meta-Manager/wiki)
 * [Local Installation](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Local-Installation)
-* [Docker Installation](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Docker)
+* [Docker Installation](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Docker-Installation)
+* [unRAID Installation](https://github.com/meisnate12/Plex-Meta-Manager/wiki/unRAID-Installation)
 
 ## Support
 
