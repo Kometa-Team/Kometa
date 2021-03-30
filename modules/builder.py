@@ -188,7 +188,7 @@ class CollectionBuilder:
                     else:
                         for tm in data_template:
                             if not data_template[tm]:
-                                raise Failed(f"Collection Error: template sub-attribute {data_template[tm]} is blank")
+                                raise Failed(f"Collection Error: template sub-attribute {tm} is blank")
 
                         template_name = data_template["name"]
                         template = self.library.templates[template_name]
@@ -230,18 +230,22 @@ class CollectionBuilder:
                                             if option not in data_template and f"<<{option}>>" in txt:
                                                 raise Failed("remove attribute")
                                         for template_method in data_template:
-                                            if template_method != "name" and f"<<{template_method}>>" in txt:
+                                            if template_method != "name" and txt == f"<<{template_method}>>":
+                                                txt = data_template[template_method]
+                                            elif template_method != "name" and f"<<{template_method}>>" in txt:
                                                 txt = txt.replace(f"<<{template_method}>>", str(data_template[template_method]))
                                         if "<<collection_name>>" in txt:
                                             txt = txt.replace("<<collection_name>>", str(self.name))
                                         for dm in default:
-                                            if f"<<{dm}>>" in txt:
+                                            if txt == f"<<{dm}>>":
+                                                txt = default[dm]
+                                            elif f"<<{dm}>>" in txt:
                                                 txt = txt.replace(f"<<{dm}>>", str(default[dm]))
                                         if txt in ["true", "True"]:                     return True
                                         elif txt in ["false", "False"]:                 return False
                                         else:
                                             try:                                            return int(txt)
-                                            except ValueError:                              return txt
+                                            except (ValueError, TypeError):                 return txt
                                     try:
                                         if isinstance(attr_data, dict):
                                             final_data = {}
