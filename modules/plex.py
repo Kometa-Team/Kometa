@@ -12,6 +12,91 @@ from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = ["plex_all", "plex_collection", "plex_collectionless", "plex_search",]
+search_translation = {
+    "audio_language": "audioLanguage",
+    "content_rating": "contentRating",
+    "subtitle_language": "subtitleLanguage",
+    "added": "addedAt",
+    "originally_available": "originallyAvailableAt",
+    "rating": "userRating"
+}
+episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
+keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
+delete_episodes_options = {"never": 0, "day": 1, "week": 7, "refresh": 100}
+season_display_options = {"default": -1, "show": 0, "hide": 1}
+episode_ordering_options = {"default": None, "tmdb_aired": "tmdbAiring", "tvdb_aired": "airing", "tvdb_dvd": "dvd", "tvdb_absolute": "absolute"}
+plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US",
+                  "es-ES", "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID",
+                  "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO",
+                  "ru-RU", "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"]
+metadata_language_options = {lang.lower(): lang for lang in plex_languages}
+metadata_language_options["default"] = None
+filter_alias = {
+    "actor": "actors",
+    "collection": "collections",
+    "content_rating": "contentRating",
+    "country": "countries",
+    "director": "directors",
+    "genre": "genres",
+    "originally_available": "originallyAvailableAt",
+    "tmdb_vote_count": "vote_count",
+    "writer": "writers"
+}
+searches = [
+    "title", "title.and", "title.not", "title.begins", "title.ends",
+    "studio", "studio.and", "studio.not", "studio.begins", "studio.ends",
+    "actor", "actor.and", "actor.not",
+    "audio_language", "audio_language.and", "audio_language.not",
+    "collection", "collection.and", "collection.not",
+    "content_rating", "content_rating.and", "content_rating.not",
+    "country", "country.and", "country.not",
+    "director", "director.and", "director.not",
+    "genre", "genre.and", "genre.not",
+    "label", "label.and", "label.not",
+    "producer", "producer.and", "producer.not",
+    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
+    "writer", "writer.and", "writer.not",
+    "decade", "resolution",
+    "added.before", "added.after",
+    "originally_available.before", "originally_available.after",
+    "duration.greater", "duration.less",
+    "rating.greater", "rating.less",
+    "year", "year.not", "year.greater", "year.less"
+]
+movie_only_searches = [
+    "audio_language", "audio_language.and", "audio_language.not",
+    "country", "country.and", "country.not",
+    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
+    "decade", "resolution",
+    "originally_available.before", "originally_available.after",
+    "duration.greater", "duration.less"
+]
+tmdb_searches = [
+    "actor", "actor.and", "actor.not",
+    "director", "director.and", "director.not",
+    "producer", "producer.and", "producer.not",
+    "writer", "writer.and", "writer.not"
+]
+sorts = {
+    "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
+    "originally_available.asc": "originallyAvailableAt:asc", "originally_available.desc": "originallyAvailableAt:desc",
+    "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
+    "audience_rating.asc": "audienceRating:asc", "audience_rating.desc": "audienceRating:desc",
+    "duration.asc": "duration:asc", "duration.desc": "duration:desc",
+    "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
+}
+modifiers = {
+    ".and": "&",
+    ".not": "!",
+    ".begins": "<",
+    ".ends": ">",
+    ".before": "<<",
+    ".after": ">>",
+    ".greater": ">>",
+    ".less": "<<"
+}
+
 class PlexAPI:
     def __init__(self, params, TMDb, TVDb):
         try:
@@ -98,7 +183,7 @@ class PlexAPI:
         else:               return {c.title.lower(): c.title for c in self.Plex.listFilterChoices(search_name)}
 
     def validate_search_list(self, data, search_name):
-        final_search = util.search_alias[search_name] if search_name in util.search_alias else search_name
+        final_search = search_translation[search_name] if search_name in search_translation else search_name
         search_choices = self.get_search_choices(final_search, key=final_search.endswith("Language"))
         valid_list = []
         for value in util.get_list(data):
@@ -160,7 +245,7 @@ class PlexAPI:
                 for filter_method, filter_data in filters:
                     modifier = filter_method[-4:]
                     method = filter_method[:-4] if modifier in [".not", ".lte", ".gte"] else filter_method
-                    method_name = util.filter_alias[method] if method in util.filter_alias else method
+                    method_name = filter_alias[method] if method in filter_alias else method
                     if method_name == "max_age":
                         threshold_date = datetime.now() - timedelta(days=filter_data)
                         if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:

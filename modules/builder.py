@@ -1,11 +1,146 @@
 import glob, logging, os, re
 from datetime import datetime, timedelta
-from modules import util
+from modules import anidb, anilist, imdb, letterboxd, mal, plex, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed
 from plexapi.collection import Collections
 from plexapi.exceptions import BadRequest, NotFound
 
 logger = logging.getLogger("Plex Meta Manager")
+
+image_file_details = ["file_poster", "file_background", "asset_directory"]
+method_alias = {
+    "actors": "actor", "role": "actor", "roles": "actor",
+    "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
+    "countries": "country",
+    "decades": "decade",
+    "directors": "director",
+    "genres": "genre",
+    "labels": "label",
+    "studios": "studio", "network": "studio", "networks": "studio",
+    "producers": "producer",
+    "writers": "writer",
+    "years": "year"
+}
+all_builders = anidb.builders + anilist.builders + imdb.builders + letterboxd.builders + mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakttv.builders + tvdb.builders
+dictionary_builders = [
+    "filters",
+    "anilist_genre",
+    "anilist_season",
+    "anilist_tag",
+    "mal_season",
+    "mal_userlist",
+    "plex_collectionless",
+    "plex_search",
+    "tautulli_popular",
+    "tautulli_watched",
+    "tmdb_discover"
+]
+show_only_builders = [
+    "tmdb_network",
+    "tmdb_show",
+    "tmdb_show_details",
+    "tvdb_show",
+    "tvdb_show_details"
+]
+movie_only_builders = [
+    "letterboxd_list",
+    "letterboxd_list_details",
+    "tmdb_collection",
+    "tmdb_collection_details",
+    "tmdb_movie",
+    "tmdb_movie_details",
+    "tmdb_now_playing",
+    "tvdb_movie",
+    "tvdb_movie_details"
+]
+numbered_builders = [
+    "anidb_popular",
+    "anilist_popular",
+    "anilist_top_rated",
+    "mal_all",
+    "mal_airing",
+    "mal_upcoming",
+    "mal_tv",
+    "mal_ova",
+    "mal_movie",
+    "mal_special",
+    "mal_popular",
+    "mal_favorite",
+    "mal_suggested",
+    "tmdb_popular",
+    "tmdb_top_rated",
+    "tmdb_now_playing",
+    "tmdb_trending_daily",
+    "tmdb_trending_weekly",
+    "trakt_trending",
+    "trakt_popular",
+    "trakt_recommended",
+    "trakt_watched",
+    "trakt_collected"
+]
+all_details = [
+    "sort_title", "content_rating",
+    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary", "tvdb_description", "trakt_description", "letterboxd_description",
+    "collection_mode", "collection_order",
+    "url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster",
+    "url_background", "tmdb_background", "tvdb_background", "file_background",
+    "name_mapping", "add_to_arr", "arr_tag", "label",
+    "show_filtered", "show_missing", "save_missing"
+]
+collectionless_details = [
+    "sort_title", "content_rating",
+    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography",
+    "collection_order", "plex_collectionless",
+    "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
+    "url_background", "file_background",
+    "name_mapping", "label", "label_sync_mode", "test"
+]
+ignored_details = [
+    "run_again",
+    "schedule",
+    "sync_mode",
+    "template",
+    "test",
+    "tmdb_person"
+]
+boolean_details = [
+    "add_to_arr",
+    "show_filtered",
+    "show_missing",
+    "save_missing"
+]
+all_filters = [
+    "actor", "actor.not",
+    "audio_language", "audio_language.not",
+    "audio_track_title", "audio_track_title.not",
+    "collection", "collection.not",
+    "content_rating", "content_rating.not",
+    "country", "country.not",
+    "director", "director.not",
+    "genre", "genre.not",
+    "max_age",
+    "originally_available.gte", "originally_available.lte",
+    "tmdb_vote_count.gte", "tmdb_vote_count.lte",
+    "duration.gte", "duration.lte",
+    "original_language", "original_language.not",
+    "rating.gte", "rating.lte",
+    "studio", "studio.not",
+    "subtitle_language", "subtitle_language.not",
+    "video_resolution", "video_resolution.not",
+    "writer", "writer.not",
+    "year", "year.gte", "year.lte", "year.not"
+]
+movie_only_filters = [
+    "audio_language", "audio_language.not",
+    "audio_track_title", "audio_track_title.not",
+    "country", "country.not",
+    "director", "director.not",
+    "duration.gte", "duration.lte",
+    "original_language", "original_language.not",
+    "subtitle_language", "subtitle_language.not",
+    "video_resolution", "video_resolution.not",
+    "writer", "writer.not"
+]
 
 class CollectionBuilder:
     def __init__(self, config, library, name, data):
@@ -221,18 +356,18 @@ class CollectionBuilder:
                 logger.debug("")
                 logger.debug(f"Validating Method: {method_name}")
                 logger.debug(f"Value: {method_data}")
-                if method_name.lower() in util.method_alias:
-                    method_name = util.method_alias[method_name.lower()]
+                if method_name.lower() in method_alias:
+                    method_name = method_alias[method_name.lower()]
                     logger.warning(f"Collection Warning: {method_name} attribute will run as {method_name}")
                 else:
                     method_name = method_name.lower()
-                if method_name in util.show_only_lists and self.library.is_movie:
+                if method_name in show_only_builders and self.library.is_movie:
                     raise Failed(f"Collection Error: {method_name} attribute only works for show libraries")
-                elif method_name in util.movie_only_lists and self.library.is_show:
+                elif method_name in movie_only_builders and self.library.is_show:
                     raise Failed(f"Collection Error: {method_name} attribute only works for movie libraries")
-                elif method_name in util.movie_only_searches and self.library.is_show:
+                elif method_name in plex.movie_only_searches and self.library.is_show:
                     raise Failed(f"Collection Error: {method_name} plex search only works for movie libraries")
-                elif method_name not in util.collectionless_lists and self.collectionless:
+                elif method_name not in collectionless_details and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
                 elif method_name == "summary":
                     self.summaries[method_name] = method_data
@@ -298,12 +433,12 @@ class CollectionBuilder:
                     else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
                 elif method_name in ["arr_tag", "label"]:
                     self.details[method_name] = util.get_list(method_data)
-                elif method_name in util.boolean_details:
+                elif method_name in boolean_details:
                     if isinstance(method_data, bool):                           self.details[method_name] = method_data
                     elif str(method_data).lower() in ["t", "true"]:             self.details[method_name] = True
                     elif str(method_data).lower() in ["f", "false"]:            self.details[method_name] = False
                     else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
-                elif method_name in util.all_details:
+                elif method_name in all_details:
                     self.details[method_name] = method_data
                 elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
                     self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
@@ -315,7 +450,7 @@ class CollectionBuilder:
                     self.methods.append(("plex_search", [{method_name: [util.check_number(method_data, method_name, minimum=0)]}]))
                 elif method_name in ["year", "year.not"]:
                     self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
-                elif method_name in util.tmdb_searches:
+                elif method_name in plex.tmdb_searches:
                     final_values = []
                     for value in util.get_list(method_data):
                         if value.lower() == "tmdb" and "tmdb_person" in self.details:
@@ -324,8 +459,8 @@ class CollectionBuilder:
                         else:
                             final_values.append(value)
                     self.methods.append(("plex_search", [{method_name: self.library.validate_search_list(final_values, os.path.splitext(method_name)[0])}]))
-                elif method_name in util.plex_searches:
-                    if method_name in util.tmdb_searches:
+                elif method_name in plex.searches:
+                    if method_name in plex.tmdb_searches:
                         final_values = []
                         for value in util.get_list(method_data):
                             if value.lower() == "tmdb" and "tmdb_person" in self.details:
@@ -387,7 +522,7 @@ class CollectionBuilder:
                     values = util.get_list(method_data, split=False)
                     self.summaries[method_name] = config.Letterboxd.get_list_description(values[0], self.library.Plex.language)
                     self.methods.append((method_name[:-8], values))
-                elif method_name in util.dictionary_lists:
+                elif method_name in dictionary_builders:
                     if isinstance(method_data, dict):
                         def get_int(parent, method, data_in, methods_in, default_in, minimum=1, maximum=None):
                             if method not in methods_in:
@@ -404,12 +539,12 @@ class CollectionBuilder:
                             return default_in
                         if method_name == "filters":
                             for filter_name, filter_data in method_data.items():
-                                if filter_name.lower() in util.method_alias or (filter_name.lower().endswith(".not") and filter_name.lower()[:-4] in util.method_alias):
-                                    filter_method = (util.method_alias[filter_name.lower()[:-4]] + filter_name.lower()[-4:]) if filter_name.lower().endswith(".not") else util.method_alias[filter_name.lower()]
+                                if filter_name.lower() in method_alias or (filter_name.lower().endswith(".not") and filter_name.lower()[:-4] in method_alias):
+                                    filter_method = (method_alias[filter_name.lower()[:-4]] + filter_name.lower()[-4:]) if filter_name.lower().endswith(".not") else method_alias[filter_name.lower()]
                                     logger.warning(f"Collection Warning: {filter_name} filter will run as {filter_method}")
                                 else:
                                     filter_method = filter_name.lower()
-                                if filter_method in util.movie_only_filters and self.library.is_show:
+                                if filter_method in movie_only_filters and self.library.is_show:
                                     raise Failed(f"Collection Error: {filter_method} filter only works for movie libraries")
                                 elif filter_data is None:
                                     raise Failed(f"Collection Error: {filter_method} filter is blank")
@@ -427,7 +562,7 @@ class CollectionBuilder:
                                     valid_data = util.get_list(filter_data, lower=True)
                                 elif filter_method == "collection":
                                     valid_data = filter_data if isinstance(filter_data, list) else [filter_data]
-                                elif filter_method in util.all_filters:
+                                elif filter_method in all_filters:
                                     valid_data = util.get_list(filter_data)
                                 else:
                                     raise Failed(f"Collection Error: {filter_method} filter not supported")
@@ -456,16 +591,16 @@ class CollectionBuilder:
                             searches = {}
                             for search_name, search_data in method_data.items():
                                 search, modifier = os.path.splitext(str(search_name).lower())
-                                if search in util.method_alias:
-                                    search = util.method_alias[search]
+                                if search in method_alias:
+                                    search = method_alias[search]
                                     logger.warning(f"Collection Warning: {str(search_name).lower()} plex search attribute will run as {search}{modifier if modifier else ''}")
                                 search_final = f"{search}{modifier}"
-                                if search_final in util.movie_only_searches and self.library.is_show:
+                                if search_final in plex.movie_only_searches and self.library.is_show:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for movie libraries")
                                 elif search_data is None:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute is blank")
                                 elif search == "sort_by":
-                                    if str(search_data).lower() in util.plex_sort:
+                                    if str(search_data).lower() in plex.sorts:
                                         searches[search] = str(search_data).lower()
                                     else:
                                         logger.warning(f"Collection Error: {search_data} is not a valid plex search sort defaulting to title.asc")
@@ -481,7 +616,7 @@ class CollectionBuilder:
                                 elif (search == "studio" and modifier in ["", ".and", ".not", ".begins", ".ends"]) \
                                         or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "producer", "subtitle_language", "writer"] and modifier in ["", ".and", ".not"]) \
                                         or (search == "resolution" and modifier in [""]):
-                                    if search_final in util.tmdb_searches:
+                                    if search_final in plex.tmdb_searches:
                                         final_values = []
                                         for value in util.get_list(search_data):
                                             if value.lower() == "tmdb" and "tmdb_person" in self.details:
@@ -516,7 +651,7 @@ class CollectionBuilder:
                             for discover_name, discover_data in method_data.items():
                                 discover_final = discover_name.lower()
                                 if discover_data:
-                                    if (self.library.is_movie and discover_final in util.discover_movie) or (self.library.is_show and discover_final in util.discover_tv):
+                                    if (self.library.is_movie and discover_final in tmdb.discover_movie) or (self.library.is_show and discover_final in tmdb.discover_tv):
                                         if discover_final == "language":
                                             if re.compile("([a-z]{2})-([A-Z]{2})").match(str(discover_data)):
                                                 new_dictionary[discover_final] = str(discover_data)
@@ -528,7 +663,7 @@ class CollectionBuilder:
                                             else:
                                                 raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} must match pattern ^[A-Z]{{2}}$ e.g. US")
                                         elif discover_final == "sort_by":
-                                            if (self.library.is_movie and discover_data in util.discover_movie_sort) or (self.library.is_show and discover_data in util.discover_tv_sort):
+                                            if (self.library.is_movie and discover_data in tmdb.discover_movie_sort) or (self.library.is_show and discover_data in tmdb.discover_tv_sort):
                                                 new_dictionary[discover_final] = discover_data
                                             else:
                                                 raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} is invalid")
@@ -545,7 +680,7 @@ class CollectionBuilder:
                                         elif discover_final in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
                                             if discover_data is True:
                                                 new_dictionary[discover_final] = discover_data
-                                        elif discover_final in util.discover_dates:
+                                        elif discover_final in tmdb.discover_dates:
                                             new_dictionary[discover_final] = util.check_date(discover_data, f"{method_name} attribute {discover_final}", return_string=True)
                                         elif discover_final in ["primary_release_year", "year", "first_air_date_year"]:
                                             new_dictionary[discover_final] = util.check_number(discover_data, f"{method_name} attribute {discover_final}", minimum=1800, maximum=current_year + 1)
@@ -588,10 +723,10 @@ class CollectionBuilder:
                                 logger.warning("Collection Warning: mal_season sort_by attribute not found using members as default")
                             elif not method_data[dict_methods["sort_by"]]:
                                 logger.warning("Collection Warning: mal_season sort_by attribute is blank using members as default")
-                            elif method_data[dict_methods["sort_by"]] not in util.mal_season_sort:
+                            elif method_data[dict_methods["sort_by"]] not in mal.season_sort:
                                 logger.warning(f"Collection Warning: mal_season sort_by attribute {method_data[dict_methods['sort_by']]} invalid must be either 'members' or 'score' using members as default")
                             else:
-                                new_dictionary["sort_by"] = util.mal_season_sort[method_data[dict_methods["sort_by"]]]
+                                new_dictionary["sort_by"] = mal.season_sort[method_data[dict_methods["sort_by"]]]
 
                             if current_time.month in [1, 2, 3]:                     new_dictionary["season"] = "winter"
                             elif current_time.month in [4, 5, 6]:                   new_dictionary["season"] = "spring"
@@ -624,19 +759,19 @@ class CollectionBuilder:
                                 logger.warning("Collection Warning: mal_season status attribute not found using all as default")
                             elif not method_data[dict_methods["status"]]:
                                 logger.warning("Collection Warning: mal_season status attribute is blank using all as default")
-                            elif method_data[dict_methods["status"]] not in util.mal_userlist_status:
+                            elif method_data[dict_methods["status"]] not in mal.userlist_status:
                                 logger.warning(f"Collection Warning: mal_season status attribute {method_data[dict_methods['status']]} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default")
                             else:
-                                new_dictionary["status"] = util.mal_userlist_status[method_data[dict_methods["status"]]]
+                                new_dictionary["status"] = mal.userlist_status[method_data[dict_methods["status"]]]
 
                             if "sort_by" not in dict_methods:
                                 logger.warning("Collection Warning: mal_season sort_by attribute not found using score as default")
                             elif not method_data[dict_methods["sort_by"]]:
                                 logger.warning("Collection Warning: mal_season sort_by attribute is blank using score as default")
-                            elif method_data[dict_methods["sort_by"]] not in util.mal_userlist_sort:
+                            elif method_data[dict_methods["sort_by"]] not in mal.userlist_sort:
                                 logger.warning(f"Collection Warning: mal_season sort_by attribute {method_data[dict_methods['sort_by']]} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default")
                             else:
-                                new_dictionary["sort_by"] = util.mal_userlist_sort[method_data[dict_methods["sort_by"]]]
+                                new_dictionary["sort_by"] = mal.userlist_sort[method_data[dict_methods["sort_by"]]]
 
                             new_dictionary["limit"] = get_int(method_name, "limit", method_data, dict_methods, 100, maximum=1000)
                             self.methods.append((method_name, [new_dictionary]))
@@ -688,7 +823,7 @@ class CollectionBuilder:
                             self.methods.append((method_name, [new_dictionary]))
                     else:
                         raise Failed(f"Collection Error: {method_name} attribute is not a dictionary: {method_data}")
-                elif method_name in util.count_lists:
+                elif method_name in numbered_builders:
                     list_count = util.regex_first_int(method_data, "List Size", default=10)
                     if list_count < 1:
                         logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 10")
@@ -718,8 +853,8 @@ class CollectionBuilder:
                         self.methods.append((method_name[:-8], values))
                     else:
                         self.methods.append((method_name, values))
-                elif method_name in util.tmdb_lists:
-                    values = config.TMDb.validate_tmdb_list(util.get_int_list(method_data, f"TMDb {util.tmdb_type[method_name]} ID"), util.tmdb_type[method_name])
+                elif method_name in tmdb.builders:
+                    values = config.TMDb.validate_tmdb_list(util.get_int_list(method_data, f"TMDb {tmdb.type_map[method_name]} ID"), tmdb.type_map[method_name])
                     if method_name[-8:] == "_details":
                         if method_name in ["tmdb_collection_details", "tmdb_movie_details", "tmdb_show_details"]:
                             item = config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
@@ -742,11 +877,11 @@ class CollectionBuilder:
                         self.methods.append((method_name[:-8], values))
                     else:
                         self.methods.append((method_name, values))
-                elif method_name in util.all_lists:
+                elif method_name in all_builders:
                     self.methods.append((method_name, util.get_list(method_data)))
-                elif method_name not in util.other_attributes:
+                elif method_name not in ignored_details:
                     raise Failed(f"Collection Error: {method_name} attribute not supported")
-            elif method_name in util.all_lists or method_name in util.method_alias or method_name in util.plex_searches:
+            elif method_name in all_builders or method_name in method_alias or method_name in plex.searches:
                 raise Failed(f"Collection Error: {method_name} attribute is blank")
             else:
                 logger.warning(f"Collection Warning: {method_name} attribute is blank")
@@ -814,11 +949,11 @@ class CollectionBuilder:
                         if search_method == "limit":
                             search_limit = search_data
                         elif search_method == "sort_by":
-                            search_sort = util.plex_sort[search_data]
+                            search_sort = plex.sorts[search_data]
                         else:
                             search, modifier = os.path.splitext(str(search_method).lower())
-                            final_search = util.search_alias[search] if search in util.search_alias else search
-                            final_mod = util.plex_modifiers[modifier] if modifier in util.plex_modifiers else ""
+                            final_search = plex.search_translation[search] if search in plex.search_translation else search
+                            final_mod = plex.modifiers[modifier] if modifier in plex.modifiers else ""
                             final_method = f"{final_search}{final_mod}"
                             search_terms[final_method] = search_data * 60000 if final_search == "duration" else search_data
                             ors = ""

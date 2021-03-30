@@ -6,6 +6,73 @@ from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = [
+    "mal_id",
+    "mal_all",
+    "mal_airing",
+    "mal_upcoming",
+    "mal_tv",
+    "mal_ova",
+    "mal_movie",
+    "mal_special",
+    "mal_popular",
+    "mal_favorite",
+    "mal_season",
+    "mal_suggested",
+    "mal_userlist"
+]
+mal_ranked_name = {
+    "mal_all": "all",
+    "mal_airing": "airing",
+    "mal_upcoming": "upcoming",
+    "mal_tv": "tv",
+    "mal_ova": "ova",
+    "mal_movie": "movie",
+    "mal_special": "special",
+    "mal_popular": "bypopularity",
+    "mal_favorite": "favorite"
+}
+season_sort = {
+    "anime_score": "anime_score",
+    "anime_num_list_users": "anime_num_list_users",
+    "score": "anime_score",
+    "members": "anime_num_list_users"
+}
+pretty_names = {
+    "anime_score": "Score",
+    "anime_num_list_users": "Members",
+    "list_score": "Score",
+    "list_updated_at": "Last Updated",
+    "anime_title": "Title",
+    "anime_start_date": "Start Date",
+    "all": "All Anime",
+    "watching": "Currently Watching",
+    "completed": "Completed",
+    "on_hold": "On Hold",
+    "dropped": "Dropped",
+    "plan_to_watch": "Plan to Watch"
+}
+userlist_sort = {
+    "score": "list_score",
+    "list_score": "list_score",
+    "last_updated": "list_updated_at",
+    "list_updated": "list_updated_at",
+    "list_updated_at": "list_updated_at",
+    "title": "anime_title",
+    "anime_title": "anime_title",
+    "start_date": "anime_start_date",
+    "anime_start_date": "anime_start_date"
+}
+userlist_status = [
+    "all",
+    "watching",
+    "completed",
+    "on_hold",
+    "dropped",
+    "plan_to_watch"
+]
+
+
 class MyAnimeListIDList:
     def __init__(self):
         self.ids = json.loads(requests.get("https://raw.githubusercontent.com/Fribb/anime-lists/master/animeMapping_full.json").content)
@@ -155,14 +222,14 @@ class MyAnimeListAPI:
             mal_ids = [data]
             if status_message:
                 logger.info(f"Processing {pretty}: {data}")
-        elif method in util.mal_ranked_name:
-            mal_ids = self.get_ranked(util.mal_ranked_name[method], data)
+        elif method in mal_ranked_name:
+            mal_ids = self.get_ranked(mal_ranked_name[method], data)
             if status_message:
                 logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "mal_season":
             mal_ids = self.get_season(data["season"], data["year"], data["sort_by"], data["limit"])
             if status_message:
-                logger.info(f"Processing {pretty}: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {util.mal_pretty[data['sort_by']]}")
+                logger.info(f"Processing {pretty}: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "mal_suggested":
             mal_ids = self.get_suggestions(data)
             if status_message:
@@ -170,7 +237,7 @@ class MyAnimeListAPI:
         elif method == "mal_userlist":
             mal_ids = self.get_userlist(data["username"], data["status"], data["sort_by"], data["limit"])
             if status_message:
-                logger.info(f"Processing {pretty}: {data['limit']} Anime from {self.get_username() if data['username'] == '@me' else data['username']}'s {util.mal_pretty[data['status']]} list sorted by {util.mal_pretty[data['sort_by']]}")
+                logger.info(f"Processing {pretty}: {data['limit']} Anime from {self.get_username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
         show_ids = []

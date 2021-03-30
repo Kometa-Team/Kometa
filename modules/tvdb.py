@@ -6,6 +6,15 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = [
+    "tvdb_list",
+    "tvdb_list_details",
+    "tvdb_movie",
+    "tvdb_movie_details",
+    "tvdb_show",
+    "tvdb_show_details"
+]
+
 class TVDbObj:
     def __init__(self, tvdb_url, language, is_movie, TVDb):
         tvdb_url = tvdb_url.strip()

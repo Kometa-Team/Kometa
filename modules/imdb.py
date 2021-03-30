@@ -6,6 +6,8 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = ["imdb_list", "imdb_id"]
+
 class IMDbAPI:
     def __init__(self, config):
         self.config = config

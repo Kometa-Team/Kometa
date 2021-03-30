@@ -11,6 +11,18 @@ from trakt.objects.show import Show
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = [
+    "trakt_collected",
+    "trakt_collection",
+    "trakt_list",
+    "trakt_list_details",
+    "trakt_popular",
+    "trakt_recommended",
+    "trakt_trending",
+    "trakt_watched",
+    "trakt_watchlist"
+]
+
 class TraktAPI:
     def __init__(self, params, authorization=None):
         self.base_url = "https://api.trakt.tv"
