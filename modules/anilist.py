@@ -5,6 +5,21 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = [
+    "anilist_genre",
+    "anilist_id",
+    "anilist_popular",
+    "anilist_relations",
+    "anilist_season",
+    "anilist_studio",
+    "anilist_tag",
+    "anilist_top_rated"
+]
+pretty_names = {
+    "score": "Average Score",
+    "popular": "Popularity"
+}
+
 class AniListAPI:
     def __init__(self, config):
         self.config = config
@@ -223,15 +238,15 @@ class AniListAPI:
         elif method == "anilist_season":
             mal_ids = self.season(data["season"], data["year"], data["sort_by"], data["limit"])
             if status_message:
-                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {util.anilist_pretty[data['sort_by']]}")
+                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "anilist_genre":
             mal_ids = self.genre(data["genre"], data["sort_by"], data["limit"])
             if status_message:
-                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Genre: {data['genre']} sorted by {util.anilist_pretty[data['sort_by']]}")
+                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Genre: {data['genre']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "anilist_tag":
             mal_ids = self.tag(data["tag"], data["sort_by"], data["limit"])
             if status_message:
-                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag: {data['tag']} sorted by {util.anilist_pretty[data['sort_by']]}")
+                logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag: {data['tag']} sorted by {pretty_names[data['sort_by']]}")
         elif method in ["anilist_studio", "anilist_relations"]:
             if method == "anilist_studio":          mal_ids, name = self.studio(data)
             else:                                   mal_ids, _, name = self.relations(data)
