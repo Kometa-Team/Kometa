@@ -122,11 +122,11 @@ class Config:
             if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
                 return default
             elif var_type == "path" and default:
-                default = None
                 if attribute in data and data[attribute]:
                     message = f"neither {data[attribute]} or the default path {default} could be found"
                 else:
                     message = f"no {text} found and the default path {default} could be found"
+                default = None
             if default is not None or default_is_none:
                 message = message + f" using {default} as default"
             message = message + endline
