@@ -190,7 +190,7 @@ class PlexAPI:
             if str(value).lower() in search_choices:
                 valid_list.append(search_choices[str(value).lower()])
             else:
-                raise Failed(f"Plex Error: {search_name}: {value} not found")
+                logger.error(f"Plex Error: {search_name}: {value} not found")
         return valid_list
 
     def get_all_collections(self):
