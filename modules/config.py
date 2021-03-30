@@ -33,7 +33,7 @@ class Config:
 
         yaml.YAML().allow_duplicate_keys = True
         try:
-            new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
+            new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
             def replace_attr(all_data, attr, par):
                 if "settings" not in all_data:
                     all_data["settings"] = {}
@@ -75,10 +75,13 @@ class Config:
             if "omdb" in new_config:                        new_config["omdb"] = new_config.pop("omdb")
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
+            yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=ind, block_seq_indent=bsi)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
             raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
+        except Exception as e:
+            util.print_stacktrace()
+            raise Failed(f"YAML Error: {e}")
 
         def check_for_attribute(data, attribute, parent=None, test_list=None, options="", default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
             endline = ""
