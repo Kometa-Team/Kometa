@@ -454,15 +454,6 @@ class CollectionBuilder:
                     self.methods.append(("plex_search", [{method_name: [util.check_number(method_data, method_name, minimum=0)]}]))
                 elif method_name in ["year", "year.not"]:
                     self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
-                elif method_name in plex.tmdb_searches:
-                    final_values = []
-                    for value in util.get_list(method_data):
-                        if value.lower() == "tmdb" and "tmdb_person" in self.details:
-                            for name in self.details["tmdb_person"]:
-                                final_values.append(name)
-                        else:
-                            final_values.append(value)
-                    self.methods.append(("plex_search", [{method_name: self.library.validate_search_list(final_values, os.path.splitext(method_name)[0])}]))
                 elif method_name in plex.searches:
                     if method_name in plex.tmdb_searches:
                         final_values = []
@@ -474,7 +465,12 @@ class CollectionBuilder:
                                 final_values.append(value)
                     else:
                         final_values = method_data
-                    self.methods.append(("plex_search", [{method_name: self.library.validate_search_list(final_values, os.path.splitext(method_name)[0])}]))
+                    search = os.path.splitext(method_name)[0]
+                    valid_values = self.library.validate_search_list(final_values, search)
+                    if valid_values:
+                        self.methods.append(("plex_search", [{method_name: valid_values}]))
+                    else:
+                        logger.warning(f"Collection Warning: No valid {search} values found in {final_values}")
                 elif method_name == "plex_all":
                     self.methods.append((method_name, [""]))
                 elif method_name == "plex_collection":
@@ -630,7 +626,11 @@ class CollectionBuilder:
                                                 final_values.append(value)
                                     else:
                                         final_values = search_data
-                                    searches[search_final] = self.library.validate_search_list(final_values, search)
+                                    valid_values = self.library.validate_search_list(final_values, search)
+                                    if valid_values:
+                                        searches[search_final] = valid_values
+                                    else:
+                                        logger.warning(f"Collection Warning: No valid {search} values found in {final_values}")
                                 elif (search == "decade" and modifier in [""]) \
                                         or (search == "year" and modifier in [".greater", ".less"]):
                                     searches[search_final] = [util.check_year(search_data, current_year, search_final)]
