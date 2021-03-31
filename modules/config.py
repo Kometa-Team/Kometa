@@ -389,7 +389,7 @@ class Config:
 
         util.separator()
 
-    def update_libraries(self, test, requested_collections):
+    def update_libraries(self, test, requested_collections, resume_from):
         for library in self.libraries:
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
@@ -398,7 +398,7 @@ class Config:
             util.separator(f"Mapping {library.name} Library")
             logger.info("")
             movie_map, show_map = self.map_guids(library)
-            if not test:
+            if not test and not resume_from:
                 if library.mass_genre_update:
                     self.mass_metadata(library, movie_map, show_map)
                 try:                        library.update_metadata(self.TMDb, test)
@@ -406,6 +406,9 @@ class Config:
             logger.info("")
             util.separator(f"{library.name} Library {'Test ' if test else ''}Collections")
             collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
+            if resume_from and resume_from not in collections:
+                logger.warning(f"Collection: {resume_from} not in {library.name}")
+                continue
             if collections:
                 for mapping_name, collection_attrs in collections.items():
                     if test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
@@ -423,6 +426,13 @@ class Config:
                         if no_template_test:
                             continue
                     try:
+                        if resume_from and resume_from != mapping_name:
+                            continue
+                        elif resume_from == mapping_name:
+                            resume_from = None
+                            logger.info("")
+                            util.separator(f"Resuming Collections")
+
                         logger.info("")
                         util.separator(f"{mapping_name} Collection")
                         logger.info("")
