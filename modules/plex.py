@@ -113,6 +113,7 @@ class PlexAPI:
         self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"] and ((self.is_movie and isinstance(s, MovieSection)) or (self.is_show and isinstance(s, ShowSection)))), None)
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library {params['name']} not found")
+        logger.info(f"Using Metadata File: {params['metadata_path']}")
         try:
             self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(params["metadata_path"], encoding="utf-8"))
         except yaml.scanner.ScannerError as ye:
