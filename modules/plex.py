@@ -300,9 +300,7 @@ class PlexAPI:
                             attr = tmdb_item.vote_count
                         else:
                             attr = getattr(current, method_name) / 60000 if method_name == "duration" else getattr(current, method_name)
-                        if attr is None:
-                            attr = 0
-                        if (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
+                        if attr is None or (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
                             match = False
                             break
                     else:
