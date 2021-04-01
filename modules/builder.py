@@ -16,6 +16,7 @@ method_alias = {
     "directors": "director",
     "genres": "genre",
     "labels": "label",
+    "rating": "critic_rating",
     "studios": "studio",
     "networks": "network",
     "producers": "producer",
@@ -124,7 +125,8 @@ all_filters = [
     "tmdb_vote_count.gte", "tmdb_vote_count.lte",
     "duration.gte", "duration.lte",
     "original_language", "original_language.not",
-    "rating.gte", "rating.lte",
+    "audience_rating.gte", "audience_rating.lte",
+    "critic_rating.gte", "critic_rating.lte",
     "studio", "studio.not",
     "subtitle_language", "subtitle_language.not",
     "video_resolution", "video_resolution.not",
@@ -542,11 +544,13 @@ class CollectionBuilder:
                             return default_in
                         if method_name == "filters":
                             for filter_name, filter_data in method_data.items():
-                                if filter_name.lower() in method_alias or (filter_name.lower().endswith(".not") and filter_name.lower()[:-4] in method_alias):
-                                    filter_method = (method_alias[filter_name.lower()[:-4]] + filter_name.lower()[-4:]) if filter_name.lower().endswith(".not") else method_alias[filter_name.lower()]
+                                modifier = filter_name[-4:].lower()
+                                method = filter_name[:-4].lower() if modifier in [".not", ".lte", ".gte"] else filter_name.lower()
+                                if method in method_alias:
+                                    filter_method = f"{method_alias[method]}{modifier}"
                                     logger.warning(f"Collection Warning: {filter_name} filter will run as {filter_method}")
                                 else:
-                                    filter_method = filter_name.lower()
+                                    filter_method = f"{method}{modifier}"
                                 if filter_method in movie_only_filters and self.library.is_show:
                                     raise Failed(f"Collection Error: {filter_method} filter only works for movie libraries")
                                 elif filter_data is None:
@@ -557,7 +561,7 @@ class CollectionBuilder:
                                     valid_data = util.check_number(filter_data, f"{filter_method} filter", minimum=1)
                                 elif filter_method in ["year.gte", "year.lte"]:
                                     valid_data = util.check_year(filter_data, current_year, f"{filter_method} filter")
-                                elif filter_method in ["rating.gte", "rating.lte"]:
+                                elif filter_method in ["audience_rating.gte", "audience_rating.lte", "critic_rating.gte", "critic_rating.lte"]:
                                     valid_data = util.check_number(filter_data, f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)
                                 elif filter_method in ["originally_available.gte", "originally_available.lte"]:
                                     valid_data = util.check_date(filter_data, f"{filter_method} filter")
@@ -639,7 +643,7 @@ class CollectionBuilder:
                                 elif (search == "decade" and modifier in [""]) \
                                         or (search == "year" and modifier in [".greater", ".less"]):
                                     searches[search_final] = [util.check_year(search_data, current_year, search_final)]
-                                elif search in ["added", "originally_available"] and modifier in [".before", ".after"]:
+                                elif search in ["added", "originally_available"] and modifier in ["", ".not", ".before", ".after"]:
                                     searches[search_final] = [util.check_date(search_data, search_final, return_string=True, plex_date=True)]
                                 elif search in ["duration", "rating"] and modifier in [".greater", ".less"]:
                                     searches[search_final] = [util.check_number(search_data, search_final, minimum=0)]
@@ -648,7 +652,7 @@ class CollectionBuilder:
                                 elif (search in ["title", "studio"] and modifier not in ["", ".and", ".not", ".begins", ".ends"]) \
                                         or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
                                         or (search in ["resolution", "decade"] and modifier not in [""]) \
-                                        or (search in ["added", "originally_available"] and modifier not in [".before", ".after"]) \
+                                        or (search in ["added", "originally_available"] and modifier not in ["", ".not", ".before", ".after"]) \
                                         or (search in ["duration", "rating"] and modifier not in [".greater", ".less"]) \
                                         or (search in ["year"] and modifier not in ["", ".not", ".greater", ".less"]):
                                     raise Failed(f"Collection Error: modifier: {modifier} not supported with the {search} plex search attribute")
