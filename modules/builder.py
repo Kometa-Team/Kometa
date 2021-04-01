@@ -502,7 +502,7 @@ class CollectionBuilder:
                         self.summaries[method_name] = item.description
                     self.methods.append((method_name[:-8], valid_list))
                 elif method_name in ["trakt_watchlist", "trakt_collection"]:
-                    self.methods.append((method_name, config.Trakt.validate_trakt(method_name[6:], util.get_list(method_data), self.library.is_movie)))
+                    self.methods.append((method_name, config.Trakt.validate_trakt(util.get_list(method_data), trakt_type=method_name[6:], is_movie=self.library.is_movie)))
                 elif method_name == "imdb_list":
                     new_list = []
                     for imdb_list in util.get_list(method_data, split=False):

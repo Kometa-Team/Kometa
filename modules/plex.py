@@ -453,10 +453,10 @@ class PlexAPI:
             def add_advanced_edit(attr, options, key=None, show_library=False):
                 if key is None:
                     key = attr
-                if show_library and not self.is_show:
-                    logger.error(f"Metadata Error: {attr} attribute only works for show libraries")
-                elif attr in methods:
-                    if meta[methods[attr]]:
+                if attr in methods:
+                    if show_library and not self.is_show:
+                        logger.error(f"Metadata Error: {attr} attribute only works for show libraries")
+                    elif meta[methods[attr]]:
                         method_data = str(meta[methods[attr]]).lower()
                         if method_data in options and getattr(item, key) != options[method_data]:
                             advance_edits[key] = options[method_data]
