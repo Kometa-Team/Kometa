@@ -39,7 +39,7 @@ class SonarrAPI:
         self.season_folder = params["season_folder"]
         self.tag = params["tag"]
 
-    def add_tvdb(self, tvdb_ids, tag=None):
+    def add_tvdb(self, tvdb_ids, tag=None, folder=None):
         logger.info("")
         logger.debug(f"TVDb IDs: {tvdb_ids}")
         tag_nums = []
@@ -73,7 +73,7 @@ class SonarrAPI:
                 "language": self.language,
                 "monitored": True,
                 "seasonFolder": self.season_folder,
-                "rootFolderPath": self.root_folder_path,
+                "rootFolderPath": self.root_folder_path if folder is None else folder,
                 "seasons": [],
                 "images": [{"covertype": "poster", "url": show.poster_path}],
                 "addOptions": {"searchForMissingEpisodes": self.search}

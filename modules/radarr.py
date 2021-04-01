@@ -37,7 +37,7 @@ class RadarrAPI:
         self.search = params["search"]
         self.tag = params["tag"]
 
-    def add_tmdb(self, tmdb_ids, tag=None):
+    def add_tmdb(self, tmdb_ids, tag=None, folder=None):
         logger.info("")
         logger.debug(f"TMDb IDs: {tmdb_ids}")
         tag_nums = []
@@ -81,7 +81,7 @@ class RadarrAPI:
                 "tmdbid": int(tmdb_id),
                 "titleslug": titleslug,
                 "monitored": True,
-                "rootFolderPath": self.root_folder_path,
+                "rootFolderPath": self.root_folder_path if folder is None else folder,
                 "images": [{"covertype": "poster", "url": poster}],
                 "addOptions": {"searchForMovie": self.search}
             }
