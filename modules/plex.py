@@ -54,6 +54,7 @@ searches = [
     "director", "director.and", "director.not",
     "genre", "genre.and", "genre.not",
     "label", "label.and", "label.not",
+    "network", "network.and", "network.not",
     "producer", "producer.and", "producer.not",
     "subtitle_language", "subtitle_language.and", "subtitle_language.not",
     "writer", "writer.and", "writer.not",
@@ -71,6 +72,9 @@ movie_only_searches = [
     "decade", "resolution",
     "originally_available.before", "originally_available.after",
     "duration.greater", "duration.less"
+]
+show_only_searches = [
+    "network", "network.and", "network.not",
 ]
 tmdb_searches = [
     "actor", "actor.and", "actor.not",
@@ -181,8 +185,11 @@ class PlexAPI:
         return self.PlexServer.search(data)
 
     def get_search_choices(self, search_name, key=False):
-        if key:             return {c.key.lower(): c.key for c in self.Plex.listFilterChoices(search_name)}
-        else:               return {c.title.lower(): c.title for c in self.Plex.listFilterChoices(search_name)}
+        try:
+            if key:             return {c.key.lower(): c.key for c in self.Plex.listFilterChoices(search_name)}
+            else:               return {c.title.lower(): c.title for c in self.Plex.listFilterChoices(search_name)}
+        except NotFound:
+            raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
 
     def validate_search_list(self, data, search_name):
         final_search = search_translation[search_name] if search_name in search_translation else search_name

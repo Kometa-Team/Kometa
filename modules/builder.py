@@ -16,7 +16,8 @@ method_alias = {
     "directors": "director",
     "genres": "genre",
     "labels": "label",
-    "studios": "studio", "network": "studio", "networks": "studio",
+    "studios": "studio",
+    "networks": "network",
     "producers": "producer",
     "writers": "writer",
     "years": "year"
@@ -371,6 +372,8 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: {method_name} attribute only works for movie libraries")
                 elif method_name in plex.movie_only_searches and self.library.is_show:
                     raise Failed(f"Collection Error: {method_name} plex search only works for movie libraries")
+                elif method_name in plex.show_only_searches and self.library.is_movie:
+                    raise Failed(f"Collection Error: {method_name} plex search only works for show libraries")
                 elif method_name not in collectionless_details and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
                 elif method_name == "summary":
@@ -597,6 +600,8 @@ class CollectionBuilder:
                                 search_final = f"{search}{modifier}"
                                 if search_final in plex.movie_only_searches and self.library.is_show:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for movie libraries")
+                                if search_final in plex.show_only_searches and self.library.is_movie:
+                                    raise Failed(f"Collection Error: {search_final} plex search attribute only works for show libraries")
                                 elif search_data is None:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute is blank")
                                 elif search == "sort_by":
@@ -614,7 +619,7 @@ class CollectionBuilder:
                                 elif search == "title" and modifier in ["", ".and", ".not", ".begins", ".ends"]:
                                     searches[search_final] = util.get_list(search_data, split=False)
                                 elif (search == "studio" and modifier in ["", ".and", ".not", ".begins", ".ends"]) \
-                                        or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "producer", "subtitle_language", "writer"] and modifier in ["", ".and", ".not"]) \
+                                        or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier in ["", ".and", ".not"]) \
                                         or (search == "resolution" and modifier in [""]):
                                     if search_final in plex.tmdb_searches:
                                         final_values = []
@@ -641,7 +646,7 @@ class CollectionBuilder:
                                 elif search == "year" and modifier in ["", ".not"]:
                                     searches[search_final] = util.get_year_list(search_data, current_year, search_final)
                                 elif (search in ["title", "studio"] and modifier not in ["", ".and", ".not", ".begins", ".ends"]) \
-                                        or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
+                                        or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
                                         or (search in ["resolution", "decade"] and modifier not in [""]) \
                                         or (search in ["added", "originally_available"] and modifier not in [".before", ".after"]) \
                                         or (search in ["duration", "rating"] and modifier not in [".greater", ".less"]) \
