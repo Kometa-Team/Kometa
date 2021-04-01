@@ -234,7 +234,7 @@ class CollectionBuilder:
                                                 raise Failed("remove attribute")
                                         for template_method in data_template:
                                             if template_method != "name" and txt == f"<<{template_method}>>":
-                                                txt = data_template[template_method]
+                                                return data_template[template_method]
                                             elif template_method != "name" and f"<<{template_method}>>" in txt:
                                                 txt = txt.replace(f"<<{template_method}>>", str(data_template[template_method]))
                                         if "<<collection_name>>" in txt:
@@ -531,7 +531,7 @@ class CollectionBuilder:
                     if isinstance(method_data, dict):
                         def get_int(parent, method, data_in, methods_in, default_in, minimum=1, maximum=None):
                             if method not in methods_in:
-                                logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute not found using {default_in} as default")
+                                logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default_in} as default")
                             elif not data_in[methods_in[method]]:
                                 logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute is blank using {default_in} as default")
                             elif isinstance(data_in[methods_in[method]], int) and data_in[methods_in[method]] >= minimum:
