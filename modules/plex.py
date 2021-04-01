@@ -19,7 +19,8 @@ search_translation = {
     "subtitle_language": "subtitleLanguage",
     "added": "addedAt",
     "originally_available": "originallyAvailableAt",
-    "rating": "userRating"
+    "audience_rating": "audienceRating",
+    "critic_rating": "rating"
 }
 episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
@@ -62,7 +63,8 @@ searches = [
     "added.before", "added.after",
     "originally_available.before", "originally_available.after",
     "duration.greater", "duration.less",
-    "rating.greater", "rating.less",
+    "audience_rating.greater", "audience_rating.less",
+    "critic_rating.greater", "critic_rating.less",
     "year", "year.not", "year.greater", "year.less"
 ]
 movie_only_searches = [
@@ -406,21 +408,31 @@ class PlexAPI:
             updated = False
 
             edits = {}
-            def add_edit(name, current, group, alias, key=None, value=None):
+            def add_edit(name, current, group, alias, key=None, value=None, var_type="str"):
                 if value or name in alias:
                     if value or group[alias[name]]:
                         if key is None:         key = name
                         if value is None:       value = group[alias[name]]
-                        if str(current) != str(value):
-                            edits[f"{key}.value"] = value
-                            edits[f"{key}.locked"] = 1
-                            logger.info(f"Detail: {name} updated to {value}")
+                        try:
+                            if var_type == "date":
+                                final_value = util.check_date(value, name, return_string=True, plex_date=True)
+                            elif var_type == "float":
+                                final_value = util.check_number(value, name, number_type="float", minimum=0, maximum=10)
+                            else:
+                                final_value = value
+                            if str(current) != str(final_value):
+                                edits[f"{key}.value"] = final_value
+                                edits[f"{key}.locked"] = 1
+                                logger.info(f"Detail: {name} updated to {final_value}")
+                        except Failed as ee:
+                            logger.error(ee)
                     else:
                         logger.error(f"Metadata Error: {name} attribute is blank")
             add_edit("title", item.title, meta, methods, value=title)
             add_edit("sort_title", item.titleSort, meta, methods, key="titleSort")
-            add_edit("originally_available", str(item.originallyAvailableAt)[:-9], meta, methods, key="originallyAvailableAt", value=originally_available)
-            add_edit("rating", item.rating, meta, methods, value=rating)
+            add_edit("originally_available", str(item.originallyAvailableAt)[:-9], meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
+            add_edit("critic_rating", item.rating, meta, methods, value=rating, key="rating", var_type="float")
+            add_edit("audience_rating", item.audienceRating, meta, methods, key="audienceRating", var_type="float")
             add_edit("content_rating", item.contentRating, meta, methods, key="contentRating")
             add_edit("original_title", item.originalTitle, meta, methods, key="originalTitle", value=original_title)
             add_edit("studio", item.studio, meta, methods, value=studio)
