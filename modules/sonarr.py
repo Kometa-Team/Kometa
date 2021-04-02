@@ -44,6 +44,7 @@ class SonarrAPI:
         if self.language_profile_id is None:
             self.language_profile_id = 1
 
+        self.tags = self.get_tags()
         self.tvdb = tvdb
         self.language = language
         self.url = params["url"]
@@ -55,22 +56,28 @@ class SonarrAPI:
         self.season_folder = params["season_folder"]
         self.tag = params["tag"]
 
-    def add_tvdb(self, tvdb_ids, tag=None, folder=None):
+    def get_tags(self):
+        return {tag["label"]: tag["id"] for tag in self.send_get("tag")}
+
+    def add_tags(self, tags):
+        added = False
+        for label in tags:
+            if label not in self.tags:
+                added = True
+                self.send_post("tag", {"label": str(label)})
+        if added:
+            self.tags = self.get_tags()
+
+    def add_tvdb(self, tvdb_ids, tags=None, folder=None):
         logger.info("")
         logger.debug(f"TVDb IDs: {tvdb_ids}")
         tag_nums = []
         add_count = 0
-        if tag is None:
-            tag = self.tag
-        if tag:
-            tag_cache = {}
-            for label in tag:
-                self.send_post("tag", {"label": str(label)})
-            for t in self.send_get("tag"):
-                tag_cache[t["label"]] = t["id"]
-            for label in tag:
-                if label in tag_cache:
-                    tag_nums.append(tag_cache[label])
+        if tags is None:
+            tags = self.tag
+        if tags:
+            self.add_tags(tags)
+            tag_nums = [self.tags[label] for label in tags if label in self.tags]
         for tvdb_id in tvdb_ids:
             try:
                 show = self.tvdb.get_series(self.language, tvdb_id)

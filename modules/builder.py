@@ -1077,7 +1077,7 @@ class CollectionBuilder:
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_movies_with_names, True)
                         if self.do_arr and self.library.Radarr:
-                            self.library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], tag=self.details["arr_tag"], folder=self.details["arr_folder"])
+                            self.library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], tags=self.details["arr_tag"], folder=self.details["arr_folder"])
                         if self.run_again:
                             self.missing_movies.extend([missing_id for title, missing_id in missing_movies_with_names])
                     if len(missing_shows) > 0 and self.library.is_show:
@@ -1106,7 +1106,7 @@ class CollectionBuilder:
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_shows_with_names, False)
                         if self.do_arr and self.library.Sonarr:
-                            self.library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tag=self.details["arr_tag"], folder=self.details["arr_folder"])
+                            self.library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tags=self.details["arr_tag"], folder=self.details["arr_folder"])
                         if self.run_again:
                             self.missing_shows.extend([missing_id for title, missing_id in missing_shows_with_names])
 

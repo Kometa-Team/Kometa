@@ -28,6 +28,7 @@ class RadarrAPI:
                 self.quality_profile_id = profile["id"]
         if not self.quality_profile_id:
             raise Failed(f"Radarr Error: quality_profile: {params['quality_profile']} does not exist in radarr. Profiles available: {profiles}")
+        self.tags = self.get_tags()
         self.tmdb = tmdb
         self.url = params["url"]
         self.version = params["version"]
@@ -37,22 +38,28 @@ class RadarrAPI:
         self.search = params["search"]
         self.tag = params["tag"]
 
-    def add_tmdb(self, tmdb_ids, tag=None, folder=None):
+    def get_tags(self):
+        return {tag["label"]: tag["id"] for tag in self.send_get("tag")}
+
+    def add_tags(self, tags):
+        added = False
+        for label in tags:
+            if label not in self.tags:
+                added = True
+                self.send_post("tag", {"label": str(label)})
+        if added:
+            self.tags = self.get_tags()
+
+    def add_tmdb(self, tmdb_ids, tags=None, folder=None):
         logger.info("")
         logger.debug(f"TMDb IDs: {tmdb_ids}")
         tag_nums = []
         add_count = 0
-        if tag is None:
-            tag = self.tag
-        if tag:
-            tag_cache = {}
-            for label in tag:
-                self.send_post("tag", {"label": str(label)})
-            for t in self.send_get("tag"):
-                tag_cache[t["label"]] = t["id"]
-            for label in tag:
-                if label in tag_cache:
-                    tag_nums.append(tag_cache[label])
+        if tags is None:
+            tags = self.tag
+        if tags:
+            self.add_tags(tags)
+            tag_nums = [self.tags[label] for label in tags if label in self.tags]
         for tmdb_id in tmdb_ids:
             try:
                 movie = self.tmdb.get_movie(tmdb_id)
