@@ -20,7 +20,7 @@ class RadarrAPI:
             raise Failed("Radarr Error: Unexpected Response Check URL")
         self.quality_profile_id = None
         profiles = ""
-        for profile in self.send_get(f"{self.base_url}{'qualityProfile' if params['version'] == 'v3' else 'profile'}"):
+        for profile in self.send_get("qualityProfile" if params["version"] == "v3" else "profile"):
             if len(profiles) > 0:
                 profiles += ", "
             profiles += profile["name"]
@@ -47,8 +47,8 @@ class RadarrAPI:
         if tag:
             tag_cache = {}
             for label in tag:
-                self.send_post(f"{self.base_url}tag", {"label": str(label)})
-            for t in self.send_get(f"{self.base_url}tag"):
+                self.send_post("tag", {"label": str(label)})
+            for t in self.send_get("tag"):
                 tag_cache[t["label"]] = t["id"]
             for label in tag:
                 if label in tag_cache:
@@ -87,7 +87,7 @@ class RadarrAPI:
             }
             if tag_nums:
                 url_json["tags"] = tag_nums
-            response = self.send_post(f"{self.base_url}movie", url_json)
+            response = self.send_post("movie", url_json)
             if response.status_code < 400:
                 logger.info(f"Added to Radarr | {tmdb_id:<6} | {movie.title}")
                 add_count += 1
@@ -101,8 +101,8 @@ class RadarrAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_get(self, url):
-        return requests.get(url, params=self.url_params).json()
+        return requests.get(f"{self.base_url}{url}", params=self.url_params).json()
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_post(self, url, url_json):
-        return requests.post(url, json=url_json, params=self.url_params)
+        return requests.post(f"{self.base_url}{url}", json=url_json, params=self.url_params)

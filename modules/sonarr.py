@@ -20,7 +20,7 @@ class SonarrAPI:
             raise Failed("Sonarr Error: Unexpected Response Check URL")
         self.quality_profile_id = None
         profiles = ""
-        for profile in self.send_get(f"{self.base_url}{'qualityProfile' if params['version'] == 'v3' else 'profile'}"):
+        for profile in self.send_get("qualityProfile" if params["version"] == "v3" else "profile"):
             if len(profiles) > 0:
                 profiles += ", "
             profiles += profile["name"]
@@ -28,13 +28,28 @@ class SonarrAPI:
                 self.quality_profile_id = profile["id"]
         if not self.quality_profile_id:
             raise Failed(f"Sonarr Error: quality_profile: {params['quality_profile']} does not exist in sonarr. Profiles available: {profiles}")
+
+        self.language_profile_id = None
+        if params["version"] == "v3" and params["language_profile"] is not None:
+            profiles = ""
+            for profile in self.send_get("languageProfile"):
+                if len(profiles) > 0:
+                    profiles += ", "
+                profiles += profile["name"]
+                if profile["name"] == params["language_profile"]:
+                    self.language_profile_id = profile["id"]
+            if not self.quality_profile_id:
+                raise Failed(f"Sonarr Error: language_profile: {params['language_profile']} does not exist in sonarr. Profiles available: {profiles}")
+
+        if self.language_profile_id is None:
+            self.language_profile_id = 1
+
         self.tvdb = tvdb
         self.language = language
         self.url = params["url"]
         self.version = params["version"]
         self.token = params["token"]
         self.root_folder_path = params["root_folder_path"]
-        self.language_profile_id = params["language_profile_id"]
         self.add = params["add"]
         self.search = params["search"]
         self.season_folder = params["season_folder"]
@@ -50,8 +65,8 @@ class SonarrAPI:
         if tag:
             tag_cache = {}
             for label in tag:
-                self.send_post(f"{self.base_url}tag", {"label": str(label)})
-            for t in self.send_get(f"{self.base_url}tag"):
+                self.send_post("tag", {"label": str(label)})
+            for t in self.send_get("tag"):
                 tag_cache[t["label"]] = t["id"]
             for label in tag:
                 if label in tag_cache:
@@ -81,7 +96,7 @@ class SonarrAPI:
             }
             if tag_nums:
                 url_json["tags"] = tag_nums
-            response = self.send_post(f"{self.base_url}series", url_json)
+            response = self.send_post("series", url_json)
             if response.status_code < 400:
                 logger.info(f"Added to Sonarr | {tvdb_id:<6} | {show.title}")
                 add_count += 1
@@ -95,8 +110,8 @@ class SonarrAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_get(self, url):
-        return requests.get(url, params=self.url_params).json()
+        return requests.get(f"{self.base_url}{url}", params=self.url_params).json()
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_post(self, url, url_json):
-        return requests.post(url, json=url_json, params=self.url_params)
+        return requests.post(f"{self.base_url}{url}", json=url_json, params=self.url_params)
