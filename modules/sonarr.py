@@ -34,6 +34,7 @@ class SonarrAPI:
         self.version = params["version"]
         self.token = params["token"]
         self.root_folder_path = params["root_folder_path"]
+        self.language_profile_id = params["language_profile_id"]
         self.add = params["add"]
         self.search = params["search"]
         self.season_folder = params["season_folder"]
@@ -67,7 +68,7 @@ class SonarrAPI:
             url_json = {
                 "title": show.title,
                 f"{'qualityProfileId' if self.version == 'v3' else 'profileId'}": self.quality_profile_id,
-                "languageProfileId": 1,
+                "languageProfileId": self.language_profile_id,
                 "tvdbId": int(tvdb_id),
                 "titleslug": titleslug,
                 "language": self.language,
