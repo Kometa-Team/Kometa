@@ -6,11 +6,11 @@ from retrying import retry
 logger = logging.getLogger("Plex Meta Manager")
 
 class SonarrAPI:
-    def __init__(self, tvdb, params, language):
-        self.url_params = {"apikey": f"{params['token']}"}
+    def __init__(self, params, language):
         self.base_url = f"{params['url']}/api{'/v3/' if params['version'] == 'v3' else '/'}"
+        self.token = params["token"]
         try:
-            result = requests.get(f"{self.base_url}system/status", params=self.url_params).json()
+            result = requests.get(f"{self.base_url}system/status", params={"apikey": f"{self.token}"}).json()
         except Exception:
             util.print_stacktrace()
             raise Failed(f"Sonarr Error: Could not connect to Sonarr at {params['url']}")
@@ -45,11 +45,8 @@ class SonarrAPI:
             self.language_profile_id = 1
 
         self.tags = self.get_tags()
-        self.tvdb = tvdb
         self.language = language
-        self.url = params["url"]
         self.version = params["version"]
-        self.token = params["token"]
         self.root_folder_path = params["root_folder_path"]
         self.add = params["add"]
         self.search = params["search"]
@@ -68,6 +65,13 @@ class SonarrAPI:
         if added:
             self.tags = self.get_tags()
 
+    def lookup(self, tvdb_id):
+        results = self.send_get("series/lookup", params={"term": f"tvdb:{tvdb_id}"})
+        if results:
+            return results[0]
+        else:
+            raise Failed(f"Sonarr Error: TVDb ID: {tvdb_id} not found")
+
     def add_tvdb(self, tvdb_ids, tags=None, folder=None):
         logger.info("")
         logger.debug(f"TVDb IDs: {tvdb_ids}")
@@ -80,45 +84,52 @@ class SonarrAPI:
             tag_nums = [self.tags[label] for label in tags if label in self.tags]
         for tvdb_id in tvdb_ids:
             try:
-                show = self.tvdb.get_series(self.language, tvdb_id)
+                show_info = self.lookup(tvdb_id)
             except Failed as e:
                 logger.error(e)
                 continue
 
-            titleslug = re.sub(r"([^\s\w]|_)+", "", show.title).replace(" ", "-").lower()
+            poster_url = None
+            for image in show_info["images"]:
+                if "coverType" in image and image["coverType"] == "poster" and "remoteUrl" in image:
+                    poster_url = image["remoteUrl"]
 
             url_json = {
-                "title": show.title,
+                "title": show_info["title"],
                 f"{'qualityProfileId' if self.version == 'v3' else 'profileId'}": self.quality_profile_id,
                 "languageProfileId": self.language_profile_id,
                 "tvdbId": int(tvdb_id),
-                "titleslug": titleslug,
+                "titleslug": show_info["titleSlug"],
                 "language": self.language,
                 "monitored": True,
                 "seasonFolder": self.season_folder,
                 "rootFolderPath": self.root_folder_path if folder is None else folder,
                 "seasons": [],
-                "images": [{"covertype": "poster", "url": show.poster_path}],
+                "images": [{"covertype": "poster", "url": poster_url}],
                 "addOptions": {"searchForMissingEpisodes": self.search}
             }
             if tag_nums:
                 url_json["tags"] = tag_nums
             response = self.send_post("series", url_json)
             if response.status_code < 400:
-                logger.info(f"Added to Sonarr | {tvdb_id:<6} | {show.title}")
+                logger.info(f"Added to Sonarr | {tvdb_id:<6} | {show_info['title']}")
                 add_count += 1
             else:
                 try:
-                    logger.error(f"Sonarr Error: ({tvdb_id}) {show.title}: ({response.status_code}) {response.json()[0]['errorMessage']}")
+                    logger.error(f"Sonarr Error: ({tvdb_id}) {show_info['title']}: ({response.status_code}) {response.json()[0]['errorMessage']}")
                 except KeyError:
                     logger.debug(url_json)
                     logger.error(f"Sonarr Error: {response.json()}")
         logger.info(f"{add_count} Show{'s' if add_count > 1 else ''} added to Sonarr")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_get(self, url):
-        return requests.get(f"{self.base_url}{url}", params=self.url_params).json()
+    def send_get(self, url, params=None):
+        url_params = {"apikey": f"{self.token}"}
+        if params:
+            for param in params:
+                url_params[param] = params[param]
+        return requests.get(f"{self.base_url}{url}", params=url_params).json()
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_post(self, url, url_json):
-        return requests.post(f"{self.base_url}{url}", json=url_json, params=self.url_params)
+        return requests.post(f"{self.base_url}{url}", json=url_json, params={"apikey": f"{self.token}"})
