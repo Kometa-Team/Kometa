@@ -345,7 +345,7 @@ class Config:
                     radarr_params["add"] = check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
                     radarr_params["search"] = check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
                     radarr_params["tag"] = check_for_attribute(lib, "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
-                    library.Radarr = RadarrAPI(self.TMDb, radarr_params)
+                    library.Radarr = RadarrAPI(radarr_params)
                 except Failed as e:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
@@ -367,7 +367,7 @@ class Config:
                     sonarr_params["search"] = check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
                     sonarr_params["season_folder"] = check_for_attribute(lib, "season_folder", parent="sonarr", var_type="bool", default=self.general["sonarr"]["season_folder"], save=False)
                     sonarr_params["tag"] = check_for_attribute(lib, "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
-                    library.Sonarr = SonarrAPI(self.TVDb, sonarr_params, library.Plex.language)
+                    library.Sonarr = SonarrAPI(sonarr_params, library.Plex.language)
                 except Failed as e:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
