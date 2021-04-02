@@ -452,13 +452,15 @@ class CollectionBuilder:
                     self.details[method_name] = method_data
                 elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
                     self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
-                elif method_name in ["decade", "year.greater", "year.less"]:
-                    self.methods.append(("plex_search", [{method_name: [util.check_year(method_data, current_year, method_name)]}]))
+                elif method_name in ["year.greater", "year.less"]:
+                    self.methods.append(("plex_search", [{method_name: util.check_year(method_data, current_year, method_name)}]))
                 elif method_name in ["added.before", "added.after", "originally_available.before", "originally_available.after"]:
-                    self.methods.append(("plex_search", [{method_name: [util.check_date(method_data, method_name, return_string=True, plex_date=True)]}]))
+                    self.methods.append(("plex_search", [{method_name: util.check_date(method_data, method_name, return_string=True, plex_date=True)}]))
+                elif method_name in ["added", "added.not", "originally_available", "originally_available.not"]:
+                    self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=1)}]))
                 elif method_name in ["duration.greater", "duration.less", "rating.greater", "rating.less"]:
-                    self.methods.append(("plex_search", [{method_name: [util.check_number(method_data, method_name, minimum=0)]}]))
-                elif method_name in ["year", "year.not"]:
+                    self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=0)}]))
+                elif method_name in ["decade", "year", "year.not"]:
                     self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
                 elif method_name in plex.searches:
                     if method_name in plex.tmdb_searches:
@@ -641,14 +643,15 @@ class CollectionBuilder:
                                         searches[search_final] = valid_values
                                     else:
                                         logger.warning(f"Collection Warning: No valid {search} values found in {final_values}")
-                                elif (search == "decade" and modifier in [""]) \
-                                        or (search == "year" and modifier in [".greater", ".less"]):
-                                    searches[search_final] = [util.check_year(search_data, current_year, search_final)]
-                                elif search in ["added", "originally_available"] and modifier in ["", ".not", ".before", ".after"]:
-                                    searches[search_final] = [util.check_date(search_data, search_final, return_string=True, plex_date=True)]
+                                elif search == "year" and modifier in [".greater", ".less"]:
+                                    searches[search_final] = util.check_year(search_data, current_year, search_final)
+                                elif search in ["added", "originally_available"] and modifier in [".before", ".after"]:
+                                    searches[search_final] = util.check_date(search_data, search_final, return_string=True, plex_date=True)
+                                elif search in ["added", "originally_available"] and modifier in ["", ".not"]:
+                                    searches[search_final] = util.check_number(search_data, search_final, minimum=1)
                                 elif search in ["duration", "rating"] and modifier in [".greater", ".less"]:
-                                    searches[search_final] = [util.check_number(search_data, search_final, minimum=0)]
-                                elif search == "year" and modifier in ["", ".not"]:
+                                    searches[search_final] = util.check_number(search_data, search_final, minimum=0)
+                                elif (search == "decade" and modifier in [""]) or (search == "year" and modifier in ["", ".not"]):
                                     searches[search_final] = util.get_year_list(search_data, current_year, search_final)
                                 elif (search in ["title", "studio"] and modifier not in ["", ".and", ".not", ".begins", ".ends"]) \
                                         or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
@@ -967,14 +970,29 @@ class CollectionBuilder:
                         else:
                             search, modifier = os.path.splitext(str(search_method).lower())
                             final_search = plex.search_translation[search] if search in plex.search_translation else search
-                            final_mod = plex.modifiers[modifier] if modifier in plex.modifiers else ""
+                            if search == "originally_available" and modifier == "":
+                                final_mod = ">>"
+                            elif search == "originally_available" and modifier == ".not":
+                                final_mod = "<<"
+                            else:
+                                final_mod = plex.modifiers[modifier] if modifier in plex.modifiers else ""
                             final_method = f"{final_search}{final_mod}"
-                            search_terms[final_method] = search_data * 60000 if final_search == "duration" else search_data
-                            ors = ""
-                            conjunction = " AND " if final_mod == "&" else " OR "
-                            for o, param in enumerate(search_data):
-                                or_des = conjunction if o > 0 else f"{search_method}("
-                                ors += f"{or_des}{param}"
+
+                            if search == "duration":
+                                search_terms[final_method] = search_data * 60000
+                            elif search in ["added", "originally_available"] and modifier in ["", ".not"]:
+                                search_terms[final_method] = f"{search_data}d"
+                            else:
+                                search_terms[final_method] = search_data
+
+                            if search in ["added", "originally_available"] or modifier in [".greater", ".less", ".before", ".after"]:
+                                ors = f"{search_method}({search_data}"
+                            else:
+                                ors = ""
+                                conjunction = " AND " if final_mod == "&" else " OR "
+                                for o, param in enumerate(search_data):
+                                    or_des = conjunction if o > 0 else f"{search_method}("
+                                    ors += f"{or_des}{param}"
                             if has_processed:
                                 logger.info(f"\t\t      AND {ors})")
                             else:
