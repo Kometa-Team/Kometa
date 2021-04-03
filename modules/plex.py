@@ -35,9 +35,11 @@ metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 filter_alias = {
     "actor": "actors",
+    "audience_rating": "audienceRating",
     "collection": "collections",
     "content_rating": "contentRating",
     "country": "countries",
+    "critic_rating": "rating",
     "director": "directors",
     "genre": "genres",
     "originally_available": "originallyAvailableAt",
