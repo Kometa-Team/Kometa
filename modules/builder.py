@@ -294,7 +294,7 @@ class CollectionBuilder:
                 run_time = str(schedule).lower()
                 if run_time.startswith("day") or run_time.startswith("daily"):
                     skip_collection = False
-                if run_time.startswith("week") or run_time.startswith("month") or run_time.startswith("year"):
+                elif run_time.startswith("week") or run_time.startswith("month") or run_time.startswith("year"):
                     match = re.search("\\(([^)]+)\\)", run_time)
                     if match:
                         param = match.group(1)
@@ -939,8 +939,10 @@ class CollectionBuilder:
                     if len(movie_ids) > 0:
                         items_found_inside += len(movie_ids)
                         for movie_id in movie_ids:
-                            if movie_id in movie_map:                           items.append(movie_map[movie_id])
-                            else:                                               missing_movies.append(movie_id)
+                            if movie_id in movie_map:
+                                items.append(movie_map[movie_id])
+                            else:
+                                missing_movies.append(movie_id)
                     if len(show_ids) > 0:
                         items_found_inside += len(show_ids)
                         for show_id in show_ids:
