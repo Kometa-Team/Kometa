@@ -456,10 +456,10 @@ class CollectionBuilder:
                     self.methods.append(("plex_search", [{method_name: util.check_year(method_data, current_year, method_name)}]))
                 elif method_name in ["added.before", "added.after", "originally_available.before", "originally_available.after"]:
                     self.methods.append(("plex_search", [{method_name: util.check_date(method_data, method_name, return_string=True, plex_date=True)}]))
-                elif method_name in ["added", "added.not", "originally_available", "originally_available.not"]:
+                elif method_name in ["added", "added.not", "originally_available", "originally_available.not", "duration.greater", "duration.less"]:
                     self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=1)}]))
-                elif method_name in ["duration.greater", "duration.less", "rating.greater", "rating.less"]:
-                    self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=0)}]))
+                elif method_name in ["critic_rating.greater", "critic_rating.less", "audience_rating.greater", "audience_rating.less"]:
+                    self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, number_type="float", minimum=0, maximum=10)}]))
                 elif method_name in ["decade", "year", "year.not"]:
                     self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
                 elif method_name in plex.searches:
@@ -647,17 +647,17 @@ class CollectionBuilder:
                                     searches[search_final] = util.check_year(search_data, current_year, search_final)
                                 elif search in ["added", "originally_available"] and modifier in [".before", ".after"]:
                                     searches[search_final] = util.check_date(search_data, search_final, return_string=True, plex_date=True)
-                                elif search in ["added", "originally_available"] and modifier in ["", ".not"]:
+                                elif (search in ["added", "originally_available"] and modifier in ["", ".not"]) or (search in ["duration"] and modifier in [".greater", ".less"]):
                                     searches[search_final] = util.check_number(search_data, search_final, minimum=1)
-                                elif search in ["duration", "rating"] and modifier in [".greater", ".less"]:
-                                    searches[search_final] = util.check_number(search_data, search_final, minimum=0)
+                                elif search in ["critic_rating", "audience_rating"] and modifier in [".greater", ".less"]:
+                                    searches[search_final] = util.check_number(search_data, search_final, number_type="float", minimum=0, maximum=10)
                                 elif (search == "decade" and modifier in [""]) or (search == "year" and modifier in ["", ".not"]):
                                     searches[search_final] = util.get_year_list(search_data, current_year, search_final)
                                 elif (search in ["title", "studio"] and modifier not in ["", ".and", ".not", ".begins", ".ends"]) \
                                         or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
                                         or (search in ["resolution", "decade"] and modifier not in [""]) \
                                         or (search in ["added", "originally_available"] and modifier not in ["", ".not", ".before", ".after"]) \
-                                        or (search in ["duration", "rating"] and modifier not in [".greater", ".less"]) \
+                                        or (search in ["duration", "critic_rating", "audience_rating"] and modifier not in [".greater", ".less"]) \
                                         or (search in ["year"] and modifier not in ["", ".not", ".greater", ".less"]):
                                     raise Failed(f"Collection Error: modifier: {modifier} not supported with the {search} plex search attribute")
                                 else:
@@ -929,7 +929,6 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug(f"Method: {method}")
             logger.debug(f"Values: {values}")
-            pretty = util.pretty_names[method] if method in util.pretty_names else method
             for value in values:
                 items = []
                 missing_movies = []
@@ -950,85 +949,9 @@ class CollectionBuilder:
                     return items_found_inside
                 logger.info("")
                 logger.debug(f"Value: {value}")
-                if method == "plex_all":
-                    logger.info(f"Processing {pretty} {'Movies' if self.library.is_movie else 'Shows'}")
-                    items = self.library.Plex.all()
+                if "plex" in method:
+                    items = self.library.get_items(method, value)
                     items_found += len(items)
-                elif method == "plex_collection":
-                    items = value.items()
-                    items_found += len(items)
-                elif method == "plex_search":
-                    search_terms = {}
-                    has_processed = False
-                    search_limit = None
-                    search_sort = None
-                    for search_method, search_data in value.items():
-                        if search_method == "limit":
-                            search_limit = search_data
-                        elif search_method == "sort_by":
-                            search_sort = plex.sorts[search_data]
-                        else:
-                            search, modifier = os.path.splitext(str(search_method).lower())
-                            final_search = plex.search_translation[search] if search in plex.search_translation else search
-                            if search == "originally_available" and modifier == "":
-                                final_mod = ">>"
-                            elif search == "originally_available" and modifier == ".not":
-                                final_mod = "<<"
-                            else:
-                                final_mod = plex.modifiers[modifier] if modifier in plex.modifiers else ""
-                            final_method = f"{final_search}{final_mod}"
-
-                            if search == "duration":
-                                search_terms[final_method] = search_data * 60000
-                            elif search in ["added", "originally_available"] and modifier in ["", ".not"]:
-                                search_terms[final_method] = f"{search_data}d"
-                            else:
-                                search_terms[final_method] = search_data
-
-                            if search in ["added", "originally_available"] or modifier in [".greater", ".less", ".before", ".after"]:
-                                ors = f"{search_method}({search_data}"
-                            else:
-                                ors = ""
-                                conjunction = " AND " if final_mod == "&" else " OR "
-                                for o, param in enumerate(search_data):
-                                    or_des = conjunction if o > 0 else f"{search_method}("
-                                    ors += f"{or_des}{param}"
-                            if has_processed:
-                                logger.info(f"\t\t      AND {ors})")
-                            else:
-                                logger.info(f"Processing {pretty}: {ors})")
-                                has_processed = True
-                    items = self.library.Plex.search(sort=search_sort, maxresults=search_limit, **search_terms)
-                    items_found += len(items)
-                elif method == "plex_collectionless":
-                    good_collections = []
-                    for col in self.library.get_all_collections():
-                        keep_collection = True
-                        for pre in value["exclude_prefix"]:
-                            if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
-                                keep_collection = False
-                                break
-                        if keep_collection:
-                            for ext in value["exclude"]:
-                                if col.title == ext or (col.titleSort and col.titleSort == ext):
-                                    keep_collection = False
-                                    break
-                        if keep_collection:
-                            good_collections.append(col.index)
-                    all_items = self.library.Plex.all()
-                    length = 0
-                    for i, item in enumerate(all_items, 1):
-                        length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
-                        add_item = True
-                        item.reload()
-                        for collection in item.collections:
-                            if collection.id in good_collections:
-                                add_item = False
-                                break
-                        if add_item:
-                            items.append(item)
-                    items_found += len(items)
-                    util.print_end(length, f"Processed {len(all_items)} {'Movies' if self.library.is_movie else 'Shows'}")
                 elif "tautulli" in method:
                     items = self.library.Tautulli.get_items(self.library, time_range=value["list_days"], stats_count=value["list_size"], list_type=value["list_type"], stats_count_buffer=value["list_buffer"])
                     items_found += len(items)
