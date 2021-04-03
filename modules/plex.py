@@ -85,6 +85,7 @@ tmdb_searches = [
     "writer", "writer.and", "writer.not"
 ]
 sorts = {
+    None: None,
     "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
     "originally_available.asc": "originallyAvailableAt:asc", "originally_available.desc": "originallyAvailableAt:desc",
     "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
@@ -220,6 +221,108 @@ class PlexAPI:
         if len(valid_collections) == 0:
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
+
+    def get_items(self, method, data, status_message=True):
+        if status_message:
+            logger.debug(f"Data: {data}")
+        pretty = util.pretty_names[method] if method in util.pretty_names else method
+        media_type = "Movie" if self.is_movie else "Show"
+        items = []
+        if method == "plex_all":
+            if status_message:
+                logger.info(f"Processing {pretty} {media_type}s")
+            items = self.Plex.all()
+        elif method == "plex_collection":
+            if status_message:
+                logger.info(f"Processing {pretty} {data}")
+            items = data.items()
+        elif method == "plex_search":
+            search_terms = {}
+            has_processed = False
+            search_limit = None
+            search_sort = None
+            for search_method, search_data in data.items():
+                if search_method == "limit":
+                    search_limit = search_data
+                elif search_method == "sort_by":
+                    search_sort = search_data
+                else:
+                    search, modifier = os.path.splitext(str(search_method).lower())
+                    final_search = search_translation[search] if search in search_translation else search
+                    if search == "originally_available" and modifier == "":
+                        final_mod = ">>"
+                    elif search == "originally_available" and modifier == ".not":
+                        final_mod = "<<"
+                    elif search in ["critic_rating", "audience_rating"] and modifier == ".greater":
+                        final_mod = "__gte"
+                    elif search in ["critic_rating", "audience_rating"] and modifier == ".less":
+                        final_mod = "__lt"
+                    else:
+                        final_mod = modifiers[modifier] if modifier in modifiers else ""
+                    final_method = f"{final_search}{final_mod}"
+
+                    if search == "duration":
+                        search_terms[final_method] = search_data * 60000
+                    elif search in ["added", "originally_available"] and modifier in ["", ".not"]:
+                        search_terms[final_method] = f"{search_data}d"
+                    else:
+                        search_terms[final_method] = search_data
+
+                    if status_message:
+                        if search in ["added", "originally_available"] or modifier in [".greater", ".less", ".before", ".after"]:
+                            ors = f"{search_method}({search_data}"
+                        else:
+                            ors = ""
+                            conjunction = " AND " if final_mod == "&" else " OR "
+                            for o, param in enumerate(search_data):
+                                or_des = conjunction if o > 0 else f"{search_method}("
+                                ors += f"{or_des}{param}"
+                        if has_processed:
+                            logger.info(f"\t\t      AND {ors})")
+                        else:
+                            logger.info(f"Processing {pretty}: {ors})")
+                            has_processed = True
+            if status_message:
+                if search_sort:
+                    logger.info(f"\t\t      SORT BY {search_sort})")
+                if search_limit:
+                    logger.info(f"\t\t      LIMIT {search_limit})")
+                logger.debug(f"Search: {search_terms}")
+            return self.Plex.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
+        elif method == "plex_collectionless":
+            good_collections = []
+            for col in self.get_all_collections():
+                keep_collection = True
+                for pre in data["exclude_prefix"]:
+                    if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
+                        keep_collection = False
+                        break
+                if keep_collection:
+                    for ext in data["exclude"]:
+                        if col.title == ext or (col.titleSort and col.titleSort == ext):
+                            keep_collection = False
+                            break
+                if keep_collection:
+                    good_collections.append(col.index)
+            all_items = self.Plex.all()
+            length = 0
+            for i, item in enumerate(all_items, 1):
+                length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
+                add_item = True
+                item.reload()
+                for collection in item.collections:
+                    if collection.id in good_collections:
+                        add_item = False
+                        break
+                if add_item:
+                    items.append(item)
+            util.print_end(length, f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}")
+        else:
+            raise Failed(f"Plex Error: Method {method} not supported")
+        if len(items) > 0:
+            return items
+        else:
+            raise Failed("Plex Error: No Items found in Plex")
 
     def add_missing(self, collection, items, is_movie):
         col_name = collection.encode("ascii", "replace").decode()
