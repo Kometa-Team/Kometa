@@ -5,37 +5,46 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
+availability_translation = {
+    "announced": "announced",
+    "cinemas": "inCinemas",
+    "released": "released",
+    "db": "preDB"
+}
+
 class RadarrAPI:
     def __init__(self, params):
-        self.base_url = f"{params['url']}/api{'/v3' if params['version'] == 'v3' else ''}/"
+        self.url = params["url"]
         self.token = params["token"]
+        self.version = params["version"]
+        self.base_url = f"{self.url}/api{'/v3' if self.version == 'v3' else ''}/"
         try:
             result = requests.get(f"{self.base_url}system/status", params={"apikey": f"{self.token}"}).json()
         except Exception:
             util.print_stacktrace()
-            raise Failed(f"Radarr Error: Could not connect to Radarr at {params['url']}")
+            raise Failed(f"Radarr Error: Could not connect to Radarr at {self.url}")
         if "error" in result and result["error"] == "Unauthorized":
             raise Failed("Radarr Error: Invalid API Key")
         if "version" not in result:
             raise Failed("Radarr Error: Unexpected Response Check URL")
-        self.quality_profile_id = None
+        self.add = params["add"]
+        self.root_folder_path = params["root_folder_path"]
+        self.monitor = params["monitor"]
+        self.availability = params["availability"]
+        self.quality_profile_id = self.get_profile_id(params["quality_profile"])
+        self.tag = params["tag"]
+        self.tags = self.get_tags()
+        self.search = params["search"]
+
+    def get_profile_id(self, profile_name):
         profiles = ""
-        for profile in self.send_get("qualityProfile" if params["version"] == "v3" else "profile"):
+        for profile in self.send_get("qualityProfile" if self.version == "v3" else "profile"):
             if len(profiles) > 0:
                 profiles += ", "
             profiles += profile["name"]
-            if profile["name"] == params["quality_profile"]:
-                self.quality_profile_id = profile["id"]
-        if not self.quality_profile_id:
-            raise Failed(f"Radarr Error: quality_profile: {params['quality_profile']} does not exist in radarr. Profiles available: {profiles}")
-        self.tags = self.get_tags()
-        self.url = params["url"]
-        self.version = params["version"]
-        self.token = params["token"]
-        self.root_folder_path = params["root_folder_path"]
-        self.add = params["add"]
-        self.search = params["search"]
-        self.tag = params["tag"]
+            if profile["name"] == profile_name:
+                return profile["id"]
+        raise Failed(f"Radarr Error: quality_profile: {profile_name} does not exist in radarr. Profiles available: {profiles}")
 
     def get_tags(self):
         return {tag["label"]: tag["id"] for tag in self.send_get("tag")}
@@ -56,13 +65,17 @@ class RadarrAPI:
         else:
             raise Failed(f"Sonarr Error: TMDb ID: {tmdb_id} not found")
 
-    def add_tmdb(self, tmdb_ids, tags=None, folder=None):
+    def add_tmdb(self, tmdb_ids, **options):
         logger.info("")
         logger.debug(f"TMDb IDs: {tmdb_ids}")
         tag_nums = []
         add_count = 0
-        if tags is None:
-            tags = self.tag
+        folder = options["folder"] if "folder" in options else self.root_folder_path
+        monitor = options["monitor"] if "monitor" in options else self.monitor
+        availability = options["availability"] if "availability" in options else self.availability
+        quality_profile_id = self.get_profile_id(options["quality"]) if "quality" in options else self.quality_profile_id
+        tags = options["tag"] if "tag" in options else self.tag
+        search = options["search"] if "search" in options else self.search
         if tags:
             self.add_tags(tags)
             tag_nums = [self.tags[label] for label in tags if label in self.tags]
@@ -80,14 +93,15 @@ class RadarrAPI:
 
             url_json = {
                 "title": movie_info["title"],
-                f"{'qualityProfileId' if self.version == 'v3' else 'profileId'}": self.quality_profile_id,
+                f"{'qualityProfileId' if self.version == 'v3' else 'profileId'}": quality_profile_id,
                 "year": int(movie_info["year"]),
                 "tmdbid": int(tmdb_id),
                 "titleslug": movie_info["titleSlug"],
-                "monitored": True,
-                "rootFolderPath": self.root_folder_path if folder is None else folder,
+                "minimumAvailability": availability_translation[availability],
+                "monitored": monitor,
+                "rootFolderPath": folder,
                 "images": [{"covertype": "poster", "url": poster_url}],
-                "addOptions": {"searchForMovie": self.search}
+                "addOptions": {"searchForMovie": search}
             }
             if tag_nums:
                 url_json["tags"] = tag_nums
