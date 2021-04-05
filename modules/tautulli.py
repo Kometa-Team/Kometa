@@ -5,6 +5,8 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = ["tautulli_popular", "tautulli_watched"]
+
 class TautulliAPI:
     def __init__(self, params):
         try:

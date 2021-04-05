@@ -6,6 +6,8 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = ["anidb_id", "anidb_relation", "anidb_popular"]
+
 class AniDBAPI:
     def __init__(self, config):
         self.config = config

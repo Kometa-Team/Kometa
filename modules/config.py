@@ -22,6 +22,33 @@ from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
+sync_modes = {"append": "Only Add Items to the Collection", "sync": "Add & Remove Items from the Collection"}
+radarr_versions = {"v2": "For Radarr 0.2", "v3": "For Radarr 3.0"}
+radarr_availabilities = {
+    "announced": "For Announced",
+    "cinemas": "For In Cinemas",
+    "released": "For Released",
+    "db": "For PreDB"
+}
+sonarr_versions = {"v2": "For Sonarr 0.2", "v3": "For Sonarr 3.0"}
+sonarr_monitors = {
+    "all": "Monitor all episodes except specials",
+    "future": "Monitor episodes that have not aired yet",
+    "missing": "Monitor episodes that do not have files or have not aired yet",
+    "existing": "Monitor episodes that have files or have not aired yet",
+    "pilot": "Monitor the first episode. All other episodes will be ignored",
+    "first": "Monitor all episodes of the first season. All other seasons will be ignored",
+    "latest": "Monitor all episodes of the latest season and future seasons",
+    "none": "No episodes will be monitored"
+}
+sonarr_series_types = {
+    "standard": "Episodes released with SxxEyy pattern",
+    "daily": "Episodes released daily or less frequently that use year-month-day (2017-05-25)",
+    "anime": "Episodes released using an absolute episode number"
+}
+mass_genre_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
+library_types = {"movie": "For Movie Libraries", "show": "For Show Libraries"}
+
 class Config:
     def __init__(self, default_dir, config_path=None):
         logger.info("Locating config...")
@@ -33,7 +60,7 @@ class Config:
 
         yaml.YAML().allow_duplicate_keys = True
         try:
-            new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
+            new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
             def replace_attr(all_data, attr, par):
                 if "settings" not in all_data:
                     all_data["settings"] = {}
@@ -75,12 +102,15 @@ class Config:
             if "omdb" in new_config:                        new_config["omdb"] = new_config.pop("omdb")
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            yaml.round_trip_dump(new_config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
+            yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=ind, block_seq_indent=bsi)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
             raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
+        except Exception as e:
+            util.print_stacktrace()
+            raise Failed(f"YAML Error: {e}")
 
-        def check_for_attribute(data, attribute, parent=None, test_list=None, options="", default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
+        def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
             endline = ""
             if parent is not None:
                 if parent in data:
@@ -122,16 +152,22 @@ class Config:
             if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
                 return default
             elif var_type == "path" and default:
-                default = None
                 if attribute in data and data[attribute]:
                     message = f"neither {data[attribute]} or the default path {default} could be found"
                 else:
-                    message = f"no {text} found and the default path {default} could be found"
+                    message = f"no {text} found and the default path {default} could not be found"
+                default = None
             if default is not None or default_is_none:
                 message = message + f" using {default} as default"
             message = message + endline
             if req_default and default is None:
                 raise Failed(f"Config Error: {attribute} attribute must be set under {parent} globally or under this specific Library")
+            options = ""
+            if test_list:
+                for option, description in test_list.items():
+                    if len(options) > 0:
+                        options = f"{options}\n"
+                    options = f"{options}    {option} ({description})"
             if (default is None and not default_is_none) or throw:
                 if len(options) > 0:
                     message = message + "\n" + options
@@ -143,7 +179,7 @@ class Config:
             return default
 
         self.general = {}
-        self.general["cache"] = check_for_attribute(self.data, "cache", parent="settings", options="    true (Create a cache to store ids)\n    false (Do not create a cache to store ids)", var_type="bool", default=True)
+        self.general["cache"] = check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True)
         self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
         if self.general["cache"]:
             util.separator()
@@ -151,7 +187,7 @@ class Config:
         else:
             self.Cache = None
         self.general["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")])
-        self.general["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)")
+        self.general["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes)
         self.general["run_again_delay"] = check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0)
         self.general["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True)
         self.general["show_filtered"] = check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False)
@@ -241,24 +277,30 @@ class Config:
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True)
-        self.general["radarr"]["version"] = check_for_attribute(self.data, "version", parent="radarr", test_list=["v2", "v3"], options="    v2 (For Radarr 0.2)\n    v3 (For Radarr 3.0)", default="v2")
         self.general["radarr"]["token"] = check_for_attribute(self.data, "token", parent="radarr", default_is_none=True)
-        self.general["radarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="radarr", default_is_none=True)
-        self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True)
+        self.general["radarr"]["version"] = check_for_attribute(self.data, "version", parent="radarr", test_list=radarr_versions, default="v3")
         self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False)
-        self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
+        self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True)
+        self.general["radarr"]["monitor"] = check_for_attribute(self.data, "monitor", parent="radarr", var_type="bool", default=True)
+        self.general["radarr"]["availability"] = check_for_attribute(self.data, "availability", parent="radarr", test_list=radarr_availabilities, default="announced")
+        self.general["radarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="radarr", default_is_none=True)
         self.general["radarr"]["tag"] = check_for_attribute(self.data, "tag", parent="radarr", var_type="lower_list", default_is_none=True)
+        self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
 
         self.general["sonarr"] = {}
         self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", default_is_none=True)
         self.general["sonarr"]["token"] = check_for_attribute(self.data, "token", parent="sonarr", default_is_none=True)
-        self.general["sonarr"]["version"] = check_for_attribute(self.data, "version", parent="sonarr", test_list=["v2", "v3"], options="    v2 (For Sonarr 0.2)\n    v3 (For Sonarr 3.0)", default="v2")
-        self.general["sonarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="sonarr", default_is_none=True)
-        self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["version"] = check_for_attribute(self.data, "version", parent="sonarr", test_list=sonarr_versions, default="v3")
         self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False)
-        self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False)
+        self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["monitor"] = check_for_attribute(self.data, "monitor", parent="sonarr", test_list=sonarr_monitors, default="all")
+        self.general["sonarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["language_profile"] = check_for_attribute(self.data, "language_profile", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["series_type"] = check_for_attribute(self.data, "series_type", parent="sonarr", test_list=sonarr_series_types, default="standard")
         self.general["sonarr"]["season_folder"] = check_for_attribute(self.data, "season_folder", parent="sonarr", var_type="bool", default=True)
         self.general["sonarr"]["tag"] = check_for_attribute(self.data, "tag", parent="sonarr", var_type="lower_list", default_is_none=True)
+        self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False)
+        self.general["sonarr"]["cutoff_search"] = check_for_attribute(self.data, "cutoff_search", parent="sonarr", var_type="bool", default=False)
 
         self.general["tautulli"] = {}
         self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True)
@@ -282,9 +324,9 @@ class Config:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
             if "settings" in lib and lib["settings"] and "sync_mode" in lib["settings"]:
-                params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], do_print=False, save=False)
+                params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
             else:
-                params["sync_mode"] = check_for_attribute(lib, "sync_mode", test_list=["append", "sync"], options="    append (Only Add Items to the Collection)\n    sync (Add & Remove Items from the Collection)", default=self.general["sync_mode"], do_print=False, save=False)
+                params["sync_mode"] = check_for_attribute(lib, "sync_mode", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
 
             if "settings" in lib and lib["settings"] and "show_unmanaged" in lib["settings"]:
                 params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
@@ -307,7 +349,7 @@ class Config:
                 params["save_missing"] = check_for_attribute(lib, "save_missing", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
 
             if "mass_genre_update" in lib and lib["mass_genre_update"]:
-                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=["tmdb", "omdb"], options="    tmdb (Use TMDb Metadata)\n    omdb (Use IMDb Metadata through OMDb)", default_is_none=True, save=False)
+                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_genre_update_options, default_is_none=True, save=False)
             else:
                 params["mass_genre_update"] = None
 
@@ -317,7 +359,7 @@ class Config:
 
             try:
                 params["metadata_path"] = check_for_attribute(lib, "metadata_path", var_type="path", default=os.path.join(default_dir, f"{library_name}.yml"), throw=True)
-                params["library_type"] = check_for_attribute(lib, "library_type", test_list=["movie", "show"], options="    movie (For Movie Libraries)\n    show (For Show Libraries)", throw=True)
+                params["library_type"] = check_for_attribute(lib, "library_type", test_list=library_types, throw=True)
                 params["plex"] = {}
                 params["plex"]["url"] = check_for_attribute(lib, "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
@@ -335,13 +377,15 @@ class Config:
                 try:
                     radarr_params["url"] = check_for_attribute(lib, "url", parent="radarr", default=self.general["radarr"]["url"], req_default=True, save=False)
                     radarr_params["token"] = check_for_attribute(lib, "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False)
-                    radarr_params["version"] = check_for_attribute(lib, "version", parent="radarr", test_list=["v2", "v3"], options="    v2 (For Radarr 0.2)\n    v3 (For Radarr 3.0)", default=self.general["radarr"]["version"], save=False)
-                    radarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False)
-                    radarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
+                    radarr_params["version"] = check_for_attribute(lib, "version", parent="radarr", test_list=radarr_versions, default=self.general["radarr"]["version"], save=False)
                     radarr_params["add"] = check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
-                    radarr_params["search"] = check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
+                    radarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
+                    radarr_params["monitor"] = check_for_attribute(lib, "monitor", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor"], save=False)
+                    radarr_params["availability"] = check_for_attribute(lib, "availability", parent="radarr", test_list=radarr_availabilities, default=self.general["radarr"]["availability"], save=False)
+                    radarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False)
                     radarr_params["tag"] = check_for_attribute(lib, "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
-                    library.Radarr = RadarrAPI(self.TMDb, radarr_params)
+                    radarr_params["search"] = check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
+                    library.Radarr = RadarrAPI(radarr_params)
                 except Failed as e:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
@@ -352,14 +396,21 @@ class Config:
                 try:
                     sonarr_params["url"] = check_for_attribute(lib, "url", parent="sonarr", default=self.general["sonarr"]["url"], req_default=True, save=False)
                     sonarr_params["token"] = check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False)
-                    sonarr_params["version"] = check_for_attribute(lib, "version", parent="sonarr", test_list=["v2", "v3"], options="    v2 (For Sonarr 0.2)\n    v3 (For Sonarr 3.0)", default=self.general["sonarr"]["version"], save=False)
-                    sonarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="sonarr", default=self.general["sonarr"]["quality_profile"], req_default=True, save=False)
-                    sonarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
+                    sonarr_params["version"] = check_for_attribute(lib, "version", parent="sonarr", test_list=sonarr_versions, default=self.general["sonarr"]["version"], save=False)
                     sonarr_params["add"] = check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
-                    sonarr_params["search"] = check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
+                    sonarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
+                    sonarr_params["monitor"] = check_for_attribute(lib, "monitor", parent="sonarr", test_list=sonarr_monitors, default=self.general["sonarr"]["monitor"], save=False)
+                    sonarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="sonarr", default=self.general["sonarr"]["quality_profile"], req_default=True, save=False)
+                    if self.general["sonarr"]["language_profile"]:
+                        sonarr_params["language_profile"] = check_for_attribute(lib, "language_profile", parent="sonarr", default=self.general["sonarr"]["language_profile"], save=False)
+                    else:
+                        sonarr_params["language_profile"] = check_for_attribute(lib, "language_profile", parent="sonarr", default_is_none=True, save=False)
+                    sonarr_params["series_type"] = check_for_attribute(lib, "series_type", parent="sonarr", test_list=sonarr_series_types, default=self.general["sonarr"]["series_type"], save=False)
                     sonarr_params["season_folder"] = check_for_attribute(lib, "season_folder", parent="sonarr", var_type="bool", default=self.general["sonarr"]["season_folder"], save=False)
                     sonarr_params["tag"] = check_for_attribute(lib, "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
-                    library.Sonarr = SonarrAPI(self.TVDb, sonarr_params, library.Plex.language)
+                    sonarr_params["search"] = check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
+                    sonarr_params["cutoff_search"] = check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False)
+                    library.Sonarr = SonarrAPI(sonarr_params, library.Plex.language)
                 except Failed as e:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
@@ -382,11 +433,11 @@ class Config:
         if len(self.libraries) > 0:
             logger.info(f"{len(self.libraries)} Plex Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
         else:
-            raise Failed("Plex Error: No Plex libraries were found")
+            raise Failed("Plex Error: No Plex libraries were connected to")
 
         util.separator()
 
-    def update_libraries(self, test, requested_collections):
+    def update_libraries(self, test, requested_collections, resume_from):
         for library in self.libraries:
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
@@ -395,7 +446,7 @@ class Config:
             util.separator(f"Mapping {library.name} Library")
             logger.info("")
             movie_map, show_map = self.map_guids(library)
-            if not test:
+            if not test and not resume_from:
                 if library.mass_genre_update:
                     self.mass_metadata(library, movie_map, show_map)
                 try:                        library.update_metadata(self.TMDb, test)
@@ -403,6 +454,9 @@ class Config:
             logger.info("")
             util.separator(f"{library.name} Library {'Test ' if test else ''}Collections")
             collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
+            if resume_from and resume_from not in collections:
+                logger.warning(f"Collection: {resume_from} not in {library.name}")
+                continue
             if collections:
                 for mapping_name, collection_attrs in collections.items():
                     if test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
@@ -420,6 +474,13 @@ class Config:
                         if no_template_test:
                             continue
                     try:
+                        if resume_from and resume_from != mapping_name:
+                            continue
+                        elif resume_from == mapping_name:
+                            resume_from = None
+                            logger.info("")
+                            util.separator(f"Resuming Collections")
+
                         logger.info("")
                         util.separator(f"{mapping_name} Collection")
                         logger.info("")

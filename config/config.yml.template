@@ -30,19 +30,28 @@ tautulli:                                       # Can be individually specified 
 radarr:                                         # Can be individually specified per library as well
   url: http://192.168.1.12:7878
   token: ################################
-  version: v2
-  quality_profile: HD-1080p
-  root_folder_path: S:/Movies
+  version: v3
   add: false
+  root_folder_path: S:/Movies
+  monitor: true
+  availability: announced
+  quality_profile: HD-1080p
+  tag:
   search: false
 sonarr:                                         # Can be individually specified per library as well
   url: http://192.168.1.12:8989
   token: ################################
-  version: v2
-  quality_profile: HD-1080p
-  root_folder_path: "S:/TV Shows"
+  version: v3
   add: false
+  root_folder_path: "S:/TV Shows"
+  monitor: all
+  quality_profile: HD-1080p
+  language_profile: English
+  series_type: standard
+  season_folder: true
+  tag:
   search: false
+  cutoff_search: false
 omdb:
   apikey: ########
 trakt:
