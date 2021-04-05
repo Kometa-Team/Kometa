@@ -1,4 +1,5 @@
 import logging, requests
+from json.decoder import JSONDecodeError
 from modules import util
 from modules.util import Failed
 from retrying import retry
@@ -144,6 +145,10 @@ class SonarrAPI:
                 except KeyError:
                     logger.debug(url_json)
                     logger.error(f"Sonarr Error: {response.json()}")
+                except JSONDecodeError:
+                    logger.debug(url_json)
+                    logger.error(f"Sonarr Error: {response}")
+
         logger.info(f"{add_count} Show{'s' if add_count > 1 else ''} added to Sonarr")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
