@@ -13,13 +13,14 @@ class IMDbAPI:
         self.config = config
         self.urls = {
             "list": "https://www.imdb.com/list/ls",
-            "search": "https://www.imdb.com/search/title/?"
+            "search": "https://www.imdb.com/search/title/?",
+            "keyword": "https://www.imdb.com/search/keyword/?"
         }
 
     def validate_imdb_url(self, imdb_url):
         imdb_url = imdb_url.strip()
-        if not imdb_url.startswith(self.urls["list"]) and not imdb_url.startswith(self.urls["search"]):
-            raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n{self.urls['list']} (For Lists)\n{self.urls['search']} (For Searches)")
+        if not imdb_url.startswith(self.urls["list"]) and not imdb_url.startswith(self.urls["search"]) and not imdb_url.startswith(self.urls["keyword"]):
+            raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n{self.urls['list']} (For Lists)\n{self.urls['search']} (For Searches)\n{self.urls['keyword']} (For Keyword Searches)")
         return imdb_url
 
     def get_imdb_ids_from_url(self, imdb_url, language, limit):
@@ -32,24 +33,47 @@ class IMDbAPI:
         header = {"Accept-Language": language}
         length = 0
         imdb_ids = []
-        try:                                results = self.send_request(current_url, header).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
-        except IndexError:                  raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
-        try:                                total = int(re.findall("(\\d+) title", results)[0])
-        except IndexError:                  raise Failed(f"IMDb Error: No Results at URL: {imdb_url}")
+        if imdb_url.startswith(self.urls["keyword"]):
+            results = self.send_request(current_url, header).xpath("//div[@class='desc']/text()")
+            total = None
+            for result in results:
+                if "title" in result:
+                    try:
+                        total = int(re.findall("(\\d+) title", result)[0])
+                        break
+                    except IndexError:
+                        pass
+            if total is None:
+                raise Failed(f"IMDb Error: No Results at URL: {imdb_url}")
+            item_count = 50
+        else:
+            try:                                results = self.send_request(current_url, header).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
+            except IndexError:                  raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
+            try:                                total = int(re.findall("(\\d+) title", results)[0])
+            except IndexError:                  raise Failed(f"IMDb Error: No Results at URL: {imdb_url}")
+            item_count = 250
         if "&start=" in current_url:        current_url = re.sub("&start=\\d+", "", current_url)
         if "&count=" in current_url:        current_url = re.sub("&count=\\d+", "", current_url)
+        if "&page=" in current_url:         current_url = re.sub("&page=\\d+", "", current_url)
         if limit < 1 or total < limit:      limit = total
-        remainder = limit % 250
-        if remainder == 0:                  remainder = 250
-        num_of_pages = math.ceil(int(limit) / 250)
+
+        remainder = limit % item_count
+        if remainder == 0:                  remainder = item_count
+        num_of_pages = math.ceil(int(limit) / item_count)
         for i in range(1, num_of_pages + 1):
-            start_num = (i - 1) * 250 + 1
-            length = util.print_return(length, f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * 250}")
-            response = self.send_request(f"{current_url}&count={remainder if i == num_of_pages else 250}&start={start_num}", header)
-            imdb_ids.extend(response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst"))
+            start_num = (i - 1) * item_count + 1
+            length = util.print_return(length, f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
+            if imdb_url.startswith(self.urls["keyword"]):
+                response = self.send_request(f"{current_url}&page={i}", header)
+            else:
+                response = self.send_request(f"{current_url}&count={remainder if i == num_of_pages else item_count}&start={start_num}", header)
+            if imdb_url.startswith(self.urls["keyword"]) and i == num_of_pages:
+                imdb_ids.extend(response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst")[:remainder])
+            else:
+                imdb_ids.extend(response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst"))
         util.print_end(length)
         if imdb_ids:                        return imdb_ids
-        else:                               raise Failed(f"IMDb Error: No Movies Found at {imdb_url}")
+        else:                               raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, header):

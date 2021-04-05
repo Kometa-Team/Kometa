@@ -33,6 +33,7 @@ plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR
                   "ru-RU", "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"]
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
+use_original_title_options = {"default": -1, "no": 0, "yes": 1}
 filter_alias = {
     "actor": "actors",
     "audience_rating": "audienceRating",
@@ -577,8 +578,6 @@ class PlexAPI:
             add_advanced_edit("season_display", season_display_options, key="flattenSeasons", show_library=True)
             add_advanced_edit("episode_ordering", episode_ordering_options, key="showOrdering", show_library=True)
             add_advanced_edit("metadata_language", metadata_language_options, key="languageOverride")
-
-            use_original_title_options = {"default": -1, "no": 0, "yes": 1}
             add_advanced_edit("use_original_title", use_original_title_options, key="useOriginalTitle")
 
             if len(advance_edits) > 0:
