@@ -1,4 +1,4 @@
-import logging, re, requests
+import logging, requests
 from modules import util
 from modules.util import Failed
 from retrying import retry
