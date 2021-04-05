@@ -7,6 +7,107 @@ from tmdbv3api.exceptions import TMDbException
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = [
+    "tmdb_actor",
+    "tmdb_actor_details",
+    "tmdb_collection",
+    "tmdb_collection_details",
+    "tmdb_company",
+    "tmdb_crew",
+    "tmdb_crew_details",
+    "tmdb_director",
+    "tmdb_director_details",
+    "tmdb_discover",
+    "tmdb_keyword",
+    "tmdb_list",
+    "tmdb_list_details",
+    "tmdb_movie",
+    "tmdb_movie_details",
+    "tmdb_network",
+    "tmdb_now_playing",
+    "tmdb_popular",
+    "tmdb_producer",
+    "tmdb_producer_details",
+    "tmdb_show",
+    "tmdb_show_details",
+    "tmdb_top_rated",
+    "tmdb_trending_daily",
+    "tmdb_trending_weekly",
+    "tmdb_writer",
+    "tmdb_writer_details"
+]
+type_map = {
+    "tmdb_actor": "Person",
+    "tmdb_actor_details": "Person",
+    "tmdb_collection": "Collection",
+    "tmdb_collection_details": "Collection",
+    "tmdb_company": "Company",
+    "tmdb_crew": "Person",
+    "tmdb_crew_details": "Person",
+    "tmdb_director": "Person",
+    "tmdb_director_details": "Person",
+    "tmdb_keyword": "Keyword",
+    "tmdb_list": "List",
+    "tmdb_list_details": "List",
+    "tmdb_movie": "Movie",
+    "tmdb_movie_details": "Movie",
+    "tmdb_network": "Network",
+    "tmdb_person": "Person",
+    "tmdb_producer": "Person",
+    "tmdb_producer_details": "Person",
+    "tmdb_show": "Show",
+    "tmdb_show_details": "Show",
+    "tmdb_writer": "Person",
+    "tmdb_writer_details": "Person"
+}
+discover_movie = [
+    "language", "with_original_language", "region", "sort_by",
+    "certification_country", "certification", "certification.lte", "certification.gte",
+    "include_adult",
+    "primary_release_year", "primary_release_date.gte", "primary_release_date.lte",
+    "release_date.gte", "release_date.lte", "year",
+    "vote_count.gte", "vote_count.lte",
+    "vote_average.gte", "vote_average.lte",
+    "with_cast", "with_crew", "with_people",
+    "with_companies",
+    "with_genres", "without_genres",
+    "with_keywords", "without_keywords",
+    "with_runtime.gte", "with_runtime.lte"
+]
+discover_tv = [
+    "language", "with_original_language", "timezone", "sort_by",
+    "air_date.gte", "air_date.lte",
+    "first_air_date.gte", "first_air_date.lte", "first_air_date_year",
+    "vote_count.gte", "vote_count.lte",
+    "vote_average.gte", "vote_average.lte",
+    "with_genres", "without_genres",
+    "with_keywords", "without_keywords",
+    "with_networks", "with_companies",
+    "with_runtime.gte", "with_runtime.lte",
+    "include_null_first_air_dates",
+    "screened_theatrically"
+]
+discover_dates = [
+    "primary_release_date.gte", "primary_release_date.lte",
+    "release_date.gte", "release_date.lte",
+    "air_date.gte", "air_date.lte",
+    "first_air_date.gte", "first_air_date.lte"
+]
+discover_movie_sort = [
+    "popularity.asc", "popularity.desc",
+    "release_date.asc", "release_date.desc",
+    "revenue.asc", "revenue.desc",
+    "primary_release_date.asc", "primary_release_date.desc",
+    "original_title.asc", "original_title.desc",
+    "vote_average.asc", "vote_average.desc",
+    "vote_count.asc", "vote_count.desc"
+]
+discover_tv_sort = [
+    "vote_average.desc", "vote_average.asc",
+    "first_air_date.desc", "first_air_date.asc",
+    "popularity.desc", "popularity.asc"
+]
+
 class TMDbAPI:
     def __init__(self, params):
         self.TMDb = tmdbv3api.TMDb()
@@ -156,7 +257,7 @@ class TMDbAPI:
     def get_discover(self, attrs, amount, is_movie):
         ids = []
         count = 0
-        for date_attr in util.discover_dates:
+        for date_attr in discover_dates:
             if date_attr in attrs:
                 attrs[date_attr] = datetime.strftime(datetime.strptime(attrs[date_attr], "%m/%d/%Y"), "%Y-%m-%d")
         self.Discover.discover_movies(attrs) if is_movie else self.Discover.discover_tv_shows(attrs)

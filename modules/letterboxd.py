@@ -6,6 +6,8 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = ["letterboxd_list", "letterboxd_list_details"]
+
 class LetterboxdAPI:
     def __init__(self, config):
         self.config = config

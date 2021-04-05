@@ -12,6 +12,100 @@ from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
+builders = ["plex_all", "plex_collection", "plex_collectionless", "plex_search",]
+search_translation = {
+    "audio_language": "audioLanguage",
+    "content_rating": "contentRating",
+    "subtitle_language": "subtitleLanguage",
+    "added": "addedAt",
+    "originally_available": "originallyAvailableAt",
+    "audience_rating": "audienceRating",
+    "critic_rating": "rating"
+}
+episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
+keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
+delete_episodes_options = {"never": 0, "day": 1, "week": 7, "refresh": 100}
+season_display_options = {"default": -1, "show": 0, "hide": 1}
+episode_ordering_options = {"default": None, "tmdb_aired": "tmdbAiring", "tvdb_aired": "airing", "tvdb_dvd": "dvd", "tvdb_absolute": "absolute"}
+plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US",
+                  "es-ES", "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID",
+                  "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO",
+                  "ru-RU", "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"]
+metadata_language_options = {lang.lower(): lang for lang in plex_languages}
+metadata_language_options["default"] = None
+filter_alias = {
+    "actor": "actors",
+    "audience_rating": "audienceRating",
+    "collection": "collections",
+    "content_rating": "contentRating",
+    "country": "countries",
+    "critic_rating": "rating",
+    "director": "directors",
+    "genre": "genres",
+    "originally_available": "originallyAvailableAt",
+    "tmdb_vote_count": "vote_count",
+    "writer": "writers"
+}
+searches = [
+    "title", "title.and", "title.not", "title.begins", "title.ends",
+    "studio", "studio.and", "studio.not", "studio.begins", "studio.ends",
+    "actor", "actor.and", "actor.not",
+    "audio_language", "audio_language.and", "audio_language.not",
+    "collection", "collection.and", "collection.not",
+    "content_rating", "content_rating.and", "content_rating.not",
+    "country", "country.and", "country.not",
+    "director", "director.and", "director.not",
+    "genre", "genre.and", "genre.not",
+    "label", "label.and", "label.not",
+    "network", "network.and", "network.not",
+    "producer", "producer.and", "producer.not",
+    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
+    "writer", "writer.and", "writer.not",
+    "decade", "resolution",
+    "added.before", "added.after",
+    "originally_available.before", "originally_available.after",
+    "duration.greater", "duration.less",
+    "audience_rating.greater", "audience_rating.less",
+    "critic_rating.greater", "critic_rating.less",
+    "year", "year.not", "year.greater", "year.less"
+]
+movie_only_searches = [
+    "audio_language", "audio_language.and", "audio_language.not",
+    "country", "country.and", "country.not",
+    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
+    "decade", "resolution",
+    "originally_available.before", "originally_available.after",
+    "duration.greater", "duration.less"
+]
+show_only_searches = [
+    "network", "network.and", "network.not",
+]
+tmdb_searches = [
+    "actor", "actor.and", "actor.not",
+    "director", "director.and", "director.not",
+    "producer", "producer.and", "producer.not",
+    "writer", "writer.and", "writer.not"
+]
+sorts = {
+    None: None,
+    "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
+    "originally_available.asc": "originallyAvailableAt:asc", "originally_available.desc": "originallyAvailableAt:desc",
+    "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
+    "audience_rating.asc": "audienceRating:asc", "audience_rating.desc": "audienceRating:desc",
+    "duration.asc": "duration:asc", "duration.desc": "duration:desc",
+    "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
+}
+modifiers = {
+    ".and": "&",
+    ".not": "!",
+    ".begins": "<",
+    ".ends": ">",
+    ".before": "<<",
+    ".after": ">>",
+    ".greater": ">>",
+    ".less": "<<"
+}
+
 class PlexAPI:
     def __init__(self, params, TMDb, TVDb):
         try:
@@ -28,10 +122,15 @@ class PlexAPI:
         self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"] and ((self.is_movie and isinstance(s, MovieSection)) or (self.is_show and isinstance(s, ShowSection)))), None)
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library {params['name']} not found")
+
+        logger.info(f"Using Metadata File: {params['metadata_path']}")
         try:
             self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(params["metadata_path"], encoding="utf-8"))
-        except yaml.scanner.ScannerError as e:
-            raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
+        except yaml.scanner.ScannerError as ye:
+            raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
+        except Exception as e:
+            util.print_stacktrace()
+            raise Failed(f"YAML Error: {e}")
 
         def get_dict(attribute):
             if attribute in self.data:
@@ -91,18 +190,21 @@ class PlexAPI:
         return self.PlexServer.search(data)
 
     def get_search_choices(self, search_name, key=False):
-        if key:             return {c.key.lower(): c.key for c in self.Plex.listFilterChoices(search_name)}
-        else:               return {c.title.lower(): c.title for c in self.Plex.listFilterChoices(search_name)}
+        try:
+            if key:             return {c.key.lower(): c.key for c in self.Plex.listFilterChoices(search_name)}
+            else:               return {c.title.lower(): c.title for c in self.Plex.listFilterChoices(search_name)}
+        except NotFound:
+            raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
 
     def validate_search_list(self, data, search_name):
-        final_search = util.search_alias[search_name] if search_name in util.search_alias else search_name
+        final_search = search_translation[search_name] if search_name in search_translation else search_name
         search_choices = self.get_search_choices(final_search, key=final_search.endswith("Language"))
         valid_list = []
         for value in util.get_list(data):
             if str(value).lower() in search_choices:
                 valid_list.append(search_choices[str(value).lower()])
             else:
-                raise Failed(f"Plex Error: {search_name}: {value} not found")
+                logger.error(f"Plex Error: {search_name}: {value} not found")
         return valid_list
 
     def get_all_collections(self):
@@ -121,6 +223,108 @@ class PlexAPI:
         if len(valid_collections) == 0:
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
+
+    def get_items(self, method, data, status_message=True):
+        if status_message:
+            logger.debug(f"Data: {data}")
+        pretty = util.pretty_names[method] if method in util.pretty_names else method
+        media_type = "Movie" if self.is_movie else "Show"
+        items = []
+        if method == "plex_all":
+            if status_message:
+                logger.info(f"Processing {pretty} {media_type}s")
+            items = self.Plex.all()
+        elif method == "plex_collection":
+            if status_message:
+                logger.info(f"Processing {pretty} {data}")
+            items = data.items()
+        elif method == "plex_search":
+            search_terms = {}
+            has_processed = False
+            search_limit = None
+            search_sort = None
+            for search_method, search_data in data.items():
+                if search_method == "limit":
+                    search_limit = search_data
+                elif search_method == "sort_by":
+                    search_sort = search_data
+                else:
+                    search, modifier = os.path.splitext(str(search_method).lower())
+                    final_search = search_translation[search] if search in search_translation else search
+                    if search == "originally_available" and modifier == "":
+                        final_mod = ">>"
+                    elif search == "originally_available" and modifier == ".not":
+                        final_mod = "<<"
+                    elif search in ["critic_rating", "audience_rating"] and modifier == ".greater":
+                        final_mod = "__gte"
+                    elif search in ["critic_rating", "audience_rating"] and modifier == ".less":
+                        final_mod = "__lt"
+                    else:
+                        final_mod = modifiers[modifier] if modifier in modifiers else ""
+                    final_method = f"{final_search}{final_mod}"
+
+                    if search == "duration":
+                        search_terms[final_method] = search_data * 60000
+                    elif search in ["added", "originally_available"] and modifier in ["", ".not"]:
+                        search_terms[final_method] = f"{search_data}d"
+                    else:
+                        search_terms[final_method] = search_data
+
+                    if status_message:
+                        if search in ["added", "originally_available"] or modifier in [".greater", ".less", ".before", ".after"]:
+                            ors = f"{search_method}({search_data}"
+                        else:
+                            ors = ""
+                            conjunction = " AND " if final_mod == "&" else " OR "
+                            for o, param in enumerate(search_data):
+                                or_des = conjunction if o > 0 else f"{search_method}("
+                                ors += f"{or_des}{param}"
+                        if has_processed:
+                            logger.info(f"\t\t      AND {ors})")
+                        else:
+                            logger.info(f"Processing {pretty}: {ors})")
+                            has_processed = True
+            if status_message:
+                if search_sort:
+                    logger.info(f"\t\t      SORT BY {search_sort})")
+                if search_limit:
+                    logger.info(f"\t\t      LIMIT {search_limit})")
+                logger.debug(f"Search: {search_terms}")
+            return self.Plex.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
+        elif method == "plex_collectionless":
+            good_collections = []
+            for col in self.get_all_collections():
+                keep_collection = True
+                for pre in data["exclude_prefix"]:
+                    if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
+                        keep_collection = False
+                        break
+                if keep_collection:
+                    for ext in data["exclude"]:
+                        if col.title == ext or (col.titleSort and col.titleSort == ext):
+                            keep_collection = False
+                            break
+                if keep_collection:
+                    good_collections.append(col.index)
+            all_items = self.Plex.all()
+            length = 0
+            for i, item in enumerate(all_items, 1):
+                length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
+                add_item = True
+                item.reload()
+                for collection in item.collections:
+                    if collection.id in good_collections:
+                        add_item = False
+                        break
+                if add_item:
+                    items.append(item)
+            util.print_end(length, f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}")
+        else:
+            raise Failed(f"Plex Error: Method {method} not supported")
+        if len(items) > 0:
+            return items
+        else:
+            raise Failed("Plex Error: No Items found in Plex")
 
     def add_missing(self, collection, items, is_movie):
         col_name = collection.encode("ascii", "replace").decode()
@@ -157,7 +361,7 @@ class PlexAPI:
                 for filter_method, filter_data in filters:
                     modifier = filter_method[-4:]
                     method = filter_method[:-4] if modifier in [".not", ".lte", ".gte"] else filter_method
-                    method_name = util.filter_alias[method] if method in util.filter_alias else method
+                    method_name = filter_alias[method] if method in filter_alias else method
                     if method_name == "max_age":
                         threshold_date = datetime.now() - timedelta(days=filter_data)
                         if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
@@ -210,7 +414,7 @@ class PlexAPI:
                             attr = tmdb_item.vote_count
                         else:
                             attr = getattr(current, method_name) / 60000 if method_name == "duration" else getattr(current, method_name)
-                        if (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
+                        if attr is None or (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
                             match = False
                             break
                     else:
@@ -306,29 +510,34 @@ class PlexAPI:
             tagline = tmdb_item.tagline if tmdb_item and len(tmdb_item.tagline) > 0 else None
             summary = tmdb_item.overview if tmdb_item else None
 
-            details_updated = False
-            advance_details_updated = False
-            genre_updated = False
-            label_updated = False
-            season_updated = False
-            episode_updated = False
+            updated = False
 
             edits = {}
-            def add_edit(name, current, group, alias, key=None, value=None):
+            def add_edit(name, current, group, alias, key=None, value=None, var_type="str"):
                 if value or name in alias:
                     if value or group[alias[name]]:
                         if key is None:         key = name
                         if value is None:       value = group[alias[name]]
-                        if str(current) != str(value):
-                            edits[f"{key}.value"] = value
-                            edits[f"{key}.locked"] = 1
-                            logger.info(f"Detail: {name} updated to {value}")
+                        try:
+                            if var_type == "date":
+                                final_value = util.check_date(value, name, return_string=True, plex_date=True)
+                            elif var_type == "float":
+                                final_value = util.check_number(value, name, number_type="float", minimum=0, maximum=10)
+                            else:
+                                final_value = value
+                            if str(current) != str(final_value):
+                                edits[f"{key}.value"] = final_value
+                                edits[f"{key}.locked"] = 1
+                                logger.info(f"Detail: {name} updated to {final_value}")
+                        except Failed as ee:
+                            logger.error(ee)
                     else:
                         logger.error(f"Metadata Error: {name} attribute is blank")
             add_edit("title", item.title, meta, methods, value=title)
             add_edit("sort_title", item.titleSort, meta, methods, key="titleSort")
-            add_edit("originally_available", str(item.originallyAvailableAt)[:-9], meta, methods, key="originallyAvailableAt", value=originally_available)
-            add_edit("rating", item.rating, meta, methods, value=rating)
+            add_edit("originally_available", str(item.originallyAvailableAt)[:-9], meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
+            add_edit("critic_rating", item.rating, meta, methods, value=rating, key="rating", var_type="float")
+            add_edit("audience_rating", item.audienceRating, meta, methods, key="audienceRating", var_type="float")
             add_edit("content_rating", item.contentRating, meta, methods, key="contentRating")
             add_edit("original_title", item.originalTitle, meta, methods, key="originalTitle", value=original_title)
             add_edit("studio", item.studio, meta, methods, value=studio)
@@ -336,7 +545,7 @@ class PlexAPI:
             add_edit("summary", item.summary, meta, methods, value=summary)
             if len(edits) > 0:
                 logger.debug(f"Details Update: {edits}")
-                details_updated = True
+                updated = True
                 try:
                     item.edit(**edits)
                     item.reload()
@@ -346,143 +555,35 @@ class PlexAPI:
                     logger.error(f"{item_type}: {mapping_name} Details Update Failed")
 
             advance_edits = {}
-            if self.is_show:
-
-                if "episode_sorting" in methods:
-                    if meta[methods["episode_sorting"]]:
-                        method_data = str(meta[methods["episode_sorting"]]).lower()
-                        if method_data in ["default", "oldest", "newest"]:
-                            if method_data == "default" and item.episodeSort != "-1":
-                                advance_edits["episodeSort"] = "-1"
-                            elif method_data == "oldest" and item.episodeSort != "0":
-                                advance_edits["episodeSort"] = "0"
-                            elif method_data == "newest" and item.episodeSort != "1":
-                                advance_edits["episodeSort"] = "1"
-                            if "episodeSort" in advance_edits:
-                                logger.info(f"Detail: episode_sorting updated to {method_data}")
+            def add_advanced_edit(attr, options, key=None, show_library=False):
+                if key is None:
+                    key = attr
+                if attr in methods:
+                    if show_library and not self.is_show:
+                        logger.error(f"Metadata Error: {attr} attribute only works for show libraries")
+                    elif meta[methods[attr]]:
+                        method_data = str(meta[methods[attr]]).lower()
+                        if method_data in options and getattr(item, key) != options[method_data]:
+                            advance_edits[key] = options[method_data]
+                            logger.info(f"Detail: {attr} updated to {method_data}")
                         else:
-                            logger.error(f"Metadata Error: {meta[methods['episode_sorting']]} episode_sorting attribute invalid")
+                            logger.error(f"Metadata Error: {meta[methods[attr]]} {attr} attribute invalid")
                     else:
-                        logger.error(f"Metadata Error: episode_sorting attribute is blank")
+                        logger.error(f"Metadata Error: {attr} attribute is blank")
 
-                if "keep_episodes" in methods:
-                    if meta[methods["keep_episodes"]]:
-                        method_data = str(meta[methods["keep_episodes"]]).lower()
-                        if method_data in ["all", "5_latest", "3_latest", "latest", "past_3", "past_7", "past_30"]:
-                            if method_data == "all" and item.autoDeletionItemPolicyUnwatchedLibrary != 0:
-                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = 0
-                            elif method_data == "5_latest" and item.autoDeletionItemPolicyUnwatchedLibrary != 5:
-                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = 5
-                            elif method_data == "3_latest" and item.autoDeletionItemPolicyUnwatchedLibrary != 3:
-                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = 3
-                            elif method_data == "latest" and item.autoDeletionItemPolicyUnwatchedLibrary != 1:
-                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = 1
-                            elif method_data == "past_3" and item.autoDeletionItemPolicyUnwatchedLibrary != -3:
-                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = -3
-                            elif method_data == "past_7" and item.autoDeletionItemPolicyUnwatchedLibrary != -7:
-                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = -7
-                            elif method_data == "past_30" and item.autoDeletionItemPolicyUnwatchedLibrary != -30:
-                                advance_edits["autoDeletionItemPolicyUnwatchedLibrary"] = -30
-                            if "autoDeletionItemPolicyUnwatchedLibrary" in advance_edits:
-                                logger.info(f"Detail: keep_episodes updated to {method_data}")
-                        else:
-                            logger.error(f"Metadata Error: {meta[methods['keep_episodes']]} keep_episodes attribute invalid")
-                    else:
-                        logger.error(f"Metadata Error: keep_episodes attribute is blank")
+            add_advanced_edit("episode_sorting", episode_sorting_options, key="episodeSort", show_library=True)
+            add_advanced_edit("keep_episodes", keep_episodes_options, key="autoDeletionItemPolicyUnwatchedLibrary", show_library=True)
+            add_advanced_edit("delete_episodes", delete_episodes_options, key="autoDeletionItemPolicyWatchedLibrary", show_library=True)
+            add_advanced_edit("season_display", season_display_options, key="flattenSeasons", show_library=True)
+            add_advanced_edit("episode_ordering", episode_ordering_options, key="showOrdering", show_library=True)
+            add_advanced_edit("metadata_language", metadata_language_options, key="languageOverride")
 
-                if "delete_episodes" in methods:
-                    if meta[methods["delete_episodes"]]:
-                        method_data = str(meta[methods["delete_episodes"]]).lower()
-                        if method_data in ["never", "day", "week", "refresh"]:
-                            if method_data == "never" and item.autoDeletionItemPolicyWatchedLibrary != 0:
-                                advance_edits["autoDeletionItemPolicyWatchedLibrary"] = 0
-                            elif method_data == "day" and item.autoDeletionItemPolicyWatchedLibrary != 1:
-                                advance_edits["autoDeletionItemPolicyWatchedLibrary"] = 1
-                            elif method_data == "week" and item.autoDeletionItemPolicyWatchedLibrary != 7:
-                                advance_edits["autoDeletionItemPolicyWatchedLibrary"] = 7
-                            elif method_data == "refresh" and item.autoDeletionItemPolicyWatchedLibrary != 100:
-                                advance_edits["autoDeletionItemPolicyWatchedLibrary"] = 100
-                            if "autoDeletionItemPolicyWatchedLibrary" in advance_edits:
-                                logger.info(f"Detail: delete_episodes updated to {method_data}")
-                        else:
-                            logger.error(f"Metadata Error: {meta[methods['delete_episodes']]} delete_episodes attribute invalid")
-                    else:
-                        logger.error(f"Metadata Error: delete_episodes attribute is blank")
-
-                if "season_display" in methods:
-                    if meta[methods["season_display"]]:
-                        method_data = str(meta[methods["season_display"]]).lower()
-                        if method_data in ["default", "hide", "show"]:
-                            if method_data == "default" and item.flattenSeasons != -1:
-                                advance_edits["flattenSeasons"] = -1
-                            elif method_data == "show" and item.flattenSeasons != 0:
-                                advance_edits["flattenSeasons"] = 0
-                            elif method_data == "hide" and item.flattenSeasons != 1:
-                                advance_edits["flattenSeasons"] = 1
-                            if "flattenSeasons" in advance_edits:
-                                logger.info(f"Detail: season_display updated to {method_data}")
-                        else:
-                            logger.error(f"Metadata Error: {meta[methods['season_display']]} season_display attribute invalid")
-                    else:
-                        logger.error(f"Metadata Error: season_display attribute is blank")
-
-                if "episode_ordering" in methods:
-                    if meta[methods["episode_ordering"]]:
-                        method_data = str(meta[methods["episode_ordering"]]).lower()
-                        if method_data in ["default", "tmdb_aired", "tvdb_aired", "tvdb_dvd", "tvdb_absolute"]:
-                            if method_data == "default" and item.showOrdering is not None:
-                                advance_edits["showOrdering"] = None
-                            elif method_data == "tmdb_aired" and item.showOrdering != "tmdbAiring":
-                                advance_edits["showOrdering"] = "tmdbAiring"
-                            elif method_data == "tvdb_aired" and item.showOrdering != "airing":
-                                advance_edits["showOrdering"] = "airing"
-                            elif method_data == "tvdb_dvd" and item.showOrdering != "dvd":
-                                advance_edits["showOrdering"] = "dvd"
-                            elif method_data == "tvdb_absolute" and item.showOrdering != "absolute":
-                                advance_edits["showOrdering"] = "absolute"
-                            if "showOrdering" in advance_edits:
-                                logger.info(f"Detail: episode_ordering updated to {method_data}")
-                        else:
-                            logger.error(f"Metadata Error: {meta[methods['episode_ordering']]} episode_ordering attribute invalid")
-                    else:
-                        logger.error(f"Metadata Error: episode_ordering attribute is blank")
-
-            if "metadata_language" in methods:
-                if meta[methods["metadata_language"]]:
-                    method_data = str(meta[methods["metadata_language"]]).lower()
-                    lower_languages = {la.lower(): la for la in util.plex_languages}
-                    if method_data in lower_languages:
-                        if method_data == "default" and item.languageOverride is None:
-                            advance_edits["languageOverride"] = None
-                        elif str(item.languageOverride).lower() != lower_languages[method_data]:
-                            advance_edits["languageOverride"] = lower_languages[method_data]
-                        if "languageOverride" in advance_edits:
-                            logger.info(f"Detail: metadata_language updated to {method_data}")
-                    else:
-                        logger.error(f"Metadata Error: {meta[methods['metadata_language']]} metadata_language attribute invalid")
-                else:
-                    logger.error(f"Metadata Error: metadata_language attribute is blank")
-
-            if "use_original_title" in methods:
-                if meta[methods["use_original_title"]]:
-                    method_data = str(meta[methods["use_original_title"]]).lower()
-                    if method_data in ["default", "no", "yes"]:
-                        if method_data == "default" and item.useOriginalTitle != -1:
-                            advance_edits["useOriginalTitle"] = -1
-                        elif method_data == "no" and item.useOriginalTitle != 0:
-                            advance_edits["useOriginalTitle"] = 0
-                        elif method_data == "yes" and item.useOriginalTitle != 1:
-                            advance_edits["useOriginalTitle"] = 1
-                        if "useOriginalTitle" in advance_edits:
-                            logger.info(f"Detail: use_original_title updated to {method_data}")
-                    else:
-                        logger.error(f"Metadata Error: {meta[methods['use_original_title']]} use_original_title attribute invalid")
-                else:
-                    logger.error(f"Metadata Error: use_original_title attribute is blank")
+            use_original_title_options = {"default": -1, "no": 0, "yes": 1}
+            add_advanced_edit("use_original_title", use_original_title_options, key="useOriginalTitle")
 
             if len(advance_edits) > 0:
                 logger.debug(f"Details Update: {advance_edits}")
-                advance_details_updated = True
+                updated = True
                 try:
                     check_dict = {pref.id: list(pref.enumValues.keys()) for pref in item.preferences()}
                     logger.info(check_dict)
@@ -493,51 +594,44 @@ class PlexAPI:
                     util.print_stacktrace()
                     logger.error(f"{item_type}: {mapping_name} Advanced Details Update Failed")
 
-            genres = []
-            if tmdb_item:
-                genres.extend([genre.name for genre in tmdb_item.genres])
-            if "genre" in methods:
-                if meta[methods["genre"]]:
-                    genres.extend(util.get_list(meta[methods["genre"]]))
-                else:
-                    logger.error("Metadata Error: genre attribute is blank")
-            if len(genres) > 0:
-                item_genres = [genre.tag for genre in item.genres]
-                if "genre_sync_mode" in methods:
-                    if meta[methods["genre_sync_mode"]] is None:
-                        logger.error("Metadata Error: genre_sync_mode attribute is blank defaulting to append")
-                    elif str(meta[methods["genre_sync_mode"]]).lower() not in ["append", "sync"]:
-                        logger.error("Metadata Error: genre_sync_mode attribute must be either 'append' or 'sync' defaulting to append")
-                    elif str(meta["genre_sync_mode"]).lower() == "sync":
-                        for genre in (g for g in item_genres if g not in genres):
-                            genre_updated = True
-                            item.removeGenre(genre)
-                            logger.info(f"Detail: Genre {genre} removed")
-                for genre in (g for g in genres if g not in item_genres):
-                    genre_updated = True
-                    item.addGenre(genre)
-                    logger.info(f"Detail: Genre {genre} added")
+            def edit_tags(attr, obj, key=None, extra=None, movie_library=False):
+                if key is None:
+                    key = f"{attr}s"
+                if attr in methods and f"{attr}.sync" in methods:
+                    logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
+                elif attr in methods or f"{attr}.sync" in methods:
+                    attr_key = attr if attr in methods else f"{attr}.sync"
+                    if movie_library and not self.is_movie:
+                        logger.error(f"Metadata Error: {attr_key} attribute only works for movie libraries")
+                    elif meta[methods[attr_key]] or extra:
+                        item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
+                        input_tags = []
+                        if meta[methods[attr_key]]:
+                            input_tags.extend(util.get_list(meta[methods[attr_key]]))
+                        if extra:
+                            input_tags.extend(extra)
+                        if f"{attr}.sync" in methods:
+                            remove_method = getattr(obj, f"remove{attr.capitalize()}")
+                            for tag in (t for t in item_tags if t not in input_tags):
+                                updated = True
+                                remove_method(tag)
+                                logger.info(f"Detail: {attr.capitalize()} {tag} removed")
+                        add_method = getattr(obj, f"add{attr.capitalize()}")
+                        for tag in (t for t in input_tags if t not in item_tags):
+                            updated = True
+                            add_method(tag)
+                            logger.info(f"Detail: {attr.capitalize()} {tag} added")
+                    else:
+                        logger.error(f"Metadata Error: {attr} attribute is blank")
 
-            if "label" in methods:
-                if meta[methods["label"]]:
-                    item_labels = [label.tag for label in item.labels]
-                    labels = util.get_list(meta[methods["label"]])
-                    if "label_sync_mode" in methods:
-                        if meta[methods["label_sync_mode"]] is None:
-                            logger.error("Metadata Error: label_sync_mode attribute is blank defaulting to append")
-                        elif str(meta[methods["label_sync_mode"]]).lower() not in ["append", "sync"]:
-                            logger.error("Metadata Error: label_sync_mode attribute must be either 'append' or 'sync' defaulting to append")
-                        elif str(meta[methods["label_sync_mode"]]).lower() == "sync":
-                            for label in (la for la in item_labels if la not in labels):
-                                label_updated = True
-                                item.removeLabel(label)
-                                logger.info(f"Detail: Label {label} removed")
-                    for label in (la for la in labels if la not in item_labels):
-                        label_updated = True
-                        item.addLabel(label)
-                        logger.info(f"Detail: Label {label} added")
-                else:
-                    logger.error("Metadata Error: label attribute is blank")
+            genres = [genre.name for genre in tmdb_item.genres] if tmdb_item else []
+            edit_tags("genre", item, extra=genres)
+            edit_tags("label", item)
+            edit_tags("collection", item)
+            edit_tags("country", item, key="countries", movie_library=True)
+            edit_tags("director", item, movie_library=True)
+            edit_tags("producer", item, movie_library=True)
+            edit_tags("writer", item, movie_library=True)
 
             if "seasons" in methods and self.is_show:
                 if meta[methods["seasons"]]:
@@ -570,7 +664,7 @@ class PlexAPI:
                                 add_edit("summary", season.summary, season_methods, season_dict)
                                 if len(edits) > 0:
                                     logger.debug(f"Season: {season_id} Details Update: {edits}")
-                                    season_updated = True
+                                    updated = True
                                     try:
                                         season.edit(**edits)
                                         season.reload()
@@ -582,6 +676,8 @@ class PlexAPI:
                             logger.error(f"Metadata Error: Season: {season_id} invalid, it must be an integer")
                 else:
                     logger.error("Metadata Error: seasons attribute is blank")
+            elif "seasons" in methods:
+                logger.error("Metadata Error: seasons attribute only works for show libraries")
 
             if "episodes" in methods and self.is_show:
                 if meta[methods["episodes"]]:
@@ -620,7 +716,7 @@ class PlexAPI:
                                 add_edit("summary", episode.summary, episode_dict, episode_methods)
                                 if len(edits) > 0:
                                     logger.debug(f"Season: {season_id} Episode: {episode_id} Details Update: {edits}")
-                                    episode_updated = True
+                                    updated = True
                                     try:
                                         episode.edit(**edits)
                                         episode.reload()
@@ -629,10 +725,15 @@ class PlexAPI:
                                     except BadRequest:
                                         util.print_stacktrace()
                                         logger.error(f"Season: {season_id} Episode: {episode_id} Details Update Failed")
+                                edit_tags("director", episode)
+                                edit_tags("writer", episode)
+
                         else:
                             logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
                 else:
                     logger.error("Metadata Error: episodes attribute is blank")
+            elif "episodes" in methods:
+                logger.error("Metadata Error: episodes attribute only works for show libraries")
 
-            if not details_updated and not advance_details_updated and not genre_updated and not label_updated and not season_updated and not episode_updated:
+            if not updated:
                 logger.info(f"{item_type}: {mapping_name} Details Update Not Needed")

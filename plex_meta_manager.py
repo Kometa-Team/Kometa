@@ -13,6 +13,7 @@ parser.add_argument("--my-tests", dest="tests", help=argparse.SUPPRESS, action="
 parser.add_argument("--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", dest="time", help="Time to update each day use format HH:MM (Default: 03:00)", default="03:00", type=str)
+parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
 parser.add_argument("-cl", "--collection", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
@@ -37,6 +38,7 @@ test = check_bool("PMM_TEST", args.test)
 debug = check_bool("PMM_DEBUG", args.debug)
 run = check_bool("PMM_RUN", args.run)
 collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
+resume = os.environ.get("PMM_RESUME") if os.environ.get("PMM_RESUME") else args.resume
 
 time_to_run = os.environ.get("PMM_TIME") if os.environ.get("PMM_TIME") else args.time
 if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", time_to_run):
@@ -87,14 +89,14 @@ util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_
 util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
 util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
 util.centered("                                                                     |___/           ")
-util.centered("    Version: 1.6.4                                                                   ")
+util.centered("    Version: 1.7.0                                                                   ")
 util.separator()
 
 if my_tests:
     tests.run_tests(default_dir)
     sys.exit(0)
 
-def start(config_path, is_test, daily, collections_to_run):
+def start(config_path, is_test, daily, collections_to_run, resume_from):
     if daily:               start_type = "Daily "
     elif is_test:           start_type = "Test "
     elif collections_to_run:       start_type = "Collections "
@@ -103,7 +105,7 @@ def start(config_path, is_test, daily, collections_to_run):
     util.separator(f"Starting {start_type}Run")
     try:
         config = Config(default_dir, config_path)
-        config.update_libraries(is_test, collections_to_run)
+        config.update_libraries(is_test, collections_to_run, resume_from)
     except Exception as e:
         util.print_stacktrace()
         logger.critical(e)
@@ -111,11 +113,11 @@ def start(config_path, is_test, daily, collections_to_run):
     util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
 
 try:
-    if run or test or collections:
-        start(config_file, test, False, collections)
+    if run or test or collections or resume:
+        start(config_file, test, False, collections, resume)
     else:
         length = 0
-        schedule.every().day.at(time_to_run).do(start, config_file, False, True, None)
+        schedule.every().day.at(time_to_run).do(start, config_file, False, True, None, None)
         while True:
             schedule.run_pending()
             current = datetime.now().strftime("%H:%M")
