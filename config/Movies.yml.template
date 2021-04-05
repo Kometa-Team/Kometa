@@ -1,15 +1,15 @@
 templates:
   Chart Alpha:
-    sort_title: ++++_<<num>><<collection_name>>
+    sort_title: +_<<num>><<collection_name>>
     sync_mode: sync
     collection_order: alpha
   Chart Release:
-    sort_title: ++++_<<collection_name>>
+    sort_title: +_<<collection_name>>
     sync_mode: sync
     collection_order: release
   Best of:
     trakt_list: https://trakt.tv/users/lish408/lists/rotten-tomatoes-best-of-<<year>>
-    sort_title: ++++_Best of <<year>>
+    sort_title: +_Best of <<year>>
     sync_mode: sync
     summary: Rotten Tomatoes Best Movies of <<year>>
     collection_order: release
@@ -17,7 +17,7 @@ templates:
     optional:
       - company
     tmdb_company: <<company>>
-    sort_title: +++_<<collection_name>>
+    sort_title: ++_<<collection_name>>
     sync_mode: sync
     collection_order: alpha
   IMDb Genre:
@@ -29,24 +29,24 @@ templates:
       limit: <<limit>>
     - url: https://www.imdb.com/search/title/?title_type=<<title>>&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=<<genre>>&sort=user_rating,desc
       limit: <<limit>>
-    sort_title: ++_<<collection_name>>
+    sort_title: +++_<<collection_name>>
     sync_mode: sync
     collection_order: alpha
   Other Genre:
-    sort_title: ++_<<collection_name>>
+    sort_title: +++_<<collection_name>>
     sync_mode: sync
     collection_order: alpha
   Actor:
     actor: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: ++++_<<collection_name>>
     sync_mode: sync
     collection_order: release
   Actor Director:
     actor: tmdb
     director: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: ++++_<<collection_name>>
     sync_mode: sync
     collection_order: release
   Actor Director Writer:
@@ -54,33 +54,33 @@ templates:
     director: tmdb
     writer: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: ++++_<<collection_name>>
     sync_mode: sync
     collection_order: release
   Actor Writer:
     actor: tmdb
     writer: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: ++++_<<collection_name>>
     sync_mode: sync
     collection_order: release
   Director:
     director: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: ++++_<<collection_name>>
     sync_mode: sync
     collection_order: release
   Director Writer:
     director: tmdb
     writer: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: ++++_<<collection_name>>
     sync_mode: sync
     collection_order: release
   Writer:
     writer: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: ++++_<<collection_name>>
     sync_mode: sync
     collection_order: release
   Collection:
