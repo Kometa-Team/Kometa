@@ -1,5 +1,5 @@
 # Plex Meta Manager
-#### Version 1.7.0
+#### Version 1.7.1
 
 The original concept for Plex Meta Manager is [Plex Auto Collections](https://github.com/mza921/Plex-Auto-Collections), but this is rewritten from the ground up to be able to include a scheduler, metadata edits, multiple libraries, and logging. Plex Meta Manager is a Python 3 script that can be continuously run using YAML configuration files to update on a schedule the metadata of the movies, shows, and collections in your libraries as well as automatically build collections based on various methods all detailed in the wiki. Some collection examples that the script can automatically build and update daily include Plex Based Searches like actor, genre, or studio collections or Collections based on TMDb, IMDb, Trakt, TVDb, AniDB, or MyAnimeList lists and various other services.
 
@@ -12,7 +12,7 @@ The script is designed to work with most Metadata agents including the new Plex 
 ## Getting Started
 
 1. Install Plex Meta Manager either by installing Python3 and following the [Local Installation Guide](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Local-Installation)
-   or by installing Docker and following the [Docker Installation Guide](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Docker-Installation) or the [unRAID Installation Guide](https://github.com/meisnate12/Plex-Meta-Manager/wiki/unRAID-Installation)
+   or by installing Docker and following the [Docker Installation Guide](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Docker-Installation) or the [unRAID Installation Guide](https://github.com/meisnate12/Plex-Meta-Manager/wiki/unRAID-Installation).
 2. Once installed, you have to create a [Configuration File](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Configuration-File) filled with all your values to connect to the various services. 
 3. After that you can start updating Metadata and building automatic Collections by creating a [Metadata File](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Metadata-File) for each Library you want to interact with.
 4. Explore the [Wiki](https://github.com/meisnate12/Plex-Meta-Manager/wiki) to see all the different Collection Builders that can be used to create collections. 
