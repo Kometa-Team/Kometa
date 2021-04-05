@@ -602,6 +602,7 @@ class CollectionBuilder:
                         if method_name == "filters":
                             for filter_name, filter_data in method_data.items():
                                 modifier = filter_name[-4:].lower()
+                                modifier = modifier if modifier in [".not", ".lte", ".gte"] else ""
                                 method = filter_name[:-4].lower() if modifier in [".not", ".lte", ".gte"] else filter_name.lower()
                                 if method in method_alias:
                                     filter_method = f"{method_alias[method]}{modifier}"
