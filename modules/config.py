@@ -24,7 +24,28 @@ logger = logging.getLogger("Plex Meta Manager")
 
 sync_modes = {"append": "Only Add Items to the Collection", "sync": "Add & Remove Items from the Collection"}
 radarr_versions = {"v2": "For Radarr 0.2", "v3": "For Radarr 3.0"}
+radarr_availabilities = {
+    "announced": "For Announced",
+    "cinemas": "For In Cinemas",
+    "released": "For Released",
+    "db": "For PreDB"
+}
 sonarr_versions = {"v2": "For Sonarr 0.2", "v3": "For Sonarr 3.0"}
+sonarr_monitors = {
+    "all": "Monitor all episodes except specials",
+    "future": "Monitor episodes that have not aired yet",
+    "missing": "Monitor episodes that do not have files or have not aired yet",
+    "existing": "Monitor episodes that have files or have not aired yet",
+    "pilot": "Monitor the first episode. All other episodes will be ignored",
+    "first": "Monitor all episodes of the first season. All other seasons will be ignored",
+    "latest": "Monitor all episodes of the latest season and future seasons",
+    "none": "No episodes will be monitored"
+}
+sonarr_series_types = {
+    "standard": "Episodes released with SxxEyy pattern",
+    "daily": "Episodes released daily or less frequently that use year-month-day (2017-05-25)",
+    "anime": "Episodes released using an absolute episode number"
+}
 mass_genre_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
 library_types = {"movie": "For Movie Libraries", "show": "For Show Libraries"}
 
@@ -257,9 +278,11 @@ class Config:
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True)
         self.general["radarr"]["token"] = check_for_attribute(self.data, "token", parent="radarr", default_is_none=True)
-        self.general["radarr"]["version"] = check_for_attribute(self.data, "version", parent="radarr", test_list=radarr_versions, default="v2")
+        self.general["radarr"]["version"] = check_for_attribute(self.data, "version", parent="radarr", test_list=radarr_versions, default="v3")
         self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False)
         self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True)
+        self.general["radarr"]["monitor"] = check_for_attribute(self.data, "monitor", parent="radarr", var_type="bool", default=True)
+        self.general["radarr"]["availability"] = check_for_attribute(self.data, "availability", parent="radarr", test_list=radarr_availabilities, default="announced")
         self.general["radarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="radarr", default_is_none=True)
         self.general["radarr"]["tag"] = check_for_attribute(self.data, "tag", parent="radarr", var_type="lower_list", default_is_none=True)
         self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
@@ -267,14 +290,17 @@ class Config:
         self.general["sonarr"] = {}
         self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", default_is_none=True)
         self.general["sonarr"]["token"] = check_for_attribute(self.data, "token", parent="sonarr", default_is_none=True)
-        self.general["sonarr"]["version"] = check_for_attribute(self.data, "version", parent="sonarr", test_list=sonarr_versions, default="v2")
-        self.general["sonarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="sonarr", default_is_none=True)
-        self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True)
-        self.general["sonarr"]["language_profile"] = check_for_attribute(self.data, "language_profile", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["version"] = check_for_attribute(self.data, "version", parent="sonarr", test_list=sonarr_versions, default="v3")
         self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False)
-        self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False)
+        self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["monitor"] = check_for_attribute(self.data, "monitor", parent="sonarr", test_list=sonarr_monitors, default="all")
+        self.general["sonarr"]["quality_profile"] = check_for_attribute(self.data, "quality_profile", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["language_profile"] = check_for_attribute(self.data, "language_profile", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["series_type"] = check_for_attribute(self.data, "series_type", parent="sonarr", test_list=sonarr_series_types, default="standard")
         self.general["sonarr"]["season_folder"] = check_for_attribute(self.data, "season_folder", parent="sonarr", var_type="bool", default=True)
         self.general["sonarr"]["tag"] = check_for_attribute(self.data, "tag", parent="sonarr", var_type="lower_list", default_is_none=True)
+        self.general["sonarr"]["search"] = check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False)
+        self.general["sonarr"]["cutoff_search"] = check_for_attribute(self.data, "cutoff_search", parent="sonarr", var_type="bool", default=False)
 
         self.general["tautulli"] = {}
         self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True)
@@ -354,6 +380,8 @@ class Config:
                     radarr_params["version"] = check_for_attribute(lib, "version", parent="radarr", test_list=radarr_versions, default=self.general["radarr"]["version"], save=False)
                     radarr_params["add"] = check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
                     radarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
+                    radarr_params["monitor"] = check_for_attribute(lib, "monitor", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor"], save=False)
+                    radarr_params["availability"] = check_for_attribute(lib, "availability", parent="radarr", test_list=radarr_availabilities, default=self.general["radarr"]["availability"], save=False)
                     radarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False)
                     radarr_params["tag"] = check_for_attribute(lib, "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
                     radarr_params["search"] = check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
@@ -369,16 +397,19 @@ class Config:
                     sonarr_params["url"] = check_for_attribute(lib, "url", parent="sonarr", default=self.general["sonarr"]["url"], req_default=True, save=False)
                     sonarr_params["token"] = check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False)
                     sonarr_params["version"] = check_for_attribute(lib, "version", parent="sonarr", test_list=sonarr_versions, default=self.general["sonarr"]["version"], save=False)
-                    sonarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="sonarr", default=self.general["sonarr"]["quality_profile"], req_default=True, save=False)
+                    sonarr_params["add"] = check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
                     sonarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
+                    sonarr_params["monitor"] = check_for_attribute(lib, "monitor", parent="sonarr", test_list=sonarr_monitors, default=self.general["sonarr"]["monitor"], save=False)
+                    sonarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="sonarr", default=self.general["sonarr"]["quality_profile"], req_default=True, save=False)
                     if self.general["sonarr"]["language_profile"]:
                         sonarr_params["language_profile"] = check_for_attribute(lib, "language_profile", parent="sonarr", default=self.general["sonarr"]["language_profile"], save=False)
                     else:
                         sonarr_params["language_profile"] = check_for_attribute(lib, "language_profile", parent="sonarr", default_is_none=True, save=False)
-                    sonarr_params["add"] = check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
-                    sonarr_params["search"] = check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
+                    sonarr_params["series_type"] = check_for_attribute(lib, "series_type", parent="sonarr", test_list=sonarr_series_types, default=self.general["sonarr"]["series_type"], save=False)
                     sonarr_params["season_folder"] = check_for_attribute(lib, "season_folder", parent="sonarr", var_type="bool", default=self.general["sonarr"]["season_folder"], save=False)
                     sonarr_params["tag"] = check_for_attribute(lib, "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
+                    sonarr_params["search"] = check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
+                    sonarr_params["cutoff_search"] = check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False)
                     library.Sonarr = SonarrAPI(sonarr_params, library.Plex.language)
                 except Failed as e:
                     util.print_multiline(e, error=True)

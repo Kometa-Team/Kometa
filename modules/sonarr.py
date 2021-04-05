@@ -5,53 +5,65 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
+series_type = ["standard", "daily", "anime"]
+monitor_translation = {
+    "all": "all",
+    "future": "future",
+    "missing": "missing",
+    "existing": "existing",
+    "pilot": "pilot",
+    "first": "firstSeason",
+    "latest": "latestSeason",
+    "none": "none"
+}
+
 class SonarrAPI:
     def __init__(self, params, language):
-        self.base_url = f"{params['url']}/api{'/v3/' if params['version'] == 'v3' else '/'}"
+        self.url = params["url"]
         self.token = params["token"]
+        self.version = params["version"]
+        self.base_url = f"{self.url}/api{'/v3/' if self.version == 'v3' else '/'}"
         try:
             result = requests.get(f"{self.base_url}system/status", params={"apikey": f"{self.token}"}).json()
         except Exception:
             util.print_stacktrace()
-            raise Failed(f"Sonarr Error: Could not connect to Sonarr at {params['url']}")
+            raise Failed(f"Sonarr Error: Could not connect to Sonarr at {self.url}")
         if "error" in result and result["error"] == "Unauthorized":
             raise Failed("Sonarr Error: Invalid API Key")
         if "version" not in result:
             raise Failed("Sonarr Error: Unexpected Response Check URL")
-        self.quality_profile_id = None
+        self.add = params["add"]
+        self.root_folder_path = params["root_folder_path"]
+        self.monitor = params["monitor"]
+        self.quality_profile_id = self.get_profile_id(params["quality_profile"], "quality_profile")
+        self.language_profile_id = None
+        if self.version == "v3" and params["language_profile"] is not None:
+            self.language_profile_id = self.get_profile_id(params["language_profile"], "language_profile")
+        if self.language_profile_id is None:
+            self.language_profile_id = 1
+        self.series_type = params["series_type"]
+        self.season_folder = params["season_folder"]
+        self.tag = params["tag"]
+        self.tags = self.get_tags()
+        self.search = params["search"]
+        self.cutoff_search = params["cutoff_search"]
+        self.language = language
+
+    def get_profile_id(self, profile_name, profile_type):
         profiles = ""
-        for profile in self.send_get("qualityProfile" if params["version"] == "v3" else "profile"):
+        if profile_type == "quality_profile" and self.version == "v3":
+            endpoint = "qualityProfile"
+        elif profile_type == "language_profile":
+            endpoint = "languageProfile"
+        else:
+            endpoint = "profile"
+        for profile in self.send_get(endpoint):
             if len(profiles) > 0:
                 profiles += ", "
             profiles += profile["name"]
-            if profile["name"] == params["quality_profile"]:
-                self.quality_profile_id = profile["id"]
-        if not self.quality_profile_id:
-            raise Failed(f"Sonarr Error: quality_profile: {params['quality_profile']} does not exist in sonarr. Profiles available: {profiles}")
-
-        self.language_profile_id = None
-        if params["version"] == "v3" and params["language_profile"] is not None:
-            profiles = ""
-            for profile in self.send_get("languageProfile"):
-                if len(profiles) > 0:
-                    profiles += ", "
-                profiles += profile["name"]
-                if profile["name"] == params["language_profile"]:
-                    self.language_profile_id = profile["id"]
-            if not self.quality_profile_id:
-                raise Failed(f"Sonarr Error: language_profile: {params['language_profile']} does not exist in sonarr. Profiles available: {profiles}")
-
-        if self.language_profile_id is None:
-            self.language_profile_id = 1
-
-        self.tags = self.get_tags()
-        self.language = language
-        self.version = params["version"]
-        self.root_folder_path = params["root_folder_path"]
-        self.add = params["add"]
-        self.search = params["search"]
-        self.season_folder = params["season_folder"]
-        self.tag = params["tag"]
+            if profile["name"] == profile_name:
+                return profile["id"]
+        raise Failed(f"Sonarr Error: {profile_type}: {profile_name} does not exist in sonarr. Profiles available: {profiles}")
 
     def get_tags(self):
         return {tag["label"]: tag["id"] for tag in self.send_get("tag")}
@@ -72,13 +84,20 @@ class SonarrAPI:
         else:
             raise Failed(f"Sonarr Error: TVDb ID: {tvdb_id} not found")
 
-    def add_tvdb(self, tvdb_ids, tags=None, folder=None):
+    def add_tvdb(self, tvdb_ids, **options):
         logger.info("")
         logger.debug(f"TVDb IDs: {tvdb_ids}")
         tag_nums = []
         add_count = 0
-        if tags is None:
-            tags = self.tag
+        folder = options["folder"] if "folder" in options else self.root_folder_path
+        monitor = options["monitor"] if "monitor" in options else self.monitor
+        quality_profile_id = self.get_profile_id(options["quality"], "quality_profile") if "quality" in options else self.quality_profile_id
+        language_profile_id = self.get_profile_id(options["language"], "language_profile") if "quality" in options else self.quality_profile_id
+        series = options["series"] if "series" in options else self.series_type
+        season = options["season"] if "season" in options else self.season_folder
+        tags = options["tag"] if "tag" in options else self.tag
+        search = options["search"] if "search" in options else self.search
+        cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
         if tags:
             self.add_tags(tags)
             tag_nums = [self.tags[label] for label in tags if label in self.tags]
@@ -96,17 +115,22 @@ class SonarrAPI:
 
             url_json = {
                 "title": show_info["title"],
-                f"{'qualityProfileId' if self.version == 'v3' else 'profileId'}": self.quality_profile_id,
-                "languageProfileId": self.language_profile_id,
+                f"{'qualityProfileId' if self.version == 'v3' else 'profileId'}": quality_profile_id,
+                "languageProfileId": language_profile_id,
                 "tvdbId": int(tvdb_id),
                 "titleslug": show_info["titleSlug"],
                 "language": self.language,
-                "monitored": True,
-                "seasonFolder": self.season_folder,
-                "rootFolderPath": self.root_folder_path if folder is None else folder,
+                "monitored": monitor != "none",
+                "seasonFolder": season,
+                "seriesType": series,
+                "rootFolderPath": folder,
                 "seasons": [],
                 "images": [{"covertype": "poster", "url": poster_url}],
-                "addOptions": {"searchForMissingEpisodes": self.search}
+                "addOptions": {
+                    "searchForMissingEpisodes": search,
+                    "searchForCutoffUnmetEpisodes": cutoff_search,
+                    "monitor": monitor_translation[monitor]
+                }
             }
             if tag_nums:
                 url_json["tags"] = tag_nums

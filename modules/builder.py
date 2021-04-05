@@ -1,6 +1,6 @@
 import glob, logging, os, re
 from datetime import datetime, timedelta
-from modules import anidb, anilist, imdb, letterboxd, mal, plex, tautulli, tmdb, trakttv, tvdb, util
+from modules import anidb, anilist, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed
 from plexapi.collection import Collections
 from plexapi.exceptions import BadRequest, NotFound
@@ -81,13 +81,12 @@ numbered_builders = [
     "trakt_collected"
 ]
 all_details = [
-    "sort_title", "content_rating",
-    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary", "tvdb_description", "trakt_description", "letterboxd_description",
-    "collection_mode", "collection_order",
+    "sort_title", "content_rating", "collection_mode", "collection_order",
+    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary",
+    "tvdb_description", "trakt_description", "letterboxd_description",
     "url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster",
     "url_background", "tmdb_background", "tvdb_background", "file_background",
-    "name_mapping", "add_to_arr", "arr_tag", "arr_folder", "label",
-    "show_filtered", "show_missing", "save_missing"
+    "name_mapping", "label", "show_filtered", "show_missing", "save_missing"
 ]
 collectionless_details = [
     "sort_title", "content_rating",
@@ -106,7 +105,6 @@ ignored_details = [
     "tmdb_person"
 ]
 boolean_details = [
-    "add_to_arr",
     "show_filtered",
     "show_missing",
     "save_missing"
@@ -152,12 +150,12 @@ class CollectionBuilder:
         self.name = name
         self.data = data
         self.details = {
-            "arr_tag": None,
-            "arr_folder": None,
             "show_filtered": library.show_filtered,
             "show_missing": library.show_missing,
             "save_missing": library.save_missing
         }
+        self.radarr_options = {}
+        self.sonarr_options = {}
         self.missing_movies = []
         self.missing_shows = []
         self.methods = []
@@ -167,6 +165,8 @@ class CollectionBuilder:
         self.summaries = {}
         self.schedule = ""
         self.rating_key_map = {}
+        self.add_to_radarr = None
+        self.add_to_sonarr = None
         current_time = datetime.now()
         current_year = current_time.year
 
@@ -355,20 +355,28 @@ class CollectionBuilder:
             else:
                 raise Failed("Collection Error: tmdb_person attribute is blank")
 
-        for method_name, method_data in self.data.items():
-            if "trakt" in method_name.lower() and not config.Trakt:                     raise Failed(f"Collection Error: {method_name} requires Trakt todo be configured")
-            elif "imdb" in method_name.lower() and not config.IMDb:                     raise Failed(f"Collection Error: {method_name} requires TMDb or Trakt to be configured")
-            elif "tautulli" in method_name.lower() and not self.library.Tautulli:       raise Failed(f"Collection Error: {method_name} requires Tautulli to be configured")
-            elif "mal" in method_name.lower() and not config.MyAnimeList:               raise Failed(f"Collection Error: {method_name} requires MyAnimeList to be configured")
+        for method_key, method_data in self.data.items():
+            if "trakt" in method_key.lower() and not config.Trakt:                      raise Failed(f"Collection Error: {method_key} requires Trakt todo be configured")
+            elif "imdb" in method_key.lower() and not config.IMDb:                      raise Failed(f"Collection Error: {method_key} requires TMDb or Trakt to be configured")
+            elif "radarr" in method_key.lower() and not self.library.Radarr:            raise Failed(f"Collection Error: {method_key} requires Radarr to be configured")
+            elif "sonarr" in method_key.lower() and not self.library.Sonarr:            raise Failed(f"Collection Error: {method_key} requires Sonarr to be configured")
+            elif "tautulli" in method_key.lower() and not self.library.Tautulli:        raise Failed(f"Collection Error: {method_key} requires Tautulli to be configured")
+            elif "mal" in method_key.lower() and not config.MyAnimeList:                raise Failed(f"Collection Error: {method_key} requires MyAnimeList to be configured")
             elif method_data is not None:
                 logger.debug("")
-                logger.debug(f"Validating Method: {method_name}")
+                logger.debug(f"Validating Method: {method_key}")
                 logger.debug(f"Value: {method_data}")
-                if method_name.lower() in method_alias:
-                    method_name = method_alias[method_name.lower()]
-                    logger.warning(f"Collection Warning: {method_name} attribute will run as {method_name}")
+                if method_key.lower() in method_alias:
+                    method_name = method_alias[method_key.lower()]
+                    logger.warning(f"Collection Warning: {method_key} attribute will run as {method_name}")
+                elif method_key.lower() == "add_to_arr":
+                    method_name = "radarr_add" if self.library.is_movie else "sonarr_add"
+                    logger.warning(f"Collection Warning: {method_key} attribute will run as {method_name}")
+                elif method_key.lower() in ["arr_tag", "arr_folder"]:
+                    method_name = f"{'rad' if self.library.is_movie else 'son'}{method_key.lower()}"
+                    logger.warning(f"Collection Warning: {method_key} attribute will run as {method_name}")
                 else:
-                    method_name = method_name.lower()
+                    method_name = method_key.lower()
                 if method_name in show_only_builders and self.library.is_movie:
                     raise Failed(f"Collection Error: {method_name} attribute only works for show libraries")
                 elif method_name in movie_only_builders and self.library.is_show:
@@ -441,7 +449,7 @@ class CollectionBuilder:
                 elif method_name == "sync_mode":
                     if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
                     else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
-                elif method_name in ["arr_tag", "label"]:
+                elif method_name == "label":
                     self.details[method_name] = util.get_list(method_data)
                 elif method_name in boolean_details:
                     if isinstance(method_data, bool):                           self.details[method_name] = method_data
@@ -450,6 +458,52 @@ class CollectionBuilder:
                     else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
                 elif method_name in all_details:
                     self.details[method_name] = method_data
+                elif method_name == "radarr_add":
+                    self.add_to_radarr = True
+                elif method_name == "radarr_folder":
+                    self.radarr_options["folder"] = method_data
+                elif method_name in ["radarr_monitor", "radarr_search"]:
+                    if isinstance(method_data, bool):                           self.radarr_options[method_name[7:]] = method_data
+                    elif str(method_data).lower() in ["t", "true"]:             self.radarr_options[method_name[7:]] = True
+                    elif str(method_data).lower() in ["f", "false"]:            self.radarr_options[method_name[7:]] = False
+                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                elif method_name == "radarr_availability":
+                    if str(method_data).lower() in radarr.availability_translation:
+                        self.radarr_options["availability"] = str(method_data).lower()
+                    else:
+                        raise Failed(f"Collection Error: {method_name} attribute must be either announced, cinemas, released or db")
+                elif method_name == "radarr_quality":
+                    self.library.Radarr.get_profile_id(method_data)
+                    self.radarr_options["quality"] = method_data
+                elif method_name == "radarr_tag":
+                    self.radarr_options["tag"] = util.get_list(method_data)
+                elif method_name == "sonarr_add":
+                    self.add_to_sonarr = True
+                elif method_name == "sonarr_folder":
+                    self.sonarr_options["folder"] = method_data
+                elif method_name == "sonarr_monitor":
+                    if str(method_data).lower() in sonarr.monitor_translation:
+                        self.sonarr_options["monitor"] = str(method_data).lower()
+                    else:
+                        raise Failed(f"Collection Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
+                elif method_name == "sonarr_quality":
+                    self.library.Sonarr.get_profile_id(method_data, "quality_profile")
+                    self.sonarr_options["quality"] = method_data
+                elif method_name == "sonarr_language":
+                    self.library.Sonarr.get_profile_id(method_data, "language_profile")
+                    self.sonarr_options["language"] = method_data
+                elif method_name == "sonarr_series":
+                    if str(method_data).lower() in sonarr.series_type:
+                        self.sonarr_options["series"] = str(method_data).lower()
+                    else:
+                        raise Failed(f"Collection Error: {method_name} attribute must be either standard, daily, or anime")
+                elif method_name in ["sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
+                    if isinstance(method_data, bool):                           self.sonarr_options[method_name[7:]] = method_data
+                    elif str(method_data).lower() in ["t", "true"]:             self.sonarr_options[method_name[7:]] = True
+                    elif str(method_data).lower() in ["f", "false"]:            self.sonarr_options[method_name[7:]] = False
+                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                elif method_name == "sonarr_tag":
+                    self.sonarr_options["tag"] = util.get_list(method_data)
                 elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
                     self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
                 elif method_name in ["year.greater", "year.less"]:
@@ -898,10 +952,10 @@ class CollectionBuilder:
                     self.methods.append((method_name, util.get_list(method_data)))
                 elif method_name not in ignored_details:
                     raise Failed(f"Collection Error: {method_name} attribute not supported")
-            elif method_name in all_builders or method_name in method_alias or method_name in plex.searches:
-                raise Failed(f"Collection Error: {method_name} attribute is blank")
+            elif method_key.lower() in all_builders or method_key.lower() in method_alias or method_key.lower() in plex.searches:
+                raise Failed(f"Collection Error: {method_key} attribute is blank")
             else:
-                logger.warning(f"Collection Warning: {method_name} attribute is blank")
+                logger.warning(f"Collection Warning: {method_key} attribute is blank")
 
         self.sync = self.library.sync_mode == "sync"
         if "sync_mode" in methods:
@@ -912,14 +966,14 @@ class CollectionBuilder:
             else:
                 self.sync = self.data[methods["sync_mode"]].lower() == "sync"
 
-        self.do_arr = False
-        if self.library.Radarr:
-            self.do_arr = self.details["add_to_arr"] if "add_to_arr" in self.details else self.library.Radarr.add
-        if self.library.Sonarr:
-            self.do_arr = self.details["add_to_arr"] if "add_to_arr" in self.details else self.library.Sonarr.add
+        if self.add_to_radarr is None:
+            self.add_to_radarr = self.library.Radarr.add if self.library.Radarr else False
+        if self.add_to_sonarr is None:
+            self.add_to_sonarr = self.library.Sonarr.add if self.library.Sonarr else False
 
         if self.collectionless:
-            self.details["add_to_arr"] = False
+            self.add_to_radarr = False
+            self.add_to_sonarr = False
             self.details["collection_mode"] = "hide"
             self.sync = True
 
@@ -1001,8 +1055,11 @@ class CollectionBuilder:
                         logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_movies_with_names, True)
-                        if self.do_arr and self.library.Radarr:
-                            self.library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], tags=self.details["arr_tag"], folder=self.details["arr_folder"])
+                        if self.add_to_radarr and self.library.Radarr:
+                            try:
+                                self.library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], **self.radarr_options)
+                            except Failed as e:
+                                logger.error(e)
                         if self.run_again:
                             self.missing_movies.extend([missing_id for title, missing_id in missing_movies_with_names])
                     if len(missing_shows) > 0 and self.library.is_show:
@@ -1030,8 +1087,11 @@ class CollectionBuilder:
                         logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_shows_with_names, False)
-                        if self.do_arr and self.library.Sonarr:
-                            self.library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], tags=self.details["arr_tag"], folder=self.details["arr_folder"])
+                        if self.add_to_sonarr and self.library.Sonarr:
+                            try:
+                                self.library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], **self.sonarr_options)
+                            except Failed as e:
+                                logger.error(e)
                         if self.run_again:
                             self.missing_shows.extend([missing_id for title, missing_id in missing_shows_with_names])
 
