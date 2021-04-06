@@ -93,7 +93,7 @@ class SonarrAPI:
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
         quality_profile_id = self.get_profile_id(options["quality"], "quality_profile") if "quality" in options else self.quality_profile_id
-        language_profile_id = self.get_profile_id(options["language"], "language_profile") if "quality" in options else self.quality_profile_id
+        language_profile_id = self.get_profile_id(options["language"], "language_profile") if "quality" in options else self.language_profile_id
         series = options["series"] if "series" in options else self.series_type
         season = options["season"] if "season" in options else self.season_folder
         tags = options["tag"] if "tag" in options else self.tag
