@@ -89,7 +89,7 @@ util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_
 util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
 util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
 util.centered("                                                                     |___/           ")
-util.centered("    Version: 1.7.1                                                                   ")
+util.centered("    Version: 1.7.1-beta.1                                                            ")
 util.separator()
 
 if my_tests:
