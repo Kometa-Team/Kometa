@@ -123,6 +123,7 @@ all_filters = [
     "tmdb_vote_count.gte", "tmdb_vote_count.lte",
     "duration.gte", "duration.lte",
     "original_language", "original_language.not",
+    "user_rating.gte", "user_rating.lte",
     "audience_rating.gte", "audience_rating.lte",
     "critic_rating.gte", "critic_rating.lte",
     "studio", "studio.not",
@@ -512,7 +513,7 @@ class CollectionBuilder:
                     self.methods.append(("plex_search", [{method_name: util.check_date(method_data, method_name, return_string=True, plex_date=True)}]))
                 elif method_name in ["added", "added.not", "originally_available", "originally_available.not", "duration.greater", "duration.less"]:
                     self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=1)}]))
-                elif method_name in ["critic_rating.greater", "critic_rating.less", "audience_rating.greater", "audience_rating.less"]:
+                elif method_name in ["user_rating.greater", "user_rating.less", "critic_rating.greater", "critic_rating.less", "audience_rating.greater", "audience_rating.less"]:
                     self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, number_type="float", minimum=0, maximum=10)}]))
                 elif method_name in ["decade", "year", "year.not"]:
                     self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
@@ -619,7 +620,7 @@ class CollectionBuilder:
                                     valid_data = util.check_number(filter_data, f"{filter_method} filter", minimum=1)
                                 elif filter_method in ["year.gte", "year.lte"]:
                                     valid_data = util.check_year(filter_data, current_year, f"{filter_method} filter")
-                                elif filter_method in ["audience_rating.gte", "audience_rating.lte", "critic_rating.gte", "critic_rating.lte"]:
+                                elif filter_method in ["user_rating.gte", "user_rating.lte", "audience_rating.gte", "audience_rating.lte", "critic_rating.gte", "critic_rating.lte"]:
                                     valid_data = util.check_number(filter_data, f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)
                                 elif filter_method in ["originally_available.gte", "originally_available.lte"]:
                                     valid_data = util.check_date(filter_data, f"{filter_method} filter")
@@ -704,7 +705,7 @@ class CollectionBuilder:
                                     searches[search_final] = util.check_date(search_data, search_final, return_string=True, plex_date=True)
                                 elif (search in ["added", "originally_available"] and modifier in ["", ".not"]) or (search in ["duration"] and modifier in [".greater", ".less"]):
                                     searches[search_final] = util.check_number(search_data, search_final, minimum=1)
-                                elif search in ["critic_rating", "audience_rating"] and modifier in [".greater", ".less"]:
+                                elif search in ["user_rating", "critic_rating", "audience_rating"] and modifier in [".greater", ".less"]:
                                     searches[search_final] = util.check_number(search_data, search_final, number_type="float", minimum=0, maximum=10)
                                 elif (search == "decade" and modifier in [""]) or (search == "year" and modifier in ["", ".not"]):
                                     searches[search_final] = util.get_year_list(search_data, current_year, search_final)
@@ -712,7 +713,7 @@ class CollectionBuilder:
                                         or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
                                         or (search in ["resolution", "decade"] and modifier not in [""]) \
                                         or (search in ["added", "originally_available"] and modifier not in ["", ".not", ".before", ".after"]) \
-                                        or (search in ["duration", "critic_rating", "audience_rating"] and modifier not in [".greater", ".less"]) \
+                                        or (search in ["duration", "user_rating", "critic_rating", "audience_rating"] and modifier not in [".greater", ".less"]) \
                                         or (search in ["year"] and modifier not in ["", ".not", ".greater", ".less"]):
                                     raise Failed(f"Collection Error: modifier: {modifier} not supported with the {search} plex search attribute")
                                 else:
