@@ -20,7 +20,8 @@ search_translation = {
     "added": "addedAt",
     "originally_available": "originallyAvailableAt",
     "audience_rating": "audienceRating",
-    "critic_rating": "rating"
+    "critic_rating": "rating",
+    "user_rating": "userRating"
 }
 episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
@@ -45,6 +46,7 @@ filter_alias = {
     "genre": "genres",
     "originally_available": "originallyAvailableAt",
     "tmdb_vote_count": "vote_count",
+    "user_rating": "userRating",
     "writer": "writers"
 }
 searches = [
@@ -66,6 +68,7 @@ searches = [
     "added.before", "added.after",
     "originally_available.before", "originally_available.after",
     "duration.greater", "duration.less",
+    "user_rating.greater", "user_rating.less",
     "audience_rating.greater", "audience_rating.less",
     "critic_rating.greater", "critic_rating.less",
     "year", "year.not", "year.greater", "year.less"
@@ -252,9 +255,9 @@ class PlexAPI:
                 else:
                     search, modifier = os.path.splitext(str(search_method).lower())
                     final_search = search_translation[search] if search in search_translation else search
-                    if search == "originally_available" and modifier == "":
+                    if search in ["added", "originally_available"] and modifier == "":
                         final_mod = ">>"
-                    elif search == "originally_available" and modifier == ".not":
+                    elif search in ["added", "originally_available"] and modifier == ".not":
                         final_mod = "<<"
                     elif search in ["critic_rating", "audience_rating"] and modifier == ".greater":
                         final_mod = "__gte"
