@@ -12,7 +12,7 @@ from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = ["plex_all", "plex_collection", "plex_collectionless", "plex_search",]
+builders = ["plex_all", "plex_collection", "plex_collectionless", "plex_search"]
 search_translation = {
     "audio_language": "audioLanguage",
     "content_rating": "contentRating",
@@ -685,8 +685,8 @@ class PlexAPI:
                         match = re.search("[Ss]\\d+[Ee]\\d+", episode_str)
                         if match:
                             output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
-                            episode_id = int(output[0])
-                            season_id = int(output[1])
+                            season_id = int(output[0])
+                            episode_id = int(output[1])
                             logger.info(f"Updating episode S{episode_id}E{season_id} of {mapping_name}...")
                             try:                                episode = item.episode(season=season_id, episode=episode_id)
                             except NotFound:                    logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")

@@ -677,7 +677,7 @@ class Config:
                         util.print_end(length, str(e))
                         continue
                     new_genres = [genre.name for genre in tmdb_item.genres]
-                elif library.mass_genre_update == "omdb":
+                elif library.mass_genre_update in ["omdb", "imdb"]:
                     if self.OMDb.limit is True:
                         break
                     if "imdb" not in ids:
