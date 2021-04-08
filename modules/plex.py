@@ -178,21 +178,30 @@ class PlexAPI:
         self.missing = {}
         self.run_again = []
 
+    def get_all_collections(self):
+        return self.search(libtype="collection")
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def search(self, title, libtype=None, year=None):
-        if libtype is not None and year is not None:        return self.Plex.search(title=title, year=year, libtype=libtype)
-        elif libtype is not None:                           return self.Plex.search(title=title, libtype=libtype)
-        elif year is not None:                              return self.Plex.search(title=title, year=year)
-        else:                                               return self.Plex.search(title=title)
+    def search(self, title=None, libtype=None, sort=None, maxresults=None, **kwargs):
+        return self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def get_all(self):
+        return self.Plex.all()
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def server_search(self, data):
         return self.PlexServer.search(data)
 
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def add_collection(self, item, name):
+        item.addCollection(name)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, key=False):
         try:
             if key:             return {c.key.lower(): c.key for c in self.Plex.listFilterChoices(search_name)}
@@ -210,9 +219,6 @@ class PlexAPI:
             else:
                 logger.error(f"Plex Error: {search_name}: {value} not found")
         return valid_list
-
-    def get_all_collections(self):
-        return self.Plex.search(libtype="collection")
 
     def get_collection(self, data):
         collection = util.choose_from_list(self.search(str(data), libtype="collection"), "collection", str(data), exact=True)
@@ -237,7 +243,7 @@ class PlexAPI:
         if method == "plex_all":
             if status_message:
                 logger.info(f"Processing {pretty} {media_type}s")
-            items = self.Plex.all()
+            items = self.get_all()
         elif method == "plex_collection":
             if status_message:
                 logger.info(f"Processing {pretty} {data}")
@@ -294,7 +300,7 @@ class PlexAPI:
                 if search_limit:
                     logger.info(f"\t\t      LIMIT {search_limit})")
                 logger.debug(f"Search: {search_terms}")
-            return self.Plex.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
+            return self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
         elif method == "plex_collectionless":
             good_collections = []
             for col in self.get_all_collections():
@@ -310,7 +316,7 @@ class PlexAPI:
                             break
                 if keep_collection:
                     good_collections.append(col.index)
-            all_items = self.Plex.all()
+            all_items = self.get_all()
             length = 0
             for i, item in enumerate(all_items, 1):
                 length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
@@ -446,7 +452,7 @@ class PlexAPI:
             if match:
                 util.print_end(length, f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}")
                 if current in collection_items:             rating_key_map[current.ratingKey] = None
-                else:                                       current.addCollection(name)
+                else:                                       self.add_collection(current, name)
             elif show_filtered is True:
                 logger.info(f"{name} Collection | X | {current.title}")
         media_type = f"{'Movie' if self.is_movie else 'Show'}{'s' if total > 1 else ''}"
