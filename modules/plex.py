@@ -12,7 +12,7 @@ from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = ["plex_all", "plex_collection", "plex_collectionless", "plex_search",]
+builders = ["plex_all", "plex_collection", "plex_collectionless", "plex_search"]
 search_translation = {
     "audio_language": "audioLanguage",
     "content_rating": "contentRating",
