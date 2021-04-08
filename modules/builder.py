@@ -638,13 +638,13 @@ class CollectionBuilder:
                             prefix_list = []
                             if "exclude_prefix" in dict_methods and method_data[dict_methods["exclude_prefix"]]:
                                 if isinstance(method_data[dict_methods["exclude_prefix"]], list):
-                                    prefix_list.extend(method_data[dict_methods["exclude_prefix"]])
+                                    prefix_list.extend([exclude for exclude in method_data[dict_methods["exclude_prefix"]] if exclude])
                                 else:
                                     prefix_list.append(str(method_data[dict_methods["exclude_prefix"]]))
                             exact_list = []
                             if "exclude" in dict_methods and method_data[dict_methods["exclude"]]:
                                 if isinstance(method_data[dict_methods["exclude"]], list):
-                                    exact_list.extend(method_data[dict_methods["exclude"]])
+                                    exact_list.extend([exclude for exclude in method_data[dict_methods["exclude"]] if exclude])
                                 else:
                                     exact_list.append(str(method_data[dict_methods["exclude"]]))
                             if len(prefix_list) == 0 and len(exact_list) == 0:
@@ -1230,6 +1230,9 @@ class CollectionBuilder:
             except BadRequest:
                 logger.error(f"Detail: {image_method} failed to update {message}")
 
+        if len(self.posters) > 0:
+            logger.info("")
+
         if len(self.posters) > 1:
             logger.info(f"{len(self.posters)} posters found:")
             for p in self.posters:
@@ -1254,7 +1257,8 @@ class CollectionBuilder:
         elif "tmdb_show_details" in self.posters:           set_image("tmdb_show_details", self.posters)
         else:                                               logger.info("No poster to update")
 
-        logger.info("")
+        if len(self.backgrounds) > 0:
+            logger.info("")
 
         if len(self.backgrounds) > 1:
             logger.info(f"{len(self.backgrounds)} backgrounds found:")
