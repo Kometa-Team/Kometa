@@ -717,7 +717,10 @@ class CollectionBuilder:
                                     raise Failed(f"Collection Error: modifier: {modifier} not supported with the {search} plex search attribute")
                                 else:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute not supported")
-                            self.methods.append((method_name, [searches]))
+                            if len(searches) > 0:
+                                self.methods.append((method_name, [searches]))
+                            else:
+                                raise Failed("Collection Error: no valid plex search attributes")
                         elif method_name == "tmdb_discover":
                             new_dictionary = {"limit": 100}
                             for discover_name, discover_data in method_data.items():
