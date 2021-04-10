@@ -460,7 +460,10 @@ class CollectionBuilder:
                 elif method_name in all_details:
                     self.details[method_name] = method_data
                 elif method_name == "radarr_add":
-                    self.add_to_radarr = True
+                    if isinstance(method_data, bool):                           self.add_to_radarr = method_data
+                    elif str(method_data).lower() in ["t", "true"]:             self.add_to_radarr = True
+                    elif str(method_data).lower() in ["f", "false"]:            self.add_to_radarr = False
+                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
                 elif method_name == "radarr_folder":
                     self.radarr_options["folder"] = method_data
                 elif method_name in ["radarr_monitor", "radarr_search"]:
@@ -479,7 +482,10 @@ class CollectionBuilder:
                 elif method_name == "radarr_tag":
                     self.radarr_options["tag"] = util.get_list(method_data)
                 elif method_name == "sonarr_add":
-                    self.add_to_sonarr = True
+                    if isinstance(method_data, bool):                           self.add_to_sonarr = method_data
+                    elif str(method_data).lower() in ["t", "true"]:             self.add_to_sonarr = True
+                    elif str(method_data).lower() in ["f", "false"]:            self.add_to_sonarr = False
+                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
                 elif method_name == "sonarr_folder":
                     self.sonarr_options["folder"] = method_data
                 elif method_name == "sonarr_monitor":
