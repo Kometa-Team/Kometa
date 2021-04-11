@@ -453,24 +453,15 @@ class CollectionBuilder:
                 elif method_name == "label":
                     self.details[method_name] = util.get_list(method_data)
                 elif method_name in boolean_details:
-                    if isinstance(method_data, bool):                           self.details[method_name] = method_data
-                    elif str(method_data).lower() in ["t", "true"]:             self.details[method_name] = True
-                    elif str(method_data).lower() in ["f", "false"]:            self.details[method_name] = False
-                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                    self.details[method_name] = util.get_bool(method_name, method_data)
                 elif method_name in all_details:
                     self.details[method_name] = method_data
                 elif method_name == "radarr_add":
-                    if isinstance(method_data, bool):                           self.add_to_radarr = method_data
-                    elif str(method_data).lower() in ["t", "true"]:             self.add_to_radarr = True
-                    elif str(method_data).lower() in ["f", "false"]:            self.add_to_radarr = False
-                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                    self.add_to_radarr = util.get_bool(method_name, method_data)
                 elif method_name == "radarr_folder":
                     self.radarr_options["folder"] = method_data
                 elif method_name in ["radarr_monitor", "radarr_search"]:
-                    if isinstance(method_data, bool):                           self.radarr_options[method_name[7:]] = method_data
-                    elif str(method_data).lower() in ["t", "true"]:             self.radarr_options[method_name[7:]] = True
-                    elif str(method_data).lower() in ["f", "false"]:            self.radarr_options[method_name[7:]] = False
-                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                    self.radarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
                 elif method_name == "radarr_availability":
                     if str(method_data).lower() in radarr.availability_translation:
                         self.radarr_options["availability"] = str(method_data).lower()
@@ -482,10 +473,7 @@ class CollectionBuilder:
                 elif method_name == "radarr_tag":
                     self.radarr_options["tag"] = util.get_list(method_data)
                 elif method_name == "sonarr_add":
-                    if isinstance(method_data, bool):                           self.add_to_sonarr = method_data
-                    elif str(method_data).lower() in ["t", "true"]:             self.add_to_sonarr = True
-                    elif str(method_data).lower() in ["f", "false"]:            self.add_to_sonarr = False
-                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                    self.add_to_sonarr = util.get_bool(method_name, method_data)
                 elif method_name == "sonarr_folder":
                     self.sonarr_options["folder"] = method_data
                 elif method_name == "sonarr_monitor":
@@ -505,10 +493,7 @@ class CollectionBuilder:
                     else:
                         raise Failed(f"Collection Error: {method_name} attribute must be either standard, daily, or anime")
                 elif method_name in ["sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
-                    if isinstance(method_data, bool):                           self.sonarr_options[method_name[7:]] = method_data
-                    elif str(method_data).lower() in ["t", "true"]:             self.sonarr_options[method_name[7:]] = True
-                    elif str(method_data).lower() in ["f", "false"]:            self.sonarr_options[method_name[7:]] = False
-                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                    self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
                 elif method_name == "sonarr_tag":
                     self.sonarr_options["tag"] = util.get_list(method_data)
                 elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
