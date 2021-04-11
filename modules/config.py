@@ -18,6 +18,7 @@ from modules.trakttv import TraktAPI
 from modules.tvdb import TVDbAPI
 from modules.util import Failed
 from plexapi.exceptions import BadRequest
+from retrying import retry
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -727,6 +728,10 @@ class Config:
         util.print_end(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}")
         return movie_map, show_map
 
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def get_guids(self, item):
+        return item.guids
+
     def get_id(self, item, library, length):
         expired = None
         tmdb_id = None
@@ -747,16 +752,26 @@ class Config:
             check_id = guid.netloc
 
             if item_type == "plex" and check_id == "movie":
-                for guid_tag in item.guids:
-                    url_parsed = requests.utils.urlparse(guid_tag.id)
-                    if url_parsed.scheme == "tmdb":                 tmdb_id = int(url_parsed.netloc)
-                    elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
+                try:
+                    for guid_tag in self.get_guids(item):
+                        url_parsed = requests.utils.urlparse(guid_tag.id)
+                        if url_parsed.scheme == "tmdb":                 tmdb_id = int(url_parsed.netloc)
+                        elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
+                except requests.exceptions.ConnectionError:
+                    util.print_stacktrace()
+                    logger.error(f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | No External GUIDs found for {item.title}")
+                    return None, None
             elif item_type == "plex" and check_id == "show":
-                for guid_tag in item.guids:
-                    url_parsed = requests.utils.urlparse(guid_tag.id)
-                    if url_parsed.scheme == "tvdb":                 tvdb_id = int(url_parsed.netloc)
-                    elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
-                    elif url_parsed.scheme == "tmdb":               tmdb_id = int(url_parsed.netloc)
+                try:
+                    for guid_tag in self.get_guids(item):
+                        url_parsed = requests.utils.urlparse(guid_tag.id)
+                        if url_parsed.scheme == "tvdb":                 tvdb_id = int(url_parsed.netloc)
+                        elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
+                        elif url_parsed.scheme == "tmdb":               tmdb_id = int(url_parsed.netloc)
+                except requests.exceptions.ConnectionError:
+                    util.print_stacktrace()
+                    logger.error(f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | No External GUIDs found for {item.title}")
+                    return None, None
             elif item_type == "imdb":                       imdb_id = check_id
             elif item_type == "thetvdb":                    tvdb_id = int(check_id)
             elif item_type == "themoviedb":                 tmdb_id = int(check_id)

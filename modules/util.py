@@ -197,6 +197,16 @@ def choose_from_list(datalist, description, data=None, list_type="title", exact=
     else:
         return None
 
+def get_bool(method_name, method_data):
+    if isinstance(method_data, bool):
+        return method_data
+    elif str(method_data).lower() in ["t", "true"]:
+        return True
+    elif str(method_data).lower() in ["f", "false"]:
+        return False
+    else:
+        raise Failed(f"Collection Error: {method_name} attribute: {method_data} invalid must be either true or false")
+
 def get_list(data, lower=False, split=True):
     if isinstance(data, list):      return data
     elif isinstance(data, dict):    return [data]
@@ -326,9 +336,6 @@ def regex_first_int(data, id_type, default=None):
         return int(default)
     else:
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
-
-def remove_not(method):
-    return method[:-4] if method.endswith(".not") else method
 
 def centered(text, do_print=True):
     if len(text) > screen_width - 2:
