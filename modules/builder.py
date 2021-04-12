@@ -444,14 +444,16 @@ class CollectionBuilder:
                 elif method_name == "file_background":
                     if os.path.exists(method_data):                             self.backgrounds[method_name] = os.path.abspath(method_data)
                     else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
-                elif method_name == "label_sync_mode":
-                    if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
-                    else:                                                       raise Failed("Collection Error: label_sync_mode attribute must be either 'append' or 'sync'")
                 elif method_name == "sync_mode":
                     if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
                     else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
-                elif method_name == "label":
-                    self.details[method_name] = util.get_list(method_data)
+                elif method_name in ["label", "label.sync"]:
+                    if "label" in self.data and "label.sync" in self.data:
+                        raise Failed(f"Collection Error: Cannot use label and label.sync together")
+                    if method_name == "label" and "label_sync_mode" in self.data and self.data["label_sync_mode"] == "sync":
+                        self.details["label.sync"] = util.get_list(method_data)
+                    else:
+                        self.details[method_name] = util.get_list(method_data)
                 elif method_name in boolean_details:
                     self.details[method_name] = util.get_bool(method_name, method_data)
                 elif method_name in all_details:
@@ -1149,10 +1151,10 @@ class CollectionBuilder:
             collection.sortUpdate(sort=self.details["collection_order"])
             logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
 
-        if "label" in self.details:
+        if "label" in self.details or "label.sync" in self.details:
             item_labels = [label.tag for label in collection.labels]
-            labels = util.get_list(self.details["label"])
-            if "label_sync_mode" in self.details and str(self.details["label_sync_mode"]).lower() == "sync":
+            labels = util.get_list(self.details["label" if "label" in self.details else "label.sync"])
+            if "label.sync" in self.details:
                 for label in (la for la in item_labels if la not in labels):
                     collection.removeLabel(label)
                     logger.info(f"Detail: Label {label} removed")
