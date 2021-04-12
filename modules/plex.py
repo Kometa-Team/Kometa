@@ -221,7 +221,7 @@ class PlexAPI:
         return valid_list
 
     def get_collection(self, data):
-        collection = util.choose_from_list(self.search(str(data), libtype="collection"), "collection", str(data), exact=True)
+        collection = util.choose_from_list(self.search(title=str(data), libtype="collection"), "collection", str(data), exact=True)
         if collection:                              return collection
         else:                                       raise Failed(f"Plex Error: Collection {data} not found")
 
@@ -460,7 +460,10 @@ class PlexAPI:
         return rating_key_map
 
     def search_item(self, data, year=None):
-        return util.choose_from_list(self.search(data, year=year), "movie" if self.is_movie else "show", str(data), exact=True)
+        kwargs = {}
+        if year is not None:
+            kwargs["year"] = year
+        return util.choose_from_list(self.search(title=str(data), **kwargs), "movie" if self.is_movie else "show", str(data), exact=True)
 
     def update_metadata(self, TMDb, test):
         logger.info("")
