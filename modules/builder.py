@@ -523,7 +523,7 @@ class CollectionBuilder:
                         final_values = method_data
                     search = os.path.splitext(method_name)[0]
                     valid_values = self.library.validate_search_list(final_values, search)
-                    if valid_values:
+                    if len(valid_values) > 0:
                         self.methods.append(("plex_search", [{method_name: valid_values}]))
                     else:
                         logger.warning(f"Collection Warning: No valid {search} values found in {final_values}")

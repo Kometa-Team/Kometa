@@ -576,11 +576,11 @@ class PlexAPI:
                         logger.error(f"Metadata Error: {attr} attribute only works for show libraries")
                     elif meta[methods[attr]]:
                         method_data = str(meta[methods[attr]]).lower()
-                        if method_data in options and getattr(item, key) != options[method_data]:
+                        if method_data not in options:
+                            logger.error(f"Metadata Error: {meta[methods[attr]]} {attr} attribute invalid")
+                        elif getattr(item, key) != options[method_data]:
                             advance_edits[key] = options[method_data]
                             logger.info(f"Detail: {attr} updated to {method_data}")
-                        else:
-                            logger.error(f"Metadata Error: {meta[methods[attr]]} {attr} attribute invalid")
                     else:
                         logger.error(f"Metadata Error: {attr} attribute is blank")
 
@@ -644,14 +644,22 @@ class PlexAPI:
             edit_tags("producer", item, movie_library=True)
             edit_tags("writer", item, movie_library=True)
 
+            logger.info(f"{item_type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
             if "seasons" in methods and self.is_show:
                 if meta[methods["seasons"]]:
                     for season_id in meta[methods["seasons"]]:
+                        updated = False
                         logger.info("")
                         logger.info(f"Updating season {season_id} of {mapping_name}...")
                         if isinstance(season_id, int):
-                            try:                                season = item.season(season_id)
-                            except NotFound:                    logger.error(f"Metadata Error: Season: {season_id} not found")
+                            season = None
+                            for s in item.seasons():
+                                if s.index == season_id:
+                                    season = s
+                                    break
+                            if season is None:
+                                logger.error(f"Metadata Error: Season: {season_id} not found")
                             else:
                                 season_dict = meta[methods["seasons"]][season_id]
                                 season_methods = {sm.lower(): sm for sm in season_dict}
@@ -685,6 +693,7 @@ class PlexAPI:
                                         logger.error(f"Season: {season_id} Details Update Failed")
                         else:
                             logger.error(f"Metadata Error: Season: {season_id} invalid, it must be an integer")
+                        logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
                 else:
                     logger.error("Metadata Error: seasons attribute is blank")
             elif "seasons" in methods:
@@ -693,10 +702,13 @@ class PlexAPI:
             if "episodes" in methods and self.is_show:
                 if meta[methods["episodes"]]:
                     for episode_str in meta[methods["episodes"]]:
+                        updated = False
                         logger.info("")
                         match = re.search("[Ss]\\d+[Ee]\\d+", episode_str)
                         if match:
                             output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
+                            season_str = output[0]
+                            episode_str = output[1]
                             season_id = int(output[0])
                             episode_id = int(output[1])
                             logger.info(f"Updating episode S{episode_id}E{season_id} of {mapping_name}...")
@@ -738,13 +750,10 @@ class PlexAPI:
                                         logger.error(f"Season: {season_id} Episode: {episode_id} Details Update Failed")
                                 edit_tags("director", episode)
                                 edit_tags("writer", episode)
-
+                            logger.info(f"Episode S{episode_id}E{season_id}  of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
                         else:
                             logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
                 else:
                     logger.error("Metadata Error: episodes attribute is blank")
             elif "episodes" in methods:
                 logger.error("Metadata Error: episodes attribute only works for show libraries")
-
-            if not updated:
-                logger.info(f"{item_type}: {mapping_name} Details Update Not Needed")
