@@ -7,7 +7,6 @@ from modules.cache import Cache
 from modules.imdb import IMDbAPI
 from modules.letterboxd import LetterboxdAPI
 from modules.mal import MyAnimeListAPI
-from modules.mal import MyAnimeListIDList
 from modules.omdb import OMDbAPI
 from modules.plex import PlexAPI
 from modules.radarr import RadarrAPI
@@ -245,7 +244,6 @@ class Config:
         util.separator()
 
         self.MyAnimeList = None
-        self.MyAnimeListIDList = MyAnimeListIDList()
         if "mal" in self.data:
             logger.info("Connecting to My Anime List...")
             self.mal = {}
@@ -254,7 +252,7 @@ class Config:
                 self.mal["client_secret"] = check_for_attribute(self.data, "client_secret", parent="mal", throw=True)
                 self.mal["config_path"] = self.config_path
                 authorization = self.data["mal"]["authorization"] if "authorization" in self.data["mal"] and self.data["mal"]["authorization"] else None
-                self.MyAnimeList = MyAnimeListAPI(self.mal, self.MyAnimeListIDList, authorization)
+                self.MyAnimeList = MyAnimeListAPI(self.mal, self, authorization)
             except Failed as e:
                 logger.error(e)
             logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
@@ -264,6 +262,7 @@ class Config:
         self.TVDb = TVDbAPI(self)
         self.IMDb = IMDbAPI(self)
         self.AniDB = AniDBAPI(self)
+        self.AniDBIDs = self.AniDB.get_AniDB_IDs()
         self.AniList = AniListAPI(self)
         self.Letterboxd = LetterboxdAPI(self)
 
@@ -591,6 +590,65 @@ class Config:
                                 continue
                             builder.run_collections_again(collection_obj, movie_map, show_map)
 
+    def covert_anilist_to_id(self, anilist_id, language):
+        return self.convert_anidb_to_id(self.anilist_to_anidb(anilist_id), language)
+
+    def convert_mal_to_id(self, mal_id, language):
+        return self.convert_anidb_to_id(self.mal_to_anidb(mal_id), language)
+
+    def convert_anidb_to_id(self, anidb_id, language):
+        try:
+            for imdb_id in self.convert_anidb_to_imdb(anidb_id):
+                tmdb_id, _ = self.convert_from_imdb(imdb_id, language)
+                if tmdb_id:                                         return tmdb_id, None
+                else:                                               raise Failed
+        except Failed:
+            try:                                                return None, self.convert_anidb_to_tvdb(anidb_id)
+            except Failed:                                      logger.error(f"AniDB Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
+
+    def convert_anidb_to_tvdb(self, anidb_id):          return self.convert_anidb(anidb_id, "anidbid", "tvdbid")
+    def convert_anidb_to_imdb(self, anidb_id):          return self.convert_anidb(anidb_id, "anidbid", "imdbid")
+    def convert_tvdb_to_anidb(self, tvdb_id):           return self.convert_anidb(tvdb_id, "tvdbid", "anidbid")
+    def convert_imdb_to_anidb(self, imdb_id):           return self.convert_anidb(imdb_id, "imdbid", "anidbid")
+    def convert_anidb(self, input_id, from_id, to_id):
+        ids = self.AniDBIDs.xpath(f"//anime[contains(@{from_id}, '{input_id}')]/@{to_id}")
+        if len(ids) > 0:
+            if from_id == "tvdbid":                             return [int(i) for i in ids]
+            if len(ids[0]) > 0:
+                try:                                                return ids[0].split(",") if to_id == "imdbid" else int(ids[0])
+                except ValueError:                                  raise Failed(f"AniDB Error: No {util.pretty_ids[to_id]} ID found for {util.pretty_ids[from_id]} ID: {input_id}")
+            else:                                               raise Failed(f"AniDB Error: No {util.pretty_ids[to_id]} ID found for {util.pretty_ids[from_id]} ID: {input_id}")
+        else:                                               raise Failed(f"AniDB Error: {util.pretty_ids[from_id]} ID: {input_id} not found")
+
+    def mal_to_anidb(self, mal_id):
+        if mal_id is None:
+            raise Failed(f"Convert Error: MyAnimeList ID is None")
+        anime_ids = self.convert_anime_ids(mal_ids=mal_id)
+        if anime_ids[0] is None:
+            raise Failed(f"Convert Error: MyAnimeList ID: {mal_id} does not exist")
+        return anime_ids[0]["anidb"]
+
+    def anilist_to_anidb(self, anilist_id):
+        if anilist_id is None:
+            raise Failed(f"Convert Error: AniList ID is None")
+        anime_ids = self.convert_anime_ids(anilist_ids=anilist_id)
+        if anime_ids[0] is None:
+            raise Failed(f"Convert Error: AniList ID: {anilist_id} does not exist")
+        return anime_ids[0]["anidb"]
+
+    def convert_anime_ids(self, anilist_ids=None, anidb_ids=None, mal_ids=None):
+        all_ids = []
+        def collect_ids(ids, id_type):
+            if ids:
+                if isinstance(ids, list):
+                    all_ids.extend([{id_type: anime_id} for anime_id in ids])
+                else:
+                    all_ids.append({id_type: ids})
+        collect_ids(anilist_ids, "anilist")
+        collect_ids(anidb_ids, "anidb")
+        collect_ids(mal_ids, "myanimelist")
+        return requests.post("https://relations.yuna.moe/api/ids", json=all_ids).json()
+
     def convert_from_imdb(self, imdb_id, language):
         update_tmdb = False
         update_tvdb = False
@@ -784,75 +842,76 @@ class Config:
             else:                                           error_message = f"Agent {item_type} not supported"
 
             if not error_message:
+                if mal_id and not anidb_id:
+                    try:                                            anidb_id = self.mal_to_anidb(mal_id)
+                    except Failed:                                  pass
                 if anidb_id and not tvdb_id:
-                    try:                                            tvdb_id = self.AniDB.convert_anidb_to_tvdb(anidb_id)
+                    try:                                            tvdb_id = self.convert_anidb_to_tvdb(anidb_id)
                     except Failed:                                  pass
                 if anidb_id and not imdb_id:
-                    try:                                            imdb_id = self.AniDB.convert_anidb_to_imdb(anidb_id)
+                    try:                                            imdb_id = self.convert_anidb_to_imdb(anidb_id)
                     except Failed:                                  pass
-                if mal_id:
-                    try:
-                        ids = self.MyAnimeListIDList.find_mal_ids(mal_id)
-                        if "thetvdb_id" in ids and int(ids["thetvdb_id"]) > 0:                  tvdb_id = int(ids["thetvdb_id"])
-                        elif "themoviedb_id" in ids and int(ids["themoviedb_id"]) > 0:          tmdb_id = int(ids["themoviedb_id"])
-                        else:                                                                   raise Failed(f"MyAnimeList Error: MyAnimeList ID: {mal_id} has no other IDs associated with it")
-                    except Failed:
-                        pass
-                if mal_id and not tvdb_id:
-                    try:                                            tvdb_id = self.MyAnimeListIDList.convert_mal_to_tvdb(mal_id)
-                    except Failed:                                  pass
-                if mal_id and not tmdb_id:
-                    try:                                            tmdb_id = self.MyAnimeListIDList.convert_mal_to_tmdb(mal_id)
-                    except Failed:                                  pass
-                if not tmdb_id and imdb_id and isinstance(imdb_id, list) and self.TMDb:
-                    tmdb_id = []
-                    new_imdb_id = []
-                    for imdb in imdb_id:
-                        try:
-                            temp_tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb)
-                            tmdb_id.append(temp_tmdb_id)
-                            new_imdb_id.append(imdb)
-                        except Failed:
-                            continue
-                    imdb_id = new_imdb_id
-                if not tmdb_id and imdb_id and self.TMDb:
-                    try:                                            tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb_id)
-                    except Failed:                                  pass
-                if not tmdb_id and imdb_id and self.Trakt:
-                    try:                                            tmdb_id = self.Trakt.convert_imdb_to_tmdb(imdb_id)
-                    except Failed:                                  pass
-                if not tmdb_id and tvdb_id and self.TMDb:
+                if not tmdb_id and imdb_id:
+                    if isinstance(imdb_id, list):
+                        tmdb_id = []
+                        new_imdb_id = []
+                        for imdb in imdb_id:
+                            try:
+                                tmdb_id.append(self.TMDb.convert_imdb_to_tmdb(imdb))
+                                new_imdb_id.append(imdb)
+                            except Failed:
+                                if self.Trakt:
+                                    try:
+                                        tmdb_id.append(self.Trakt.convert_imdb_to_tmdb(imdb))
+                                        new_imdb_id.append(imdb)
+                                    except Failed:
+                                        continue
+                                else:
+                                    continue
+                        imdb_id = new_imdb_id
+                    else:
+                        try:                                            tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb_id)
+                        except Failed:                                  pass
+                        if not tmdb_id and self.Trakt:
+                            try:                                            tmdb_id = self.Trakt.convert_imdb_to_tmdb(imdb_id)
+                            except Failed:                                  pass
+                if not tmdb_id and tvdb_id and library.is_show:
                     try:                                            tmdb_id = self.TMDb.convert_tvdb_to_tmdb(tvdb_id)
                     except Failed:                                  pass
-                if not tmdb_id and tvdb_id and self.Trakt:
-                    try:                                            tmdb_id = self.Trakt.convert_tvdb_to_tmdb(tvdb_id)
-                    except Failed:                                  pass
-                if not imdb_id and tmdb_id and self.TMDb:
+                    if not tmdb_id and self.Trakt:
+                        try:                                            tmdb_id = self.Trakt.convert_tvdb_to_tmdb(tvdb_id)
+                        except Failed:                                  pass
+                if not imdb_id and tmdb_id and library.is_movie:
                     try:                                            imdb_id = self.TMDb.convert_tmdb_to_imdb(tmdb_id)
                     except Failed:                                  pass
-                if not imdb_id and tmdb_id and self.Trakt:
-                    try:                                            imdb_id = self.Trakt.convert_tmdb_to_imdb(tmdb_id)
+                    if not imdb_id and self.Trakt:
+                        try:                                            imdb_id = self.Trakt.convert_tmdb_to_imdb(tmdb_id)
+                        except Failed:                                  pass
+                if not imdb_id and tvdb_id and library.is_show:
+                    try:                                            imdb_id = self.TMDb.convert_tvdb_to_imdb(tvdb_id)
                     except Failed:                                  pass
-                if not imdb_id and tvdb_id and self.Trakt:
-                    try:                                            imdb_id = self.Trakt.convert_tmdb_to_imdb(tmdb_id)
-                    except Failed:                                  pass
-                if not tvdb_id and tmdb_id and self.TMDb and library.is_show:
-                    try:                                            tvdb_id = self.TMDb.convert_tmdb_to_tvdb(tmdb_id)
-                    except Failed:                                  pass
-                if not tvdb_id and tmdb_id and self.Trakt and library.is_show:
-                    try:                                            tvdb_id = self.Trakt.convert_tmdb_to_tvdb(tmdb_id)
-                    except Failed:                                  pass
-                if not tvdb_id and imdb_id and self.Trakt and library.is_show:
-                    try:                                            tvdb_id = self.Trakt.convert_imdb_to_tvdb(imdb_id)
-                    except Failed:                                  pass
+                    if not imdb_id and self.Trakt:
+                        try:                                            imdb_id = self.Trakt.convert_tvdb_to_imdb(tvdb_id)
+                        except Failed:                                  pass
+                if not tvdb_id and library.is_show:
+                    if tmdb_id:
+                        try:                                            tvdb_id = self.TMDb.convert_tmdb_to_tvdb(tmdb_id)
+                        except Failed:                                  pass
+                        if not tvdb_id and self.Trakt:
+                            try:                                            tvdb_id = self.Trakt.convert_tmdb_to_tvdb(tmdb_id)
+                            except Failed:                                  pass
+                    if not tvdb_id and imdb_id:
+                        try:                                            tvdb_id = self.TMDb.convert_imdb_to_tvdb(imdb_id)
+                        except Failed:                                  pass
+                        if not tvdb_id and self.Trakt:
+                            try:                                            tvdb_id = self.Trakt.convert_imdb_to_tvdb(tmdb_id)
+                            except Failed:                                  pass
 
                 if (not tmdb_id and library.is_movie) or (not tvdb_id and not ((anidb_id or mal_id) and tmdb_id) and library.is_show):
                     service_name = "TMDb ID" if library.is_movie else "TVDb ID"
 
-                    if self.TMDb and self.Trakt:                    api_name = "TMDb or Trakt"
-                    elif self.TMDb:                                 api_name = "TMDb"
-                    elif self.Trakt:                                api_name = "Trakt"
-                    else:                                           api_name = None
+                    if self.Trakt:                                  api_name = "TMDb or Trakt"
+                    else:                                           api_name = "TMDb"
 
                     if tmdb_id and imdb_id:                         id_name = f"TMDb ID: {tmdb_id} or IMDb ID: {imdb_id}"
                     elif imdb_id and tvdb_id:                       id_name = f"IMDb ID: {imdb_id} or TVDb ID: {tvdb_id}"
@@ -861,10 +920,9 @@ class Config:
                     elif tvdb_id:                                   id_name = f"TVDb ID: {tvdb_id}"
                     else:                                           id_name = None
 
-                    if anidb_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert AniDb ID: {anidb_id} to TMDb ID or TVDb ID"
+                    if anidb_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert AniDB ID: {anidb_id} to TMDb ID or TVDb ID"
                     elif mal_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert MyAnimeList ID: {mal_id} to TMDb ID or TVDb ID"
-                    elif id_name and api_name:                      error_message = f"Unable to convert {id_name} to {service_name} using {api_name}"
-                    elif id_name:                                   error_message = f"Configure TMDb or Trakt to covert {id_name} to {service_name}"
+                    elif id_name:                                   error_message = f"Unable to convert {id_name} to {service_name} using {api_name}"
                     else:                                           error_message = f"No ID to convert to {service_name}"
             if self.Cache and ((tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show)):
                 if not isinstance(tmdb_id, list):               tmdb_id = [tmdb_id]

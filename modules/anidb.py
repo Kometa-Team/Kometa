@@ -16,21 +16,9 @@ class AniDBAPI:
             "popular": "https://anidb.net/latest/anime/popular/?h=1",
             "relation": "/relation/graph"
         }
-        self.id_list = html.fromstring(requests.get("https://raw.githubusercontent.com/Anime-Lists/anime-lists/master/anime-list-master.xml").content)
 
-    def convert_anidb_to_tvdb(self, anidb_id):          return self.convert_anidb(anidb_id, "anidbid", "tvdbid")
-    def convert_anidb_to_imdb(self, anidb_id):          return self.convert_anidb(anidb_id, "anidbid", "imdbid")
-    def convert_tvdb_to_anidb(self, tvdb_id):           return self.convert_anidb(tvdb_id, "tvdbid", "anidbid")
-    def convert_imdb_to_anidb(self, imdb_id):           return self.convert_anidb(imdb_id, "imdbid", "anidbid")
-    def convert_anidb(self, input_id, from_id, to_id):
-        ids = self.id_list.xpath(f"//anime[contains(@{from_id}, '{input_id}')]/@{to_id}")
-        if len(ids) > 0:
-            if from_id == "tvdbid":                             return [int(i) for i in ids]
-            if len(ids[0]) > 0:
-                try:                                                return ids[0].split(",") if to_id == "imdbid" else int(ids[0])
-                except ValueError:                                  raise Failed(f"AniDB Error: No {util.pretty_ids[to_id]} ID found for {util.pretty_ids[from_id]} ID: {input_id}")
-            else:                                               raise Failed(f"AniDB Error: No {util.pretty_ids[to_id]} ID found for {util.pretty_ids[from_id]} ID: {input_id}")
-        else:                                               raise Failed(f"AniDB Error: {util.pretty_ids[from_id]} ID: {input_id} not found")
+    def get_AniDB_IDs(self):
+        return html.fromstring(requests.get("https://raw.githubusercontent.com/Anime-Lists/anime-lists/master/anime-list-master.xml").content)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, language):
@@ -79,14 +67,11 @@ class AniDBAPI:
         show_ids = []
         movie_ids = []
         for anidb_id in anime_ids:
-            try:
-                for imdb_id in self.convert_anidb_to_imdb(anidb_id):
-                    tmdb_id, _ = self.config.convert_from_imdb(imdb_id, language)
-                    if tmdb_id:                                         movie_ids.append(tmdb_id)
-                    else:                                               raise Failed
-            except Failed:
-                try:                                                show_ids.append(self.convert_anidb_to_tvdb(anidb_id))
-                except Failed:                                      logger.error(f"AniDB Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
+            tmdb_id, tvdb_id = self.config.convert_anidb_to_id(anidb_id, language)
+            if tmdb_id:
+                movie_ids.append(tmdb_id)
+            if tvdb_id:
+                show_ids.append(tvdb_id)
         if status_message:
             logger.debug(f"AniDB IDs Found: {anime_ids}")
             logger.debug(f"TMDb IDs Found: {movie_ids}")
