@@ -560,7 +560,7 @@ class CollectionBuilder:
                         if isinstance(imdb_list, dict):
                             dict_methods = {dm.lower(): dm for dm in imdb_list}
                             if "url" in dict_methods and imdb_list[dict_methods["url"]]:
-                                imdb_url = config.IMDb.validate_imdb_url(imdb_list[dict_methods["url"]])
+                                imdb_url = config.IMDb.validate_imdb_url(imdb_list[dict_methods["url"]], self.library.Plex.language)
                             else:
                                 raise Failed("Collection Error: imdb_list attribute url is required")
                             if "limit" in dict_methods and imdb_list[dict_methods["limit"]]:
@@ -568,7 +568,7 @@ class CollectionBuilder:
                             else:
                                 list_count = 0
                         else:
-                            imdb_url = config.IMDb.validate_imdb_url(str(imdb_list))
+                            imdb_url = config.IMDb.validate_imdb_url(str(imdb_list), self.library.Plex.language)
                             list_count = 0
                         new_list.append({"url": imdb_url, "limit": list_count})
                     self.methods.append((method_name, new_list))
