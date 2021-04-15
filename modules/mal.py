@@ -72,29 +72,9 @@ userlist_status = [
     "plan_to_watch"
 ]
 
-
-class MyAnimeListIDList:
-    def __init__(self):
-        self.ids = json.loads(requests.get("https://raw.githubusercontent.com/Fribb/anime-lists/master/animeMapping_full.json").content)
-
-    def convert_mal_to_tvdb(self, mal_id):              return self.convert_mal(mal_id, "mal_id", "thetvdb_id")
-    def convert_mal_to_tmdb(self, mal_id):              return self.convert_mal(mal_id, "mal_id", "themoviedb_id")
-    def convert_tvdb_to_mal(self, tvdb_id):             return self.convert_mal(tvdb_id, "thetvdb_id", "mal_id")
-    def convert_tmdb_to_mal(self, tmdb_id):             return self.convert_mal(tmdb_id, "themoviedb_id", "mal_id")
-    def convert_mal(self, input_id, from_id, to_id):
-        for attrs in self.ids:
-            if from_id in attrs and int(attrs[from_id]) == int(input_id) and to_id in attrs and int(attrs[to_id]) > 0:
-                return int(attrs[to_id])
-        raise Failed(f"MyAnimeList Error: {util.pretty_ids[to_id]} ID not found for {util.pretty_ids[from_id]}: {input_id}")
-
-    def find_mal_ids(self, mal_id):
-        for mal in self.ids:
-            if "mal_id" in mal and int(mal["mal_id"]) == int(mal_id):
-                return mal
-        raise Failed(f"MyAnimeList Error: MyAnimeList ID: {mal_id} not found")
-
 class MyAnimeListAPI:
-    def __init__(self, params, MyAnimeListIDList_in, authorization=None):
+    def __init__(self, params, config, authorization=None):
+        self.config = config
         self.urls = {
             "oauth_token": "https://myanimelist.net/v1/oauth2/token",
             "oauth_authorize": "https://myanimelist.net/v1/oauth2/authorize",
@@ -107,7 +87,6 @@ class MyAnimeListAPI:
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
         self.authorization = authorization
-        self.MyAnimeListIDList = MyAnimeListIDList_in
         if not self.save_authorization(self.authorization):
             if not self.refresh_authorization():
                 self.get_authorization()
@@ -214,7 +193,7 @@ class MyAnimeListAPI:
         url = f"{self.urls['user']}/{username}/animelist?{final_status}sort={sort_by}&limit={limit}"
         return self.request_and_parse_mal_ids(url)
 
-    def get_items(self, method, data, status_message=True):
+    def get_items(self, method, data, language, status_message=True):
         if status_message:
             logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
@@ -243,14 +222,11 @@ class MyAnimeListAPI:
         show_ids = []
         movie_ids = []
         for mal_id in mal_ids:
-            try:
-                ids = self.MyAnimeListIDList.find_mal_ids(mal_id)
-                if "thetvdb_id" in ids and int(ids["thetvdb_id"]) > 0:                  show_ids.append(int(ids["thetvdb_id"]))
-                elif "themoviedb_id" in ids and int(ids["themoviedb_id"]) > 0:          movie_ids.append(int(ids["themoviedb_id"]))
-                else:                                                                   raise Failed(f"MyAnimeList Error: MyAnimeList ID: {mal_id} has no other IDs associated with it")
-            except Failed as e:
-                if status_message:
-                    logger.error(e)
+            tmdb_id, tvdb_id = self.config.covert_mal_to_id(mal_id, language)
+            if tmdb_id:
+                movie_ids.append(tmdb_id)
+            if tvdb_id:
+                show_ids.append(tvdb_id)
         if status_message:
             logger.debug(f"MyAnimeList IDs Found: {mal_ids}")
             logger.debug(f"Shows Found: {show_ids}")
