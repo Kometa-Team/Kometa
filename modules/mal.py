@@ -219,14 +219,7 @@ class MyAnimeListAPI:
                 logger.info(f"Processing {pretty}: {data['limit']} Anime from {self.get_username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
-        show_ids = []
-        movie_ids = []
-        for mal_id in mal_ids:
-            tmdb_id, tvdb_id = self.config.covert_mal_to_id(mal_id, language)
-            if tmdb_id:
-                movie_ids.append(tmdb_id)
-            if tvdb_id:
-                show_ids.append(tvdb_id)
+        movie_ids, show_ids = self.config.convert_myanimelist_list(mal_ids, language)
         if status_message:
             logger.debug(f"MyAnimeList IDs Found: {mal_ids}")
             logger.debug(f"Shows Found: {show_ids}")

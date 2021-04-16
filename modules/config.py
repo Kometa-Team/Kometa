@@ -606,6 +606,23 @@ class Config:
             try:                                                return None, self.convert_anidb_to_tvdb(anidb_id)
             except Failed:                                      logger.error(f"AniDB Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
 
+    def convert_anidb_list(self, anidb_list, language):
+        show_ids = []
+        movie_ids = []
+        for anidb_id in anidb_list:
+            tmdb_id, tvdb_id = self.convert_anidb_to_id(anidb_id, language)
+            if tmdb_id:
+                movie_ids.append(tmdb_id)
+            if tvdb_id:
+                show_ids.append(tvdb_id)
+        return movie_ids, show_ids
+
+    def convert_anilist_list(self, anilist_list, language):
+        return self.convert_anidb_list(self.convert_anilist_to_anidb(anilist_list), language)
+
+    def convert_myanimelist_list(self, myanimelist_list, language):
+        return self.convert_anidb_list(self.convert_myanimelist_to_anidb(myanimelist_list), language)
+
     def convert_anidb_to_tvdb(self, anidb_id):          return self.convert_anidb(anidb_id, "anidbid", "tvdbid")
     def convert_anidb_to_imdb(self, anidb_id):          return self.convert_anidb(anidb_id, "anidbid", "imdbid")
     def convert_tvdb_to_anidb(self, tvdb_id):           return self.convert_anidb(tvdb_id, "tvdbid", "anidbid")
@@ -635,6 +652,24 @@ class Config:
         if anime_ids[0] is None:
             raise Failed(f"Convert Error: AniList ID: {anilist_id} does not exist")
         return anime_ids[0]["anidb"]
+
+    def convert_anilist_to_anidb(self, anilist_ids):
+        anidb_ids = []
+        for id_set in self.convert_anime_ids(anilist_ids=anilist_ids):
+            if id_set["anidb"] is not None:
+                anidb_ids.append(id_set["anidb"])
+            else:
+                logger.error(f"Convert Error: AniDB ID not found for AniList ID: {id_set['anilist']}")
+        return anidb_ids
+
+    def convert_myanimelist_to_anidb(self, mal_ids):
+        anidb_ids = []
+        for id_set in self.convert_anime_ids(mal_ids=mal_ids):
+            if id_set["anidb"] is not None:
+                anidb_ids.append(id_set["anidb"])
+            else:
+                logger.error(f"Convert Error: AniDB ID not found for MyAnimeList ID: {id_set['myanimelist']}")
+        return anidb_ids
 
     def convert_anime_ids(self, anilist_ids=None, anidb_ids=None, mal_ids=None):
         all_ids = []
