@@ -54,26 +54,19 @@ class AniDBAPI:
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if status_message:
             logger.debug(f"Data: {data}")
-        anime_ids = []
+        anidb_ids = []
         if method == "anidb_popular":
             if status_message:
                 logger.info(f"Processing {pretty}: {data} Anime")
-            anime_ids.extend(self.get_popular(language)[:data])
+            anidb_ids.extend(self.get_popular(language)[:data])
         else:
             if status_message:                                  logger.info(f"Processing {pretty}: {data}")
-            if method == "anidb_id":                            anime_ids.append(data)
-            elif method == "anidb_relation":                    anime_ids.extend(self.get_anidb_relations(data, language))
+            if method == "anidb_id":                            anidb_ids.append(data)
+            elif method == "anidb_relation":                    anidb_ids.extend(self.get_anidb_relations(data, language))
             else:                                               raise Failed(f"AniDB Error: Method {method} not supported")
-        show_ids = []
-        movie_ids = []
-        for anidb_id in anime_ids:
-            tmdb_id, tvdb_id = self.config.convert_anidb_to_id(anidb_id, language)
-            if tmdb_id:
-                movie_ids.append(tmdb_id)
-            if tvdb_id:
-                show_ids.append(tvdb_id)
+        movie_ids, show_ids = self.config.convert_anidb_list(anidb_ids, language)
         if status_message:
-            logger.debug(f"AniDB IDs Found: {anime_ids}")
+            logger.debug(f"AniDB IDs Found: {anidb_ids}")
             logger.debug(f"TMDb IDs Found: {movie_ids}")
             logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

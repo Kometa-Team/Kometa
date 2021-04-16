@@ -254,14 +254,7 @@ class AniListAPI:
                 logger.info(f"Processing {pretty}: ({data}) {name} ({len(anilist_ids)} Anime)")
         else:
             raise Failed(f"AniList Error: Method {method} not supported")
-        show_ids = []
-        movie_ids = []
-        for anilist_id in anilist_ids:
-            tmdb_id, tvdb_id = self.config.covert_anilist_to_id(anilist_id, language)
-            if tmdb_id:
-                movie_ids.append(tmdb_id)
-            if tvdb_id:
-                show_ids.append(tvdb_id)
+        movie_ids, show_ids = self.config.convert_anilist_list(anilist_ids, language)
         if status_message:
             logger.debug(f"AniList IDs Found: {anilist_ids}")
             logger.debug(f"Shows Found: {show_ids}")
