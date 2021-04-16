@@ -85,7 +85,7 @@ class Config:
             replace_attr(new_config, "save_missing", "plex")
             if new_config["libraries"]:
                 for library in new_config["libraries"]:
-                    if "plex" in new_config["libraries"][library]:
+                    if new_config["libraries"][library] and "plex" in new_config["libraries"][library]:
                         replace_attr(new_config["libraries"][library], "asset_directory", "plex")
                         replace_attr(new_config["libraries"][library], "sync_mode", "plex")
                         replace_attr(new_config["libraries"][library], "show_unmanaged", "plex")
@@ -113,7 +113,7 @@ class Config:
         def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
             endline = ""
             if parent is not None:
-                if parent in data:
+                if data and parent in data:
                     data = data[parent]
                 else:
                     data = None
@@ -312,7 +312,8 @@ class Config:
         for library_name, lib in libs.items():
             util.separator()
             params = {}
-            if "library_name" in lib and lib["library_name"]:
+            logger.info("")
+            if lib and "library_name" in lib and lib["library_name"]:
                 params["name"] = str(lib["library_name"])
                 logger.info(f"Connecting to {params['name']} ({library_name}) Library...")
             else:
@@ -323,32 +324,32 @@ class Config:
             if params["asset_directory"] is None:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
-            if "settings" in lib and lib["settings"] and "sync_mode" in lib["settings"]:
+            if lib and "settings" in lib and lib["settings"] and "sync_mode" in lib["settings"]:
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
             else:
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
 
-            if "settings" in lib and lib["settings"] and "show_unmanaged" in lib["settings"]:
+            if lib and "settings" in lib and lib["settings"] and "show_unmanaged" in lib["settings"]:
                 params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
             else:
                 params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
 
-            if "settings" in lib and lib["settings"] and "show_filtered" in lib["settings"]:
+            if lib and "settings" in lib and lib["settings"] and "show_filtered" in lib["settings"]:
                 params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
             else:
                 params["show_filtered"] = check_for_attribute(lib, "show_filtered", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
 
-            if "settings" in lib and lib["settings"] and "show_missing" in lib["settings"]:
+            if lib and "settings" in lib and lib["settings"] and "show_missing" in lib["settings"]:
                 params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
             else:
                 params["show_missing"] = check_for_attribute(lib, "show_missing", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
 
-            if "settings" in lib and lib["settings"] and "save_missing" in lib["settings"]:
+            if lib and "settings" in lib and lib["settings"] and "save_missing" in lib["settings"]:
                 params["save_missing"] = check_for_attribute(lib, "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
             else:
                 params["save_missing"] = check_for_attribute(lib, "save_missing", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
 
-            if "mass_genre_update" in lib and lib["mass_genre_update"]:
+            if lib and "mass_genre_update" in lib and lib["mass_genre_update"]:
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_genre_update_options, default_is_none=True, save=False)
             else:
                 params["mass_genre_update"] = None
@@ -359,7 +360,6 @@ class Config:
 
             try:
                 params["metadata_path"] = check_for_attribute(lib, "metadata_path", var_type="path", default=os.path.join(default_dir, f"{library_name}.yml"), throw=True)
-                params["library_type"] = check_for_attribute(lib, "library_type", test_list=library_types, throw=True)
                 params["plex"] = {}
                 params["plex"]["url"] = check_for_attribute(lib, "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
@@ -372,6 +372,7 @@ class Config:
                 continue
 
             if self.general["radarr"]["url"] or "radarr" in lib:
+                logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Radarr...")
                 radarr_params = {}
                 try:
@@ -391,6 +392,7 @@ class Config:
                 logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
             if self.general["sonarr"]["url"] or "sonarr" in lib:
+                logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Sonarr...")
                 sonarr_params = {}
                 try:
@@ -416,6 +418,7 @@ class Config:
                 logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
             if self.general["tautulli"]["url"] or "tautulli" in lib:
+                logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Tautulli...")
                 tautulli_params = {}
                 try:
@@ -426,6 +429,7 @@ class Config:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
+            logger.info("")
             self.libraries.append(library)
 
         util.separator()

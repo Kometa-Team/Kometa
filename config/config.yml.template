@@ -1,12 +1,9 @@
 ## This file is a template remove the .template to use the file
 
-libraries:
+libraries:                                      # Library Names must have a colon (:) placed after them
   Movies:
-    library_type: movie
   TV Shows:
-    library_type: show
   Anime:
-    library_type: show
 settings:                                       # Can be individually specified per library as well
   cache: true
   cache_expiration: 60
