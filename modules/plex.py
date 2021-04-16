@@ -121,11 +121,12 @@ class PlexAPI:
         except requests.exceptions.ConnectionError:
             util.print_stacktrace()
             raise Failed("Plex Error: Plex url is invalid")
-        self.is_movie = params["library_type"] == "movie"
-        self.is_show = params["library_type"] == "show"
-        self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"] and ((self.is_movie and isinstance(s, MovieSection)) or (self.is_show and isinstance(s, ShowSection)))), None)
+        self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"]), None)
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library {params['name']} not found")
+
+        self.is_movie = self.Plex.type == "movie"
+        self.is_show = self.Plex.type == "show"
 
         logger.info(f"Using Metadata File: {params['metadata_path']}")
         try:
