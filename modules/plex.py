@@ -203,16 +203,19 @@ class PlexAPI:
         item.addCollection(name)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def get_search_choices(self, search_name, key=False):
+    def get_search_choices(self, search_name):
         try:
-            if key:             return {c.key.lower(): c.key for c in self.Plex.listFilterChoices(search_name)}
-            else:               return {c.title.lower(): c.title for c in self.Plex.listFilterChoices(search_name)}
+            choices = {}
+            for choice in self.Plex.listFilterChoices(search_name):
+                choices[choice.title.lower()] = choice.title
+                choices[choice.key.lower()] = choice.title
+            return choices
         except NotFound:
             raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
 
     def validate_search_list(self, data, search_name):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
-        search_choices = self.get_search_choices(final_search, key=final_search.endswith("Language"))
+        search_choices = self.get_search_choices(final_search)
         valid_list = []
         for value in util.get_list(data):
             if str(value).lower() in search_choices:
