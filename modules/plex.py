@@ -512,20 +512,45 @@ class PlexAPI:
             logger.info(f"Updating {item_type}: {title}...")
 
             tmdb_item = None
-            try:
-                if "tmdb_id" in methods:
-                    if meta[methods["tmdb_id"]] is None:        logger.error("Metadata Error: tmdb_id attribute is blank")
-                    elif self.is_show:                          logger.error("Metadata Error: tmdb_id attribute only works with movie libraries")
-                    else:                                       tmdb_item = TMDb.get_show(util.regex_first_int(meta[methods["tmdb_id"]], "Show"))
-            except Failed as e:
-                logger.error(e)
+            tmdb_is_movie = None
+            if ("tmdb_show" in methods or "tmdb_id" in methods) and "tmdb_movie" in methods:
+                logger.error("Metadata Error: Cannot use tmdb_movie and tmdb_show when editing the same metadata item")
 
-            originally_available = tmdb_item.first_air_date if tmdb_item else None
-            rating = tmdb_item.vote_average if tmdb_item else None
-            original_title = tmdb_item.original_name if tmdb_item and tmdb_item.original_name != tmdb_item.name else None
-            studio = tmdb_item.networks[0].name if tmdb_item else None
-            tagline = tmdb_item.tagline if tmdb_item and len(tmdb_item.tagline) > 0 else None
-            summary = tmdb_item.overview if tmdb_item else None
+            if "tmdb_show" in methods or "tmdb_id" in methods or "tmdb_movie" in methods:
+                try:
+                    if "tmdb_show" in methods or "tmdb_id" in methods:
+                        data = meta[methods["tmdb_show" if "tmdb_show" in methods else "tmdb_id"]]
+                        if data is None:
+                            logger.error("Metadata Error: tmdb_show attribute is blank")
+                        else:
+                            tmdb_is_movie = False
+                            tmdb_item = TMDb.get_show(util.regex_first_int(data, "Show"))
+                    elif "tmdb_movie" in methods:
+                        if meta[methods["tmdb_movie"]] is None:
+                            logger.error("Metadata Error: tmdb_movie attribute is blank")
+                        else:
+                            tmdb_is_movie = True
+                            tmdb_item = TMDb.get_movie(util.regex_first_int(meta[methods["tmdb_movie"]], "Movie"))
+                except Failed as e:
+                    logger.error(e)
+            originally_available = None
+            original_title = None
+            rating = None
+            tagline = None
+            summary = None
+            if tmdb_item:
+                originally_available = tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date
+                if tmdb_item and tmdb_is_movie is True and tmdb_item.original_title != tmdb_item.title:
+                    original_title = tmdb_item.original_title
+                elif tmdb_item and tmdb_is_movie is False and tmdb_item.original_name != tmdb_item.name:
+                    original_title = tmdb_item.original_name
+                rating = tmdb_item.vote_average
+                if tmdb_is_movie is True and tmdb_item.production_companies:
+                    studio = tmdb_item.production_companies[0].name
+                elif tmdb_is_movie is False and tmdb_item.networks:
+                    studio = tmdb_item.networks[0].name
+                tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
+                summary = tmdb_item.overview
 
             updated = False
 
