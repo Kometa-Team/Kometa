@@ -479,6 +479,102 @@ class PlexAPI:
             methods = {mm.lower(): mm for mm in meta}
             if test and ("test" not in methods or meta[methods["test"]] is not True):
                 continue
+
+            updated = False
+            edits = {}
+            advance_edits = {}
+            def add_edit(name, current, group, alias, key=None, value=None, var_type="str"):
+                if value or name in alias:
+                    if value or group[alias[name]]:
+                        if key is None:         key = name
+                        if value is None:       value = group[alias[name]]
+                        try:
+                            if var_type == "date":
+                                final_value = util.check_date(value, name, return_string=True, plex_date=True)
+                            elif var_type == "float":
+                                final_value = util.check_number(value, name, number_type="float", minimum=0, maximum=10)
+                            else:
+                                final_value = value
+                            if str(current) != str(final_value):
+                                edits[f"{key}.value"] = final_value
+                                edits[f"{key}.locked"] = 1
+                                logger.info(f"Detail: {name} updated to {final_value}")
+                        except Failed as ee:
+                            logger.error(ee)
+                    else:
+                        logger.error(f"Metadata Error: {name} attribute is blank")
+
+            def add_advanced_edit(attr, options, key=None, show_library=False):
+                if key is None:
+                    key = attr
+                if attr in methods:
+                    if show_library and not self.is_show:
+                        logger.error(f"Metadata Error: {attr} attribute only works for show libraries")
+                    elif meta[methods[attr]]:
+                        method_data = str(meta[methods[attr]]).lower()
+                        if method_data not in options:
+                            logger.error(f"Metadata Error: {meta[methods[attr]]} {attr} attribute invalid")
+                        elif getattr(item, key) != options[method_data]:
+                            advance_edits[key] = options[method_data]
+                            logger.info(f"Detail: {attr} updated to {method_data}")
+                    else:
+                        logger.error(f"Metadata Error: {attr} attribute is blank")
+
+            def edit_tags(attr, obj, group, alias, key=None, extra=None, movie_library=False):
+                if key is None:
+                    key = f"{attr}s"
+                if attr in alias and f"{attr}.sync" in alias:
+                    logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
+                elif attr in alias or f"{attr}.sync" in alias:
+                    attr_key = attr if attr in alias else f"{attr}.sync"
+                    if movie_library and not self.is_movie:
+                        logger.error(f"Metadata Error: {attr_key} attribute only works for movie libraries")
+                    elif group[alias[attr_key]] or extra:
+                        item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
+                        input_tags = []
+                        if group[alias[attr_key]]:
+                            input_tags.extend(util.get_list(group[alias[attr_key]]))
+                        if extra:
+                            input_tags.extend(extra)
+                        if f"{attr}.sync" in alias:
+                            remove_method = getattr(obj, f"remove{attr.capitalize()}")
+                            for tag in (t for t in item_tags if t not in input_tags):
+                                updated = True
+                                remove_method(tag)
+                                logger.info(f"Detail: {attr.capitalize()} {tag} removed")
+                        add_method = getattr(obj, f"add{attr.capitalize()}")
+                        for tag in (t for t in input_tags if t not in item_tags):
+                            updated = True
+                            add_method(tag)
+                            logger.info(f"Detail: {attr.capitalize()} {tag} added")
+                    else:
+                        logger.error(f"Metadata Error: {attr} attribute is blank")
+
+            def set_image(attr, obj, group, alias, is_background=False):
+                if group[alias[attr]]:
+                    message = f"{'background' if is_background else 'poster'} to [{'File' if attr.startswith('file') else 'URL'}] {group[alias[attr]]}"
+                    if group[alias[attr]] and attr.startswith("url") and is_background:
+                        obj.uploadArt(url=group[alias[attr]])
+                    elif group[alias[attr]] and attr.startswith("url"):
+                        obj.uploadPoster(url=group[alias[attr]])
+                    elif group[alias[attr]] and attr.startswith("file") and is_background:
+                        obj.uploadArt(filepath=group[alias[attr]])
+                    elif group[alias[attr]] and attr.startswith("file"):
+                        obj.uploadPoster(filepath=group[alias[attr]])
+                    logger.info(f"Detail: {attr} updated {message}")
+                else:
+                    logger.error(f"Metadata Error: {attr} attribute is blank")
+
+            def set_images(obj, group, alias):
+                if "url_poster" in alias:
+                    set_image("url_poster", obj, group, alias)
+                elif "file_poster" in alias:
+                    set_image("file_poster", obj, group, alias)
+                if "url_background" in alias:
+                    set_image("url_background", obj, group, alias, is_background=True)
+                elif "file_background" in alias:
+                    set_image("file_background", obj, group, alias, is_background=True)
+
             logger.info("")
             util.separator()
             logger.info("")
@@ -533,11 +629,14 @@ class PlexAPI:
                             tmdb_item = TMDb.get_movie(util.regex_first_int(meta[methods["tmdb_movie"]], "Movie"))
                 except Failed as e:
                     logger.error(e)
+
             originally_available = None
             original_title = None
             rating = None
+            studio = None
             tagline = None
             summary = None
+            genres = []
             if tmdb_item:
                 originally_available = tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date
                 if tmdb_item and tmdb_is_movie is True and tmdb_item.original_title != tmdb_item.title:
@@ -551,30 +650,9 @@ class PlexAPI:
                     studio = tmdb_item.networks[0].name
                 tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
                 summary = tmdb_item.overview
-
-            updated = False
+                genres = [genre.name for genre in tmdb_item.genres]
 
             edits = {}
-            def add_edit(name, current, group, alias, key=None, value=None, var_type="str"):
-                if value or name in alias:
-                    if value or group[alias[name]]:
-                        if key is None:         key = name
-                        if value is None:       value = group[alias[name]]
-                        try:
-                            if var_type == "date":
-                                final_value = util.check_date(value, name, return_string=True, plex_date=True)
-                            elif var_type == "float":
-                                final_value = util.check_number(value, name, number_type="float", minimum=0, maximum=10)
-                            else:
-                                final_value = value
-                            if str(current) != str(final_value):
-                                edits[f"{key}.value"] = final_value
-                                edits[f"{key}.locked"] = 1
-                                logger.info(f"Detail: {name} updated to {final_value}")
-                        except Failed as ee:
-                            logger.error(ee)
-                    else:
-                        logger.error(f"Metadata Error: {name} attribute is blank")
             add_edit("title", item.title, meta, methods, value=title)
             add_edit("sort_title", item.titleSort, meta, methods, key="titleSort")
             add_edit("originally_available", str(item.originallyAvailableAt)[:-9], meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
@@ -597,22 +675,6 @@ class PlexAPI:
                     logger.error(f"{item_type}: {mapping_name} Details Update Failed")
 
             advance_edits = {}
-            def add_advanced_edit(attr, options, key=None, show_library=False):
-                if key is None:
-                    key = attr
-                if attr in methods:
-                    if show_library and not self.is_show:
-                        logger.error(f"Metadata Error: {attr} attribute only works for show libraries")
-                    elif meta[methods[attr]]:
-                        method_data = str(meta[methods[attr]]).lower()
-                        if method_data not in options:
-                            logger.error(f"Metadata Error: {meta[methods[attr]]} {attr} attribute invalid")
-                        elif getattr(item, key) != options[method_data]:
-                            advance_edits[key] = options[method_data]
-                            logger.info(f"Detail: {attr} updated to {method_data}")
-                    else:
-                        logger.error(f"Metadata Error: {attr} attribute is blank")
-
             add_advanced_edit("episode_sorting", episode_sorting_options, key="episodeSort", show_library=True)
             add_advanced_edit("keep_episodes", keep_episodes_options, key="autoDeletionItemPolicyUnwatchedLibrary", show_library=True)
             add_advanced_edit("delete_episodes", delete_episodes_options, key="autoDeletionItemPolicyWatchedLibrary", show_library=True)
@@ -620,7 +682,6 @@ class PlexAPI:
             add_advanced_edit("episode_ordering", episode_ordering_options, key="showOrdering", show_library=True)
             add_advanced_edit("metadata_language", metadata_language_options, key="languageOverride")
             add_advanced_edit("use_original_title", use_original_title_options, key="useOriginalTitle")
-
             if len(advance_edits) > 0:
                 logger.debug(f"Details Update: {advance_edits}")
                 updated = True
@@ -634,46 +695,17 @@ class PlexAPI:
                     util.print_stacktrace()
                     logger.error(f"{item_type}: {mapping_name} Advanced Details Update Failed")
 
-            def edit_tags(attr, obj, key=None, extra=None, movie_library=False):
-                if key is None:
-                    key = f"{attr}s"
-                if attr in methods and f"{attr}.sync" in methods:
-                    logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
-                elif attr in methods or f"{attr}.sync" in methods:
-                    attr_key = attr if attr in methods else f"{attr}.sync"
-                    if movie_library and not self.is_movie:
-                        logger.error(f"Metadata Error: {attr_key} attribute only works for movie libraries")
-                    elif meta[methods[attr_key]] or extra:
-                        item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
-                        input_tags = []
-                        if meta[methods[attr_key]]:
-                            input_tags.extend(util.get_list(meta[methods[attr_key]]))
-                        if extra:
-                            input_tags.extend(extra)
-                        if f"{attr}.sync" in methods:
-                            remove_method = getattr(obj, f"remove{attr.capitalize()}")
-                            for tag in (t for t in item_tags if t not in input_tags):
-                                updated = True
-                                remove_method(tag)
-                                logger.info(f"Detail: {attr.capitalize()} {tag} removed")
-                        add_method = getattr(obj, f"add{attr.capitalize()}")
-                        for tag in (t for t in input_tags if t not in item_tags):
-                            updated = True
-                            add_method(tag)
-                            logger.info(f"Detail: {attr.capitalize()} {tag} added")
-                    else:
-                        logger.error(f"Metadata Error: {attr} attribute is blank")
-
-            genres = [genre.name for genre in tmdb_item.genres] if tmdb_item else []
-            edit_tags("genre", item, extra=genres)
-            edit_tags("label", item)
-            edit_tags("collection", item)
-            edit_tags("country", item, key="countries", movie_library=True)
-            edit_tags("director", item, movie_library=True)
-            edit_tags("producer", item, movie_library=True)
-            edit_tags("writer", item, movie_library=True)
+            edit_tags("genre", item, meta, methods, extra=genres)
+            edit_tags("label", item, meta, methods)
+            edit_tags("collection", item, meta, methods)
+            edit_tags("country", item, meta, methods, key="countries", movie_library=True)
+            edit_tags("director", item, meta, methods, movie_library=True)
+            edit_tags("producer", item, meta, methods, movie_library=True)
+            edit_tags("writer", item, meta, methods, movie_library=True)
 
             logger.info(f"{item_type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+            set_images(item, meta, methods)
 
             if "seasons" in methods and self.is_show:
                 if meta[methods["seasons"]]:
@@ -709,7 +741,7 @@ class PlexAPI:
 
                                 edits = {}
                                 add_edit("title", season.title, season_dict, season_methods, value=title)
-                                add_edit("summary", season.summary, season_methods, season_dict)
+                                add_edit("summary", season.summary, season_dict, season_methods)
                                 if len(edits) > 0:
                                     logger.debug(f"Season: {season_id} Details Update: {edits}")
                                     updated = True
@@ -720,6 +752,7 @@ class PlexAPI:
                                     except BadRequest:
                                         util.print_stacktrace()
                                         logger.error(f"Season: {season_id} Details Update Failed")
+                                set_images(season, season_dict, season_methods)
                         else:
                             logger.error(f"Metadata Error: Season: {season_id} invalid, it must be an integer")
                         logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -738,8 +771,8 @@ class PlexAPI:
                             output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
                             season_str = output[0]
                             episode_str = output[1]
-                            season_id = int(output[0])
-                            episode_id = int(output[1])
+                            season_id = int(season_str)
+                            episode_id = int(episode_str)
                             logger.info(f"Updating episode S{episode_id}E{season_id} of {mapping_name}...")
                             try:                                episode = item.episode(season=season_id, episode=episode_id)
                             except NotFound:                    logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
@@ -777,8 +810,9 @@ class PlexAPI:
                                     except BadRequest:
                                         util.print_stacktrace()
                                         logger.error(f"Season: {season_id} Episode: {episode_id} Details Update Failed")
-                                edit_tags("director", episode)
-                                edit_tags("writer", episode)
+                                edit_tags("director", episode, episode_dict, episode_methods)
+                                edit_tags("writer", episode, episode_dict, episode_methods)
+                                set_images(episode, episode_dict, episode_methods)
                             logger.info(f"Episode S{episode_id}E{season_id}  of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
                         else:
                             logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
