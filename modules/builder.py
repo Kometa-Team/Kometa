@@ -8,6 +8,8 @@ from plexapi.exceptions import BadRequest, NotFound
 logger = logging.getLogger("Plex Meta Manager")
 
 image_file_details = ["file_poster", "file_background", "asset_directory"]
+advance_new_agent = ["item_metadata_language", "item_use_original_title"]
+advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
 method_alias = {
     "actors": "actor", "role": "actor", "roles": "actor",
     "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
@@ -155,6 +157,7 @@ class CollectionBuilder:
             "show_missing": library.show_missing,
             "save_missing": library.save_missing
         }
+        self.item_details = {}
         self.radarr_options = {}
         self.sonarr_options = {}
         self.missing_movies = []
@@ -454,6 +457,20 @@ class CollectionBuilder:
                         self.details["label.sync"] = util.get_list(method_data)
                     else:
                         self.details[method_name] = util.get_list(method_data)
+                elif method_name in ["item_label", "item_label.sync"]:
+                    if "item_label" in self.data and "item_label.sync" in self.data:
+                        raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
+                    self.item_details[method_name] = util.get_list(method_data)
+                elif method_name in plex.item_advance_keys:
+                    key, options = plex.item_advance_keys[method_name]
+                    if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
+                        logger.error(f"Metadata Error: {method_name} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                    elif method_name in advance_show and not self.library.is_show:
+                        logger.error(f"Metadata Error: {method_name} attribute only works for show libraries")
+                    elif str(method_data).lower() not in options:
+                        logger.error(f"Metadata Error: {method_data} {method_name} attribute invalid")
+                    else:
+                        self.item_details[method_name] = str(method_data).lower()
                 elif method_name in boolean_details:
                     self.details[method_name] = util.get_bool(method_name, method_data)
                 elif method_name in all_details:
@@ -1161,6 +1178,36 @@ class CollectionBuilder:
             for label in (la for la in labels if la not in item_labels):
                 collection.addLabel(label)
                 logger.info(f"Detail: Label {label} added")
+
+        if len(self.item_details) > 0:
+            labels = None
+            if "item_label" in self.item_details or "item_label.sync" in self.item_details:
+                labels = util.get_list(self.item_details["item_label" if "item_label" in self.item_details else "item_label.sync"])
+            for item in collection.items():
+                if labels is not None:
+                    item_labels = [label.tag for label in item.labels]
+                    if "item_label.sync" in self.item_details:
+                        for label in (la for la in item_labels if la not in labels):
+                            item.removeLabel(label)
+                            logger.info(f"Detail: Label {label} removed from {item.title}")
+                    for label in (la for la in labels if la not in item_labels):
+                        item.addLabel(label)
+                        logger.info(f"Detail: Label {label} added to {item.title}")
+                advance_edits = {}
+                for method_name, method_data in self.item_details.items():
+                    if method_name in plex.item_advance_keys:
+                        key, options = plex.item_advance_keys[method_name]
+                        if getattr(item, key) != options[method_data]:
+                            advance_edits[key] = options[method_data]
+                if len(advance_edits) > 0:
+                    logger.debug(f"Details Update: {advance_edits}")
+                    try:
+                        item.editAdvanced(**advance_edits)
+                        item.reload()
+                        logger.info(f"{'Movie' if self.library.is_movie else 'Show'}: {item.title} Advanced Details Update Successful")
+                    except BadRequest:
+                        util.print_stacktrace()
+                        logger.error(f"{'Movie' if self.library.is_movie else 'Show'}: {item.title} Advanced Details Update Failed")
 
         if len(edits) > 0:
             logger.debug(edits)
