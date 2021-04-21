@@ -1,4 +1,4 @@
-import logging, os, re, requests, time
+import glob, logging, os, re, requests, time
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.anilist import AniListAPI
@@ -187,6 +187,8 @@ class Config:
         else:
             self.Cache = None
         self.general["asset_directory"] = check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")])
+        self.general["asset_folders"] = check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True)
+        self.general["assets_for_all"] = check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False)
         self.general["sync_mode"] = check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes)
         self.general["run_again_delay"] = check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0)
         self.general["show_unmanaged"] = check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True)
@@ -323,6 +325,16 @@ class Config:
             params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
             if params["asset_directory"] is None:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
+
+            if lib and "settings" in lib and lib["settings"] and "asset_folders" in lib["settings"]:
+                params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
+            else:
+                params["asset_folders"] = check_for_attribute(lib, "asset_folders", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
+
+            if lib and "settings" in lib and lib["settings"] and "assets_for_all" in lib["settings"]:
+                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
+            else:
+                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
 
             if lib and "settings" in lib and lib["settings"] and "sync_mode" in lib["settings"]:
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
@@ -533,6 +545,37 @@ class Config:
                             continue
 
                         builder.update_details(plex_collection)
+
+                        if library.assets_for_all:
+                            for item in library.get_all():
+                                folder = os.path.basename(os.path.dirname(item.locations[0]) if library.is_movie else item.locations[0])
+                                for ad in library.asset_directory:
+                                    if library.asset_folders:
+                                        poster_path = os.path.join(ad, folder, "poster.*")
+                                    else:
+                                        poster_path = os.path.join(ad, f"{folder}.*")
+                                    matches = glob.glob(poster_path)
+                                    if len(matches) > 0:
+                                        item.uploadPoster(filepath=os.path.abspath(matches[0]))
+                                        logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
+                                    if library.asset_folders:
+                                        matches = glob.glob(os.path.join(ad, folder, "background.*"))
+                                        if len(matches) > 0:
+                                            item.uploadArt(filepath=os.path.abspath(matches[0]))
+                                            logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
+                                        if library.is_show:
+                                            for season in item.seasons():
+                                                matches = glob.glob(os.path.join(ad, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
+                                                if len(matches) > 0:
+                                                    season_path = os.path.abspath(matches[0])
+                                                    season.uploadPoster(filepath=season_path)
+                                                    logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
+                                                for episode in season.episodes():
+                                                    matches = glob.glob(os.path.join(ad, folder, f"{episode.seasonEpisode.upper()}.*"))
+                                                    if len(matches) > 0:
+                                                        episode_path = os.path.abspath(matches[0])
+                                                        episode.uploadPoster(filepath=episode_path)
+                                                        logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
 
                         if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                             library.run_again.append(builder)

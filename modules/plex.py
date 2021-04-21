@@ -189,6 +189,8 @@ class PlexAPI:
         self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), f"{os.path.splitext(os.path.basename(params['metadata_path']))[0]}_missing.yml")
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
+        self.asset_folders = params["asset_folders"]
+        self.assets_for_all = params["assets_for_all"]
         self.sync_mode = params["sync_mode"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_filtered = params["show_filtered"]
@@ -505,9 +507,7 @@ class PlexAPI:
                 else:
                     item.edit(**edits)
                 item.reload()
-                logger.debug(f"Details After Update: {advanced} {edits}")
                 if advanced and "languageOverride" in edits:
-                    logger.debug("Item Refreshed")
                     self.refresh_item(item.ratingKey)
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
             except BadRequest:

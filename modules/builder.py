@@ -1216,40 +1216,49 @@ class CollectionBuilder:
                 path = os.path.join(ad, f"{name_mapping}")
                 if not os.path.isdir(path):
                     continue
-                matches = glob.glob(os.path.join(ad, f"{name_mapping}", "poster.*"))
+                if self.library.asset_folders:
+                    poster_path = os.path.join(ad, f"{name_mapping}", "poster.*")
+                else:
+                    poster_path = os.path.join(ad, f"{name_mapping}.*")
+                matches = glob.glob(poster_path)
                 if len(matches) > 0:
-                    for match in matches:
-                        self.posters["asset_directory"] = os.path.abspath(match)
-                matches = glob.glob(os.path.join(ad, f"{name_mapping}", "background.*"))
-                if len(matches) > 0:
-                    for match in matches:
-                        self.backgrounds["asset_directory"] = os.path.abspath(match)
-                dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
-                if len(dirs) > 0:
-                    for item in collection.items():
-                        folder = os.path.basename(os.path.dirname(item.locations[0]) if self.library.is_movie else item.locations[0])
-                        if folder in dirs:
-                            matches = glob.glob(os.path.join(path, folder, "poster.*"))
-                            poster_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
-                            matches = glob.glob(os.path.join(path, folder, "background.*"))
-                            background_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
-                            if poster_path:
-                                item.uploadPoster(filepath=poster_path)
-                                logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_path}")
-                            if background_path:
-                                item.uploadArt(filepath=background_path)
-                                logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_path}")
-                            if poster_path is None and background_path is None:
-                                logger.warning(f"No Files Found: {os.path.join(path, folder)}")
-                            if self.library.is_show:
-                                for season in item.seasons():
-                                    matches = glob.glob(os.path.join(path, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
-                                    if len(matches) > 0:
-                                        season_path = os.path.abspath(matches[0])
-                                        season.uploadPoster(filepath=season_path)
-                                        logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
-                        else:
-                            logger.warning(f"No Folder: {os.path.join(path, folder)}")
+                    self.posters["asset_directory"] = os.path.abspath(matches[0])
+                if self.library.asset_folders:
+                    matches = glob.glob(os.path.join(ad, f"{name_mapping}", "background.*"))
+                    if len(matches) > 0:
+                        self.backgrounds["asset_directory"] = os.path.abspath(matches[0])
+                    dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
+                    if len(dirs) > 0:
+                        for item in collection.items():
+                            folder = os.path.basename(os.path.dirname(item.locations[0]) if self.library.is_movie else item.locations[0])
+                            if folder in dirs:
+                                matches = glob.glob(os.path.join(path, folder, "poster.*"))
+                                poster_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
+                                matches = glob.glob(os.path.join(path, folder, "background.*"))
+                                background_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
+                                if poster_path:
+                                    item.uploadPoster(filepath=poster_path)
+                                    logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_path}")
+                                if background_path:
+                                    item.uploadArt(filepath=background_path)
+                                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_path}")
+                                if poster_path is None and background_path is None:
+                                    logger.warning(f"No Files Found: {os.path.join(path, folder)}")
+                                if self.library.is_show:
+                                    for season in item.seasons():
+                                        matches = glob.glob(os.path.join(path, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
+                                        if len(matches) > 0:
+                                            season_path = os.path.abspath(matches[0])
+                                            season.uploadPoster(filepath=season_path)
+                                            logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
+                                        for episode in season.episodes():
+                                            matches = glob.glob(os.path.join(path, folder, f"{episode.seasonEpisode.upper()}.*"))
+                                            if len(matches) > 0:
+                                                episode_path = os.path.abspath(matches[0])
+                                                episode.uploadPoster(filepath=episode_path)
+                                                logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
+                            else:
+                                logger.warning(f"No Folder: {os.path.join(path, folder)}")
 
         def set_image(image_method, images, is_background=False):
             message = f"{'background' if is_background else 'poster'} to [{'File' if image_method in image_file_details else 'URL'}] {images[image_method]}"
