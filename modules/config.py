@@ -546,43 +546,43 @@ class Config:
 
                         builder.update_details(plex_collection)
 
-                        if library.assets_for_all:
-                            for item in library.get_all():
-                                folder = os.path.basename(os.path.dirname(item.locations[0]) if library.is_movie else item.locations[0])
-                                for ad in library.asset_directory:
-                                    if library.asset_folders:
-                                        poster_path = os.path.join(ad, folder, "poster.*")
-                                    else:
-                                        poster_path = os.path.join(ad, f"{folder}.*")
-                                    matches = glob.glob(poster_path)
-                                    if len(matches) > 0:
-                                        item.uploadPoster(filepath=os.path.abspath(matches[0]))
-                                        logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
-                                    if library.asset_folders:
-                                        matches = glob.glob(os.path.join(ad, folder, "background.*"))
-                                        if len(matches) > 0:
-                                            item.uploadArt(filepath=os.path.abspath(matches[0]))
-                                            logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
-                                        if library.is_show:
-                                            for season in item.seasons():
-                                                matches = glob.glob(os.path.join(ad, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
-                                                if len(matches) > 0:
-                                                    season_path = os.path.abspath(matches[0])
-                                                    season.uploadPoster(filepath=season_path)
-                                                    logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
-                                                for episode in season.episodes():
-                                                    matches = glob.glob(os.path.join(ad, folder, f"{episode.seasonEpisode.upper()}.*"))
-                                                    if len(matches) > 0:
-                                                        episode_path = os.path.abspath(matches[0])
-                                                        episode.uploadPoster(filepath=episode_path)
-                                                        logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
-
                         if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                             library.run_again.append(builder)
 
                     except Exception as e:
                         util.print_stacktrace()
                         logger.error(f"Unknown Error: {e}")
+
+                if library.assets_for_all:
+                    for item in library.get_all():
+                        folder = os.path.basename(os.path.dirname(item.locations[0]) if library.is_movie else item.locations[0])
+                        for ad in library.asset_directory:
+                            if library.asset_folders:
+                                poster_path = os.path.join(ad, folder, "poster.*")
+                            else:
+                                poster_path = os.path.join(ad, f"{folder}.*")
+                            matches = glob.glob(poster_path)
+                            if len(matches) > 0:
+                                item.uploadPoster(filepath=os.path.abspath(matches[0]))
+                                logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
+                            if library.asset_folders:
+                                matches = glob.glob(os.path.join(ad, folder, "background.*"))
+                                if len(matches) > 0:
+                                    item.uploadArt(filepath=os.path.abspath(matches[0]))
+                                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
+                                if library.is_show:
+                                    for season in item.seasons():
+                                        matches = glob.glob(os.path.join(ad, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
+                                        if len(matches) > 0:
+                                            season_path = os.path.abspath(matches[0])
+                                            season.uploadPoster(filepath=season_path)
+                                            logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
+                                        for episode in season.episodes():
+                                            matches = glob.glob(os.path.join(ad, folder, f"{episode.seasonEpisode.upper()}.*"))
+                                            if len(matches) > 0:
+                                                episode_path = os.path.abspath(matches[0])
+                                                episode.uploadPoster(filepath=episode_path)
+                                                logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
 
                 if library.show_unmanaged is True and not test and not requested_collections:
                     logger.info("")
