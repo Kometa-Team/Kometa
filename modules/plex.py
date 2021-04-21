@@ -505,6 +505,7 @@ class PlexAPI:
                 else:
                     item.edit(**edits)
                 item.reload()
+                logger.debug(f"Details After Update: {advanced} {edits}")
                 if advanced and "languageOverride" in edits:
                     logger.debug("Item Refreshed")
                     self.refresh_item(item.rating_key)
