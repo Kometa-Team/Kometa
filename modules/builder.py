@@ -1199,15 +1199,7 @@ class CollectionBuilder:
                         key, options = plex.item_advance_keys[method_name]
                         if getattr(item, key) != options[method_data]:
                             advance_edits[key] = options[method_data]
-                if len(advance_edits) > 0:
-                    logger.debug(f"Details Update: {advance_edits}")
-                    try:
-                        item.editAdvanced(**advance_edits)
-                        item.reload()
-                        logger.info(f"{'Movie' if self.library.is_movie else 'Show'}: {item.title} Advanced Details Update Successful")
-                    except BadRequest:
-                        util.print_stacktrace()
-                        logger.error(f"{'Movie' if self.library.is_movie else 'Show'}: {item.title} Advanced Details Update Failed")
+                self.library.edit_item(item, item.title, "Movie" if self.library.is_movie else "Show", advance_edits, advanced=True)
 
         if len(edits) > 0:
             logger.debug(edits)
