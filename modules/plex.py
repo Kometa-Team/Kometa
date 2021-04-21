@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import MovieSection, ShowSection
 from plexapi.collection import Collections
 from plexapi.server import PlexServer
 from plexapi.video import Movie, Show
@@ -143,6 +142,8 @@ class PlexAPI:
         self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"]), None)
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library {params['name']} not found")
+        if self.Plex.type not in ["movie", "show"]:
+            raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
         self.agent = self.Plex.agent
         self.is_movie = self.Plex.type == "movie"
@@ -195,6 +196,8 @@ class PlexAPI:
         self.save_missing = params["save_missing"]
         self.mass_genre_update = params["mass_genre_update"]
         self.plex = params["plex"]
+        self.url = params["plex"]["url"]
+        self.token = params["plex"]["token"]
         self.timeout = params["plex"]["timeout"]
         self.missing = {}
         self.run_again = []
@@ -232,6 +235,10 @@ class PlexAPI:
             return choices
         except NotFound:
             raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def refresh_item(self, rating_key):
+        requests.put(f"{self.url}/library/metadata/{rating_key}/refresh?X-Plex-Token={self.token}")
 
     def validate_search_list(self, data, search_name):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
@@ -489,6 +496,22 @@ class PlexAPI:
             kwargs["year"] = year
         return util.choose_from_list(self.search(title=str(data), **kwargs), "movie" if self.is_movie else "show", str(data), exact=True)
 
+    def edit_item(self, item, name, item_type, edits, advanced=False):
+        if len(edits) > 0:
+            logger.debug(f"Details Update: {edits}")
+            try:
+                if advanced:
+                    item.editAdvanced(**edits)
+                else:
+                    item.edit(**edits)
+                item.reload()
+                if advanced and "languageOverride" in edits:
+                    self.refresh_item(item.rating_key)
+                logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
+            except BadRequest:
+                util.print_stacktrace()
+                logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
+
     def update_metadata(self, TMDb, test):
         logger.info("")
         util.separator(f"{self.name} Library Metadata")
@@ -684,16 +707,7 @@ class PlexAPI:
             add_edit("studio", item.studio, meta, methods, value=studio)
             add_edit("tagline", item.tagline, meta, methods, value=tagline)
             add_edit("summary", item.summary, meta, methods, value=summary)
-            if len(edits) > 0:
-                logger.debug(f"Details Update: {edits}")
-                updated = True
-                try:
-                    item.edit(**edits)
-                    item.reload()
-                    logger.info(f"{item_type}: {mapping_name} Details Update Successful")
-                except BadRequest:
-                    util.print_stacktrace()
-                    logger.error(f"{item_type}: {mapping_name} Details Update Failed")
+            self.edit_item(item, mapping_name, item_type, edits)
 
             advance_edits = {}
             add_advanced_edit("episode_sorting", item, meta, methods, show_library=True)
@@ -703,16 +717,7 @@ class PlexAPI:
             add_advanced_edit("episode_ordering", item, meta, methods, show_library=True)
             add_advanced_edit("metadata_language", item, meta, methods, new_agent=True)
             add_advanced_edit("use_original_title", item, meta, methods, new_agent=True)
-            if len(advance_edits) > 0:
-                logger.debug(f"Details Update: {advance_edits}")
-                updated = True
-                try:
-                    item.editAdvanced(**advance_edits)
-                    item.reload()
-                    logger.info(f"{item_type}: {mapping_name} Advanced Details Update Successful")
-                except BadRequest:
-                    util.print_stacktrace()
-                    logger.error(f"{item_type}: {mapping_name} Advanced Details Update Failed")
+            self.edit_item(item, mapping_name, item_type, advance_edits, advanced=True)
 
             edit_tags("genre", item, meta, methods, extra=genres)
             edit_tags("label", item, meta, methods)
@@ -761,16 +766,7 @@ class PlexAPI:
                                 edits = {}
                                 add_edit("title", season.title, season_dict, season_methods, value=title)
                                 add_edit("summary", season.summary, season_dict, season_methods)
-                                if len(edits) > 0:
-                                    logger.debug(f"Season: {season_id} Details Update: {edits}")
-                                    updated = True
-                                    try:
-                                        season.edit(**edits)
-                                        season.reload()
-                                        logger.info(f"Season: {season_id} Details Update Successful")
-                                    except BadRequest:
-                                        util.print_stacktrace()
-                                        logger.error(f"Season: {season_id} Details Update Failed")
+                                self.edit_item(season, season_id, "Season", edits)
                                 set_images(season, season_dict, season_methods)
                         else:
                             logger.error(f"Metadata Error: Season: {season_id} invalid, it must be an integer")
@@ -818,17 +814,7 @@ class PlexAPI:
                                 add_edit("rating", episode.rating, episode_dict, episode_methods)
                                 add_edit("originally_available", str(episode.originallyAvailableAt)[:-9], episode_dict, episode_methods, key="originallyAvailableAt")
                                 add_edit("summary", episode.summary, episode_dict, episode_methods)
-                                if len(edits) > 0:
-                                    logger.debug(f"Season: {season_id} Episode: {episode_id} Details Update: {edits}")
-                                    updated = True
-                                    try:
-                                        episode.edit(**edits)
-                                        episode.reload()
-                                        logger.info(
-                                            f"Season: {season_id} Episode: {episode_id} Details Update Successful")
-                                    except BadRequest:
-                                        util.print_stacktrace()
-                                        logger.error(f"Season: {season_id} Episode: {episode_id} Details Update Failed")
+                                self.edit_item(episode, f"{season_id} Episode: {episode_id}", "Season", edits)
                                 edit_tags("director", episode, episode_dict, episode_methods)
                                 edit_tags("writer", episode, episode_dict, episode_methods)
                                 set_images(episode, episode_dict, episode_methods)
