@@ -35,6 +35,25 @@ plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
+advance_keys = {
+    "episode_sorting": ("episodeSort", episode_sorting_options),
+    "keep_episodes": ("autoDeletionItemPolicyUnwatchedLibrary", keep_episodes_options),
+    "delete_episodes": ("autoDeletionItemPolicyWatchedLibrary", delete_episodes_options),
+    "season_display": ("flattenSeasons", season_display_options),
+    "episode_ordering": ("showOrdering", episode_ordering_options),
+    "metadata_language": ("languageOverride", metadata_language_options),
+    "use_original_title": ("useOriginalTitle", use_original_title_options)
+}
+item_advance_keys = {
+    "item_episode_sorting": ("episodeSort", episode_sorting_options),
+    "item_keep_episodes": ("autoDeletionItemPolicyUnwatchedLibrary", keep_episodes_options),
+    "item_delete_episodes": ("autoDeletionItemPolicyWatchedLibrary", delete_episodes_options),
+    "item_season_display": ("flattenSeasons", season_display_options),
+    "item_episode_ordering": ("showOrdering", episode_ordering_options),
+    "item_metadata_language": ("languageOverride", metadata_language_options),
+    "item_use_original_title": ("useOriginalTitle", use_original_title_options)
+}
+new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
 filter_alias = {
     "actor": "actors",
     "audience_rating": "audienceRating",
@@ -125,6 +144,7 @@ class PlexAPI:
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library {params['name']} not found")
 
+        self.agent = self.Plex.agent
         self.is_movie = self.Plex.type == "movie"
         self.is_show = self.Plex.type == "show"
 
@@ -504,17 +524,18 @@ class PlexAPI:
                     else:
                         logger.error(f"Metadata Error: {name} attribute is blank")
 
-            def add_advanced_edit(attr, options, key=None, show_library=False):
-                if key is None:
-                    key = attr
-                if attr in methods:
-                    if show_library and not self.is_show:
+            def add_advanced_edit(attr, obj, group, alias, show_library=False, new_agent=False):
+                key, options = advance_keys[attr]
+                if attr in alias:
+                    if new_agent and self.agent not in new_plex_agents:
+                        logger.error(f"Metadata Error: {attr} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                    elif show_library and not self.is_show:
                         logger.error(f"Metadata Error: {attr} attribute only works for show libraries")
-                    elif meta[methods[attr]]:
-                        method_data = str(meta[methods[attr]]).lower()
+                    elif group[alias[attr]]:
+                        method_data = str(group[alias[attr]]).lower()
                         if method_data not in options:
-                            logger.error(f"Metadata Error: {meta[methods[attr]]} {attr} attribute invalid")
-                        elif getattr(item, key) != options[method_data]:
+                            logger.error(f"Metadata Error: {group[alias[attr]]} {attr} attribute invalid")
+                        elif getattr(obj, key) != options[method_data]:
                             advance_edits[key] = options[method_data]
                             logger.info(f"Detail: {attr} updated to {method_data}")
                     else:
@@ -675,19 +696,17 @@ class PlexAPI:
                     logger.error(f"{item_type}: {mapping_name} Details Update Failed")
 
             advance_edits = {}
-            add_advanced_edit("episode_sorting", episode_sorting_options, key="episodeSort", show_library=True)
-            add_advanced_edit("keep_episodes", keep_episodes_options, key="autoDeletionItemPolicyUnwatchedLibrary", show_library=True)
-            add_advanced_edit("delete_episodes", delete_episodes_options, key="autoDeletionItemPolicyWatchedLibrary", show_library=True)
-            add_advanced_edit("season_display", season_display_options, key="flattenSeasons", show_library=True)
-            add_advanced_edit("episode_ordering", episode_ordering_options, key="showOrdering", show_library=True)
-            add_advanced_edit("metadata_language", metadata_language_options, key="languageOverride")
-            add_advanced_edit("use_original_title", use_original_title_options, key="useOriginalTitle")
+            add_advanced_edit("episode_sorting", item, meta, methods, show_library=True)
+            add_advanced_edit("keep_episodes", item, meta, methods, show_library=True)
+            add_advanced_edit("delete_episodes", item, meta, methods, show_library=True)
+            add_advanced_edit("season_display", item, meta, methods, show_library=True)
+            add_advanced_edit("episode_ordering", item, meta, methods, show_library=True)
+            add_advanced_edit("metadata_language", item, meta, methods, new_agent=True)
+            add_advanced_edit("use_original_title", item, meta, methods, new_agent=True)
             if len(advance_edits) > 0:
                 logger.debug(f"Details Update: {advance_edits}")
                 updated = True
                 try:
-                    check_dict = {pref.id: list(pref.enumValues.keys()) for pref in item.preferences()}
-                    logger.info(check_dict)
                     item.editAdvanced(**advance_edits)
                     item.reload()
                     logger.info(f"{item_type}: {mapping_name} Advanced Details Update Successful")
