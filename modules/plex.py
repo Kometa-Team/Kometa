@@ -506,6 +506,7 @@ class PlexAPI:
                     item.edit(**edits)
                 item.reload()
                 if advanced and "languageOverride" in edits:
+                    logger.debug("Item Refreshed")
                     self.refresh_item(item.rating_key)
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
             except BadRequest:
