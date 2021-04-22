@@ -28,34 +28,6 @@ def anidb_tests(config):
         util.separator("AniDB Tests")
 
         try:
-            config.convert_anidb_to_tvdb(69)
-            logger.info("Success | Convert AniDB to TVDb")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert AniDB to TVDb: {e}")
-
-        try:
-            config.convert_anidb_to_imdb(112)
-            logger.info("Success | Convert AniDB to IMDb")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert AniDB to IMDb: {e}")
-
-        try:
-            config.convert_tvdb_to_anidb(81797)
-            logger.info("Success | Convert TVDb to AniDB")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert TVDb to AniDB: {e}")
-
-        try:
-            config.convert_imdb_to_anidb("tt0245429")
-            logger.info("Success | Convert IMDb to AniDB")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert IMDb to AniDB: {e}")
-
-        try:
             config.AniDB.get_items("anidb_id", 69, "en", status_message=False)
             logger.info("Success | Get AniDB ID")
         except Failed as e:

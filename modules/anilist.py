@@ -254,7 +254,7 @@ class AniListAPI:
                 logger.info(f"Processing {pretty}: ({data}) {name} ({len(anilist_ids)} Anime)")
         else:
             raise Failed(f"AniList Error: Method {method} not supported")
-        movie_ids, show_ids = self.config.convert_anilist_list(anilist_ids, language)
+        movie_ids, show_ids = self.config.Arms.anilist_to_ids(anilist_ids, language)
         if status_message:
             logger.debug(f"AniList IDs Found: {anilist_ids}")
             logger.debug(f"Shows Found: {show_ids}")
