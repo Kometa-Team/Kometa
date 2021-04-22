@@ -89,7 +89,7 @@ util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_
 util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
 util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
 util.centered("                                                                     |___/           ")
-util.centered("    Version: 1.7.2-Beta10                                                            ")
+util.centered("    Version: 1.7.2-Beta11                                                            ")
 util.separator()
 
 if my_tests:
@@ -97,10 +97,10 @@ if my_tests:
     sys.exit(0)
 
 def start(config_path, is_test, daily, collections_to_run, resume_from):
-    if daily:               start_type = "Daily "
-    elif is_test:           start_type = "Test "
-    elif collections_to_run:       start_type = "Collections "
-    else:                   start_type = ""
+    if daily:                       start_type = "Daily "
+    elif is_test:                   start_type = "Test "
+    elif collections_to_run:        start_type = "Collections "
+    else:                           start_type = ""
     start_time = datetime.now()
     util.separator(f"Starting {start_type}Run")
     try:
