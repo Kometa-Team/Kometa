@@ -553,7 +553,10 @@ class Config:
                         util.print_stacktrace()
                         logger.error(f"Unknown Error: {e}")
 
-                if library.assets_for_all:
+                if library.assets_for_all is True and not test and not requested_collections:
+                    logger.info("")
+                    util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
+                    logger.info("")
                     for item in library.get_all():
                         folder = os.path.basename(os.path.dirname(item.locations[0]) if library.is_movie else item.locations[0])
                         for ad in library.asset_directory:
@@ -797,13 +800,13 @@ class Config:
             if self.Cache:
                 ids, expired = self.Cache.get_ids("movie" if library.is_movie else "show", plex_guid=item.guid)
             elif library.is_movie:
-                for tmdb in movie_map:
-                    if movie_map[tmdb] == item.ratingKey:
+                for tmdb, rating_keys in movie_map.items():
+                    if item.ratingKey in rating_keys:
                         ids["tmdb"] = tmdb
                         break
             else:
-                for tvdb in show_map:
-                    if show_map[tvdb] == item.ratingKey:
+                for tvdb, rating_keys in show_map.items():
+                    if item.ratingKey in rating_keys:
                         ids["tvdb"] = tvdb
                         break
 
@@ -859,12 +862,28 @@ class Config:
                 continue
             if isinstance(main_id, list):
                 if id_type == "movie":
-                    for m in main_id:                               movie_map[m] = item.ratingKey
+                    for m in main_id:
+                        if m in movie_map:
+                            movie_map[m].append(item.ratingKey)
+                        else:
+                            movie_map[m] = [item.ratingKey]
                 elif id_type == "show":
-                    for m in main_id:                               show_map[m] = item.ratingKey
+                    for m in main_id:
+                        if m in show_map:
+                            show_map[m].append(item.ratingKey)
+                        else:
+                            show_map[m] = [item.ratingKey]
             else:
-                if id_type == "movie":                          movie_map[main_id] = item.ratingKey
-                elif id_type == "show":                         show_map[main_id] = item.ratingKey
+                if id_type == "movie":
+                    if main_id in movie_map:
+                        movie_map[main_id].append(item.ratingKey)
+                    else:
+                        movie_map[main_id] = [item.ratingKey]
+                elif id_type == "show":
+                    if main_id in show_map:
+                        show_map[main_id].append(item.ratingKey)
+                    else:
+                        show_map[main_id] = [item.ratingKey]
         util.print_end(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}")
         return movie_map, show_map
 

@@ -1009,14 +1009,16 @@ class CollectionBuilder:
                         items_found_inside += len(movie_ids)
                         for movie_id in movie_ids:
                             if movie_id in movie_map:
-                                items.append(movie_map[movie_id])
+                                items.extend(movie_map[movie_id])
                             else:
                                 missing_movies.append(movie_id)
                     if len(show_ids) > 0:
                         items_found_inside += len(show_ids)
                         for show_id in show_ids:
-                            if show_id in show_map:                             items.append(show_map[show_id])
-                            else:                                               missing_shows.append(show_id)
+                            if show_id in show_map:
+                                items.extend(show_map[show_id])
+                            else:
+                                missing_shows.append(show_id)
                     return items_found_inside
                 logger.info("")
                 logger.debug(f"Value: {value}")
@@ -1325,10 +1327,14 @@ class CollectionBuilder:
     def run_collections_again(self, collection_obj, movie_map, show_map):
         collection_items = collection_obj.items() if isinstance(collection_obj, Collections) else []
         name = collection_obj.title if isinstance(collection_obj, Collections) else collection_obj
-        rating_keys = [movie_map[mm] for mm in self.missing_movies if mm in movie_map]
+        rating_keys = []
+        for mm in self.missing_movies:
+            if mm in movie_map:
+                rating_keys.extend(movie_map[mm])
         if self.library.is_show:
-            rating_keys.extend([show_map[sm] for sm in self.missing_shows if sm in show_map])
-
+            for sm in self.missing_shows:
+                if sm in show_map:
+                    rating_keys.extend(show_map[sm])
         if len(rating_keys) > 0:
             for rating_key in rating_keys:
                 try:
