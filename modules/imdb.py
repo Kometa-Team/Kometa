@@ -100,7 +100,7 @@ class IMDbAPI:
         if method == "imdb_id":
             if status_message:
                 logger.info(f"Processing {pretty}: {data}")
-            tmdb_id, tvdb_id = self.config.convert_from_imdb(data, language)
+            tmdb_id, tvdb_id = self.config.Arms.imdb_to_ids(data, language)
             if tmdb_id:                     movie_ids.append(tmdb_id)
             if tvdb_id:                     show_ids.append(tvdb_id)
         elif method == "imdb_list":
@@ -113,7 +113,7 @@ class IMDbAPI:
             for i, imdb_id in enumerate(imdb_ids, 1):
                 length = util.print_return(length, f"Converting IMDb ID {i}/{total_ids}")
                 try:
-                    tmdb_id, tvdb_id = self.config.convert_from_imdb(imdb_id, language)
+                    tmdb_id, tvdb_id = self.config.Arms.imdb_to_ids(imdb_id, language)
                     if tmdb_id:                     movie_ids.append(tmdb_id)
                     if tvdb_id:                     show_ids.append(tvdb_id)
                 except Failed as e:             logger.warning(e)

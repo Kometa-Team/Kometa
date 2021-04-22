@@ -64,7 +64,7 @@ class AniDBAPI:
             if method == "anidb_id":                            anidb_ids.append(data)
             elif method == "anidb_relation":                    anidb_ids.extend(self.get_anidb_relations(data, language))
             else:                                               raise Failed(f"AniDB Error: Method {method} not supported")
-        movie_ids, show_ids = self.config.convert_anidb_list(anidb_ids, language)
+        movie_ids, show_ids = self.config.Arms.anidb_to_ids(anidb_ids, language)
         if status_message:
             logger.debug(f"AniDB IDs Found: {anidb_ids}")
             logger.debug(f"TMDb IDs Found: {movie_ids}")
