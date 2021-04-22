@@ -50,7 +50,7 @@ mass_genre_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Meta
 library_types = {"movie": "For Movie Libraries", "show": "For Show Libraries"}
 
 class Config:
-    def __init__(self, default_dir, config_path=None):
+    def __init__(self, default_dir, config_path=None, libraries_to_run=None):
         logger.info("Locating config...")
         if config_path and os.path.exists(config_path):                     self.config_path = os.path.abspath(config_path)
         elif config_path and not os.path.exists(config_path):               raise Failed(f"Config Error: config not found at {os.path.abspath(config_path)}")
@@ -311,7 +311,10 @@ class Config:
         self.libraries = []
         try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
         except Failed as e:             raise Failed(e)
+        requested_libraries = util.get_list(libraries_to_run) if libraries_to_run else None
         for library_name, lib in libs.items():
+            if requested_libraries and library_name not in requested_libraries:
+                continue
             util.separator()
             params = {}
             logger.info("")
