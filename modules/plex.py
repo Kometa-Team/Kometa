@@ -413,7 +413,7 @@ class PlexAPI:
                     elif method_name == "original_language":
                         movie = None
                         for key, value in movie_map.items():
-                            if current.ratingKey == value:
+                            if current.ratingKey in value:
                                 try:
                                     movie = self.TMDb.get_movie(key)
                                     break
@@ -445,7 +445,7 @@ class PlexAPI:
                         if method_name == "vote_count":
                             tmdb_item = None
                             for key, value in movie_map.items():
-                                if current.ratingKey == value:
+                                if current.ratingKey in value:
                                     try:
                                         tmdb_item = self.TMDb.get_movie(key) if self.is_movie else self.TMDb.get_show(key)
                                         break
