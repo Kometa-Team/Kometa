@@ -723,16 +723,36 @@ class Config:
 
     def convert_anime_ids(self, anilist_ids=None, anidb_ids=None, mal_ids=None):
         all_ids = []
-        def collect_ids(ids, id_type):
+        def collect_ids(ids, id_name):
             if ids:
                 if isinstance(ids, list):
-                    all_ids.extend([{id_type: anime_id} for anime_id in ids])
+                    all_ids.extend([{id_name: a_id} for a_id in ids])
                 else:
-                    all_ids.append({id_type: ids})
+                    all_ids.append({id_name: ids})
         collect_ids(anilist_ids, "anilist")
         collect_ids(anidb_ids, "anidb")
         collect_ids(mal_ids, "myanimelist")
-        return requests.post("https://relations.yuna.moe/api/ids", json=all_ids).json()
+        if self.Cache:
+            converted_ids = []
+            unconverted_ids = []
+            for anime_dict in all_ids:
+                for id_type, anime_id in anime_dict.items():
+                    query_ids, update = self.Cache.query_anime_map(anime_id, id_type)
+                    if not update and query_ids:
+                        converted_ids.append(query_ids)
+                    else:
+                        unconverted_ids.append({id_type: anime_id})
+            arm_ids = self.call_arm_server(unconverted_ids)
+            for anime_ids in arm_ids:
+                self.Cache.update_anime(False, anime_ids)
+            converted_ids.extend(arm_ids)
+            return converted_ids
+        else:
+            return self.call_arm_server(all_ids)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def call_arm_server(self, ids):
+        return requests.post("https://relations.yuna.moe/api/ids", json=ids).json()
 
     def convert_from_imdb(self, imdb_id, language):
         update_tmdb = False
@@ -1008,7 +1028,7 @@ class Config:
                             try:                                            tvdb_id = self.Trakt.convert_imdb_to_tvdb(tmdb_id)
                             except Failed:                                  pass
 
-                if (not tmdb_id and library.is_movie) or (not tvdb_id and not ((anidb_id or mal_id) and tmdb_id) and library.is_show):
+                if (not tmdb_id and library.is_movie) or (not tvdb_id and not (anidb_id and tmdb_id) and library.is_show):
                     service_name = "TMDb ID" if library.is_movie else "TVDb ID"
 
                     if self.Trakt:                                  api_name = "TMDb or Trakt"
@@ -1022,21 +1042,20 @@ class Config:
                     else:                                           id_name = None
 
                     if anidb_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert AniDB ID: {anidb_id} to TMDb ID or TVDb ID"
-                    elif mal_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert MyAnimeList ID: {mal_id} to TMDb ID or TVDb ID"
                     elif id_name:                                   error_message = f"Unable to convert {id_name} to {service_name} using {api_name}"
                     else:                                           error_message = f"No ID to convert to {service_name}"
-            if self.Cache and ((tmdb_id and library.is_movie) or ((tvdb_id or ((anidb_id or mal_id) and tmdb_id)) and library.is_show)):
+            if self.Cache and ((tmdb_id and library.is_movie) or ((tvdb_id or (anidb_id and tmdb_id)) and library.is_show)):
                 if not isinstance(tmdb_id, list):               tmdb_id = [tmdb_id]
                 if not isinstance(imdb_id, list):               imdb_id = [imdb_id]
                 for i in range(len(tmdb_id)):
                     try:                                            imdb_value = imdb_id[i]
                     except IndexError:                              imdb_value = None
-                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_value if imdb_value else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {mal_id if mal_id else 'None':<5} | {item.title}")
-                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_value, tvdb_id, anidb_id, mal_id, expired)
+                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_value if imdb_value else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {item.title}")
+                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_value, tvdb_id, anidb_id, expired)
 
         if tmdb_id and library.is_movie:                return "movie", tmdb_id
         elif tvdb_id and library.is_show:               return "show", tvdb_id
-        elif (anidb_id or mal_id) and tmdb_id:          return "movie", tmdb_id
+        elif anidb_id and tmdb_id:                      return "movie", tmdb_id
         else:
             util.print_end(length, f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | {error_message} for {item.title}")
             return None, None
