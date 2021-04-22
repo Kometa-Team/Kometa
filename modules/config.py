@@ -657,17 +657,20 @@ class Config:
                 else:                                               raise Failed
         except Failed:
             try:                                                return None, self.convert_anidb_to_tvdb(anidb_id)
-            except Failed:                                      logger.error(f"AniDB Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
+            except Failed:                                      raise Failed(f"AniDB Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
 
     def convert_anidb_list(self, anidb_list, language):
         show_ids = []
         movie_ids = []
         for anidb_id in anidb_list:
-            tmdb_id, tvdb_id = self.convert_anidb_to_id(anidb_id, language)
-            if tmdb_id:
-                movie_ids.append(tmdb_id)
-            if tvdb_id:
-                show_ids.append(tvdb_id)
+            try:
+                tmdb_id, tvdb_id = self.convert_anidb_to_id(anidb_id, language)
+                if tmdb_id:
+                    movie_ids.append(tmdb_id)
+                if tvdb_id:
+                    show_ids.append(tvdb_id)
+            except Failed as e:
+                logger.error(e)
         return movie_ids, show_ids
 
     def convert_anilist_list(self, anilist_list, language):
@@ -735,8 +738,8 @@ class Config:
         collect_ids(anilist_ids, "anilist")
         collect_ids(anidb_ids, "anidb")
         collect_ids(mal_ids, "myanimelist")
+        converted_ids = []
         if self.Cache:
-            converted_ids = []
             unconverted_ids = []
             for anime_dict in all_ids:
                 for id_type, anime_id in anime_dict.items():
@@ -745,13 +748,15 @@ class Config:
                         converted_ids.append(query_ids)
                     else:
                         unconverted_ids.append({id_type: anime_id})
-            arm_ids = self.call_arm_server(unconverted_ids)
-            for anime_ids in arm_ids:
-                self.Cache.update_anime(False, anime_ids)
-            converted_ids.extend(arm_ids)
-            return converted_ids
         else:
-            return self.call_arm_server(all_ids)
+            unconverted_ids = all_ids
+
+        for anime_ids in self.call_arm_server(unconverted_ids):
+            if anime_ids:
+                if self.Cache:
+                    self.Cache.update_anime(False, anime_ids)
+                converted_ids.append(anime_ids)
+        return converted_ids
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def call_arm_server(self, ids):
