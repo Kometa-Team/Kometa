@@ -788,7 +788,7 @@ class PlexAPI:
                             output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
                             season_id = int(output[0])
                             episode_id = int(output[1])
-                            logger.info(f"Updating episode S{episode_id}E{season_id} of {mapping_name}...")
+                            logger.info(f"Updating episode S{season_id}E{episode_id} of {mapping_name}...")
                             try:                                episode = item.episode(season=season_id, episode=episode_id)
                             except NotFound:                    logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
                             else:
