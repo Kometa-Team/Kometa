@@ -134,32 +134,25 @@ class ArmsAPI:
         from_cache = tmdb_id is not None or tvdb_id is not None
 
         if not tmdb_id and not tvdb_id and self.config.TMDb:
-            try:
-                tmdb_id = self.config.TMDb.convert_imdb_to_tmdb(imdb_id)
-            except Failed:
-                pass
+            try:                    tmdb_id = self.config.TMDb.convert_imdb_to_tmdb(imdb_id)
+            except Failed:          pass
         if not tmdb_id and not tvdb_id and self.config.TMDb:
-            try:
-                tvdb_id = self.config.TMDb.convert_imdb_to_tvdb(imdb_id)
-            except Failed:
-                pass
+            try:                    tvdb_id = self.config.TMDb.convert_imdb_to_tvdb(imdb_id)
+            except Failed:          pass
         if not tmdb_id and not tvdb_id and self.config.Trakt:
-            try:
-                tmdb_id = self.config.Trakt.convert_imdb_to_tmdb(imdb_id)
-            except Failed:
-                pass
+            try:                    tmdb_id = self.config.Trakt.convert_imdb_to_tmdb(imdb_id)
+            except Failed:          pass
         if not tmdb_id and not tvdb_id and self.config.Trakt:
-            try:
-                tvdb_id = self.config.Trakt.convert_imdb_to_tvdb(imdb_id)
-            except Failed:
-                pass
-        try:
-            if tmdb_id and not from_cache:              self.config.TMDb.get_movie(tmdb_id)
-        except Failed:                              tmdb_id = None
-        try:
-            if tvdb_id and not from_cache:              self.config.TVDb.get_series(language, tvdb_id)
-        except Failed:                              tvdb_id = None
-        if not tmdb_id and not tvdb_id:             raise Failed(f"Arms Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
+            try:                    tvdb_id = self.config.Trakt.convert_imdb_to_tvdb(imdb_id)
+            except Failed:          pass
+        if tmdb_id and not from_cache:
+            try:                    self.config.TMDb.get_movie(tmdb_id)
+            except Failed:          tmdb_id = None
+        if tvdb_id and not from_cache:
+            try:                    self.config.TVDb.get_series(language, tvdb_id)
+            except Failed:          tvdb_id = None
+        if not tmdb_id and not tvdb_id:
+            raise Failed(f"Arms Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
         if self.config.Cache:
             if tmdb_id and update_tmdb is not False:
                 self.config.Cache.update_imdb("movie", update_tmdb, imdb_id, tmdb_id)
