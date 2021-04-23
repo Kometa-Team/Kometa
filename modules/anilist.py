@@ -52,14 +52,14 @@ class AniListAPI:
         return json_obj
 
     def anilist_id(self, anilist_id):
-        query = "query ($id: Int) {Media(id: $id) {idMal title{romaji english}}}"
+        query = "query ($id: Int) {Media(id: $id) {id title{romaji english}}}"
         media = self.send_request(query, {"id": anilist_id})["data"]["Media"]
-        if media["idMal"]:
-            return media["idMal"], media["title"]["english" if media["title"]["english"] else "romaji"]
-        raise Failed(f"AniList Error: No MyAnimeList ID found for {anilist_id}")
+        if media["id"]:
+            return media["id"], media["title"]["english" if media["title"]["english"] else "romaji"]
+        raise Failed(f"AniList Error: No AniList ID found for {anilist_id}")
 
     def get_pagenation(self, query, limit=0, variables=None):
-        mal_ids = []
+        anilist_ids = []
         count = 0
         page_num = 0
         if variables is None:
@@ -71,21 +71,21 @@ class AniListAPI:
             json_obj = self.send_request(query, variables)
             next_page = json_obj["data"]["Page"]["pageInfo"]["hasNextPage"]
             for media in json_obj["data"]["Page"]["media"]:
-                if media["idMal"]:
-                    mal_ids.append(media["idMal"])
+                if media["id"]:
+                    anilist_ids.append(media["id"])
                     count += 1
                     if 0 < limit == count:
                         break
             if 0 < limit == count:
                 break
-        return mal_ids
+        return anilist_ids
 
     def top_rated(self, limit):
         query = """
             query ($page: Int) {
               Page(page: $page) {
                 pageInfo {hasNextPage}
-                media(averageScore_greater: 3, sort: SCORE_DESC, type: ANIME) {idMal}
+                media(averageScore_greater: 3, sort: SCORE_DESC, type: ANIME) {id}
               }
             }
         """
@@ -96,7 +96,7 @@ class AniListAPI:
             query ($page: Int) {
               Page(page: $page) {
                 pageInfo {hasNextPage}
-                media(popularity_greater: 1000, sort: POPULARITY_DESC, type: ANIME) {idMal}
+                media(popularity_greater: 1000, sort: POPULARITY_DESC, type: ANIME) {id}
               }
             }
         """
@@ -107,7 +107,7 @@ class AniListAPI:
             query ($page: Int, $season: MediaSeason, $year: Int, $sort: [MediaSort]) {
               Page(page: $page){
                 pageInfo {hasNextPage}
-                media(season: $season, seasonYear: $year, type: ANIME, sort: $sort){idMal}
+                media(season: $season, seasonYear: $year, type: ANIME, sort: $sort){id}
               }
             }
         """
@@ -119,7 +119,7 @@ class AniListAPI:
             query ($page: Int, $genre: String, $sort: [MediaSort]) {
               Page(page: $page){
                 pageInfo {hasNextPage}
-                media(genre: $genre, sort: $sort){idMal}
+                media(genre: $genre, sort: $sort){id}
               }
             }
         """
@@ -131,7 +131,7 @@ class AniListAPI:
             query ($page: Int, $tag: String, $sort: [MediaSort]) {
               Page(page: $page){
                 pageInfo {hasNextPage}
-                media(tag: $tag, sort: $sort){idMal}
+                media(tag: $tag, sort: $sort){id}
               }
             }
         """
@@ -144,13 +144,13 @@ class AniListAPI:
               Studio(id: $id) {
                 name
                 media(page: $page) {
-                  nodes {idMal type}
+                  nodes {id type}
                   pageInfo {hasNextPage}
                 }
               }
             }
         """
-        mal_ids = []
+        anilist_ids = []
         page_num = 0
         next_page = True
         name = None
@@ -161,43 +161,43 @@ class AniListAPI:
                 name = json_obj["data"]["Studio"]["name"]
             next_page = json_obj["data"]["Studio"]["media"]["pageInfo"]["hasNextPage"]
             for media in json_obj["data"]["Studio"]["media"]["nodes"]:
-                if media["idMal"] and media["type"] == "ANIME":
-                    mal_ids.append(media["idMal"])
-        return mal_ids, name
+                if media["id"] and media["type"] == "ANIME":
+                    anilist_ids.append(media["id"])
+        return anilist_ids, name
 
     def relations(self, anilist_id, ignore_ids=None):
         query = """
             query ($id: Int) {
               Media(id: $id) {
-                idMal
+                id
                 relations {
-                  edges {node{id idMal type} relationType}
-                  nodes {id idMal type}
+                  edges {node{id type} relationType}
+                  nodes {id type}
                 }
               }
             }
         """
+        new_anilist_ids = []
         anilist_ids = []
-        mal_ids = []
         name = ""
         if not ignore_ids:
             ignore_ids = [anilist_id]
-            mal_id, name = self.anilist_id(anilist_id)
-            mal_ids.append(mal_id)
+            anilist_id, name = self.anilist_id(anilist_id)
+            anilist_ids.append(anilist_id)
         json_obj = self.send_request(query, {"id": anilist_id})
         edges = [media["node"]["id"] for media in json_obj["data"]["Media"]["relations"]["edges"]
                  if media["relationType"] not in ["CHARACTER", "OTHER"] and media["node"]["type"] == "ANIME"]
         for media in json_obj["data"]["Media"]["relations"]["nodes"]:
-            if media["idMal"] and media["id"] not in ignore_ids and media["id"] in edges and media["type"] == "ANIME":
-                anilist_ids.append(media["id"])
+            if media["id"] and media["id"] not in ignore_ids and media["id"] in edges and media["type"] == "ANIME":
+                new_anilist_ids.append(media["id"])
                 ignore_ids.append(media["id"])
-                mal_ids.append(media["idMal"])
+                anilist_ids.append(media["id"])
 
-        for next_id in anilist_ids:
-            new_mal_ids, ignore_ids, _ = self.relations(next_id, ignore_ids=ignore_ids)
-            mal_ids.extend(new_mal_ids)
+        for next_id in new_anilist_ids:
+            new_relation_ids, ignore_ids, _ = self.relations(next_id, ignore_ids=ignore_ids)
+            anilist_ids.extend(new_relation_ids)
 
-        return mal_ids, ignore_ids, name
+        return anilist_ids, ignore_ids, name
 
     def validate_genre(self, genre):
         if genre.lower() in self.genres:
@@ -213,7 +213,7 @@ class AniListAPI:
         anilist_values = []
         for anilist_id in anilist_ids:
             if studio:              query = "query ($id: Int) {Studio(id: $id) {name}}"
-            else:                   query = "query ($id: Int) {Media(id: $id) {idMal}}"
+            else:                   query = "query ($id: Int) {Media(id: $id) {id}}"
             try:
                 self.send_request(query, {"id": anilist_id})
                 anilist_values.append(anilist_id)
@@ -222,51 +222,41 @@ class AniListAPI:
             return anilist_values
         raise Failed(f"AniList Error: No valid AniList IDs in {anilist_ids}")
 
-    def get_items(self, method, data, status_message=True):
+    def get_items(self, method, data, language, status_message=True):
         if status_message:
             logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if method == "anilist_id":
-            mal_id, name = self.anilist_id(data)
-            mal_ids = [mal_id]
+            anilist_id, name = self.anilist_id(data)
+            anilist_ids = [anilist_id]
             if status_message:
                 logger.info(f"Processing {pretty}: ({data}) {name}")
         elif method in ["anilist_popular", "anilist_top_rated"]:
-            mal_ids = self.popular(data) if method == "anilist_popular" else self.top_rated(data)
+            anilist_ids = self.popular(data) if method == "anilist_popular" else self.top_rated(data)
             if status_message:
                 logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "anilist_season":
-            mal_ids = self.season(data["season"], data["year"], data["sort_by"], data["limit"])
+            anilist_ids = self.season(data["season"], data["year"], data["sort_by"], data["limit"])
             if status_message:
                 logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "anilist_genre":
-            mal_ids = self.genre(data["genre"], data["sort_by"], data["limit"])
+            anilist_ids = self.genre(data["genre"], data["sort_by"], data["limit"])
             if status_message:
                 logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Genre: {data['genre']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "anilist_tag":
-            mal_ids = self.tag(data["tag"], data["sort_by"], data["limit"])
+            anilist_ids = self.tag(data["tag"], data["sort_by"], data["limit"])
             if status_message:
                 logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag: {data['tag']} sorted by {pretty_names[data['sort_by']]}")
         elif method in ["anilist_studio", "anilist_relations"]:
-            if method == "anilist_studio":          mal_ids, name = self.studio(data)
-            else:                                   mal_ids, _, name = self.relations(data)
+            if method == "anilist_studio":          anilist_ids, name = self.studio(data)
+            else:                                   anilist_ids, _, name = self.relations(data)
             if status_message:
-                logger.info(f"Processing {pretty}: ({data}) {name} ({len(mal_ids)} Anime)")
+                logger.info(f"Processing {pretty}: ({data}) {name} ({len(anilist_ids)} Anime)")
         else:
             raise Failed(f"AniList Error: Method {method} not supported")
-        show_ids = []
-        movie_ids = []
-        for mal_id in mal_ids:
-            try:
-                ids = self.config.MyAnimeListIDList.find_mal_ids(mal_id)
-                if "thetvdb_id" in ids and int(ids["thetvdb_id"]) > 0:                  show_ids.append(int(ids["thetvdb_id"]))
-                elif "themoviedb_id" in ids and int(ids["themoviedb_id"]) > 0:          movie_ids.append(int(ids["themoviedb_id"]))
-                else:                                                                   raise Failed(f"MyAnimeList Error: MyAnimeList ID: {mal_id} has no other IDs associated with it")
-            except Failed as e:
-                if status_message:
-                    logger.error(e)
+        movie_ids, show_ids = self.config.Arms.anilist_to_ids(anilist_ids, language)
         if status_message:
-            logger.debug(f"MyAnimeList IDs Found: {mal_ids}")
+            logger.debug(f"AniList IDs Found: {anilist_ids}")
             logger.debug(f"Shows Found: {show_ids}")
             logger.debug(f"Movies Found: {movie_ids}")
         return movie_ids, show_ids

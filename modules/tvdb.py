@@ -55,13 +55,17 @@ class TVDbObj:
         if is_movie:
             results = response.xpath("//*[text()='TheMovieDB.com']/@href")
             if len(results) > 0:
-                try:                                                    tmdb_id = util.regex_first_int(results[0], "TMDb ID")
-                except Failed as e:                                     logger.error(e)
+                try:
+                    tmdb_id = util.regex_first_int(results[0], "TMDb ID")
+                except Failed as e:
+                    logger.error(e)
             if not tmdb_id:
                 results = response.xpath("//*[text()='IMDB']/@href")
                 if len(results) > 0:
-                    try:                                                tmdb_id, _ = TVDb.config.convert_from_imdb(util.get_id_from_imdb_url(results[0]), language)
-                    except Failed as e:                                 logger.error(e)
+                    try:
+                        tmdb_id, _ = TVDb.config.Arms.imdb_to_ids(util.get_id_from_imdb_url(results[0]), language)
+                    except Failed as e:
+                        logger.error(e)
         self.tmdb_id = tmdb_id
         self.tvdb_url = tvdb_url
         self.language = language
@@ -114,13 +118,17 @@ class TVDbAPI:
                     title = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/text()")[0]
                     item_url = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/@href")[0]
                     if item_url.startswith("/series/"):
-                        try:                                                    show_ids.append(self.get_series(language, f"{self.site_url}{item_url}").id)
-                        except Failed as e:                                     logger.error(f"{e} for series {title}")
+                        try:
+                            show_ids.append(self.get_series(language, f"{self.site_url}{item_url}").id)
+                        except Failed as e:
+                            logger.error(f"{e} for series {title}")
                     elif item_url.startswith("/movies/"):
                         try:
                             tmdb_id = self.get_movie(language, f"{self.site_url}{item_url}").tmdb_id
-                            if tmdb_id:                                             movie_ids.append(tmdb_id)
-                            else:                                                   raise Failed(f"TVDb Error: TMDb ID not found from TVDb URL: {tvdb_url}")
+                            if tmdb_id:
+                                movie_ids.append(tmdb_id)
+                            else:
+                                raise Failed(f"TVDb Error: TMDb ID not found from TVDb URL: {tvdb_url}")
                         except Failed as e:
                             logger.error(f"{e} for series {title}")
                     else:

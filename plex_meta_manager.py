@@ -10,13 +10,14 @@ except ModuleNotFoundError:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--my-tests", dest="tests", help=argparse.SUPPRESS, action="store_true", default=False)
-parser.add_argument("--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
+parser.add_argument("-db", "--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", dest="time", help="Time to update each day use format HH:MM (Default: 03:00)", default="03:00", type=str)
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
 parser.add_argument("-cl", "--collection", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
+parser.add_argument("-l", "--library", "--libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -38,6 +39,7 @@ test = check_bool("PMM_TEST", args.test)
 debug = check_bool("PMM_DEBUG", args.debug)
 run = check_bool("PMM_RUN", args.run)
 collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
+libraries = os.environ.get("PMM_LIBRARIES") if os.environ.get("PMM_LIBRARIES") else args.libraries
 resume = os.environ.get("PMM_RESUME") if os.environ.get("PMM_RESUME") else args.resume
 
 time_to_run = os.environ.get("PMM_TIME") if os.environ.get("PMM_TIME") else args.time
@@ -89,22 +91,23 @@ util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_
 util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
 util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
 util.centered("                                                                     |___/           ")
-util.centered("    Version: 1.7.2                                                                   ")
+util.centered("    Version: 1.8.0                                                                   ")
 util.separator()
 
 if my_tests:
     tests.run_tests(default_dir)
     sys.exit(0)
 
-def start(config_path, is_test, daily, collections_to_run, resume_from):
-    if daily:               start_type = "Daily "
-    elif is_test:           start_type = "Test "
-    elif collections_to_run:       start_type = "Collections "
-    else:                   start_type = ""
+def start(config_path, is_test, daily, collections_to_run, libraries_to_run, resume_from):
+    if daily:                       start_type = "Daily "
+    elif is_test:                   start_type = "Test "
+    elif collections_to_run:        start_type = "Collections "
+    elif libraries_to_run:          start_type = "Libraries "
+    else:                           start_type = ""
     start_time = datetime.now()
     util.separator(f"Starting {start_type}Run")
     try:
-        config = Config(default_dir, config_path)
+        config = Config(default_dir, config_path, libraries_to_run)
         config.update_libraries(is_test, collections_to_run, resume_from)
     except Exception as e:
         util.print_stacktrace()
@@ -113,11 +116,11 @@ def start(config_path, is_test, daily, collections_to_run, resume_from):
     util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
 
 try:
-    if run or test or collections or resume:
-        start(config_file, test, False, collections, resume)
+    if run or test or collections or libraries or resume:
+        start(config_file, test, False, collections, libraries, resume)
     else:
         length = 0
-        schedule.every().day.at(time_to_run).do(start, config_file, False, True, None, None)
+        schedule.every().day.at(time_to_run).do(start, config_file, False, True, None, None, None)
         while True:
             schedule.run_pending()
             current = datetime.now().strftime("%H:%M")

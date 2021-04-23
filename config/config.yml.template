@@ -1,16 +1,15 @@
 ## This file is a template remove the .template to use the file
 
-libraries:
+libraries:                                      # Library mappings must have a colon (:) placed after them
   Movies:
-    library_type: movie
   TV Shows:
-    library_type: show
   Anime:
-    library_type: show
 settings:                                       # Can be individually specified per library as well
   cache: true
   cache_expiration: 60
   asset_directory: config/assets
+  asset_folders: true
+  assets_for_all: false
   sync_mode: append
   show_unmanaged: true
   show_filtered: false
