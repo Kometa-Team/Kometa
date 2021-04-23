@@ -1,6 +1,6 @@
 ## This file is a template remove the .template to use the file
 
-libraries:                                      # Library Names must have a colon (:) placed after them
+libraries:                                      # Library mappings must have a colon (:) placed after them
   Movies:
   TV Shows:
   Anime:
@@ -8,6 +8,8 @@ settings:                                       # Can be individually specified 
   cache: true
   cache_expiration: 60
   asset_directory: config/assets
+  asset_folders: true
+  assets_for_all: false
   sync_mode: append
   show_unmanaged: true
   show_filtered: false
