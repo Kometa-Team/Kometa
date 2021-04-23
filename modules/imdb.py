@@ -17,24 +17,29 @@ class IMDbAPI:
             "keyword": "https://www.imdb.com/search/keyword/?"
         }
 
-    def validate_imdb_url(self, imdb_url):
+    def validate_imdb_url(self, imdb_url, language):
         imdb_url = imdb_url.strip()
         if not imdb_url.startswith(self.urls["list"]) and not imdb_url.startswith(self.urls["search"]) and not imdb_url.startswith(self.urls["keyword"]):
             raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n{self.urls['list']} (For Lists)\n{self.urls['search']} (For Searches)\n{self.urls['keyword']} (For Keyword Searches)")
-        return imdb_url
+        total, _ = self.get_total(self.fix_url(imdb_url), language)
+        if total > 0:
+            return imdb_url
+        raise Failed(f"IMDb Error: {imdb_url} failed to parse")
 
-    def get_imdb_ids_from_url(self, imdb_url, language, limit):
+    def fix_url(self, imdb_url):
         if imdb_url.startswith(self.urls["list"]):
             try:                                list_id = re.search("(\\d+)", str(imdb_url)).group(1)
             except AttributeError:              raise Failed(f"IMDb Error: Failed to parse List ID from {imdb_url}")
-            current_url = f"{self.urls['search']}lists=ls{list_id}"
+            return f"{self.urls['search']}lists=ls{list_id}"
+        elif imdb_url.endswith("/"):
+            return imdb_url[:-1]
         else:
-            current_url = imdb_url
+            return imdb_url
+
+    def get_total(self, imdb_url, language):
         header = {"Accept-Language": language}
-        length = 0
-        imdb_ids = []
         if imdb_url.startswith(self.urls["keyword"]):
-            results = self.send_request(current_url, header).xpath("//div[@class='desc']/text()")
+            results = self.send_request(imdb_url, header).xpath("//div[@class='desc']/text()")
             total = None
             for result in results:
                 if "title" in result:
@@ -45,13 +50,20 @@ class IMDbAPI:
                         pass
             if total is None:
                 raise Failed(f"IMDb Error: No Results at URL: {imdb_url}")
-            item_count = 50
+            return total, 50
         else:
-            try:                                results = self.send_request(current_url, header).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
+            try:                                results = self.send_request(imdb_url, header).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
             except IndexError:                  raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
             try:                                total = int(re.findall("(\\d+) title", results)[0])
             except IndexError:                  raise Failed(f"IMDb Error: No Results at URL: {imdb_url}")
-            item_count = 250
+            return total, 250
+
+    def get_imdb_ids_from_url(self, imdb_url, language, limit):
+        current_url = self.fix_url(imdb_url)
+        total, item_count = self.get_total(current_url, language)
+        header = {"Accept-Language": language}
+        length = 0
+        imdb_ids = []
         if "&start=" in current_url:        current_url = re.sub("&start=\\d+", "", current_url)
         if "&count=" in current_url:        current_url = re.sub("&count=\\d+", "", current_url)
         if "&page=" in current_url:         current_url = re.sub("&page=\\d+", "", current_url)
@@ -88,7 +100,7 @@ class IMDbAPI:
         if method == "imdb_id":
             if status_message:
                 logger.info(f"Processing {pretty}: {data}")
-            tmdb_id, tvdb_id = self.config.convert_from_imdb(data, language)
+            tmdb_id, tvdb_id = self.config.Arms.imdb_to_ids(data, language)
             if tmdb_id:                     movie_ids.append(tmdb_id)
             if tvdb_id:                     show_ids.append(tvdb_id)
         elif method == "imdb_list":
@@ -101,7 +113,7 @@ class IMDbAPI:
             for i, imdb_id in enumerate(imdb_ids, 1):
                 length = util.print_return(length, f"Converting IMDb ID {i}/{total_ids}")
                 try:
-                    tmdb_id, tvdb_id = self.config.convert_from_imdb(imdb_id, language)
+                    tmdb_id, tvdb_id = self.config.Arms.imdb_to_ids(imdb_id, language)
                     if tmdb_id:                     movie_ids.append(tmdb_id)
                     if tvdb_id:                     show_ids.append(tvdb_id)
                 except Failed as e:             logger.warning(e)

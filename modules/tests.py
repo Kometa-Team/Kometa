@@ -28,34 +28,6 @@ def anidb_tests(config):
         util.separator("AniDB Tests")
 
         try:
-            config.AniDB.convert_anidb_to_tvdb(69)
-            logger.info("Success | Convert AniDB to TVDb")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert AniDB to TVDb: {e}")
-
-        try:
-            config.AniDB.convert_anidb_to_imdb(112)
-            logger.info("Success | Convert AniDB to IMDb")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert AniDB to IMDb: {e}")
-
-        try:
-            config.AniDB.convert_tvdb_to_anidb(81797)
-            logger.info("Success | Convert TVDb to AniDB")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert TVDb to AniDB: {e}")
-
-        try:
-            config.AniDB.convert_imdb_to_anidb("tt0245429")
-            logger.info("Success | Convert IMDb to AniDB")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert IMDb to AniDB: {e}")
-
-        try:
             config.AniDB.get_items("anidb_id", 69, "en", status_message=False)
             logger.info("Success | Get AniDB ID")
         except Failed as e:
@@ -106,47 +78,6 @@ def imdb_tests(config):
         util.separator("IMDb Not Configured")
 
 def mal_tests(config):
-    if config.MyAnimeListIDList:
-        util.separator("MyAnimeListXML Tests")
-
-        try:
-            config.MyAnimeListIDList.convert_mal_to_tvdb(21)
-            logger.info("Success | Convert MyAnimeList to TVDb")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert MyAnimeList to TVDb: {e}")
-
-        try:
-            config.MyAnimeListIDList.convert_mal_to_tmdb(199)
-            logger.info("Success | Convert MyAnimeList to TMDb")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert MyAnimeList to TMDb: {e}")
-
-        try:
-            config.MyAnimeListIDList.convert_tvdb_to_mal(81797)
-            logger.info("Success | Convert TVDb to MyAnimeList")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert TVDb to MyAnimeList: {e}")
-
-        try:
-            config.MyAnimeListIDList.convert_tmdb_to_mal(129)
-            logger.info("Success | Convert TMDb to MyAnimeList")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Convert TMDb to MyAnimeList: {e}")
-
-        try:
-            config.MyAnimeListIDList.find_mal_ids(21)
-            logger.info("Success | Find MyAnimeList ID")
-        except Failed as e:
-            util.print_stacktrace()
-            logger.error(f"Failure | Find MyAnimeList ID: {e}")
-
-    else:
-        util.separator("MyAnimeListXML Not Configured")
-
     if config.MyAnimeList:
         util.separator("MyAnimeList Tests")
 

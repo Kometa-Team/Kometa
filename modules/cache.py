@@ -24,7 +24,6 @@ class Cache:
                     imdb_id TEXT,
                     tvdb_id TEXT,
                     anidb_id TEXT,
-                    mal_id TEXT,
                     expiration_date TEXT,
                     media_type TEXT)"""
                 )
@@ -57,6 +56,15 @@ class Cache:
                     type TEXT,
                     expiration_date TEXT)"""
                 )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS anime_map (
+                    INTEGER PRIMARY KEY,
+                    anidb TEXT UNIQUE,
+                    anilist TEXT,
+                    myanimelist TEXT,
+                    kitsu TEXT,
+                    expiration_date TEXT)"""
+                )
         self.expiration = expiration
         self.cache_path = cache
 
@@ -65,28 +73,24 @@ class Cache:
         tvdb_id, tvdb_expired = self.get_tvdb_id("show", imdb_id=imdb_id)
         return tmdb_id, tvdb_id
 
-    def get_tmdb_id(self, media_type, plex_guid=None, imdb_id=None, tvdb_id=None, anidb_id=None, mal_id=None):
-        return self.get_id_from(media_type, "tmdb_id", plex_guid=plex_guid, imdb_id=imdb_id, tvdb_id=tvdb_id, anidb_id=anidb_id, mal_id=mal_id)
+    def get_tmdb_id(self, media_type, plex_guid=None, imdb_id=None, tvdb_id=None, anidb_id=None):
+        return self.get_id_from(media_type, "tmdb_id", plex_guid=plex_guid, imdb_id=imdb_id, tvdb_id=tvdb_id, anidb_id=anidb_id)
 
-    def get_imdb_id(self, media_type, plex_guid=None, tmdb_id=None, tvdb_id=None, anidb_id=None, mal_id=None):
-        return self.get_id_from(media_type, "imdb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, tvdb_id=tvdb_id, anidb_id=anidb_id, mal_id=mal_id)
+    def get_imdb_id(self, media_type, plex_guid=None, tmdb_id=None, tvdb_id=None, anidb_id=None):
+        return self.get_id_from(media_type, "imdb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, tvdb_id=tvdb_id, anidb_id=anidb_id)
 
-    def get_tvdb_id(self, media_type, plex_guid=None, tmdb_id=None, imdb_id=None, anidb_id=None, mal_id=None):
-        return self.get_id_from(media_type, "tvdb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, imdb_id=imdb_id, anidb_id=anidb_id, mal_id=mal_id)
+    def get_tvdb_id(self, media_type, plex_guid=None, tmdb_id=None, imdb_id=None, anidb_id=None):
+        return self.get_id_from(media_type, "tvdb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, imdb_id=imdb_id, anidb_id=anidb_id)
 
-    def get_anidb_id(self, media_type, plex_guid=None, tmdb_id=None, imdb_id=None, tvdb_id=None, mal_id=None):
-        return self.get_id_from(media_type, "anidb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, imdb_id=imdb_id, tvdb_id=tvdb_id, mal_id=mal_id)
+    def get_anidb_id(self, media_type, plex_guid=None, tmdb_id=None, imdb_id=None, tvdb_id=None):
+        return self.get_id_from(media_type, "anidb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, imdb_id=imdb_id, tvdb_id=tvdb_id)
 
-    def get_mal_id(self, media_type, plex_guid=None, tmdb_id=None, imdb_id=None, tvdb_id=None, anidb_id=None):
-        return self.get_id_from(media_type, "anidb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, imdb_id=imdb_id, tvdb_id=tvdb_id, anidb_id=anidb_id)
-
-    def get_id_from(self, media_type, id_from, plex_guid=None, tmdb_id=None, imdb_id=None, tvdb_id=None, anidb_id=None, mal_id=None):
+    def get_id_from(self, media_type, id_from, plex_guid=None, tmdb_id=None, imdb_id=None, tvdb_id=None, anidb_id=None):
         if plex_guid:           return self.get_id(media_type, "plex_guid", id_from, plex_guid)
         elif tmdb_id:           return self.get_id(media_type, "tmdb_id", id_from, tmdb_id)
         elif imdb_id:           return self.get_id(media_type, "imdb_id", id_from, imdb_id)
         elif tvdb_id:           return self.get_id(media_type, "tvdb_id", id_from, tvdb_id)
         elif anidb_id:          return self.get_id(media_type, "anidb_id", id_from, anidb_id)
-        elif mal_id:            return self.get_id(media_type, "mal_id", id_from, mal_id)
         else:                   return None, None
 
     def get_id(self, media_type, from_id, to_id, key):
@@ -132,13 +136,12 @@ class Cache:
                     if row["imdb_id"]:                      ids_to_return["imdb"] = row["imdb_id"]
                     if row["tvdb_id"]:                      ids_to_return["tvdb"] = int(row["tvdb_id"])
                     if row["anidb_id"]:                     ids_to_return["anidb"] = int(row["anidb_id"])
-                    if row["mal_id"]:                       ids_to_return["mal"] = int(row["mal_id"])
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     expired = time_between_insertion.days > self.expiration
         return ids_to_return, expired
 
-    def update_guid(self, media_type, plex_guid, tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expired):
+    def update_guid(self, media_type, plex_guid, tmdb_id, imdb_id, tvdb_id, anidb_id, expired):
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
@@ -150,10 +153,9 @@ class Cache:
                 imdb_id = ?,
                 tvdb_id = ?,
                 anidb_id = ?,
-                mal_id = ?,
                 expiration_date = ?,
                 media_type = ?
-                WHERE plex_guid = ?""", (tmdb_id, imdb_id, tvdb_id, anidb_id, mal_id, expiration_date.strftime("%Y-%m-%d"), media_type, plex_guid))
+                WHERE plex_guid = ?""", (tmdb_id, imdb_id, tvdb_id, anidb_id, expiration_date.strftime("%Y-%m-%d"), media_type, plex_guid))
                 if imdb_id and (tmdb_id or tvdb_id):
                     cursor.execute("INSERT OR IGNORE INTO imdb_map(imdb_id) VALUES(?)", (imdb_id,))
                     cursor.execute("UPDATE imdb_map SET t_id = ?, expiration_date = ?, media_type = ? WHERE imdb_id = ?", (tmdb_id if media_type == "movie" else tvdb_id, expiration_date.strftime("%Y-%m-%d"), media_type, imdb_id))
@@ -237,3 +239,31 @@ class Cache:
                 cursor.execute("INSERT OR IGNORE INTO omdb_data(imdb_id) VALUES(?)", (omdb.imdb_id,))
                 update_sql = "UPDATE omdb_data SET title = ?, year = ?, content_rating = ?, genres = ?, imdb_rating = ?, imdb_votes = ?, metacritic_rating = ?, type = ?, expiration_date = ? WHERE imdb_id = ?"
                 cursor.execute(update_sql, (omdb.title, omdb.year, omdb.content_rating, omdb.genres_str, omdb.imdb_rating, omdb.imdb_votes, omdb.metacritic_rating, omdb.type, expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
+
+    def query_anime_map(self, anime_id, id_type):
+        ids = None
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM anime_map WHERE {id_type} = ?", (anime_id, ))
+                row = cursor.fetchone()
+                if row and row["anidb"]:
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    ids = {
+                        "anilist": int(row["anilist"]) if row["anilist"] else None,
+                        "anidb": int(row["anidb"]) if row["anidb"] else None,
+                        "myanimelist": int(row["myanimelist"]) if row["myanimelist"] else None,
+                        "kitsu": int(row["kitsu"]) if row["kitsu"] else None
+                    }
+                    expired = time_between_insertion.days > self.expiration
+        return ids, expired
+
+    def update_anime(self, expired, anime_ids):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO anime_map(anidb) VALUES(?)", (anime_ids["anidb"],))
+                cursor.execute("UPDATE anime_map SET anilist = ?, myanimelist = ?, kitsu = ?, expiration_date = ? WHERE anidb = ?", (anime_ids["anidb"], anime_ids["myanimelist"], anime_ids["kitsu"], expiration_date.strftime("%Y-%m-%d"), anime_ids["anidb"]))

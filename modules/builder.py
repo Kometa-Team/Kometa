@@ -8,6 +8,8 @@ from plexapi.exceptions import BadRequest, NotFound
 logger = logging.getLogger("Plex Meta Manager")
 
 image_file_details = ["file_poster", "file_background", "asset_directory"]
+advance_new_agent = ["item_metadata_language", "item_use_original_title"]
+advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
 method_alias = {
     "actors": "actor", "role": "actor", "roles": "actor",
     "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
@@ -123,6 +125,7 @@ all_filters = [
     "tmdb_vote_count.gte", "tmdb_vote_count.lte",
     "duration.gte", "duration.lte",
     "original_language", "original_language.not",
+    "user_rating.gte", "user_rating.lte",
     "audience_rating.gte", "audience_rating.lte",
     "critic_rating.gte", "critic_rating.lte",
     "studio", "studio.not",
@@ -154,6 +157,7 @@ class CollectionBuilder:
             "show_missing": library.show_missing,
             "save_missing": library.save_missing
         }
+        self.item_details = {}
         self.radarr_options = {}
         self.sonarr_options = {}
         self.missing_movies = []
@@ -443,30 +447,40 @@ class CollectionBuilder:
                 elif method_name == "file_background":
                     if os.path.exists(method_data):                             self.backgrounds[method_name] = os.path.abspath(method_data)
                     else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
-                elif method_name == "label_sync_mode":
-                    if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
-                    else:                                                       raise Failed("Collection Error: label_sync_mode attribute must be either 'append' or 'sync'")
                 elif method_name == "sync_mode":
                     if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
                     else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
-                elif method_name == "label":
-                    self.details[method_name] = util.get_list(method_data)
+                elif method_name in ["label", "label.sync"]:
+                    if "label" in self.data and "label.sync" in self.data:
+                        raise Failed(f"Collection Error: Cannot use label and label.sync together")
+                    if method_name == "label" and "label_sync_mode" in self.data and self.data["label_sync_mode"] == "sync":
+                        self.details["label.sync"] = util.get_list(method_data)
+                    else:
+                        self.details[method_name] = util.get_list(method_data)
+                elif method_name in ["item_label", "item_label.sync"]:
+                    if "item_label" in self.data and "item_label.sync" in self.data:
+                        raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
+                    self.item_details[method_name] = util.get_list(method_data)
+                elif method_name in plex.item_advance_keys:
+                    key, options = plex.item_advance_keys[method_name]
+                    if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
+                        logger.error(f"Metadata Error: {method_name} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                    elif method_name in advance_show and not self.library.is_show:
+                        logger.error(f"Metadata Error: {method_name} attribute only works for show libraries")
+                    elif str(method_data).lower() not in options:
+                        logger.error(f"Metadata Error: {method_data} {method_name} attribute invalid")
+                    else:
+                        self.item_details[method_name] = str(method_data).lower()
                 elif method_name in boolean_details:
-                    if isinstance(method_data, bool):                           self.details[method_name] = method_data
-                    elif str(method_data).lower() in ["t", "true"]:             self.details[method_name] = True
-                    elif str(method_data).lower() in ["f", "false"]:            self.details[method_name] = False
-                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                    self.details[method_name] = util.get_bool(method_name, method_data)
                 elif method_name in all_details:
                     self.details[method_name] = method_data
                 elif method_name == "radarr_add":
-                    self.add_to_radarr = True
+                    self.add_to_radarr = util.get_bool(method_name, method_data)
                 elif method_name == "radarr_folder":
                     self.radarr_options["folder"] = method_data
                 elif method_name in ["radarr_monitor", "radarr_search"]:
-                    if isinstance(method_data, bool):                           self.radarr_options[method_name[7:]] = method_data
-                    elif str(method_data).lower() in ["t", "true"]:             self.radarr_options[method_name[7:]] = True
-                    elif str(method_data).lower() in ["f", "false"]:            self.radarr_options[method_name[7:]] = False
-                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                    self.radarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
                 elif method_name == "radarr_availability":
                     if str(method_data).lower() in radarr.availability_translation:
                         self.radarr_options["availability"] = str(method_data).lower()
@@ -478,7 +492,7 @@ class CollectionBuilder:
                 elif method_name == "radarr_tag":
                     self.radarr_options["tag"] = util.get_list(method_data)
                 elif method_name == "sonarr_add":
-                    self.add_to_sonarr = True
+                    self.add_to_sonarr = util.get_bool(method_name, method_data)
                 elif method_name == "sonarr_folder":
                     self.sonarr_options["folder"] = method_data
                 elif method_name == "sonarr_monitor":
@@ -498,10 +512,7 @@ class CollectionBuilder:
                     else:
                         raise Failed(f"Collection Error: {method_name} attribute must be either standard, daily, or anime")
                 elif method_name in ["sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
-                    if isinstance(method_data, bool):                           self.sonarr_options[method_name[7:]] = method_data
-                    elif str(method_data).lower() in ["t", "true"]:             self.sonarr_options[method_name[7:]] = True
-                    elif str(method_data).lower() in ["f", "false"]:            self.sonarr_options[method_name[7:]] = False
-                    else:                                                       raise Failed(f"Collection Error: {method_name} attribute must be either true or false")
+                    self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
                 elif method_name == "sonarr_tag":
                     self.sonarr_options["tag"] = util.get_list(method_data)
                 elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
@@ -512,7 +523,7 @@ class CollectionBuilder:
                     self.methods.append(("plex_search", [{method_name: util.check_date(method_data, method_name, return_string=True, plex_date=True)}]))
                 elif method_name in ["added", "added.not", "originally_available", "originally_available.not", "duration.greater", "duration.less"]:
                     self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=1)}]))
-                elif method_name in ["critic_rating.greater", "critic_rating.less", "audience_rating.greater", "audience_rating.less"]:
+                elif method_name in ["user_rating.greater", "user_rating.less", "critic_rating.greater", "critic_rating.less", "audience_rating.greater", "audience_rating.less"]:
                     self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, number_type="float", minimum=0, maximum=10)}]))
                 elif method_name in ["decade", "year", "year.not"]:
                     self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
@@ -529,7 +540,7 @@ class CollectionBuilder:
                         final_values = method_data
                     search = os.path.splitext(method_name)[0]
                     valid_values = self.library.validate_search_list(final_values, search)
-                    if valid_values:
+                    if len(valid_values) > 0:
                         self.methods.append(("plex_search", [{method_name: valid_values}]))
                     else:
                         logger.warning(f"Collection Warning: No valid {search} values found in {final_values}")
@@ -566,7 +577,7 @@ class CollectionBuilder:
                         if isinstance(imdb_list, dict):
                             dict_methods = {dm.lower(): dm for dm in imdb_list}
                             if "url" in dict_methods and imdb_list[dict_methods["url"]]:
-                                imdb_url = config.IMDb.validate_imdb_url(imdb_list[dict_methods["url"]])
+                                imdb_url = config.IMDb.validate_imdb_url(imdb_list[dict_methods["url"]], self.library.Plex.language)
                             else:
                                 raise Failed("Collection Error: imdb_list attribute url is required")
                             if "limit" in dict_methods and imdb_list[dict_methods["limit"]]:
@@ -574,7 +585,7 @@ class CollectionBuilder:
                             else:
                                 list_count = 0
                         else:
-                            imdb_url = config.IMDb.validate_imdb_url(str(imdb_list))
+                            imdb_url = config.IMDb.validate_imdb_url(str(imdb_list), self.library.Plex.language)
                             list_count = 0
                         new_list.append({"url": imdb_url, "limit": list_count})
                     self.methods.append((method_name, new_list))
@@ -619,7 +630,7 @@ class CollectionBuilder:
                                     valid_data = util.check_number(filter_data, f"{filter_method} filter", minimum=1)
                                 elif filter_method in ["year.gte", "year.lte"]:
                                     valid_data = util.check_year(filter_data, current_year, f"{filter_method} filter")
-                                elif filter_method in ["audience_rating.gte", "audience_rating.lte", "critic_rating.gte", "critic_rating.lte"]:
+                                elif filter_method in ["user_rating.gte", "user_rating.lte", "audience_rating.gte", "audience_rating.lte", "critic_rating.gte", "critic_rating.lte"]:
                                     valid_data = util.check_number(filter_data, f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)
                                 elif filter_method in ["originally_available.gte", "originally_available.lte"]:
                                     valid_data = util.check_date(filter_data, f"{filter_method} filter")
@@ -704,7 +715,7 @@ class CollectionBuilder:
                                     searches[search_final] = util.check_date(search_data, search_final, return_string=True, plex_date=True)
                                 elif (search in ["added", "originally_available"] and modifier in ["", ".not"]) or (search in ["duration"] and modifier in [".greater", ".less"]):
                                     searches[search_final] = util.check_number(search_data, search_final, minimum=1)
-                                elif search in ["critic_rating", "audience_rating"] and modifier in [".greater", ".less"]:
+                                elif search in ["user_rating", "critic_rating", "audience_rating"] and modifier in [".greater", ".less"]:
                                     searches[search_final] = util.check_number(search_data, search_final, number_type="float", minimum=0, maximum=10)
                                 elif (search == "decade" and modifier in [""]) or (search == "year" and modifier in ["", ".not"]):
                                     searches[search_final] = util.get_year_list(search_data, current_year, search_final)
@@ -712,12 +723,15 @@ class CollectionBuilder:
                                         or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
                                         or (search in ["resolution", "decade"] and modifier not in [""]) \
                                         or (search in ["added", "originally_available"] and modifier not in ["", ".not", ".before", ".after"]) \
-                                        or (search in ["duration", "critic_rating", "audience_rating"] and modifier not in [".greater", ".less"]) \
+                                        or (search in ["duration", "user_rating", "critic_rating", "audience_rating"] and modifier not in [".greater", ".less"]) \
                                         or (search in ["year"] and modifier not in ["", ".not", ".greater", ".less"]):
                                     raise Failed(f"Collection Error: modifier: {modifier} not supported with the {search} plex search attribute")
                                 else:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute not supported")
-                            self.methods.append((method_name, [searches]))
+                            if len(searches) > 0:
+                                self.methods.append((method_name, [searches]))
+                            else:
+                                raise Failed("Collection Error: no valid plex search attributes")
                         elif method_name == "tmdb_discover":
                             new_dictionary = {"limit": 100}
                             for discover_name, discover_data in method_data.items():
@@ -995,14 +1009,16 @@ class CollectionBuilder:
                         items_found_inside += len(movie_ids)
                         for movie_id in movie_ids:
                             if movie_id in movie_map:
-                                items.append(movie_map[movie_id])
+                                items.extend(movie_map[movie_id])
                             else:
                                 missing_movies.append(movie_id)
                     if len(show_ids) > 0:
                         items_found_inside += len(show_ids)
                         for show_id in show_ids:
-                            if show_id in show_map:                             items.append(show_map[show_id])
-                            else:                                               missing_shows.append(show_id)
+                            if show_id in show_map:
+                                items.extend(show_map[show_id])
+                            else:
+                                missing_shows.append(show_id)
                     return items_found_inside
                 logger.info("")
                 logger.debug(f"Value: {value}")
@@ -1013,8 +1029,8 @@ class CollectionBuilder:
                     items = self.library.Tautulli.get_items(self.library, time_range=value["list_days"], stats_count=value["list_size"], list_type=value["list_type"], stats_count_buffer=value["list_buffer"])
                     items_found += len(items)
                 elif "anidb" in method:                             items_found += check_map(self.config.AniDB.get_items(method, value, self.library.Plex.language))
-                elif "anilist" in method:                           items_found += check_map(self.config.AniList.get_items(method, value))
-                elif "mal" in method:                               items_found += check_map(self.config.MyAnimeList.get_items(method, value))
+                elif "anilist" in method:                           items_found += check_map(self.config.AniList.get_items(method, value, self.library.Plex.language))
+                elif "mal" in method:                               items_found += check_map(self.config.MyAnimeList.get_items(method, value, self.library.Plex.language))
                 elif "tvdb" in method:                              items_found += check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
                 elif "imdb" in method:                              items_found += check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language))
                 elif "letterboxd" in method:                        items_found += check_map(self.config.Letterboxd.get_items(method, value, self.library.Plex.language))
@@ -1154,16 +1170,38 @@ class CollectionBuilder:
             collection.sortUpdate(sort=self.details["collection_order"])
             logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
 
-        if "label" in self.details:
+        if "label" in self.details or "label.sync" in self.details:
             item_labels = [label.tag for label in collection.labels]
-            labels = util.get_list(self.details["label"])
-            if "label_sync_mode" in self.details and str(self.details["label_sync_mode"]).lower() == "sync":
+            labels = util.get_list(self.details["label" if "label" in self.details else "label.sync"])
+            if "label.sync" in self.details:
                 for label in (la for la in item_labels if la not in labels):
                     collection.removeLabel(label)
                     logger.info(f"Detail: Label {label} removed")
             for label in (la for la in labels if la not in item_labels):
                 collection.addLabel(label)
                 logger.info(f"Detail: Label {label} added")
+
+        if len(self.item_details) > 0:
+            labels = None
+            if "item_label" in self.item_details or "item_label.sync" in self.item_details:
+                labels = util.get_list(self.item_details["item_label" if "item_label" in self.item_details else "item_label.sync"])
+            for item in collection.items():
+                if labels is not None:
+                    item_labels = [label.tag for label in item.labels]
+                    if "item_label.sync" in self.item_details:
+                        for label in (la for la in item_labels if la not in labels):
+                            item.removeLabel(label)
+                            logger.info(f"Detail: Label {label} removed from {item.title}")
+                    for label in (la for la in labels if la not in item_labels):
+                        item.addLabel(label)
+                        logger.info(f"Detail: Label {label} added to {item.title}")
+                advance_edits = {}
+                for method_name, method_data in self.item_details.items():
+                    if method_name in plex.item_advance_keys:
+                        key, options = plex.item_advance_keys[method_name]
+                        if getattr(item, key) != options[method_data]:
+                            advance_edits[key] = options[method_data]
+                self.library.edit_item(item, item.title, "Movie" if self.library.is_movie else "Show", advance_edits, advanced=True)
 
         if len(edits) > 0:
             logger.debug(edits)
@@ -1180,40 +1218,49 @@ class CollectionBuilder:
                 path = os.path.join(ad, f"{name_mapping}")
                 if not os.path.isdir(path):
                     continue
-                matches = glob.glob(os.path.join(ad, f"{name_mapping}", "poster.*"))
+                if self.library.asset_folders:
+                    poster_path = os.path.join(ad, f"{name_mapping}", "poster.*")
+                else:
+                    poster_path = os.path.join(ad, f"{name_mapping}.*")
+                matches = glob.glob(poster_path)
                 if len(matches) > 0:
-                    for match in matches:
-                        self.posters["asset_directory"] = os.path.abspath(match)
-                matches = glob.glob(os.path.join(ad, f"{name_mapping}", "background.*"))
-                if len(matches) > 0:
-                    for match in matches:
-                        self.backgrounds["asset_directory"] = os.path.abspath(match)
-                dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
-                if len(dirs) > 0:
-                    for item in collection.items():
-                        folder = os.path.basename(os.path.dirname(item.locations[0]) if self.library.is_movie else item.locations[0])
-                        if folder in dirs:
-                            matches = glob.glob(os.path.join(path, folder, "poster.*"))
-                            poster_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
-                            matches = glob.glob(os.path.join(path, folder, "background.*"))
-                            background_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
-                            if poster_path:
-                                item.uploadPoster(filepath=poster_path)
-                                logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_path}")
-                            if background_path:
-                                item.uploadArt(filepath=background_path)
-                                logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_path}")
-                            if poster_path is None and background_path is None:
-                                logger.warning(f"No Files Found: {os.path.join(path, folder)}")
-                            if self.library.is_show:
-                                for season in item.seasons():
-                                    matches = glob.glob(os.path.join(path, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
-                                    if len(matches) > 0:
-                                        season_path = os.path.abspath(matches[0])
-                                        season.uploadPoster(filepath=season_path)
-                                        logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
-                        else:
-                            logger.warning(f"No Folder: {os.path.join(path, folder)}")
+                    self.posters["asset_directory"] = os.path.abspath(matches[0])
+                if self.library.asset_folders:
+                    matches = glob.glob(os.path.join(ad, f"{name_mapping}", "background.*"))
+                    if len(matches) > 0:
+                        self.backgrounds["asset_directory"] = os.path.abspath(matches[0])
+                    dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
+                    if len(dirs) > 0:
+                        for item in collection.items():
+                            folder = os.path.basename(os.path.dirname(item.locations[0]) if self.library.is_movie else item.locations[0])
+                            if folder in dirs:
+                                matches = glob.glob(os.path.join(path, folder, "poster.*"))
+                                poster_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
+                                matches = glob.glob(os.path.join(path, folder, "background.*"))
+                                background_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
+                                if poster_path:
+                                    item.uploadPoster(filepath=poster_path)
+                                    logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_path}")
+                                if background_path:
+                                    item.uploadArt(filepath=background_path)
+                                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_path}")
+                                if poster_path is None and background_path is None:
+                                    logger.warning(f"No Files Found: {os.path.join(path, folder)}")
+                                if self.library.is_show:
+                                    for season in item.seasons():
+                                        matches = glob.glob(os.path.join(path, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
+                                        if len(matches) > 0:
+                                            season_path = os.path.abspath(matches[0])
+                                            season.uploadPoster(filepath=season_path)
+                                            logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
+                                        for episode in season.episodes():
+                                            matches = glob.glob(os.path.join(path, folder, f"{episode.seasonEpisode.upper()}.*"))
+                                            if len(matches) > 0:
+                                                episode_path = os.path.abspath(matches[0])
+                                                episode.uploadPoster(filepath=episode_path)
+                                                logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
+                            else:
+                                logger.warning(f"No Folder: {os.path.join(path, folder)}")
 
         def set_image(image_method, images, is_background=False):
             message = f"{'background' if is_background else 'poster'} to [{'File' if image_method in image_file_details else 'URL'}] {images[image_method]}"
@@ -1280,10 +1327,14 @@ class CollectionBuilder:
     def run_collections_again(self, collection_obj, movie_map, show_map):
         collection_items = collection_obj.items() if isinstance(collection_obj, Collections) else []
         name = collection_obj.title if isinstance(collection_obj, Collections) else collection_obj
-        rating_keys = [movie_map[mm] for mm in self.missing_movies if mm in movie_map]
+        rating_keys = []
+        for mm in self.missing_movies:
+            if mm in movie_map:
+                rating_keys.extend(movie_map[mm])
         if self.library.is_show:
-            rating_keys.extend([show_map[sm] for sm in self.missing_shows if sm in show_map])
-
+            for sm in self.missing_shows:
+                if sm in show_map:
+                    rating_keys.extend(show_map[sm])
         if len(rating_keys) > 0:
             for rating_key in rating_keys:
                 try:
