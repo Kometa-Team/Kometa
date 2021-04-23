@@ -27,20 +27,20 @@ class ArmsAPI:
                     return ids[0].split(",") if to_id == "imdbid" else int(ids[0])
                 raise ValueError
             except ValueError:
-                raise Failed(f"AniDB Error: No {util.pretty_ids[to_id]} ID found for AniDB ID: {input_id}")
+                raise Failed(f"Arms Error: No {util.pretty_ids[to_id]} ID found for AniDB ID: {input_id}")
         else:
-            raise Failed(f"AniDB Error: AniDB ID: {input_id} not found")
+            raise Failed(f"Arms Error: AniDB ID: {input_id} not found")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_request(self, ids):
+    def _request(self, ids):
         return requests.post(self.arms_url, json=ids).json()
 
     def mal_to_anidb(self, mal_id):
         anime_ids = self._arms_ids(mal_ids=mal_id)
         if anime_ids[0] is None:
-            raise Failed(f"Arms Server Error: MyAnimeList ID: {mal_id} does not exist")
+            raise Failed(f"Arms Error: MyAnimeList ID: {mal_id} does not exist")
         if anime_ids[0]["anidb"] is None:
-            raise Failed(f"Arms Server Error: No AniDB ID for MyAnimeList ID: {mal_id}")
+            raise Failed(f"Arms Error: No AniDB ID for MyAnimeList ID: {mal_id}")
         return anime_ids[0]["anidb"]
 
     def anidb_to_ids(self, anidb_list, language):
@@ -61,7 +61,7 @@ class ArmsAPI:
                     if tvdb_id:
                         show_ids.append(tvdb_id)
                 except Failed:
-                    logger.error(f"AniDB Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
+                    logger.error(f"Arms Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
         return movie_ids, show_ids
 
     def anilist_to_ids(self, anilist_ids, language):
@@ -70,7 +70,7 @@ class ArmsAPI:
             if id_set["anidb"] is not None:
                 anidb_ids.append(id_set["anidb"])
             else:
-                logger.error(f"Convert Error: AniDB ID not found for AniList ID: {id_set['anilist']}")
+                logger.error(f"Arms Error: AniDB ID not found for AniList ID: {id_set['anilist']}")
         return self.anidb_to_ids(anidb_ids, language)
 
     def myanimelist_to_ids(self, mal_ids, language):
@@ -79,7 +79,7 @@ class ArmsAPI:
             if id_set["anidb"] is not None:
                 anidb_ids.append(id_set["anidb"])
             else:
-                logger.error(f"Convert Error: AniDB ID not found for MyAnimeList ID: {id_set['myanimelist']}")
+                logger.error(f"Arms Error: AniDB ID not found for MyAnimeList ID: {id_set['myanimelist']}")
         return self.anidb_to_ids(anidb_ids, language)
 
     def _arms_ids(self, anilist_ids=None, anidb_ids=None, mal_ids=None):
@@ -106,7 +106,7 @@ class ArmsAPI:
         else:
             unconverted_ids = all_ids
 
-        for anime_ids in self.send_request(unconverted_ids):
+        for anime_ids in self._request(unconverted_ids):
             if anime_ids:
                 if self.config.Cache:
                     self.config.Cache.update_anime(False, anime_ids)
@@ -159,7 +159,7 @@ class ArmsAPI:
         try:
             if tvdb_id and not from_cache:              self.config.TVDb.get_series(language, tvdb_id)
         except Failed:                              tvdb_id = None
-        if not tmdb_id and not tvdb_id:             raise Failed(f"IMDb Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
+        if not tmdb_id and not tvdb_id:             raise Failed(f"Arms Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
         if self.config.Cache:
             if tmdb_id and update_tmdb is not False:
                 self.config.Cache.update_imdb("movie", update_tmdb, imdb_id, tmdb_id)
