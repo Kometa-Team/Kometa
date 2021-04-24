@@ -388,7 +388,7 @@ class Config:
                 logger.info(f"{params['name']} Library Connection Failed")
                 continue
 
-            if self.general["radarr"]["url"] or "radarr" in lib:
+            if self.general["radarr"]["url"] or (lib and "radarr" in lib):
                 logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Radarr...")
                 radarr_params = {}
@@ -408,7 +408,7 @@ class Config:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
-            if self.general["sonarr"]["url"] or "sonarr" in lib:
+            if self.general["sonarr"]["url"] or (lib and "sonarr" in lib):
                 logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Sonarr...")
                 sonarr_params = {}
@@ -434,7 +434,7 @@ class Config:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
-            if self.general["tautulli"]["url"] or "tautulli" in lib:
+            if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                 logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Tautulli...")
                 tautulli_params = {}
