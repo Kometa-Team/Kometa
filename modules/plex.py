@@ -441,6 +441,17 @@ class PlexAPI:
                         if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
                             match = False
                             break
+                    elif method_name == "filepath":
+                        jailbreak = False
+                        for location in current.locations:
+                            for location_prefix in filter_data:
+                                if location.startswith(location_prefix):
+                                    jailbreak = True
+                                    break
+                            if jailbreak: break
+                        if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
+                            match = False
+                            break
                     elif modifier in [".gte", ".lte"]:
                         if method_name == "vote_count":
                             tmdb_item = None
