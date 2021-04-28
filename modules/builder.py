@@ -119,6 +119,7 @@ all_filters = [
     "content_rating", "content_rating.not",
     "country", "country.not",
     "director", "director.not",
+    "filepath", "filepath.not",
     "genre", "genre.not",
     "max_age",
     "originally_available.gte", "originally_available.lte",
@@ -634,9 +635,9 @@ class CollectionBuilder:
                                     valid_data = util.check_number(filter_data, f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)
                                 elif filter_method in ["originally_available.gte", "originally_available.lte"]:
                                     valid_data = util.check_date(filter_data, f"{filter_method} filter")
-                                elif filter_method == "original_language":
+                                elif filter_method in ["original_language", "original_language.not"]:
                                     valid_data = util.get_list(filter_data, lower=True)
-                                elif filter_method == "collection":
+                                elif filter_method in ["collection", "collection.not"]:
                                     valid_data = filter_data if isinstance(filter_data, list) else [filter_data]
                                 elif filter_method in all_filters:
                                     valid_data = util.get_list(filter_data)
