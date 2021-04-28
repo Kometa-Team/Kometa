@@ -661,6 +661,7 @@ class CollectionBuilder:
                                     exact_list.append(str(method_data[dict_methods["exclude"]]))
                             if len(prefix_list) == 0 and len(exact_list) == 0:
                                 raise Failed("Collection Error: you must have at least one exclusion")
+                            exact_list.append(self.name)
                             new_dictionary["exclude_prefix"] = prefix_list
                             new_dictionary["exclude"] = exact_list
                             self.methods.append((method_name, [new_dictionary]))
