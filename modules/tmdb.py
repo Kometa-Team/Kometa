@@ -271,7 +271,8 @@ class TMDbAPI:
                 try:
                     ids.append(tmdb_item.id if is_movie else self.convert_tmdb_to_tvdb(tmdb_item.id))
                     count += 1
-                except Failed:
+                except Failed as e:
+                    logger.error(e)
                     pass
                 if count == amount: break
             if count == amount: break
