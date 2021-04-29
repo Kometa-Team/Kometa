@@ -888,11 +888,14 @@ class Config:
             if self.Cache and ((tmdb_id and library.is_movie) or ((tvdb_id or (anidb_id and tmdb_id)) and library.is_show)):
                 if not isinstance(tmdb_id, list):               tmdb_id = [tmdb_id]
                 if not isinstance(imdb_id, list):               imdb_id = [imdb_id]
+                if not isinstance(tvdb_id, list):               tvdb_id = [tvdb_id]
+                try:                                            tvdb_value = tvdb_id[0]
+                except IndexError:                              tvdb_value = None
                 for i in range(len(tmdb_id)):
                     try:                                            imdb_value = imdb_id[i]
                     except IndexError:                              imdb_value = None
-                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_value if imdb_value else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {item.title}")
-                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_value, tvdb_id, anidb_id, expired)
+                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_value if imdb_value else 'None':<10} | {tvdb_value if tvdb_value else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {item.title}")
+                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_value, tvdb_value, anidb_id, expired)
 
         if tmdb_id and library.is_movie:                return "movie", tmdb_id
         elif tvdb_id and library.is_show:               return "show", tvdb_id
