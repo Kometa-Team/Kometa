@@ -767,27 +767,31 @@ class Config:
             item_type = guid.scheme.split(".")[-1]
             check_id = guid.netloc
 
-            if item_type == "plex" and check_id == "movie":
-                try:
-                    for guid_tag in self.get_guids(item):
-                        url_parsed = requests.utils.urlparse(guid_tag.id)
-                        if url_parsed.scheme == "tmdb":                 tmdb_id = int(url_parsed.netloc)
-                        elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
-                except requests.exceptions.ConnectionError:
-                    util.print_stacktrace()
-                    logger.error(f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | No External GUIDs found for {item.title}")
-                    return None, None
-            elif item_type == "plex" and check_id == "show":
-                try:
-                    for guid_tag in self.get_guids(item):
-                        url_parsed = requests.utils.urlparse(guid_tag.id)
-                        if url_parsed.scheme == "tvdb":                 tvdb_id = int(url_parsed.netloc)
-                        elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
-                        elif url_parsed.scheme == "tmdb":               tmdb_id = int(url_parsed.netloc)
-                except requests.exceptions.ConnectionError:
-                    util.print_stacktrace()
-                    logger.error(f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | No External GUIDs found for {item.title}")
-                    return None, None
+            if item_type == "plex":
+                tmdb_id = []
+                imdb_id = []
+                tvdb_id = []
+                if check_id == "movie":
+                    try:
+                        for guid_tag in self.get_guids(item):
+                            url_parsed = requests.utils.urlparse(guid_tag.id)
+                            if url_parsed.scheme == "tmdb":                 tmdb_id.append(int(url_parsed.netloc))
+                            elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
+                    except requests.exceptions.ConnectionError:
+                        util.print_stacktrace()
+                        logger.error(f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | No External GUIDs found for {item.title}")
+                        return None, None
+                elif check_id == "show":
+                    try:
+                        for guid_tag in self.get_guids(item):
+                            url_parsed = requests.utils.urlparse(guid_tag.id)
+                            if url_parsed.scheme == "tvdb":                 tvdb_id.append(int(url_parsed.netloc))
+                            elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
+                            elif url_parsed.scheme == "tmdb":               tmdb_id.append(int(url_parsed.netloc))
+                    except requests.exceptions.ConnectionError:
+                        util.print_stacktrace()
+                        logger.error(f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | No External GUIDs found for {item.title}")
+                        return None, None
             elif item_type == "imdb":                       imdb_id = check_id
             elif item_type == "thetvdb":                    tvdb_id = int(check_id)
             elif item_type == "themoviedb":                 tmdb_id = int(check_id)
