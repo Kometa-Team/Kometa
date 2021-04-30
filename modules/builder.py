@@ -1218,9 +1218,9 @@ class CollectionBuilder:
                 else:                                               logger.error("Collection Error: name_mapping attribute is blank")
             for ad in self.library.asset_directory:
                 path = os.path.join(ad, f"{name_mapping}")
-                if not os.path.isdir(path):
-                    continue
                 if self.library.asset_folders:
+                    if not os.path.isdir(path):
+                        continue
                     poster_path = os.path.join(ad, f"{name_mapping}", "poster.*")
                 else:
                     poster_path = os.path.join(ad, f"{name_mapping}.*")
