@@ -52,9 +52,9 @@ class RadarrAPI:
     def add_tags(self, tags):
         added = False
         for label in tags:
-            if label not in self.tags:
+            if str(label).lower() not in self.tags:
                 added = True
-                self.send_post("tag", {"label": str(label)})
+                self.send_post("tag", {"label": str(label).lower()})
         if added:
             self.tags = self.get_tags()
 
@@ -78,7 +78,7 @@ class RadarrAPI:
         search = options["search"] if "search" in options else self.search
         if tags:
             self.add_tags(tags)
-            tag_nums = [self.tags[label] for label in tags if label in self.tags]
+            tag_nums = [self.tags[label.lower()] for label in tags if label.lower() in self.tags]
         for tmdb_id in tmdb_ids:
             try:
                 movie_info = self.lookup(tmdb_id)
