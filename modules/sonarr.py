@@ -72,9 +72,9 @@ class SonarrAPI:
     def add_tags(self, tags):
         added = False
         for label in tags:
-            if label not in self.tags:
+            if str(label).lower() not in self.tags:
                 added = True
-                self.send_post("tag", {"label": str(label)})
+                self.send_post("tag", {"label": str(label).lower()})
         if added:
             self.tags = self.get_tags()
 
@@ -101,7 +101,7 @@ class SonarrAPI:
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
         if tags:
             self.add_tags(tags)
-            tag_nums = [self.tags[label] for label in tags if label in self.tags]
+            tag_nums = [self.tags[label.lower()] for label in tags if label.lower() in self.tags]
         for tvdb_id in tvdb_ids:
             try:
                 show_info = self.lookup(tvdb_id)
