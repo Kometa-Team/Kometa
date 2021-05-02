@@ -1,4 +1,4 @@
-import glob, logging, os, re, requests, time
+import logging, os, re, requests, time
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.anilist import AniListAPI
@@ -498,36 +498,7 @@ class Config:
                 util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
                 logger.info("")
                 for item in library.get_all():
-                    folder = os.path.basename(os.path.dirname(item.locations[0]) if library.is_movie else item.locations[0])
-                    for ad in library.asset_directory:
-                        if library.asset_folders:
-                            if not os.path.isdir(os.path.join(ad, folder)):
-                                continue
-                            poster_path = os.path.join(ad, folder, "poster.*")
-                        else:
-                            poster_path = os.path.join(ad, f"{folder}.*")
-                        matches = glob.glob(poster_path)
-                        if len(matches) > 0:
-                            library.upload_image(item, os.path.abspath(matches[0]), url=False)
-                            logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
-                        if library.asset_folders:
-                            matches = glob.glob(os.path.join(ad, folder, "background.*"))
-                            if len(matches) > 0:
-                                library.upload_image(item, os.path.abspath(matches[0]), poster=False, url=False)
-                                logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
-                            if library.is_show:
-                                for season in item.seasons():
-                                    matches = glob.glob(os.path.join(ad, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
-                                    if len(matches) > 0:
-                                        season_path = os.path.abspath(matches[0])
-                                        library.upload_image(season, season_path, url=False)
-                                        logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
-                                    for episode in season.episodes():
-                                        matches = glob.glob(os.path.join(ad, folder, f"{episode.seasonEpisode.upper()}.*"))
-                                        if len(matches) > 0:
-                                            episode_path = os.path.abspath(matches[0])
-                                            library.upload_image(episode, episode_path, url=False)
-                                            logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
+                    library.update_item_from_assets(item)
 
         has_run_again = False
         for library in self.libraries:

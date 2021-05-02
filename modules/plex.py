@@ -1,4 +1,4 @@
-import logging, os, re, requests
+import glob, logging, os, re, requests
 from datetime import datetime, timedelta
 from modules import util
 from modules.util import Failed
@@ -938,3 +938,46 @@ class PlexAPI:
                     logger.error("Metadata Error: episodes attribute is blank")
             elif "episodes" in methods:
                 logger.error("Metadata Error: episodes attribute only works for show libraries")
+
+    def update_item_from_assets(self, item, dirs=None):
+        if dirs is None:
+            dirs = self.asset_directory
+        name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
+        for ad in dirs:
+            if self.asset_folders:
+                if not os.path.isdir(os.path.join(ad, name)):
+                    continue
+                poster_filter = os.path.join(ad, name, "poster.*")
+                background_filter = os.path.join(ad, name, "background.*")
+            else:
+                poster_filter = os.path.join(ad, f"{name}.*")
+                background_filter = os.path.join(ad, f"{name}_background.*")
+            matches = glob.glob(poster_filter)
+            if len(matches) > 0:
+                self.upload_image(item, os.path.abspath(matches[0]), url=False)
+                logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
+            matches = glob.glob(background_filter)
+            if len(matches) > 0:
+                self.upload_image(item, os.path.abspath(matches[0]), poster=False, url=False)
+                logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
+            if self.is_show:
+                for season in self.query(item.seasons):
+                    if self.asset_folders:
+                        season_filter = os.path.join(ad, name, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
+                    else:
+                        season_filter = os.path.join(ad, f"{name}_Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
+                    matches = glob.glob(season_filter)
+                    if len(matches) > 0:
+                        season_path = os.path.abspath(matches[0])
+                        self.upload_image(season, season_path, url=False)
+                        logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
+                    for episode in self.query(season.episodes):
+                        if self.asset_folders:
+                            episode_filter = os.path.join(ad, name, f"{episode.seasonEpisode.upper()}.*")
+                        else:
+                            episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
+                        matches = glob.glob(episode_filter)
+                        if len(matches) > 0:
+                            episode_path = os.path.abspath(matches[0])
+                            self.upload_image(episode, episode_path, url=False)
+                            logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
