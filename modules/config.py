@@ -479,133 +479,55 @@ class Config:
                 logger.warning(f"Collection: {resume_from} not in {library.name}")
                 continue
             if collections:
-                for mapping_name, collection_attrs in collections.items():
-                    if test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
-                        no_template_test = True
-                        if "template" in collection_attrs and collection_attrs["template"]:
-                            for data_template in util.get_list(collection_attrs["template"], split=False):
-                                if "name" in data_template \
-                                    and data_template["name"] \
-                                    and library.templates \
-                                    and data_template["name"] in library.templates \
-                                    and library.templates[data_template["name"]] \
-                                    and "test" in library.templates[data_template["name"]] \
-                                    and library.templates[data_template["name"]]["test"] is True:
-                                    no_template_test = False
-                        if no_template_test:
-                            continue
-                    try:
-                        if resume_from and resume_from != mapping_name:
-                            continue
-                        elif resume_from == mapping_name:
-                            resume_from = None
-                            logger.info("")
-                            util.separator(f"Resuming Collections")
+                resume_from = self.run_collection(library, collections, test, resume_from, movie_map, show_map)
 
-                        logger.info("")
-                        util.separator(f"{mapping_name} Collection")
-                        logger.info("")
-
-                        rating_key_map = {}
-                        try:
-                            builder = CollectionBuilder(self, library, mapping_name, collection_attrs)
-                        except Failed as ef:
-                            util.print_multiline(ef, error=True)
-                            continue
-                        except Exception as ee:
-                            util.print_stacktrace()
-                            logger.error(ee)
-                            continue
-
-                        try:
-                            collection_obj = library.get_collection(mapping_name)
-                            collection_name = collection_obj.title
-                        except Failed:
-                            collection_obj = None
-                            collection_name = mapping_name
-
-                        if len(builder.schedule) > 0:
-                            util.print_multiline(builder.schedule, info=True)
-
-                        logger.info("")
-                        if builder.sync:
-                            logger.info("Sync Mode: sync")
-                            if collection_obj:
-                                for item in collection_obj.items():
-                                    rating_key_map[item.ratingKey] = item
-                        else:
-                            logger.info("Sync Mode: append")
-
-                        for i, f in enumerate(builder.filters):
-                            if i == 0:
-                                logger.info("")
-                            logger.info(f"Collection Filter {f[0]}: {f[1]}")
-
-                        builder.run_methods(collection_obj, collection_name, rating_key_map, movie_map, show_map)
-
-                        try:
-                            plex_collection = library.get_collection(collection_name)
-                        except Failed as e:
-                            logger.debug(e)
-                            continue
-
-                        builder.update_details(plex_collection)
-
-                        if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
-                            library.run_again.append(builder)
-
-                    except Exception as e:
-                        util.print_stacktrace()
-                        logger.error(f"Unknown Error: {e}")
-
-                if library.assets_for_all is True and not test and not requested_collections:
-                    logger.info("")
-                    util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
-                    logger.info("")
-                    for item in library.get_all():
-                        folder = os.path.basename(os.path.dirname(item.locations[0]) if library.is_movie else item.locations[0])
-                        for ad in library.asset_directory:
-                            if library.asset_folders:
-                                poster_path = os.path.join(ad, folder, "poster.*")
-                            else:
-                                poster_path = os.path.join(ad, f"{folder}.*")
-                            matches = glob.glob(poster_path)
-                            if len(matches) > 0:
-                                item.uploadPoster(filepath=os.path.abspath(matches[0]))
-                                logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
-                            if library.asset_folders:
-                                matches = glob.glob(os.path.join(ad, folder, "background.*"))
-                                if len(matches) > 0:
-                                    item.uploadArt(filepath=os.path.abspath(matches[0]))
-                                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
-                                if library.is_show:
-                                    for season in item.seasons():
-                                        matches = glob.glob(os.path.join(ad, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
-                                        if len(matches) > 0:
-                                            season_path = os.path.abspath(matches[0])
-                                            season.uploadPoster(filepath=season_path)
-                                            logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
-                                        for episode in season.episodes():
-                                            matches = glob.glob(os.path.join(ad, folder, f"{episode.seasonEpisode.upper()}.*"))
-                                            if len(matches) > 0:
-                                                episode_path = os.path.abspath(matches[0])
-                                                episode.uploadPoster(filepath=episode_path)
-                                                logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
-
-                if library.show_unmanaged is True and not test and not requested_collections:
-                    logger.info("")
-                    util.separator(f"Unmanaged Collections in {library.name} Library")
-                    logger.info("")
-                    unmanaged_count = 0
-                    collections_in_plex = [str(plex_col) for plex_col in collections]
-                    for col in library.get_all_collections():
-                        if col.title not in collections_in_plex:
-                            logger.info(col.title)
-                            unmanaged_count += 1
-                    logger.info("{} Unmanaged Collections".format(unmanaged_count))
-            else:
+            if library.show_unmanaged is True and not test and not requested_collections:
                 logger.info("")
-                logger.error("No collection to update")
+                util.separator(f"Unmanaged Collections in {library.name} Library")
+                logger.info("")
+                unmanaged_count = 0
+                collections_in_plex = [str(plex_col) for plex_col in collections]
+                for col in library.get_all_collections():
+                    if col.title not in collections_in_plex:
+                        logger.info(col.title)
+                        unmanaged_count += 1
+                logger.info("{} Unmanaged Collections".format(unmanaged_count))
+
+            if library.assets_for_all is True and not test and not requested_collections:
+                logger.info("")
+                util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
+                logger.info("")
+                for item in library.get_all():
+                    folder = os.path.basename(os.path.dirname(item.locations[0]) if library.is_movie else item.locations[0])
+                    for ad in library.asset_directory:
+                        if library.asset_folders:
+                            if not os.path.isdir(os.path.join(ad, folder)):
+                                continue
+                            poster_path = os.path.join(ad, folder, "poster.*")
+                        else:
+                            poster_path = os.path.join(ad, f"{folder}.*")
+                        matches = glob.glob(poster_path)
+                        if len(matches) > 0:
+                            library.upload_image(item, os.path.abspath(matches[0]), url=False)
+                            logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
+                        if library.asset_folders:
+                            matches = glob.glob(os.path.join(ad, folder, "background.*"))
+                            if len(matches) > 0:
+                                library.upload_image(item, os.path.abspath(matches[0]), poster=False, url=False)
+                                logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
+                            if library.is_show:
+                                for season in item.seasons():
+                                    matches = glob.glob(os.path.join(ad, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
+                                    if len(matches) > 0:
+                                        season_path = os.path.abspath(matches[0])
+                                        library.upload_image(season, season_path, url=False)
+                                        logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
+                                    for episode in season.episodes():
+                                        matches = glob.glob(os.path.join(ad, folder, f"{episode.seasonEpisode.upper()}.*"))
+                                        if len(matches) > 0:
+                                            episode_path = os.path.abspath(matches[0])
+                                            library.upload_image(episode, episode_path, url=False)
+                                            logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
 
         has_run_again = False
         for library in self.libraries:
@@ -644,6 +566,99 @@ class Config:
                                 util.print_multiline(e, error=True)
                                 continue
                             builder.run_collections_again(collection_obj, movie_map, show_map)
+
+    def run_collection(self, library, collections, test, resume_from, movie_map, show_map):
+        for mapping_name, collection_attrs in collections.items():
+            if test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
+                no_template_test = True
+                if "template" in collection_attrs and collection_attrs["template"]:
+                    for data_template in util.get_list(collection_attrs["template"], split=False):
+                        if "name" in data_template \
+                                and data_template["name"] \
+                                and library.templates \
+                                and data_template["name"] in library.templates \
+                                and library.templates[data_template["name"]] \
+                                and "test" in library.templates[data_template["name"]] \
+                                and library.templates[data_template["name"]]["test"] is True:
+                            no_template_test = False
+                if no_template_test:
+                    continue
+            try:
+                if resume_from and resume_from != mapping_name:
+                    continue
+                elif resume_from == mapping_name:
+                    resume_from = None
+                    logger.info("")
+                    util.separator(f"Resuming Collections")
+
+                logger.info("")
+                util.separator(f"{mapping_name} Collection")
+                logger.info("")
+
+                try:
+                    builder = CollectionBuilder(self, library, mapping_name, collection_attrs)
+                except Failed as f:
+                    util.print_multiline(f, error=True)
+                    continue
+                except Exception as e:
+                    util.print_stacktrace()
+                    logger.error(e)
+                    continue
+
+                try:
+                    collection_obj = library.get_collection(mapping_name)
+                    collection_name = collection_obj.title
+                    collection_smart = library.smart(collection_obj)
+                    if (builder.smart and not collection_smart) or (not builder.smart and collection_smart):
+                        logger.info("")
+                        logger.error(f"Collection Error: Converting {collection_obj.title} to a {'smart' if builder.smart else 'normal'} collection")
+                        library.query(collection_obj.delete)
+                        collection_obj = None
+                except Failed:
+                    collection_obj = None
+                    collection_name = mapping_name
+
+                if len(builder.schedule) > 0:
+                    util.print_multiline(builder.schedule, info=True)
+
+                rating_key_map = {}
+                logger.info("")
+                if builder.sync:
+                    logger.info("Sync Mode: sync")
+                    if collection_obj:
+                        for item in library.get_collection_items(collection_obj, builder.smart_label_collection):
+                            rating_key_map[item.ratingKey] = item
+                else:
+                    logger.info("Sync Mode: append")
+
+                for i, f in enumerate(builder.filters):
+                    if i == 0:
+                        logger.info("")
+                    logger.info(f"Collection Filter {f[0]}: {f[1]}")
+
+                if not builder.smart_url_collection:
+                    builder.run_methods(collection_obj, collection_name, rating_key_map, movie_map, show_map)
+
+                try:
+                    if not collection_obj and builder.smart_url_collection:
+                        library.create_smart_collection(collection_name, builder.smart_url)
+                    elif not collection_obj and builder.smart_label_collection:
+                        library.create_smart_labels(collection_name, sort=builder.smart_sort)
+                    plex_collection = library.get_collection(collection_name)
+                except Failed as e:
+                    util.print_stacktrace()
+                    logger.error(e)
+                    continue
+
+                builder.update_details(plex_collection)
+
+                if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                    library.run_again.append(builder)
+
+            except Exception as e:
+                util.print_stacktrace()
+                logger.error(f"Unknown Error: {e}")
+        return resume_from
 
     def mass_metadata(self, library, movie_map, show_map):
         length = 0
@@ -695,10 +710,10 @@ class Config:
                 item_genres = [genre.tag for genre in item.genres]
                 display_str = ""
                 for genre in (g for g in item_genres if g not in new_genres):
-                    item.removeGenre(genre)
+                    library.query_data(item.removeGenre, genre)
                     display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
                 for genre in (g for g in new_genres if g not in item_genres):
-                    item.addGenre(genre)
+                    library.query_data(item.addGenre, genre)
                     display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
                 if len(display_str) > 0:
                     util.print_end(length, f"{item.title[:25]:<25} | Genres | {display_str}")
