@@ -1297,48 +1297,19 @@ class CollectionBuilder:
                 if self.library.asset_folders:
                     if not os.path.isdir(path):
                         continue
-                    poster_path = os.path.join(ad, f"{name_mapping}", "poster.*")
+                    poster_filter = os.path.join(ad, name_mapping, "poster.*")
+                    background_filter = os.path.join(ad, name_mapping, "background.*")
                 else:
-                    poster_path = os.path.join(ad, f"{name_mapping}.*")
-                matches = glob.glob(poster_path)
+                    poster_filter = os.path.join(ad, f"{name_mapping}.*")
+                    background_filter = os.path.join(ad, f"{name_mapping}_background.*")
+                matches = glob.glob(poster_filter)
                 if len(matches) > 0:
                     self.posters["asset_directory"] = os.path.abspath(matches[0])
-                if self.library.asset_folders:
-                    matches = glob.glob(os.path.join(ad, f"{name_mapping}", "background.*"))
-                    if len(matches) > 0:
-                        self.backgrounds["asset_directory"] = os.path.abspath(matches[0])
-                    dirs = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
-                    if len(dirs) > 0:
-                        for item in collection.items():
-                            folder = os.path.basename(os.path.dirname(item.locations[0]) if self.library.is_movie else item.locations[0])
-                            if folder in dirs:
-                                matches = glob.glob(os.path.join(path, folder, "poster.*"))
-                                poster_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
-                                matches = glob.glob(os.path.join(path, folder, "background.*"))
-                                background_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
-                                if poster_path:
-                                    self.library.upload_image(item, poster_path, url=False)
-                                    logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_path}")
-                                if background_path:
-                                    self.library.upload_image(item, background_path, poster=False, url=False)
-                                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_path}")
-                                if poster_path is None and background_path is None:
-                                    logger.warning(f"No Files Found: {os.path.join(path, folder)}")
-                                if self.library.is_show:
-                                    for season in item.seasons():
-                                        matches = glob.glob(os.path.join(path, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
-                                        if len(matches) > 0:
-                                            season_path = os.path.abspath(matches[0])
-                                            self.library.upload_image(season, season_path, url=False)
-                                            logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
-                                        for episode in season.episodes():
-                                            matches = glob.glob(os.path.join(path, folder, f"{episode.seasonEpisode.upper()}.*"))
-                                            if len(matches) > 0:
-                                                episode_path = os.path.abspath(matches[0])
-                                                self.library.upload_image(episode, episode_path, url=False)
-                                                logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
-                            else:
-                                logger.warning(f"No Folder: {os.path.join(path, folder)}")
+                matches = glob.glob(background_filter)
+                if len(matches) > 0:
+                    self.backgrounds["asset_directory"] = os.path.abspath(matches[0])
+                for item in self.library.query(collection.items):
+                    self.library.update_item_from_assets(item, dirs=[path])
 
         def set_image(image_method, images, is_background=False):
             message = f"{'background' if is_background else 'poster'} to [{'File' if image_method in image_file_details else 'URL'}] {images[image_method]}"
