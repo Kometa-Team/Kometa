@@ -2,7 +2,6 @@ import glob, logging, os, re
 from datetime import datetime, timedelta
 from modules import anidb, anilist, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed
-from plexapi.collection import Collections
 from plexapi.exceptions import BadRequest, NotFound
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -82,6 +81,16 @@ numbered_builders = [
     "trakt_watched",
     "trakt_collected"
 ]
+smart_collection_invalid = ["collection_mode", "collection_order"]
+smart_url_collection_invalid = [
+    "item_label", "item_label.sync", "item_episode_sorting", "item_keep_episodes", "item_delete_episodes",
+    "item_season_display", "item_episode_ordering", "item_metadata_language", "item_use_original_title",
+    "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label",
+    "radarr_add", "radarr_folder", "radarr_monitor", "radarr_availability", 
+    "radarr_quality", "radarr_tag", "radarr_search",
+    "sonarr_add", "sonarr_folder", "sonarr_monitor", "sonarr_quality", "sonarr_language", 
+    "sonarr_series", "sonarr_season", "sonarr_tag", "sonarr_search", "sonarr_cutoff_search"
+]
 all_details = [
     "sort_title", "content_rating", "collection_mode", "collection_order",
     "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary",
@@ -99,6 +108,8 @@ collectionless_details = [
     "name_mapping", "label", "label_sync_mode", "test"
 ]
 ignored_details = [
+    "smart_label",
+    "smart_url",
     "run_again",
     "schedule",
     "sync_mode",
@@ -342,8 +353,42 @@ class CollectionBuilder:
 
         logger.info(f"Scanning {self.name} Collection")
 
-        self.collectionless = "plex_collectionless" in methods
         self.run_again = "run_again" in methods
+        self.collectionless = "plex_collectionless" in methods
+
+        self.smart_sort = "title.asc"
+        self.smart_label_collection = False
+        if "smart_label" in methods:
+            self.smart_label_collection = True
+            if self.data[methods["smart_label"]]:
+                if str(self.data[methods["smart_label"]]).lower() in plex.smart_sorts:
+                    self.smart_sort = str(self.data[methods["smart_label"]]).lower()
+                else:
+                    logger.info("")
+                    logger.warning(f"Collection Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to title.asc")
+            else:
+                logger.info("")
+                logger.warning("Collection Error: smart_label attribute is blank defaulting to title.asc")
+
+        self.smart_url = None
+        self.smart_url_collection = False
+        if "smart_url" in methods:
+            if self.data[methods["smart_url"]]:
+                self.smart_url_collection = True
+                try:
+                    self.smart_url = library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
+                except ValueError:
+                    raise Failed("Collection Error: smart_url is incorrectly formatted")
+            else:
+                raise Failed("Collection Error: smart_url attribute is blank")
+
+        if self.smart_label_collection and self.collectionless:
+            raise Failed(f"Collection Error: plex_collectionless & smart_label_collection attributes cannot go together")
+
+        if self.smart_url_collection and self.run_again:
+            raise Failed(f"Collection Error: run_again & smart_url_collection attributes cannot go together")
+
+        self.smart = self.smart_url_collection or self.smart_label_collection
 
         if "tmdb_person" in methods:
             if self.data[methods["tmdb_person"]]:
@@ -355,8 +400,10 @@ class CollectionBuilder:
                         self.summaries["tmdb_person"] = person.biography
                     if hasattr(person, "profile_path") and person.profile_path:
                         self.posters["tmdb_person"] = f"{config.TMDb.image_url}{person.profile_path}"
-                if len(valid_names) > 0:                                        self.details["tmdb_person"] = valid_names
-                else:                                                           raise Failed(f"Collection Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
+                if len(valid_names) > 0:
+                    self.details["tmdb_person"] = valid_names
+                else:
+                    raise Failed(f"Collection Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
             else:
                 raise Failed("Collection Error: tmdb_person attribute is blank")
 
@@ -390,8 +437,14 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: {method_name} plex search only works for movie libraries")
                 elif method_name in plex.show_only_searches and self.library.is_movie:
                     raise Failed(f"Collection Error: {method_name} plex search only works for show libraries")
+                elif method_name in smart_collection_invalid and self.smart:
+                    raise Failed(f"Collection Error: {method_name} attribute only works with normal collections")
                 elif method_name not in collectionless_details and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
+                elif self.smart_url_collection and method_name in all_builders:
+                    raise Failed(f"Collection Error: {method_name} builder not allowed when using smart_url")
+                elif self.smart_url_collection and method_name in smart_url_collection_invalid:
+                    raise Failed(f"Collection Error: {method_name} detail not allowed when using smart_url")
                 elif method_name == "summary":
                     self.summaries[method_name] = method_data
                 elif method_name == "tmdb_summary":
@@ -987,6 +1040,10 @@ class CollectionBuilder:
             self.add_to_radarr = self.library.Radarr.add if self.library.Radarr else False
         if self.add_to_sonarr is None:
             self.add_to_sonarr = self.library.Sonarr.add if self.library.Sonarr else False
+            
+        if self.smart_url_collection:
+            self.add_to_radarr = False
+            self.add_to_sonarr = False
 
         if self.collectionless:
             self.add_to_radarr = False
@@ -1040,8 +1097,10 @@ class CollectionBuilder:
                 elif "trakt" in method:                             items_found += check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
 
-                if len(items) > 0:                                  rating_key_map = self.library.add_to_collection(collection_obj if collection_obj else collection_name, items, self.filters, self.details["show_filtered"], rating_key_map, movie_map, show_map)
-                else:                                               logger.error("No items found to add to this collection ")
+                if len(items) > 0:
+                    rating_key_map = self.library.add_to_collection(collection_obj if collection_obj else collection_name, items, self.filters, self.details["show_filtered"], self.smart_label_collection, rating_key_map, movie_map, show_map)
+                else:
+                    logger.error("No items found to add to this collection ")
 
                 if len(missing_movies) > 0 or len(missing_shows) > 0:
                     logger.info("")
@@ -1074,13 +1133,15 @@ class CollectionBuilder:
                         logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_movies_with_names, True)
-                        if self.add_to_radarr and self.library.Radarr:
-                            try:
-                                self.library.Radarr.add_tmdb([missing_id for title, missing_id in missing_movies_with_names], **self.radarr_options)
-                            except Failed as e:
-                                logger.error(e)
-                        if self.run_again:
-                            self.missing_movies.extend([missing_id for title, missing_id in missing_movies_with_names])
+                        if (self.add_to_radarr and self.library.Radarr) or self.run_again:
+                            missing_tmdb_ids = [missing_id for title, missing_id in missing_movies_with_names]
+                            if self.add_to_radarr and self.library.Radarr:
+                                try:
+                                    self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_options)
+                                except Failed as e:
+                                    logger.error(e)
+                            if self.run_again:
+                                self.missing_movies.extend(missing_tmdb_ids)
                     if len(missing_shows) > 0 and self.library.is_show:
                         missing_shows_with_names = []
                         for missing_id in missing_shows:
@@ -1106,13 +1167,15 @@ class CollectionBuilder:
                         logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
                         if self.details["save_missing"] is True:
                             self.library.add_missing(collection_name, missing_shows_with_names, False)
-                        if self.add_to_sonarr and self.library.Sonarr:
-                            try:
-                                self.library.Sonarr.add_tvdb([missing_id for title, missing_id in missing_shows_with_names], **self.sonarr_options)
-                            except Failed as e:
-                                logger.error(e)
-                        if self.run_again:
-                            self.missing_shows.extend([missing_id for title, missing_id in missing_shows_with_names])
+                        if (self.add_to_sonarr and self.library.Sonarr) or self.run_again:
+                            missing_tvdb_ids = [missing_id for title, missing_id in missing_shows_with_names]
+                            if self.add_to_sonarr and self.library.Sonarr:
+                                try:
+                                    self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_options)
+                                except Failed as e:
+                                    logger.error(e)
+                            if self.run_again:
+                                self.missing_shows.extend(missing_tvdb_ids)
 
         if self.sync and items_found > 0:
             logger.info("")
@@ -1120,12 +1183,19 @@ class CollectionBuilder:
             for ratingKey, item in rating_key_map.items():
                 if item is not None:
                     logger.info(f"{collection_name} Collection | - | {item.title}")
-                    item.removeCollection(collection_name)
+                    if self.smart_label_collection:
+                        self.library.query_data(item.removeLabel, collection_name)
+                    else:
+                        self.library.query_data(item.removeCollection, collection_name)
                     count_removed += 1
             logger.info(f"{count_removed} {'Movie' if self.library.is_movie else 'Show'}{'s' if count_removed == 1 else ''} Removed")
         logger.info("")
 
     def update_details(self, collection):
+        if self.smart_url and self.smart_url != self.library.smart_filter(collection):
+            self.library.update_smart_collection(collection, self.smart_url)
+            logger.info(f"Detail: Smart Filter updated to {self.smart_url}")
+
         edits = {}
         def get_summary(summary_method, summaries):
             logger.info(f"Detail: {summary_method} updated Collection Summary")
@@ -1151,51 +1221,58 @@ class CollectionBuilder:
         elif "tmdb_show_details" in self.summaries:         summary = get_summary("tmdb_show_details", self.summaries)
         else:                                               summary = None
         if summary:
-            edits["summary.value"] = summary
-            edits["summary.locked"] = 1
+            if str(summary) != str(collection.summary):
+                edits["summary.value"] = summary
+                edits["summary.locked"] = 1
 
         if "sort_title" in self.details:
-            edits["titleSort.value"] = self.details["sort_title"]
-            edits["titleSort.locked"] = 1
-            logger.info(f"Detail: sort_title updated Collection Sort Title to {self.details['sort_title']}")
+            if str(self.details["sort_title"]) != str(collection.titleSort):
+                edits["titleSort.value"] = self.details["sort_title"]
+                edits["titleSort.locked"] = 1
+                logger.info(f"Detail: sort_title updated Collection Sort Title to {self.details['sort_title']}")
 
         if "content_rating" in self.details:
-            edits["contentRating.value"] = self.details["content_rating"]
-            edits["contentRating.locked"] = 1
-            logger.info(f"Detail: content_rating updated Collection Content Rating to {self.details['content_rating']}")
+            if str(self.details["content_rating"]) != str(collection.contentRating):
+                edits["contentRating.value"] = self.details["content_rating"]
+                edits["contentRating.locked"] = 1
+                logger.info(f"Detail: content_rating updated Collection Content Rating to {self.details['content_rating']}")
 
         if "collection_mode" in self.details:
-            collection.modeUpdate(mode=self.details["collection_mode"])
-            logger.info(f"Detail: collection_mode updated Collection Mode to {self.details['collection_mode']}")
+            if int(collection.collectionMode) not in plex.collection_mode_keys\
+                    or plex.collection_mode_keys[int(collection.collectionMode)] != self.details["collection_mode"]:
+                self.library.collection_mode_query(collection, self.details["collection_mode"])
+                logger.info(f"Detail: collection_mode updated Collection Mode to {self.details['collection_mode']}")
 
         if "collection_order" in self.details:
-            collection.sortUpdate(sort=self.details["collection_order"])
-            logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
+            if int(collection.collectionSort) not in plex.collection_order_keys\
+                    or plex.collection_order_keys[int(collection.collectionSort)] != self.details["collection_order"]:
+                self.library.collection_order_query(collection, self.details["collection_order"])
+                logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
 
         if "label" in self.details or "label.sync" in self.details:
             item_labels = [label.tag for label in collection.labels]
             labels = util.get_list(self.details["label" if "label" in self.details else "label.sync"])
             if "label.sync" in self.details:
                 for label in (la for la in item_labels if la not in labels):
-                    collection.removeLabel(label)
+                    self.library.query_data(collection.removeLabel, label)
                     logger.info(f"Detail: Label {label} removed")
             for label in (la for la in labels if la not in item_labels):
-                collection.addLabel(label)
+                self.library.query_data(collection.addLabel, label)
                 logger.info(f"Detail: Label {label} added")
 
         if len(self.item_details) > 0:
             labels = None
             if "item_label" in self.item_details or "item_label.sync" in self.item_details:
                 labels = util.get_list(self.item_details["item_label" if "item_label" in self.item_details else "item_label.sync"])
-            for item in collection.items():
+            for item in self.library.get_collection_items(collection, self.smart_label_collection):
                 if labels is not None:
                     item_labels = [label.tag for label in item.labels]
                     if "item_label.sync" in self.item_details:
                         for label in (la for la in item_labels if la not in labels):
-                            item.removeLabel(label)
+                            self.library.query_data(item.removeLabel, label)
                             logger.info(f"Detail: Label {label} removed from {item.title}")
                     for label in (la for la in labels if la not in item_labels):
-                        item.addLabel(label)
+                        self.library.query_data(item.addLabel, label)
                         logger.info(f"Detail: Label {label} added to {item.title}")
                 advance_edits = {}
                 for method_name, method_data in self.item_details.items():
@@ -1207,8 +1284,7 @@ class CollectionBuilder:
 
         if len(edits) > 0:
             logger.debug(edits)
-            collection.edit(**edits)
-            collection.reload()
+            self.library.collection_edit_query(collection, edits)
             logger.info("Details: have been updated")
 
         if self.library.asset_directory:
@@ -1241,10 +1317,10 @@ class CollectionBuilder:
                                 matches = glob.glob(os.path.join(path, folder, "background.*"))
                                 background_path = os.path.abspath(matches[0]) if len(matches) > 0 else None
                                 if poster_path:
-                                    item.uploadPoster(filepath=poster_path)
+                                    self.library.upload_image(item, poster_path, url=False)
                                     logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_path}")
                                 if background_path:
-                                    item.uploadArt(filepath=background_path)
+                                    self.library.upload_image(item, background_path, poster=False, url=False)
                                     logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_path}")
                                 if poster_path is None and background_path is None:
                                     logger.warning(f"No Files Found: {os.path.join(path, folder)}")
@@ -1253,13 +1329,13 @@ class CollectionBuilder:
                                         matches = glob.glob(os.path.join(path, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
                                         if len(matches) > 0:
                                             season_path = os.path.abspath(matches[0])
-                                            season.uploadPoster(filepath=season_path)
+                                            self.library.upload_image(season, season_path, url=False)
                                             logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
                                         for episode in season.episodes():
                                             matches = glob.glob(os.path.join(path, folder, f"{episode.seasonEpisode.upper()}.*"))
                                             if len(matches) > 0:
                                                 episode_path = os.path.abspath(matches[0])
-                                                episode.uploadPoster(filepath=episode_path)
+                                                self.library.upload_image(episode, episode_path, url=False)
                                                 logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
                             else:
                                 logger.warning(f"No Folder: {os.path.join(path, folder)}")
@@ -1267,14 +1343,7 @@ class CollectionBuilder:
         def set_image(image_method, images, is_background=False):
             message = f"{'background' if is_background else 'poster'} to [{'File' if image_method in image_file_details else 'URL'}] {images[image_method]}"
             try:
-                if image_method in image_file_details and is_background:
-                    collection.uploadArt(filepath=images[image_method])
-                elif image_method in image_file_details:
-                    collection.uploadPoster(filepath=images[image_method])
-                elif is_background:
-                    collection.uploadArt(url=images[image_method])
-                else:
-                    collection.uploadPoster(url=images[image_method])
+                self.library.upload_image(collection, images[image_method], poster=not is_background, url=image_method not in image_file_details)
                 logger.info(f"Detail: {image_method} updated collection {message}")
             except BadRequest:
                 logger.error(f"Detail: {image_method} failed to update {message}")
@@ -1327,8 +1396,7 @@ class CollectionBuilder:
         else:                                               logger.info("No background to update")
 
     def run_collections_again(self, collection_obj, movie_map, show_map):
-        collection_items = collection_obj.items() if isinstance(collection_obj, Collections) else []
-        name = collection_obj.title if isinstance(collection_obj, Collections) else collection_obj
+        name, collection_items = self.library.get_collection_name_and_items(collection_obj, self.smart_label_collection)
         rating_keys = []
         for mm in self.missing_movies:
             if mm in movie_map:
@@ -1346,8 +1414,10 @@ class CollectionBuilder:
                     continue
                 if current in collection_items:
                     logger.info(f"{name} Collection | = | {current.title}")
+                elif self.smart_label_collection:
+                    self.library.query_data(current.addLabel, name)
                 else:
-                    current.addCollection(name)
+                    self.library.query_data(current.addCollection, name)
                     logger.info(f"{name} Collection | + | {current.title}")
             logger.info(f"{len(rating_keys)} {'Movie' if self.library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
 

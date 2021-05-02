@@ -2,12 +2,14 @@ import logging, os, re, requests
 from datetime import datetime, timedelta
 from modules import util
 from modules.util import Failed
+from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collections
 from plexapi.server import PlexServer
 from plexapi.video import Movie, Show
 from retrying import retry
 from ruamel import yaml
+from urllib import parse
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -34,6 +36,8 @@ plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
+collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
+collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 advance_keys = {
     "episode_sorting": ("episodeSort", episode_sorting_options),
     "keep_episodes": ("autoDeletionItemPolicyUnwatchedLibrary", keep_episodes_options),
@@ -108,6 +112,19 @@ tmdb_searches = [
     "producer", "producer.and", "producer.not",
     "writer", "writer.and", "writer.not"
 ]
+smart_sorts = {
+    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "year.asc": "year", "year.desc": "year%3Adesc",
+    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
+    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
+    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
+    "content_rating.asc": "contentRating", "content_rating.desc": "contentRating%3Adesc",
+    "duration.asc": "duration", "duration.desc": "duration%3Adesc",
+    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "random": "random"
+}
 sorts = {
     None: None,
     "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
@@ -174,7 +191,7 @@ class PlexAPI:
         self.collections = get_dict("collections")
 
         if self.metadata is None and self.collections is None:
-            raise Failed("YAML Error: metadata attributes or collections attribute required")
+            raise Failed("YAML Error: metadata or collections attribute is required")
 
         if params["asset_directory"]:
             for ad in params["asset_directory"]:
@@ -212,6 +229,10 @@ class PlexAPI:
         return self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def get_labeled_items(self, label):
+        return self.Plex.search(label=label)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
@@ -224,8 +245,36 @@ class PlexAPI:
         return self.PlexServer.search(data)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def add_collection(self, item, name):
-        item.addCollection(name)
+    def query(self, method):
+        return method()
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def query_data(self, method, data):
+        return method(data)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def collection_mode_query(self, collection, data):
+        collection.modeUpdate(mode=data)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def collection_order_query(self, collection, data):
+        collection.sortUpdate(sort=data)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def collection_edit_query(self, collection, data):
+        collection.edit(**data)
+        collection.reload()
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def upload_image(self, item, location, poster=True, url=True):
+        if poster and url:
+            item.uploadPoster(url=location)
+        elif poster:
+            item.uploadPoster(filepath=location)
+        elif url:
+            item.uploadArt(url=location)
+        else:
+            item.uploadArt(filepath=location)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name):
@@ -239,8 +288,49 @@ class PlexAPI:
             raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def refresh_item(self, rating_key):
-        requests.put(f"{self.url}/library/metadata/{rating_key}/refresh?X-Plex-Token={self.token}")
+    def get_labels(self):
+        return {label.title: label.key for label in self.Plex.listFilterChoices(field="label")}
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def _query(self, key, post=False, put=False):
+        if post:                method = self.Plex._server._session.post
+        elif put:               method = self.Plex._server._session.put
+        else:                   method = None
+        self.Plex._server.query(key, method=method)
+
+    def create_smart_labels(self, title, sort):
+        labels = self.get_labels()
+        if title not in labels:
+            raise Failed(f"Plex Error: Label: {title} does not exist")
+        uri_args = f"?type=1&sort={smart_sorts[sort]}&label={labels[title]}"
+        self.create_smart_collection(title, uri_args)
+
+    def create_smart_collection(self, title, uri_args):
+        args = {
+            "type": 1,
+            "title": title,
+            "smart": 1,
+            "sectionId": self.Plex.key,
+            "uri": self.build_smart_filter(uri_args)
+        }
+        self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
+
+    def get_smart_filter_from_uri(self, uri):
+        smart_filter = parse.parse_qs(parse.urlparse(uri.replace("/#!/", "/")).query)["key"][0]
+        return self.build_smart_filter(smart_filter[smart_filter.index("?"):])
+
+    def build_smart_filter(self, uri_args):
+        return f"server://{self.PlexServer.machineIdentifier}/com.plexapp.plugins.library/library/sections/{self.Plex.key}/all{uri_args}"
+
+    def update_smart_collection(self, collection, uri_args):
+        self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
+
+    def smart(self, collection):
+        return utils.cast(bool, self.get_collection(collection)._data.attrib.get('smart', '0'))
+
+    def smart_filter(self, collection):
+        smart_filter = self.get_collection(collection)._data.attrib.get('content')
+        return smart_filter[smart_filter.index("?"):]
 
     def validate_search_list(self, data, search_name):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
@@ -254,9 +344,16 @@ class PlexAPI:
         return valid_list
 
     def get_collection(self, data):
-        collection = util.choose_from_list(self.search(title=str(data), libtype="collection"), "collection", str(data), exact=True)
-        if collection:                              return collection
-        else:                                       raise Failed(f"Plex Error: Collection {data} not found")
+        if isinstance(data, int):
+            collection = self.fetchItem(data)
+        elif isinstance(data, Collections):
+            collection = data
+        else:
+            collection = util.choose_from_list(self.search(title=str(data), libtype="collection"), "collection", str(data), exact=True)
+        if collection:
+            return collection
+        else:
+            raise Failed(f"Plex Error: Collection {data} not found")
 
     def validate_collections(self, collections):
         valid_collections = []
@@ -384,9 +481,20 @@ class PlexAPI:
         except yaml.scanner.ScannerError as e:
             logger.error(f"YAML Error: {util.tab_new_lines(e)}")
 
-    def add_to_collection(self, collection, items, filters, show_filtered, rating_key_map, movie_map, show_map):
-        name = collection.title if isinstance(collection, Collections) else collection
-        collection_items = collection.items() if isinstance(collection, Collections) else []
+    def get_collection_items(self, collection, smart_label_collection):
+        if smart_label_collection:
+            return self.get_labeled_items(collection.title if isinstance(collection, Collections) else str(collection))
+        elif isinstance(collection, Collections):
+            return self.query(collection.items)
+        else:
+            return []
+
+    def get_collection_name_and_items(self, collection, smart_label_collection):
+        name = collection.title if isinstance(collection, Collections) else str(collection)
+        return name, self.get_collection_items(collection, smart_label_collection)
+
+    def add_to_collection(self, collection, items, filters, show_filtered, smart, rating_key_map, movie_map, show_map):
+        name, collection_items = self.get_collection_name_and_items(collection, smart)
         total = len(items)
         max_length = len(str(total))
         length = 0
@@ -496,7 +604,8 @@ class PlexAPI:
             if match:
                 util.print_end(length, f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}")
                 if current in collection_items:             rating_key_map[current.ratingKey] = None
-                else:                                       self.add_collection(current, name)
+                elif smart:                                 self.query_data(current.addLabel, name)
+                else:                                       self.query_data(current.addCollection, name)
             elif show_filtered is True:
                 logger.info(f"{name} Collection | X | {current.title}")
         media_type = f"{'Movie' if self.is_movie else 'Show'}{'s' if total > 1 else ''}"
@@ -519,7 +628,7 @@ class PlexAPI:
                     item.edit(**edits)
                 item.reload()
                 if advanced and "languageOverride" in edits:
-                    self.refresh_item(item.ratingKey)
+                    self.query(item.refresh)
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
             except BadRequest:
                 util.print_stacktrace()
@@ -607,17 +716,10 @@ class PlexAPI:
                     else:
                         logger.error(f"Metadata Error: {attr} attribute is blank")
 
-            def set_image(attr, obj, group, alias, is_background=False):
+            def set_image(attr, obj, group, alias, poster=True, url=True):
                 if group[alias[attr]]:
-                    message = f"{'background' if is_background else 'poster'} to [{'File' if attr.startswith('file') else 'URL'}] {group[alias[attr]]}"
-                    if group[alias[attr]] and attr.startswith("url") and is_background:
-                        obj.uploadArt(url=group[alias[attr]])
-                    elif group[alias[attr]] and attr.startswith("url"):
-                        obj.uploadPoster(url=group[alias[attr]])
-                    elif group[alias[attr]] and attr.startswith("file") and is_background:
-                        obj.uploadArt(filepath=group[alias[attr]])
-                    elif group[alias[attr]] and attr.startswith("file"):
-                        obj.uploadPoster(filepath=group[alias[attr]])
+                    message = f"{'poster' if poster else 'background'} to [{'URL' if url else 'File'}] {group[alias[attr]]}"
+                    self.upload_image(obj, group[alias[attr]], poster=poster, url=url)
                     logger.info(f"Detail: {attr} updated {message}")
                 else:
                     logger.error(f"Metadata Error: {attr} attribute is blank")
@@ -626,11 +728,11 @@ class PlexAPI:
                 if "url_poster" in alias:
                     set_image("url_poster", obj, group, alias)
                 elif "file_poster" in alias:
-                    set_image("file_poster", obj, group, alias)
+                    set_image("file_poster", obj, group, alias, url=False)
                 if "url_background" in alias:
-                    set_image("url_background", obj, group, alias, is_background=True)
+                    set_image("url_background", obj, group, alias, poster=False)
                 elif "file_background" in alias:
-                    set_image("file_background", obj, group, alias, is_background=True)
+                    set_image("file_background", obj, group, alias, poster=False, url=False)
 
             logger.info("")
             util.separator()
