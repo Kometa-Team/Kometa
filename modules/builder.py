@@ -1284,7 +1284,7 @@ class CollectionBuilder:
 
         if len(edits) > 0:
             logger.debug(edits)
-            self.library.collection_edit_query(collection, edits)
+            self.library.edit_query(collection, edits)
             logger.info("Details: have been updated")
 
         if self.library.asset_directory:
