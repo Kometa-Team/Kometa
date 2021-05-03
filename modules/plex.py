@@ -214,6 +214,8 @@ class PlexAPI:
         self.show_missing = params["show_missing"]
         self.save_missing = params["save_missing"]
         self.mass_genre_update = params["mass_genre_update"]
+        self.mass_audience_rating_update = params["mass_audience_rating_update"]
+        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update
         self.plex = params["plex"]
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
@@ -261,9 +263,12 @@ class PlexAPI:
         collection.sortUpdate(sort=data)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def collection_edit_query(self, collection, data):
-        collection.edit(**data)
-        collection.reload()
+    def edit_query(self, item, edits, advance=False):
+        if advance:
+            item.editAdvanced(**edits)
+        else:
+            item.edit(**edits)
+        item.reload()
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def upload_image(self, item, location, poster=True, url=True):
@@ -451,7 +456,7 @@ class PlexAPI:
             for i, item in enumerate(all_items, 1):
                 length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
-                item.reload()
+                self.query(item.reload)
                 for collection in item.collections:
                     if collection.id in good_collections:
                         add_item = False
@@ -622,11 +627,7 @@ class PlexAPI:
         if len(edits) > 0:
             logger.debug(f"Details Update: {edits}")
             try:
-                if advanced:
-                    item.editAdvanced(**edits)
-                else:
-                    item.edit(**edits)
-                item.reload()
+                self.edit_query(item, edits, advanced=advanced)
                 if advanced and "languageOverride" in edits:
                     self.query(item.refresh)
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")

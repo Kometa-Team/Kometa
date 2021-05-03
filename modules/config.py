@@ -47,7 +47,7 @@ sonarr_series_types = {
     "daily": "Episodes released daily or less frequently that use year-month-day (2017-05-25)",
     "anime": "Episodes released using an absolute episode number"
 }
-mass_genre_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
+mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
 library_types = {"movie": "For Movie Libraries", "show": "For Show Libraries"}
 
 class Config:
@@ -367,13 +367,20 @@ class Config:
                 params["save_missing"] = check_for_attribute(lib, "save_missing", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
 
             if lib and "mass_genre_update" in lib and lib["mass_genre_update"]:
-                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_genre_update_options, default_is_none=True, save=False)
+                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
+                if self.OMDb is None and params["mass_genre_update"] == "omdb":
+                    params["mass_genre_update"] = None
+                    logger.error("Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection")
             else:
                 params["mass_genre_update"] = None
 
-            if params["mass_genre_update"] == "omdb" and self.OMDb is None:
-                params["mass_genre_update"] = None
-                logger.error("Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection")
+            if lib and "mass_audience_rating_update" in lib and lib["mass_audience_rating_update"]:
+                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                if self.OMDb is None and params["mass_audience_rating_update"] == "omdb":
+                    params["mass_audience_rating_update"] = None
+                    logger.error("Config Error: mass_audience_rating_update cannot be omdb without a successful OMDb Connection")
+            else:
+                params["mass_audience_rating_update"] = None
 
             try:
                 params["metadata_path"] = check_for_attribute(lib, "metadata_path", var_type="path", default=os.path.join(default_dir, f"{library_name}.yml"), throw=True)
@@ -468,7 +475,7 @@ class Config:
             logger.info("")
             movie_map, show_map = self.map_guids(library)
             if not test and not resume_from:
-                if library.mass_genre_update:
+                if library.mass_update:
                     self.mass_metadata(library, movie_map, show_map)
                 try:                        library.update_metadata(self.TMDb, test)
                 except Failed as e:         logger.error(e)
@@ -688,6 +695,36 @@ class Config:
                     display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
                 if len(display_str) > 0:
                     util.print_end(length, f"{item.title[:25]:<25} | Genres | {display_str}")
+            if library.mass_audience_rating_update:
+                if library.mass_audience_rating_update == "tmdb":
+                    if "tmdb" not in ids:
+                        util.print_end(length, f"{item.title[:25]:<25} | No TMDb for Guid: {item.guid}")
+                        continue
+                    try:
+                        tmdb_item = self.TMDb.get_movie(ids["tmdb"]) if library.is_movie else self.TMDb.get_show(ids["tmdb"])
+                    except Failed as e:
+                        util.print_end(length, str(e))
+                        continue
+                    new_rating = tmdb_item.vote_average
+                elif library.mass_audience_rating_update in ["omdb", "imdb"]:
+                    if self.OMDb.limit is True:
+                        break
+                    if "imdb" not in ids:
+                        util.print_end(length, f"{item.title[:25]:<25} | No IMDb for Guid: {item.guid}")
+                        continue
+                    try:
+                        omdb_item = self.OMDb.get_omdb(ids["imdb"])
+                    except Failed as e:
+                        util.print_end(length, str(e))
+                        continue
+                    new_rating = omdb_item.imdb_rating
+                else:
+                    raise Failed
+                if new_rating is None:
+                    util.print_end(length, f"{item.title[:25]:<25} | No Rating Found")
+                elif str(item.audienceRating) != str(new_rating):
+                    library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
+                    util.print_end(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
 
     def map_guids(self, library):
         movie_map = {}
