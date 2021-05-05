@@ -443,13 +443,16 @@ class PlexAPI:
                 for pre in data["exclude_prefix"]:
                     if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
                         keep_collection = False
+                        logger.info(f"Collection Excluded: {col.title} by prefix {pre}")
                         break
                 if keep_collection:
                     for ext in data["exclude"]:
                         if col.title == ext or (col.titleSort and col.titleSort == ext):
                             keep_collection = False
+                            logger.info(f"Collection Excluded: {col.title} by exact match")
                             break
                 if keep_collection:
+                    logger.info(f"Collection Passed: {col.title}")
                     good_collections.append(col.index)
             all_items = self.get_all()
             length = 0
