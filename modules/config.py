@@ -576,6 +576,7 @@ class Config:
                 try:
                     builder = CollectionBuilder(self, library, mapping_name, collection_attrs)
                 except Failed as f:
+                    util.print_stacktrace()
                     util.print_multiline(f, error=True)
                     continue
                 except Exception as e:
@@ -614,12 +615,12 @@ class Config:
                         logger.info("")
                     logger.info(f"Collection Filter {f[0]}: {f[1]}")
 
-                if not builder.smart_url_collection:
+                if not builder.smart_url:
                     builder.run_methods(collection_obj, collection_name, rating_key_map, movie_map, show_map)
 
                 try:
-                    if not collection_obj and builder.smart_url_collection:
-                        library.create_smart_collection(collection_name, builder.smart_url)
+                    if not collection_obj and builder.smart_url:
+                        library.create_smart_collection(collection_name, builder.smart_type_key, builder.smart_url)
                     elif not collection_obj and builder.smart_label_collection:
                         library.create_smart_labels(collection_name, sort=builder.smart_sort)
                     plex_collection = library.get_collection(collection_name)

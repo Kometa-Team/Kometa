@@ -22,7 +22,26 @@ search_translation = {
     "originally_available": "originallyAvailableAt",
     "audience_rating": "audienceRating",
     "critic_rating": "rating",
-    "user_rating": "userRating"
+    "user_rating": "userRating",
+    "plays": "viewCount",
+    "episode_title": "episode.title",
+    "episode_added": "episode.addedAt",
+    "episode_originally_available": "episode.originallyAvailableAt",
+    "episode_year": "episode.year",
+    "episode_user_rating": "episode.userRating",
+    "episode_plays": "episode.viewCount"
+}
+modifier_translation = {
+    "": "",
+    ".not": "!",
+    ".gt": "%3E%3E",
+    ".gte": "%3E",
+    ".lt": "%3C%3C",
+    ".lte": "%3C",
+    ".before": "%3C%3C",
+    ".after": "%3E%3E",
+    ".begins": "%3C",
+    ".ends": "%3E"
 }
 episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
@@ -87,13 +106,14 @@ searches = [
     "subtitle_language", "subtitle_language.and", "subtitle_language.not",
     "writer", "writer.and", "writer.not",
     "decade", "resolution",
-    "added.before", "added.after",
+    "added", "added.not", "added.before", "added.after",
+    "originally_available", "originally_available.not",
     "originally_available.before", "originally_available.after",
-    "duration.greater", "duration.less",
-    "user_rating.greater", "user_rating.less",
-    "audience_rating.greater", "audience_rating.less",
-    "critic_rating.greater", "critic_rating.less",
-    "year", "year.not", "year.greater", "year.less"
+    "duration.gt", "duration.gte", "duration.lt", "duration.lte",
+    "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
+    "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
+    "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte"\
+    "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte"
 ]
 movie_only_searches = [
     "audio_language", "audio_language.and", "audio_language.not",
@@ -101,7 +121,7 @@ movie_only_searches = [
     "subtitle_language", "subtitle_language.and", "subtitle_language.not",
     "decade", "resolution",
     "originally_available.before", "originally_available.after",
-    "duration.greater", "duration.less"
+    "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
     "network", "network.and", "network.not",
@@ -112,19 +132,6 @@ tmdb_searches = [
     "producer", "producer.and", "producer.not",
     "writer", "writer.and", "writer.not"
 ]
-smart_sorts = {
-    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
-    "year.asc": "year", "year.desc": "year%3Adesc",
-    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
-    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
-    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
-    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
-    "content_rating.asc": "contentRating", "content_rating.desc": "contentRating%3Adesc",
-    "duration.asc": "duration", "duration.desc": "duration%3Adesc",
-    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
-    "random": "random"
-}
 sorts = {
     None: None,
     "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
@@ -141,8 +148,144 @@ modifiers = {
     ".ends": ">",
     ".before": "<<",
     ".after": ">>",
-    ".greater": ">>",
-    ".less": "<<"
+    ".gt": ">>",
+    ".gte": "__gte",
+    ".lt": "<<",
+    ".lte": "__lte"
+}
+mod_displays = {
+    "": "is",
+    ".not": "is not",
+    ".begins": "begins with",
+    ".ends": "ends with",
+    ".before": "is before",
+    ".after": "is after",
+    ".gt": "is greater than",
+    ".gte": "is greater than or equal",
+    ".lt": "is less than",
+    ".lte": "is less than or equal"
+}
+tags = [
+    "actor",
+    "audio_language",
+    "collection",
+    "content_rating",
+    "country",
+    "director",
+    "genre",
+    "label",
+    "network",
+    "producer",
+    "resolution",
+    "studio",
+    "subtitle_language",
+    "writer"
+]
+smart_searches = [
+    "all", "any",
+    "title", "title.not", "title.begins", "title.ends",
+    "studio", "studio.not", "studio.begins", "studio.ends",
+    "actor", "actor.not",
+    "audio_language", "audio_language.not",
+    "collection", "collection.not",
+    "content_rating", "content_rating.not",
+    "country", "country.not",
+    "director", "director.not",
+    "genre", "genre.not",
+    "label", "label.not",
+    "network", "network.not",
+    "producer", "producer.not",
+    "subtitle_language", "subtitle_language.not",
+    "writer", "writer.not",
+    "decade", "resolution",
+    "added", "added.not", "added.before", "added.after",
+    "originally_available", "originally_available.not",
+    "originally_available.before", "originally_available.after",
+    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
+    "duration.gt", "duration.gte", "duration.lt", "duration.lte",
+    "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
+    "audience_rating.gt", "audience_rating.gte", "audience_rating.lt","audience_rating.lte",
+    "critic_rating.gt", "critic_rating.gte", "critic_rating.lt","critic_rating.lte",
+    "year", "year.not", "year.gt", "year.gte", "year.lt","year.lte",
+    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
+    "episode_originally_available", "episode_originally_available.not",
+    "episode_originally_available.before", "episode_originally_available.after",
+    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt","episode_year.lte",
+    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt","episode_user_rating.lte",
+    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte"
+]
+movie_only_smart_searches = [
+    "country", "country.not",
+    "director", "director.not",
+    "producer", "producer.not",
+    "writer", "writer.not",
+    "decade",
+    "originally_available", "originally_available.not",
+    "originally_available.before", "originally_available.after",
+    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
+    "duration.gt", "duration.gte", "duration.lt", "duration.lte"
+]
+show_only_smart_searches = [
+    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
+    "episode_originally_available", "episode_originally_available.not",
+    "episode_originally_available.before", "episode_originally_available.after",
+    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt","episode_year.lte",
+    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt","episode_user_rating.lte",
+    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte"
+]
+movie_smart_sorts = {
+    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "year.asc": "year", "year.desc": "year%3Adesc",
+    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
+    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
+    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
+    "content_rating.asc": "contentRating", "content_rating.desc": "contentRating%3Adesc",
+    "duration.asc": "duration", "duration.desc": "duration%3Adesc",
+    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "random": "random"
+}
+show_smart_sorts = {
+    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "year.asc": "year", "year.desc": "year%3Adesc",
+    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
+    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
+    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
+    "content_rating.asc": "contentRating", "content_rating.desc": "contentRating%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "episode_added.asc": "episode.addedAt", "episode_added.desc": "episode.addedAt%3Adesc",
+    "random": "random"
+}
+season_smart_sorts = {
+    "season.asc": "season.index%2Cseason.titleSort", "season.desc": "season.index%3Adesc%2Cseason.titleSort",
+    "show.asc": "show.titleSort%2Cindex", "show.desc": "show.titleSort%3Adesc%2Cindex",
+    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "random": "random"
+}
+episode_smart_sorts = {
+    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "show.asc": "show.titleSort%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
+    "show.desc": "show.titleSort%3Adesc%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
+    "year.asc": "year", "year.desc": "year%3Adesc",
+    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
+    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
+    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
+    "duration.asc": "duration", "duration.desc": "duration%3Adesc",
+    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "random": "random"
+}
+smart_types = {
+    "movies": (1, movie_smart_sorts),
+    "shows": (2, show_smart_sorts),
+    "seasons": (3, season_smart_sorts),
+    "episodes": (4, episode_smart_sorts),
 }
 
 class PlexAPI:
@@ -282,12 +425,12 @@ class PlexAPI:
             item.uploadArt(filepath=location)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def get_search_choices(self, search_name):
+    def get_search_choices(self, search_name, title=True):
         try:
             choices = {}
             for choice in self.Plex.listFilterChoices(search_name):
-                choices[choice.title.lower()] = choice.title
-                choices[choice.key.lower()] = choice.title
+                choices[choice.title.lower()] = choice.title if title else choice.key
+                choices[choice.key.lower()] = choice.title if title else choice.key
             return choices
         except NotFound:
             raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
@@ -307,12 +450,14 @@ class PlexAPI:
         labels = self.get_labels()
         if title not in labels:
             raise Failed(f"Plex Error: Label: {title} does not exist")
-        uri_args = f"?type=1&sort={smart_sorts[sort]}&label={labels[title]}"
-        self.create_smart_collection(title, uri_args)
+        smart_type = 1 if self.is_movie else 2
+        sort_type = movie_smart_sorts[sort] if self.is_movie else show_smart_sorts[sort]
+        uri_args = f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
+        self.create_smart_collection(title, smart_type, uri_args)
 
-    def create_smart_collection(self, title, uri_args):
+    def create_smart_collection(self, title, smart_type, uri_args):
         args = {
-            "type": 1,
+            "type": smart_type,
             "title": title,
             "smart": 1,
             "sectionId": self.Plex.key,
@@ -322,7 +467,8 @@ class PlexAPI:
 
     def get_smart_filter_from_uri(self, uri):
         smart_filter = parse.parse_qs(parse.urlparse(uri.replace("/#!/", "/")).query)["key"][0]
-        return self.build_smart_filter(smart_filter[smart_filter.index("?"):])
+        args = smart_filter[smart_filter.index("?"):]
+        return self.build_smart_filter(args), int(args[args.index("type=") + 5:args.index("type=") + 6])
 
     def build_smart_filter(self, uri_args):
         return f"server://{self.PlexServer.machineIdentifier}/com.plexapp.plugins.library/library/sections/{self.Plex.key}/all{uri_args}"
@@ -337,13 +483,18 @@ class PlexAPI:
         smart_filter = self.get_collection(collection)._data.attrib.get('content')
         return smart_filter[smart_filter.index("?"):]
 
-    def validate_search_list(self, data, search_name):
+    def validate_search_list(self, data, search_name, fail=False, title=True, pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
-        search_choices = self.get_search_choices(final_search)
+        search_choices = self.get_search_choices(final_search, title=title)
         valid_list = []
         for value in util.get_list(data):
             if str(value).lower() in search_choices:
-                valid_list.append(search_choices[str(value).lower()])
+                if pairs:
+                    valid_list.append((value, search_choices[str(value).lower()]))
+                else:
+                    valid_list.append(search_choices[str(value).lower()])
+            elif fail:
+                raise Failed(f"Plex Error: {search_name}: {value} not found")
             else:
                 logger.error(f"Plex Error: {search_name}: {value} not found")
         return valid_list
@@ -400,9 +551,9 @@ class PlexAPI:
                         final_mod = ">>"
                     elif search in ["added", "originally_available"] and modifier == ".not":
                         final_mod = "<<"
-                    elif search in ["critic_rating", "audience_rating"] and modifier == ".greater":
-                        final_mod = "__gte"
-                    elif search in ["critic_rating", "audience_rating"] and modifier == ".less":
+                    elif search in ["critic_rating", "audience_rating"] and modifier == ".gt":
+                        final_mod = "__gt"
+                    elif search in ["critic_rating", "audience_rating"] and modifier == ".lt":
                         final_mod = "__lt"
                     else:
                         final_mod = modifiers[modifier] if modifier in modifiers else ""
@@ -416,7 +567,7 @@ class PlexAPI:
                         search_terms[final_method] = search_data
 
                     if status_message:
-                        if search in ["added", "originally_available"] or modifier in [".greater", ".less", ".before", ".after"]:
+                        if search in ["added", "originally_available"] or modifier in [".gt", ".gte", ".lt", ".lte", ".before", ".after"]:
                             ors = f"{search_method}({search_data}"
                         else:
                             ors = ""
@@ -438,22 +589,32 @@ class PlexAPI:
             return self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
         elif method == "plex_collectionless":
             good_collections = []
+            if status_message:
+                logger.info("Collections Excluded")
             for col in self.get_all_collections():
                 keep_collection = True
                 for pre in data["exclude_prefix"]:
                     if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
                         keep_collection = False
-                        logger.info(f"Collection Excluded: {col.title} by prefix {pre}")
+                        if status_message:
+                            logger.info(f"{col.title} excluded by prefix match {pre}")
                         break
                 if keep_collection:
                     for ext in data["exclude"]:
                         if col.title == ext or (col.titleSort and col.titleSort == ext):
                             keep_collection = False
-                            logger.info(f"Collection Excluded: {col.title} by exact match")
+                            if status_message:
+                                logger.info(f"{col.title} excluded by exact match")
                             break
                 if keep_collection:
                     logger.info(f"Collection Passed: {col.title}")
-                    good_collections.append(col.index)
+                    good_collections.append(col)
+            if status_message:
+                logger.info("")
+                logger.info("Collections Not Excluded (Items in these collections are not added to Collectionless)")
+                for col in good_collections:
+                    logger.info(col.title)
+            collection_indexes = [c.index for c in good_collections]
             all_items = self.get_all()
             length = 0
             for i, item in enumerate(all_items, 1):
@@ -461,7 +622,7 @@ class PlexAPI:
                 add_item = True
                 self.query(item.reload)
                 for collection in item.collections:
-                    if collection.id in good_collections:
+                    if collection.id in collection_indexes:
                         add_item = False
                         break
                 if add_item:

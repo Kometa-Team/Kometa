@@ -3,9 +3,11 @@ from datetime import datetime, timedelta
 from modules import anidb, anilist, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound
+from urllib.parse import quote
 
 logger = logging.getLogger("Plex Meta Manager")
 
+string_filters = ["title", "episode_title", "studio"]
 image_file_details = ["file_poster", "file_background", "asset_directory"]
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
@@ -24,6 +26,7 @@ method_alias = {
     "writers": "writer",
     "years": "year"
 }
+modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + imdb.builders + letterboxd.builders + mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakttv.builders + tvdb.builders
 dictionary_builders = [
     "filters",
@@ -89,7 +92,8 @@ smart_url_collection_invalid = [
     "radarr_add", "radarr_folder", "radarr_monitor", "radarr_availability", 
     "radarr_quality", "radarr_tag", "radarr_search",
     "sonarr_add", "sonarr_folder", "sonarr_monitor", "sonarr_quality", "sonarr_language", 
-    "sonarr_series", "sonarr_season", "sonarr_tag", "sonarr_search", "sonarr_cutoff_search"
+    "sonarr_series", "sonarr_season", "sonarr_tag", "sonarr_search", "sonarr_cutoff_search",
+    "filters"
 ]
 all_details = [
     "sort_title", "content_rating", "collection_mode", "collection_order",
@@ -108,6 +112,7 @@ collectionless_details = [
     "name_mapping", "label", "label_sync_mode", "test"
 ]
 ignored_details = [
+    "smart_filter",
     "smart_label",
     "smart_url",
     "run_again",
@@ -157,6 +162,15 @@ movie_only_filters = [
     "video_resolution", "video_resolution.not",
     "writer", "writer.not"
 ]
+
+def split_attribute(text):
+    attribute, modifier = os.path.splitext(str(text).lower())
+    attribute = method_alias[attribute] if attribute in method_alias else attribute
+    modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
+    final = f"{attribute}{modifier}"
+    if text != final:
+        logger.warning(f"Collection Warning: {text} plex search attribute will run as {final}")
+    return attribute, modifier, final
 
 class CollectionBuilder:
     def __init__(self, config, library, name, data):
@@ -356,40 +370,6 @@ class CollectionBuilder:
         self.run_again = "run_again" in methods
         self.collectionless = "plex_collectionless" in methods
 
-        self.smart_sort = "title.asc"
-        self.smart_label_collection = False
-        if "smart_label" in methods:
-            self.smart_label_collection = True
-            if self.data[methods["smart_label"]]:
-                if str(self.data[methods["smart_label"]]).lower() in plex.smart_sorts:
-                    self.smart_sort = str(self.data[methods["smart_label"]]).lower()
-                else:
-                    logger.info("")
-                    logger.warning(f"Collection Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to title.asc")
-            else:
-                logger.info("")
-                logger.warning("Collection Error: smart_label attribute is blank defaulting to title.asc")
-
-        self.smart_url = None
-        self.smart_url_collection = False
-        if "smart_url" in methods:
-            if self.data[methods["smart_url"]]:
-                self.smart_url_collection = True
-                try:
-                    self.smart_url = library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
-                except ValueError:
-                    raise Failed("Collection Error: smart_url is incorrectly formatted")
-            else:
-                raise Failed("Collection Error: smart_url attribute is blank")
-
-        if self.smart_label_collection and self.collectionless:
-            raise Failed(f"Collection Error: plex_collectionless & smart_label_collection attributes cannot go together")
-
-        if self.smart_url_collection and self.run_again:
-            raise Failed(f"Collection Error: run_again & smart_url_collection attributes cannot go together")
-
-        self.smart = self.smart_url_collection or self.smart_label_collection
-
         if "tmdb_person" in methods:
             if self.data[methods["tmdb_person"]]:
                 valid_names = []
@@ -406,6 +386,188 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
             else:
                 raise Failed("Collection Error: tmdb_person attribute is blank")
+
+        self.smart_sort = "random"
+        self.smart_label_collection = False
+        if "smart_label" in methods:
+            self.smart_label_collection = True
+            if self.data[methods["smart_label"]]:
+                if (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_smart_sorts) \
+                        or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_smart_sorts):
+                    self.smart_sort = str(self.data[methods["smart_label"]]).lower()
+                else:
+                    logger.info("")
+                    logger.warning(f"Collection Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
+            else:
+                logger.info("")
+                logger.warning("Collection Error: smart_label attribute is blank defaulting to random")
+
+        self.smart_url = None
+        self.smart_type_key = None
+        if "smart_url" in methods:
+            if self.data[methods["smart_url"]]:
+                try:
+                    self.smart_url, self.smart_type_key = library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
+                except ValueError:
+                    raise Failed("Collection Error: smart_url is incorrectly formatted")
+            else:
+                raise Failed("Collection Error: smart_url attribute is blank")
+
+        if "smart_filter" in methods:
+            logger.info("")
+            smart_filter = self.data[methods["smart_filter"]]
+            if smart_filter is None:
+                raise Failed(f"Collection Error: smart_filter attribute is blank")
+            if not isinstance(smart_filter, dict):
+                raise Failed(f"Collection Error: smart_filter must be a dictionary: {smart_filter}")
+            smart_methods = {m.lower(): m for m in smart_filter}
+            if "any" in smart_methods and "all" in smart_methods:
+                raise Failed(f"Collection Error: Cannot have more then one base")
+            if "any" not in smart_methods and "all" not in smart_methods:
+                raise Failed(f"Collection Error: Must have either any or all as a base for the filter")
+
+            if "type" in smart_methods and self.library.is_show:
+                if smart_filter[smart_methods["type"]] not in ["shows", "seasons", "episodes"]:
+                    raise Failed(f"Collection Error: type: {smart_filter[smart_methods['type']]} is invalid, must be either shows, season, or episodes")
+                smart_type = smart_filter[smart_methods["type"]]
+            elif self.library.is_show:
+                smart_type = "shows"
+            else:
+                smart_type = "movies"
+            logger.info(f"Smart {smart_type.capitalize()[:-1]} Filter")
+            self.smart_type_key, smart_sorts = plex.smart_types[smart_type]
+
+            smart_sort = "random"
+            if "sort_by" in smart_methods:
+                if smart_filter[smart_methods["sort_by"]] is None:
+                    raise Failed(f"Collection Error: sort_by attribute is blank")
+                if smart_filter[smart_methods["sort_by"]] not in smart_sorts:
+                    raise Failed(f"Collection Error: sort_by: {smart_filter[smart_methods['sort_by']]} is invalid")
+                smart_sort = smart_filter[smart_methods["sort_by"]]
+            logger.info(f"Sort By: {smart_sort}")
+
+            limit = None
+            if "limit" in smart_methods:
+                if smart_filter[smart_methods["limit"]] is None:
+                    raise Failed("Collection Error: limit attribute is blank")
+                if not isinstance(smart_filter[smart_methods["limit"]], int) or smart_filter[smart_methods["limit"]] < 1:
+                    raise Failed("Collection Error: limit attribute must be an integer greater then 0")
+                limit = smart_filter[smart_methods["limit"]]
+                logger.info(f"Limit: {limit}")
+
+            def _filter(filter_dict, is_all=True, level=1):
+                output = ""
+                display = f"\n{'  ' * level}Match {'all' if is_all else 'any'} of the following:"
+                level += 1
+                indent = f"\n{'  ' * level}"
+                conjunction = f"{'and' if is_all else 'or'}=1&"
+                for smart_key, smart_data in filter_dict.items():
+                    smart, smart_mod, smart_final = split_attribute(smart_key)
+
+                    def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
+                        arg_key = plex.search_translation[smart] if smart in plex.search_translation else smart
+                        if mod is None:
+                            mod = plex.modifier_translation[smart_mod] if smart_mod in plex.search_translation else smart_mod
+                        if arg_s is None:
+                            arg_s = arg
+                        if smart in string_filters and smart_mod in ["", ".not"]:
+                            mod_s = "does not contain" if smart_mod == ".not" else "contains"
+                        elif mod_s is None:
+                            mod_s = plex.mod_displays[smart_mod]
+                        display_line = f"{indent}{smart.title().replace('_', ' ')} {mod_s} {arg_s}"
+                        return f"{arg_key}{mod}={arg}&", display_line
+
+                    if smart_final in plex.movie_only_smart_searches and self.library.is_show:
+                        raise Failed(f"Collection Error: {smart_final} smart filter attribute only works for movie libraries")
+                    elif smart_final in plex.show_only_smart_searches and self.library.is_movie:
+                        raise Failed(f"Collection Error: {smart_final} smart filter attribute only works for show libraries")
+                    elif smart_final not in plex.smart_searches:
+                        raise Failed(f"Collection Error: {smart_final} is not a valid smart filter attribute")
+                    elif smart_data is None:
+                        raise Failed(f"Collection Error: {smart_final} smart filter attribute is blank")
+                    elif smart in ["all", "any"]:
+                        dicts = util.get_list(smart_data)
+                        results = ""
+                        display_add = ""
+                        for dict_data in dicts:
+                            if not isinstance(dict_data, dict):
+                                raise Failed(f"Collection Error: {smart} must be either a dictionary or list of dictionaries")
+                            inside_filter, inside_display = _filter(dict_data, is_all=smart == "all", level=level)
+                            display_add += inside_display
+                            results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
+                    elif smart in ["year", "episode_year"] and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
+                        results, display_add = build_url_arg(util.check_year(smart_data, current_year, smart_final))
+                    elif smart in ["added", "episode_added", "originally_available", "episode_originally_available"] and smart_mod in [".before", ".after"]:
+                        results, display_add = build_url_arg(util.check_date(smart_data, smart_final, return_string=True, plex_date=True))
+                    elif smart in ["added", "episode_added", "originally_available", "episode_originally_available"] and smart_mod in ["", ".not"]:
+                        in_the_last = util.check_number(smart_data, smart_final, minimum=1)
+                        last_text = "is not in the last" if smart_mod == ".not" else "is in the last"
+                        last_mod = "%3E%3E" if smart_mod == "" else "%3C%3C"
+                        results, display_add = build_url_arg(f"-{in_the_last}d", mod=last_mod, arg_s=f"{in_the_last} Days", mod_s=last_text)
+                    elif smart in ["duration"] and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
+                        results, display_add = build_url_arg(util.check_number(smart_data, smart_final, minimum=1) * 60000)
+                    elif smart in ["plays", "episode_plays"] and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
+                        results, display_add = build_url_arg(util.check_number(smart_data, smart_final, minimum=1))
+                    elif smart in ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"] and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
+                        results, display_add = build_url_arg(util.check_number(smart_data, smart_final, number_type="float", minimum=0, maximum=10))
+                    else:
+                        if smart in ["title", "episode_title"] and smart_mod in ["", ".not", ".begins", ".ends"]:
+                            results_list = [(t, t) for t in util.get_list(smart_data, split=False)]
+                        elif smart in plex.tags and smart_mod in ["", ".not", ".begins", ".ends"]:
+                            if smart_final in plex.tmdb_searches:
+                                final_tmdb_values = []
+                                for tmdb_value in util.get_list(smart_data):
+                                    if tmdb_value.lower() == "tmdb" and "tmdb_person" in self.details:
+                                        for tmdb_name in self.details["tmdb_person"]:
+                                            final_tmdb_values.append(tmdb_name)
+                                    else:
+                                        final_tmdb_values.append(tmdb_value)
+                            elif smart == "studio":
+                                final_tmdb_values = util.get_list(smart_data, split=False)
+                            else:
+                                final_tmdb_values = util.get_list(smart_data)
+                            results_list = self.library.validate_search_list(final_tmdb_values, smart, fail=True, title=False, pairs=True)
+                        elif smart in ["decade", "year", "episode_year"] and smart_mod in ["", ".not"]:
+                            results_list = [(y, y) for y in util.get_year_list(smart_data, current_year, smart_final)]
+                        else:
+                            raise Failed(f"Collection Error: modifier: {smart_mod} not supported with the {smart} plex search attribute")
+                        results = ""
+                        display_add = ""
+                        for og_value, result in results_list:
+                            built_arg = build_url_arg(quote(result) if smart in string_filters else result, arg_s=og_value)
+                            display_add += built_arg[1]
+                            results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
+                    display += display_add
+                    output += f"{conjunction if len(output) > 0 else ''}{results}"
+                return output, display
+
+            base = "all" if "all" in smart_methods else "any"
+            base_all = base == "all"
+            if smart_filter[smart_methods[base]] is None:
+                raise Failed(f"Collection Error: {base} attribute is blank")
+            if not isinstance(smart_filter[smart_methods[base]], dict):
+                raise Failed(f"Collection Error: {base} must be a dictionary: {smart_filter[smart_methods[base]]}")
+            built_filter, filter_text = _filter(smart_filter[smart_methods[base]], is_all=base_all)
+            util.print_multiline(f"Filter:{filter_text}")
+            final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
+            self.smart_url = f"?type={self.smart_type_key}&{f'limit={limit}&' if limit else ''}sort={smart_sorts[smart_sort]}&{final_filter}"
+
+        def cant_interact(attr1, attr2, fail=False):
+            if getattr(self, attr1) and getattr(self, attr2):
+                message = f"Collection Error: {attr1} & {attr2} attributes cannot go together"
+                if fail:
+                    raise Failed(message)
+                else:
+                    setattr(self, attr2, False)
+                    logger.info("")
+                    logger.warning(f"{message} removing {attr2}")
+
+        cant_interact("smart_label_collection", "collectionless")
+        cant_interact("smart_url", "collectionless")
+        cant_interact("smart_url", "run_again")
+        cant_interact("smart_label_collection", "smart_url", fail=True)
+
+        self.smart = self.smart_url or self.smart_label_collection
 
         for method_key, method_data in self.data.items():
             if "trakt" in method_key.lower() and not config.Trakt:                      raise Failed(f"Collection Error: {method_key} requires Trakt todo be configured")
@@ -441,9 +603,9 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: {method_name} attribute only works with normal collections")
                 elif method_name not in collectionless_details and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
-                elif self.smart_url_collection and method_name in all_builders:
+                elif self.smart_url and method_name in all_builders:
                     raise Failed(f"Collection Error: {method_name} builder not allowed when using smart_url")
-                elif self.smart_url_collection and method_name in smart_url_collection_invalid:
+                elif self.smart_url and method_name in smart_url_collection_invalid:
                     raise Failed(f"Collection Error: {method_name} detail not allowed when using smart_url")
                 elif method_name == "summary":
                     self.summaries[method_name] = method_data
@@ -571,13 +733,13 @@ class CollectionBuilder:
                     self.sonarr_options["tag"] = util.get_list(method_data)
                 elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
                     self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
-                elif method_name in ["year.greater", "year.less"]:
+                elif method_name in ["year.gt", "year.gte", "year.lt", "year.lte"]:
                     self.methods.append(("plex_search", [{method_name: util.check_year(method_data, current_year, method_name)}]))
                 elif method_name in ["added.before", "added.after", "originally_available.before", "originally_available.after"]:
                     self.methods.append(("plex_search", [{method_name: util.check_date(method_data, method_name, return_string=True, plex_date=True)}]))
-                elif method_name in ["added", "added.not", "originally_available", "originally_available.not", "duration.greater", "duration.less"]:
+                elif method_name in ["added", "added.not", "originally_available", "originally_available.not", "duration.gt", "duration.gte", "duration.lt", "duration.lte"]:
                     self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=1)}]))
-                elif method_name in ["user_rating.greater", "user_rating.less", "critic_rating.greater", "critic_rating.less", "audience_rating.greater", "audience_rating.less"]:
+                elif method_name in ["user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte", "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte", "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte"]:
                     self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, number_type="float", minimum=0, maximum=10)}]))
                 elif method_name in ["decade", "year", "year.not"]:
                     self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, current_year, method_name)}]))
@@ -721,15 +883,15 @@ class CollectionBuilder:
                         elif method_name == "plex_search":
                             searches = {}
                             for search_name, search_data in method_data.items():
-                                search, modifier = os.path.splitext(str(search_name).lower())
-                                if search in method_alias:
-                                    search = method_alias[search]
-                                    logger.warning(f"Collection Warning: {str(search_name).lower()} plex search attribute will run as {search}{modifier if modifier else ''}")
-                                search_final = f"{search}{modifier}"
+                                search, modifier, search_final = split_attribute(search_name)
+                                if search_name != search_final:
+                                    logger.warning(f"Collection Warning: {search_name} plex search attribute will run as {search_final}")
                                 if search_final in plex.movie_only_searches and self.library.is_show:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for movie libraries")
-                                if search_final in plex.show_only_searches and self.library.is_movie:
+                                elif search_final in plex.show_only_searches and self.library.is_movie:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for show libraries")
+                                elif search_final not in plex.searches:
+                                    raise Failed(f"Collection Error: {search_final} is not a valid plex search attribute")
                                 elif search_data is None:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute is blank")
                                 elif search == "sort_by":
@@ -746,9 +908,7 @@ class CollectionBuilder:
                                         searches[search] = search_data
                                 elif search == "title" and modifier in ["", ".and", ".not", ".begins", ".ends"]:
                                     searches[search_final] = util.get_list(search_data, split=False)
-                                elif (search == "studio" and modifier in ["", ".and", ".not", ".begins", ".ends"]) \
-                                        or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier in ["", ".and", ".not"]) \
-                                        or (search == "resolution" and modifier in [""]):
+                                elif search in plex.tags and modifier in ["", ".and", ".not", ".begins", ".ends"]:
                                     if search_final in plex.tmdb_searches:
                                         final_values = []
                                         for value in util.get_list(search_data):
@@ -758,31 +918,24 @@ class CollectionBuilder:
                                             else:
                                                 final_values.append(value)
                                     else:
-                                        final_values = search_data
+                                        final_values = util.get_list(search_data)
                                     valid_values = self.library.validate_search_list(final_values, search)
                                     if valid_values:
                                         searches[search_final] = valid_values
                                     else:
                                         logger.warning(f"Collection Warning: No valid {search} values found in {final_values}")
-                                elif search == "year" and modifier in [".greater", ".less"]:
+                                elif search == "year" and modifier in [".gt", ".gte", ".lt", ".lte"]:
                                     searches[search_final] = util.check_year(search_data, current_year, search_final)
                                 elif search in ["added", "originally_available"] and modifier in [".before", ".after"]:
                                     searches[search_final] = util.check_date(search_data, search_final, return_string=True, plex_date=True)
-                                elif (search in ["added", "originally_available"] and modifier in ["", ".not"]) or (search in ["duration"] and modifier in [".greater", ".less"]):
+                                elif search in ["added", "originally_available", "duration"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
                                     searches[search_final] = util.check_number(search_data, search_final, minimum=1)
-                                elif search in ["user_rating", "critic_rating", "audience_rating"] and modifier in [".greater", ".less"]:
+                                elif search in ["user_rating", "critic_rating", "audience_rating"] and modifier in [".gt", ".gte", ".lt", ".lte"]:
                                     searches[search_final] = util.check_number(search_data, search_final, number_type="float", minimum=0, maximum=10)
-                                elif (search == "decade" and modifier in [""]) or (search == "year" and modifier in ["", ".not"]):
+                                elif search in ["decade", "year"] and modifier in ["", ".not"]:
                                     searches[search_final] = util.get_year_list(search_data, current_year, search_final)
-                                elif (search in ["title", "studio"] and modifier not in ["", ".and", ".not", ".begins", ".ends"]) \
-                                        or (search in ["actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer"] and modifier not in ["", ".and", ".not"]) \
-                                        or (search in ["resolution", "decade"] and modifier not in [""]) \
-                                        or (search in ["added", "originally_available"] and modifier not in ["", ".not", ".before", ".after"]) \
-                                        or (search in ["duration", "user_rating", "critic_rating", "audience_rating"] and modifier not in [".greater", ".less"]) \
-                                        or (search in ["year"] and modifier not in ["", ".not", ".greater", ".less"]):
-                                    raise Failed(f"Collection Error: modifier: {modifier} not supported with the {search} plex search attribute")
                                 else:
-                                    raise Failed(f"Collection Error: {search_final} plex search attribute not supported")
+                                    raise Failed(f"Collection Error: modifier: {modifier} not supported with the {search} plex search attribute")
                             if len(searches) > 0:
                                 self.methods.append((method_name, [searches]))
                             else:
@@ -1041,7 +1194,7 @@ class CollectionBuilder:
         if self.add_to_sonarr is None:
             self.add_to_sonarr = self.library.Sonarr.add if self.library.Sonarr else False
             
-        if self.smart_url_collection:
+        if self.smart_url:
             self.add_to_radarr = False
             self.add_to_sonarr = False
 
@@ -1079,8 +1232,9 @@ class CollectionBuilder:
                             else:
                                 missing_shows.append(show_id)
                     return items_found_inside
-                logger.info("")
+                logger.debug("")
                 logger.debug(f"Value: {value}")
+                logger.info("")
                 if "plex" in method:
                     items = self.library.get_items(method, value)
                     items_found += len(items)
@@ -1097,6 +1251,7 @@ class CollectionBuilder:
                 elif "trakt" in method:                             items_found += check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
 
+                logger.info("")
                 if len(items) > 0:
                     rating_key_map = self.library.add_to_collection(collection_obj if collection_obj else collection_name, items, self.filters, self.details["show_filtered"], self.smart_label_collection, rating_key_map, movie_map, show_map)
                 else:
