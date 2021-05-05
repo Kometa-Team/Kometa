@@ -28,7 +28,7 @@ episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
 delete_episodes_options = {"never": 0, "day": 1, "week": 7, "refresh": 100}
 season_display_options = {"default": -1, "show": 0, "hide": 1}
-episode_ordering_options = {"default": None, "tmdb_aired": "tmdbAiring", "tvdb_aired": "airing", "tvdb_dvd": "dvd", "tvdb_absolute": "absolute"}
+episode_ordering_options = {"default": None, "tmdb_aired": "tmdbAiring", "tvdb_aired": "aired", "tvdb_dvd": "dvd", "tvdb_absolute": "absolute"}
 plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US",
                   "es-ES", "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID",
                   "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO",
