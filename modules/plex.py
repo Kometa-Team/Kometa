@@ -399,8 +399,8 @@ class PlexAPI:
         collection.sortUpdate(sort=data)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def edit_query(self, item, edits, advance=False):
-        if advance:
+    def edit_query(self, item, edits, advanced=False):
+        if advanced:
             item.editAdvanced(**edits)
         else:
             item.edit(**edits)
