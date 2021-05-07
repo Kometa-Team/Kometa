@@ -163,7 +163,7 @@ movie_only_filters = [
     "writer", "writer.not"
 ]
 
-def split_attribute(text):
+def _split(text):
     attribute, modifier = os.path.splitext(str(text).lower())
     attribute = method_alias[attribute] if attribute in method_alias else attribute
     modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
@@ -463,7 +463,7 @@ class CollectionBuilder:
                 indent = f"\n{'  ' * level}"
                 conjunction = f"{'and' if is_all else 'or'}=1&"
                 for smart_key, smart_data in filter_dict.items():
-                    smart, smart_mod, smart_final = split_attribute(smart_key)
+                    smart, smart_mod, smart_final = _split(smart_key)
 
                     def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
                         arg_key = plex.search_translation[smart] if smart in plex.search_translation else smart
@@ -884,7 +884,7 @@ class CollectionBuilder:
                         elif method_name == "plex_search":
                             searches = {}
                             for search_name, search_data in method_data.items():
-                                search, modifier, search_final = split_attribute(search_name)
+                                search, modifier, search_final = _split(search_name)
                                 if search_name != search_final:
                                     logger.warning(f"Collection Warning: {search_name} plex search attribute will run as {search_final}")
                                 if search_final in plex.movie_only_searches and self.library.is_show:
