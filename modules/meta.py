@@ -35,10 +35,12 @@ class Metadata:
                     logger.warning(f"Config Warning: {attribute} attribute is blank")
             return None
         try:
-            if file_type == "URL":
-                content = requests.get(path).content
-            elif file_type == "Git":
-                content = requests.get(f"{self.github_base}{path}.yml").content
+            if file_type in ["URL", "Git"]:
+                content_path = path if file_type == "URL" else f"{self.github_base}{path}.yml"
+                response = requests.get(content_path)
+                if response.status_code >= 400:
+                    raise Failed(f"URL Error: No file found at {content_path}")
+                content = response.content
             elif os.path.exists(os.path.abspath(path)):
                 content = open(path, encoding="utf-8")
             else:

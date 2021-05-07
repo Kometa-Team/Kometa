@@ -316,16 +316,20 @@ class PlexAPI:
         for file_type, metadata_file in params["metadata_path"]:
             try:
                 meta_obj = Metadata(self, file_type, metadata_file)
-                self.collections.extend([c for c in meta_obj.collections])
-                self.metadatas.extend([c for c in meta_obj.metadata])
+                if meta_obj.collections:
+                    self.collections.extend([c for c in meta_obj.collections])
+                if meta_obj.metadata:
+                    self.metadatas.extend([c for c in meta_obj.metadata])
                 self.metadata_files.append(meta_obj)
             except Failed as e:
                 logger.error(e)
 
         if len(self.metadata_files) == 0:
+            logger.info("")
             raise Failed("Metadata File Error: No valid metadata files found")
 
         if params["asset_directory"]:
+            logger.info("")
             for ad in params["asset_directory"]:
                 logger.info(f"Using Asset Directory: {ad}")
 
@@ -472,7 +476,7 @@ class PlexAPI:
         smart_filter = self.get_collection(collection)._data.attrib.get('content')
         return smart_filter[smart_filter.index("?"):]
 
-    def validate_search_list(self, data, search_name, fail=False, title=True, pairs=False):
+    def validate_search_list(self, data, search_name, title=True, pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         search_choices = self.get_search_choices(final_search, title=title)
         valid_list = []
@@ -482,8 +486,6 @@ class PlexAPI:
                     valid_list.append((value, search_choices[str(value).lower()]))
                 else:
                     valid_list.append(search_choices[str(value).lower()])
-            elif fail:
-                raise Failed(f"Plex Error: {search_name}: {value} not found")
             else:
                 logger.error(f"Plex Error: {search_name}: {value} not found")
         return valid_list
