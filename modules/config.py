@@ -144,7 +144,7 @@ class Config:
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
             elif var_type == "list":                                            return util.get_list(data[attribute])
             elif var_type == "list_path":
-                temp_list = [path for path in util.get_list(data[attribute], split=True) if os.path.exists(os.path.abspath(path))]
+                temp_list = [p for p in util.get_list(data[attribute], split=True) if os.path.exists(os.path.abspath(p))]
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
             elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
@@ -266,7 +266,6 @@ class Config:
         self.IMDb = IMDbAPI(self)
         self.AniDB = AniDBAPI(self)
         self.Arms = ArmsAPI(self)
-        self.AniDBIDs = self.AniDB.get_AniDB_IDs()
         self.AniList = AniListAPI(self)
         self.Letterboxd = LetterboxdAPI(self)
 
@@ -383,7 +382,28 @@ class Config:
                 params["mass_audience_rating_update"] = None
 
             try:
-                params["metadata_path"] = check_for_attribute(lib, "metadata_path", var_type="path", default=os.path.join(default_dir, f"{library_name}.yml"), throw=True)
+                if lib and "metadata_path" in lib:
+                    params["metadata_path"] = []
+                    if lib["metadata_path"] is None:
+                        raise Failed("Config Error: metadata_path attribute is blank")
+                    paths_to_check = lib["metadata_path"] if isinstance(lib["metadata_path"], list) else [lib["metadata_path"]]
+                    for path in paths_to_check:
+                        if isinstance(path, dict):
+                            if "url" in path:
+                                if path["url"] is None:
+                                    logger.error("Config Error: metadata_path url is blank")
+                                else:
+                                    params["metadata_path"].append(("URL", path["url"]))
+                            if "git" in path:
+                                if path["git"] is None:
+                                    logger.error("Config Error: metadata_path git is blank")
+                                else:
+                                    params["metadata_path"].append(("Git", path['git']))
+                        else:
+                            params["metadata_path"].append(("File", path))
+                else:
+                    params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"))]
+                params["default_dir"] = default_dir
                 params["plex"] = {}
                 params["plex"]["url"] = check_for_attribute(lib, "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
@@ -474,26 +494,29 @@ class Config:
             util.separator(f"Mapping {library.name} Library")
             logger.info("")
             movie_map, show_map = self.map_guids(library)
-            if not test and not resume_from:
-                if library.mass_update:
-                    self.mass_metadata(library, movie_map, show_map)
-                try:                        library.update_metadata(self.TMDb, test)
-                except Failed as e:         logger.error(e)
-            logger.info("")
-            util.separator(f"{library.name} Library {'Test ' if test else ''}Collections")
-            collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
-            if resume_from and resume_from not in collections:
-                logger.warning(f"Collection: {resume_from} not in {library.name}")
-                continue
-            if collections:
-                resume_from = self.run_collection(library, collections, test, resume_from, movie_map, show_map)
+            if not test and not resume_from and library.mass_update:
+                self.mass_metadata(library, movie_map, show_map)
+            for metadata in library.metadata_files:
+                logger.info("")
+                util.separator(f"Running Metadata File\n{metadata.path}")
+                if not test and not resume_from:
+                    try:                        metadata.update_metadata(self.TMDb, test)
+                    except Failed as e:         logger.error(e)
+                logger.info("")
+                util.separator(f"{'Test ' if test else ''}Collections")
+                collections = metadata.get_collections(requested_collections)
+                if resume_from and resume_from not in collections:
+                    logger.warning(f"Collection: {resume_from} not in Metadata File: {metadata.path}")
+                    continue
+                if collections:
+                    resume_from = self.run_collection(library, metadata, collections, test, resume_from, movie_map, show_map)
 
             if library.show_unmanaged is True and not test and not requested_collections:
                 logger.info("")
                 util.separator(f"Unmanaged Collections in {library.name} Library")
                 logger.info("")
                 unmanaged_count = 0
-                collections_in_plex = [str(plex_col) for plex_col in collections]
+                collections_in_plex = [str(plex_col) for plex_col in library.collections]
                 for col in library.get_all_collections():
                     if col.title not in collections_in_plex:
                         logger.info(col.title)
@@ -529,23 +552,19 @@ class Config:
                     logger.info("")
                     util.separator(f"{library.name} Library Run Again")
                     logger.info("")
-                    collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
-                    if collections:
-                        util.separator(f"Mapping {library.name} Library")
+                    movie_map, show_map = self.map_guids(library)
+                    for builder in library.run_again:
                         logger.info("")
-                        movie_map, show_map = self.map_guids(library)
-                        for builder in library.run_again:
-                            logger.info("")
-                            util.separator(f"{builder.name} Collection")
-                            logger.info("")
-                            try:
-                                collection_obj = library.get_collection(builder.name)
-                            except Failed as e:
-                                util.print_multiline(e, error=True)
-                                continue
-                            builder.run_collections_again(collection_obj, movie_map, show_map)
+                        util.separator(f"{builder.name} Collection")
+                        logger.info("")
+                        try:
+                            collection_obj = library.get_collection(builder.name)
+                        except Failed as e:
+                            util.print_multiline(e, error=True)
+                            continue
+                        builder.run_collections_again(collection_obj, movie_map, show_map)
 
-    def run_collection(self, library, collections, test, resume_from, movie_map, show_map):
+    def run_collection(self, library, metadata, collections, test, resume_from, movie_map, show_map):
         for mapping_name, collection_attrs in collections.items():
             if test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
                 no_template_test = True
@@ -553,11 +572,11 @@ class Config:
                     for data_template in util.get_list(collection_attrs["template"], split=False):
                         if "name" in data_template \
                                 and data_template["name"] \
-                                and library.templates \
-                                and data_template["name"] in library.templates \
-                                and library.templates[data_template["name"]] \
-                                and "test" in library.templates[data_template["name"]] \
-                                and library.templates[data_template["name"]]["test"] is True:
+                                and metadata.templates \
+                                and data_template["name"] in metadata.templates \
+                                and metadata.templates[data_template["name"]] \
+                                and "test" in metadata.templates[data_template["name"]] \
+                                and metadata.templates[data_template["name"]]["test"] is True:
                             no_template_test = False
                 if no_template_test:
                     continue

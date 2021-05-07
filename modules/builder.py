@@ -813,18 +813,18 @@ class CollectionBuilder:
                     self.methods.append((method_name[:-8], values))
                 elif method_name in dictionary_builders:
                     if isinstance(method_data, dict):
-                        def get_int(parent, method, data_in, methods_in, default_in, minimum=1, maximum=None):
-                            if method not in methods_in:
-                                logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default_in} as default")
-                            elif not data_in[methods_in[method]]:
-                                logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute is blank using {default_in} as default")
-                            elif isinstance(data_in[methods_in[method]], int) and data_in[methods_in[method]] >= minimum:
-                                if maximum is None or data_in[methods_in[method]] <= maximum:
-                                    return data_in[methods_in[method]]
+                        def get_int(parent, int_method, data_in, methods_in, default_in, minimum=1, maximum=None):
+                            if int_method not in methods_in:
+                                logger.warning(f"Collection Warning: {parent} {int_method} attribute not found using {default_in} as default")
+                            elif not data_in[methods_in[int_method]]:
+                                logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute is blank using {default_in} as default")
+                            elif isinstance(data_in[methods_in[int_method]], int) and data_in[methods_in[int_method]] >= minimum:
+                                if maximum is None or data_in[methods_in[int_method]] <= maximum:
+                                    return data_in[methods_in[int_method]]
                                 else:
-                                    logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute {data_in[methods_in[method]]} invalid must an integer <= {maximum} using {default_in} as default")
+                                    logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute {data_in[methods_in[int_method]]} invalid must an integer <= {maximum} using {default_in} as default")
                             else:
-                                logger.warning(f"Collection Warning: {parent} {methods_in[method]} attribute {data_in[methods_in[method]]} invalid must an integer >= {minimum} using {default_in} as default")
+                                logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute {data_in[methods_in[int_method]]} invalid must an integer >= {minimum} using {default_in} as default")
                             return default_in
                         if method_name == "filters":
                             for filter_name, filter_data in method_data.items():

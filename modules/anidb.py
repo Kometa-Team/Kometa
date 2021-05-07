@@ -17,9 +17,6 @@ class AniDBAPI:
             "relation": "/relation/graph"
         }
 
-    def get_AniDB_IDs(self):
-        return html.fromstring(requests.get("https://raw.githubusercontent.com/Anime-Lists/anime-lists/master/anime-list-master.xml").content)
-
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def send_request(self, url, language):
         return html.fromstring(requests.get(url, headers={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}).content)

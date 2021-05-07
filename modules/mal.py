@@ -1,4 +1,4 @@
-import json, logging, re, requests, secrets, webbrowser
+import logging, re, requests, secrets, webbrowser
 from modules import util
 from modules.util import Failed, TimeoutExpired
 from retrying import retry
