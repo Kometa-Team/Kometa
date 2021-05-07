@@ -173,9 +173,10 @@ def split_attribute(text):
     return attribute, modifier, final
 
 class CollectionBuilder:
-    def __init__(self, config, library, name, data):
+    def __init__(self, config, library, metadata, name, data):
         self.config = config
         self.library = library
+        self.metadata = metadata
         self.name = name
         self.data = data
         self.details = {
@@ -203,7 +204,7 @@ class CollectionBuilder:
         methods = {m.lower(): m for m in self.data}
 
         if "template" in methods:
-            if not self.library.templates:
+            if not self.metadata.templates:
                 raise Failed("Collection Error: No templates found")
             elif not self.data[methods["template"]]:
                 raise Failed("Collection Error: template attribute is blank")
@@ -215,9 +216,9 @@ class CollectionBuilder:
                         raise Failed("Collection Error: template sub-attribute name is required")
                     elif not data_template["name"]:
                         raise Failed("Collection Error: template sub-attribute name is blank")
-                    elif data_template["name"] not in self.library.templates:
+                    elif data_template["name"] not in self.metadata.templates:
                         raise Failed(f"Collection Error: template {data_template['name']} not found")
-                    elif not isinstance(self.library.templates[data_template["name"]], dict):
+                    elif not isinstance(self.metadata.templates[data_template["name"]], dict):
                         raise Failed(f"Collection Error: template {data_template['name']} is not a dictionary")
                     else:
                         for tm in data_template:
@@ -225,7 +226,7 @@ class CollectionBuilder:
                                 raise Failed(f"Collection Error: template sub-attribute {tm} is blank")
 
                         template_name = data_template["name"]
-                        template = self.library.templates[template_name]
+                        template = self.metadata.templates[template_name]
 
                         default = {}
                         if "default" in template:
@@ -526,7 +527,7 @@ class CollectionBuilder:
                                 final_tmdb_values = util.get_list(smart_data, split=False)
                             else:
                                 final_tmdb_values = util.get_list(smart_data)
-                            results_list = self.library.validate_search_list(final_tmdb_values, smart, fail=True, title=False, pairs=True)
+                            results_list = self.library.validate_search_list(final_tmdb_values, smart, title=False, pairs=True)
                         elif smart in ["decade", "year", "episode_year"] and smart_mod in ["", ".not"]:
                             results_list = [(y, y) for y in util.get_year_list(smart_data, current_year, smart_final)]
                         else:

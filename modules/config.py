@@ -593,7 +593,7 @@ class Config:
                 logger.info("")
 
                 try:
-                    builder = CollectionBuilder(self, library, mapping_name, collection_attrs)
+                    builder = CollectionBuilder(self, library, metadata, mapping_name, collection_attrs)
                 except Failed as f:
                     util.print_stacktrace()
                     util.print_multiline(f, error=True)
