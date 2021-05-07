@@ -1,6 +1,7 @@
 import glob, logging, os, re, requests
 from datetime import datetime, timedelta
 from modules import util
+from modules.meta import Metadata
 from modules.util import Failed
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -308,33 +309,21 @@ class PlexAPI:
         self.agent = self.Plex.agent
         self.is_movie = self.Plex.type == "movie"
         self.is_show = self.Plex.type == "show"
+        self.collections = []
+        self.metadatas = []
 
-        logger.info(f"Using Metadata File: {params['metadata_path']}")
-        try:
-            self.data, ind, bsi = yaml.util.load_yaml_guess_indent(open(params["metadata_path"], encoding="utf-8"))
-        except yaml.scanner.ScannerError as ye:
-            raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
-        except Exception as e:
-            util.print_stacktrace()
-            raise Failed(f"YAML Error: {e}")
+        self.metadata_files = []
+        for file_type, metadata_file in params["metadata_path"]:
+            try:
+                meta_obj = Metadata(self, file_type, metadata_file)
+                self.collections.extend([c for c in meta_obj.collections])
+                self.metadatas.extend([c for c in meta_obj.metadata])
+                self.metadata_files.append(meta_obj)
+            except Failed as e:
+                logger.error(e)
 
-        def get_dict(attribute):
-            if attribute in self.data:
-                if self.data[attribute]:
-                    if isinstance(self.data[attribute], dict):
-                        return self.data[attribute]
-                    else:
-                        logger.warning(f"Config Warning: {attribute} must be a dictionary")
-                else:
-                    logger.warning(f"Config Warning: {attribute} attribute is blank")
-            return None
-
-        self.metadata = get_dict("metadata")
-        self.templates = get_dict("templates")
-        self.collections = get_dict("collections")
-
-        if self.metadata is None and self.collections is None:
-            raise Failed("YAML Error: metadata or collections attribute is required")
+        if len(self.metadata_files) == 0:
+            raise Failed("Metadata File Error: No valid metadata files found")
 
         if params["asset_directory"]:
             for ad in params["asset_directory"]:
@@ -346,7 +335,7 @@ class PlexAPI:
         self.Sonarr = None
         self.Tautulli = None
         self.name = params["name"]
-        self.missing_path = os.path.join(os.path.dirname(os.path.abspath(params["metadata_path"])), f"{os.path.splitext(os.path.basename(params['metadata_path']))[0]}_missing.yml")
+        self.missing_path = os.path.join(params["default_dir"], f"{self.name}_missing.yml")
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
         self.asset_folders = params["asset_folders"]
