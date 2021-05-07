@@ -21,12 +21,12 @@ class IMDbAPI:
         imdb_url = imdb_url.strip()
         if not imdb_url.startswith(self.urls["list"]) and not imdb_url.startswith(self.urls["search"]) and not imdb_url.startswith(self.urls["keyword"]):
             raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n{self.urls['list']} (For Lists)\n{self.urls['search']} (For Searches)\n{self.urls['keyword']} (For Keyword Searches)")
-        total, _ = self.get_total(self.fix_url(imdb_url), language)
+        total, _ = self._total(self._fix_url(imdb_url), language)
         if total > 0:
             return imdb_url
         raise Failed(f"IMDb Error: {imdb_url} failed to parse")
 
-    def fix_url(self, imdb_url):
+    def _fix_url(self, imdb_url):
         if imdb_url.startswith(self.urls["list"]):
             try:                                list_id = re.search("(\\d+)", str(imdb_url)).group(1)
             except AttributeError:              raise Failed(f"IMDb Error: Failed to parse List ID from {imdb_url}")
@@ -36,10 +36,10 @@ class IMDbAPI:
         else:
             return imdb_url
 
-    def get_total(self, imdb_url, language):
+    def _total(self, imdb_url, language):
         header = {"Accept-Language": language}
         if imdb_url.startswith(self.urls["keyword"]):
-            results = self.send_request(imdb_url, header).xpath("//div[@class='desc']/text()")
+            results = self._request(imdb_url, header).xpath("//div[@class='desc']/text()")
             total = None
             for result in results:
                 if "title" in result:
@@ -52,15 +52,15 @@ class IMDbAPI:
                 raise Failed(f"IMDb Error: No Results at URL: {imdb_url}")
             return total, 50
         else:
-            try:                                results = self.send_request(imdb_url, header).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
+            try:                                results = self._request(imdb_url, header).xpath("//div[@class='desc']/span/text()")[0].replace(",", "")
             except IndexError:                  raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
             try:                                total = int(re.findall("(\\d+) title", results)[0])
             except IndexError:                  raise Failed(f"IMDb Error: No Results at URL: {imdb_url}")
             return total, 250
 
-    def get_imdb_ids_from_url(self, imdb_url, language, limit):
-        current_url = self.fix_url(imdb_url)
-        total, item_count = self.get_total(current_url, language)
+    def _ids_from_url(self, imdb_url, language, limit):
+        current_url = self._fix_url(imdb_url)
+        total, item_count = self._total(current_url, language)
         header = {"Accept-Language": language}
         length = 0
         imdb_ids = []
@@ -76,9 +76,9 @@ class IMDbAPI:
             start_num = (i - 1) * item_count + 1
             length = util.print_return(length, f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
             if imdb_url.startswith(self.urls["keyword"]):
-                response = self.send_request(f"{current_url}&page={i}", header)
+                response = self._request(f"{current_url}&page={i}", header)
             else:
-                response = self.send_request(f"{current_url}&count={remainder if i == num_of_pages else item_count}&start={start_num}", header)
+                response = self._request(f"{current_url}&count={remainder if i == num_of_pages else item_count}&start={start_num}", header)
             if imdb_url.startswith(self.urls["keyword"]) and i == num_of_pages:
                 imdb_ids.extend(response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst")[:remainder])
             else:
@@ -88,7 +88,7 @@ class IMDbAPI:
         else:                               raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_request(self, url, header):
+    def _request(self, url, header):
         return html.fromstring(requests.get(url, headers=header).content)
 
     def get_items(self, method, data, language, status_message=True):
@@ -107,7 +107,7 @@ class IMDbAPI:
             if status_message:
                 status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
                 logger.info(f"Processing {pretty}: {status}{data['url']}")
-            imdb_ids = self.get_imdb_ids_from_url(data["url"], language, data["limit"])
+            imdb_ids = self._ids_from_url(data["url"], language, data["limit"])
             total_ids = len(imdb_ids)
             length = 0
             for i, imdb_id in enumerate(imdb_ids, 1):

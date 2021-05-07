@@ -25,7 +25,7 @@ class TVDbObj:
         else:
             raise Failed(f"TVDb Error: {tvdb_url} must begin with {TVDb.movies_url if is_movie else TVDb.series_url}")
 
-        response = TVDb.send_request(tvdb_url, language)
+        response = TVDb._request(tvdb_url, language)
         results = response.xpath(f"//*[text()='TheTVDB.com {self.media_type} ID']/parent::node()/span/text()")
         if len(results) > 0:
             self.id = int(results[0])
@@ -104,16 +104,16 @@ class TVDbAPI:
         return TVDbObj(tvdb_url, language, True, self)
 
     def get_list_description(self, tvdb_url, language):
-        description = self.send_request(tvdb_url, language).xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
+        description = self._request(tvdb_url, language).xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
         return description[0] if len(description) > 0 and len(description[0]) > 0 else ""
 
-    def get_tvdb_ids_from_url(self, tvdb_url, language):
+    def _ids_from_url(self, tvdb_url, language):
         show_ids = []
         movie_ids = []
         tvdb_url = tvdb_url.strip()
         if tvdb_url.startswith((self.list_url, self.alt_list_url)):
             try:
-                items = self.send_request(tvdb_url, language).xpath("//div[@class='col-xs-12 col-sm-12 col-md-8 col-lg-8 col-md-pull-4']/div[@class='row']")
+                items = self._request(tvdb_url, language).xpath("//div[@class='col-xs-12 col-sm-12 col-md-8 col-lg-8 col-md-pull-4']/div[@class='row']")
                 for item in items:
                     title = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/text()")[0]
                     item_url = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/@href")[0]
@@ -143,7 +143,7 @@ class TVDbAPI:
             raise Failed(f"TVDb Error: {tvdb_url} must begin with {self.list_url}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_request(self, url, language):
+    def _request(self, url, language):
         return html.fromstring(requests.get(url, headers={"Accept-Language": language}).content)
 
     def get_items(self, method, data, language, status_message=True):
@@ -157,7 +157,7 @@ class TVDbAPI:
         elif method == "tvdb_movie":
             movie_ids.append(self.get_movie(language, data).id)
         elif method == "tvdb_list":
-            tmdb_ids, tvdb_ids = self.get_tvdb_ids_from_url(data, language)
+            tmdb_ids, tvdb_ids = self._ids_from_url(data, language)
             movie_ids.extend(tmdb_ids)
             show_ids.extend(tvdb_ids)
         else:

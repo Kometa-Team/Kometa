@@ -87,11 +87,11 @@ class MyAnimeListAPI:
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
         self.authorization = authorization
-        if not self.save_authorization(self.authorization):
-            if not self.refresh_authorization():
-                self.get_authorization()
+        if not self._save(self.authorization):
+            if not self._refresh():
+                self._authorization()
 
-    def get_authorization(self):
+    def _authorization(self):
         code_verifier = secrets.token_urlsafe(100)[:128]
         url = f"{self.urls['oauth_authorize']}?response_type=code&client_id={self.client_id}&code_challenge={code_verifier}"
         logger.info("")
@@ -114,21 +114,21 @@ class MyAnimeListAPI:
             "code_verifier": code_verifier,
             "grant_type": "authorization_code"
         }
-        new_authorization = self.oauth_request(data)
+        new_authorization = self._oauth(data)
         if "error" in new_authorization:
             raise Failed("MyAnimeList Error: Invalid code")
-        if not self.save_authorization(new_authorization):
+        if not self._save(new_authorization):
             raise Failed("MyAnimeList Error: New Authorization Failed")
 
-    def check_authorization(self, authorization):
+    def _check(self, authorization):
         try:
-            self.send_request(self.urls["suggestions"], authorization=authorization)
+            self._request(self.urls["suggestions"], authorization=authorization)
             return True
         except Failed as e:
             logger.debug(e)
             return False
 
-    def refresh_authorization(self):
+    def _refresh(self):
         if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
             data = {
@@ -137,12 +137,12 @@ class MyAnimeListAPI:
                 "refresh_token": self.authorization["refresh_token"],
                 "grant_type": "refresh_token"
             }
-            refreshed_authorization = self.oauth_request(data)
-            return self.save_authorization(refreshed_authorization)
+            refreshed_authorization = self._oauth(data)
+            return self._save(refreshed_authorization)
         return False
 
-    def save_authorization(self, authorization):
-        if authorization is not None and "access_token" in authorization and authorization["access_token"] and self.check_authorization(authorization):
+    def _save(self, authorization):
+        if authorization is not None and "access_token" in authorization and authorization["access_token"] and self._check(authorization):
             if self.authorization != authorization:
                 yaml.YAML().allow_duplicate_keys = True
                 config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
@@ -159,39 +159,39 @@ class MyAnimeListAPI:
         return False
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def oauth_request(self, data):
+    def _oauth(self, data):
         return requests.post(self.urls["oauth_token"], data).json()
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def send_request(self, url, authorization=None):
+    def _request(self, url, authorization=None):
         new_authorization = authorization if authorization else self.authorization
         response = requests.get(url, headers={"Authorization": f"Bearer {new_authorization['access_token']}"}).json()
         if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
         else:                           return response
 
-    def request_and_parse_mal_ids(self, url):
-        data = self.send_request(url)
+    def _parse_request(self, url):
+        data = self._request(url)
         return [d["node"]["id"] for d in data["data"]] if "data" in data else []
 
-    def get_username(self):
-        return self.send_request(f"{self.urls['user']}/@me")["name"]
+    def _username(self):
+        return self._request(f"{self.urls['user']}/@me")["name"]
 
-    def get_ranked(self, ranking_type, limit):
+    def _ranked(self, ranking_type, limit):
         url = f"{self.urls['ranking']}?ranking_type={ranking_type}&limit={limit}"
-        return self.request_and_parse_mal_ids(url)
+        return self._parse_request(url)
 
-    def get_season(self, season, year, sort_by, limit):
+    def _season(self, season, year, sort_by, limit):
         url = f"{self.urls['season']}/{year}/{season}?sort={sort_by}&limit={limit}"
-        return self.request_and_parse_mal_ids(url)
+        return self._parse_request(url)
 
-    def get_suggestions(self, limit):
+    def _suggestions(self, limit):
         url = f"{self.urls['suggestions']}?limit={limit}"
-        return self.request_and_parse_mal_ids(url)
+        return self._parse_request(url)
 
-    def get_userlist(self, username, status, sort_by, limit):
+    def _userlist(self, username, status, sort_by, limit):
         final_status = "" if status == "all" else f"status={status}&"
         url = f"{self.urls['user']}/{username}/animelist?{final_status}sort={sort_by}&limit={limit}"
-        return self.request_and_parse_mal_ids(url)
+        return self._parse_request(url)
 
     def get_items(self, method, data, language, status_message=True):
         if status_message:
@@ -202,21 +202,21 @@ class MyAnimeListAPI:
             if status_message:
                 logger.info(f"Processing {pretty}: {data}")
         elif method in mal_ranked_name:
-            mal_ids = self.get_ranked(mal_ranked_name[method], data)
+            mal_ids = self._ranked(mal_ranked_name[method], data)
             if status_message:
                 logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "mal_season":
-            mal_ids = self.get_season(data["season"], data["year"], data["sort_by"], data["limit"])
+            mal_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])
             if status_message:
                 logger.info(f"Processing {pretty}: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "mal_suggested":
-            mal_ids = self.get_suggestions(data)
+            mal_ids = self._suggestions(data)
             if status_message:
                 logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "mal_userlist":
-            mal_ids = self.get_userlist(data["username"], data["status"], data["sort_by"], data["limit"])
+            mal_ids = self._userlist(data["username"], data["status"], data["sort_by"], data["limit"])
             if status_message:
-                logger.info(f"Processing {pretty}: {data['limit']} Anime from {self.get_username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
+                logger.info(f"Processing {pretty}: {data['limit']} Anime from {self._username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Arms.myanimelist_to_ids(mal_ids, language)

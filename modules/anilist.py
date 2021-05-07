@@ -19,6 +19,8 @@ pretty_names = {
     "score": "Average Score",
     "popular": "Popularity"
 }
+tag_query = "query{MediaTagCollection {name}}"
+genre_query = "query{GenreCollection}"
 
 class AniListAPI:
     def __init__(self, config):
@@ -26,19 +28,12 @@ class AniListAPI:
         self.url = "https://graphql.anilist.co"
         self.tags = {}
         self.genres = {}
-
-        for tag in self.send_request("query{MediaTagCollection {name}}", {})["data"]["MediaTagCollection"]:
-            self.tags[tag["name"].lower()] = tag["name"]
-        for genre in self.send_request("query{GenreCollection}", {})["data"]["GenreCollection"]:
-            self.genres[genre.lower()] = genre
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def post(self, query, variables):
-        return requests.post(self.url, json={"query": query, "variables": variables})
+        self.tags = {t["name"].lower(): t["name"] for t in self._request(tag_query, {})["data"]["MediaTagCollection"]}
+        self.genres = {g.lower(): g for g in self._request(genre_query, {})["data"]["GenreCollection"]}
 
     @retry(stop_max_attempt_number=2, retry_on_exception=util.retry_if_not_failed)
-    def send_request(self, query, variables):
-        response = self.post(query, variables)
+    def _request(self, query, variables):
+        response = requests.post(self.url, json={"query": query, "variables": variables})
         json_obj = response.json()
         if "errors" in json_obj:
             if json_obj['errors'][0]['message'] == "Too Many Requests.":
@@ -51,14 +46,14 @@ class AniListAPI:
             time.sleep(0.4)
         return json_obj
 
-    def anilist_id(self, anilist_id):
+    def _validate(self, anilist_id):
         query = "query ($id: Int) {Media(id: $id) {id title{romaji english}}}"
-        media = self.send_request(query, {"id": anilist_id})["data"]["Media"]
+        media = self._request(query, {"id": anilist_id})["data"]["Media"]
         if media["id"]:
             return media["id"], media["title"]["english" if media["title"]["english"] else "romaji"]
         raise Failed(f"AniList Error: No AniList ID found for {anilist_id}")
 
-    def get_pagenation(self, query, limit=0, variables=None):
+    def _pagenation(self, query, limit=0, variables=None):
         anilist_ids = []
         count = 0
         page_num = 0
@@ -68,7 +63,7 @@ class AniListAPI:
         while next_page:
             page_num += 1
             variables["page"] = page_num
-            json_obj = self.send_request(query, variables)
+            json_obj = self._request(query, variables)
             next_page = json_obj["data"]["Page"]["pageInfo"]["hasNextPage"]
             for media in json_obj["data"]["Page"]["media"]:
                 if media["id"]:
@@ -80,7 +75,7 @@ class AniListAPI:
                 break
         return anilist_ids
 
-    def top_rated(self, limit):
+    def _top_rated(self, limit):
         query = """
             query ($page: Int) {
               Page(page: $page) {
@@ -89,9 +84,9 @@ class AniListAPI:
               }
             }
         """
-        return self.get_pagenation(query, limit=limit)
+        return self._pagenation(query, limit=limit)
 
-    def popular(self, limit):
+    def _popular(self, limit):
         query = """
             query ($page: Int) {
               Page(page: $page) {
@@ -100,9 +95,9 @@ class AniListAPI:
               }
             }
         """
-        return self.get_pagenation(query, limit=limit)
+        return self._pagenation(query, limit=limit)
 
-    def season(self, season, year, sort, limit):
+    def _season(self, season, year, sort, limit):
         query = """
             query ($page: Int, $season: MediaSeason, $year: Int, $sort: [MediaSort]) {
               Page(page: $page){
@@ -112,9 +107,9 @@ class AniListAPI:
             }
         """
         variables = {"season": season.upper(), "year": year, "sort": "SCORE_DESC" if sort == "score" else "POPULARITY_DESC"}
-        return self.get_pagenation(query, limit=limit, variables=variables)
+        return self._pagenation(query, limit=limit, variables=variables)
 
-    def genre(self, genre, sort, limit):
+    def _genre(self, genre, sort, limit):
         query = """
             query ($page: Int, $genre: String, $sort: [MediaSort]) {
               Page(page: $page){
@@ -124,9 +119,9 @@ class AniListAPI:
             }
         """
         variables = {"genre": genre, "sort": "SCORE_DESC" if sort == "score" else "POPULARITY_DESC"}
-        return self.get_pagenation(query, limit=limit, variables=variables)
+        return self._pagenation(query, limit=limit, variables=variables)
 
-    def tag(self, tag, sort, limit):
+    def _tag(self, tag, sort, limit):
         query = """
             query ($page: Int, $tag: String, $sort: [MediaSort]) {
               Page(page: $page){
@@ -136,9 +131,9 @@ class AniListAPI:
             }
         """
         variables = {"tag": tag, "sort": "SCORE_DESC" if sort == "score" else "POPULARITY_DESC"}
-        return self.get_pagenation(query, limit=limit, variables=variables)
+        return self._pagenation(query, limit=limit, variables=variables)
 
-    def studio(self, studio_id):
+    def _studio(self, studio_id):
         query = """
             query ($page: Int, $id: Int) {
               Studio(id: $id) {
@@ -156,7 +151,7 @@ class AniListAPI:
         name = None
         while next_page:
             page_num += 1
-            json_obj = self.send_request(query, {"id": studio_id, "page": page_num})
+            json_obj = self._request(query, {"id": studio_id, "page": page_num})
             if not name:
                 name = json_obj["data"]["Studio"]["name"]
             next_page = json_obj["data"]["Studio"]["media"]["pageInfo"]["hasNextPage"]
@@ -165,7 +160,7 @@ class AniListAPI:
                     anilist_ids.append(media["id"])
         return anilist_ids, name
 
-    def relations(self, anilist_id, ignore_ids=None):
+    def _relations(self, anilist_id, ignore_ids=None):
         query = """
             query ($id: Int) {
               Media(id: $id) {
@@ -182,9 +177,9 @@ class AniListAPI:
         name = ""
         if not ignore_ids:
             ignore_ids = [anilist_id]
-            anilist_id, name = self.anilist_id(anilist_id)
+            anilist_id, name = self._validate(anilist_id)
             anilist_ids.append(anilist_id)
-        json_obj = self.send_request(query, {"id": anilist_id})
+        json_obj = self._request(query, {"id": anilist_id})
         edges = [media["node"]["id"] for media in json_obj["data"]["Media"]["relations"]["edges"]
                  if media["relationType"] not in ["CHARACTER", "OTHER"] and media["node"]["type"] == "ANIME"]
         for media in json_obj["data"]["Media"]["relations"]["nodes"]:
@@ -194,7 +189,7 @@ class AniListAPI:
                 anilist_ids.append(media["id"])
 
         for next_id in new_anilist_ids:
-            new_relation_ids, ignore_ids, _ = self.relations(next_id, ignore_ids=ignore_ids)
+            new_relation_ids, ignore_ids, _ = self._relations(next_id, ignore_ids=ignore_ids)
             anilist_ids.extend(new_relation_ids)
 
         return anilist_ids, ignore_ids, name
@@ -215,7 +210,7 @@ class AniListAPI:
             if studio:              query = "query ($id: Int) {Studio(id: $id) {name}}"
             else:                   query = "query ($id: Int) {Media(id: $id) {id}}"
             try:
-                self.send_request(query, {"id": anilist_id})
+                self._request(query, {"id": anilist_id})
                 anilist_values.append(anilist_id)
             except Failed as e:     logger.error(e)
         if len(anilist_values) > 0:
@@ -227,29 +222,29 @@ class AniListAPI:
             logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if method == "anilist_id":
-            anilist_id, name = self.anilist_id(data)
+            anilist_id, name = self._validate(data)
             anilist_ids = [anilist_id]
             if status_message:
                 logger.info(f"Processing {pretty}: ({data}) {name}")
         elif method in ["anilist_popular", "anilist_top_rated"]:
-            anilist_ids = self.popular(data) if method == "anilist_popular" else self.top_rated(data)
+            anilist_ids = self._popular(data) if method == "anilist_popular" else self._top_rated(data)
             if status_message:
                 logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "anilist_season":
-            anilist_ids = self.season(data["season"], data["year"], data["sort_by"], data["limit"])
+            anilist_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])
             if status_message:
                 logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "anilist_genre":
-            anilist_ids = self.genre(data["genre"], data["sort_by"], data["limit"])
+            anilist_ids = self._genre(data["genre"], data["sort_by"], data["limit"])
             if status_message:
                 logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Genre: {data['genre']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "anilist_tag":
-            anilist_ids = self.tag(data["tag"], data["sort_by"], data["limit"])
+            anilist_ids = self._tag(data["tag"], data["sort_by"], data["limit"])
             if status_message:
                 logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag: {data['tag']} sorted by {pretty_names[data['sort_by']]}")
         elif method in ["anilist_studio", "anilist_relations"]:
-            if method == "anilist_studio":          anilist_ids, name = self.studio(data)
-            else:                                   anilist_ids, _, name = self.relations(data)
+            if method == "anilist_studio":          anilist_ids, name = self._studio(data)
+            else:                                   anilist_ids, _, name = self._relations(data)
             if status_message:
                 logger.info(f"Processing {pretty}: ({data}) {name} ({len(anilist_ids)} Anime)")
         else:

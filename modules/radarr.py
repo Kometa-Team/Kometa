@@ -38,7 +38,7 @@ class RadarrAPI:
 
     def get_profile_id(self, profile_name):
         profiles = ""
-        for profile in self.send_get("qualityProfile" if self.version == "v3" else "profile"):
+        for profile in self._get("qualityProfile" if self.version == "v3" else "profile"):
             if len(profiles) > 0:
                 profiles += ", "
             profiles += profile["name"]
@@ -47,19 +47,19 @@ class RadarrAPI:
         raise Failed(f"Radarr Error: quality_profile: {profile_name} does not exist in radarr. Profiles available: {profiles}")
 
     def get_tags(self):
-        return {tag["label"]: tag["id"] for tag in self.send_get("tag")}
+        return {tag["label"]: tag["id"] for tag in self._get("tag")}
 
     def add_tags(self, tags):
         added = False
         for label in tags:
             if str(label).lower() not in self.tags:
                 added = True
-                self.send_post("tag", {"label": str(label).lower()})
+                self._post("tag", {"label": str(label).lower()})
         if added:
             self.tags = self.get_tags()
 
     def lookup(self, tmdb_id):
-        results = self.send_get("movie/lookup", params={"term": f"tmdb:{tmdb_id}"})
+        results = self._get("movie/lookup", params={"term": f"tmdb:{tmdb_id}"})
         if results:
             return results[0]
         else:
@@ -105,7 +105,7 @@ class RadarrAPI:
             }
             if tag_nums:
                 url_json["tags"] = tag_nums
-            response = self.send_post("movie", url_json)
+            response = self._post("movie", url_json)
             if response.status_code < 400:
                 logger.info(f"Added to Radarr | {tmdb_id:<6} | {movie_info['title']}")
                 add_count += 1
@@ -118,7 +118,7 @@ class RadarrAPI:
         logger.info(f"{add_count} Movie{'s' if add_count > 1 else ''} added to Radarr")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_get(self, url, params=None):
+    def _get(self, url, params=None):
         url_params = {"apikey": f"{self.token}"}
         if params:
             for param in params:
@@ -126,5 +126,5 @@ class RadarrAPI:
         return requests.get(f"{self.base_url}{url}", params=url_params).json()
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_post(self, url, url_json):
+    def _post(self, url, url_json):
         return requests.post(f"{self.base_url}{url}", json=url_json, params={"apikey": f"{self.token}"})
