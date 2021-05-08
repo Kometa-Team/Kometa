@@ -100,7 +100,10 @@ class IMDbAPI:
         if method == "imdb_id":
             if status_message:
                 logger.info(f"Processing {pretty}: {data}")
-            tmdb_id, tvdb_id = self.config.Convert.imdb_to_ids(data, language)
+            tmdb_id = self.config.Convert.imdb_to_tmdb(data)
+            tvdb_id = self.config.Convert.imdb_to_tvdb(data)
+            if not tmdb_id and not tvdb_id:
+                logger.error(f"Convert Error: No TMDb ID or TVDb ID found for IMDb: {data}")
             if tmdb_id:                     movie_ids.append(tmdb_id)
             if tvdb_id:                     show_ids.append(tvdb_id)
         elif method == "imdb_list":
@@ -112,11 +115,12 @@ class IMDbAPI:
             length = 0
             for i, imdb_id in enumerate(imdb_ids, 1):
                 length = util.print_return(length, f"Converting IMDb ID {i}/{total_ids}")
-                try:
-                    tmdb_id, tvdb_id = self.config.Convert.imdb_to_ids(imdb_id, language)
-                    if tmdb_id:                     movie_ids.append(tmdb_id)
-                    if tvdb_id:                     show_ids.append(tvdb_id)
-                except Failed as e:             logger.warning(e)
+                tmdb_id = self.config.Convert.imdb_to_tmdb(imdb_id)
+                tvdb_id = self.config.Convert.imdb_to_tvdb(imdb_id)
+                if not tmdb_id and not tvdb_id:
+                    logger.error(f"Convert Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
+                if tmdb_id:                     movie_ids.append(tmdb_id)
+                if tvdb_id:                     show_ids.append(tvdb_id)
             util.print_end(length, f"Processed {total_ids} IMDb IDs")
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
