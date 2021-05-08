@@ -258,7 +258,7 @@ class CollectionBuilder:
 
                         for method_name, attr_data in template.items():
                             if method_name not in self.data and method_name not in ["default", "optional"]:
-                                if attr_data:
+                                if attr_data is not None:
                                     def replace_txt(txt):
                                         txt = str(txt)
                                         for option in optional:

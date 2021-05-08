@@ -11,29 +11,27 @@ class Cache:
         with sqlite3.connect(cache) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='guids'")
+                cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='guid_map'")
                 if cursor.fetchone()[0] == 0:
                     logger.info(f"Initializing cache database at {cache}")
                 else:
                     logger.info(f"Using cache database at {cache}")
+                cursor.execute("DROP TABLE IF EXISTS guids")
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS guids (
+                    """CREATE TABLE IF NOT EXISTS guid_map (
                     INTEGER PRIMARY KEY,
                     plex_guid TEXT UNIQUE,
-                    tmdb_id TEXT,
-                    imdb_id TEXT,
-                    tvdb_id TEXT,
-                    anidb_id TEXT,
-                    expiration_date TEXT,
-                    media_type TEXT)"""
+                    t_id TEXT,
+                    media_type TEXT,
+                    expiration_date TEXT)"""
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS imdb_map (
                     INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     t_id TEXT,
-                    expiration_date TEXT,
-                    media_type TEXT)"""
+                    media_type TEXT,
+                    expiration_date TEXT)"""
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS letterboxd_map (
@@ -68,45 +66,21 @@ class Cache:
         self.expiration = expiration
         self.cache_path = cache
 
-    def get_ids_from_imdb(self, imdb_id):
-        tmdb_id, tmdb_expired = self.get_tmdb_id("movie", imdb_id=imdb_id)
-        tvdb_id, tvdb_expired = self.get_tvdb_id("show", imdb_id=imdb_id)
-        return tmdb_id, tvdb_id
-
-    def get_tmdb_id(self, media_type, plex_guid=None, imdb_id=None, tvdb_id=None, anidb_id=None):
-        return self._id_from(media_type, "tmdb_id", plex_guid=plex_guid, imdb_id=imdb_id, tvdb_id=tvdb_id, anidb_id=anidb_id)
-
-    def get_imdb_id(self, media_type, plex_guid=None, tmdb_id=None, tvdb_id=None, anidb_id=None):
-        return self._id_from(media_type, "imdb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, tvdb_id=tvdb_id, anidb_id=anidb_id)
-
-    def get_tvdb_id(self, media_type, plex_guid=None, tmdb_id=None, imdb_id=None, anidb_id=None):
-        return self._id_from(media_type, "tvdb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, imdb_id=imdb_id, anidb_id=anidb_id)
-
-    def get_anidb_id(self, media_type, plex_guid=None, tmdb_id=None, imdb_id=None, tvdb_id=None):
-        return self._id_from(media_type, "anidb_id", plex_guid=plex_guid, tmdb_id=tmdb_id, imdb_id=imdb_id, tvdb_id=tvdb_id)
-
-    def _id_from(self, media_type, id_from, plex_guid=None, tmdb_id=None, imdb_id=None, tvdb_id=None, anidb_id=None):
-        if plex_guid:           return self._id(media_type, "plex_guid", id_from, plex_guid)
-        elif tmdb_id:           return self._id(media_type, "tmdb_id", id_from, tmdb_id)
-        elif imdb_id:           return self._id(media_type, "imdb_id", id_from, imdb_id)
-        elif tvdb_id:           return self._id(media_type, "tvdb_id", id_from, tvdb_id)
-        elif anidb_id:          return self._id(media_type, "anidb_id", id_from, anidb_id)
-        else:                   return None, None
-
-    def _id(self, media_type, from_id, to_id, key):
+    def query_guid_map(self, plex_guid):
         id_to_return = None
+        media_type = None
         expired = None
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute(f"SELECT * FROM guids WHERE {from_id} = ? AND media_type = ?", (key, media_type))
+                cursor.execute(f"SELECT * FROM guid_map WHERE plex_guid = ?", (plex_guid,))
                 row = cursor.fetchone()
-                if row and row[to_id]:
-                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
-                    time_between_insertion = datetime.now() - datetime_object
-                    id_to_return = int(row[to_id])
+                if row:
+                    time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    id_to_return = row["t_id"]
+                    media_type = row["media_type"]
                     expired = time_between_insertion.days > self.expiration
-        return id_to_return, expired
+        return id_to_return, media_type, expired
 
     def get_ids(self, media_type, plex_guid=None, tmdb_id=None, imdb_id=None, tvdb_id=None):
         ids_to_return = {}
@@ -128,7 +102,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute(f"SELECT * FROM guids WHERE {key_type} = ? AND media_type = ?", (key, media_type))
+                cursor.execute(f"SELECT * FROM guid_map WHERE {key_type} = ? AND media_type = ?", (key, media_type))
                 row = cursor.fetchone()
                 if row:
                     if row["plex_guid"]:                    ids_to_return["plex"] = row["plex_guid"]
@@ -141,24 +115,13 @@ class Cache:
                     expired = time_between_insertion.days > self.expiration
         return ids_to_return, expired
 
-    def update_guid(self, media_type, plex_guid, tmdb_id, imdb_id, tvdb_id, anidb_id, expired):
+    def update_guid(self, media_type, plex_guid, t_id, expired):
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO guids(plex_guid) VALUES(?)", (plex_guid,))
-                cursor.execute(
-                """UPDATE guids SET
-                tmdb_id = ?,
-                imdb_id = ?,
-                tvdb_id = ?,
-                anidb_id = ?,
-                expiration_date = ?,
-                media_type = ?
-                WHERE plex_guid = ?""", (tmdb_id, imdb_id, tvdb_id, anidb_id, expiration_date.strftime("%Y-%m-%d"), media_type, plex_guid))
-                if imdb_id and (tmdb_id or tvdb_id):
-                    cursor.execute("INSERT OR IGNORE INTO imdb_map(imdb_id) VALUES(?)", (imdb_id,))
-                    cursor.execute("UPDATE imdb_map SET t_id = ?, expiration_date = ?, media_type = ? WHERE imdb_id = ?", (tmdb_id if media_type == "movie" else tvdb_id, expiration_date.strftime("%Y-%m-%d"), media_type, imdb_id))
+                cursor.execute("INSERT OR IGNORE INTO guid_map(plex_guid) VALUES(?)", (plex_guid,))
+                cursor.execute("UPDATE guid_map SET t_id = ?, media_type = ?, expiration_date = ? WHERE plex_guid = ?", (t_id, media_type, expiration_date.strftime("%Y-%m-%d"), plex_guid))
 
     def get_tmdb_from_imdb(self, imdb_id):              return self._imdb_map("movie", imdb_id)
     def get_tvdb_from_imdb(self, imdb_id):              return self._imdb_map("show", imdb_id)
