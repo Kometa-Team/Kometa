@@ -1308,7 +1308,7 @@ class CollectionBuilder:
                                 continue
                             match = True
                             if arr_filters:
-                                show = self.config.TMDb.get_show(self.config.TMDb.convert_tvdb_to_tmdb(missing_id))
+                                show = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(missing_id))
                                 for filter_method, filter_data in arr_filters:
                                     if (filter_method == "tmdb_vote_count.gte" and show.vote_count < filter_data) \
                                             or (filter_method == "tmdb_vote_count.lte" and show.vote_count > filter_data):

@@ -63,7 +63,7 @@ class TVDbObj:
                 results = response.xpath("//*[text()='IMDB']/@href")
                 if len(results) > 0:
                     try:
-                        tmdb_id, _ = TVDb.config.Arms.imdb_to_ids(util.get_id_from_imdb_url(results[0]), language)
+                        tmdb_id, _ = TVDb.config.Convert.imdb_to_ids(util.get_id_from_imdb_url(results[0]), language)
                     except Failed as e:
                         logger.error(e)
         self.tmdb_id = tmdb_id
