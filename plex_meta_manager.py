@@ -12,7 +12,6 @@ except ModuleNotFoundError:
     sys.exit(0)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--my-tests", dest="tests", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-db", "--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", dest="time", help="Time to update each day use format HH:MM (Default: 03:00)", default="03:00", type=str)
@@ -37,7 +36,6 @@ def check_bool(env_str, default):
     else:
         return default
 
-my_tests = check_bool("PMM_TESTS", args.tests)
 test = check_bool("PMM_TEST", args.test)
 debug = check_bool("PMM_DEBUG", args.debug)
 run = check_bool("PMM_RUN", args.run)
@@ -96,10 +94,6 @@ util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_
 util.centered("                                                                     |___/           ")
 util.centered("    Version: 1.8.0                                                                   ")
 util.separator()
-
-if my_tests:
-    tests.run_tests(default_dir)
-    sys.exit(0)
 
 def start(config_path, is_test, daily, requested_collections, requested_libraries, resume_from):
     if daily:                       start_type = "Daily "
@@ -389,7 +383,7 @@ def map_guids(config, library):
     for i, item in enumerate(items, 1):
         length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
         try:
-            id_type, main_id = config.Arms.get_id(item, library, length)
+            id_type, main_id = config.Convert.get_id(item, library, length)
         except BadRequest:
             util.print_stacktrace()
             util.print_end(length, f"{'Cache | ! |' if config.Cache else 'Mapping Error:'} | {item.guid} for {item.title} not found")

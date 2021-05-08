@@ -97,7 +97,7 @@ class TraktAPI:
             lookup = lookup[0] if isinstance(lookup, list) else lookup
             if lookup.get_key(to_source):
                 return lookup.get_key(to_source) if to_source == "imdb" else int(lookup.get_key(to_source))
-        raise Failed(f"No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID {external_id}")
+        raise Failed(f"Trakt Error: No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
 
     def collection(self, data, is_movie):
         return self._user_list("collection", data, is_movie)

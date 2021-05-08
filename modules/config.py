@@ -2,8 +2,8 @@ import logging, os
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.anilist import AniListAPI
-from modules.arms import ArmsAPI
 from modules.cache import Cache
+from modules.convert import Convert
 from modules.imdb import IMDbAPI
 from modules.letterboxd import LetterboxdAPI
 from modules.mal import MyAnimeListAPI
@@ -262,7 +262,7 @@ class Config:
         self.TVDb = TVDbAPI(self)
         self.IMDb = IMDbAPI(self)
         self.AniDB = AniDBAPI(self)
-        self.Arms = ArmsAPI(self)
+        self.Convert = Convert(self)
         self.AniList = AniListAPI(self)
         self.Letterboxd = LetterboxdAPI(self)
 
