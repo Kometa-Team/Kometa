@@ -90,15 +90,8 @@ class TraktAPI:
             return True
         return False
 
-    def convert_tmdb_to_imdb(self, tmdb_id, is_movie=True):         return self._convert(tmdb_id, "tmdb", "imdb", "movie" if is_movie else "show")
-    def convert_imdb_to_tmdb(self, imdb_id, is_movie=True):         return self._convert(imdb_id, "imdb", "tmdb", "movie" if is_movie else "show")
-    def convert_tmdb_to_tvdb(self, tmdb_id):                        return self._convert(tmdb_id, "tmdb", "tvdb", "show")
-    def convert_tvdb_to_tmdb(self, tvdb_id):                        return self._convert(tvdb_id, "tvdb", "tmdb", "show")
-    def convert_tvdb_to_imdb(self, tvdb_id):                        return self._convert(tvdb_id, "tvdb", "imdb", "show")
-    def convert_imdb_to_tvdb(self, imdb_id):                        return self._convert(imdb_id, "imdb", "tvdb", "show")
-
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def _convert(self, external_id, from_source, to_source, media_type):
+    def convert(self, external_id, from_source, to_source, media_type):
         lookup = Trakt["search"].lookup(external_id, from_source, media_type)
         if lookup:
             lookup = lookup[0] if isinstance(lookup, list) else lookup
