@@ -193,35 +193,28 @@ class MyAnimeListAPI:
         url = f"{self.urls['user']}/{username}/animelist?{final_status}sort={sort_by}&limit={limit}"
         return self._parse_request(url)
 
-    def get_items(self, method, data, language, status_message=True):
-        if status_message:
-            logger.debug(f"Data: {data}")
+    def get_items(self, method, data):
+        logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if method == "mal_id":
             mal_ids = [data]
-            if status_message:
-                logger.info(f"Processing {pretty}: {data}")
+            logger.info(f"Processing {pretty}: {data}")
         elif method in mal_ranked_name:
             mal_ids = self._ranked(mal_ranked_name[method], data)
-            if status_message:
-                logger.info(f"Processing {pretty}: {data} Anime")
+            logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "mal_season":
             mal_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])
-            if status_message:
-                logger.info(f"Processing {pretty}: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
+            logger.info(f"Processing {pretty}: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "mal_suggested":
             mal_ids = self._suggestions(data)
-            if status_message:
-                logger.info(f"Processing {pretty}: {data} Anime")
+            logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "mal_userlist":
             mal_ids = self._userlist(data["username"], data["status"], data["sort_by"], data["limit"])
-            if status_message:
-                logger.info(f"Processing {pretty}: {data['limit']} Anime from {self._username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
+            logger.info(f"Processing {pretty}: {data['limit']} Anime from {self._username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.myanimelist_to_ids(mal_ids)
-        if status_message:
-            logger.debug(f"MyAnimeList IDs Found: {mal_ids}")
-            logger.debug(f"Shows Found: {show_ids}")
-            logger.debug(f"Movies Found: {movie_ids}")
+        logger.debug(f"MyAnimeList IDs Found: {mal_ids}")
+        logger.debug(f"Shows Found: {show_ids}")
+        logger.debug(f"Movies Found: {movie_ids}")
         return movie_ids, show_ids

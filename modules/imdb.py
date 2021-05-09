@@ -91,15 +91,13 @@ class IMDbAPI:
     def _request(self, url, header):
         return html.fromstring(requests.get(url, headers=header).content)
 
-    def get_items(self, method, data, language, status_message=True):
+    def get_items(self, method, data, language):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
-        if status_message:
-            logger.debug(f"Data: {data}")
+        logger.debug(f"Data: {data}")
         show_ids = []
         movie_ids = []
         if method == "imdb_id":
-            if status_message:
-                logger.info(f"Processing {pretty}: {data}")
+            logger.info(f"Processing {pretty}: {data}")
             tmdb_id = self.config.Convert.imdb_to_tmdb(data)
             tvdb_id = self.config.Convert.imdb_to_tvdb(data)
             if not tmdb_id and not tvdb_id:
@@ -107,9 +105,8 @@ class IMDbAPI:
             if tmdb_id:                     movie_ids.append(tmdb_id)
             if tvdb_id:                     show_ids.append(tvdb_id)
         elif method == "imdb_list":
-            if status_message:
-                status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
-                logger.info(f"Processing {pretty}: {status}{data['url']}")
+            status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
+            logger.info(f"Processing {pretty}: {status}{data['url']}")
             imdb_ids = self._ids_from_url(data["url"], language, data["limit"])
             total_ids = len(imdb_ids)
             length = 0
@@ -124,7 +121,6 @@ class IMDbAPI:
             util.print_end(length, f"Processed {total_ids} IMDb IDs")
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
-        if status_message:
-            logger.debug(f"TMDb IDs Found: {movie_ids}")
-            logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

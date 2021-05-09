@@ -515,19 +515,16 @@ class PlexAPI:
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
 
-    def get_items(self, method, data, status_message=True):
-        if status_message:
-            logger.debug(f"Data: {data}")
+    def get_items(self, method, data):
+        logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         media_type = "Movie" if self.is_movie else "Show"
         items = []
         if method == "plex_all":
-            if status_message:
-                logger.info(f"Processing {pretty} {media_type}s")
+            logger.info(f"Processing {pretty} {media_type}s")
             items = self.get_all()
         elif method == "plex_collection":
-            if status_message:
-                logger.info(f"Processing {pretty} {data}")
+            logger.info(f"Processing {pretty} {data}")
             items = data.items()
         elif method == "plex_search":
             search_terms = {}
@@ -561,54 +558,48 @@ class PlexAPI:
                     else:
                         search_terms[final_method] = search_data
 
-                    if status_message:
-                        if search in ["added", "originally_available"] or modifier in [".gt", ".gte", ".lt", ".lte", ".before", ".after"]:
-                            ors = f"{search_method}({search_data}"
-                        else:
-                            ors = ""
-                            conjunction = " AND " if final_mod == "&" else " OR "
-                            for o, param in enumerate(search_data):
-                                or_des = conjunction if o > 0 else f"{search_method}("
-                                ors += f"{or_des}{param}"
-                        if has_processed:
-                            logger.info(f"\t\t      AND {ors})")
-                        else:
-                            logger.info(f"Processing {pretty}: {ors})")
-                            has_processed = True
-            if status_message:
-                if search_sort:
-                    logger.info(f"\t\t      SORT BY {search_sort})")
-                if search_limit:
-                    logger.info(f"\t\t      LIMIT {search_limit})")
-                logger.debug(f"Search: {search_terms}")
+                    if search in ["added", "originally_available"] or modifier in [".gt", ".gte", ".lt", ".lte", ".before", ".after"]:
+                        ors = f"{search_method}({search_data}"
+                    else:
+                        ors = ""
+                        conjunction = " AND " if final_mod == "&" else " OR "
+                        for o, param in enumerate(search_data):
+                            or_des = conjunction if o > 0 else f"{search_method}("
+                            ors += f"{or_des}{param}"
+                    if has_processed:
+                        logger.info(f"\t\t      AND {ors})")
+                    else:
+                        logger.info(f"Processing {pretty}: {ors})")
+                        has_processed = True
+            if search_sort:
+                logger.info(f"\t\t      SORT BY {search_sort})")
+            if search_limit:
+                logger.info(f"\t\t      LIMIT {search_limit})")
+            logger.debug(f"Search: {search_terms}")
             return self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
         elif method == "plex_collectionless":
             good_collections = []
-            if status_message:
-                logger.info("Collections Excluded")
+            logger.info("Collections Excluded")
             for col in self.get_all_collections():
                 keep_collection = True
                 for pre in data["exclude_prefix"]:
                     if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
                         keep_collection = False
-                        if status_message:
-                            logger.info(f"{col.title} excluded by prefix match {pre}")
+                        logger.info(f"{col.title} excluded by prefix match {pre}")
                         break
                 if keep_collection:
                     for ext in data["exclude"]:
                         if col.title == ext or (col.titleSort and col.titleSort == ext):
                             keep_collection = False
-                            if status_message:
-                                logger.info(f"{col.title} excluded by exact match")
+                            logger.info(f"{col.title} excluded by exact match")
                             break
                 if keep_collection:
                     logger.info(f"Collection Passed: {col.title}")
                     good_collections.append(col)
-            if status_message:
-                logger.info("")
-                logger.info("Collections Not Excluded (Items in these collections are not added to Collectionless)")
-                for col in good_collections:
-                    logger.info(col.title)
+            logger.info("")
+            logger.info("Collections Not Excluded (Items in these collections are not added to Collectionless)")
+            for col in good_collections:
+                logger.info(col.title)
             collection_indexes = [c.index for c in good_collections]
             all_items = self.get_all()
             length = 0

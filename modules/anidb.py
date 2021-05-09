@@ -47,23 +47,20 @@ class AniDBAPI:
             return anidb_values
         raise Failed(f"AniDB Error: No valid AniDB IDs in {anidb_list}")
 
-    def get_items(self, method, data, language, status_message=True):
+    def get_items(self, method, data, language):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
-        if status_message:
-            logger.debug(f"Data: {data}")
+        logger.debug(f"Data: {data}")
         anidb_ids = []
         if method == "anidb_popular":
-            if status_message:
-                logger.info(f"Processing {pretty}: {data} Anime")
+            logger.info(f"Processing {pretty}: {data} Anime")
             anidb_ids.extend(self._popular(language)[:data])
         else:
-            if status_message:                                  logger.info(f"Processing {pretty}: {data}")
+            logger.info(f"Processing {pretty}: {data}")
             if method == "anidb_id":                            anidb_ids.append(data)
             elif method == "anidb_relation":                    anidb_ids.extend(self._relations(data, language))
             else:                                               raise Failed(f"AniDB Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.anidb_to_ids(anidb_ids)
-        if status_message:
-            logger.debug(f"AniDB IDs Found: {anidb_ids}")
-            logger.debug(f"TMDb IDs Found: {movie_ids}")
-            logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"AniDB IDs Found: {anidb_ids}")
+        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

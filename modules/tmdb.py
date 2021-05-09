@@ -290,9 +290,8 @@ class TMDbAPI:
         elif tmdb_type == "List":                   self.get_list(tmdb_id)
         return tmdb_id
 
-    def get_items(self, method, data, is_movie, status_message=True):
-        if status_message:
-            logger.debug(f"Data: {data}")
+    def get_items(self, method, data, is_movie):
+        logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         media_type = "Movie" if is_movie else "Show"
         movie_ids = []
@@ -318,18 +317,16 @@ class TMDbAPI:
                 limit = int(attrs.pop("limit"))
             if is_movie:                    movie_ids, amount = self._discover(attrs, limit, is_movie)
             else:                           show_ids, amount = self._discover(attrs, limit, is_movie)
-            if status_message:
-                if method in ["tmdb_company", "tmdb_network", "tmdb_keyword"]:
-                    logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({amount} {media_type}{'' if amount == 1 else 's'})")
-                elif method == "tmdb_discover":
-                    logger.info(f"Processing {pretty}: {amount} {media_type}{'' if amount == 1 else 's'}")
-                    for attr, value in attrs.items():
-                        logger.info(f"           {attr}: {value}")
+            if method in ["tmdb_company", "tmdb_network", "tmdb_keyword"]:
+                logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({amount} {media_type}{'' if amount == 1 else 's'})")
+            elif method == "tmdb_discover":
+                logger.info(f"Processing {pretty}: {amount} {media_type}{'' if amount == 1 else 's'}")
+                for attr, value in attrs.items():
+                    logger.info(f"           {attr}: {value}")
         elif method in ["tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_trending_daily", "tmdb_trending_weekly"]:
             if is_movie:                    movie_ids = self._pagenation(method, data, is_movie)
             else:                           show_ids = self._pagenation(method, data, is_movie)
-            if status_message:
-                logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
         else:
             tmdb_id = int(data)
             if method == "tmdb_list":
@@ -360,11 +357,10 @@ class TMDbAPI:
                 elif method == "tmdb_writer":               movie_ids, show_ids = self._credits(tmdb_id, writer=True)
                 elif method == "tmdb_crew":                 movie_ids, show_ids = self._credits(tmdb_id, crew=True)
                 else:                                       raise Failed(f"TMDb Error: Method {method} not supported")
-            if status_message and len(movie_ids) > 0:
+            if len(movie_ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(movie_ids)} Movie{'' if len(movie_ids) == 1 else 's'})")
-            if status_message and not is_movie and len(show_ids) > 0:
+            if not is_movie and len(show_ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(show_ids)} Show{'' if len(show_ids) == 1 else 's'})")
-        if status_message:
-            logger.debug(f"TMDb IDs Found: {movie_ids}")
-            logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

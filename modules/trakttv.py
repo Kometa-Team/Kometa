@@ -156,26 +156,23 @@ class TraktAPI:
                 raise Failed(f"Trakt Error: No valid Trakt Lists in {values}")
         return trakt_values
 
-    def get_items(self, method, data, is_movie, status_message=True):
-        if status_message:
-            logger.debug(f"Data: {data}")
+    def get_items(self, method, data, is_movie):
+        logger.debug(f"Data: {data}")
         pretty = self.aliases[method] if method in self.aliases else method
         media_type = "Movie" if is_movie else "Show"
         if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
             movie_ids, show_ids = self._pagenation(method[6:], data, is_movie)
-            if status_message:
-                logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
         elif method == "trakt_collection":
             movie_ids, show_ids = self._collection(data, is_movie)
-            if status_message:
-                logger.info(f"Processing {pretty} {media_type}s for {data}")
+            logger.info(f"Processing {pretty} {media_type}s for {data}")
         else:
             show_ids = []
             movie_ids = []
             if method == "trakt_watchlist":             trakt_items = self._watchlist(data, is_movie)
             elif method == "trakt_list":                trakt_items = self.standard_list(data).items()
             else:                                       raise Failed(f"Trakt Error: Method {method} not supported")
-            if status_message:                          logger.info(f"Processing {pretty}: {data}")
+            logger.info(f"Processing {pretty}: {data}")
             for trakt_item in trakt_items:
                 if isinstance(trakt_item, Movie):
                     movie_ids.append(int(trakt_item.get_key("tmdb")))
@@ -183,9 +180,7 @@ class TraktAPI:
                     show_ids.append(int(trakt_item.pk[1]))
                 elif (isinstance(trakt_item, (Season, Episode))) and trakt_item.show.pk[1] not in show_ids:
                     show_ids.append(int(trakt_item.show.pk[1]))
-            if status_message:
-                logger.debug(f"Trakt {media_type} Found: {trakt_items}")
-        if status_message:
-            logger.debug(f"TMDb IDs Found: {movie_ids}")
-            logger.debug(f"TVDb IDs Found: {show_ids}")
+            logger.debug(f"Trakt {media_type} Found: {trakt_items}")
+        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

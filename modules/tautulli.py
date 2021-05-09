@@ -19,9 +19,8 @@ class TautulliAPI:
         self.url = params["url"]
         self.apikey = params["apikey"]
 
-    def get_items(self, library, time_range=30, stats_count=20, list_type="popular", stats_count_buffer=20, status_message=True):
-        if status_message:
-            logger.info(f"Processing Tautulli Most {'Popular' if list_type == 'popular' else 'Watched'}: {stats_count} {'Movies' if library.is_movie else 'Shows'}")
+    def get_items(self, library, time_range=30, stats_count=20, list_type="popular", stats_count_buffer=20):
+        logger.info(f"Processing Tautulli Most {'Popular' if list_type == 'popular' else 'Watched'}: {stats_count} {'Movies' if library.is_movie else 'Shows'}")
         response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_home_stats&time_range={time_range}&stats_count={int(stats_count) + int(stats_count_buffer)}")
         stat_id = f"{'popular' if list_type == 'popular' else 'top'}_{'movies' if library.is_movie else 'tv'}"
 
