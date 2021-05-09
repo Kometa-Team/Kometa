@@ -295,7 +295,7 @@ class Convert:
                     new_imdb_id = []
                     for imdb in imdb_id:
                         try:
-                            tmdb_id.append(self.imdb_to_tmdb(imdb_id, fail=True))
+                            tmdb_id.append(self.imdb_to_tmdb(imdb, fail=True))
                             new_imdb_id.append(imdb)
                         except Failed:
                             continue
