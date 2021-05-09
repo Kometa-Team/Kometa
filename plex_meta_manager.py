@@ -2,7 +2,7 @@ import argparse, logging, os, re, sys, time
 from datetime import datetime
 try:
     import schedule
-    from modules import tests, util
+    from modules import util
     from modules.builder import CollectionBuilder
     from modules.config import Config
     from modules.util import Failed
@@ -77,7 +77,7 @@ file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(lev
 
 cmd_handler = logging.StreamHandler()
 cmd_handler.setFormatter(logging.Formatter("| %(message)-100s |"))
-cmd_handler.setLevel(logging.DEBUG if my_tests or test or debug else logging.INFO)
+cmd_handler.setLevel(logging.DEBUG if test or debug else logging.INFO)
 
 logger.addHandler(cmd_handler)
 logger.addHandler(file_handler)

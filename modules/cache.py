@@ -148,7 +148,7 @@ class Cache:
                     expired = time_between_insertion.days > self.expiration
         return id_to_return, expired
 
-    def _update_map(self, map_name, val1, val1_name, val2, val2_name, expired, media_type=None):
+    def _update_map(self, map_name, val1_name, val1, val2_name, val2, expired, media_type=None):
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
