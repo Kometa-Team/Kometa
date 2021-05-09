@@ -294,85 +294,91 @@ def mass_metadata(config, library, movie_map, show_map):
     items = library.Plex.all()
     for i, item in enumerate(items, 1):
         length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
-        ids = {}
+        tmdb_id = None
+        tvdb_id = None
+        imdb_id = None
         if config.Cache:
-            ids, expired = config.Cache.get_ids("movie" if library.is_movie else "show", plex_guid=item.guid)
-        elif library.is_movie:
+            t_id, guid_media_type, _ = config.Cache.config.Cache.query_guid_map(item.guid)
+            if t_id:
+                if "movie" in guid_media_type:
+                    tmdb_id = t_id
+                else:
+                    tvdb_id = t_id
+        if not tmdb_id and not tvdb_id:
             for tmdb, rating_keys in movie_map.items():
                 if item.ratingKey in rating_keys:
-                    ids["tmdb"] = tmdb
+                    tmdb_id = tmdb
                     break
-        else:
+        if not tmdb_id and not tvdb_id and library.is_show:
             for tvdb, rating_keys in show_map.items():
                 if item.ratingKey in rating_keys:
-                    ids["tvdb"] = tvdb
+                    tvdb_id = tvdb
                     break
+        if tmdb_id:
+            imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
+        elif tvdb_id:
+            tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
+            imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
+
+        tmdb_item = None
+        if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb":
+            if tmdb_id:
+                try:
+                    tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
+                except Failed as e:
+                    util.print_end(length, str(e))
+            else:
+                util.print_end(length, f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}")
+
+        omdb_item = None
+        if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"]:
+            if config.OMDb.limit is False:
+                if imdb_id:
+                    try:
+                        omdb_item = config.OMDb.get_omdb(imdb_id)
+                    except Failed as e:
+                        util.print_end(length, str(e))
+                else:
+                    util.print_end(length, f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
+
+        if not tmdb_item and not omdb_item:
+            continue
 
         if library.mass_genre_update:
-            if library.mass_genre_update == "tmdb":
-                if "tmdb" not in ids:
-                    util.print_end(length, f"{item.title[:25]:<25} | No TMDb for Guid: {item.guid}")
-                    continue
-                try:
-                    tmdb_item = config.TMDb.get_movie(ids["tmdb"]) if library.is_movie else config.TMDb.get_show(ids["tmdb"])
-                except Failed as e:
-                    util.print_end(length, str(e))
-                    continue
-                new_genres = [genre.name for genre in tmdb_item.genres]
-            elif library.mass_genre_update in ["omdb", "imdb"]:
-                if config.OMDb.limit is True:
-                    break
-                if "imdb" not in ids:
-                    util.print_end(length, f"{item.title[:25]:<25} | No IMDb for Guid: {item.guid}")
-                    continue
-                try:
-                    omdb_item = config.OMDb.get_omdb(ids["imdb"])
-                except Failed as e:
-                    util.print_end(length, str(e))
-                    continue
-                new_genres = omdb_item.genres
-            else:
-                raise Failed
-            item_genres = [genre.tag for genre in item.genres]
-            display_str = ""
-            for genre in (g for g in item_genres if g not in new_genres):
-                library.query_data(item.removeGenre, genre)
-                display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
-            for genre in (g for g in new_genres if g not in item_genres):
-                library.query_data(item.addGenre, genre)
-                display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
-            if len(display_str) > 0:
-                util.print_end(length, f"{item.title[:25]:<25} | Genres | {display_str}")
+            try:
+                if tmdb_item and library.mass_genre_update == "tmdb":
+                    new_genres = [genre.name for genre in tmdb_item.genres]
+                elif omdb_item and library.mass_genre_update in ["omdb", "imdb"]:
+                    new_genres = omdb_item.genres
+                else:
+                    raise Failed
+                item_genres = [genre.tag for genre in item.genres]
+                display_str = ""
+                for genre in (g for g in item_genres if g not in new_genres):
+                    library.query_data(item.removeGenre, genre)
+                    display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
+                for genre in (g for g in new_genres if g not in item_genres):
+                    library.query_data(item.addGenre, genre)
+                    display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
+                if len(display_str) > 0:
+                    util.print_end(length, f"{item.title[:25]:<25} | Genres | {display_str}")
+            except Failed:
+                pass
         if library.mass_audience_rating_update:
-            if library.mass_audience_rating_update == "tmdb":
-                if "tmdb" not in ids:
-                    util.print_end(length, f"{item.title[:25]:<25} | No TMDb for Guid: {item.guid}")
-                    continue
-                try:
-                    tmdb_item = config.TMDb.get_movie(ids["tmdb"]) if library.is_movie else config.TMDb.get_show(ids["tmdb"])
-                except Failed as e:
-                    util.print_end(length, str(e))
-                    continue
-                new_rating = tmdb_item.vote_average
-            elif library.mass_audience_rating_update in ["omdb", "imdb"]:
-                if config.OMDb.limit is True:
-                    break
-                if "imdb" not in ids:
-                    util.print_end(length, f"{item.title[:25]:<25} | No IMDb for Guid: {item.guid}")
-                    continue
-                try:
-                    omdb_item = config.OMDb.get_omdb(ids["imdb"])
-                except Failed as e:
-                    util.print_end(length, str(e))
-                    continue
-                new_rating = omdb_item.imdb_rating
-            else:
-                raise Failed
-            if new_rating is None:
-                util.print_end(length, f"{item.title[:25]:<25} | No Rating Found")
-            elif str(item.audienceRating) != str(new_rating):
-                library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                util.print_end(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
+            try:
+                if tmdb_item and library.mass_genre_update == "tmdb":
+                    new_rating = tmdb_item.vote_average
+                elif omdb_item and library.mass_genre_update in ["omdb", "imdb"]:
+                    new_rating = omdb_item.imdb_rating
+                else:
+                    raise Failed
+                if new_rating is None:
+                    util.print_end(length, f"{item.title[:25]:<25} | No Rating Found")
+                elif str(item.audienceRating) != str(new_rating):
+                    library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
+                    util.print_end(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
+            except Failed:
+                pass
 
 def map_guids(config, library):
     movie_map = {}
