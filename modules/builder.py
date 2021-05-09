@@ -275,9 +275,9 @@ class CollectionBuilder:
                                         continue
                             else:
                                 txt = str(_data)
-                                def idk_yet(og_txt, var, var_value):
+                                def scan_text(og_txt, var, var_value):
                                     if og_txt == f"<<{var}>>":
-                                        return var_value
+                                        return str(var_value)
                                     elif f"<<{var}>>" in str(og_txt):
                                         return str(og_txt).replace(f"<<{var}>>", str(var_value))
                                     else:
@@ -287,14 +287,19 @@ class CollectionBuilder:
                                         raise Failed
                                 for variable, variable_data in variables.items():
                                     if variable != "name":
-                                        txt = idk_yet(txt, variable, variable_data)
+                                        txt = scan_text(txt, variable, variable_data)
                                 for dm, dd in default.items():
-                                    txt = idk_yet(txt, dm, dd)
-                                if txt in ["true", "True"]:                     final_data = True
-                                elif txt in ["false", "False"]:                 final_data = False
+                                    txt = scan_text(txt, dm, dd)
+                                if txt in ["true", "True"]:
+                                    final_data = True
+                                elif txt in ["false", "False"]:
+                                    final_data = False
                                 else:
-                                    try:                                            final_data = int(txt)
-                                    except (ValueError, TypeError):                 final_data = txt
+                                    try:
+                                        num_data = float(txt)
+                                        final_data = int(num_data) if num_data.is_integer() else num_data
+                                    except (ValueError, TypeError):
+                                        final_data = txt
                             return final_data
 
                         for method_name, attr_data in template.items():
