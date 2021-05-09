@@ -57,15 +57,17 @@ class TVDbObj:
             if len(results) > 0:
                 try:
                     tmdb_id = util.regex_first_int(results[0], "TMDb ID")
-                except Failed as e:
-                    logger.error(e)
-            if not tmdb_id:
+                except Failed:
+                    pass
+            if tmdb_id is None:
                 results = response.xpath("//*[text()='IMDB']/@href")
                 if len(results) > 0:
                     try:
                         tmdb_id = TVDb.config.Convert.imdb_to_tmdb(util.get_id_from_imdb_url(results[0]), fail=True)
-                    except Failed as e:
-                        logger.error(e)
+                    except Failed:
+                        pass
+            if tmdb_id is None:
+                raise Failed(f"TVDB Error: No TMDb ID found for {self.title}")
         self.tmdb_id = tmdb_id
         self.tvdb_url = tvdb_url
         self.language = language
@@ -146,23 +148,21 @@ class TVDbAPI:
     def _request(self, url, language):
         return html.fromstring(requests.get(url, headers={"Accept-Language": language}).content)
 
-    def get_items(self, method, data, language, status_message=True):
+    def get_items(self, method, data, language):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         show_ids = []
         movie_ids = []
-        if status_message:
-            logger.info(f"Processing {pretty}: {data}")
+        logger.info(f"Processing {pretty}: {data}")
         if method == "tvdb_show":
             show_ids.append(self.get_series(language, data).id)
         elif method == "tvdb_movie":
-            movie_ids.append(self.get_movie(language, data).id)
+            movie_ids.append(self.get_movie(language, data).tmdb_id)
         elif method == "tvdb_list":
             tmdb_ids, tvdb_ids = self._ids_from_url(data, language)
             movie_ids.extend(tmdb_ids)
             show_ids.extend(tvdb_ids)
         else:
             raise Failed(f"TVDb Error: Method {method} not supported")
-        if status_message:
-            logger.debug(f"TMDb IDs Found: {movie_ids}")
-            logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids
