@@ -209,23 +209,25 @@ class CollectionBuilder:
             elif not self.data[methods["template"]]:
                 raise Failed("Collection Error: template attribute is blank")
             else:
-                for data_template in util.get_list(self.data[methods["template"]], split=False):
-                    if not isinstance(data_template, dict):
+                for variables in util.get_list(self.data[methods["template"]], split=False):
+                    if not isinstance(variables, dict):
                         raise Failed("Collection Error: template attribute is not a dictionary")
-                    elif "name" not in data_template:
+                    elif "name" not in variables:
                         raise Failed("Collection Error: template sub-attribute name is required")
-                    elif not data_template["name"]:
+                    elif not variables["name"]:
                         raise Failed("Collection Error: template sub-attribute name is blank")
-                    elif data_template["name"] not in self.metadata.templates:
-                        raise Failed(f"Collection Error: template {data_template['name']} not found")
-                    elif not isinstance(self.metadata.templates[data_template["name"]], dict):
-                        raise Failed(f"Collection Error: template {data_template['name']} is not a dictionary")
+                    elif variables["name"] not in self.metadata.templates:
+                        raise Failed(f"Collection Error: template {variables['name']} not found")
+                    elif not isinstance(self.metadata.templates[variables["name"]], dict):
+                        raise Failed(f"Collection Error: template {variables['name']} is not a dictionary")
                     else:
-                        for tm in data_template:
-                            if not data_template[tm]:
+                        for tm in variables:
+                            if not variables[tm]:
                                 raise Failed(f"Collection Error: template sub-attribute {tm} is blank")
+                        if "collection_name" not in variables:
+                            variables["collection_name"] = str(self.name)
 
-                        template_name = data_template["name"]
+                        template_name = variables["name"]
                         template = self.metadata.templates[template_name]
 
                         default = {}
@@ -256,60 +258,55 @@ class CollectionBuilder:
                             else:
                                 raise Failed("Collection Error: template sub-attribute optional is blank")
 
-                        for method_name, attr_data in template.items():
-                            if method_name not in self.data and method_name not in ["default", "optional"]:
-                                if attr_data is not None:
-                                    def replace_txt(txt):
-                                        txt = str(txt)
-                                        for option in optional:
-                                            if option not in data_template and f"<<{option}>>" in txt:
-                                                raise Failed("remove attribute")
-                                        for template_method in data_template:
-                                            if template_method != "name" and txt == f"<<{template_method}>>":
-                                                return data_template[template_method]
-                                            elif template_method != "name" and f"<<{template_method}>>" in txt:
-                                                txt = txt.replace(f"<<{template_method}>>", str(data_template[template_method]))
-                                        if "<<collection_name>>" in txt:
-                                            txt = txt.replace("<<collection_name>>", str(self.name))
-                                        for dm in default:
-                                            if txt == f"<<{dm}>>":
-                                                txt = default[dm]
-                                            elif f"<<{dm}>>" in txt:
-                                                txt = txt.replace(f"<<{dm}>>", str(default[dm]))
-                                        if txt in ["true", "True"]:                     return True
-                                        elif txt in ["false", "False"]:                 return False
-                                        else:
-                                            try:                                            return int(txt)
-                                            except (ValueError, TypeError):                 return txt
+                        def check_data(_data):
+                            if isinstance(_data, dict):
+                                final_data = {}
+                                for sm, sd in _data.items():
                                     try:
-                                        if isinstance(attr_data, dict):
-                                            final_data = {}
-                                            for sm in attr_data:
-                                                if isinstance(attr_data[sm], list):
-                                                    temp_list = []
-                                                    for li in attr_data[sm]:
-                                                        temp_list.append(replace_txt(li))
-                                                    final_data[sm] = temp_list
-                                                else:
-                                                    final_data[sm] = replace_txt(attr_data[sm])
-                                        elif isinstance(attr_data, list):
-                                            final_data = []
-                                            for li in attr_data:
-                                                if isinstance(li, dict):
-                                                    temp_dict = {}
-                                                    for sm in li:
-                                                        temp_dict[sm] = replace_txt(li[sm])
-                                                    final_data.append(temp_dict)
-                                                else:
-                                                    final_data.append(replace_txt(li))
-                                        else:
-                                            final_data = replace_txt(attr_data)
+                                        final_data[sm] = check_data(sd)
                                     except Failed:
                                         continue
-                                    self.data[method_name] = final_data
-                                    methods[method_name.lower()] = method_name
+                            elif isinstance(_data, list):
+                                final_data = []
+                                for li in _data:
+                                    try:
+                                        final_data.append(check_data(li))
+                                    except Failed:
+                                        continue
+                            else:
+                                txt = str(_data)
+                                def idk_yet(og_txt, var, var_value):
+                                    if og_txt == f"<<{var}>>":
+                                        return var_value
+                                    elif f"<<{var}>>" in str(og_txt):
+                                        return str(og_txt).replace(f"<<{var}>>", str(var_value))
+                                    else:
+                                        return og_txt
+                                for option in optional:
+                                    if option not in variables and f"<<{option}>>" in txt:
+                                        raise Failed
+                                for variable, variable_data in variables.items():
+                                    if variable != "name":
+                                        txt = idk_yet(txt, variable, variable_data)
+                                for dm, dd in default.items():
+                                    txt = idk_yet(txt, dm, dd)
+                                if txt in ["true", "True"]:                     final_data = True
+                                elif txt in ["false", "False"]:                 final_data = False
                                 else:
-                                    raise Failed(f"Collection Error: template attribute {method_name} is blank")
+                                    try:                                            final_data = int(txt)
+                                    except (ValueError, TypeError):                 final_data = txt
+                            return final_data
+
+                        for method_name, attr_data in template.items():
+                            if method_name not in self.data and method_name not in ["default", "optional"]:
+                                if attr_data is None:
+                                    logger.error(f"Template Error: template attribute {method_name} is blank")
+                                    continue
+                                try:
+                                    self.data[method_name] = check_data(attr_data)
+                                    methods[method_name.lower()] = method_name
+                                except Failed:
+                                    continue
 
         skip_collection = True
         if "schedule" not in methods:
