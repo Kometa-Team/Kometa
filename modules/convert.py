@@ -48,23 +48,31 @@ class Convert:
         collect_ids(anidb_ids, "anidb")
         collect_ids(mal_ids, "myanimelist")
         converted_ids = []
-        if self.config.Cache:
-            unconverted_ids = []
-            for anime_dict in all_ids:
+        unconverted_ids = []
+        unconverted_id_sets = []
+
+        for anime_dict in all_ids:
+            if self.config.Cache:
                 for id_type, anime_id in anime_dict.items():
-                    query_ids, update = self.config.Cache.query_anime_map(anime_id, id_type)
-                    if not update and query_ids:
+                    query_ids, expired = self.config.Cache.query_anime_map(anime_id, id_type)
+                    if query_ids and not expired:
                         converted_ids.append(query_ids)
                     else:
                         unconverted_ids.append({id_type: anime_id})
-        else:
-            unconverted_ids = all_ids
-
-        for anime_ids in self._request(unconverted_ids):
-            if anime_ids:
-                if self.config.Cache:
-                    self.config.Cache.update_anime_map(False, anime_ids)
-                converted_ids.append(anime_ids)
+                        if len(unconverted_ids) == 100:
+                            unconverted_id_sets.append(unconverted_ids)
+                            unconverted_ids = []
+            else:
+                unconverted_ids.append(anime_dict)
+                if len(unconverted_ids) == 100:
+                    unconverted_id_sets.append(unconverted_ids)
+                    unconverted_ids = []
+        for unconverted_id_set in unconverted_id_sets:
+            for anime_ids in self._request(unconverted_id_set):
+                if anime_ids:
+                    if self.config.Cache:
+                        self.config.Cache.update_anime_map(False, anime_ids)
+                    converted_ids.append(anime_ids)
         return converted_ids
 
     def anidb_to_ids(self, anidb_list):
