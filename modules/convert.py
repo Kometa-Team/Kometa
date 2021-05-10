@@ -291,9 +291,9 @@ class Convert:
             else:                                           raise Failed(f"Agent {item_type} not supported")
 
             if anidb_id:
-                imdb_id = self.anidb_to_imdb(anidb_id)
-                if not imdb_id:
-                    tvdb_id = self.anidb_to_tvdb(anidb_id)
+                tvdb_id = self.anidb_to_tvdb(anidb_id)
+                if not tvdb_id:
+                    imdb_id = self.anidb_to_imdb(anidb_id)
                 if not imdb_id and not tvdb_id:
                     raise Failed(f"Unable to convert AniDB ID: {anidb_id} to TVDb ID or IMDb ID")
 
