@@ -1,6 +1,8 @@
 import logging, requests
 from modules import util
 from modules.util import Failed
+from plexapi.exceptions import BadRequest, NotFound
+from plexapi.video import Movie, Show
 from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -37,7 +39,18 @@ class TautulliAPI:
         count = 0
         for item in items:
             if item["section_id"] == section_id and count < int(stats_count):
-                rating_keys.append(item["rating_key"])
+                rk = None
+                try:
+                    library.fetchItem(int(item["rating_key"]))
+                    rk = item["rating_key"]
+                except (BadRequest, NotFound):
+                    new_item = library.exact_search(item["title"])
+                    if new_item:
+                        rk = new_item[0].ratingKey
+                    else:
+                        logger.error(f"Plex Error: Item {item} not found")
+                        continue
+                rating_keys.append(rk)
                 count += 1
         return rating_keys
 

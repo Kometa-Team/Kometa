@@ -362,47 +362,51 @@ class PlexAPI:
     def get_all_collections(self):
         return self.search(libtype="collection")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def search(self, title=None, libtype=None, sort=None, maxresults=None, **kwargs):
         return self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def exact_search(self, title, libtype=None):
+        return self.Plex.search(libtype=libtype, **{"title=": title})
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_labeled_items(self, label):
         return self.Plex.search(label=label)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_all(self):
         return self.Plex.all()
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def server_search(self, data):
         return self.PlexServer.search(data)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def query(self, method):
         return method()
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def query_data(self, method, data):
         return method(data)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_mode_query(self, collection, data):
         collection.modeUpdate(mode=data)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_order_query(self, collection, data):
         collection.sortUpdate(sort=data)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_guids(self, item):
         return item.guids
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def edit_query(self, item, edits, advanced=False):
         if advanced:
             item.editAdvanced(**edits)
@@ -410,7 +414,7 @@ class PlexAPI:
             item.edit(**edits)
         item.reload()
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def upload_image(self, item, location, poster=True, url=True):
         if poster and url:
             item.uploadPoster(url=location)
@@ -432,11 +436,11 @@ class PlexAPI:
         except NotFound:
             raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_labels(self):
         return {label.title: label.key for label in self.Plex.listFilterChoices(field="label")}
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _query(self, key, post=False, put=False):
         if post:                method = self.Plex._server._session.post
         elif put:               method = self.Plex._server._session.put
@@ -707,8 +711,8 @@ class PlexAPI:
                     elif method_name == "filepath":
                         jailbreak = False
                         for location in current.locations:
-                            for location_prefix in filter_data:
-                                if location.startswith(location_prefix):
+                            for check_text in filter_data:
+                                if check_text.lower() in location.lower():
                                     jailbreak = True
                                     break
                             if jailbreak: break
