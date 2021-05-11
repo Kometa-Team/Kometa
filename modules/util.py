@@ -1,5 +1,6 @@
 import logging, re, signal, sys, time, traceback
 from datetime import datetime
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
 try:
     import msvcrt
@@ -18,6 +19,9 @@ class Failed(Exception):
 
 def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)
+
+def retry_if_not_plex(exception):
+    return not isinstance(exception, (BadRequest, NotFound, Unauthorized))
 
 separating_character = "="
 screen_width = 100
