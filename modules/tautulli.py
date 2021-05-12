@@ -21,10 +21,11 @@ class TautulliAPI:
         self.url = params["url"]
         self.apikey = params["apikey"]
 
-    def get_items(self, library, time_range=30, stats_count=20, list_type="popular", stats_count_buffer=20):
-        logger.info(f"Processing Tautulli Most {'Popular' if list_type == 'popular' else 'Watched'}: {stats_count} {'Movies' if library.is_movie else 'Shows'}")
-        response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_home_stats&time_range={time_range}&stats_count={int(stats_count) + int(stats_count_buffer)}")
-        stat_id = f"{'popular' if list_type == 'popular' else 'top'}_{'movies' if library.is_movie else 'tv'}"
+    def get_items(self, library, params):
+        query_size = int(params["list_size"]) + int(params["list_buffer"])
+        logger.info(f"Processing Tautulli Most {params['list_type'].capitalize()}: {params['list_size']} {'Movies' if library.is_movie else 'Shows'}")
+        response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_home_stats&time_range={params['list_days']}&stats_count={query_size}")
+        stat_id = f"{'popular' if params['list_type'] == 'popular' else 'top'}_{'movies' if library.is_movie else 'tv'}"
 
         items = None
         for entry in response["response"]["data"]:
@@ -38,19 +39,17 @@ class TautulliAPI:
         rating_keys = []
         count = 0
         for item in items:
-            if item["section_id"] == section_id and count < int(stats_count):
-                rk = None
+            if item["section_id"] == section_id and count < int(params['list_size']):
                 try:
                     library.fetchItem(int(item["rating_key"]))
-                    rk = item["rating_key"]
+                    rating_keys.append(item["rating_key"])
                 except (BadRequest, NotFound):
-                    new_item = library.exact_search(item["title"])
+                    new_item = library.exact_search(item["title"], year=item["year"])
                     if new_item:
-                        rk = new_item[0].ratingKey
+                        rating_keys.append(new_item[0].ratingKey)
                     else:
                         logger.error(f"Plex Error: Item {item} not found")
                         continue
-                rating_keys.append(rk)
                 count += 1
         return rating_keys
 

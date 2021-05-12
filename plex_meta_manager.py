@@ -186,105 +186,37 @@ def update_libraries(config, is_test, requested_collections, resume_from):
                     util.separator(f"{builder.name} Collection")
                     logger.info("")
                     try:
-                        collection_obj = library.get_collection(builder.name)
+                        builder.run_collections_again(movie_map, show_map)
                     except Failed as e:
+                        util.print_stacktrace()
                         util.print_multiline(e, error=True)
-                        continue
-                    builder.run_collections_again(collection_obj, movie_map, show_map)
 
-def run_collection(config, library, metadata, requested_collections, is_test, resume_from, movie_map, show_map):
-    for mapping_name, collection_attrs in requested_collections.items():
-        if is_test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
-            no_template_test = True
-            if "template" in collection_attrs and collection_attrs["template"]:
-                for data_template in util.get_list(collection_attrs["template"], split=False):
-                    if "name" in data_template \
-                            and data_template["name"] \
-                            and metadata.templates \
-                            and data_template["name"] in metadata.templates \
-                            and metadata.templates[data_template["name"]] \
-                            and "test" in metadata.templates[data_template["name"]] \
-                            and metadata.templates[data_template["name"]]["test"] is True:
-                        no_template_test = False
-            if no_template_test:
-                continue
+def map_guids(config, library):
+    movie_map = {}
+    show_map = {}
+    length = 0
+    logger.info(f"Mapping {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
+    items = library.Plex.all()
+    for i, item in enumerate(items, 1):
+        length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
         try:
-            if resume_from and resume_from != mapping_name:
-                continue
-            elif resume_from == mapping_name:
-                resume_from = None
-                logger.info("")
-                util.separator(f"Resuming Collections")
-
-            logger.info("")
-            util.separator(f"{mapping_name} Collection")
-            logger.info("")
-
-            try:
-                builder = CollectionBuilder(config, library, metadata, mapping_name, collection_attrs)
-            except Failed as f:
-                util.print_stacktrace()
-                util.print_multiline(f, error=True)
-                continue
-            except Exception as e:
-                util.print_stacktrace()
-                logger.error(e)
-                continue
-
-            try:
-                collection_obj = library.get_collection(mapping_name)
-                collection_name = collection_obj.title
-                collection_smart = library.smart(collection_obj)
-                if (builder.smart and not collection_smart) or (not builder.smart and collection_smart):
-                    logger.info("")
-                    logger.error(f"Collection Error: Converting {collection_obj.title} to a {'smart' if builder.smart else 'normal'} collection")
-                    library.query(collection_obj.delete)
-                    collection_obj = None
-            except Failed:
-                collection_obj = None
-                collection_name = mapping_name
-
-            if len(builder.schedule) > 0:
-                util.print_multiline(builder.schedule, info=True)
-
-            rating_key_map = {}
-            logger.info("")
-            if builder.sync:
-                logger.info("Sync Mode: sync")
-                if collection_obj:
-                    for item in library.get_collection_items(collection_obj, builder.smart_label_collection):
-                        rating_key_map[item.ratingKey] = item
-            else:
-                logger.info("Sync Mode: append")
-
-            for i, f in enumerate(builder.filters):
-                if i == 0:
-                    logger.info("")
-                logger.info(f"Collection Filter {f[0]}: {f[1]}")
-
-            if not builder.smart_url:
-                builder.run_methods(collection_obj, collection_name, rating_key_map, movie_map, show_map)
-
-            try:
-                if not collection_obj and builder.smart_url:
-                    library.create_smart_collection(collection_name, builder.smart_type_key, builder.smart_url)
-                elif not collection_obj and builder.smart_label_collection:
-                    library.create_smart_labels(collection_name, sort=builder.smart_sort)
-                plex_collection = library.get_collection(collection_name)
-            except Failed as e:
-                util.print_stacktrace()
-                logger.error(e)
-                continue
-
-            builder.update_details(plex_collection)
-
-            if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
-                library.run_again.append(builder)
-
-        except Exception as e:
+            id_type, main_id = config.Convert.get_id(item, library, length)
+        except BadRequest:
             util.print_stacktrace()
-            logger.error(f"Unknown Error: {e}")
-    return resume_from
+            util.print_end(length, f"{'Cache | ! |' if config.Cache else 'Mapping Error:'} | {item.guid} for {item.title} not found")
+            continue
+        if not isinstance(main_id, list):
+            main_id = [main_id]
+        if id_type == "movie":
+            for m in main_id:
+                if m in movie_map:              movie_map[m].append(item.ratingKey)
+                else:                           movie_map[m] = [item.ratingKey]
+        elif id_type == "show":
+            for m in main_id:
+                if m in show_map:               show_map[m].append(item.ratingKey)
+                else:                           show_map[m] = [item.ratingKey]
+    util.print_end(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}")
+    return movie_map, show_map
 
 def mass_metadata(config, library, movie_map, show_map):
     length = 0
@@ -380,32 +312,70 @@ def mass_metadata(config, library, movie_map, show_map):
             except Failed:
                 pass
 
-def map_guids(config, library):
-    movie_map = {}
-    show_map = {}
-    length = 0
-    logger.info(f"Mapping {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
-    items = library.Plex.all()
-    for i, item in enumerate(items, 1):
-        length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
+def run_collection(config, library, metadata, requested_collections, is_test, resume_from, movie_map, show_map):
+    for mapping_name, collection_attrs in requested_collections.items():
+        if is_test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
+            no_template_test = True
+            if "template" in collection_attrs and collection_attrs["template"]:
+                for data_template in util.get_list(collection_attrs["template"], split=False):
+                    if "name" in data_template \
+                            and data_template["name"] \
+                            and metadata.templates \
+                            and data_template["name"] in metadata.templates \
+                            and metadata.templates[data_template["name"]] \
+                            and "test" in metadata.templates[data_template["name"]] \
+                            and metadata.templates[data_template["name"]]["test"] is True:
+                        no_template_test = False
+            if no_template_test:
+                continue
         try:
-            id_type, main_id = config.Convert.get_id(item, library, length)
-        except BadRequest:
+            if resume_from and resume_from != mapping_name:
+                continue
+            elif resume_from == mapping_name:
+                resume_from = None
+                logger.info("")
+                util.separator(f"Resuming Collections")
+
+            logger.info("")
+            util.separator(f"{mapping_name} Collection")
+            logger.info("")
+
+            builder = CollectionBuilder(config, library, metadata, mapping_name, collection_attrs)
+
+            if len(builder.schedule) > 0:
+                util.print_multiline(builder.schedule, info=True)
+
+            logger.info("")
+            logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
+
+            if len(builder.filters) > 0:
+                logger.info("")
+                for filter_key, filter_value in builder.filters:
+                    logger.info(f"Collection Filter {filter_key}: {filter_value}")
+
+            if not builder.smart_url:
+                builder.collect_rating_keys(movie_map, show_map)
+                logger.info("")
+                if len(builder.rating_keys) > 0:
+                    builder.add_to_collection(movie_map, show_map)
+                if len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0:
+                    builder.run_missing(movie_map, show_map)
+                if builder.sync and len(builder.rating_keys) > 0:
+                    builder.sync_collection()
+                logger.info("")
+
+            builder.update_details()
+
+            if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                library.run_again.append(builder)
+
+        except Failed as e:
             util.print_stacktrace()
-            util.print_end(length, f"{'Cache | ! |' if config.Cache else 'Mapping Error:'} | {item.guid} for {item.title} not found")
-            continue
-        if not isinstance(main_id, list):
-            main_id = [main_id]
-        if id_type == "movie":
-            for m in main_id:
-                if m in movie_map:              movie_map[m].append(item.ratingKey)
-                else:                           movie_map[m] = [item.ratingKey]
-        elif id_type == "show":
-            for m in main_id:
-                if m in show_map:               show_map[m].append(item.ratingKey)
-                else:                           show_map[m] = [item.ratingKey]
-    util.print_end(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}")
-    return movie_map, show_map
+            util.print_multiline(e, error=True)
+        except Exception as e:
+            util.print_stacktrace()
+            logger.error(f"Unknown Error: {e}")
+    return resume_from
 
 try:
     if run or test or collections or libraries or resume:
