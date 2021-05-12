@@ -313,7 +313,13 @@ class Convert:
                 if not tmdb_id:
                     raise Failed(f"Unable to convert IMDb ID: {imdb_id} to TMDb ID")
             if not anidb_id and not tvdb_id and tmdb_id and library.is_show:
-                tvdb_id = self.tmdb_to_tvdb(tmdb_id)
+                if isinstance(tmdb_id, list):
+                    tvdb_id = []
+                    for tmdb in tmdb_id:
+                        if tmdb:
+                            tvdb_id.append(self.tmdb_to_tvdb(tmdb))
+                else:
+                    tvdb_id = self.tmdb_to_tvdb(tmdb_id)
                 if not tvdb_id:
                     raise Failed(f"Unable to convert TMDb ID: {tmdb_id} to TVDb ID")
 
