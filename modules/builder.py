@@ -536,18 +536,25 @@ class CollectionBuilder:
                             results_list = [(t, t) for t in util.get_list(smart_data, split=False)]
                         elif smart in plex.tags and smart_mod in ["", ".not", ".begins", ".ends"]:
                             if smart_final in plex.tmdb_searches:
-                                final_tmdb_values = []
+                                smart_values = []
                                 for tmdb_value in util.get_list(smart_data):
                                     if tmdb_value.lower() == "tmdb" and "tmdb_person" in self.details:
                                         for tmdb_name in self.details["tmdb_person"]:
-                                            final_tmdb_values.append(tmdb_name)
+                                            smart_values.append(tmdb_name)
                                     else:
-                                        final_tmdb_values.append(tmdb_value)
+                                        smart_values.append(tmdb_value)
                             elif smart == "studio":
-                                final_tmdb_values = util.get_list(smart_data, split=False)
+                                smart_values = util.get_list(smart_data, split=False)
                             else:
-                                final_tmdb_values = util.get_list(smart_data)
-                            results_list = self.library.validate_search_list(final_tmdb_values, smart, title=False, pairs=True)
+                                smart_values = util.get_list(smart_data)
+                            if smart == "crew":
+                                results_list = []
+                                for c_type in ["actor", "director", "producer", "writer"]:
+                                    results_list.extend(self.library.validate_search_list(smart_values, c_type, title=False, pairs=True, fail=False))
+                                if len(results_list) == 0:
+                                    raise Failed(f"Plex Error: crew: {final_values} not found")
+                            else:
+                                results_list = self.library.validate_search_list(smart_values, smart, title=False, pairs=True)
                         elif smart in ["decade", "year", "episode_year"] and smart_mod in ["", ".not"]:
                             results_list = [(y, y) for y in util.get_year_list(smart_data, current_year, smart_final)]
                         else:
@@ -776,11 +783,18 @@ class CollectionBuilder:
                     else:
                         final_values = method_data
                     search = os.path.splitext(method_name)[0]
-                    valid_values = self.library.validate_search_list(final_values, search)
-                    if len(valid_values) > 0:
-                        self.methods.append(("plex_search", [{method_name: valid_values}]))
+                    if search == "crew":
+                        valid_methods = []
+                        for crew_type in ["actor", "director", "producer", "writer"]:
+                            valid_values = self.library.validate_search_list(final_values, crew_type, fail=False)
+                            if len(valid_values) > 0:
+                                valid_methods.append(("plex_search", [{crew_type: valid_values}]))
+                        if len(valid_methods) > 0:
+                            self.methods.extend(valid_methods)
+                        else:
+                            raise Failed(f"Plex Error: crew: {method_data} not found")
                     else:
-                        logger.warning(f"Collection Warning: No valid {search} values found in {final_values}")
+                        self.methods.append(("plex_search", [{method_name: self.library.validate_search_list(final_values, search)}]))
                 elif method_name == "plex_all":
                     self.methods.append((method_name, [""]))
                 elif method_name == "plex_collection":
@@ -940,11 +954,18 @@ class CollectionBuilder:
                                                 final_values.append(value)
                                     else:
                                         final_values = util.get_list(search_data)
-                                    valid_values = self.library.validate_search_list(final_values, search)
-                                    if valid_values:
-                                        searches[search_final] = valid_values
+                                    if search == "crew":
+                                        valid_methods = []
+                                        for crew_type in ["actor", "director", "producer", "writer"]:
+                                            valid_values = self.library.validate_search_list(final_values, crew_type, fail=False)
+                                            if len(valid_values) > 0:
+                                                valid_methods.append(("plex_search", [{crew_type: valid_values}]))
+                                        if len(valid_methods) > 0:
+                                            self.methods.extend(valid_methods)
+                                        else:
+                                            raise Failed(f"Plex Error: crew: {final_values} not found")
                                     else:
-                                        logger.warning(f"Collection Warning: No valid {search} values found in {final_values}")
+                                        searches[search_final] = self.library.validate_search_list(final_values, search)
                                 elif search == "year" and modifier in [".gt", ".gte", ".lt", ".lte"]:
                                     searches[search_final] = util.check_year(search_data, current_year, search_final)
                                 elif search in ["added", "originally_available"] and modifier in [".before", ".after"]:
