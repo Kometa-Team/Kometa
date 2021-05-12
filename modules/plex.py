@@ -82,6 +82,7 @@ searches = [
     "actor", "actor.and", "actor.not",
     "audio_language", "audio_language.and", "audio_language.not",
     "collection", "collection.and", "collection.not",
+    "crew",
     "content_rating", "content_rating.and", "content_rating.not",
     "country", "country.and", "country.not",
     "director", "director.and", "director.not",
@@ -114,6 +115,7 @@ show_only_searches = [
 ]
 tmdb_searches = [
     "actor", "actor.and", "actor.not",
+    "crew",
     "director", "director.and", "director.not",
     "producer", "producer.and", "producer.not",
     "writer", "writer.and", "writer.not"
@@ -157,6 +159,7 @@ tags = [
     "collection",
     "content_rating",
     "country",
+    "crew",
     "director",
     "genre",
     "label",
@@ -473,7 +476,7 @@ class PlexAPI:
         smart_filter = self.get_collection(collection)._data.attrib.get('content')
         return smart_filter[smart_filter.index("?"):]
 
-    def validate_search_list(self, data, search_name, title=True, pairs=False):
+    def validate_search_list(self, data, search_name, title=True, pairs=False, fail=True):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         search_choices = self.get_search_choices(final_search, title=title)
         valid_list = []
@@ -483,6 +486,8 @@ class PlexAPI:
                     valid_list.append((value, search_choices[str(value).lower()]))
                 else:
                     valid_list.append(search_choices[str(value).lower()])
+            elif fail:
+                raise Failed(f"Plex Error: {search_name}: {value} not found")
             else:
                 logger.error(f"Plex Error: {search_name}: {value} not found")
         return valid_list
