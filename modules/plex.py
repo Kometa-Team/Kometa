@@ -1,5 +1,4 @@
 import glob, logging, os, requests
-from datetime import datetime, timedelta
 from modules import util
 from modules.meta import Metadata
 from modules.util import Failed
@@ -344,6 +343,9 @@ class PlexAPI:
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
         self.timeout = params["plex"]["timeout"]
+        self.clean_bundles = params["plex"]["clean_bundles"]
+        self.empty_trash = params["plex"]["empty_trash"]
+        self.optimize = params["plex"]["optimize"]
         self.missing = {}
         self.run_again = []
 

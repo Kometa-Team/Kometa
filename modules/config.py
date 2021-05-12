@@ -274,6 +274,9 @@ class Config:
         self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", default_is_none=True)
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True)
         self.general["plex"]["timeout"] = check_for_attribute(self.data, "timeout", parent="plex", var_type="int", default=60)
+        self.general["plex"]["clean_bundles"] = check_for_attribute(self.data, "clean_bundles", parent="plex", var_type="bool", default=False)
+        self.general["plex"]["empty_trash"] = check_for_attribute(self.data, "empty_trash", parent="plex", var_type="bool", default=False)
+        self.general["plex"]["optimize"] = check_for_attribute(self.data, "optimize", parent="plex", var_type="bool", default=False)
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True)
@@ -405,6 +408,9 @@ class Config:
                 params["plex"]["url"] = check_for_attribute(lib, "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
                 params["plex"]["timeout"] = check_for_attribute(lib, "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False)
+                params["plex"]["clean_bundles"] = check_for_attribute(lib, "clean_bundles", parent="plex", var_type="bool", default=self.general["plex"]["clean_bundles"], save=False)
+                params["plex"]["empty_trash"] = check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False)
+                params["plex"]["optimize"] = check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
                 library = PlexAPI(params, self.TMDb, self.TVDb)
                 logger.info(f"{params['name']} Library Connection Successful")
             except Failed as e:

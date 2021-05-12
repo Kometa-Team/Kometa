@@ -191,6 +191,17 @@ def update_libraries(config, is_test, requested_collections, resume_from):
                         util.print_stacktrace()
                         util.print_multiline(e, error=True)
 
+    used_url = []
+    for library in config.libraries:
+        if library.url not in used_url:
+            used_url.append(library.url)
+            if library.clean_bundles:
+                library.query(library.PlexServer.library.cleanBundles)
+            if library.empty_trash:
+                library.query(library.PlexServer.library.emptyTrash)
+            if library.optimize:
+                library.query(library.PlexServer.library.optimize)
+
 def map_guids(config, library):
     movie_map = {}
     show_map = {}
