@@ -316,12 +316,29 @@ class Convert:
                 if isinstance(tmdb_id, list):
                     tvdb_id = []
                     for tmdb in tmdb_id:
-                        if tmdb:
-                            tvdb_id.append(self.tmdb_to_tvdb(tmdb))
+                        try:
+                            tvdb_id.append(self.tmdb_to_tvdb(tmdb, fail=True))
+                        except Failed:
+                            continue
                 else:
                     tvdb_id = self.tmdb_to_tvdb(tmdb_id)
                 if not tvdb_id:
                     raise Failed(f"Unable to convert TMDb ID: {tmdb_id} to TVDb ID")
+
+            if tvdb_id:
+                if isinstance(tvdb_id, list):
+                    new_tvdb_id = []
+                    for tvdb in tvdb_id:
+                        try:
+                            new_tvdb_id.append(int(tvdb))
+                        except ValueError:
+                            continue
+                    tvdb_id = new_tvdb_id
+                else:
+                    try:
+                        tvdb_id = int(tvdb_id)
+                    except ValueError:
+                        tvdb_id = None
 
             def update_cache(cache_ids, id_type, guid_type):
                 if self.config.Cache:
