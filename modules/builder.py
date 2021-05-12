@@ -707,7 +707,7 @@ class CollectionBuilder:
                     elif str(method_data).lower() not in options:
                         logger.error(f"Metadata Error: {method_data} {method_name} attribute invalid")
                     else:
-                        self.item_details[method_name] = options[str(method_data).lower()]
+                        self.item_details[method_name] = str(method_data).lower()
                 elif method_name in boolean_details:
                     self.details[method_name] = util.get_bool(method_name, method_data)
                 elif method_name in all_details:
