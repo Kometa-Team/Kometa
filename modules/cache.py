@@ -1,7 +1,6 @@
 import logging, os, random, sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta
-from modules.util import Failed
 
 logger = logging.getLogger("Plex Meta Manager")
 
