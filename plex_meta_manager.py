@@ -368,16 +368,16 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
                 builder.collect_rating_keys(movie_map, show_map)
                 logger.info("")
                 if len(builder.rating_keys) > 0:
-                    builder.add_to_collection(movie_map, show_map)
+                    builder.add_to_collection(movie_map)
                 if len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0:
-                    builder.run_missing(movie_map, show_map)
+                    builder.run_missing()
                 if builder.sync and len(builder.rating_keys) > 0:
                     builder.sync_collection()
                 logger.info("")
 
             builder.update_details()
 
-            if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+            if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
 
         except Failed as e:
