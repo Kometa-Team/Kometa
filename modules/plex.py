@@ -478,7 +478,7 @@ class PlexAPI:
         smart_filter = self.get_collection(collection)._data.attrib.get('content')
         return smart_filter[smart_filter.index("?"):]
 
-    def validate_search_list(self, data, search_name, title=True, pairs=False, fail=True):
+    def validate_search_list(self, data, search_name, title=True, pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         search_choices = self.get_search_choices(final_search, title=title)
         valid_list = []
@@ -488,10 +488,8 @@ class PlexAPI:
                     valid_list.append((value, search_choices[str(value).lower()]))
                 else:
                     valid_list.append(search_choices[str(value).lower()])
-            elif fail:
-                raise Failed(f"Plex Error: {search_name}: {value} not found")
             else:
-                logger.error(f"Plex Error: {search_name}: {value} not found")
+                raise Failed(f"Plex Error: {search_name}: {value} not found")
         return valid_list
 
     def get_collection(self, data):

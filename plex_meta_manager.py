@@ -214,7 +214,7 @@ def map_guids(config, library):
             id_type, main_id = config.Convert.get_id(item, library, length)
         except BadRequest:
             util.print_stacktrace()
-            util.print_end(length, f"{'Cache | ! |' if config.Cache else 'Mapping Error:'} | {item.guid} for {item.title} not found")
+            util.print_end(length, f"Mapping Error: | {item.guid} for {item.title} not found")
             continue
         if not isinstance(main_id, list):
             main_id = [main_id]
