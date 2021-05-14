@@ -308,7 +308,7 @@ class Convert:
                 else:
                     tmdb_id = self.imdb_to_tmdb(imdb_id)
                 if not tmdb_id:
-                    raise Failed(f"Unable to convert IMDb ID: {imdb_id} to TMDb ID")
+                    raise Failed(f"Unable to convert IMDb ID: {util.compile_list(imdb_id)} to TMDb ID")
             if not anidb_id and not tvdb_id and tmdb_id and library.is_show:
                 if isinstance(tmdb_id, list):
                     tvdb_id = []
@@ -320,7 +320,7 @@ class Convert:
                 else:
                     tvdb_id = self.tmdb_to_tvdb(tmdb_id)
                 if not tvdb_id:
-                    raise Failed(f"Unable to convert TMDb ID: {tmdb_id} to TVDb ID")
+                    raise Failed(f"Unable to convert TMDb ID: {util.compile_list(tmdb_id)} to TVDb ID")
 
             if tvdb_id:
                 if isinstance(tvdb_id, list):

@@ -207,8 +207,8 @@ class CollectionBuilder:
         self.methods = []
         self.filters = []
         self.rating_keys = []
-        self.missing_movies = []
-        self.missing_shows = []
+        self.run_again_movies = []
+        self.run_again_shows = []
         self.posters = {}
         self.backgrounds = {}
         self.summaries = {}
@@ -1343,7 +1343,7 @@ class CollectionBuilder:
                 elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
 
-    def add_to_collection(self, movie_map, show_map):
+    def add_to_collection(self, movie_map):
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
         total = len(self.rating_keys)
         max_length = len(str(total))
@@ -1466,15 +1466,15 @@ class CollectionBuilder:
         media_type = f"{'Movie' if self.library.is_movie else 'Show'}{'s' if total > 1 else ''}"
         util.print_end(length, f"{total} {media_type} Processed")
 
-    def run_missing(self, missing_movies, missing_shows):
+    def run_missing(self):
         logger.info("")
         arr_filters = []
         for filter_method, filter_data in self.filters:
             if (filter_method.startswith("original_language") and self.library.is_movie) or filter_method.startswith("tmdb_vote_count"):
                 arr_filters.append((filter_method, filter_data))
-        if len(missing_movies) > 0:
+        if len(self.missing_movies) > 0:
             missing_movies_with_names = []
-            for missing_id in missing_movies:
+            for missing_id in self.missing_movies:
                 try:
                     movie = self.config.TMDb.get_movie(missing_id)
                 except Failed as e:
@@ -1505,10 +1505,10 @@ class CollectionBuilder:
                     except Failed as e:
                         logger.error(e)
                 if self.run_again:
-                    self.missing_movies.extend(missing_tmdb_ids)
-        if len(missing_shows) > 0 and self.library.is_show:
+                    self.run_again_movies.extend(missing_tmdb_ids)
+        if len(self.missing_shows) > 0 and self.library.is_show:
             missing_shows_with_names = []
-            for missing_id in missing_shows:
+            for missing_id in self.missing_shows:
                 try:
                     title = str(self.config.TVDb.get_series(self.library.Plex.language, missing_id).title.encode("ascii", "replace").decode())
                 except Failed as e:
@@ -1539,7 +1539,7 @@ class CollectionBuilder:
                     except Failed as e:
                         logger.error(e)
                 if self.run_again:
-                    self.missing_shows.extend(missing_tvdb_ids)
+                    self.run_again_shows.extend(missing_tvdb_ids)
 
     def sync_collection(self):
         logger.info("")
@@ -1739,11 +1739,11 @@ class CollectionBuilder:
         self.obj = self.library.get_collection(self.name)
         name, collection_items = self.library.get_collection_name_and_items(self.obj, self.smart_label_collection)
         rating_keys = []
-        for mm in self.missing_movies:
+        for mm in self.run_again_movies:
             if mm in movie_map:
                 rating_keys.extend(movie_map[mm])
         if self.library.is_show:
-            for sm in self.missing_shows:
+            for sm in self.run_again_shows:
                 if sm in show_map:
                     rating_keys.extend(show_map[sm])
         if len(rating_keys) > 0:
@@ -1762,9 +1762,9 @@ class CollectionBuilder:
                     logger.info(f"{name} Collection | + | {current.title}")
             logger.info(f"{len(rating_keys)} {'Movie' if self.library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
 
-        if len(self.missing_movies) > 0:
+        if len(self.run_again_movies) > 0:
             logger.info("")
-            for missing_id in self.missing_movies:
+            for missing_id in self.run_again_movies:
                 if missing_id not in movie_map:
                     try:
                         movie = self.config.TMDb.get_movie(missing_id)
@@ -1774,11 +1774,11 @@ class CollectionBuilder:
                     if self.details["show_missing"] is True:
                         logger.info(f"{name} Collection | ? | {movie.title} (TMDb: {missing_id})")
             logger.info("")
-            logger.info(f"{len(self.missing_movies)} Movie{'s' if len(self.missing_movies) > 1 else ''} Missing")
+            logger.info(f"{len(self.run_again_movies)} Movie{'s' if len(self.run_again_movies) > 1 else ''} Missing")
 
-        if len(self.missing_shows) > 0 and self.library.is_show:
+        if len(self.run_again_shows) > 0 and self.library.is_show:
             logger.info("")
-            for missing_id in self.missing_shows:
+            for missing_id in self.run_again_shows:
                 if missing_id not in show_map:
                     try:
                         title = str(self.config.TVDb.get_series(self.library.Plex.language, missing_id).title.encode("ascii", "replace").decode())
@@ -1787,4 +1787,4 @@ class CollectionBuilder:
                         continue
                     if self.details["show_missing"] is True:
                         logger.info(f"{name} Collection | ? | {title} (TVDb: {missing_id})")
-            logger.info(f"{len(self.missing_shows)} Show{'s' if len(self.missing_shows) > 1 else ''} Missing")
+            logger.info(f"{len(self.run_again_shows)} Show{'s' if len(self.run_again_shows) > 1 else ''} Missing")
