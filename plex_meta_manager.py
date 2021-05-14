@@ -195,10 +195,10 @@ def update_libraries(config, is_test, requested_collections, resume_from):
     for library in config.libraries:
         if library.url not in used_url:
             used_url.append(library.url)
-            if library.clean_bundles:
-                library.query(library.PlexServer.library.cleanBundles)
             if library.empty_trash:
                 library.query(library.PlexServer.library.emptyTrash)
+            if library.clean_bundles:
+                library.query(library.PlexServer.library.cleanBundles)
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
