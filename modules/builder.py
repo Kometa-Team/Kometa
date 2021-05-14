@@ -476,7 +476,16 @@ class CollectionBuilder:
                 limit = smart_filter[smart_methods["limit"]]
                 logger.info(f"Limit: {limit}")
 
-            def _filter(filter_dict, is_all=True, level=1):
+            validate = True
+            if "validate" in smart_methods:
+                if smart_filter[smart_methods["validate"]] is None:
+                    raise Failed("Collection Error: validate attribute is blank")
+                if not isinstance(smart_filter[smart_methods["validate"]], bool):
+                    raise Failed("Collection Error: validate attribute must be either true or false")
+                validate = smart_filter[smart_methods["validate"]]
+                logger.info(f"Validate: {validate}")
+
+            def _filter(filter_dict, fail, is_all=True, level=1):
                 output = ""
                 display = f"\n{'  ' * level}Match {'all' if is_all else 'any'} of the following:"
                 level += 1
@@ -513,7 +522,7 @@ class CollectionBuilder:
                         for dict_data in dicts:
                             if not isinstance(dict_data, dict):
                                 raise Failed(f"Collection Error: {smart} must be either a dictionary or list of dictionaries")
-                            inside_filter, inside_display = _filter(dict_data, is_all=smart == "all", level=level)
+                            inside_filter, inside_display = _filter(dict_data, fail, is_all=smart == "all", level=level)
                             display_add += inside_display
                             results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                     elif smart in ["year", "episode_year"] and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
@@ -547,14 +556,26 @@ class CollectionBuilder:
                                 smart_values = util.get_list(smart_data, split=False)
                             else:
                                 smart_values = util.get_list(smart_data)
+                            results_list = []
                             if smart == "crew":
-                                results_list = []
                                 for c_type in ["actor", "director", "producer", "writer"]:
-                                    results_list.extend(self.library.validate_search_list(smart_values, c_type, title=False, pairs=True, fail=False))
+                                    try:
+                                        results_list.extend(self.library.validate_search_list(smart_values, c_type, title=False, pairs=True))
+                                    except Failed as e:
+                                        logger.error(e)
                                 if len(results_list) == 0:
-                                    raise Failed(f"Plex Error: crew: {final_values} not found")
+                                    if fail:
+                                        raise Failed(f"Plex Error: crew: {final_values} not found")
+                                    else:
+                                        logger.error(f"Plex Error: crew: {final_values} not found")
                             else:
-                                results_list = self.library.validate_search_list(smart_values, smart, title=False, pairs=True)
+                                try:
+                                    results_list = self.library.validate_search_list(smart_values, smart, title=False, pairs=True)
+                                except Failed as e:
+                                    if fail:
+                                        raise
+                                    else:
+                                        logger.error(e)
                         elif smart in ["decade", "year", "episode_year"] and smart_mod in ["", ".not"]:
                             results_list = [(y, y) for y in util.get_year_list(smart_data, current_year, smart_final)]
                         else:
@@ -575,7 +596,7 @@ class CollectionBuilder:
                 raise Failed(f"Collection Error: {base} attribute is blank")
             if not isinstance(smart_filter[smart_methods[base]], dict):
                 raise Failed(f"Collection Error: {base} must be a dictionary: {smart_filter[smart_methods[base]]}")
-            built_filter, filter_text = _filter(smart_filter[smart_methods[base]], is_all=base_all)
+            built_filter, filter_text = _filter(smart_filter[smart_methods[base]], validate, is_all=base_all)
             util.print_multiline(f"Filter:{filter_text}")
             final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
             self.smart_url = f"?type={self.smart_type_key}&{f'limit={limit}&' if limit else ''}sort={smart_sorts[smart_sort]}&{final_filter}"
@@ -786,9 +807,10 @@ class CollectionBuilder:
                     if search == "crew":
                         valid_methods = []
                         for crew_type in ["actor", "director", "producer", "writer"]:
-                            valid_values = self.library.validate_search_list(final_values, crew_type, fail=False)
-                            if len(valid_values) > 0:
-                                valid_methods.append(("plex_search", [{crew_type: valid_values}]))
+                            try:
+                                valid_methods.append(("plex_search", [{crew_type: self.library.validate_search_list(final_values, crew_type)}]))
+                            except Failed as e:
+                                logger.error(e)
                         if len(valid_methods) > 0:
                             self.methods.extend(valid_methods)
                         else:
@@ -917,6 +939,13 @@ class CollectionBuilder:
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "plex_search":
                             searches = {}
+                            validate = True
+                            if "validate" in method_data:
+                                if method_data["validate"] is None:
+                                    raise Failed("Collection Error: validate plex search attribute is blank")
+                                if not isinstance(method_data["validate"], bool):
+                                    raise Failed("Collection Error: validate plex search attribute must be either true or false")
+                                validate = method_data["validate"]
                             for search_name, search_data in method_data.items():
                                 search, modifier, search_final = _split(search_name)
                                 if search_name != search_final:
@@ -957,15 +986,24 @@ class CollectionBuilder:
                                     if search == "crew":
                                         valid_methods = []
                                         for crew_type in ["actor", "director", "producer", "writer"]:
-                                            valid_values = self.library.validate_search_list(final_values, crew_type, fail=False)
-                                            if len(valid_values) > 0:
-                                                valid_methods.append(("plex_search", [{crew_type: valid_values}]))
+                                            try:
+                                                valid_methods.append(("plex_search", [{crew_type: self.library.validate_search_list(final_values, crew_type)}]))
+                                            except Failed as e:
+                                                logger.error(e)
                                         if len(valid_methods) > 0:
                                             self.methods.extend(valid_methods)
-                                        else:
+                                        elif validate:
                                             raise Failed(f"Plex Error: crew: {final_values} not found")
+                                        else:
+                                            logger.error(f"Plex Error: crew: {final_values} not found")
                                     else:
-                                        searches[search_final] = self.library.validate_search_list(final_values, search)
+                                        try:
+                                            searches[search_final] = self.library.validate_search_list(final_values, search)
+                                        except Failed as e:
+                                            if validate:
+                                                raise
+                                            else:
+                                                logger.error(e)
                                 elif search == "year" and modifier in [".gt", ".gte", ".lt", ".lte"]:
                                     searches[search_final] = util.check_year(search_data, current_year, search_final)
                                 elif search in ["added", "originally_available"] and modifier in [".before", ".after"]:
