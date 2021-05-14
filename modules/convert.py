@@ -300,14 +300,11 @@ class Convert:
             if not tmdb_id and imdb_id:
                 if isinstance(imdb_id, list):
                     tmdb_id = []
-                    new_imdb_id = []
                     for imdb in imdb_id:
                         try:
                             tmdb_id.append(self.imdb_to_tmdb(imdb, fail=True))
-                            new_imdb_id.append(imdb)
                         except Failed:
                             continue
-                    imdb_id = new_imdb_id
                 else:
                     tmdb_id = self.imdb_to_tmdb(imdb_id)
                 if not tmdb_id:
@@ -343,7 +340,7 @@ class Convert:
             def update_cache(cache_ids, id_type, guid_type):
                 if self.config.Cache:
                     cache_ids = util.compile_list(cache_ids)
-                    util.print_end(length, f"Cache | {'^' if expired else '+'} | {item.guid:<46} | {id_type} ID: {cache_ids:<6} | {item.title}")
+                    util.print_end(length, f" Cache  |  {'^' if expired else '+'}  | {item.guid:<46} | {id_type} ID: {cache_ids:<6} | {item.title}")
                     self.config.Cache.update_guid_map(guid_type, item.guid, cache_ids, expired)
 
             if tmdb_id and library.is_movie:
