@@ -12,7 +12,7 @@ from urllib import parse
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = ["plex_all", "plex_collection", "plex_collectionless", "plex_search"]
+builders = ["plex_all", "plex_collectionless", "plex_search"]
 search_translation = {
     "audio_language": "audioLanguage",
     "content_rating": "contentRating",
@@ -81,7 +81,6 @@ searches = [
     "actor", "actor.and", "actor.not",
     "audio_language", "audio_language.and", "audio_language.not",
     "collection", "collection.and", "collection.not",
-    "crew",
     "content_rating", "content_rating.and", "content_rating.not",
     "country", "country.and", "country.not",
     "director", "director.and", "director.not",
@@ -114,7 +113,6 @@ show_only_searches = [
 ]
 tmdb_searches = [
     "actor", "actor.and", "actor.not",
-    "crew",
     "director", "director.and", "director.not",
     "producer", "producer.and", "producer.not",
     "writer", "writer.and", "writer.not"
@@ -158,7 +156,6 @@ tags = [
     "collection",
     "content_rating",
     "country",
-    "crew",
     "director",
     "genre",
     "label",
@@ -521,9 +518,6 @@ class PlexAPI:
         if method == "plex_all":
             logger.info(f"Processing {pretty} {media_type}s")
             items = self.get_all()
-        elif method == "plex_collection":
-            logger.info(f"Processing {pretty} {data}")
-            items = data.items()
         elif method == "plex_search":
             search_terms = {}
             has_processed = False
