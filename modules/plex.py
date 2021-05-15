@@ -335,7 +335,8 @@ class PlexAPI:
         self.save_missing = params["save_missing"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
-        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update
+        self.mass_critic_rating_update = params["mass_critic_rating_update"]
+        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update
         self.plex = params["plex"]
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]

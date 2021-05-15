@@ -264,7 +264,7 @@ def mass_metadata(config, library, movie_map, show_map):
             imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
 
         tmdb_item = None
-        if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb":
+        if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
             if tmdb_id:
                 try:
                     tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
@@ -274,7 +274,7 @@ def mass_metadata(config, library, movie_map, show_map):
                 util.print_end(length, f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}")
 
         omdb_item = None
-        if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"]:
+        if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
             if config.OMDb.limit is False:
                 if imdb_id:
                     try:
@@ -307,7 +307,7 @@ def mass_metadata(config, library, movie_map, show_map):
                     util.print_end(length, f"{item.title[:25]:<25} | Genres | {display_str}")
             except Failed:
                 pass
-        if library.mass_audience_rating_update:
+        if library.mass_audience_rating_update or library.mass_critic_rating_update:
             try:
                 if tmdb_item and library.mass_genre_update == "tmdb":
                     new_rating = tmdb_item.vote_average
@@ -317,9 +317,13 @@ def mass_metadata(config, library, movie_map, show_map):
                     raise Failed
                 if new_rating is None:
                     util.print_end(length, f"{item.title[:25]:<25} | No Rating Found")
-                elif str(item.audienceRating) != str(new_rating):
-                    library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                    util.print_end(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
+                else:
+                    if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
+                        library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
+                        util.print_end(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
+                    if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
+                        library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
+                        util.print_end(length, f"{item.title[:25]:<25} | Critic Rating | {new_rating}")
             except Failed:
                 pass
 
