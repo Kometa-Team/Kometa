@@ -381,6 +381,14 @@ class Config:
             else:
                 params["mass_audience_rating_update"] = None
 
+            if lib and "mass_critic_rating_update" in lib and lib["mass_critic_rating_update"]:
+                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
+                    params["mass_critic_rating_update"] = None
+                    logger.error("Config Error: mass_critic_rating_update cannot be omdb without a successful OMDb Connection")
+            else:
+                params["mass_critic_rating_update"] = None
+
             try:
                 if lib and "metadata_path" in lib:
                     params["metadata_path"] = []
