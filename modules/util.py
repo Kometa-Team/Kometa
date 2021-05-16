@@ -1,5 +1,6 @@
 import logging, re, signal, sys, time, traceback
 from datetime import datetime
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
 try:
     import msvcrt
@@ -18,6 +19,9 @@ class Failed(Exception):
 
 def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)
+
+def retry_if_not_plex(exception):
+    return not isinstance(exception, (BadRequest, NotFound, Unauthorized))
 
 separating_character = "="
 screen_width = 100
@@ -207,11 +211,22 @@ def get_bool(method_name, method_data):
     else:
         raise Failed(f"Collection Error: {method_name} attribute: {method_data} invalid must be either true or false")
 
-def get_list(data, lower=False, split=True):
+def compile_list(data):
+    if isinstance(data, list):
+        text = ""
+        for item in data:
+            text += f"{',' if len(text) > 0 else ''}{item}"
+        return text
+    else:
+        return data
+
+
+def get_list(data, lower=False, split=True, int_list=False):
     if isinstance(data, list):      return data
     elif isinstance(data, dict):    return [data]
     elif split is False:            return [str(data)]
     elif lower is True:             return [d.strip().lower() for d in str(data).split(",")]
+    elif int_list is True:          return [int(d.strip()) for d in str(data).split(",")]
     else:                           return [d.strip() for d in str(data).split(",")]
 
 def get_int_list(data, id_type):

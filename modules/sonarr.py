@@ -58,7 +58,7 @@ class SonarrAPI:
             endpoint = "languageProfile"
         else:
             endpoint = "profile"
-        for profile in self.send_get(endpoint):
+        for profile in self._get(endpoint):
             if len(profiles) > 0:
                 profiles += ", "
             profiles += profile["name"]
@@ -67,19 +67,19 @@ class SonarrAPI:
         raise Failed(f"Sonarr Error: {profile_type}: {profile_name} does not exist in sonarr. Profiles available: {profiles}")
 
     def get_tags(self):
-        return {tag["label"]: tag["id"] for tag in self.send_get("tag")}
+        return {tag["label"]: tag["id"] for tag in self._get("tag")}
 
     def add_tags(self, tags):
         added = False
         for label in tags:
-            if label not in self.tags:
+            if str(label).lower() not in self.tags:
                 added = True
-                self.send_post("tag", {"label": str(label)})
+                self._post("tag", {"label": str(label).lower()})
         if added:
             self.tags = self.get_tags()
 
     def lookup(self, tvdb_id):
-        results = self.send_get("series/lookup", params={"term": f"tvdb:{tvdb_id}"})
+        results = self._get("series/lookup", params={"term": f"tvdb:{tvdb_id}"})
         if results:
             return results[0]
         else:
@@ -101,7 +101,7 @@ class SonarrAPI:
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
         if tags:
             self.add_tags(tags)
-            tag_nums = [self.tags[label] for label in tags if label in self.tags]
+            tag_nums = [self.tags[label.lower()] for label in tags if label.lower() in self.tags]
         for tvdb_id in tvdb_ids:
             try:
                 show_info = self.lookup(tvdb_id)
@@ -135,7 +135,7 @@ class SonarrAPI:
             }
             if tag_nums:
                 url_json["tags"] = tag_nums
-            response = self.send_post("series", url_json)
+            response = self._post("series", url_json)
             if response.status_code < 400:
                 logger.info(f"Added to Sonarr | {tvdb_id:<6} | {show_info['title']}")
                 add_count += 1
@@ -152,7 +152,7 @@ class SonarrAPI:
         logger.info(f"{add_count} Show{'s' if add_count > 1 else ''} added to Sonarr")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_get(self, url, params=None):
+    def _get(self, url, params=None):
         url_params = {"apikey": f"{self.token}"}
         if params:
             for param in params:
@@ -160,5 +160,5 @@ class SonarrAPI:
         return requests.get(f"{self.base_url}{url}", params=url_params).json()
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_post(self, url, url_json):
+    def _post(self, url, url_json):
         return requests.post(f"{self.base_url}{url}", json=url_json, params={"apikey": f"{self.token}"})

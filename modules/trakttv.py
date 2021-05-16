@@ -37,11 +37,11 @@ class TraktAPI:
         self.config_path = params["config_path"]
         self.authorization = authorization
         Trakt.configuration.defaults.client(self.client_id, self.client_secret)
-        if not self.save_authorization(self.authorization):
-            if not self.refresh_authorization():
-                self.get_authorization()
+        if not self._save(self.authorization):
+            if not self._refresh():
+                self._authorization()
 
-    def get_authorization(self):
+    def _authorization(self):
         url = Trakt["oauth"].authorize_url(self.redirect_uri)
         logger.info(f"Navigate to: {url}")
         logger.info("If you get an OAuth error your client_id or client_secret is invalid")
@@ -52,10 +52,10 @@ class TraktAPI:
         new_authorization = Trakt["oauth"].token(pin, self.redirect_uri)
         if not new_authorization:
             raise Failed("Trakt Error: Invalid trakt pin. If you're sure you typed it in correctly your client_id or client_secret may be invalid")
-        if not self.save_authorization(new_authorization):
+        if not self._save(new_authorization):
             raise Failed("Trakt Error: New Authorization Failed")
 
-    def check_authorization(self, authorization):
+    def _check(self, authorization):
         try:
             with Trakt.configuration.oauth.from_response(authorization, refresh=True):
                 if Trakt["users/settings"].get():
@@ -63,15 +63,15 @@ class TraktAPI:
         except ValueError: pass
         return False
 
-    def refresh_authorization(self):
+    def _refresh(self):
         if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
             refreshed_authorization = Trakt["oauth"].token_refresh(self.authorization["refresh_token"], self.redirect_uri)
-            return self.save_authorization(refreshed_authorization)
+            return self._save(refreshed_authorization)
         return False
 
-    def save_authorization(self, authorization):
-        if authorization and self.check_authorization(authorization):
+    def _save(self, authorization):
+        if authorization and self._check(authorization):
             if self.authorization != authorization:
                 yaml.YAML().allow_duplicate_keys = True
                 config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
@@ -90,30 +90,23 @@ class TraktAPI:
             return True
         return False
 
-    def convert_tmdb_to_imdb(self, tmdb_id, is_movie=True):         return self.convert_id(tmdb_id, "tmdb", "imdb", "movie" if is_movie else "show")
-    def convert_imdb_to_tmdb(self, imdb_id, is_movie=True):         return self.convert_id(imdb_id, "imdb", "tmdb", "movie" if is_movie else "show")
-    def convert_tmdb_to_tvdb(self, tmdb_id):                        return self.convert_id(tmdb_id, "tmdb", "tvdb", "show")
-    def convert_tvdb_to_tmdb(self, tvdb_id):                        return self.convert_id(tvdb_id, "tvdb", "tmdb", "show")
-    def convert_tvdb_to_imdb(self, tvdb_id):                        return self.convert_id(tvdb_id, "tvdb", "imdb", "show")
-    def convert_imdb_to_tvdb(self, imdb_id):                        return self.convert_id(imdb_id, "imdb", "tvdb", "show")
-
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def convert_id(self, external_id, from_source, to_source, media_type):
+    def convert(self, external_id, from_source, to_source, media_type):
         lookup = Trakt["search"].lookup(external_id, from_source, media_type)
         if lookup:
             lookup = lookup[0] if isinstance(lookup, list) else lookup
             if lookup.get_key(to_source):
                 return lookup.get_key(to_source) if to_source == "imdb" else int(lookup.get_key(to_source))
-        raise Failed(f"No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID {external_id}")
+        raise Failed(f"Trakt Error: No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
 
     def collection(self, data, is_movie):
-        return self.user_list("collection", data, is_movie)
+        return self._user_list("collection", data, is_movie)
 
-    def watchlist(self, data, is_movie):
-        return self.user_list("watchlist", data, is_movie)
+    def _watchlist(self, data, is_movie):
+        return self._user_list("watchlist", data, is_movie)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def user_list(self, list_type, data, is_movie):
+    def _user_list(self, list_type, data, is_movie):
         items = Trakt[f"users/{data}/{list_type}"].movies() if is_movie else Trakt[f"users/{data}/{list_type}"].shows()
         if items is None:                   raise Failed("Trakt Error: No List found")
         else:                               return [i for i in items]
@@ -126,16 +119,16 @@ class TraktAPI:
         else:                               return trakt_list
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def send_request(self, url):
+    def _request(self, url):
         return requests.get(url, headers={"Content-Type": "application/json", "trakt-api-version": "2", "trakt-api-key": self.client_id}).json()
 
-    def get_collection(self, username, is_movie):
-        items = self.send_request(f"{self.base_url}/users/{username}/collection/{'movies' if is_movie else 'shows'}")
+    def _collection(self, username, is_movie):
+        items = self._request(f"{self.base_url}/users/{username}/collection/{'movies' if is_movie else 'shows'}")
         if is_movie:                                return [item["movie"]["ids"]["tmdb"] for item in items], []
         else:                                       return [], [item["show"]["ids"]["tvdb"] for item in items]
 
-    def get_pagenation(self, pagenation, amount, is_movie):
-        items = self.send_request(f"{self.base_url}/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
+    def _pagenation(self, pagenation, amount, is_movie):
+        items = self._request(f"{self.base_url}/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
         if pagenation == "popular" and is_movie:    return [item["ids"]["tmdb"] for item in items], []
         elif pagenation == "popular":               return [], [item["ids"]["tvdb"] for item in items]
         elif is_movie:                              return [item["movie"]["ids"]["tmdb"] for item in items], []
@@ -146,9 +139,9 @@ class TraktAPI:
         for value in values:
             try:
                 if trakt_type == "watchlist" and is_movie is not None:
-                    self.watchlist(value, is_movie)
+                    self._watchlist(value, is_movie)
                 elif trakt_type == "collection" and is_movie is not None:
-                    self.get_collection(value, is_movie)
+                    self._collection(value, is_movie)
                 else:
                     self.standard_list(value)
                 trakt_values.append(value)
@@ -163,33 +156,31 @@ class TraktAPI:
                 raise Failed(f"Trakt Error: No valid Trakt Lists in {values}")
         return trakt_values
 
-    def get_items(self, method, data, is_movie, status_message=True):
-        if status_message:
-            logger.debug(f"Data: {data}")
+    def get_items(self, method, data, is_movie):
+        logger.debug(f"Data: {data}")
         pretty = self.aliases[method] if method in self.aliases else method
         media_type = "Movie" if is_movie else "Show"
         if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
-            movie_ids, show_ids = self.get_pagenation(method[6:], data, is_movie)
-            if status_message:
-                logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+            movie_ids, show_ids = self._pagenation(method[6:], data, is_movie)
+            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
         elif method == "trakt_collection":
-            movie_ids, show_ids = self.get_collection(data, is_movie)
-            if status_message:
-                logger.info(f"Processing {pretty} {media_type}s for {data}")
+            movie_ids, show_ids = self._collection(data, is_movie)
+            logger.info(f"Processing {pretty} {media_type}s for {data}")
         else:
             show_ids = []
             movie_ids = []
-            if method == "trakt_watchlist":             trakt_items = self.watchlist(data, is_movie)
+            if method == "trakt_watchlist":             trakt_items = self._watchlist(data, is_movie)
             elif method == "trakt_list":                trakt_items = self.standard_list(data).items()
             else:                                       raise Failed(f"Trakt Error: Method {method} not supported")
-            if status_message:                          logger.info(f"Processing {pretty}: {data}")
+            logger.info(f"Processing {pretty}: {data}")
             for trakt_item in trakt_items:
-                if isinstance(trakt_item, Movie):                                                                movie_ids.append(int(trakt_item.get_key("tmdb")))
-                elif isinstance(trakt_item, Show) and trakt_item.pk[1] not in show_ids:                          show_ids.append(int(trakt_item.pk[1]))
-                elif (isinstance(trakt_item, (Season, Episode))) and trakt_item.show.pk[1] not in show_ids:      show_ids.append(int(trakt_item.show.pk[1]))
-            if status_message:
-                logger.debug(f"Trakt {media_type} Found: {trakt_items}")
-        if status_message:
-            logger.debug(f"TMDb IDs Found: {movie_ids}")
-            logger.debug(f"TVDb IDs Found: {show_ids}")
+                if isinstance(trakt_item, Movie):
+                    movie_ids.append(int(trakt_item.get_key("tmdb")))
+                elif isinstance(trakt_item, Show) and trakt_item.pk[1] not in show_ids:
+                    show_ids.append(int(trakt_item.pk[1]))
+                elif (isinstance(trakt_item, (Season, Episode))) and trakt_item.show.pk[1] not in show_ids:
+                    show_ids.append(int(trakt_item.show.pk[1]))
+            logger.debug(f"Trakt {media_type} Found: {trakt_items}")
+        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids
