@@ -1,10 +1,9 @@
-import glob, logging, os, re, requests, time
+import logging, os
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.anilist import AniListAPI
-from modules.arms import ArmsAPI
-from modules.builder import CollectionBuilder
 from modules.cache import Cache
+from modules.convert import Convert
 from modules.imdb import IMDbAPI
 from modules.letterboxd import LetterboxdAPI
 from modules.mal import MyAnimeListAPI
@@ -17,8 +16,6 @@ from modules.tmdb import TMDbAPI
 from modules.trakttv import TraktAPI
 from modules.tvdb import TVDbAPI
 from modules.util import Failed
-from plexapi.exceptions import BadRequest
-from retrying import retry
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -47,7 +44,7 @@ sonarr_series_types = {
     "daily": "Episodes released daily or less frequently that use year-month-day (2017-05-25)",
     "anime": "Episodes released using an absolute episode number"
 }
-mass_genre_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
+mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
 library_types = {"movie": "For Movie Libraries", "show": "For Show Libraries"}
 
 class Config:
@@ -144,7 +141,7 @@ class Config:
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
             elif var_type == "list":                                            return util.get_list(data[attribute])
             elif var_type == "list_path":
-                temp_list = [path for path in util.get_list(data[attribute], split=True) if os.path.exists(os.path.abspath(path))]
+                temp_list = [p for p in util.get_list(data[attribute], split=True) if os.path.exists(os.path.abspath(p))]
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
             elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
@@ -153,7 +150,7 @@ class Config:
             if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
                 return default
             elif var_type == "path" and default:
-                if attribute in data and data[attribute]:
+                if data and attribute in data and data[attribute]:
                     message = f"neither {data[attribute]} or the default path {default} could be found"
                 else:
                     message = f"no {text} found and the default path {default} could not be found"
@@ -206,7 +203,7 @@ class Config:
             try:                                self.tmdb["apikey"] = check_for_attribute(self.data, "apikey", parent="tmdb", throw=True)
             except Failed as e:                 raise Failed(e)
             self.tmdb["language"] = check_for_attribute(self.data, "language", parent="tmdb", default="en")
-            self.TMDb = TMDbAPI(self.tmdb)
+            self.TMDb = TMDbAPI(self, self.tmdb)
             logger.info(f"TMDb Connection {'Failed' if self.TMDb is None else 'Successful'}")
         else:
             raise Failed("Config Error: tmdb attribute not found")
@@ -265,8 +262,7 @@ class Config:
         self.TVDb = TVDbAPI(self)
         self.IMDb = IMDbAPI(self)
         self.AniDB = AniDBAPI(self)
-        self.Arms = ArmsAPI(self)
-        self.AniDBIDs = self.AniDB.get_AniDB_IDs()
+        self.Convert = Convert(self)
         self.AniList = AniListAPI(self)
         self.Letterboxd = LetterboxdAPI(self)
 
@@ -278,6 +274,9 @@ class Config:
         self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", default_is_none=True)
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True)
         self.general["plex"]["timeout"] = check_for_attribute(self.data, "timeout", parent="plex", var_type="int", default=60)
+        self.general["plex"]["clean_bundles"] = check_for_attribute(self.data, "clean_bundles", parent="plex", var_type="bool", default=False)
+        self.general["plex"]["empty_trash"] = check_for_attribute(self.data, "empty_trash", parent="plex", var_type="bool", default=False)
+        self.general["plex"]["optimize"] = check_for_attribute(self.data, "optimize", parent="plex", var_type="bool", default=False)
 
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True)
@@ -367,20 +366,64 @@ class Config:
                 params["save_missing"] = check_for_attribute(lib, "save_missing", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
 
             if lib and "mass_genre_update" in lib and lib["mass_genre_update"]:
-                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_genre_update_options, default_is_none=True, save=False)
+                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
+                if self.OMDb is None and params["mass_genre_update"] == "omdb":
+                    params["mass_genre_update"] = None
+                    logger.error("Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection")
             else:
                 params["mass_genre_update"] = None
 
-            if params["mass_genre_update"] == "omdb" and self.OMDb is None:
-                params["mass_genre_update"] = None
-                logger.error("Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection")
+            if lib and "mass_audience_rating_update" in lib and lib["mass_audience_rating_update"]:
+                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                if self.OMDb is None and params["mass_audience_rating_update"] == "omdb":
+                    params["mass_audience_rating_update"] = None
+                    logger.error("Config Error: mass_audience_rating_update cannot be omdb without a successful OMDb Connection")
+            else:
+                params["mass_audience_rating_update"] = None
+
+            if lib and "mass_critic_rating_update" in lib and lib["mass_critic_rating_update"]:
+                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
+                    params["mass_critic_rating_update"] = None
+                    logger.error("Config Error: mass_critic_rating_update cannot be omdb without a successful OMDb Connection")
+            else:
+                params["mass_critic_rating_update"] = None
 
             try:
-                params["metadata_path"] = check_for_attribute(lib, "metadata_path", var_type="path", default=os.path.join(default_dir, f"{library_name}.yml"), throw=True)
+                if lib and "metadata_path" in lib:
+                    params["metadata_path"] = []
+                    if lib["metadata_path"] is None:
+                        raise Failed("Config Error: metadata_path attribute is blank")
+                    paths_to_check = lib["metadata_path"] if isinstance(lib["metadata_path"], list) else [lib["metadata_path"]]
+                    for path in paths_to_check:
+                        if isinstance(path, dict):
+                            if "url" in path:
+                                if path["url"] is None:
+                                    logger.error("Config Error: metadata_path url is blank")
+                                else:
+                                    params["metadata_path"].append(("URL", path["url"]))
+                            if "git" in path:
+                                if path["git"] is None:
+                                    logger.error("Config Error: metadata_path git is blank")
+                                else:
+                                    params["metadata_path"].append(("Git", path['git']))
+                            if "file" in path:
+                                if path["file"] is None:
+                                    logger.error("Config Error: metadata_path file is blank")
+                                else:
+                                    params["metadata_path"].append(("File", path['file']))
+                        else:
+                            params["metadata_path"].append(("File", path))
+                else:
+                    params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"))]
+                params["default_dir"] = default_dir
                 params["plex"] = {}
                 params["plex"]["url"] = check_for_attribute(lib, "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
                 params["plex"]["timeout"] = check_for_attribute(lib, "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False)
+                params["plex"]["clean_bundles"] = check_for_attribute(lib, "clean_bundles", parent="plex", var_type="bool", default=self.general["plex"]["clean_bundles"], save=False)
+                params["plex"]["empty_trash"] = check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False)
+                params["plex"]["optimize"] = check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
                 library = PlexAPI(params, self.TMDb, self.TVDb)
                 logger.info(f"{params['name']} Library Connection Successful")
             except Failed as e:
@@ -388,7 +431,7 @@ class Config:
                 logger.info(f"{params['name']} Library Connection Failed")
                 continue
 
-            if self.general["radarr"]["url"] or "radarr" in lib:
+            if self.general["radarr"]["url"] or (lib and "radarr" in lib):
                 logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Radarr...")
                 radarr_params = {}
@@ -408,7 +451,7 @@ class Config:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
-            if self.general["sonarr"]["url"] or "sonarr" in lib:
+            if self.general["sonarr"]["url"] or (lib and "sonarr" in lib):
                 logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Sonarr...")
                 sonarr_params = {}
@@ -434,7 +477,7 @@ class Config:
                     util.print_multiline(e, error=True)
                 logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
-            if self.general["tautulli"]["url"] or "tautulli" in lib:
+            if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                 logger.info("")
                 logger.info(f"Connecting to {params['name']} library's Tautulli...")
                 tautulli_params = {}
@@ -458,441 +501,3 @@ class Config:
 
         util.separator()
 
-    def update_libraries(self, test, requested_collections, resume_from):
-        for library in self.libraries:
-            os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
-            logger.info("")
-            util.separator(f"{library.name} Library")
-            logger.info("")
-            util.separator(f"Mapping {library.name} Library")
-            logger.info("")
-            movie_map, show_map = self.map_guids(library)
-            if not test and not resume_from:
-                if library.mass_genre_update:
-                    self.mass_metadata(library, movie_map, show_map)
-                try:                        library.update_metadata(self.TMDb, test)
-                except Failed as e:         logger.error(e)
-            logger.info("")
-            util.separator(f"{library.name} Library {'Test ' if test else ''}Collections")
-            collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
-            if resume_from and resume_from not in collections:
-                logger.warning(f"Collection: {resume_from} not in {library.name}")
-                continue
-            if collections:
-                for mapping_name, collection_attrs in collections.items():
-                    if test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
-                        no_template_test = True
-                        if "template" in collection_attrs and collection_attrs["template"]:
-                            for data_template in util.get_list(collection_attrs["template"], split=False):
-                                if "name" in data_template \
-                                    and data_template["name"] \
-                                    and library.templates \
-                                    and data_template["name"] in library.templates \
-                                    and library.templates[data_template["name"]] \
-                                    and "test" in library.templates[data_template["name"]] \
-                                    and library.templates[data_template["name"]]["test"] is True:
-                                    no_template_test = False
-                        if no_template_test:
-                            continue
-                    try:
-                        if resume_from and resume_from != mapping_name:
-                            continue
-                        elif resume_from == mapping_name:
-                            resume_from = None
-                            logger.info("")
-                            util.separator(f"Resuming Collections")
-
-                        logger.info("")
-                        util.separator(f"{mapping_name} Collection")
-                        logger.info("")
-
-                        rating_key_map = {}
-                        try:
-                            builder = CollectionBuilder(self, library, mapping_name, collection_attrs)
-                        except Failed as ef:
-                            util.print_multiline(ef, error=True)
-                            continue
-                        except Exception as ee:
-                            util.print_stacktrace()
-                            logger.error(ee)
-                            continue
-
-                        try:
-                            collection_obj = library.get_collection(mapping_name)
-                            collection_name = collection_obj.title
-                        except Failed:
-                            collection_obj = None
-                            collection_name = mapping_name
-
-                        if len(builder.schedule) > 0:
-                            util.print_multiline(builder.schedule, info=True)
-
-                        logger.info("")
-                        if builder.sync:
-                            logger.info("Sync Mode: sync")
-                            if collection_obj:
-                                for item in collection_obj.items():
-                                    rating_key_map[item.ratingKey] = item
-                        else:
-                            logger.info("Sync Mode: append")
-
-                        for i, f in enumerate(builder.filters):
-                            if i == 0:
-                                logger.info("")
-                            logger.info(f"Collection Filter {f[0]}: {f[1]}")
-
-                        builder.run_methods(collection_obj, collection_name, rating_key_map, movie_map, show_map)
-
-                        try:
-                            plex_collection = library.get_collection(collection_name)
-                        except Failed as e:
-                            logger.debug(e)
-                            continue
-
-                        builder.update_details(plex_collection)
-
-                        if builder.run_again and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
-                            library.run_again.append(builder)
-
-                    except Exception as e:
-                        util.print_stacktrace()
-                        logger.error(f"Unknown Error: {e}")
-
-                if library.assets_for_all is True and not test and not requested_collections:
-                    logger.info("")
-                    util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
-                    logger.info("")
-                    for item in library.get_all():
-                        folder = os.path.basename(os.path.dirname(item.locations[0]) if library.is_movie else item.locations[0])
-                        for ad in library.asset_directory:
-                            if library.asset_folders:
-                                poster_path = os.path.join(ad, folder, "poster.*")
-                            else:
-                                poster_path = os.path.join(ad, f"{folder}.*")
-                            matches = glob.glob(poster_path)
-                            if len(matches) > 0:
-                                item.uploadPoster(filepath=os.path.abspath(matches[0]))
-                                logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
-                            if library.asset_folders:
-                                matches = glob.glob(os.path.join(ad, folder, "background.*"))
-                                if len(matches) > 0:
-                                    item.uploadArt(filepath=os.path.abspath(matches[0]))
-                                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
-                                if library.is_show:
-                                    for season in item.seasons():
-                                        matches = glob.glob(os.path.join(ad, folder, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*"))
-                                        if len(matches) > 0:
-                                            season_path = os.path.abspath(matches[0])
-                                            season.uploadPoster(filepath=season_path)
-                                            logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
-                                        for episode in season.episodes():
-                                            matches = glob.glob(os.path.join(ad, folder, f"{episode.seasonEpisode.upper()}.*"))
-                                            if len(matches) > 0:
-                                                episode_path = os.path.abspath(matches[0])
-                                                episode.uploadPoster(filepath=episode_path)
-                                                logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
-
-                if library.show_unmanaged is True and not test and not requested_collections:
-                    logger.info("")
-                    util.separator(f"Unmanaged Collections in {library.name} Library")
-                    logger.info("")
-                    unmanaged_count = 0
-                    collections_in_plex = [str(plex_col) for plex_col in collections]
-                    for col in library.get_all_collections():
-                        if col.title not in collections_in_plex:
-                            logger.info(col.title)
-                            unmanaged_count += 1
-                    logger.info("{} Unmanaged Collections".format(unmanaged_count))
-            else:
-                logger.info("")
-                logger.error("No collection to update")
-
-        has_run_again = False
-        for library in self.libraries:
-            if library.run_again:
-                has_run_again = True
-                break
-
-        if has_run_again:
-            logger.info("")
-            util.separator("Run Again")
-            logger.info("")
-            length = 0
-            for x in range(1, self.general["run_again_delay"] + 1):
-                length = util.print_return(length, f"Waiting to run again in {self.general['run_again_delay'] - x + 1} minutes")
-                for y in range(60):
-                    time.sleep(1)
-            util.print_end(length)
-            for library in self.libraries:
-                if library.run_again:
-                    os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
-                    logger.info("")
-                    util.separator(f"{library.name} Library Run Again")
-                    logger.info("")
-                    collections = {c: library.collections[c] for c in util.get_list(requested_collections) if c in library.collections} if requested_collections else library.collections
-                    if collections:
-                        util.separator(f"Mapping {library.name} Library")
-                        logger.info("")
-                        movie_map, show_map = self.map_guids(library)
-                        for builder in library.run_again:
-                            logger.info("")
-                            util.separator(f"{builder.name} Collection")
-                            logger.info("")
-                            try:
-                                collection_obj = library.get_collection(builder.name)
-                            except Failed as e:
-                                util.print_multiline(e, error=True)
-                                continue
-                            builder.run_collections_again(collection_obj, movie_map, show_map)
-
-    def mass_metadata(self, library, movie_map, show_map):
-        length = 0
-        logger.info("")
-        util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
-        logger.info("")
-        items = library.Plex.all()
-        for i, item in enumerate(items, 1):
-            length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
-            ids = {}
-            if self.Cache:
-                ids, expired = self.Cache.get_ids("movie" if library.is_movie else "show", plex_guid=item.guid)
-            elif library.is_movie:
-                for tmdb, rating_keys in movie_map.items():
-                    if item.ratingKey in rating_keys:
-                        ids["tmdb"] = tmdb
-                        break
-            else:
-                for tvdb, rating_keys in show_map.items():
-                    if item.ratingKey in rating_keys:
-                        ids["tvdb"] = tvdb
-                        break
-
-            if library.mass_genre_update:
-                if library.mass_genre_update == "tmdb":
-                    if "tmdb" not in ids:
-                        util.print_end(length, f"{item.title[:25]:<25} | No TMDb for Guid: {item.guid}")
-                        continue
-                    try:
-                        tmdb_item = self.TMDb.get_movie(ids["tmdb"]) if library.is_movie else self.TMDb.get_show(ids["tmdb"])
-                    except Failed as e:
-                        util.print_end(length, str(e))
-                        continue
-                    new_genres = [genre.name for genre in tmdb_item.genres]
-                elif library.mass_genre_update in ["omdb", "imdb"]:
-                    if self.OMDb.limit is True:
-                        break
-                    if "imdb" not in ids:
-                        util.print_end(length, f"{item.title[:25]:<25} | No IMDb for Guid: {item.guid}")
-                        continue
-                    try:
-                        omdb_item = self.OMDb.get_omdb(ids["imdb"])
-                    except Failed as e:
-                        util.print_end(length, str(e))
-                        continue
-                    new_genres = omdb_item.genres
-                else:
-                    raise Failed
-                item_genres = [genre.tag for genre in item.genres]
-                display_str = ""
-                for genre in (g for g in item_genres if g not in new_genres):
-                    item.removeGenre(genre)
-                    display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
-                for genre in (g for g in new_genres if g not in item_genres):
-                    item.addGenre(genre)
-                    display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
-                if len(display_str) > 0:
-                    util.print_end(length, f"{item.title[:25]:<25} | Genres | {display_str}")
-
-    def map_guids(self, library):
-        movie_map = {}
-        show_map = {}
-        length = 0
-        logger.info(f"Mapping {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
-        items = library.Plex.all()
-        for i, item in enumerate(items, 1):
-            length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
-            try:
-                id_type, main_id = self.get_id(item, library, length)
-            except BadRequest:
-                util.print_stacktrace()
-                util.print_end(length, f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} | {item.guid} for {item.title} not found")
-                continue
-            if isinstance(main_id, list):
-                if id_type == "movie":
-                    for m in main_id:
-                        if m in movie_map:
-                            movie_map[m].append(item.ratingKey)
-                        else:
-                            movie_map[m] = [item.ratingKey]
-                elif id_type == "show":
-                    for m in main_id:
-                        if m in show_map:
-                            show_map[m].append(item.ratingKey)
-                        else:
-                            show_map[m] = [item.ratingKey]
-            else:
-                if id_type == "movie":
-                    if main_id in movie_map:
-                        movie_map[main_id].append(item.ratingKey)
-                    else:
-                        movie_map[main_id] = [item.ratingKey]
-                elif id_type == "show":
-                    if main_id in show_map:
-                        show_map[main_id].append(item.ratingKey)
-                    else:
-                        show_map[main_id] = [item.ratingKey]
-        util.print_end(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}")
-        return movie_map, show_map
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def get_guids(self, item):
-        return item.guids
-
-    def get_id(self, item, library, length):
-        expired = None
-        tmdb_id = None
-        imdb_id = None
-        tvdb_id = None
-        anidb_id = None
-        mal_id = None
-        error_message = None
-        if self.Cache:
-            if library.is_movie:                            tmdb_id, expired = self.Cache.get_tmdb_id("movie", plex_guid=item.guid)
-            else:                                           tvdb_id, expired = self.Cache.get_tvdb_id("show", plex_guid=item.guid)
-            if not tvdb_id and library.is_show:
-                tmdb_id, expired = self.Cache.get_tmdb_id("show", plex_guid=item.guid)
-                anidb_id, expired = self.Cache.get_anidb_id("show", plex_guid=item.guid)
-        if expired or (not tmdb_id and library.is_movie) or (not tvdb_id and not tmdb_id and library.is_show):
-            guid = requests.utils.urlparse(item.guid)
-            item_type = guid.scheme.split(".")[-1]
-            check_id = guid.netloc
-
-            if item_type == "plex" and check_id == "movie":
-                try:
-                    for guid_tag in self.get_guids(item):
-                        url_parsed = requests.utils.urlparse(guid_tag.id)
-                        if url_parsed.scheme == "tmdb":                 tmdb_id = int(url_parsed.netloc)
-                        elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
-                except requests.exceptions.ConnectionError:
-                    util.print_stacktrace()
-                    logger.error(f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | No External GUIDs found for {item.title}")
-                    return None, None
-            elif item_type == "plex" and check_id == "show":
-                try:
-                    for guid_tag in self.get_guids(item):
-                        url_parsed = requests.utils.urlparse(guid_tag.id)
-                        if url_parsed.scheme == "tvdb":                 tvdb_id = int(url_parsed.netloc)
-                        elif url_parsed.scheme == "imdb":               imdb_id = url_parsed.netloc
-                        elif url_parsed.scheme == "tmdb":               tmdb_id = int(url_parsed.netloc)
-                except requests.exceptions.ConnectionError:
-                    util.print_stacktrace()
-                    logger.error(f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | No External GUIDs found for {item.title}")
-                    return None, None
-            elif item_type == "imdb":                       imdb_id = check_id
-            elif item_type == "thetvdb":                    tvdb_id = int(check_id)
-            elif item_type == "themoviedb":                 tmdb_id = int(check_id)
-            elif item_type == "hama":
-                if check_id.startswith("tvdb"):             tvdb_id = int(re.search("-(.*)", check_id).group(1))
-                elif check_id.startswith("anidb"):          anidb_id = re.search("-(.*)", check_id).group(1)
-                else:                                       error_message = f"Hama Agent ID: {check_id} not supported"
-            elif item_type == "myanimelist":                mal_id = check_id
-            elif item_type == "local":                      error_message = "No match in Plex"
-            else:                                           error_message = f"Agent {item_type} not supported"
-
-            if not error_message:
-                if mal_id and not anidb_id:
-                    try:                                            anidb_id = self.Arms.mal_to_anidb(mal_id)
-                    except Failed:                                  pass
-                if anidb_id and not tvdb_id:
-                    try:                                            tvdb_id = self.Arms.anidb_to_tvdb(anidb_id)
-                    except Failed:                                  pass
-                if anidb_id and not imdb_id:
-                    try:                                            imdb_id = self.Arms.anidb_to_imdb(anidb_id)
-                    except Failed:                                  pass
-                if not tmdb_id and imdb_id:
-                    if isinstance(imdb_id, list):
-                        tmdb_id = []
-                        new_imdb_id = []
-                        for imdb in imdb_id:
-                            try:
-                                tmdb_id.append(self.TMDb.convert_imdb_to_tmdb(imdb))
-                                new_imdb_id.append(imdb)
-                            except Failed:
-                                if self.Trakt:
-                                    try:
-                                        tmdb_id.append(self.Trakt.convert_imdb_to_tmdb(imdb))
-                                        new_imdb_id.append(imdb)
-                                    except Failed:
-                                        continue
-                                else:
-                                    continue
-                        imdb_id = new_imdb_id
-                    else:
-                        try:                                            tmdb_id = self.TMDb.convert_imdb_to_tmdb(imdb_id)
-                        except Failed:                                  pass
-                        if not tmdb_id and self.Trakt:
-                            try:                                            tmdb_id = self.Trakt.convert_imdb_to_tmdb(imdb_id)
-                            except Failed:                                  pass
-                if not tmdb_id and tvdb_id and library.is_show:
-                    try:                                            tmdb_id = self.TMDb.convert_tvdb_to_tmdb(tvdb_id)
-                    except Failed:                                  pass
-                    if not tmdb_id and self.Trakt:
-                        try:                                            tmdb_id = self.Trakt.convert_tvdb_to_tmdb(tvdb_id)
-                        except Failed:                                  pass
-                if not imdb_id and tmdb_id and library.is_movie:
-                    try:                                            imdb_id = self.TMDb.convert_tmdb_to_imdb(tmdb_id)
-                    except Failed:                                  pass
-                    if not imdb_id and self.Trakt:
-                        try:                                            imdb_id = self.Trakt.convert_tmdb_to_imdb(tmdb_id)
-                        except Failed:                                  pass
-                if not imdb_id and tvdb_id and library.is_show:
-                    try:                                            imdb_id = self.TMDb.convert_tvdb_to_imdb(tvdb_id)
-                    except Failed:                                  pass
-                    if not imdb_id and self.Trakt:
-                        try:                                            imdb_id = self.Trakt.convert_tvdb_to_imdb(tvdb_id)
-                        except Failed:                                  pass
-                if not tvdb_id and library.is_show:
-                    if tmdb_id:
-                        try:                                            tvdb_id = self.TMDb.convert_tmdb_to_tvdb(tmdb_id)
-                        except Failed:                                  pass
-                        if not tvdb_id and self.Trakt:
-                            try:                                            tvdb_id = self.Trakt.convert_tmdb_to_tvdb(tmdb_id)
-                            except Failed:                                  pass
-                    if not tvdb_id and imdb_id:
-                        try:                                            tvdb_id = self.TMDb.convert_imdb_to_tvdb(imdb_id)
-                        except Failed:                                  pass
-                        if not tvdb_id and self.Trakt:
-                            try:                                            tvdb_id = self.Trakt.convert_imdb_to_tvdb(tmdb_id)
-                            except Failed:                                  pass
-
-                if (not tmdb_id and library.is_movie) or (not tvdb_id and not (anidb_id and tmdb_id) and library.is_show):
-                    service_name = "TMDb ID" if library.is_movie else "TVDb ID"
-
-                    if self.Trakt:                                  api_name = "TMDb or Trakt"
-                    else:                                           api_name = "TMDb"
-
-                    if tmdb_id and imdb_id:                         id_name = f"TMDb ID: {tmdb_id} or IMDb ID: {imdb_id}"
-                    elif imdb_id and tvdb_id:                       id_name = f"IMDb ID: {imdb_id} or TVDb ID: {tvdb_id}"
-                    elif tmdb_id:                                   id_name = f"TMDb ID: {tmdb_id}"
-                    elif imdb_id:                                   id_name = f"IMDb ID: {imdb_id}"
-                    elif tvdb_id:                                   id_name = f"TVDb ID: {tvdb_id}"
-                    else:                                           id_name = None
-
-                    if anidb_id and not tmdb_id and not tvdb_id:    error_message = f"Unable to convert AniDB ID: {anidb_id} to TMDb ID or TVDb ID"
-                    elif id_name:                                   error_message = f"Unable to convert {id_name} to {service_name} using {api_name}"
-                    else:                                           error_message = f"No ID to convert to {service_name}"
-            if self.Cache and ((tmdb_id and library.is_movie) or ((tvdb_id or (anidb_id and tmdb_id)) and library.is_show)):
-                if not isinstance(tmdb_id, list):               tmdb_id = [tmdb_id]
-                if not isinstance(imdb_id, list):               imdb_id = [imdb_id]
-                for i in range(len(tmdb_id)):
-                    try:                                            imdb_value = imdb_id[i]
-                    except IndexError:                              imdb_value = None
-                    util.print_end(length, f"Cache | {'^' if expired is True else '+'} | {item.guid:<46} | {tmdb_id[i] if tmdb_id[i] else 'None':<6} | {imdb_value if imdb_value else 'None':<10} | {tvdb_id if tvdb_id else 'None':<6} | {anidb_id if anidb_id else 'None':<5} | {item.title}")
-                    self.Cache.update_guid("movie" if library.is_movie else "show", item.guid, tmdb_id[i], imdb_value, tvdb_id, anidb_id, expired)
-
-        if tmdb_id and library.is_movie:                return "movie", tmdb_id
-        elif tvdb_id and library.is_show:               return "show", tvdb_id
-        elif anidb_id and tmdb_id:                      return "movie", tmdb_id
-        else:
-            util.print_end(length, f"{'Cache | ! |' if self.Cache else 'Mapping Error:'} {item.guid:<46} | {error_message} for {item.title}")
-            return None, None
