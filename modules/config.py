@@ -407,6 +407,11 @@ class Config:
                                     logger.error("Config Error: metadata_path git is blank")
                                 else:
                                     params["metadata_path"].append(("Git", path['git']))
+                            if "file" in path:
+                                if path["file"] is None:
+                                    logger.error("Config Error: metadata_path file is blank")
+                                else:
+                                    params["metadata_path"].append(("File", path['file']))
                         else:
                             params["metadata_path"].append(("File", path))
                 else:
