@@ -211,7 +211,7 @@ class TMDbAPI:
                     movie_ids.append(credit.id)
                 elif credit.media_type == "tv":
                     try:
-                        show_ids.append(self.config.Convert.tmdb_to_tvdb(credit.id))
+                        show_ids.append(self.config.Convert.tmdb_to_tvdb(credit.id, fail=True))
                     except Failed as e:
                         logger.warning(e)
         for credit in actor_credits.crew:
@@ -223,7 +223,7 @@ class TMDbAPI:
                     movie_ids.append(credit.id)
                 elif credit.media_type == "tv":
                     try:
-                        show_ids.append(self.config.Convert.tmdb_to_tvdb(credit.id))
+                        show_ids.append(self.config.Convert.tmdb_to_tvdb(credit.id, fail=True))
                     except Failed as e:
                         logger.warning(e)
         return movie_ids, show_ids
@@ -240,9 +240,10 @@ class TMDbAPI:
             else:                                               raise Failed(f"TMDb Error: {method} method not supported")
             for tmdb_item in tmdb_items:
                 try:
-                    ids.append(tmdb_item.id if is_movie else self.config.Convert.tmdb_to_tvdb(tmdb_item.id))
+                    ids.append(tmdb_item.id if is_movie else self.config.Convert.tmdb_to_tvdb(tmdb_item.id, fail=True))
                     count += 1
-                except Failed:
+                except Failed as e:
+                    logger.error(e)
                     pass
                 if count == amount: break
             if count == amount: break
@@ -263,7 +264,7 @@ class TMDbAPI:
             tmdb_items = self.Discover.discover_movies(attrs) if is_movie else self.Discover.discover_tv_shows(attrs)
             for tmdb_item in tmdb_items:
                 try:
-                    ids.append(tmdb_item.id if is_movie else self.config.Convert.tmdb_to_tvdb(tmdb_item.id))
+                    ids.append(tmdb_item.id if is_movie else self.config.Convert.tmdb_to_tvdb(tmdb_item.id, fail=True))
                     count += 1
                 except Failed as e:
                     logger.error(e)
@@ -336,7 +337,7 @@ class TMDbAPI:
                     if tmdb_item.media_type == "movie":
                         movie_ids.append(tmdb_item.id)
                     elif tmdb_item.media_type == "tv":
-                        try:                    show_ids.append(self.config.Convert.tmdb_to_tvdb(tmdb_item.id))
+                        try:                    show_ids.append(self.config.Convert.tmdb_to_tvdb(tmdb_item.id, fail=True))
                         except Failed:          pass
             elif method == "tmdb_movie":
                 tmdb_name = str(self.get_movie(tmdb_id).title)
@@ -348,7 +349,7 @@ class TMDbAPI:
                     movie_ids.append(tmdb_item["id"])
             elif method == "tmdb_show":
                 tmdb_name = str(self.get_show(tmdb_id).name)
-                show_ids.append(self.config.Convert.tmdb_to_tvdb(tmdb_id))
+                show_ids.append(self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True))
             else:
                 tmdb_name = str(self.get_person(tmdb_id).name)
                 if method == "tmdb_actor":                  movie_ids, show_ids = self._credits(tmdb_id, actor=True)
