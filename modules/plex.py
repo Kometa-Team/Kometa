@@ -439,16 +439,16 @@ class PlexAPI:
         else:                   method = None
         self.Plex._server.query(key, method=method)
 
-    def create_smart_labels(self, title, sort):
+    def smart_label_url(self, title, sort):
         labels = self.get_labels()
         if title not in labels:
             raise Failed(f"Plex Error: Label: {title} does not exist")
         smart_type = 1 if self.is_movie else 2
         sort_type = movie_smart_sorts[sort] if self.is_movie else show_smart_sorts[sort]
-        uri_args = f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
-        self.create_smart_collection(title, smart_type, uri_args)
+        return smart_type, f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
 
     def create_smart_collection(self, title, smart_type, uri_args):
+        logger.debug(f"Smart Collection Created: {uri_args}")
         args = {
             "type": smart_type,
             "title": title,

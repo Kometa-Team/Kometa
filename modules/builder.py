@@ -1518,9 +1518,11 @@ class CollectionBuilder:
     def update_details(self):
         if not self.obj and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
-        elif not self.obj and self.smart_label_collection:
+        elif self.smart_label_collection:
             try:
-                self.library.create_smart_labels(self.name, sort=self.smart_sort)
+                smart_type, self.smart_url = self.library.smart_label_url(self.name, self.smart_sort)
+                if not self.obj:
+                    self.library.create_smart_collection(self.name, smart_type, self.smart_url)
             except Failed:
                 raise Failed(f"Collection Error: Label: {self.name} was not added to any items in the Library")
         self.obj = self.library.get_collection(self.name)
