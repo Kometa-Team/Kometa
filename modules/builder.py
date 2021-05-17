@@ -214,7 +214,6 @@ class CollectionBuilder:
         self.backgrounds = {}
         self.summaries = {}
         self.schedule = ""
-        self.rating_key_map = {}
         self.add_to_radarr = None
         self.add_to_sonarr = None
         current_time = datetime.now()
@@ -1505,7 +1504,7 @@ class CollectionBuilder:
     def sync_collection(self):
         logger.info("")
         count_removed = 0
-        for ratingKey, item in self.rating_key_map.items():
+        for ratingKey, item in self.plex_map.items():
             if item is not None:
                 logger.info(f"{self.name} Collection | - | {item.title}")
                 if self.smart_label_collection:
@@ -1518,9 +1517,11 @@ class CollectionBuilder:
     def update_details(self):
         if not self.obj and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
-        elif not self.obj and self.smart_label_collection:
+        elif self.smart_label_collection:
             try:
-                self.library.create_smart_labels(self.name, sort=self.smart_sort)
+                smart_type, self.smart_url = self.library.smart_label_url(self.name, self.smart_sort)
+                if not self.obj:
+                    self.library.create_smart_collection(self.name, smart_type, self.smart_url)
             except Failed:
                 raise Failed(f"Collection Error: Label: {self.name} was not added to any items in the Library")
         self.obj = self.library.get_collection(self.name)
