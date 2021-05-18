@@ -276,6 +276,8 @@ class Convert:
                 except requests.exceptions.ConnectionError:
                     util.print_stacktrace()
                     raise Failed("No External GUIDs found")
+                if not tvdb_id and not imdb_id and not tmdb_id:
+                    raise Failed("Refresh Metadata")
             elif item_type == "imdb":                       imdb_id = check_id
             elif item_type == "thetvdb":                    tvdb_id = int(check_id)
             elif item_type == "themoviedb":                 tmdb_id = int(check_id)

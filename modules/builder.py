@@ -548,7 +548,7 @@ class CollectionBuilder:
                         else:
                             raise Failed("Collection Error: HDR must be true or false")
                     else:
-                        if smart in ["title", "episode_title"] and smart_mod in ["", ".not", ".begins", ".ends"]:
+                        if smart in ["title", "episode_title", "studio"] and smart_mod in ["", ".not", ".begins", ".ends"]:
                             results_list = [(t, t) for t in util.get_list(smart_data, split=False)]
                         elif smart in plex.tags and smart_mod in ["", ".not", ".begins", ".ends"]:
                             if smart_final in plex.tmdb_searches:
@@ -559,8 +559,6 @@ class CollectionBuilder:
                                             smart_values.append(tmdb_name)
                                     else:
                                         smart_values.append(tmdb_value)
-                            elif smart == "studio":
-                                smart_values = util.get_list(smart_data, split=False)
                             else:
                                 smart_values = util.get_list(smart_data)
                             results_list = []
@@ -775,7 +773,7 @@ class CollectionBuilder:
                     self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
                 elif method_name == "sonarr_tag":
                     self.sonarr_options["tag"] = util.get_list(method_data)
-                elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
+                elif method_name in ["title", "title.and", "title.not", "title.begins", "studio.ends", "studio", "studio.and", "studio.not", "studio.begins", "studio.ends"]:
                     self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
                 elif method_name in ["year.gt", "year.gte", "year.lt", "year.lte"]:
                     self.methods.append(("plex_search", [{method_name: util.check_year(method_data, current_year, method_name)}]))
@@ -951,7 +949,7 @@ class CollectionBuilder:
                                         raise Failed(f"Collection Warning: plex search limit attribute: {search_data} must be an integer greater then 0")
                                     else:
                                         searches[search] = search_data
-                                elif search == "title" and modifier in ["", ".and", ".not", ".begins", ".ends"]:
+                                elif search in ["title", "studio"] and modifier in ["", ".and", ".not", ".begins", ".ends"]:
                                     searches[search_final] = util.get_list(search_data, split=False)
                                 elif search in plex.tags and modifier in ["", ".and", ".not", ".begins", ".ends"]:
                                     if search_final in plex.tmdb_searches:
