@@ -102,8 +102,6 @@ numbered_builders = [
 ]
 smart_collection_invalid = ["collection_mode", "collection_order"]
 smart_url_collection_invalid = [
-    "item_label", "item_label.sync", "item_episode_sorting", "item_keep_episodes", "item_delete_episodes",
-    "item_season_display", "item_episode_ordering", "item_metadata_language", "item_use_original_title",
     "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label",
     "radarr_add", "radarr_folder", "radarr_monitor", "radarr_availability", 
     "radarr_quality", "radarr_tag", "radarr_search",
@@ -641,7 +639,7 @@ class CollectionBuilder:
                 elif method_name not in collectionless_details and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
                 elif self.smart_url and method_name in all_builders:
-                    raise Failed(f"Collection Error: {method_name} builder not allowed when using smart_url")
+                    raise Failed(f"Collection Error: {method_name} builder not allowed when using smart_filter")
                 elif self.smart_url and method_name in smart_url_collection_invalid:
                     raise Failed(f"Collection Error: {method_name} detail not allowed when using smart_url")
                 elif method_name == "summary":
