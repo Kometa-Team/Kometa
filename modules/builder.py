@@ -492,7 +492,7 @@ class CollectionBuilder:
                 for smart_key, smart_data in filter_dict.items():
                     smart, smart_mod, smart_final = _split(smart_key)
 
-                    def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
+                    def build_url_arg(arg, mod=None, arg_s=None, mod_s=None, param_s=None):
                         arg_key = plex.search_translation[smart] if smart in plex.search_translation else smart
                         if mod is None:
                             mod = plex.modifier_translation[smart_mod] if smart_mod in plex.search_translation else smart_mod
@@ -502,7 +502,9 @@ class CollectionBuilder:
                             mod_s = "does not contain" if smart_mod == ".not" else "contains"
                         elif mod_s is None:
                             mod_s = plex.mod_displays[smart_mod]
-                        display_line = f"{indent}{smart.title().replace('_', ' ')} {mod_s} {arg_s}"
+                        if param_s is None:
+                            param_s = smart.title().replace('_', ' ')
+                        display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                         return f"{arg_key}{mod}={arg}&", display_line
 
                     if smart_final in plex.movie_only_smart_searches and self.library.is_show:
@@ -538,6 +540,13 @@ class CollectionBuilder:
                         results, display_add = build_url_arg(util.check_number(smart_data, smart_final, minimum=1))
                     elif smart in ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"] and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
                         results, display_add = build_url_arg(util.check_number(smart_data, smart_final, number_type="float", minimum=0, maximum=10))
+                    elif smart == "hdr":
+                        if isinstance(smart_data, bool):
+                            hdr_mod = "" if smart_data else "!"
+                            hdr_arg = "true" if smart_data else "false"
+                            results, display_add = build_url_arg(1, mod=hdr_mod, arg_s=hdr_arg, mod_s="is", param_s="HDR")
+                        else:
+                            raise Failed("Collection Error: HDR must be true or false")
                     else:
                         if smart in ["title", "episode_title"] and smart_mod in ["", ".not", ".begins", ".ends"]:
                             results_list = [(t, t) for t in util.get_list(smart_data, split=False)]
