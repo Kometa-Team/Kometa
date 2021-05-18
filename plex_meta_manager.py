@@ -18,6 +18,8 @@ parser.add_argument("-t", "--time", dest="time", help="Time to update each day u
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
+parser.add_argument("-lo", "--library-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
+parser.add_argument("-co", "--collection-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
 parser.add_argument("-cl", "--collection", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-l", "--library", "--libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
@@ -39,6 +41,8 @@ def check_bool(env_str, default):
 test = check_bool("PMM_TEST", args.test)
 debug = check_bool("PMM_DEBUG", args.debug)
 run = check_bool("PMM_RUN", args.run)
+library_only = check_bool("PMM_LIBRARY_ONLY", args.library_only)
+collection_only = check_bool("PMM_COLLECTION_ONLY", args.collection_only)
 collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
 libraries = os.environ.get("PMM_LIBRARIES") if os.environ.get("PMM_LIBRARIES") else args.libraries
 resume = os.environ.get("PMM_RESUME") if os.environ.get("PMM_RESUME") else args.resume
@@ -121,12 +125,12 @@ def update_libraries(config, is_test, requested_collections, resume_from):
         util.separator(f"Mapping {library.name} Library")
         logger.info("")
         movie_map, show_map = map_guids(config, library)
-        if not is_test and not resume_from and library.mass_update:
+        if not is_test and not resume_from and not collection_only and library.mass_update:
             mass_metadata(config, library, movie_map, show_map)
         for metadata in library.metadata_files:
             logger.info("")
             util.separator(f"Running Metadata File\n{metadata.path}")
-            if not is_test and not resume_from:
+            if not is_test and not resume_from and not collection_only:
                 try:
                     metadata.update_metadata(config.TMDb, is_test)
                 except Failed as e:
@@ -137,10 +141,10 @@ def update_libraries(config, is_test, requested_collections, resume_from):
             if resume_from and resume_from not in collections_to_run:
                 logger.warning(f"Collection: {resume_from} not in Metadata File: {metadata.path}")
                 continue
-            if collections_to_run:
+            if collections_to_run and not library_only:
                 resume_from = run_collection(config, library, metadata, collections_to_run, is_test, resume_from, movie_map, show_map)
 
-        if library.show_unmanaged is True and not is_test and not requested_collections:
+        if library.show_unmanaged is True and not is_test and not requested_collections and not library_only:
             logger.info("")
             util.separator(f"Unmanaged Collections in {library.name} Library")
             logger.info("")
@@ -164,7 +168,7 @@ def update_libraries(config, is_test, requested_collections, resume_from):
             has_run_again = True
             break
 
-    if has_run_again:
+    if has_run_again and not library_only:
         logger.info("")
         util.separator("Run Again")
         logger.info("")
