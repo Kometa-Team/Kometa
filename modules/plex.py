@@ -182,7 +182,7 @@ smart_searches = [
     "producer", "producer.not",
     "subtitle_language", "subtitle_language.not",
     "writer", "writer.not",
-    "decade", "resolution",
+    "decade", "resolution", "hdr",
     "added", "added.not", "added.before", "added.after",
     "originally_available", "originally_available.not",
     "originally_available.before", "originally_available.after",
