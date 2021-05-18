@@ -18,10 +18,10 @@ parser.add_argument("-t", "--time", dest="time", help="Time to update each day u
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
-parser.add_argument("-lo", "--library-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
-parser.add_argument("-co", "--collection-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
-parser.add_argument("-cl", "--collection", "--collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
-parser.add_argument("-l", "--library", "--libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
+parser.add_argument("-co", "--collection-only", "--collections-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
+parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
+parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
+parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -41,8 +41,8 @@ def check_bool(env_str, default):
 test = check_bool("PMM_TEST", args.test)
 debug = check_bool("PMM_DEBUG", args.debug)
 run = check_bool("PMM_RUN", args.run)
-library_only = check_bool("PMM_LIBRARY_ONLY", args.library_only)
-collection_only = check_bool("PMM_COLLECTION_ONLY", args.collection_only)
+library_only = check_bool("PMM_LIBRARIES_ONLY", args.library_only)
+collection_only = check_bool("PMM_COLLECTIONS_ONLY", args.collection_only)
 collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
 libraries = os.environ.get("PMM_LIBRARIES") if os.environ.get("PMM_LIBRARIES") else args.libraries
 resume = os.environ.get("PMM_RESUME") if os.environ.get("PMM_RESUME") else args.resume
@@ -156,7 +156,7 @@ def update_libraries(config, is_test, requested_collections, resume_from):
                     unmanaged_count += 1
             logger.info("{} Unmanaged Collections".format(unmanaged_count))
 
-        if library.assets_for_all is True and not is_test and not requested_collections:
+        if library.assets_for_all is True and not is_test and not requested_collections and not collection_only:
             logger.info("")
             util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
             logger.info("")
