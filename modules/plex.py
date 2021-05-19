@@ -396,7 +396,11 @@ class PlexAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_guids(self, item):
-        item.reload(includeOnDeck=False, includeRelated=False, includeReviews=False)
+        item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, inclueExtras=False,
+                    includeFields='', includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                    includeOnDeck=False, includePopularLeaves=False, includePreferences=False, includeRelated=False,
+                    includeRelatedCount=0, includeReviews=False, includeStations=False)
         return item.guids
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)

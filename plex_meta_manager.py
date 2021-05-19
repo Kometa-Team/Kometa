@@ -6,7 +6,6 @@ try:
     from modules.builder import CollectionBuilder
     from modules.config import Config
     from modules.util import Failed
-    from plexapi.exceptions import BadRequest
 except ModuleNotFoundError:
     print("Error: Requirements are not installed")
     sys.exit(0)
@@ -77,10 +76,8 @@ def fmt_filter(record):
 
 file_handler = logging.handlers.TimedRotatingFileHandler(os.path.join(default_dir, "logs", "meta.log"), when="midnight", backupCount=10, encoding="utf-8")
 file_handler.addFilter(fmt_filter)
-file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-100s |"))
 
 cmd_handler = logging.StreamHandler()
-cmd_handler.setFormatter(logging.Formatter("| %(message)-100s |"))
 cmd_handler.setLevel(logging.DEBUG if test or debug else logging.INFO)
 
 logger.addHandler(cmd_handler)
@@ -214,22 +211,18 @@ def map_guids(config, library):
     items = library.Plex.all()
     for i, item in enumerate(items, 1):
         length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
-        try:
-            id_type, main_id = config.Convert.get_id(item, library, length)
-        except BadRequest:
-            util.print_stacktrace()
-            util.print_end(length, f"Mapping Error: | {item.guid} for {item.title} not found")
-            continue
-        if not isinstance(main_id, list):
-            main_id = [main_id]
-        if id_type == "movie":
-            for m in main_id:
-                if m in movie_map:              movie_map[m].append(item.ratingKey)
-                else:                           movie_map[m] = [item.ratingKey]
-        elif id_type == "show":
-            for m in main_id:
-                if m in show_map:               show_map[m].append(item.ratingKey)
-                else:                           show_map[m] = [item.ratingKey]
+        id_type, main_id = config.Convert.get_id(item, library, length)
+        if main_id:
+            if not isinstance(main_id, list):
+                main_id = [main_id]
+            if id_type == "movie":
+                for m in main_id:
+                    if m in movie_map:              movie_map[m].append(item.ratingKey)
+                    else:                           movie_map[m] = [item.ratingKey]
+            elif id_type == "show":
+                for m in main_id:
+                    if m in show_map:               show_map[m].append(item.ratingKey)
+                    else:                           show_map[m] = [item.ratingKey]
     util.print_end(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}")
     return movie_map, show_map
 
@@ -332,6 +325,7 @@ def mass_metadata(config, library, movie_map, show_map):
                 pass
 
 def run_collection(config, library, metadata, requested_collections, is_test, resume_from, movie_map, show_map):
+    logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         if is_test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
             no_template_test = True
@@ -347,15 +341,15 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
                         no_template_test = False
             if no_template_test:
                 continue
-        try:
-            if resume_from and resume_from != mapping_name:
-                continue
-            elif resume_from == mapping_name:
-                resume_from = None
-                logger.info("")
-                util.separator(f"Resuming Collections")
 
+        if resume_from and resume_from != mapping_name:
+            continue
+        elif resume_from == mapping_name:
+            resume_from = None
             logger.info("")
+            util.separator(f"Resuming Collections")
+
+        try:
             util.separator(f"{mapping_name} Collection")
             logger.info("")
 
@@ -364,15 +358,15 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
             if len(builder.schedule) > 0:
                 util.print_multiline(builder.schedule, info=True)
 
-            logger.info("")
-            logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
-
-            if len(builder.filters) > 0:
-                logger.info("")
-                for filter_key, filter_value in builder.filters:
-                    logger.info(f"Collection Filter {filter_key}: {filter_value}")
-
             if not builder.smart_url:
+                logger.info("")
+                logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
+
+                if len(builder.filters) > 0:
+                    logger.info("")
+                    for filter_key, filter_value in builder.filters:
+                        logger.info(f"Collection Filter {filter_key}: {filter_value}")
+
                 builder.collect_rating_keys(movie_map, show_map)
                 logger.info("")
                 if len(builder.rating_keys) > 0:
@@ -394,6 +388,7 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
         except Exception as e:
             util.print_stacktrace()
             logger.error(f"Unknown Error: {e}")
+        logger.info("")
     return resume_from
 
 try:

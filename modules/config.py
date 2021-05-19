@@ -325,6 +325,7 @@ class Config:
             else:
                 params["name"] = str(library_name)
                 logger.info(f"Connecting to {params['name']} Library...")
+            params["mapping_name"] = str(library_name)
 
             params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
             if params["asset_directory"] is None:
