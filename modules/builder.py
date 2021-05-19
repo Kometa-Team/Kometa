@@ -495,7 +495,7 @@ class CollectionBuilder:
                     def build_url_arg(arg, mod=None, arg_s=None, mod_s=None, param_s=None):
                         arg_key = plex.search_translation[smart] if smart in plex.search_translation else smart
                         if mod is None:
-                            mod = plex.modifier_translation[smart_mod] if smart_mod in plex.search_translation else smart_mod
+                            mod = plex.modifier_translation[smart_mod] if smart_mod in plex.modifier_translation else smart_mod
                         if arg_s is None:
                             arg_s = arg
                         if smart in string_filters and smart_mod in ["", ".not"]:
