@@ -2,6 +2,7 @@ import glob, logging, os, requests
 from modules import util
 from modules.meta import Metadata
 from modules.util import Failed
+import plexapi
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collections
@@ -638,7 +639,11 @@ class PlexAPI:
         if smart_label_collection:
             return self.get_labeled_items(collection.title if isinstance(collection, Collections) else str(collection))
         elif isinstance(collection, Collections):
-            return self.query(collection.items)
+            if self.smart(collection):
+                key = f"/library/sections/{self.Plex.key}/all{self.smart_filter(collection)}"
+                return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
+            else:
+                return self.query(collection.items)
         else:
             return []
 
