@@ -366,16 +366,22 @@ def centered(text, do_print=True):
     return final_text
 
 def separator(text=None):
-    logger.handlers[0].setFormatter(logging.Formatter(f"%(message)-{screen_width - 2}s"))
-    logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s %(message)-{screen_width - 2}s"))
+    for handler in logger.handlers:
+        apply_formatter(handler, border=False)
     logger.info(f"|{separating_character * screen_width}|")
     if text:
         text_list = text.split("\n")
         for t in text_list:
             logger.info(f"| {centered(t, do_print=False)} |")
         logger.info(f"|{separating_character * screen_width}|")
-    logger.handlers[0].setFormatter(logging.Formatter(f"| %(message)-{screen_width - 2}s |"))
-    logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{screen_width - 2}s |"))
+    for handler in logger.handlers:
+        apply_formatter(handler)
+
+def apply_formatter(handler, border=True):
+    text = f"| %(message)-{screen_width - 2}s |" if border else f"%(message)-{screen_width - 2}s"
+    if not isinstance(handler, logging.StreamHandler):
+        text = f"[%(asctime)s] %(filename)-27s %(levelname)-10s {text}"
+    handler.setFormatter(logging.Formatter(text))
 
 def print_return(length, text):
     print(adjust_space(length, f"| {text}"), end="\r")
