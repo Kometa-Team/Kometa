@@ -574,7 +574,7 @@ class PlexAPI:
             if search_limit:
                 logger.info(f"\t\t      LIMIT {search_limit})")
             logger.debug(f"Search: {search_terms}")
-            return self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
+            items = self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
         elif method == "plex_collectionless":
             good_collections = []
             logger.info("Collections Excluded")
@@ -615,7 +615,7 @@ class PlexAPI:
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
-            return items
+            return [item.ratingKey for item in items]
         else:
             raise Failed("Plex Error: No Items found in Plex")
 
@@ -664,11 +664,16 @@ class PlexAPI:
                 util.print_stacktrace()
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
 
-    def update_item_from_assets(self, item, dirs=None):
+    def update_item_from_assets(self, item, collection_mode=False, upload=True, dirs=None, name=None):
         if dirs is None:
             dirs = self.asset_directory
-        name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
+        if not name and collection_mode:
+            name = item.title
+        elif not name:
+            name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
         for ad in dirs:
+            poster_image = None
+            background_image = None
             if self.asset_folders:
                 if not os.path.isdir(os.path.join(ad, name)):
                     continue
@@ -679,13 +684,22 @@ class PlexAPI:
                 background_filter = os.path.join(ad, f"{name}_background.*")
             matches = glob.glob(poster_filter)
             if len(matches) > 0:
-                self.upload_image(item, os.path.abspath(matches[0]), url=False)
-                logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
+                poster_image = os.path.abspath(matches[0])
+                if upload:
+                    self.upload_image(item, poster_image, url=False)
+                    logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_image}")
             matches = glob.glob(background_filter)
             if len(matches) > 0:
-                self.upload_image(item, os.path.abspath(matches[0]), poster=False, url=False)
-                logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
-            if self.is_show:
+                background_image = os.path.abspath(matches[0])
+                if upload:
+                    self.upload_image(item, background_image, poster=False, url=False)
+                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_image}")
+            if collection_mode:
+                for ite in self.query(item.items):
+                    self.update_item_from_assets(ite, dirs=[os.path.join(ad, name)])
+            if not upload:
+                return poster_image, background_image
+            if self.is_show and not collection_mode:
                 for season in self.query(item.seasons):
                     if self.asset_folders:
                         season_filter = os.path.join(ad, name, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
