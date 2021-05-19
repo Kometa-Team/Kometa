@@ -565,14 +565,14 @@ class PlexAPI:
                             or_des = conjunction if o > 0 else f"{search_method}("
                             ors += f"{or_des}{param}"
                     if has_processed:
-                        logger.info(f"\t\t      AND {ors})")
+                        logger.info(f"                        AND {ors})")
                     else:
                         logger.info(f"Processing {pretty}: {ors})")
                         has_processed = True
             if search_sort:
-                logger.info(f"\t\t      SORT BY {search_sort})")
+                logger.info(f"                        SORT BY {search_sort}")
             if search_limit:
-                logger.info(f"\t\t      LIMIT {search_limit})")
+                logger.info(f"                        LIMIT {search_limit}")
             logger.debug(f"Search: {search_terms}")
             items = self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
         elif method == "plex_collectionless":
@@ -720,3 +720,4 @@ class PlexAPI:
                             episode_path = os.path.abspath(matches[0])
                             self.upload_image(episode, episode_path, url=False)
                             logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
+        return None, None
