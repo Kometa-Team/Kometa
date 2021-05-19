@@ -141,24 +141,30 @@ def update_libraries(config, is_test, requested_collections, resume_from):
             if collections_to_run and not library_only:
                 resume_from = run_collection(config, library, metadata, collections_to_run, is_test, resume_from, movie_map, show_map)
 
-        if library.show_unmanaged is True and not is_test and not requested_collections and not library_only:
-            logger.info("")
-            util.separator(f"Unmanaged Collections in {library.name} Library")
-            logger.info("")
-            unmanaged_count = 0
-            collections_in_plex = [str(plex_col) for plex_col in library.collections]
+        if not is_test and not requested_collections:
+            unmanaged_collections = []
             for col in library.get_all_collections():
-                if col.title not in collections_in_plex:
-                    logger.info(col.title)
-                    unmanaged_count += 1
-            logger.info("{} Unmanaged Collections".format(unmanaged_count))
+                if col.title not in library.collections:
+                    unmanaged_collections.append(col)
 
-        if library.assets_for_all is True and not is_test and not requested_collections and not collection_only:
-            logger.info("")
-            util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
-            logger.info("")
-            for item in library.get_all():
-                library.update_item_from_assets(item)
+            if library.show_unmanaged and not library_only:
+                logger.info("")
+                util.separator(f"Unmanaged Collections in {library.name} Library")
+                logger.info("")
+                for col in unmanaged_collections:
+                    logger.info(col.title)
+                logger.info(f"{len(unmanaged_collections)} Unmanaged Collections")
+
+            if library.assets_for_all and not collection_only:
+                logger.info("")
+                util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
+                logger.info("")
+                for col in unmanaged_collections:
+                    library.update_item_from_assets(col, collection_mode=True)
+                for item in library.get_all():
+                    library.update_item_from_assets(item)
+
+
     has_run_again = False
     for library in config.libraries:
         if library.run_again:

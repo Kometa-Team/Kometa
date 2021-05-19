@@ -1631,24 +1631,11 @@ class CollectionBuilder:
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error("Collection Error: name_mapping attribute is blank")
-            for ad in self.library.asset_directory:
-                path = os.path.join(ad, f"{name_mapping}")
-                if self.library.asset_folders:
-                    if not os.path.isdir(path):
-                        continue
-                    poster_filter = os.path.join(ad, name_mapping, "poster.*")
-                    background_filter = os.path.join(ad, name_mapping, "background.*")
-                else:
-                    poster_filter = os.path.join(ad, f"{name_mapping}.*")
-                    background_filter = os.path.join(ad, f"{name_mapping}_background.*")
-                matches = glob.glob(poster_filter)
-                if len(matches) > 0:
-                    self.posters["asset_directory"] = os.path.abspath(matches[0])
-                matches = glob.glob(background_filter)
-                if len(matches) > 0:
-                    self.backgrounds["asset_directory"] = os.path.abspath(matches[0])
-                for item in self.library.query(self.obj.items):
-                    self.library.update_item_from_assets(item, dirs=[path])
+            poster_image, background_image = self.library.update_item_from_assets(self.obj, collection_mode=True, upload=False, name=name_mapping)
+            if poster_image:
+                self.posters["asset_directory"] = poster_image
+            if background_image:
+                self.backgrounds["asset_directory"] = background_image
 
         def set_image(image_method, images, is_background=False):
             message = f"{'background' if is_background else 'poster'} to [{'File' if image_method in image_file_details else 'URL'}] {images[image_method]}"
