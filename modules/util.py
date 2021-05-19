@@ -1,5 +1,6 @@
 import logging, re, signal, sys, time, traceback
 from datetime import datetime
+from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
 try:
@@ -378,7 +379,7 @@ def separator(text=None):
 
 def apply_formatter(handler, border=True):
     text = f"| %(message)-{screen_width - 2}s |" if border else f"%(message)-{screen_width - 2}s"
-    if not isinstance(handler, logging.StreamHandler):
+    if isinstance(handler, logging.handlers.RotatingFileHandler):
         text = f"[%(asctime)s] %(filename)-27s %(levelname)-10s {text}"
     handler.setFormatter(logging.Formatter(text))
 
@@ -389,3 +390,11 @@ def print_return(length, text):
 def print_end(length, text=None):
     if text:        logger.info(adjust_space(length, text))
     else:           print(adjust_space(length, " "), end="\r")
+
+def validate_filename(filename):
+    if is_valid_filename(filename):
+        return filename
+    else:
+        mapping_name = sanitize_filename(filename)
+        logger.info(f"Folder Name: {filename} is invalid using {mapping_name}")
+        return mapping_name

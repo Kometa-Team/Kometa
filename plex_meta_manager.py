@@ -74,29 +74,32 @@ def fmt_filter(record):
     record.filename = f"[{record.filename}:{record.lineno}]"
     return True
 
-file_handler = logging.handlers.TimedRotatingFileHandler(os.path.join(default_dir, "logs", "meta.log"), when="midnight", backupCount=10, encoding="utf-8")
-file_handler.addFilter(fmt_filter)
-
 cmd_handler = logging.StreamHandler()
 cmd_handler.setLevel(logging.DEBUG if test or debug else logging.INFO)
 
 logger.addHandler(cmd_handler)
-logger.addHandler(file_handler)
 
 sys.excepthook = util.my_except_hook
 
-util.separator()
-util.centered("                                                                                     ")
-util.centered(" ____  _             __  __      _          __  __                                   ")
-util.centered("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ ")
-util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|")
-util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
-util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
-util.centered("                                                                     |___/           ")
-util.centered("    Version: 1.9.1                                                                   ")
-util.separator()
-
 def start(config_path, is_test, daily, requested_collections, requested_libraries, resume_from):
+    file_logger = os.path.join(default_dir, "logs", "meta.log")
+    should_roll_over = os.path.isfile(file_logger)
+    file_handler = logging.handlers.RotatingFileHandler(file_logger, delay=True, mode="w", backupCount=10, encoding="utf-8")
+    util.apply_formatter(file_handler)
+    file_handler.addFilter(fmt_filter)
+    if should_roll_over:
+        file_handler.doRollover()
+    logger.addHandler(file_handler)
+    util.separator()
+    util.centered("                                                                                     ")
+    util.centered(" ____  _             __  __      _          __  __                                   ")
+    util.centered("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ ")
+    util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|")
+    util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
+    util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
+    util.centered("                                                                     |___/           ")
+    util.centered("    Version: 1.9.1                                                                   ")
+    util.separator()
     if daily:                       start_type = "Daily "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
@@ -112,9 +115,20 @@ def start(config_path, is_test, daily, requested_collections, requested_librarie
         logger.critical(e)
     logger.info("")
     util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
+    logger.addHandler(file_handler)
 
 def update_libraries(config, is_test, requested_collections, resume_from):
     for library in config.libraries:
+        os.makedirs(os.path.join(default_dir, "logs", library.mapping_name, "collections"), exist_ok=True)
+        col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, "library.log")
+        should_roll_over = os.path.isfile(col_file_logger)
+        library_handler = logging.handlers.RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
+        util.apply_formatter(library_handler)
+        library_handler.addFilter(fmt_filter)
+        if should_roll_over:
+            library_handler.doRollover()
+        logger.addHandler(library_handler)
+
         os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
         logger.info("")
         util.separator(f"{library.name} Library")
@@ -139,7 +153,9 @@ def update_libraries(config, is_test, requested_collections, resume_from):
                 logger.warning(f"Collection: {resume_from} not in Metadata File: {metadata.path}")
                 continue
             if collections_to_run and not library_only:
+                logger.removeHandler(library_handler)
                 resume_from = run_collection(config, library, metadata, collections_to_run, is_test, resume_from, movie_map, show_map)
+                logger.addHandler(library_handler)
 
         if not is_test and not requested_collections:
             unmanaged_collections = []
@@ -164,6 +180,7 @@ def update_libraries(config, is_test, requested_collections, resume_from):
                 for item in library.get_all():
                     library.update_item_from_assets(item)
 
+        logger.removeHandler(library_handler)
 
     has_run_again = False
     for library in config.libraries:
@@ -183,6 +200,11 @@ def update_libraries(config, is_test, requested_collections, resume_from):
         util.print_end(length)
         for library in config.libraries:
             if library.run_again:
+                col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, f"library.log")
+                library_handler = logging.handlers.RotatingFileHandler(col_file_logger, mode="w", backupCount=3, encoding="utf-8")
+                util.apply_formatter(library_handler)
+                logger.addHandler(library_handler)
+                library_handler.addFilter(fmt_filter)
                 os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
                 logger.info("")
                 util.separator(f"{library.name} Library Run Again")
@@ -197,6 +219,7 @@ def update_libraries(config, is_test, requested_collections, resume_from):
                     except Failed as e:
                         util.print_stacktrace()
                         util.print_multiline(e, error=True)
+                logger.removeHandler(library_handler)
 
     used_url = []
     for library in config.libraries:
@@ -355,6 +378,21 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
             logger.info("")
             util.separator(f"Resuming Collections")
 
+        if "name_mapping" in collection_attrs and collection_attrs["name_mapping"]:
+            collection_log_name = util.validate_filename(collection_attrs["name_mapping"])
+        else:
+            collection_log_name = util.validate_filename(mapping_name)
+        collection_log_folder = os.path.join(default_dir, "logs", library.mapping_name, "collections", collection_log_name)
+        os.makedirs(collection_log_folder, exist_ok=True)
+        col_file_logger = os.path.join(collection_log_folder, f"collection.log")
+        should_roll_over = os.path.isfile(col_file_logger)
+        collection_handler = logging.handlers.RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
+        util.apply_formatter(collection_handler)
+        collection_handler.addFilter(fmt_filter)
+        if should_roll_over:
+            collection_handler.doRollover()
+        logger.addHandler(collection_handler)
+
         try:
             util.separator(f"{mapping_name} Collection")
             logger.info("")
@@ -396,6 +434,7 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
             util.print_stacktrace()
             logger.error(f"Unknown Error: {e}")
         logger.info("")
+        logger.removeHandler(collection_handler)
     return resume_from
 
 try:
