@@ -124,7 +124,6 @@ def update_libraries(config, is_test, requested_collections, resume_from):
         should_roll_over = os.path.isfile(col_file_logger)
         library_handler = logging.handlers.RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
         util.apply_formatter(library_handler)
-        library_handler.addFilter(fmt_filter)
         if should_roll_over:
             library_handler.doRollover()
         logger.addHandler(library_handler)
@@ -388,7 +387,6 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
         should_roll_over = os.path.isfile(col_file_logger)
         collection_handler = logging.handlers.RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
         util.apply_formatter(collection_handler)
-        collection_handler.addFilter(fmt_filter)
         if should_roll_over:
             collection_handler.doRollover()
         logger.addHandler(collection_handler)
