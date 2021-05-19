@@ -933,8 +933,6 @@ class CollectionBuilder:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for movie libraries")
                                 elif search_final in plex.show_only_searches and self.library.is_movie:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for show libraries")
-                                elif search_final not in plex.searches:
-                                    raise Failed(f"Collection Error: {search_final} is not a valid plex search attribute")
                                 elif search_data is None:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute is blank")
                                 elif search == "sort_by":
@@ -949,6 +947,8 @@ class CollectionBuilder:
                                         raise Failed(f"Collection Warning: plex search limit attribute: {search_data} must be an integer greater then 0")
                                     else:
                                         searches[search] = search_data
+                                elif search_final not in plex.searches:
+                                    raise Failed(f"Collection Error: {search_final} is not a valid plex search attribute")
                                 elif search in ["title", "studio"] and modifier in ["", ".and", ".not", ".begins", ".ends"]:
                                     searches[search_final] = util.get_list(search_data, split=False)
                                 elif search in plex.tags and modifier in ["", ".and", ".not", ".begins", ".ends"]:
