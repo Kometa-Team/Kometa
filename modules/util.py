@@ -220,7 +220,6 @@ def compile_list(data):
     else:
         return data
 
-
 def get_list(data, lower=False, split=True, int_list=False):
     if isinstance(data, list):      return data
     elif isinstance(data, dict):    return [data]

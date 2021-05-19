@@ -1,4 +1,4 @@
-import glob, logging, os, re
+import logging, os, re
 from datetime import datetime, timedelta
 from modules import anidb, anilist, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed
@@ -645,10 +645,8 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: {method_name} attribute only works with normal collections")
                 elif method_name not in collectionless_details and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
-                elif self.smart_url and method_name in all_builders:
+                elif self.smart_url and (method_name in all_builders or method_name in smart_url_collection_invalid):
                     raise Failed(f"Collection Error: {method_name} builder not allowed when using smart_filter")
-                elif self.smart_url and method_name in smart_url_collection_invalid:
-                    raise Failed(f"Collection Error: {method_name} detail not allowed when using smart_url")
                 elif method_name == "summary":
                     self.summaries[method_name] = method_data
                 elif method_name == "tmdb_summary":
@@ -1249,21 +1247,32 @@ class CollectionBuilder:
             self.details["collection_mode"] = "hide"
             self.sync = True
 
-        try:
-            self.obj = library.get_collection(self.name)
-            collection_smart = library.smart(self.obj)
-            if (self.smart and not collection_smart) or (not self.smart and collection_smart):
-                logger.info("")
-                logger.error(f"Collection Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
-                library.query(self.obj.delete)
-                self.obj = None
-        except Failed:
-            self.obj = None
+        self.build_collection = True
+        if "build_collection" in methods:
+            if not self.data[methods["build_collection"]]:
+                logger.warning(f"Collection Warning: build_collection attribute is blank defaulting to true")
+            else:
+                self.build_collection = util.get_bool("build_collection", self.data[methods["build_collection"]])
 
-        self.plex_map = {}
-        if self.sync and self.obj:
-            for item in library.get_collection_items(self.obj, self.smart_label_collection):
-                self.plex_map[item.ratingKey] = item
+        if self.build_collection:
+            try:
+                self.obj = library.get_collection(self.name)
+                collection_smart = library.smart(self.obj)
+                if (self.smart and not collection_smart) or (not self.smart and collection_smart):
+                    logger.info("")
+                    logger.error(f"Collection Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
+                    library.query(self.obj.delete)
+                    self.obj = None
+            except Failed:
+                self.obj = None
+
+            self.plex_map = {}
+            if self.sync and self.obj:
+                for item in library.get_collection_items(self.obj, self.smart_label_collection):
+                    self.plex_map[item.ratingKey] = item
+        else:
+            self.sync = False
+            self.run_again = False
 
     def collect_rating_keys(self, movie_map, show_map):
         def add_rating_keys(keys):
