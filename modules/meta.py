@@ -121,30 +121,44 @@ class Metadata:
             def edit_tags(attr, obj, group, alias, key=None, extra=None, movie_library=False):
                 if key is None:
                     key = f"{attr}s"
-                if attr in alias and f"{attr}.sync" in alias:
+                if movie_library and not self.library.is_movie:
+                    logger.error(f"Metadata Error: {attr} attribute only works for movie libraries")
+                elif attr in alias and f"{attr}.sync" in alias:
                     logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
-                elif attr in alias or f"{attr}.sync" in alias:
+                elif f"{attr}.remove" in alias and f"{attr}.sync" in alias:
+                    logger.error(f"Metadata Error: Cannot use {attr}.remove and {attr}.sync together")
+                elif attr in alias and group[alias[attr]] is None:
+                    logger.error(f"Metadata Error: {attr} attribute is blank")
+                elif f"{attr}.remove" in alias and group[alias[f"{attr}.remove"]] is None:
+                    logger.error(f"Metadata Error: {attr}.remove attribute is blank")
+                elif f"{attr}.sync" in alias and group[alias[f"{attr}.sync"]] is None:
+                    logger.error(f"Metadata Error: {attr}.sync attribute is blank")
+                elif attr in alias or f"{attr}.remove" in alias or f"{attr}.sync" in alias:
                     attr_key = attr if attr in alias else f"{attr}.sync"
-                    if movie_library and not self.library.is_movie:
-                        logger.error(f"Metadata Error: {attr_key} attribute only works for movie libraries")
-                    elif group[alias[attr_key]] or extra:
-                        item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
-                        input_tags = []
-                        if group[alias[attr_key]]:
-                            input_tags.extend(util.get_list(group[alias[attr_key]]))
-                        if extra:
-                            input_tags.extend(extra)
-                        if f"{attr}.sync" in alias:
-                            remove_method = getattr(obj, f"remove{attr.capitalize()}")
-                            for tag in (t for t in item_tags if t not in input_tags):
-                                updated = True
-                                remove_method(tag)
-                                logger.info(f"Detail: {attr.capitalize()} {tag} removed")
+                    item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
+                    input_tags = []
+                    if group[alias[attr_key]]:
+                        input_tags.extend(util.get_list(group[alias[attr_key]]))
+                    if extra:
+                        input_tags.extend(extra)
+                    if f"{attr}.sync" in alias:
+                        remove_method = getattr(obj, f"remove{attr.capitalize()}")
+                        for tag in (t for t in item_tags if t not in input_tags):
+                            updated = True
+                            self.library.query_data(remove_method, tag)
+                            logger.info(f"Detail: {attr.capitalize()} {tag} removed")
+                    if attr in alias or f"{attr}.sync" in alias:
                         add_method = getattr(obj, f"add{attr.capitalize()}")
                         for tag in (t for t in input_tags if t not in item_tags):
                             updated = True
-                            add_method(tag)
+                            self.library.query_data(add_method, tag)
                             logger.info(f"Detail: {attr.capitalize()} {tag} added")
+                    if f"{attr}.remove" in alias:
+                        remove_method = getattr(obj, f"remove{attr.capitalize()}")
+                        for tag in util.get_list(group[alias[f"{attr}.remove"]]):
+                            if tag in item_tags:
+                                self.library.query_data(remove_method, tag)
+                                logger.info(f"Detail: {attr.capitalize()} {tag} removed")
                     else:
                         logger.error(f"Metadata Error: {attr} attribute is blank")
 
