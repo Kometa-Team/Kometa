@@ -2,6 +2,7 @@ import glob, logging, os, requests
 from modules import util
 from modules.meta import Metadata
 from modules.util import Failed
+import plexapi
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collections
@@ -182,7 +183,7 @@ smart_searches = [
     "producer", "producer.not",
     "subtitle_language", "subtitle_language.not",
     "writer", "writer.not",
-    "decade", "resolution",
+    "decade", "resolution", "hdr",
     "added", "added.not", "added.before", "added.after",
     "originally_available", "originally_available.not",
     "originally_available.before", "originally_available.after",
@@ -323,6 +324,7 @@ class PlexAPI:
         self.Sonarr = None
         self.Tautulli = None
         self.name = params["name"]
+        self.mapping_name = util.validate_filename(params["mapping_name"])
         self.missing_path = os.path.join(params["default_dir"], f"{self.name}_missing.yml")
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
@@ -336,7 +338,9 @@ class PlexAPI:
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
-        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update
+        self.radarr_add_all = params["radarr_add_all"]
+        self.sonarr_add_all = params["sonarr_add_all"]
+        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update or self.radarr_add_all or self.sonarr_add_all
         self.plex = params["plex"]
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
@@ -396,6 +400,11 @@ class PlexAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_guids(self, item):
+        item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, inclueExtras=False,
+                    includeFields='', includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                    includeOnDeck=False, includePopularLeaves=False, includePreferences=False, includeRelated=False,
+                    includeRelatedCount=0, includeReviews=False, includeStations=False)
         return item.guids
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -560,16 +569,16 @@ class PlexAPI:
                             or_des = conjunction if o > 0 else f"{search_method}("
                             ors += f"{or_des}{param}"
                     if has_processed:
-                        logger.info(f"\t\t      AND {ors})")
+                        logger.info(f"                        AND {ors})")
                     else:
                         logger.info(f"Processing {pretty}: {ors})")
                         has_processed = True
             if search_sort:
-                logger.info(f"\t\t      SORT BY {search_sort})")
+                logger.info(f"                        SORT BY {search_sort}")
             if search_limit:
-                logger.info(f"\t\t      LIMIT {search_limit})")
+                logger.info(f"                        LIMIT {search_limit}")
             logger.debug(f"Search: {search_terms}")
-            return self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
+            items = self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
         elif method == "plex_collectionless":
             good_collections = []
             logger.info("Collections Excluded")
@@ -610,7 +619,7 @@ class PlexAPI:
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
-            return items
+            return [item.ratingKey for item in items]
         else:
             raise Failed("Plex Error: No Items found in Plex")
 
@@ -633,7 +642,11 @@ class PlexAPI:
         if smart_label_collection:
             return self.get_labeled_items(collection.title if isinstance(collection, Collections) else str(collection))
         elif isinstance(collection, Collections):
-            return self.query(collection.items)
+            if self.smart(collection):
+                key = f"/library/sections/{self.Plex.key}/all{self.smart_filter(collection)}"
+                return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
+            else:
+                return self.query(collection.items)
         else:
             return []
 
@@ -659,11 +672,16 @@ class PlexAPI:
                 util.print_stacktrace()
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
 
-    def update_item_from_assets(self, item, dirs=None):
+    def update_item_from_assets(self, item, collection_mode=False, upload=True, dirs=None, name=None):
         if dirs is None:
             dirs = self.asset_directory
-        name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
+        if not name and collection_mode:
+            name = item.title
+        elif not name:
+            name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
         for ad in dirs:
+            poster_image = None
+            background_image = None
             if self.asset_folders:
                 if not os.path.isdir(os.path.join(ad, name)):
                     continue
@@ -674,13 +692,22 @@ class PlexAPI:
                 background_filter = os.path.join(ad, f"{name}_background.*")
             matches = glob.glob(poster_filter)
             if len(matches) > 0:
-                self.upload_image(item, os.path.abspath(matches[0]), url=False)
-                logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {os.path.abspath(matches[0])}")
+                poster_image = os.path.abspath(matches[0])
+                if upload:
+                    self.upload_image(item, poster_image, url=False)
+                    logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_image}")
             matches = glob.glob(background_filter)
             if len(matches) > 0:
-                self.upload_image(item, os.path.abspath(matches[0]), poster=False, url=False)
-                logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {os.path.abspath(matches[0])}")
-            if self.is_show:
+                background_image = os.path.abspath(matches[0])
+                if upload:
+                    self.upload_image(item, background_image, poster=False, url=False)
+                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_image}")
+            if collection_mode:
+                for ite in self.query(item.items):
+                    self.update_item_from_assets(ite, dirs=[os.path.join(ad, name)])
+            if not upload:
+                return poster_image, background_image
+            if self.is_show and not collection_mode:
                 for season in self.query(item.seasons):
                     if self.asset_folders:
                         season_filter = os.path.join(ad, name, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
@@ -701,3 +728,4 @@ class PlexAPI:
                             episode_path = os.path.abspath(matches[0])
                             self.upload_image(episode, episode_path, url=False)
                             logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
+        return None, None

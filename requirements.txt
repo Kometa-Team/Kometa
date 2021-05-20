@@ -9,3 +9,4 @@ requests>=2.4.2
 ruamel.yaml
 schedule
 retrying
+pathvalidate

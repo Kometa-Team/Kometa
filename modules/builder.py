@@ -1,4 +1,4 @@
-import glob, logging, os, re
+import logging, os, re
 from datetime import datetime, timedelta
 from modules import anidb, anilist, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed
@@ -102,8 +102,6 @@ numbered_builders = [
 ]
 smart_collection_invalid = ["collection_mode", "collection_order"]
 smart_url_collection_invalid = [
-    "item_label", "item_label.sync", "item_episode_sorting", "item_keep_episodes", "item_delete_episodes",
-    "item_season_display", "item_episode_ordering", "item_metadata_language", "item_use_original_title",
     "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label",
     "radarr_add", "radarr_folder", "radarr_monitor", "radarr_availability", 
     "radarr_quality", "radarr_tag", "radarr_search",
@@ -494,17 +492,19 @@ class CollectionBuilder:
                 for smart_key, smart_data in filter_dict.items():
                     smart, smart_mod, smart_final = _split(smart_key)
 
-                    def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
+                    def build_url_arg(arg, mod=None, arg_s=None, mod_s=None, param_s=None):
                         arg_key = plex.search_translation[smart] if smart in plex.search_translation else smart
                         if mod is None:
-                            mod = plex.modifier_translation[smart_mod] if smart_mod in plex.search_translation else smart_mod
+                            mod = plex.modifier_translation[smart_mod] if smart_mod in plex.modifier_translation else smart_mod
                         if arg_s is None:
                             arg_s = arg
                         if smart in string_filters and smart_mod in ["", ".not"]:
                             mod_s = "does not contain" if smart_mod == ".not" else "contains"
                         elif mod_s is None:
                             mod_s = plex.mod_displays[smart_mod]
-                        display_line = f"{indent}{smart.title().replace('_', ' ')} {mod_s} {arg_s}"
+                        if param_s is None:
+                            param_s = smart.title().replace('_', ' ')
+                        display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                         return f"{arg_key}{mod}={arg}&", display_line
 
                     if smart_final in plex.movie_only_smart_searches and self.library.is_show:
@@ -540,8 +540,15 @@ class CollectionBuilder:
                         results, display_add = build_url_arg(util.check_number(smart_data, smart_final, minimum=1))
                     elif smart in ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"] and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
                         results, display_add = build_url_arg(util.check_number(smart_data, smart_final, number_type="float", minimum=0, maximum=10))
+                    elif smart == "hdr":
+                        if isinstance(smart_data, bool):
+                            hdr_mod = "" if smart_data else "!"
+                            hdr_arg = "true" if smart_data else "false"
+                            results, display_add = build_url_arg(1, mod=hdr_mod, arg_s=hdr_arg, mod_s="is", param_s="HDR")
+                        else:
+                            raise Failed("Collection Error: HDR must be true or false")
                     else:
-                        if smart in ["title", "episode_title"] and smart_mod in ["", ".not", ".begins", ".ends"]:
+                        if smart in ["title", "episode_title", "studio"] and smart_mod in ["", ".not", ".begins", ".ends"]:
                             results_list = [(t, t) for t in util.get_list(smart_data, split=False)]
                         elif smart in plex.tags and smart_mod in ["", ".not", ".begins", ".ends"]:
                             if smart_final in plex.tmdb_searches:
@@ -552,8 +559,6 @@ class CollectionBuilder:
                                             smart_values.append(tmdb_name)
                                     else:
                                         smart_values.append(tmdb_value)
-                            elif smart == "studio":
-                                smart_values = util.get_list(smart_data, split=False)
                             else:
                                 smart_values = util.get_list(smart_data)
                             results_list = []
@@ -640,10 +645,8 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: {method_name} attribute only works with normal collections")
                 elif method_name not in collectionless_details and self.collectionless:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
-                elif self.smart_url and method_name in all_builders:
-                    raise Failed(f"Collection Error: {method_name} builder not allowed when using smart_url")
-                elif self.smart_url and method_name in smart_url_collection_invalid:
-                    raise Failed(f"Collection Error: {method_name} detail not allowed when using smart_url")
+                elif self.smart_url and (method_name in all_builders or method_name in smart_url_collection_invalid):
+                    raise Failed(f"Collection Error: {method_name} builder not allowed when using smart_filter")
                 elif method_name == "summary":
                     self.summaries[method_name] = method_data
                 elif method_name == "tmdb_summary":
@@ -703,16 +706,20 @@ class CollectionBuilder:
                 elif method_name == "sync_mode":
                     if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
                     else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
-                elif method_name in ["label", "label.sync"]:
+                elif method_name in ["label", "label.remove", "label.sync"]:
                     if "label" in self.data and "label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use label and label.sync together")
+                    if "label.remove" in self.data and "label.sync" in self.data:
+                        raise Failed(f"Collection Error: Cannot use label.remove and label.sync together")
                     if method_name == "label" and "label_sync_mode" in self.data and self.data["label_sync_mode"] == "sync":
                         self.details["label.sync"] = util.get_list(method_data)
                     else:
                         self.details[method_name] = util.get_list(method_data)
-                elif method_name in ["item_label", "item_label.sync"]:
+                elif method_name in ["item_label", "item_label.remove", "item_label.sync"]:
                     if "item_label" in self.data and "item_label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
+                    if "item_label.remove" in self.data and "item_label.sync" in self.data:
+                        raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
                     self.item_details[method_name] = util.get_list(method_data)
                 elif method_name in plex.item_advance_keys:
                     key, options = plex.item_advance_keys[method_name]
@@ -768,7 +775,7 @@ class CollectionBuilder:
                     self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
                 elif method_name == "sonarr_tag":
                     self.sonarr_options["tag"] = util.get_list(method_data)
-                elif method_name in ["title", "title.and", "title.not", "title.begins", "title.ends"]:
+                elif method_name in ["title", "title.and", "title.not", "title.begins", "studio.ends", "studio", "studio.and", "studio.not", "studio.begins", "studio.ends"]:
                     self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
                 elif method_name in ["year.gt", "year.gte", "year.lt", "year.lte"]:
                     self.methods.append(("plex_search", [{method_name: util.check_year(method_data, current_year, method_name)}]))
@@ -928,8 +935,6 @@ class CollectionBuilder:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for movie libraries")
                                 elif search_final in plex.show_only_searches and self.library.is_movie:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for show libraries")
-                                elif search_final not in plex.searches:
-                                    raise Failed(f"Collection Error: {search_final} is not a valid plex search attribute")
                                 elif search_data is None:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute is blank")
                                 elif search == "sort_by":
@@ -944,7 +949,9 @@ class CollectionBuilder:
                                         raise Failed(f"Collection Warning: plex search limit attribute: {search_data} must be an integer greater then 0")
                                     else:
                                         searches[search] = search_data
-                                elif search == "title" and modifier in ["", ".and", ".not", ".begins", ".ends"]:
+                                elif search_final not in plex.searches:
+                                    raise Failed(f"Collection Error: {search_final} is not a valid plex search attribute")
+                                elif search in ["title", "studio"] and modifier in ["", ".and", ".not", ".begins", ".ends"]:
                                     searches[search_final] = util.get_list(search_data, split=False)
                                 elif search in plex.tags and modifier in ["", ".and", ".not", ".begins", ".ends"]:
                                     if search_final in plex.tmdb_searches:
@@ -1244,21 +1251,32 @@ class CollectionBuilder:
             self.details["collection_mode"] = "hide"
             self.sync = True
 
-        try:
-            self.obj = library.get_collection(self.name)
-            collection_smart = library.smart(self.obj)
-            if (self.smart and not collection_smart) or (not self.smart and collection_smart):
-                logger.info("")
-                logger.error(f"Collection Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
-                library.query(self.obj.delete)
-                self.obj = None
-        except Failed:
-            self.obj = None
+        self.build_collection = True
+        if "build_collection" in methods:
+            if not self.data[methods["build_collection"]]:
+                logger.warning(f"Collection Warning: build_collection attribute is blank defaulting to true")
+            else:
+                self.build_collection = util.get_bool("build_collection", self.data[methods["build_collection"]])
 
-        self.plex_map = {}
-        if self.sync and self.obj:
-            for item in library.get_collection_items(self.obj, self.smart_label_collection):
-                self.plex_map[item.ratingKey] = item
+        if self.build_collection:
+            try:
+                self.obj = library.get_collection(self.name)
+                collection_smart = library.smart(self.obj)
+                if (self.smart and not collection_smart) or (not self.smart and collection_smart):
+                    logger.info("")
+                    logger.error(f"Collection Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
+                    library.query(self.obj.delete)
+                    self.obj = None
+            except Failed:
+                self.obj = None
+
+            self.plex_map = {}
+            if self.sync and self.obj:
+                for item in library.get_collection_items(self.obj, self.smart_label_collection):
+                    self.plex_map[item.ratingKey] = item
+        else:
+            self.sync = False
+            self.run_again = False
 
     def collect_rating_keys(self, movie_map, show_map):
         def add_rating_keys(keys):
@@ -1583,21 +1601,27 @@ class CollectionBuilder:
                 self.library.collection_order_query(self.obj, self.details["collection_order"])
                 logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
 
-        if "label" in self.details or "label.sync" in self.details:
+        if "label" in self.details or "label.remove" in self.details or "label.sync" in self.details:
             item_labels = [label.tag for label in self.obj.labels]
-            labels = util.get_list(self.details["label" if "label" in self.details else "label.sync"])
+            labels = self.details["label" if "label" in self.details else "label.sync"]
             if "label.sync" in self.details:
                 for label in (la for la in item_labels if la not in labels):
                     self.library.query_data(self.obj.removeLabel, label)
                     logger.info(f"Detail: Label {label} removed")
-            for label in (la for la in labels if la not in item_labels):
-                self.library.query_data(self.obj.addLabel, label)
-                logger.info(f"Detail: Label {label} added")
+            if "label" in self.details or "label.sync" in self.details:
+                for label in (la for la in labels if la not in item_labels):
+                    self.library.query_data(self.obj.addLabel, label)
+                    logger.info(f"Detail: Label {label} added")
+            if "label.remove" in self.details:
+                for label in self.details["label.remove"]:
+                    if label in item_labels:
+                        self.library.query_data(self.obj.removeLabel, label)
+                        logger.info(f"Detail: Label {label} removed")
 
         if len(self.item_details) > 0:
             labels = None
-            if "item_label" in self.item_details or "item_label.sync" in self.item_details:
-                labels = util.get_list(self.item_details["item_label" if "item_label" in self.item_details else "item_label.sync"])
+            if "item_label" in self.item_details or "item_label.remove" in self.item_details or "item_label.sync" in self.item_details:
+                labels = self.item_details["item_label" if "item_label" in self.item_details else "item_label.sync"]
             for item in self.library.get_collection_items(self.obj, self.smart_label_collection):
                 if labels is not None:
                     item_labels = [label.tag for label in item.labels]
@@ -1605,9 +1629,15 @@ class CollectionBuilder:
                         for label in (la for la in item_labels if la not in labels):
                             self.library.query_data(item.removeLabel, label)
                             logger.info(f"Detail: Label {label} removed from {item.title}")
-                    for label in (la for la in labels if la not in item_labels):
-                        self.library.query_data(item.addLabel, label)
-                        logger.info(f"Detail: Label {label} added to {item.title}")
+                    if "item_label" in self.item_details or "item_label.sync" in self.item_details:
+                        for label in (la for la in labels if la not in item_labels):
+                            self.library.query_data(item.addLabel, label)
+                            logger.info(f"Detail: Label {label} added to {item.title}")
+                    if "item_label.remove" in self.item_details:
+                        for label in self.item_details["item_label.remove"]:
+                            if label in item_labels:
+                                self.library.query_data(self.obj.removeLabel, label)
+                                logger.info(f"Detail: Label {label} removed from {item.title}")
                 advance_edits = {}
                 for method_name, method_data in self.item_details.items():
                     if method_name in plex.item_advance_keys:
@@ -1626,24 +1656,11 @@ class CollectionBuilder:
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error("Collection Error: name_mapping attribute is blank")
-            for ad in self.library.asset_directory:
-                path = os.path.join(ad, f"{name_mapping}")
-                if self.library.asset_folders:
-                    if not os.path.isdir(path):
-                        continue
-                    poster_filter = os.path.join(ad, name_mapping, "poster.*")
-                    background_filter = os.path.join(ad, name_mapping, "background.*")
-                else:
-                    poster_filter = os.path.join(ad, f"{name_mapping}.*")
-                    background_filter = os.path.join(ad, f"{name_mapping}_background.*")
-                matches = glob.glob(poster_filter)
-                if len(matches) > 0:
-                    self.posters["asset_directory"] = os.path.abspath(matches[0])
-                matches = glob.glob(background_filter)
-                if len(matches) > 0:
-                    self.backgrounds["asset_directory"] = os.path.abspath(matches[0])
-                for item in self.library.query(self.obj.items):
-                    self.library.update_item_from_assets(item, dirs=[path])
+            poster_image, background_image = self.library.update_item_from_assets(self.obj, collection_mode=True, upload=False, name=name_mapping)
+            if poster_image:
+                self.posters["asset_directory"] = poster_image
+            if background_image:
+                self.backgrounds["asset_directory"] = background_image
 
         def set_image(image_method, images, is_background=False):
             message = f"{'background' if is_background else 'poster'} to [{'File' if image_method in image_file_details else 'URL'}] {images[image_method]}"
