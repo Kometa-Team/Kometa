@@ -706,16 +706,20 @@ class CollectionBuilder:
                 elif method_name == "sync_mode":
                     if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
                     else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
-                elif method_name in ["label", "label.sync"]:
+                elif method_name in ["label", "label.remove", "label.sync"]:
                     if "label" in self.data and "label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use label and label.sync together")
+                    if "label.remove" in self.data and "label.sync" in self.data:
+                        raise Failed(f"Collection Error: Cannot use label.remove and label.sync together")
                     if method_name == "label" and "label_sync_mode" in self.data and self.data["label_sync_mode"] == "sync":
                         self.details["label.sync"] = util.get_list(method_data)
                     else:
                         self.details[method_name] = util.get_list(method_data)
-                elif method_name in ["item_label", "item_label.sync"]:
+                elif method_name in ["item_label", "item_label.remove", "item_label.sync"]:
                     if "item_label" in self.data and "item_label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
+                    if "item_label.remove" in self.data and "item_label.sync" in self.data:
+                        raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
                     self.item_details[method_name] = util.get_list(method_data)
                 elif method_name in plex.item_advance_keys:
                     key, options = plex.item_advance_keys[method_name]
@@ -1597,21 +1601,27 @@ class CollectionBuilder:
                 self.library.collection_order_query(self.obj, self.details["collection_order"])
                 logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
 
-        if "label" in self.details or "label.sync" in self.details:
+        if "label" in self.details or "label.remove" in self.details or "label.sync" in self.details:
             item_labels = [label.tag for label in self.obj.labels]
-            labels = util.get_list(self.details["label" if "label" in self.details else "label.sync"])
+            labels = self.details["label" if "label" in self.details else "label.sync"]
             if "label.sync" in self.details:
                 for label in (la for la in item_labels if la not in labels):
                     self.library.query_data(self.obj.removeLabel, label)
                     logger.info(f"Detail: Label {label} removed")
-            for label in (la for la in labels if la not in item_labels):
-                self.library.query_data(self.obj.addLabel, label)
-                logger.info(f"Detail: Label {label} added")
+            if "label" in self.details or "label.sync" in self.details:
+                for label in (la for la in labels if la not in item_labels):
+                    self.library.query_data(self.obj.addLabel, label)
+                    logger.info(f"Detail: Label {label} added")
+            if "label.remove" in self.details:
+                for label in self.details["label.remove"]:
+                    if label in item_labels:
+                        self.library.query_data(self.obj.removeLabel, label)
+                        logger.info(f"Detail: Label {label} removed")
 
         if len(self.item_details) > 0:
             labels = None
-            if "item_label" in self.item_details or "item_label.sync" in self.item_details:
-                labels = util.get_list(self.item_details["item_label" if "item_label" in self.item_details else "item_label.sync"])
+            if "item_label" in self.item_details or "item_label.remove" in self.item_details or "item_label.sync" in self.item_details:
+                labels = self.item_details["item_label" if "item_label" in self.item_details else "item_label.sync"]
             for item in self.library.get_collection_items(self.obj, self.smart_label_collection):
                 if labels is not None:
                     item_labels = [label.tag for label in item.labels]
@@ -1619,9 +1629,15 @@ class CollectionBuilder:
                         for label in (la for la in item_labels if la not in labels):
                             self.library.query_data(item.removeLabel, label)
                             logger.info(f"Detail: Label {label} removed from {item.title}")
-                    for label in (la for la in labels if la not in item_labels):
-                        self.library.query_data(item.addLabel, label)
-                        logger.info(f"Detail: Label {label} added to {item.title}")
+                    if "item_label" in self.item_details or "item_label.sync" in self.item_details:
+                        for label in (la for la in labels if la not in item_labels):
+                            self.library.query_data(item.addLabel, label)
+                            logger.info(f"Detail: Label {label} added to {item.title}")
+                    if "item_label.remove" in self.item_details:
+                        for label in self.item_details["item_label.remove"]:
+                            if label in item_labels:
+                                self.library.query_data(self.obj.removeLabel, label)
+                                logger.info(f"Detail: Label {label} removed from {item.title}")
                 advance_edits = {}
                 for method_name, method_data in self.item_details.items():
                     if method_name in plex.item_advance_keys:
