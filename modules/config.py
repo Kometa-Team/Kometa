@@ -390,6 +390,16 @@ class Config:
             else:
                 params["mass_critic_rating_update"] = None
 
+            if lib and "radarr_add_all" in lib and lib["radarr_add_all"]:
+                params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False)
+            else:
+                params["radarr_add_all"] = None
+
+            if lib and "sonarr_add_all" in lib and lib["sonarr_add_all"]:
+                params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False)
+            else:
+                params["sonarr_add_all"] = None
+
             try:
                 if lib and "metadata_path" in lib:
                     params["metadata_path"] = []

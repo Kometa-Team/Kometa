@@ -259,6 +259,8 @@ def mass_metadata(config, library, movie_map, show_map):
     logger.info("")
     util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
+    radarr_adds = []
+    sonarr_adds = []
     items = library.Plex.all()
     for i, item in enumerate(items, 1):
         length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
@@ -282,14 +284,16 @@ def mass_metadata(config, library, movie_map, show_map):
                 if item.ratingKey in rating_keys:
                     tvdb_id = tvdb
                     break
-        if tmdb_id:
-            imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
-        elif tvdb_id:
-            tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
-            imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
+
+        if library.Radarr and library.radarr_add_all and tmdb_id:
+            radarr_adds.append(tmdb_id)
+        if library.Sonarr and library.sonarr_add_all and tvdb_id:
+            sonarr_adds.append(tvdb_id)
 
         tmdb_item = None
         if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
+            if tvdb_id and not tmdb_id:
+                tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
             if tmdb_id:
                 try:
                     tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
@@ -301,6 +305,10 @@ def mass_metadata(config, library, movie_map, show_map):
         omdb_item = None
         if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
             if config.OMDb.limit is False:
+                if tmdb_id and not imdb_id:
+                    imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
+                elif tvdb_id and not imdb_id:
+                    imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
                 if imdb_id:
                     try:
                         omdb_item = config.OMDb.get_omdb(imdb_id)
@@ -351,6 +359,19 @@ def mass_metadata(config, library, movie_map, show_map):
                         util.print_end(length, f"{item.title[:25]:<25} | Critic Rating | {new_rating}")
             except Failed:
                 pass
+
+    if library.Radarr and library.radarr_add_all:
+        try:
+            library.Radarr.add_tmdb(radarr_adds)
+        except Failed as e:
+            logger.error(e)
+
+    if library.Sonarr and library.sonarr_add_all:
+        try:
+            library.Sonarr.add_tvdb(sonarr_adds)
+        except Failed as e:
+            logger.error(e)
+
 
 def run_collection(config, library, metadata, requested_collections, is_test, resume_from, movie_map, show_map):
     logger.info("")
