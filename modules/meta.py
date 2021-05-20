@@ -119,8 +119,6 @@ class Metadata:
                         logger.error(f"Metadata Error: {attr} attribute is blank")
 
             def edit_tags(attr, obj, group, alias, key=None, extra=None, movie_library=False):
-                if key is None:
-                    key = f"{attr}s"
                 if movie_library and not self.library.is_movie:
                     logger.error(f"Metadata Error: {attr} attribute only works for movie libraries")
                 elif attr in alias and f"{attr}.sync" in alias:
@@ -134,33 +132,16 @@ class Metadata:
                 elif f"{attr}.sync" in alias and group[alias[f"{attr}.sync"]] is None:
                     logger.error(f"Metadata Error: {attr}.sync attribute is blank")
                 elif attr in alias or f"{attr}.remove" in alias or f"{attr}.sync" in alias:
-                    attr_key = attr if attr in alias else f"{attr}.sync"
-                    item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
-                    input_tags = []
-                    if group[alias[attr_key]]:
-                        input_tags.extend(util.get_list(group[alias[attr_key]]))
+                    add_tags = group[alias[attr]] if attr in alias else None
                     if extra:
-                        input_tags.extend(extra)
-                    if f"{attr}.sync" in alias:
-                        remove_method = getattr(obj, f"remove{attr.capitalize()}")
-                        for tag in (t for t in item_tags if t not in input_tags):
-                            updated = True
-                            self.library.query_data(remove_method, tag)
-                            logger.info(f"Detail: {attr.capitalize()} {tag} removed")
-                    if attr in alias or f"{attr}.sync" in alias:
-                        add_method = getattr(obj, f"add{attr.capitalize()}")
-                        for tag in (t for t in input_tags if t not in item_tags):
-                            updated = True
-                            self.library.query_data(add_method, tag)
-                            logger.info(f"Detail: {attr.capitalize()} {tag} added")
-                    if f"{attr}.remove" in alias:
-                        remove_method = getattr(obj, f"remove{attr.capitalize()}")
-                        for tag in util.get_list(group[alias[f"{attr}.remove"]]):
-                            if tag in item_tags:
-                                self.library.query_data(remove_method, tag)
-                                logger.info(f"Detail: {attr.capitalize()} {tag} removed")
-                    else:
-                        logger.error(f"Metadata Error: {attr} attribute is blank")
+                        if add_tags:
+                            add_tags.extend(extra)
+                        else:
+                            add_tags = extra
+                    remove_tags = group[alias[f"{attr}.remove"]] if f"{attr}.remove" in alias else None
+                    sync_tags = group[alias[f"{attr}.sync"]] if f"{attr}.sync" in alias else None
+                    return self.library.edit_tags("attr", obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, key=key)
+                return False
 
             def set_image(attr, obj, group, alias, poster=True, url=True):
                 if group[alias[attr]]:
@@ -262,8 +243,7 @@ class Metadata:
             edits = {}
             add_edit("title", item.title, meta, methods, value=title)
             add_edit("sort_title", item.titleSort, meta, methods, key="titleSort")
-            add_edit("originally_available", str(item.originallyAvailableAt)[:-9], meta, methods,
-                     key="originallyAvailableAt", value=originally_available, var_type="date")
+            add_edit("originally_available", str(item.originallyAvailableAt)[:-9], meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
             add_edit("critic_rating", item.rating, meta, methods, value=rating, key="rating", var_type="float")
             add_edit("audience_rating", item.audienceRating, meta, methods, key="audienceRating", var_type="float")
             add_edit("content_rating", item.contentRating, meta, methods, key="contentRating")
@@ -271,7 +251,8 @@ class Metadata:
             add_edit("studio", item.studio, meta, methods, value=studio)
             add_edit("tagline", item.tagline, meta, methods, value=tagline)
             add_edit("summary", item.summary, meta, methods, value=summary)
-            self.library.edit_item(item, mapping_name, item_type, edits)
+            if self.library.edit_item(item, mapping_name, item_type, edits):
+                updated = True
 
             advance_edits = {}
             add_advanced_edit("episode_sorting", item, meta, methods, show_library=True)
@@ -281,15 +262,23 @@ class Metadata:
             add_advanced_edit("episode_ordering", item, meta, methods, show_library=True)
             add_advanced_edit("metadata_language", item, meta, methods, new_agent=True)
             add_advanced_edit("use_original_title", item, meta, methods, new_agent=True)
-            self.library.edit_item(item, mapping_name, item_type, advance_edits, advanced=True)
+            if self.library.edit_item(item, mapping_name, item_type, advance_edits, advanced=True):
+                updated = True
 
-            edit_tags("genre", item, meta, methods, extra=genres)
-            edit_tags("label", item, meta, methods)
-            edit_tags("collection", item, meta, methods)
-            edit_tags("country", item, meta, methods, key="countries", movie_library=True)
-            edit_tags("director", item, meta, methods, movie_library=True)
-            edit_tags("producer", item, meta, methods, movie_library=True)
-            edit_tags("writer", item, meta, methods, movie_library=True)
+            if edit_tags("genre", item, meta, methods, extra=genres):
+                updated = True
+            if edit_tags("label", item, meta, methods):
+                updated = True
+            if edit_tags("collection", item, meta, methods):
+                updated = True
+            if edit_tags("country", item, meta, methods, key="countries", movie_library=True):
+                updated = True
+            if edit_tags("director", item, meta, methods, movie_library=True):
+                updated = True
+            if edit_tags("producer", item, meta, methods, movie_library=True):
+                updated = True
+            if edit_tags("writer", item, meta, methods, movie_library=True):
+                updated = True
 
             logger.info(f"{item_type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
@@ -330,7 +319,8 @@ class Metadata:
                                 edits = {}
                                 add_edit("title", season.title, season_dict, season_methods, value=title)
                                 add_edit("summary", season.summary, season_dict, season_methods)
-                                self.library.edit_item(season, season_id, "Season", edits)
+                                if self.library.edit_item(season, season_id, "Season", edits):
+                                    updated = True
                                 set_images(season, season_dict, season_methods)
                         else:
                             logger.error(f"Metadata Error: Season: {season_id} invalid, it must be an integer")
@@ -380,11 +370,14 @@ class Metadata:
                                 add_edit("originally_available", str(episode.originallyAvailableAt)[:-9],
                                          episode_dict, episode_methods, key="originallyAvailableAt")
                                 add_edit("summary", episode.summary, episode_dict, episode_methods)
-                                self.library.edit_item(episode, f"{season_id} Episode: {episode_id}", "Season", edits)
-                                edit_tags("director", episode, episode_dict, episode_methods)
-                                edit_tags("writer", episode, episode_dict, episode_methods)
+                                if self.library.edit_item(episode, f"{season_id} Episode: {episode_id}", "Season", edits):
+                                    updated = True
+                                if edit_tags("director", episode, episode_dict, episode_methods):
+                                    updated = True
+                                if edit_tags("writer", episode, episode_dict, episode_methods):
+                                    updated = True
                                 set_images(episode, episode_dict, episode_methods)
-                            logger.info(f"Episode S{episode_id}E{season_id}  of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                            logger.info(f"Episode S{episode_id}E{season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
                         else:
                             logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
                 else:

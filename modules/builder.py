@@ -1603,12 +1603,12 @@ class CollectionBuilder:
 
         if "label" in self.details or "label.remove" in self.details or "label.sync" in self.details:
             item_labels = [label.tag for label in self.obj.labels]
-            labels = self.details["label" if "label" in self.details else "label.sync"]
-            if "label.sync" in self.details:
-                for label in (la for la in item_labels if la not in labels):
-                    self.library.query_data(self.obj.removeLabel, label)
-                    logger.info(f"Detail: Label {label} removed")
             if "label" in self.details or "label.sync" in self.details:
+                labels = self.details["label" if "label" in self.details else "label.sync"]
+                if "label.sync" in self.details:
+                    for label in (la for la in item_labels if la not in labels):
+                        self.library.query_data(self.obj.removeLabel, label)
+                        logger.info(f"Detail: Label {label} removed")
                 for label in (la for la in labels if la not in item_labels):
                     self.library.query_data(self.obj.addLabel, label)
                     logger.info(f"Detail: Label {label} added")
@@ -1618,26 +1618,17 @@ class CollectionBuilder:
                         self.library.query_data(self.obj.removeLabel, label)
                         logger.info(f"Detail: Label {label} removed")
 
+        add_tags = self.details["label"] if "label" in self.details else None
+        remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
+        sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
+        self.library.edit_tags("label", self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+
         if len(self.item_details) > 0:
-            labels = None
-            if "item_label" in self.item_details or "item_label.remove" in self.item_details or "item_label.sync" in self.item_details:
-                labels = self.item_details["item_label" if "item_label" in self.item_details else "item_label.sync"]
+            add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
+            remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
+            sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
             for item in self.library.get_collection_items(self.obj, self.smart_label_collection):
-                if labels is not None:
-                    item_labels = [label.tag for label in item.labels]
-                    if "item_label.sync" in self.item_details:
-                        for label in (la for la in item_labels if la not in labels):
-                            self.library.query_data(item.removeLabel, label)
-                            logger.info(f"Detail: Label {label} removed from {item.title}")
-                    if "item_label" in self.item_details or "item_label.sync" in self.item_details:
-                        for label in (la for la in labels if la not in item_labels):
-                            self.library.query_data(item.addLabel, label)
-                            logger.info(f"Detail: Label {label} added to {item.title}")
-                    if "item_label.remove" in self.item_details:
-                        for label in self.item_details["item_label.remove"]:
-                            if label in item_labels:
-                                self.library.query_data(self.obj.removeLabel, label)
-                                logger.info(f"Detail: Label {label} removed from {item.title}")
+                self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
                 advance_edits = {}
                 for method_name, method_data in self.item_details.items():
                     if method_name in plex.item_advance_keys:
