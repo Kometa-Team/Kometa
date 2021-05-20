@@ -668,9 +668,38 @@ class PlexAPI:
                 if advanced and "languageOverride" in edits:
                     self.query(item.refresh)
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
+                return True
             except BadRequest:
                 util.print_stacktrace()
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
+        return False
+
+    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, key=None):
+        updated = False
+        if key is None:
+            key = f"{attr}s"
+        if add_tags or remove_tags or sync_tags:
+            item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
+            input_tags = []
+            if add_tags:
+                input_tags.extend(add_tags)
+            if sync_tags:
+                input_tags.extend(sync_tags)
+            if sync_tags or remove_tags:
+                remove_method = getattr(obj, f"remove{attr.capitalize()}")
+                for tag in item_tags:
+                    if (sync_tags and tag not in sync_tags) or (remove_tags and tag in remove_tags):
+                        updated = True
+                        self.query_data(remove_method, tag)
+                        logger.info(f"Detail: {attr.capitalize()} {tag} removed")
+            if input_tags:
+                add_method = getattr(obj, f"add{attr.capitalize()}")
+                for tag in input_tags:
+                    if tag not in item_tags:
+                        updated = True
+                        self.query_data(add_method, tag)
+                        logger.info(f"Detail: {attr.capitalize()} {tag} added")
+        return updated
 
     def update_item_from_assets(self, item, collection_mode=False, upload=True, dirs=None, name=None):
         if dirs is None:
