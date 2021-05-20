@@ -1601,23 +1601,6 @@ class CollectionBuilder:
                 self.library.collection_order_query(self.obj, self.details["collection_order"])
                 logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
 
-        if "label" in self.details or "label.remove" in self.details or "label.sync" in self.details:
-            item_labels = [label.tag for label in self.obj.labels]
-            if "label" in self.details or "label.sync" in self.details:
-                labels = self.details["label" if "label" in self.details else "label.sync"]
-                if "label.sync" in self.details:
-                    for label in (la for la in item_labels if la not in labels):
-                        self.library.query_data(self.obj.removeLabel, label)
-                        logger.info(f"Detail: Label {label} removed")
-                for label in (la for la in labels if la not in item_labels):
-                    self.library.query_data(self.obj.addLabel, label)
-                    logger.info(f"Detail: Label {label} added")
-            if "label.remove" in self.details:
-                for label in self.details["label.remove"]:
-                    if label in item_labels:
-                        self.library.query_data(self.obj.removeLabel, label)
-                        logger.info(f"Detail: Label {label} removed")
-
         add_tags = self.details["label"] if "label" in self.details else None
         remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
         sync_tags = self.details["label.sync"] if "label.sync" in self.details else None

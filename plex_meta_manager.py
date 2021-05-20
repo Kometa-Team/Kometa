@@ -115,7 +115,7 @@ def start(config_path, is_test, daily, requested_collections, requested_librarie
         logger.critical(e)
     logger.info("")
     util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
-    logger.addHandler(file_handler)
+    logger.removeHandler(file_handler)
 
 def update_libraries(config, is_test, requested_collections, resume_from):
     for library in config.libraries:
@@ -372,10 +372,10 @@ def mass_metadata(config, library, movie_map, show_map):
         except Failed as e:
             logger.error(e)
 
-
 def run_collection(config, library, metadata, requested_collections, is_test, resume_from, movie_map, show_map):
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
+        collection_start = datetime.now()
         if is_test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
             no_template_test = True
             if "template" in collection_attrs and collection_attrs["template"]:
@@ -399,9 +399,9 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
             util.separator(f"Resuming Collections")
 
         if "name_mapping" in collection_attrs and collection_attrs["name_mapping"]:
-            collection_log_name = util.validate_filename(collection_attrs["name_mapping"])
+            collection_log_name, output_str = util.validate_filename(collection_attrs["name_mapping"])
         else:
-            collection_log_name = util.validate_filename(mapping_name)
+            collection_log_name, output_str = util.validate_filename(mapping_name)
         collection_log_folder = os.path.join(default_dir, "logs", library.mapping_name, "collections", collection_log_name)
         os.makedirs(collection_log_folder, exist_ok=True)
         col_file_logger = os.path.join(collection_log_folder, f"collection.log")
@@ -415,6 +415,9 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
         try:
             util.separator(f"{mapping_name} Collection")
             logger.info("")
+            if output_str:
+                logger.info(output_str)
+                logger.info("")
 
             builder = CollectionBuilder(config, library, metadata, mapping_name, collection_attrs)
 
@@ -453,6 +456,7 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
             util.print_stacktrace()
             logger.error(f"Unknown Error: {e}")
         logger.info("")
+        util.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {str(datetime.now() - collection_start).split('.')[0]}")
         logger.removeHandler(collection_handler)
     return resume_from
 
