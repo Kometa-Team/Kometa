@@ -393,8 +393,7 @@ def print_end(length, text=None):
 
 def validate_filename(filename):
     if is_valid_filename(filename):
-        return filename
+        return filename, None
     else:
         mapping_name = sanitize_filename(filename)
-        logger.info(f"Folder Name: {filename} is invalid using {mapping_name}")
-        return mapping_name
+        return mapping_name, f"Log Folder Name: {filename} is invalid using {mapping_name}"

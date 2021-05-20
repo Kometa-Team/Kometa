@@ -324,7 +324,9 @@ class PlexAPI:
         self.Sonarr = None
         self.Tautulli = None
         self.name = params["name"]
-        self.mapping_name = util.validate_filename(params["mapping_name"])
+        self.mapping_name, output = util.validate_filename(params["mapping_name"])
+        if output:
+            logger.info(output)
         self.missing_path = os.path.join(params["default_dir"], f"{self.name}_missing.yml")
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
