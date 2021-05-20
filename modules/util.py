@@ -1,5 +1,6 @@
 import logging, re, signal, sys, time, traceback
 from datetime import datetime
+from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
 try:
@@ -220,7 +221,6 @@ def compile_list(data):
     else:
         return data
 
-
 def get_list(data, lower=False, split=True, int_list=False):
     if isinstance(data, list):      return data
     elif isinstance(data, dict):    return [data]
@@ -366,16 +366,22 @@ def centered(text, do_print=True):
     return final_text
 
 def separator(text=None):
-    logger.handlers[0].setFormatter(logging.Formatter(f"%(message)-{screen_width - 2}s"))
-    logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s %(message)-{screen_width - 2}s"))
+    for handler in logger.handlers:
+        apply_formatter(handler, border=False)
     logger.info(f"|{separating_character * screen_width}|")
     if text:
         text_list = text.split("\n")
         for t in text_list:
             logger.info(f"| {centered(t, do_print=False)} |")
         logger.info(f"|{separating_character * screen_width}|")
-    logger.handlers[0].setFormatter(logging.Formatter(f"| %(message)-{screen_width - 2}s |"))
-    logger.handlers[1].setFormatter(logging.Formatter(f"[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)-{screen_width - 2}s |"))
+    for handler in logger.handlers:
+        apply_formatter(handler)
+
+def apply_formatter(handler, border=True):
+    text = f"| %(message)-{screen_width - 2}s |" if border else f"%(message)-{screen_width - 2}s"
+    if isinstance(handler, logging.handlers.RotatingFileHandler):
+        text = f"[%(asctime)s] %(filename)-27s %(levelname)-10s {text}"
+    handler.setFormatter(logging.Formatter(text))
 
 def print_return(length, text):
     print(adjust_space(length, f"| {text}"), end="\r")
@@ -384,3 +390,11 @@ def print_return(length, text):
 def print_end(length, text=None):
     if text:        logger.info(adjust_space(length, text))
     else:           print(adjust_space(length, " "), end="\r")
+
+def validate_filename(filename):
+    if is_valid_filename(filename):
+        return filename
+    else:
+        mapping_name = sanitize_filename(filename)
+        logger.info(f"Folder Name: {filename} is invalid using {mapping_name}")
+        return mapping_name
