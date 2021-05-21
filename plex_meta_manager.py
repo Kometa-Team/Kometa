@@ -251,7 +251,7 @@ def map_guids(config, library):
                 for m in main_id:
                     if m in show_map:               show_map[m].append(item.ratingKey)
                     else:                           show_map[m] = [item.ratingKey]
-    util.print_end(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}")
+    logger.info(util.adjust_space(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}"))
     return movie_map, show_map
 
 def mass_metadata(config, library, movie_map, show_map):
@@ -298,9 +298,9 @@ def mass_metadata(config, library, movie_map, show_map):
                 try:
                     tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
                 except Failed as e:
-                    util.print_end(length, str(e))
+                    logger.info(util.adjust_space(length, str(e)))
             else:
-                util.print_end(length, f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}")
+                logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
 
         omdb_item = None
         if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
@@ -313,9 +313,9 @@ def mass_metadata(config, library, movie_map, show_map):
                     try:
                         omdb_item = config.OMDb.get_omdb(imdb_id)
                     except Failed as e:
-                        util.print_end(length, str(e))
+                        logger.info(util.adjust_space(length, str(e)))
                 else:
-                    util.print_end(length, f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
+                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
 
         if not tmdb_item and not omdb_item:
             continue
@@ -337,7 +337,7 @@ def mass_metadata(config, library, movie_map, show_map):
                     library.query_data(item.addGenre, genre)
                     display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
                 if len(display_str) > 0:
-                    util.print_end(length, f"{item.title[:25]:<25} | Genres | {display_str}")
+                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Genres | {display_str}"))
             except Failed:
                 pass
         if library.mass_audience_rating_update or library.mass_critic_rating_update:
@@ -349,14 +349,14 @@ def mass_metadata(config, library, movie_map, show_map):
                 else:
                     raise Failed
                 if new_rating is None:
-                    util.print_end(length, f"{item.title[:25]:<25} | No Rating Found")
+                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No Rating Found"))
                 else:
                     if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
                         library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                        util.print_end(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
+                        logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
                     if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
                         library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
-                        util.print_end(length, f"{item.title[:25]:<25} | Critic Rating | {new_rating}")
+                        logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
             except Failed:
                 pass
 

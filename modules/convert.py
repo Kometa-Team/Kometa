@@ -214,7 +214,7 @@ class Convert:
                 return cache_id
         imdb_id = None
         try:
-            imdb_id = self.tmdb_to_imdb(self.tvdb_to_tmdb(tvdb_id), False)
+            imdb_id = self.tmdb_to_imdb(self.tvdb_to_tmdb(tvdb_id, fail=True), is_movie=False, fail=True)
         except Failed:
             if self.config.Trakt:
                 try:
@@ -235,7 +235,7 @@ class Convert:
                 return cache_id
         tvdb_id = None
         try:
-            tvdb_id = self.tmdb_to_tvdb(self.imdb_to_tmdb(imdb_id, False))
+            tvdb_id = self.tmdb_to_tvdb(self.imdb_to_tmdb(imdb_id, is_movie=False, fail=True), fail=True)
         except Failed:
             if self.config.Trakt:
                 try:
@@ -343,7 +343,7 @@ class Convert:
             def update_cache(cache_ids, id_type, guid_type):
                 if self.config.Cache:
                     cache_ids = util.compile_list(cache_ids)
-                    util.print_end(length, f" Cache  |  {'^' if expired else '+'}  | {item.guid:<46} | {id_type} ID: {cache_ids:<6} | {item.title}")
+                    logger.info(util.adjust_space(length, f" Cache  |  {'^' if expired else '+'}  | {item.guid:<46} | {id_type} ID: {cache_ids:<6} | {item.title}"))
                     self.config.Cache.update_guid_map(guid_type, item.guid, cache_ids, expired)
 
             if tmdb_id and library.is_movie:
@@ -358,8 +358,8 @@ class Convert:
             else:
                 raise Failed(f"No ID to convert")
         except Failed as e:
-            util.print_end(length, f"Mapping Error | {item.guid:<46} | {e} for {item.title}")
+            logger.info(util.adjust_space(length, f"Mapping Error | {item.guid:<46} | {e} for {item.title}"))
         except BadRequest:
             util.print_stacktrace()
-            util.print_end(length, f"Mapping Error: | {item.guid} for {item.title} not found")
+            logger.info(util.adjust_space(length, f"Mapping Error: | {item.guid} for {item.title} not found"))
         return None, None
