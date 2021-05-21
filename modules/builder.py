@@ -1315,7 +1315,7 @@ class CollectionBuilder:
                 elif "anilist" in method:                           check_map(self.config.AniList.get_items(method, value))
                 elif "mal" in method:                               check_map(self.config.MyAnimeList.get_items(method, value))
                 elif "tvdb" in method:                              check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
-                elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language))
+                elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language, self.library.is_movie))
                 elif "letterboxd" in method:                        check_map(self.config.Letterboxd.get_items(method, value, self.library.Plex.language))
                 elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
                 elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
@@ -1432,7 +1432,7 @@ class CollectionBuilder:
                             break
                 length = util.print_return(length, f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
             if match:
-                util.print_end(length, f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}")
+                logger.info(util.adjust_space(length, f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}"))
                 if current in collection_items:
                     self.plex_map[current.ratingKey] = None
                 elif self.smart_label_collection:
@@ -1442,7 +1442,7 @@ class CollectionBuilder:
             elif self.details["show_filtered"] is True:
                 logger.info(f"{name} Collection | X | {current.title}")
         media_type = f"{'Movie' if self.library.is_movie else 'Show'}{'s' if total > 1 else ''}"
-        util.print_end(length, f"{total} {media_type} Processed")
+        logger.info(util.adjust_space(length, f"{total} {media_type} Processed"))
 
     def run_missing(self):
         logger.info("")

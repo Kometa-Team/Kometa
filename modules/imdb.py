@@ -91,34 +91,32 @@ class IMDbAPI:
     def _request(self, url, header):
         return html.fromstring(requests.get(url, headers=header).content)
 
-    def get_items(self, method, data, language):
+    def get_items(self, method, data, language, is_movie):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         logger.debug(f"Data: {data}")
         show_ids = []
         movie_ids = []
-        if method == "imdb_id":
-            logger.info(f"Processing {pretty}: {data}")
-            tmdb_id = self.config.Convert.imdb_to_tmdb(data)
-            tvdb_id = self.config.Convert.imdb_to_tvdb(data)
+        def run_convert(imdb_id):
+            tmdb_id = self.config.Convert.imdb_to_tmdb(imdb_id)
+            tvdb_id = self.config.Convert.imdb_to_tvdb(imdb_id) if not is_movie else None
             if not tmdb_id and not tvdb_id:
-                logger.error(f"Convert Error: No TMDb ID or TVDb ID found for IMDb: {data}")
+                logger.error(f"Convert Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
             if tmdb_id:                     movie_ids.append(tmdb_id)
             if tvdb_id:                     show_ids.append(tvdb_id)
+
+        if method == "imdb_id":
+            logger.info(f"Processing {pretty}: {data}")
+            run_convert(data)
         elif method == "imdb_list":
             status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
             logger.info(f"Processing {pretty}: {status}{data['url']}")
             imdb_ids = self._ids_from_url(data["url"], language, data["limit"])
             total_ids = len(imdb_ids)
             length = 0
-            for i, imdb_id in enumerate(imdb_ids, 1):
+            for i, imdb in enumerate(imdb_ids, 1):
                 length = util.print_return(length, f"Converting IMDb ID {i}/{total_ids}")
-                tmdb_id = self.config.Convert.imdb_to_tmdb(imdb_id)
-                tvdb_id = self.config.Convert.imdb_to_tvdb(imdb_id)
-                if not tmdb_id and not tvdb_id:
-                    logger.error(f"Convert Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
-                if tmdb_id:                     movie_ids.append(tmdb_id)
-                if tvdb_id:                     show_ids.append(tvdb_id)
-            util.print_end(length, f"Processed {total_ids} IMDb IDs")
+                run_convert(imdb)
+            logger.info(util.adjust_space(length, f"Processed {total_ids} IMDb IDs"))
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
         logger.debug(f"TMDb IDs Found: {movie_ids}")

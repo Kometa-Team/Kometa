@@ -387,9 +387,8 @@ def print_return(length, text):
     print(adjust_space(length, f"| {text}"), end="\r")
     return len(text) + 2
 
-def print_end(length, text=None):
-    if text:        logger.info(adjust_space(length, text))
-    else:           print(adjust_space(length, " "), end="\r")
+def print_end(length):
+    print(adjust_space(length, " "), end="\r")
 
 def validate_filename(filename):
     if is_valid_filename(filename):

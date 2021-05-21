@@ -617,7 +617,7 @@ class PlexAPI:
                         break
                 if add_item:
                     items.append(item)
-            util.print_end(length, f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}")
+            logger.info(util.adjust_space(length, f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}"))
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:

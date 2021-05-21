@@ -66,7 +66,7 @@ class LetterboxdAPI:
                     if self.config.Cache:
                         self.config.Cache.update_letterboxd_map(expired, letterboxd_id, tmdb_id)
                 movie_ids.append(tmdb_id)
-            util.print_end(length, f"Processed {total_items} TMDb IDs")
+            logger.info(util.adjust_space(length, f"Processed {total_items} TMDb IDs"))
         else:
             logger.error(f"Letterboxd Error: No List Items found in {data}")
         logger.debug(f"TMDb IDs Found: {movie_ids}")
