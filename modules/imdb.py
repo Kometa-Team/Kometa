@@ -97,8 +97,8 @@ class IMDbAPI:
         show_ids = []
         movie_ids = []
         def run_convert(imdb_id):
-            tmdb_id = self.config.Convert.imdb_to_tmdb(imdb_id)
             tvdb_id = self.config.Convert.imdb_to_tvdb(imdb_id) if not is_movie else None
+            tmdb_id = self.config.Convert.imdb_to_tmdb(imdb_id) if tvdb_id is None else None
             if not tmdb_id and not tvdb_id:
                 logger.error(f"Convert Error: No TMDb ID or TVDb ID found for IMDb: {imdb_id}")
             if tmdb_id:                     movie_ids.append(tmdb_id)
