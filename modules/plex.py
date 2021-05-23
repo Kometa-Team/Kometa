@@ -458,8 +458,14 @@ class PlexAPI:
         sort_type = movie_smart_sorts[sort] if self.is_movie else show_smart_sorts[sort]
         return smart_type, f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
 
+    def test_smart_filter(self, uri_args):
+        logger.debug(f"Smart Collection Test: {uri_args}")
+        test_items = self.get_filter_items(uri_args)
+        if len(test_items) < 1:
+            raise Failed(f"Plex Error: No items for smart filter: {uri_args}")
+
     def create_smart_collection(self, title, smart_type, uri_args):
-        logger.debug(f"Smart Collection Created: {uri_args}")
+        self.test_smart_filter(uri_args)
         args = {
             "type": smart_type,
             "title": title,
@@ -478,6 +484,7 @@ class PlexAPI:
         return f"server://{self.PlexServer.machineIdentifier}/com.plexapp.plugins.library/library/sections/{self.Plex.key}/all{uri_args}"
 
     def update_smart_collection(self, collection, uri_args):
+        self.test_smart_filter(uri_args)
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
     def smart(self, collection):
@@ -645,12 +652,15 @@ class PlexAPI:
             return self.get_labeled_items(collection.title if isinstance(collection, Collections) else str(collection))
         elif isinstance(collection, Collections):
             if self.smart(collection):
-                key = f"/library/sections/{self.Plex.key}/all{self.smart_filter(collection)}"
-                return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
+                return self.get_filter_items(self.smart_filter(collection))
             else:
                 return self.query(collection.items)
         else:
             return []
+
+    def get_filter_items(self, uri_args):
+        key = f"/library/sections/{self.Plex.key}/all{uri_args}"
+        return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
 
     def get_collection_name_and_items(self, collection, smart_label_collection):
         name = collection.title if isinstance(collection, Collections) else str(collection)
