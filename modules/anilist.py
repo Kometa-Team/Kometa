@@ -218,7 +218,6 @@ class AniListAPI:
         raise Failed(f"AniList Error: No valid AniList IDs in {anilist_ids}")
 
     def get_items(self, method, data):
-        logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if method == "anilist_id":
             anilist_id, name = self._validate(data)
@@ -243,6 +242,7 @@ class AniListAPI:
         else:
             raise Failed(f"AniList Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.anilist_to_ids(anilist_ids)
+        logger.debug("")
         logger.debug(f"AniList IDs Found: {anilist_ids}")
         logger.debug(f"Shows Found: {show_ids}")
         logger.debug(f"Movies Found: {movie_ids}")

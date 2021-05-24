@@ -352,28 +352,35 @@ def regex_first_int(data, id_type, default=None):
     else:
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
-def centered(text, do_print=True):
+def centered(text, sep=" "):
     if len(text) > screen_width - 2:
         raise Failed("text must be shorter then screen_width")
     space = screen_width - len(text) - 2
+    text = f" {text} "
     if space % 2 == 1:
-        text += " "
+        text += sep
         space -= 1
-    side = int(space / 2)
-    final_text = f"{' ' * side}{text}{' ' * side}"
-    if do_print:
-        logger.info(final_text)
+    side = int(space / 2) - 1
+    final_text = f"{sep * side}{text}{sep * side}"
     return final_text
 
-def separator(text=None):
+def separator(text=None, space=True, border=True, debug=False):
+    sep = " " if space else separating_character
     for handler in logger.handlers:
         apply_formatter(handler, border=False)
-    logger.info(f"|{separating_character * screen_width}|")
+    border_text = f"|{separating_character * screen_width}|"
+    if border and debug:
+        logger.debug(border_text)
+    elif border:
+        logger.info(border_text)
     if text:
         text_list = text.split("\n")
         for t in text_list:
-            logger.info(f"| {centered(t, do_print=False)} |")
-        logger.info(f"|{separating_character * screen_width}|")
+            logger.info(f"|{sep}{centered(t, sep=sep)}{sep}|")
+        if border and debug:
+            logger.debug(border_text)
+        elif border:
+            logger.info(border_text)
     for handler in logger.handlers:
         apply_formatter(handler)
 

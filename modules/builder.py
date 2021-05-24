@@ -384,8 +384,6 @@ class CollectionBuilder:
         if skip_collection:
             raise Failed(f"{self.schedule}\n\nCollection {self.name} not scheduled to run")
 
-        logger.info(f"Scanning {self.name} Collection")
-
         self.run_again = "run_again" in methods
         self.collectionless = "plex_collectionless" in methods
 
@@ -432,8 +430,9 @@ class CollectionBuilder:
             else:
                 raise Failed("Collection Error: smart_url attribute is blank")
 
+        self.smart_filter_details = ""
         if "smart_filter" in methods:
-            logger.info("")
+            filter_details = "\n"
             smart_filter = self.data[methods["smart_filter"]]
             if smart_filter is None:
                 raise Failed(f"Collection Error: smart_filter attribute is blank")
@@ -453,7 +452,7 @@ class CollectionBuilder:
                 smart_type = "shows"
             else:
                 smart_type = "movies"
-            logger.info(f"Smart {smart_type.capitalize()[:-1]} Filter")
+            filter_details += f"Smart {smart_type.capitalize()[:-1]} Filter\n"
             self.smart_type_key, smart_sorts = plex.smart_types[smart_type]
 
             smart_sort = "random"
@@ -463,7 +462,7 @@ class CollectionBuilder:
                 if smart_filter[smart_methods["sort_by"]] not in smart_sorts:
                     raise Failed(f"Collection Error: sort_by: {smart_filter[smart_methods['sort_by']]} is invalid")
                 smart_sort = smart_filter[smart_methods["sort_by"]]
-            logger.info(f"Sort By: {smart_sort}")
+            filter_details += f"Sort By: {smart_sort}\n"
 
             limit = None
             if "limit" in smart_methods:
@@ -472,7 +471,7 @@ class CollectionBuilder:
                 if not isinstance(smart_filter[smart_methods["limit"]], int) or smart_filter[smart_methods["limit"]] < 1:
                     raise Failed("Collection Error: limit attribute must be an integer greater then 0")
                 limit = smart_filter[smart_methods["limit"]]
-                logger.info(f"Limit: {limit}")
+                filter_details += f"Limit: {limit}\n"
 
             validate = True
             if "validate" in smart_methods:
@@ -481,7 +480,7 @@ class CollectionBuilder:
                 if not isinstance(smart_filter[smart_methods["validate"]], bool):
                     raise Failed("Collection Error: validate attribute must be either true or false")
                 validate = smart_filter[smart_methods["validate"]]
-                logger.info(f"Validate: {validate}")
+                filter_details += f"Validate: {validate}\n"
 
             def _filter(filter_dict, fail, is_all=True, level=1):
                 output = ""
@@ -590,7 +589,7 @@ class CollectionBuilder:
             if not isinstance(smart_filter[smart_methods[base]], dict):
                 raise Failed(f"Collection Error: {base} must be a dictionary: {smart_filter[smart_methods[base]]}")
             built_filter, filter_text = _filter(smart_filter[smart_methods[base]], validate, is_all=base_all)
-            util.print_multiline(f"Filter:{filter_text}")
+            self.smart_filter_details = f"{filter_details}Filter:{filter_text}"
             final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
             self.smart_url = f"?type={self.smart_type_key}&{f'limit={limit}&' if limit else ''}sort={smart_sorts[smart_sort]}&{final_filter}"
 
@@ -1277,6 +1276,8 @@ class CollectionBuilder:
         else:
             self.sync = False
             self.run_again = False
+        logger.info("")
+        logger.info("Validation Successful")
 
     def collect_rating_keys(self, movie_map, show_map):
         def add_rating_keys(keys):
@@ -1442,10 +1443,11 @@ class CollectionBuilder:
             elif self.details["show_filtered"] is True:
                 logger.info(f"{name} Collection | X | {current.title}")
         media_type = f"{'Movie' if self.library.is_movie else 'Show'}{'s' if total > 1 else ''}"
-        logger.info(util.adjust_space(length, f"{total} {media_type} Processed"))
+        util.print_end(length)
+        logger.info("")
+        logger.info(f"{total} {media_type} Processed")
 
     def run_missing(self):
-        logger.info("")
         arr_filters = []
         for filter_method, filter_data in self.filters:
             if (filter_method.startswith("original_language") and self.library.is_movie) or filter_method.startswith("tmdb_vote_count"):
@@ -1472,6 +1474,7 @@ class CollectionBuilder:
                         logger.info(f"{self.name} Collection | ? | {movie.title} (TMDb: {missing_id})")
                 elif self.details["show_filtered"] is True:
                     logger.info(f"{self.name} Collection | X | {movie.title} (TMDb: {missing_id})")
+            logger.info("")
             logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
             if self.details["save_missing"] is True:
                 self.library.add_missing(self.name, missing_movies_with_names, True)
@@ -1506,6 +1509,7 @@ class CollectionBuilder:
                         logger.info(f"{self.name} Collection | ? | {title} (TVDB: {missing_id})")
                 elif self.details["show_filtered"] is True:
                     logger.info(f"{self.name} Collection | X | {title} (TVDb: {missing_id})")
+            logger.info("")
             logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
             if self.details["save_missing"] is True:
                 self.library.add_missing(self.name, missing_shows_with_names, False)
@@ -1520,17 +1524,22 @@ class CollectionBuilder:
                     self.run_again_shows.extend(missing_tvdb_ids)
 
     def sync_collection(self):
-        logger.info("")
         count_removed = 0
         for ratingKey, item in self.plex_map.items():
             if item is not None:
+                if count_removed == 0:
+                    logger.info("")
+                    util.separator(f"Removed from {self.name} Collection", space=False, border=False)
+                    logger.info("")
                 logger.info(f"{self.name} Collection | - | {item.title}")
                 if self.smart_label_collection:
                     self.library.query_data(item.removeLabel, self.name)
                 else:
                     self.library.query_data(item.removeCollection, self.name)
                 count_removed += 1
-        logger.info(f"{count_removed} {'Movie' if self.library.is_movie else 'Show'}{'s' if count_removed == 1 else ''} Removed")
+        if count_removed > 0:
+            logger.info("")
+            logger.info(f"{count_removed} {'Movie' if self.library.is_movie else 'Show'}{'s' if count_removed == 1 else ''} Removed")
 
     def update_details(self):
         if not self.obj and self.smart_url:
@@ -1644,9 +1653,6 @@ class CollectionBuilder:
             except BadRequest:
                 logger.error(f"Detail: {image_method} failed to update {message}")
 
-        if len(self.posters) > 0:
-            logger.info("")
-
         if len(self.posters) > 1:
             logger.info(f"{len(self.posters)} posters found:")
             for p in self.posters:
@@ -1670,9 +1676,6 @@ class CollectionBuilder:
         elif "tvdb_show_details" in self.posters:           set_image("tvdb_show_details", self.posters)
         elif "tmdb_show_details" in self.posters:           set_image("tmdb_show_details", self.posters)
         else:                                               logger.info("No poster to update")
-
-        if len(self.backgrounds) > 0:
-            logger.info("")
 
         if len(self.backgrounds) > 1:
             logger.info(f"{len(self.backgrounds)} backgrounds found:")

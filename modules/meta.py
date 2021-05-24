@@ -66,11 +66,11 @@ class Metadata:
             return self.collections
 
     def update_metadata(self, TMDb, test):
-        logger.info("")
-        util.separator(f"Running Metadata")
-        logger.info("")
         if not self.metadata:
-            raise Failed("No metadata to edit")
+            return None
+        logger.info("")
+        util.separator("Running Metadata")
+        logger.info("")
         for mapping_name, meta in self.metadata.items():
             methods = {mm.lower(): mm for mm in meta}
             if test and ("test" not in methods or meta[methods["test"]] is not True):

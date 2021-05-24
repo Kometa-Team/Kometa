@@ -69,5 +69,6 @@ class LetterboxdAPI:
             logger.info(util.adjust_space(length, f"Processed {total_items} TMDb IDs"))
         else:
             logger.error(f"Letterboxd Error: No List Items found in {data}")
+        logger.debug("")
         logger.debug(f"TMDb IDs Found: {movie_ids}")
         return movie_ids, []
