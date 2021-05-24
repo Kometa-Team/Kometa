@@ -220,11 +220,14 @@ class CollectionBuilder:
         methods = {m.lower(): m for m in self.data}
 
         if "template" in methods:
+            logger.info("")
+            logger.info("Validating Method: template")
             if not self.metadata.templates:
                 raise Failed("Collection Error: No templates found")
             elif not self.data[methods["template"]]:
                 raise Failed("Collection Error: template attribute is blank")
             else:
+                logger.debug(f"Value: {self.data[methods['template']]}")
                 for variables in util.get_list(self.data[methods["template"]], split=False):
                     if not isinstance(variables, dict):
                         raise Failed("Collection Error: template attribute is not a dictionary")
@@ -329,66 +332,105 @@ class CollectionBuilder:
                                 except Failed:
                                     continue
 
-        skip_collection = True
-        if "schedule" not in methods:
-            skip_collection = False
-        elif not self.data[methods["schedule"]]:
-            logger.error("Collection Error: schedule attribute is blank. Running daily")
-            skip_collection = False
-        else:
-            schedule_list = util.get_list(self.data[methods["schedule"]])
-            next_month = current_time.replace(day=28) + timedelta(days=4)
-            last_day = next_month - timedelta(days=next_month.day)
-            for schedule in schedule_list:
-                run_time = str(schedule).lower()
-                if run_time.startswith("day") or run_time.startswith("daily"):
-                    skip_collection = False
-                elif run_time.startswith("week") or run_time.startswith("month") or run_time.startswith("year"):
-                    match = re.search("\\(([^)]+)\\)", run_time)
-                    if match:
-                        param = match.group(1)
-                        if run_time.startswith("week"):
-                            if param.lower() in util.days_alias:
-                                weekday = util.days_alias[param.lower()]
-                                self.schedule += f"\nScheduled weekly on {util.pretty_days[weekday]}"
-                                if weekday == current_time.weekday():
-                                    skip_collection = False
-                            else:
-                                logger.error(f"Collection Error: weekly schedule attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
-                        elif run_time.startswith("month"):
-                            try:
-                                if 1 <= int(param) <= 31:
-                                    self.schedule += f"\nScheduled monthly on the {util.make_ordinal(param)}"
-                                    if current_time.day == int(param) or (current_time.day == last_day.day and int(param) > last_day.day):
+        if "schedule" in methods:
+            logger.info("")
+            logger.info("Validating Method: schedule")
+            if not self.data[methods["schedule"]]:
+                raise Failed("Collection Error: schedule attribute is blank")
+            else:
+                logger.debug(f"Value: {self.data[methods['schedule']]}")
+                skip_collection = True
+                schedule_list = util.get_list(self.data[methods["schedule"]])
+                next_month = current_time.replace(day=28) + timedelta(days=4)
+                last_day = next_month - timedelta(days=next_month.day)
+                for schedule in schedule_list:
+                    run_time = str(schedule).lower()
+                    if run_time.startswith("day") or run_time.startswith("daily"):
+                        skip_collection = False
+                    elif run_time.startswith("week") or run_time.startswith("month") or run_time.startswith("year"):
+                        match = re.search("\\(([^)]+)\\)", run_time)
+                        if match:
+                            param = match.group(1)
+                            if run_time.startswith("week"):
+                                if param.lower() in util.days_alias:
+                                    weekday = util.days_alias[param.lower()]
+                                    self.schedule += f"\nScheduled weekly on {util.pretty_days[weekday]}"
+                                    if weekday == current_time.weekday():
                                         skip_collection = False
                                 else:
-                                    logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be between 1 and 31")
-                            except ValueError:
-                                logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be an integer")
-                        elif run_time.startswith("year"):
-                            match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
-                            if match:
-                                month = int(match.group(1))
-                                day = int(match.group(2))
-                                self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
-                                if current_time.month == month and (current_time.day == day or (current_time.day == last_day.day and day > last_day.day)):
-                                    skip_collection = False
-                            else:
-                                logger.error(f"Collection Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+                                    logger.error(f"Collection Error: weekly schedule attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
+                            elif run_time.startswith("month"):
+                                try:
+                                    if 1 <= int(param) <= 31:
+                                        self.schedule += f"\nScheduled monthly on the {util.make_ordinal(param)}"
+                                        if current_time.day == int(param) or (current_time.day == last_day.day and int(param) > last_day.day):
+                                            skip_collection = False
+                                    else:
+                                        logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be between 1 and 31")
+                                except ValueError:
+                                    logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be an integer")
+                            elif run_time.startswith("year"):
+                                match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
+                                if match:
+                                    month = int(match.group(1))
+                                    day = int(match.group(2))
+                                    self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
+                                    if current_time.month == month and (current_time.day == day or (current_time.day == last_day.day and day > last_day.day)):
+                                        skip_collection = False
+                                else:
+                                    logger.error(f"Collection Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+                        else:
+                            logger.error(f"Collection Error: failed to parse schedule: {schedule}")
                     else:
-                        logger.error(f"Collection Error: failed to parse schedule: {schedule}")
-                else:
-                    logger.error(f"Collection Error: schedule attribute {schedule} invalid")
-        if len(self.schedule) == 0:
-            skip_collection = False
-        if skip_collection:
-            raise Failed(f"{self.schedule}\n\nCollection {self.name} not scheduled to run")
+                        logger.error(f"Collection Error: schedule attribute {schedule} invalid")
+                if len(self.schedule) == 0:
+                    skip_collection = False
+                if skip_collection:
+                    raise Failed(f"{self.schedule}\n\nCollection {self.name} not scheduled to run")
 
         self.run_again = "run_again" in methods
         self.collectionless = "plex_collectionless" in methods
 
+        self.run_again = False
+        if "run_again" in methods:
+            logger.info("")
+            logger.info("Validating Method: run_again")
+            if not self.data[methods["run_again"]]:
+                logger.warning(f"Collection Warning: run_again attribute is blank defaulting to false")
+            else:
+                logger.debug(f"Value: {self.data[methods['run_again']]}")
+                self.run_again = util.get_bool("run_again", self.data[methods["run_again"]])
+
+        self.sync = self.library.sync_mode == "sync"
+        if "sync_mode" in methods:
+            logger.info("")
+            logger.info("Validating Method: sync_mode")
+            if not self.data[methods["sync_mode"]]:
+                logger.warning(f"Collection Warning: sync_mode attribute is blank using general: {self.library.sync_mode}")
+            else:
+                logger.debug(f"Value: {self.data[methods['sync_mode']]}")
+                if self.data[methods["sync_mode"]].lower() not in ["append", "sync"]:
+                    logger.warning(f"Collection Warning: {self.data[methods['sync_mode']]} sync_mode invalid using general: {self.library.sync_mode}")
+                else:
+                    self.sync = self.data[methods["sync_mode"]].lower() == "sync"
+
+        self.build_collection = True
+        if "build_collection" in methods:
+            logger.info("")
+            logger.info("Validating Method: build_collection")
+            if not self.data[methods["build_collection"]]:
+                logger.warning(f"Collection Warning: build_collection attribute is blank defaulting to true")
+            else:
+                logger.debug(f"Value: {self.data[methods['build_collection']]}")
+                self.build_collection = util.get_bool("build_collection", self.data[methods["build_collection"]])
+
         if "tmdb_person" in methods:
-            if self.data[methods["tmdb_person"]]:
+            logger.info("")
+            logger.info("Validating Method: build_collection")
+            if not self.data[methods["tmdb_person"]]:
+                raise Failed("Collection Error: tmdb_person attribute is blank")
+            else:
+                logger.debug(f"Value: {self.data[methods['tmdb_person']]}")
                 valid_names = []
                 for tmdb_id in util.get_int_list(self.data[methods["tmdb_person"]], "TMDb Person ID"):
                     person = config.TMDb.get_person(tmdb_id)
@@ -401,43 +443,48 @@ class CollectionBuilder:
                     self.details["tmdb_person"] = valid_names
                 else:
                     raise Failed(f"Collection Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
-            else:
-                raise Failed("Collection Error: tmdb_person attribute is blank")
 
         self.smart_sort = "random"
         self.smart_label_collection = False
         if "smart_label" in methods:
+            logger.info("")
+            logger.info("Validating Method: smart_label")
             self.smart_label_collection = True
-            if self.data[methods["smart_label"]]:
+            if not self.data[methods["smart_label"]]:
+                logger.warning("Collection Error: smart_label attribute is blank defaulting to random")
+            else:
+                logger.debug(f"Value: {self.data[methods['smart_label']]}")
                 if (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_smart_sorts) \
                         or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_smart_sorts):
                     self.smart_sort = str(self.data[methods["smart_label"]]).lower()
                 else:
-                    logger.info("")
                     logger.warning(f"Collection Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
-            else:
-                logger.info("")
-                logger.warning("Collection Error: smart_label attribute is blank defaulting to random")
 
         self.smart_url = None
         self.smart_type_key = None
         if "smart_url" in methods:
-            if self.data[methods["smart_url"]]:
+            logger.info("")
+            logger.info("Validating Method: smart_url")
+            if not self.data[methods["smart_url"]]:
+                raise Failed("Collection Error: smart_url attribute is blank")
+            else:
+                logger.debug(f"Value: {self.data[methods['smart_url']]}")
                 try:
                     self.smart_url, self.smart_type_key = library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
                 except ValueError:
                     raise Failed("Collection Error: smart_url is incorrectly formatted")
-            else:
-                raise Failed("Collection Error: smart_url attribute is blank")
 
         self.smart_filter_details = ""
         if "smart_filter" in methods:
+            logger.info("")
+            logger.info("Validating Method: smart_filter")
             filter_details = "\n"
             smart_filter = self.data[methods["smart_filter"]]
             if smart_filter is None:
                 raise Failed(f"Collection Error: smart_filter attribute is blank")
             if not isinstance(smart_filter, dict):
                 raise Failed(f"Collection Error: smart_filter must be a dictionary: {smart_filter}")
+            logger.debug(f"Value: {self.data[methods['smart_filter']]}")
             smart_methods = {m.lower(): m for m in smart_filter}
             if "any" in smart_methods and "all" in smart_methods:
                 raise Failed(f"Collection Error: Cannot have more then one base")
@@ -611,6 +658,10 @@ class CollectionBuilder:
         self.smart = self.smart_url or self.smart_label_collection
 
         for method_key, method_data in self.data.items():
+            if method_key.lower() in ignored_details:
+                continue
+            logger.info("")
+            logger.info(f"Validating Method: {method_key}")
             if "trakt" in method_key.lower() and not config.Trakt:                      raise Failed(f"Collection Error: {method_key} requires Trakt todo be configured")
             elif "imdb" in method_key.lower() and not config.IMDb:                      raise Failed(f"Collection Error: {method_key} requires TMDb or Trakt to be configured")
             elif "radarr" in method_key.lower() and not self.library.Radarr:            raise Failed(f"Collection Error: {method_key} requires Radarr to be configured")
@@ -618,8 +669,6 @@ class CollectionBuilder:
             elif "tautulli" in method_key.lower() and not self.library.Tautulli:        raise Failed(f"Collection Error: {method_key} requires Tautulli to be configured")
             elif "mal" in method_key.lower() and not config.MyAnimeList:                raise Failed(f"Collection Error: {method_key} requires MyAnimeList to be configured")
             elif method_data is not None:
-                logger.debug("")
-                logger.debug(f"Validating Method: {method_key}")
                 logger.debug(f"Value: {method_data}")
                 if method_key.lower() in method_alias:
                     method_name = method_alias[method_key.lower()]
@@ -1226,15 +1275,6 @@ class CollectionBuilder:
             else:
                 logger.warning(f"Collection Warning: {method_key} attribute is blank")
 
-        self.sync = self.library.sync_mode == "sync"
-        if "sync_mode" in methods:
-            if not self.data[methods["sync_mode"]]:
-                logger.warning(f"Collection Warning: sync_mode attribute is blank using general: {self.library.sync_mode}")
-            elif self.data[methods["sync_mode"]].lower() not in ["append", "sync"]:
-                logger.warning(f"Collection Warning: {self.data[methods['sync_mode']]} sync_mode invalid using general: {self.library.sync_mode}")
-            else:
-                self.sync = self.data[methods["sync_mode"]].lower() == "sync"
-
         if self.add_to_radarr is None:
             self.add_to_radarr = self.library.Radarr.add if self.library.Radarr else False
         if self.add_to_sonarr is None:
@@ -1249,13 +1289,6 @@ class CollectionBuilder:
             self.add_to_sonarr = False
             self.details["collection_mode"] = "hide"
             self.sync = True
-
-        self.build_collection = True
-        if "build_collection" in methods:
-            if not self.data[methods["build_collection"]]:
-                logger.warning(f"Collection Warning: build_collection attribute is blank defaulting to true")
-            else:
-                self.build_collection = util.get_bool("build_collection", self.data[methods["build_collection"]])
 
         if self.build_collection:
             try:

@@ -159,7 +159,6 @@ def update_libraries(config, is_test, requested_collections, resume_from):
         if not is_test and not requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
             logger.info("")
             util.separator(f"Other {library.name} Library Operations")
-            logger.info("")
             unmanaged_collections = []
             for col in library.get_all_collections():
                 if col.title not in library.collections:
