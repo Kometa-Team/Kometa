@@ -1392,8 +1392,8 @@ class CollectionBuilder:
                         if movie is None:
                             logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
                             continue
-                        if (modifier == ".not" and movie.original_language in filter_data) or (
-                                modifier != ".not" and movie.original_language not in filter_data):
+                        if (modifier == ".not" and movie.original_language in filter_data) \
+                                or (modifier != ".not" and movie.original_language not in filter_data):
                             match = False
                             break
                     elif method_name == "audio_track_title":

@@ -275,6 +275,7 @@ class Convert:
                         elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
                         elif url_parsed.scheme == "tmdb":               tmdb_id.append(int(url_parsed.netloc))
                 except requests.exceptions.ConnectionError:
+                    library.query(item.refresh)
                     util.print_stacktrace()
                     raise Failed("No External GUIDs found")
                 if not tvdb_id and not imdb_id and not tmdb_id:
@@ -361,5 +362,5 @@ class Convert:
             logger.info(util.adjust_space(length, f"Mapping Error | {item.guid:<46} | {e} for {item.title}"))
         except BadRequest:
             util.print_stacktrace()
-            logger.info(util.adjust_space(length, f"Mapping Error: | {item.guid} for {item.title} not found"))
+            logger.info(util.adjust_space(length, f"Mapping Error | {item.guid:<46} | Bad Request for {item.title}"))
         return None, None

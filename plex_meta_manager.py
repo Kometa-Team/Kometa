@@ -21,6 +21,7 @@ parser.add_argument("-co", "--collection-only", "--collections-only", dest="coll
 parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
+parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying countdown", action="store_true", default=False)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -40,6 +41,7 @@ def check_bool(env_str, default):
 test = check_bool("PMM_TEST", args.test)
 debug = check_bool("PMM_DEBUG", args.debug)
 run = check_bool("PMM_RUN", args.run)
+no_countdown = check_bool("PMM_NO_COUNTDOWN", args.no_countdown)
 library_only = check_bool("PMM_LIBRARIES_ONLY", args.library_only)
 collection_only = check_bool("PMM_COLLECTIONS_ONLY", args.collection_only)
 collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
@@ -489,16 +491,17 @@ try:
         schedule.every().day.at(time_to_run).do(start, config_file, False, True, None, None, None)
         while True:
             schedule.run_pending()
-            current = datetime.now().strftime("%H:%M")
-            seconds = (datetime.strptime(time_to_run, "%H:%M") - datetime.strptime(current, "%H:%M")).total_seconds()
-            hours = int(seconds // 3600)
-            if hours < 0:
-                hours += 24
-            minutes = int((seconds % 3600) // 60)
-            time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
-            time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
+            if not no_countdown:
+                current = datetime.now().strftime("%H:%M")
+                seconds = (datetime.strptime(time_to_run, "%H:%M") - datetime.strptime(current, "%H:%M")).total_seconds()
+                hours = int(seconds // 3600)
+                if hours < 0:
+                    hours += 24
+                minutes = int((seconds % 3600) // 60)
+                time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
+                time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
 
-            time_length = util.print_return(time_length, f"Current Time: {current} | {time_str} until the daily run at {time_to_run}")
+                time_length = util.print_return(time_length, f"Current Time: {current} | {time_str} until the daily run at {time_to_run}")
             time.sleep(1)
 except KeyboardInterrupt:
     util.separator("Exiting Plex Meta Manager")
