@@ -49,7 +49,6 @@ class AniDBAPI:
 
     def get_items(self, method, data, language):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
-        logger.debug(f"Data: {data}")
         anidb_ids = []
         if method == "anidb_popular":
             logger.info(f"Processing {pretty}: {data} Anime")
@@ -60,6 +59,7 @@ class AniDBAPI:
             elif method == "anidb_relation":                    anidb_ids.extend(self._relations(data, language))
             else:                                               raise Failed(f"AniDB Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.anidb_to_ids(anidb_ids)
+        logger.debug("")
         logger.debug(f"AniDB IDs Found: {anidb_ids}")
         logger.debug(f"TMDb IDs Found: {movie_ids}")
         logger.debug(f"TVDb IDs Found: {show_ids}")

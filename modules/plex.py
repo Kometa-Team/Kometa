@@ -530,7 +530,6 @@ class PlexAPI:
         return valid_collections
 
     def get_items(self, method, data):
-        logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         media_type = "Movie" if self.is_movie else "Show"
         items = []

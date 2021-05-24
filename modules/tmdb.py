@@ -292,7 +292,6 @@ class TMDbAPI:
         return tmdb_id
 
     def get_items(self, method, data, is_movie):
-        logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         media_type = "Movie" if is_movie else "Show"
         movie_ids = []
@@ -362,6 +361,7 @@ class TMDbAPI:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(movie_ids)} Movie{'' if len(movie_ids) == 1 else 's'})")
             if not is_movie and len(show_ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(show_ids)} Show{'' if len(show_ids) == 1 else 's'})")
+        logger.debug("")
         logger.debug(f"TMDb IDs Found: {movie_ids}")
         logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

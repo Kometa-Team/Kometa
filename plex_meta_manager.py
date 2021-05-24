@@ -91,15 +91,14 @@ def start(config_path, is_test, daily, requested_collections, requested_librarie
         file_handler.doRollover()
     logger.addHandler(file_handler)
     util.separator()
-    util.centered("                                                                                     ")
-    util.centered(" ____  _             __  __      _          __  __                                   ")
-    util.centered("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ ")
-    util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|")
-    util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
-    util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
-    util.centered("                                                                     |___/           ")
-    util.centered("    Version: 1.9.2                                                                   ")
-    util.separator()
+    logger.info(util.centered("                                                                                     "))
+    logger.info(util.centered(" ____  _             __  __      _          __  __                                   "))
+    logger.info(util.centered("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ "))
+    logger.info(util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|"))
+    logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
+    logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
+    logger.info(util.centered("                                                                     |___/           "))
+    logger.info(util.centered("    Version: 1.9.2                                                                   "))
     if daily:                       start_type = "Daily "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
@@ -132,7 +131,7 @@ def update_libraries(config, is_test, requested_collections, resume_from):
         logger.info("")
         util.separator(f"{library.name} Library")
         logger.info("")
-        util.separator(f"Mapping {library.name} Library")
+        util.separator(f"Mapping {library.name} Library", space=False, border=False)
         logger.info("")
         movie_map, show_map = map_guids(config, library)
         if not is_test and not resume_from and not collection_only and library.mass_update:
@@ -145,18 +144,22 @@ def update_libraries(config, is_test, requested_collections, resume_from):
                     metadata.update_metadata(config.TMDb, is_test)
                 except Failed as e:
                     logger.error(e)
-            logger.info("")
-            util.separator(f"{'Test ' if is_test else ''}Collections")
             collections_to_run = metadata.get_collections(requested_collections)
             if resume_from and resume_from not in collections_to_run:
+                logger.info("")
                 logger.warning(f"Collection: {resume_from} not in Metadata File: {metadata.path}")
                 continue
             if collections_to_run and not library_only:
+                logger.info("")
+                util.separator(f"{'Test ' if is_test else ''}Collections")
                 logger.removeHandler(library_handler)
                 resume_from = run_collection(config, library, metadata, collections_to_run, is_test, resume_from, movie_map, show_map)
                 logger.addHandler(library_handler)
 
-        if not is_test and not requested_collections:
+        if not is_test and not requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
+            logger.info("")
+            util.separator(f"Other {library.name} Library Operations")
+            logger.info("")
             unmanaged_collections = []
             for col in library.get_all_collections():
                 if col.title not in library.collections:
@@ -164,15 +167,16 @@ def update_libraries(config, is_test, requested_collections, resume_from):
 
             if library.show_unmanaged and not library_only:
                 logger.info("")
-                util.separator(f"Unmanaged Collections in {library.name} Library")
+                util.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
                 logger.info("")
                 for col in unmanaged_collections:
                     logger.info(col.title)
+                logger.info("")
                 logger.info(f"{len(unmanaged_collections)} Unmanaged Collections")
 
             if library.assets_for_all and not collection_only:
                 logger.info("")
-                util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library")
+                util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library", space=False, border=False)
                 logger.info("")
                 for col in unmanaged_collections:
                     library.update_item_from_assets(col, collection_mode=True)
@@ -236,6 +240,7 @@ def map_guids(config, library):
     show_map = {}
     length = 0
     logger.info(f"Mapping {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
+    logger.info("")
     items = library.Plex.all()
     for i, item in enumerate(items, 1):
         length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
@@ -251,6 +256,7 @@ def map_guids(config, library):
                 for m in main_id:
                     if m in show_map:               show_map[m].append(item.ratingKey)
                     else:                           show_map[m] = [item.ratingKey]
+    logger.info("")
     logger.info(util.adjust_space(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}"))
     return movie_map, show_map
 
@@ -419,10 +425,18 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
                 logger.info(output_str)
                 logger.info("")
 
+            util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
+
             builder = CollectionBuilder(config, library, metadata, mapping_name, collection_attrs)
+            logger.info("")
+
+            util.separator(f"Building {mapping_name} Collection", space=False, border=False)
 
             if len(builder.schedule) > 0:
                 util.print_multiline(builder.schedule, info=True)
+
+            if len(builder.smart_filter_details) > 0:
+                util.print_multiline(builder.smart_filter_details, info=True)
 
             if not builder.smart_url:
                 logger.info("")
@@ -434,16 +448,24 @@ def run_collection(config, library, metadata, requested_collections, is_test, re
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
                 builder.collect_rating_keys(movie_map, show_map)
-                logger.info("")
+
                 if len(builder.rating_keys) > 0 and builder.build_collection:
+                    logger.info("")
+                    util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
+                    logger.info("")
                     builder.add_to_collection(movie_map)
                 if len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0:
+                    logger.info("")
+                    util.separator(f"Missing from Library", space=False, border=False)
+                    logger.info("")
                     builder.run_missing()
                 if builder.sync and len(builder.rating_keys) > 0 and builder.build_collection:
                     builder.sync_collection()
-                logger.info("")
 
             if builder.build_collection:
+                logger.info("")
+                util.separator(f"Updating Details of {mapping_name} Collection", space=False, border=False)
+                logger.info("")
                 builder.update_details()
 
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):

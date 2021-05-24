@@ -194,7 +194,6 @@ class MyAnimeListAPI:
         return self._parse_request(url)
 
     def get_items(self, method, data):
-        logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         if method == "mal_id":
             mal_ids = [data]
@@ -214,6 +213,7 @@ class MyAnimeListAPI:
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.myanimelist_to_ids(mal_ids)
+        logger.debug("")
         logger.debug(f"MyAnimeList IDs Found: {mal_ids}")
         logger.debug(f"Shows Found: {show_ids}")
         logger.debug(f"Movies Found: {movie_ids}")
