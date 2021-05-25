@@ -100,7 +100,7 @@ def start(config_path, is_test, daily, requested_collections, requested_librarie
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.9.2                                                                   "))
+    logger.info(util.centered("    Version: 1.9.3-beta1                                                             "))
     if daily:                       start_type = "Daily "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
