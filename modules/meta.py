@@ -132,14 +132,11 @@ class Metadata:
                 elif f"{attr}.sync" in alias and group[alias[f"{attr}.sync"]] is None:
                     logger.error(f"Metadata Error: {attr}.sync attribute is blank")
                 elif attr in alias or f"{attr}.remove" in alias or f"{attr}.sync" in alias:
-                    add_tags = group[alias[attr]] if attr in alias else None
+                    add_tags = util.get_list(group[alias[attr]]) if attr in alias else []
                     if extra:
-                        if add_tags:
-                            add_tags.extend(extra)
-                        else:
-                            add_tags = extra
-                    remove_tags = group[alias[f"{attr}.remove"]] if f"{attr}.remove" in alias else None
-                    sync_tags = group[alias[f"{attr}.sync"]] if f"{attr}.sync" in alias else None
+                        add_tags.extend(extra)
+                    remove_tags = util.get_list(group[alias[f"{attr}.remove"]]) if f"{attr}.remove" in alias else None
+                    sync_tags = util.get_list(group[alias[f"{attr}.sync"]]) if f"{attr}.sync" in alias else None
                     return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, key=key)
                 return False
 
