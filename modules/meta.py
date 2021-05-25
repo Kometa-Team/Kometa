@@ -119,7 +119,7 @@ class Metadata:
                         logger.error(f"Metadata Error: {attr} attribute is blank")
 
             def edit_tags(attr, obj, group, alias, key=None, extra=None, movie_library=False):
-                if movie_library and not self.library.is_movie:
+                if movie_library and not self.library.is_movie and (attr in alias or f"{attr}.sync" in alias or f"{attr}.remove" in alias):
                     logger.error(f"Metadata Error: {attr} attribute only works for movie libraries")
                 elif attr in alias and f"{attr}.sync" in alias:
                     logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
@@ -140,7 +140,7 @@ class Metadata:
                             add_tags = extra
                     remove_tags = group[alias[f"{attr}.remove"]] if f"{attr}.remove" in alias else None
                     sync_tags = group[alias[f"{attr}.sync"]] if f"{attr}.sync" in alias else None
-                    return self.library.edit_tags("attr", obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, key=key)
+                    return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, key=key)
                 return False
 
             def set_image(attr, obj, group, alias, poster=True, url=True):
