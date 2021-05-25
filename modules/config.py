@@ -1,4 +1,5 @@
 import logging, os
+from datetime import datetime
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.anilist import AniListAPI
@@ -48,13 +49,20 @@ mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata t
 library_types = {"movie": "For Movie Libraries", "show": "For Show Libraries"}
 
 class Config:
-    def __init__(self, default_dir, config_path=None, libraries_to_run=None):
+    def __init__(self, default_dir, config_path=None, is_test=False, time_scheduled=None, requested_collections=None, requested_libraries=None, resume_from=None):
         logger.info("Locating config...")
         if config_path and os.path.exists(config_path):                     self.config_path = os.path.abspath(config_path)
         elif config_path and not os.path.exists(config_path):               raise Failed(f"Config Error: config not found at {os.path.abspath(config_path)}")
         elif os.path.exists(os.path.join(default_dir, "config.yml")):       self.config_path = os.path.abspath(os.path.join(default_dir, "config.yml"))
         else:                                                               raise Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
         logger.info(f"Using {self.config_path} as config")
+
+        self.test_mode = is_test
+        self.run_start_time = time_scheduled
+        self.run_hour = datetime.strptime(time_scheduled, "%H:%M").hour
+        self.requested_collections = util.get_list(requested_collections)
+        self.requested_libraries = util.get_list(requested_libraries)
+        self.resume_from = resume_from
 
         yaml.YAML().allow_duplicate_keys = True
         try:
@@ -312,9 +320,9 @@ class Config:
         self.libraries = []
         try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
         except Failed as e:             raise Failed(e)
-        requested_libraries = util.get_list(libraries_to_run) if libraries_to_run else None
+
         for library_name, lib in libs.items():
-            if requested_libraries and library_name not in requested_libraries:
+            if self.requested_libraries and library_name not in self.requested_libraries:
                 continue
             util.separator()
             params = {}

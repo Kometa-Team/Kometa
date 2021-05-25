@@ -222,7 +222,8 @@ def compile_list(data):
         return data
 
 def get_list(data, lower=False, split=True, int_list=False):
-    if isinstance(data, list):      return data
+    if data is None:                return None
+    elif isinstance(data, list):    return data
     elif isinstance(data, dict):    return [data]
     elif split is False:            return [str(data)]
     elif lower is True:             return [d.strip().lower() for d in str(data).split(",")]

@@ -345,42 +345,52 @@ class CollectionBuilder:
                 last_day = next_month - timedelta(days=next_month.day)
                 for schedule in schedule_list:
                     run_time = str(schedule).lower()
-                    if run_time.startswith("day") or run_time.startswith("daily"):
+                    if run_time.startswith(("day", "daily")):
                         skip_collection = False
-                    elif run_time.startswith("week") or run_time.startswith("month") or run_time.startswith("year"):
+                    elif run_time.startswith(("hour", "week", "month", "year")):
                         match = re.search("\\(([^)]+)\\)", run_time)
-                        if match:
-                            param = match.group(1)
-                            if run_time.startswith("week"):
-                                if param.lower() in util.days_alias:
-                                    weekday = util.days_alias[param.lower()]
-                                    self.schedule += f"\nScheduled weekly on {util.pretty_days[weekday]}"
-                                    if weekday == current_time.weekday():
-                                        skip_collection = False
-                                else:
-                                    logger.error(f"Collection Error: weekly schedule attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
-                            elif run_time.startswith("month"):
-                                try:
-                                    if 1 <= int(param) <= 31:
-                                        self.schedule += f"\nScheduled monthly on the {util.make_ordinal(param)}"
-                                        if current_time.day == int(param) or (current_time.day == last_day.day and int(param) > last_day.day):
-                                            skip_collection = False
-                                    else:
-                                        logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be between 1 and 31")
-                                except ValueError:
-                                    logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be an integer")
-                            elif run_time.startswith("year"):
-                                match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
-                                if match:
-                                    month = int(match.group(1))
-                                    day = int(match.group(2))
-                                    self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
-                                    if current_time.month == month and (current_time.day == day or (current_time.day == last_day.day and day > last_day.day)):
-                                        skip_collection = False
-                                else:
-                                    logger.error(f"Collection Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
-                        else:
+                        if not match:
                             logger.error(f"Collection Error: failed to parse schedule: {schedule}")
+                            continue
+                        param = match.group(1)
+                        if run_time.startswith("hour"):
+                            try:
+                                if 0 <= int(param) <= 23:
+                                    self.schedule += f"\nScheduled to run only on the {util.make_ordinal(param)} hour"
+                                    if config.run_hour == int(param):
+                                        skip_collection = False
+                                else:
+                                    raise ValueError
+                            except ValueError:
+                                logger.error(f"Collection Error: hourly schedule attribute {schedule} invalid must be an integer between 0 and 23")
+                        elif run_time.startswith("week"):
+                            if param.lower() not in util.days_alias:
+                                logger.error(f"Collection Error: weekly schedule attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
+                                continue
+                            weekday = util.days_alias[param.lower()]
+                            self.schedule += f"\nScheduled weekly on {util.pretty_days[weekday]}"
+                            if weekday == current_time.weekday():
+                                skip_collection = False
+                        elif run_time.startswith("month"):
+                            try:
+                                if 1 <= int(param) <= 31:
+                                    self.schedule += f"\nScheduled monthly on the {util.make_ordinal(param)}"
+                                    if current_time.day == int(param) or (current_time.day == last_day.day and int(param) > last_day.day):
+                                        skip_collection = False
+                                else:
+                                    raise ValueError
+                            except ValueError:
+                                logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be an integer between 1 and 31")
+                        elif run_time.startswith("year"):
+                            match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
+                            if not match:
+                                logger.error(f"Collection Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+                                continue
+                            month = int(match.group(1))
+                            day = int(match.group(2))
+                            self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
+                            if current_time.month == month and (current_time.day == day or (current_time.day == last_day.day and day > last_day.day)):
+                                skip_collection = False
                     else:
                         logger.error(f"Collection Error: schedule attribute {schedule} invalid")
                 if len(self.schedule) == 0:

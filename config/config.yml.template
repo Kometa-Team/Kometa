@@ -33,6 +33,9 @@ plex:                                           # Can be individually specified 
   url: http://192.168.1.12:32400
   token: ####################
   timeout: 60
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
 tmdb:
   apikey: ################################
   language: en
