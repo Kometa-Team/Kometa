@@ -194,9 +194,9 @@ class CollectionBuilder:
         self.name = name
         self.data = data
         self.details = {
-            "show_filtered": library.show_filtered,
-            "show_missing": library.show_missing,
-            "save_missing": library.save_missing
+            "show_filtered": self.library.show_filtered,
+            "show_missing": self.library.show_missing,
+            "save_missing": self.library.save_missing
         }
         self.item_details = {}
         self.radarr_options = {}
@@ -480,7 +480,7 @@ class CollectionBuilder:
             else:
                 logger.debug(f"Value: {self.data[methods['smart_url']]}")
                 try:
-                    self.smart_url, self.smart_type_key = library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
+                    self.smart_url, self.smart_type_key = self.library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
                 except ValueError:
                     raise Failed("Collection Error: smart_url is incorrectly formatted")
 
@@ -1302,19 +1302,19 @@ class CollectionBuilder:
 
         if self.build_collection:
             try:
-                self.obj = library.get_collection(self.name)
-                collection_smart = library.smart(self.obj)
+                self.obj = self.library.get_collection(self.name)
+                collection_smart = self.library.smart(self.obj)
                 if (self.smart and not collection_smart) or (not self.smart and collection_smart):
                     logger.info("")
                     logger.error(f"Collection Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
-                    library.query(self.obj.delete)
+                    self.library.query(self.obj.delete)
                     self.obj = None
             except Failed:
                 self.obj = None
 
             self.plex_map = {}
             if self.sync and self.obj:
-                for item in library.get_collection_items(self.obj, self.smart_label_collection):
+                for item in self.library.get_collection_items(self.obj, self.smart_label_collection):
                     self.plex_map[item.ratingKey] = item
         else:
             self.sync = False
@@ -1322,7 +1322,7 @@ class CollectionBuilder:
         logger.info("")
         logger.info("Validation Successful")
 
-    def collect_rating_keys(self, movie_map, show_map):
+    def collect_rating_keys(self):
         def add_rating_keys(keys):
             if not isinstance(keys, list):
                 keys = [keys]
@@ -1338,15 +1338,15 @@ class CollectionBuilder:
                     if len(movie_ids) > 0:
                         items_found_inside += len(movie_ids)
                         for movie_id in movie_ids:
-                            if movie_id in movie_map:
-                                add_rating_keys(movie_map[movie_id])
+                            if movie_id in self.library.movie_map:
+                                add_rating_keys(self.library.movie_map[movie_id])
                             elif movie_id not in self.missing_movies:
                                 self.missing_movies.append(movie_id)
                     if len(show_ids) > 0:
                         items_found_inside += len(show_ids)
                         for show_id in show_ids:
-                            if show_id in show_map:
-                                add_rating_keys(show_map[show_id])
+                            if show_id in self.library.show_map:
+                                add_rating_keys(self.library.show_map[show_id])
                             elif show_id not in self.missing_shows:
                                 self.missing_shows.append(show_id)
                     return items_found_inside
@@ -1365,7 +1365,7 @@ class CollectionBuilder:
                 elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
 
-    def add_to_collection(self, movie_map):
+    def add_to_collection(self):
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
         total = len(self.rating_keys)
         max_length = len(str(total))
@@ -1391,7 +1391,7 @@ class CollectionBuilder:
                             break
                     elif method_name == "original_language":
                         movie = None
-                        for key, value in movie_map.items():
+                        for key, value in self.library.movie_map.items():
                             if current.ratingKey in value:
                                 try:
                                     movie = self.config.TMDb.get_movie(key)
@@ -1435,7 +1435,7 @@ class CollectionBuilder:
                     elif modifier in [".gte", ".lte"]:
                         if method_name == "vote_count":
                             tmdb_item = None
-                            for key, value in movie_map.items():
+                            for key, value in self.library.movie_map.items():
                                 if current.ratingKey in value:
                                     try:
                                         tmdb_item = self.config.TMDb.get_movie(key) if self.library.is_movie else self.config.TMDb.get_show(key)
@@ -1736,17 +1736,17 @@ class CollectionBuilder:
         elif "tmdb_show_details" in self.backgrounds:       set_image("tmdb_show_details", self.backgrounds, is_background=True)
         else:                                               logger.info("No background to update")
 
-    def run_collections_again(self, movie_map, show_map):
+    def run_collections_again(self):
         self.obj = self.library.get_collection(self.name)
         name, collection_items = self.library.get_collection_name_and_items(self.obj, self.smart_label_collection)
         rating_keys = []
         for mm in self.run_again_movies:
-            if mm in movie_map:
-                rating_keys.extend(movie_map[mm])
+            if mm in self.library.movie_map:
+                rating_keys.extend(self.library.movie_map[mm])
         if self.library.is_show:
             for sm in self.run_again_shows:
-                if sm in show_map:
-                    rating_keys.extend(show_map[sm])
+                if sm in self.library.show_map:
+                    rating_keys.extend(self.library.show_map[sm])
         if len(rating_keys) > 0:
             for rating_key in rating_keys:
                 try:
@@ -1766,7 +1766,7 @@ class CollectionBuilder:
         if len(self.run_again_movies) > 0:
             logger.info("")
             for missing_id in self.run_again_movies:
-                if missing_id not in movie_map:
+                if missing_id not in self.library.movie_map:
                     try:
                         movie = self.config.TMDb.get_movie(missing_id)
                     except Failed as e:
@@ -1780,7 +1780,7 @@ class CollectionBuilder:
         if len(self.run_again_shows) > 0 and self.library.is_show:
             logger.info("")
             for missing_id in self.run_again_shows:
-                if missing_id not in show_map:
+                if missing_id not in self.library.show_map:
                     try:
                         title = str(self.config.TVDb.get_series(self.library.Plex.language, missing_id).title.encode("ascii", "replace").decode())
                     except Failed as e:

@@ -275,7 +275,7 @@ smart_types = {
 }
 
 class PlexAPI:
-    def __init__(self, params, TMDb, TVDb):
+    def __init__(self, params):
         try:
             self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
         except Unauthorized:
@@ -318,8 +318,6 @@ class PlexAPI:
             for ad in params["asset_directory"]:
                 logger.info(f"Using Asset Directory: {ad}")
 
-        self.TMDb = TMDb
-        self.TVDb = TVDb
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
@@ -351,6 +349,10 @@ class PlexAPI:
         self.empty_trash = params["plex"]["empty_trash"]
         self.optimize = params["plex"]["optimize"]
         self.missing = {}
+        self.movie_map = {}
+        self.show_map = {}
+        self.movie_rating_key_map = {}
+        self.show_rating_key_map = {}
         self.run_again = []
 
     def get_all_collections(self):
@@ -663,6 +665,42 @@ class PlexAPI:
     def get_collection_name_and_items(self, collection, smart_label_collection):
         name = collection.title if isinstance(collection, Collections) else str(collection)
         return name, self.get_collection_items(collection, smart_label_collection)
+
+    def map_guids(self, config):
+        logger.info(f"Loading {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
+        logger.info("")
+        items = self.Plex.all()
+        logger.info(f"Mapping {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
+        logger.info("")
+        for i, item in enumerate(items, 1):
+            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:
+                id_type, main_id = config.Convert.get_id(item, self)
+                if main_id:
+                    if not isinstance(main_id, list):
+                        main_id = [main_id]
+                    if id_type == "movie":
+                        self.movie_rating_key_map[item.ratingKey] = main_id[0]
+                        for m in main_id:
+                            if m in self.movie_map:
+                                self.movie_map[m].append(item.ratingKey)
+                            else:
+                                self.movie_map[m] = [item.ratingKey]
+                    elif id_type == "show":
+                        self.show_rating_key_map[item.ratingKey] = main_id[0]
+                        for m in main_id:
+                            if m in self.show_map:
+                                self.show_map[m].append(item.ratingKey)
+                            else:
+                                self.show_map[m] = [item.ratingKey]
+        logger.info("")
+        logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if self.is_movie else 'Shows'}"))
+
+    def get_tmdb_from_map(self, item):
+        return self.movie_rating_key_map[item.ratingKey] if item.ratingKey in self.movie_rating_key_map else None
+
+    def get_tvdb_from_map(self, item):
+        return self.show_rating_key_map[item.ratingKey] if item.ratingKey in self.show_rating_key_map else None
 
     def search_item(self, data, year=None):
         kwargs = {}
