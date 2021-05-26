@@ -445,6 +445,12 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 builder.update_details()
 
+            if len(builder.item_details) > 0:
+                logger.info("")
+                util.separator(f"Updating Details of the Items in  {mapping_name} Collection", space=False, border=False)
+                logger.info("")
+                builder.update_item_details()
+
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
 
