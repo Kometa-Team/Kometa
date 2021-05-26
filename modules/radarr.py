@@ -67,6 +67,8 @@ class RadarrAPI:
 
     def add_tmdb(self, tmdb_ids, **options):
         logger.info("")
+        util.separator(f"Adding to Radarr", space=False, border=False)
+        logger.info("")
         logger.debug(f"TMDb IDs: {tmdb_ids}")
         tag_nums = []
         add_count = 0

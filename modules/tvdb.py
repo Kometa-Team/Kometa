@@ -163,6 +163,7 @@ class TVDbAPI:
             show_ids.extend(tvdb_ids)
         else:
             raise Failed(f"TVDb Error: Method {method} not supported")
+        logger.debug("")
         logger.debug(f"TMDb IDs Found: {movie_ids}")
         logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

@@ -157,7 +157,6 @@ class TraktAPI:
         return trakt_values
 
     def get_items(self, method, data, is_movie):
-        logger.debug(f"Data: {data}")
         pretty = self.aliases[method] if method in self.aliases else method
         media_type = "Movie" if is_movie else "Show"
         if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
@@ -181,6 +180,7 @@ class TraktAPI:
                 elif (isinstance(trakt_item, (Season, Episode))) and trakt_item.show.pk[1] not in show_ids:
                     show_ids.append(int(trakt_item.show.pk[1]))
             logger.debug(f"Trakt {media_type} Found: {trakt_items}")
+        logger.debug("")
         logger.debug(f"TMDb IDs Found: {movie_ids}")
         logger.debug(f"TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

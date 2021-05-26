@@ -1,4 +1,5 @@
 import logging, os
+from datetime import datetime
 from modules import util
 from modules.anidb import AniDBAPI
 from modules.anilist import AniListAPI
@@ -48,13 +49,20 @@ mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata t
 library_types = {"movie": "For Movie Libraries", "show": "For Show Libraries"}
 
 class Config:
-    def __init__(self, default_dir, config_path=None, libraries_to_run=None):
+    def __init__(self, default_dir, config_path=None, is_test=False, time_scheduled=None, requested_collections=None, requested_libraries=None, resume_from=None):
         logger.info("Locating config...")
         if config_path and os.path.exists(config_path):                     self.config_path = os.path.abspath(config_path)
         elif config_path and not os.path.exists(config_path):               raise Failed(f"Config Error: config not found at {os.path.abspath(config_path)}")
         elif os.path.exists(os.path.join(default_dir, "config.yml")):       self.config_path = os.path.abspath(os.path.join(default_dir, "config.yml"))
         else:                                                               raise Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
         logger.info(f"Using {self.config_path} as config")
+
+        self.test_mode = is_test
+        self.run_start_time = time_scheduled
+        self.run_hour = datetime.strptime(time_scheduled, "%H:%M").hour
+        self.requested_collections = util.get_list(requested_collections)
+        self.requested_libraries = util.get_list(requested_libraries)
+        self.resume_from = resume_from
 
         yaml.YAML().allow_duplicate_keys = True
         try:
@@ -312,20 +320,23 @@ class Config:
         self.libraries = []
         try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
         except Failed as e:             raise Failed(e)
-        requested_libraries = util.get_list(libraries_to_run) if libraries_to_run else None
+
         for library_name, lib in libs.items():
-            if requested_libraries and library_name not in requested_libraries:
+            if self.requested_libraries and library_name not in self.requested_libraries:
                 continue
             util.separator()
             params = {}
-            logger.info("")
+            params["mapping_name"] = str(library_name)
             if lib and "library_name" in lib and lib["library_name"]:
                 params["name"] = str(lib["library_name"])
-                logger.info(f"Connecting to {params['name']} ({library_name}) Library...")
+                display_name = f"{params['name']} ({params['mapping_name']})"
             else:
-                params["name"] = str(library_name)
-                logger.info(f"Connecting to {params['name']} Library...")
-            params["mapping_name"] = str(library_name)
+                params["name"] = params["mapping_name"]
+                display_name = params["mapping_name"]
+
+            util.separator(f"{display_name} Configuration")
+            logger.info("")
+            logger.info(f"Connecting to {display_name} Library...")
 
             params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
             if params["asset_directory"] is None:
@@ -436,15 +447,19 @@ class Config:
                 params["plex"]["empty_trash"] = check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False)
                 params["plex"]["optimize"] = check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
                 library = PlexAPI(params, self.TMDb, self.TVDb)
-                logger.info(f"{params['name']} Library Connection Successful")
+                logger.info("")
+                logger.info(f"{display_name} Library Connection Successful")
             except Failed as e:
                 util.print_multiline(e, error=True)
-                logger.info(f"{params['name']} Library Connection Failed")
+                logger.info(f"{display_name} Library Connection Failed")
                 continue
 
             if self.general["radarr"]["url"] or (lib and "radarr" in lib):
                 logger.info("")
-                logger.info(f"Connecting to {params['name']} library's Radarr...")
+                util.separator("Radarr Configuration", space=False, border=False)
+                logger.info("")
+                logger.info(f"Connecting to {display_name} library's Radarr...")
+                logger.info("")
                 radarr_params = {}
                 try:
                     radarr_params["url"] = check_for_attribute(lib, "url", parent="radarr", default=self.general["radarr"]["url"], req_default=True, save=False)
@@ -460,11 +475,15 @@ class Config:
                     library.Radarr = RadarrAPI(radarr_params)
                 except Failed as e:
                     util.print_multiline(e, error=True)
-                logger.info(f"{params['name']} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
+                    logger.info("")
+                logger.info(f"{display_name} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
             if self.general["sonarr"]["url"] or (lib and "sonarr" in lib):
                 logger.info("")
-                logger.info(f"Connecting to {params['name']} library's Sonarr...")
+                util.separator("Sonarr Configuration", space=False, border=False)
+                logger.info("")
+                logger.info(f"Connecting to {display_name} library's Sonarr...")
+                logger.info("")
                 sonarr_params = {}
                 try:
                     sonarr_params["url"] = check_for_attribute(lib, "url", parent="sonarr", default=self.general["sonarr"]["url"], req_default=True, save=False)
@@ -486,11 +505,15 @@ class Config:
                     library.Sonarr = SonarrAPI(sonarr_params, library.Plex.language)
                 except Failed as e:
                     util.print_multiline(e, error=True)
-                logger.info(f"{params['name']} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
+                    logger.info("")
+                logger.info(f"{display_name} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
             if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                 logger.info("")
-                logger.info(f"Connecting to {params['name']} library's Tautulli...")
+                util.separator("Tautulli Configuration", space=False, border=False)
+                logger.info("")
+                logger.info(f"Connecting to {display_name} library's Tautulli...")
+                logger.info("")
                 tautulli_params = {}
                 try:
                     tautulli_params["url"] = check_for_attribute(lib, "url", parent="tautulli", default=self.general["tautulli"]["url"], req_default=True, save=False)
@@ -498,7 +521,8 @@ class Config:
                     library.Tautulli = TautulliAPI(tautulli_params)
                 except Failed as e:
                     util.print_multiline(e, error=True)
-                logger.info(f"{params['name']} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
+                    logger.info("")
+                logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
             logger.info("")
             self.libraries.append(library)

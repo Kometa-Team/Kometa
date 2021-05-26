@@ -87,6 +87,8 @@ class SonarrAPI:
 
     def add_tvdb(self, tvdb_ids, **options):
         logger.info("")
+        util.separator(f"Adding to Sonarr", space=False, border=False)
+        logger.info("")
         logger.debug(f"TVDb IDs: {tvdb_ids}")
         tag_nums = []
         add_count = 0
