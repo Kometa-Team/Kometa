@@ -1365,17 +1365,23 @@ class CollectionBuilder:
                 elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
 
+    def fetch_item(self, item):
+        try:
+            current = self.library.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
+            if not isinstance(current, (Movie, Show)):
+                raise NotFound
+        except (BadRequest, NotFound):
+            raise Failed(f"Plex Error: Item {item} not found")
+
     def add_to_collection(self):
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
         total = len(self.rating_keys)
         max_length = len(str(total))
         for i, item in enumerate(self.rating_keys, 1):
             try:
-                current = self.library.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
-                if not isinstance(current, (Movie, Show)):
-                    raise NotFound
-            except (BadRequest, NotFound):
-                logger.error(f"Plex Error: Item {item} not found")
+                current = self.fetch_item(item)
+            except Failed as e:
+                logger.error(e)
                 continue
             if self.check_filters(current, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
                 logger.info(util.adjust_space(f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}"))
@@ -1578,6 +1584,31 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"{count_removed} {'Movie' if self.library.is_movie else 'Show'}{'s' if count_removed == 1 else ''} Removed")
 
+    def update_item_details(self):
+        add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
+        remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
+        sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
+
+        if self.build_collection:
+            items = self.library.get_collection_items(self.obj, self.smart_label_collection)
+        else:
+            items = []
+            for rk in self.rating_keys:
+                try:
+                    items.append(self.fetch_item(rk))
+                except Failed as e:
+                    logger.error(e)
+
+        for item in items:
+            self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+            advance_edits = {}
+            for method_name, method_data in self.item_details.items():
+                if method_name in plex.item_advance_keys:
+                    key, options = plex.item_advance_keys[method_name]
+                    if getattr(item, key) != options[method_data]:
+                        advance_edits[key] = options[method_data]
+            self.library.edit_item(item, item.title, "Movie" if self.library.is_movie else "Show", advance_edits, advanced=True)
+
     def update_details(self):
         if not self.obj and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
@@ -1651,20 +1682,6 @@ class CollectionBuilder:
         remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
         sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
         self.library.edit_tags("label", self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
-
-        if len(self.item_details) > 0:
-            add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
-            remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
-            sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
-            for item in self.library.get_collection_items(self.obj, self.smart_label_collection):
-                self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
-                advance_edits = {}
-                for method_name, method_data in self.item_details.items():
-                    if method_name in plex.item_advance_keys:
-                        key, options = plex.item_advance_keys[method_name]
-                        if getattr(item, key) != options[method_data]:
-                            advance_edits[key] = options[method_data]
-                self.library.edit_item(item, item.title, "Movie" if self.library.is_movie else "Show", advance_edits, advanced=True)
 
         if len(edits) > 0:
             logger.debug(edits)
