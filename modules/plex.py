@@ -324,7 +324,9 @@ class PlexAPI:
         self.Sonarr = None
         self.Tautulli = None
         self.name = params["name"]
-        self.mapping_name = util.validate_filename(params["mapping_name"])
+        self.mapping_name, output = util.validate_filename(params["mapping_name"])
+        if output:
+            logger.info(output)
         self.missing_path = os.path.join(params["default_dir"], f"{self.name}_missing.yml")
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
@@ -401,7 +403,7 @@ class PlexAPI:
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_guids(self, item):
         item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, inclueExtras=False,
+                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
                     includeFields='', includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
                     includeOnDeck=False, includePopularLeaves=False, includePreferences=False, includeRelated=False,
                     includeRelatedCount=0, includeReviews=False, includeStations=False)
@@ -456,8 +458,14 @@ class PlexAPI:
         sort_type = movie_smart_sorts[sort] if self.is_movie else show_smart_sorts[sort]
         return smart_type, f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
 
+    def test_smart_filter(self, uri_args):
+        logger.debug(f"Smart Collection Test: {uri_args}")
+        test_items = self.get_filter_items(uri_args)
+        if len(test_items) < 1:
+            raise Failed(f"Plex Error: No items for smart filter: {uri_args}")
+
     def create_smart_collection(self, title, smart_type, uri_args):
-        logger.debug(f"Smart Collection Created: {uri_args}")
+        self.test_smart_filter(uri_args)
         args = {
             "type": smart_type,
             "title": title,
@@ -476,6 +484,7 @@ class PlexAPI:
         return f"server://{self.PlexServer.machineIdentifier}/com.plexapp.plugins.library/library/sections/{self.Plex.key}/all{uri_args}"
 
     def update_smart_collection(self, collection, uri_args):
+        self.test_smart_filter(uri_args)
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
     def smart(self, collection):
@@ -521,7 +530,6 @@ class PlexAPI:
         return valid_collections
 
     def get_items(self, method, data):
-        logger.debug(f"Data: {data}")
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         media_type = "Movie" if self.is_movie else "Show"
         items = []
@@ -615,7 +623,7 @@ class PlexAPI:
                         break
                 if add_item:
                     items.append(item)
-            util.print_end(length, f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}")
+            logger.info(util.adjust_space(length, f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}"))
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
@@ -643,12 +651,15 @@ class PlexAPI:
             return self.get_labeled_items(collection.title if isinstance(collection, Collections) else str(collection))
         elif isinstance(collection, Collections):
             if self.smart(collection):
-                key = f"/library/sections/{self.Plex.key}/all{self.smart_filter(collection)}"
-                return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
+                return self.get_filter_items(self.smart_filter(collection))
             else:
                 return self.query(collection.items)
         else:
             return []
+
+    def get_filter_items(self, uri_args):
+        key = f"/library/sections/{self.Plex.key}/all{uri_args}"
+        return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
 
     def get_collection_name_and_items(self, collection, smart_label_collection):
         name = collection.title if isinstance(collection, Collections) else str(collection)
@@ -668,9 +679,38 @@ class PlexAPI:
                 if advanced and "languageOverride" in edits:
                     self.query(item.refresh)
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
+                return True
             except BadRequest:
                 util.print_stacktrace()
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
+        return False
+
+    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, key=None):
+        updated = False
+        if key is None:
+            key = f"{attr}s"
+        if add_tags or remove_tags or sync_tags:
+            item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
+            input_tags = []
+            if add_tags:
+                input_tags.extend(add_tags)
+            if sync_tags:
+                input_tags.extend(sync_tags)
+            if sync_tags or remove_tags:
+                remove_method = getattr(obj, f"remove{attr.capitalize()}")
+                for tag in item_tags:
+                    if (sync_tags and tag not in sync_tags) or (remove_tags and tag in remove_tags):
+                        updated = True
+                        self.query_data(remove_method, tag)
+                        logger.info(f"Detail: {attr.capitalize()} {tag} removed")
+            if input_tags:
+                add_method = getattr(obj, f"add{attr.capitalize()}")
+                for tag in input_tags:
+                    if tag not in item_tags:
+                        updated = True
+                        self.query_data(add_method, tag)
+                        logger.info(f"Detail: {attr.capitalize()} {tag} added")
+        return updated
 
     def update_item_from_assets(self, item, collection_mode=False, upload=True, dirs=None, name=None):
         if dirs is None:
