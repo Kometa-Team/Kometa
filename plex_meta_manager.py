@@ -25,7 +25,7 @@ parser.add_argument("-co", "--collection-only", "--collections-only", dest="coll
 parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
-parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying countdown", action="store_true", default=False)
+parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -105,7 +105,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.9.3-beta1                                                             "))
+    logger.info(util.centered("    Version: 1.9.3                                                                   "))
     if time_scheduled:              start_type = f"{time_scheduled} "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
