@@ -205,12 +205,11 @@ def update_libraries(config):
         logger.info("")
         util.separator("Run Again")
         logger.info("")
-        length = 0
         for x in range(1, config.general["run_again_delay"] + 1):
-            length = util.print_return(length, f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
+            util.print_return(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
             for y in range(60):
                 time.sleep(1)
-        util.print_end(length)
+        util.print_end()
         for library in config.libraries:
             if library.run_again:
                 col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, f"library.log")
@@ -248,15 +247,14 @@ def update_libraries(config):
 def map_guids(config, library):
     movie_map = {}
     show_map = {}
-    length = 0
     logger.info(f"Loading {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
     items = library.Plex.all()
     logger.info(f"Mapping {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
     for i, item in enumerate(items, 1):
-        length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
-        id_type, main_id = config.Convert.get_id(item, library, length)
+        util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+        id_type, main_id = config.Convert.get_id(item, library)
         if main_id:
             if not isinstance(main_id, list):
                 main_id = [main_id]
@@ -269,11 +267,10 @@ def map_guids(config, library):
                     if m in show_map:               show_map[m].append(item.ratingKey)
                     else:                           show_map[m] = [item.ratingKey]
     logger.info("")
-    logger.info(util.adjust_space(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}"))
+    logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}"))
     return movie_map, show_map
 
 def mass_metadata(config, library, movie_map, show_map):
-    length = 0
     logger.info("")
     util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
@@ -281,7 +278,7 @@ def mass_metadata(config, library, movie_map, show_map):
     sonarr_adds = []
     items = library.Plex.all()
     for i, item in enumerate(items, 1):
-        length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
+        util.print_return(f"Processing: {i}/{len(items)} {item.title}")
         tmdb_id = None
         tvdb_id = None
         imdb_id = None
@@ -316,9 +313,9 @@ def mass_metadata(config, library, movie_map, show_map):
                 try:
                     tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
                 except Failed as e:
-                    logger.info(util.adjust_space(length, str(e)))
+                    logger.info(util.adjust_space(str(e)))
             else:
-                logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
+                logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
 
         omdb_item = None
         if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
@@ -331,9 +328,9 @@ def mass_metadata(config, library, movie_map, show_map):
                     try:
                         omdb_item = config.OMDb.get_omdb(imdb_id)
                     except Failed as e:
-                        logger.info(util.adjust_space(length, str(e)))
+                        logger.info(util.adjust_space(str(e)))
                 else:
-                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
 
         if not tmdb_item and not omdb_item:
             continue
@@ -355,7 +352,7 @@ def mass_metadata(config, library, movie_map, show_map):
                     library.query_data(item.addGenre, genre)
                     display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
                 if len(display_str) > 0:
-                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Genres | {display_str}"))
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | Genres | {display_str}"))
             except Failed:
                 pass
         if library.mass_audience_rating_update or library.mass_critic_rating_update:
@@ -367,14 +364,14 @@ def mass_metadata(config, library, movie_map, show_map):
                 else:
                     raise Failed
                 if new_rating is None:
-                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No Rating Found"))
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
                 else:
                     if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
                         library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                        logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
                     if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
                         library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
-                        logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
             except Failed:
                 pass
 
@@ -497,7 +494,6 @@ try:
     if run or test or collections or libraries or resume:
         start(config_file, is_test=test, requested_collections=collections, requested_libraries=libraries, resume_from=resume)
     else:
-        time_length = 0
         for time_to_run in times_to_run:
             schedule.every().day.at(time_to_run).do(start, config_file, time_scheduled=time_to_run)
         while True:
@@ -517,7 +513,7 @@ try:
                 minutes = int((seconds % 3600) // 60)
                 time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                 time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                time_length = util.print_return(time_length, f"Current Time: {current} | {time_str} until the next run at {og_time_str} {times_to_run}")
+                util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} {times_to_run}")
             time.sleep(60)
 except KeyboardInterrupt:
     util.separator("Exiting Plex Meta Manager")
