@@ -612,9 +612,8 @@ class PlexAPI:
                 logger.info(col.title)
             collection_indexes = [c.index for c in good_collections]
             all_items = self.get_all()
-            length = 0
             for i, item in enumerate(all_items, 1):
-                length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
+                util.print_return(f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
                 self.query(item.reload)
                 for collection in item.collections:
@@ -623,7 +622,7 @@ class PlexAPI:
                         break
                 if add_item:
                     items.append(item)
-            logger.info(util.adjust_space(length, f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}"))
+            logger.info(util.adjust_space(f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}"))
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:

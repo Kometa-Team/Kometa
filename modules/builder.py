@@ -1369,7 +1369,6 @@ class CollectionBuilder:
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
         total = len(self.rating_keys)
         max_length = len(str(total))
-        length = 0
         for i, item in enumerate(self.rating_keys, 1):
             try:
                 current = self.library.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
@@ -1380,7 +1379,7 @@ class CollectionBuilder:
                 continue
             match = True
             if self.filters:
-                length = util.print_return(length, f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
+                util.print_return(f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
                 for filter_method, filter_data in self.filters:
                     modifier = filter_method[-4:]
                     method = filter_method[:-4] if modifier in [".not", ".lte", ".gte"] else filter_method
@@ -1474,9 +1473,9 @@ class CollectionBuilder:
                                 or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             match = False
                             break
-                length = util.print_return(length, f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
+                util.print_return(f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
             if match:
-                logger.info(util.adjust_space(length, f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}"))
+                logger.info(util.adjust_space(f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}"))
                 if current in collection_items:
                     self.plex_map[current.ratingKey] = None
                 elif self.smart_label_collection:
@@ -1486,7 +1485,7 @@ class CollectionBuilder:
             elif self.details["show_filtered"] is True:
                 logger.info(f"{name} Collection | X | {current.title}")
         media_type = f"{'Movie' if self.library.is_movie else 'Show'}{'s' if total > 1 else ''}"
-        util.print_end(length)
+        util.print_end()
         logger.info("")
         logger.info(f"{total} {media_type} Processed")
 

@@ -248,7 +248,7 @@ class Convert:
             self.config.Cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
         return tvdb_id
 
-    def get_id(self, item, library, length):
+    def get_id(self, item, library):
         expired = None
         if self.config.Cache:
             cache_id, media_type, expired = self.config.Cache.query_guid_map(item.guid)
@@ -344,7 +344,7 @@ class Convert:
             def update_cache(cache_ids, id_type, guid_type):
                 if self.config.Cache:
                     cache_ids = util.compile_list(cache_ids)
-                    logger.info(util.adjust_space(length, f" Cache  |  {'^' if expired else '+'}  | {item.guid:<46} | {id_type} ID: {cache_ids:<6} | {item.title}"))
+                    logger.info(util.adjust_space(f" Cache  |  {'^' if expired else '+'}  | {item.guid:<46} | {id_type} ID: {cache_ids:<6} | {item.title}"))
                     self.config.Cache.update_guid_map(guid_type, item.guid, cache_ids, expired)
 
             if tmdb_id and library.is_movie:
@@ -359,8 +359,8 @@ class Convert:
             else:
                 raise Failed(f"No ID to convert")
         except Failed as e:
-            logger.info(util.adjust_space(length, f"Mapping Error | {item.guid:<46} | {e} for {item.title}"))
+            logger.info(util.adjust_space(f"Mapping Error | {item.guid:<46} | {e} for {item.title}"))
         except BadRequest:
             util.print_stacktrace()
-            logger.info(util.adjust_space(length, f"Mapping Error | {item.guid:<46} | Bad Request for {item.title}"))
+            logger.info(util.adjust_space(f"Mapping Error | {item.guid:<46} | Bad Request for {item.title}"))
         return None, None
