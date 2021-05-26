@@ -1377,104 +1377,7 @@ class CollectionBuilder:
             except (BadRequest, NotFound):
                 logger.error(f"Plex Error: Item {item} not found")
                 continue
-            match = True
-            if self.filters:
-                util.print_return(f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
-                for filter_method, filter_data in self.filters:
-                    modifier = filter_method[-4:]
-                    method = filter_method[:-4] if modifier in [".not", ".lte", ".gte"] else filter_method
-                    method_name = filter_translation[method] if method in filter_translation else method
-                    if method_name == "max_age":
-                        threshold_date = datetime.now() - timedelta(days=filter_data)
-                        if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
-                            match = False
-                            break
-                    elif method_name == "original_language":
-                        movie = None
-                        for key, value in self.library.movie_map.items():
-                            if current.ratingKey in value:
-                                try:
-                                    movie = self.config.TMDb.get_movie(key)
-                                    break
-                                except Failed:
-                                    pass
-                        if movie is None:
-                            logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
-                            continue
-                        if (modifier == ".not" and movie.original_language in filter_data) \
-                                or (modifier != ".not" and movie.original_language not in filter_data):
-                            match = False
-                            break
-                    elif method_name == "audio_track_title":
-                        jailbreak = False
-                        for media in current.media:
-                            for part in media.parts:
-                                for audio in part.audioStreams():
-                                    for check_title in filter_data:
-                                        title = audio.title if audio.title else ""
-                                        if check_title.lower() in title.lower():
-                                            jailbreak = True
-                                            break
-                                    if jailbreak: break
-                                if jailbreak: break
-                            if jailbreak: break
-                        if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
-                            match = False
-                            break
-                    elif method_name == "filepath":
-                        jailbreak = False
-                        for location in current.locations:
-                            for check_text in filter_data:
-                                if check_text.lower() in location.lower():
-                                    jailbreak = True
-                                    break
-                            if jailbreak: break
-                        if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
-                            match = False
-                            break
-                    elif modifier in [".gte", ".lte"]:
-                        if method_name == "vote_count":
-                            tmdb_item = None
-                            for key, value in self.library.movie_map.items():
-                                if current.ratingKey in value:
-                                    try:
-                                        tmdb_item = self.config.TMDb.get_movie(key) if self.library.is_movie else self.config.TMDb.get_show(key)
-                                        break
-                                    except Failed:
-                                        pass
-                            if tmdb_item is None:
-                                logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
-                                continue
-                            attr = tmdb_item.vote_count
-                        else:
-                            attr = getattr(current, method_name) / 60000 if method_name == "duration" else getattr(current, method_name)
-                        if attr is None or (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
-                            match = False
-                            break
-                    else:
-                        attrs = []
-                        if method_name in ["video_resolution", "audio_language", "subtitle_language"]:
-                            for media in current.media:
-                                if method_name == "video_resolution":
-                                    attrs.extend([media.videoResolution])
-                                for part in media.parts:
-                                    if method_name == "audio_language":
-                                        attrs.extend([a.language for a in part.audioStreams()])
-                                    if method_name == "subtitle_language":
-                                        attrs.extend([s.language for s in part.subtitleStreams()])
-                        elif method_name in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:
-                            attrs = [str(getattr(current, method_name))]
-                        elif method_name in ["actors", "countries", "directors", "genres", "writers", "collections"]:
-                            attrs = [getattr(x, "tag") for x in getattr(current, method_name)]
-                        else:
-                            raise Failed(f"Filter Error: filter: {method_name} not supported")
-
-                        if (not list(set(filter_data) & set(attrs)) and modifier != ".not")\
-                                or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
-                            match = False
-                            break
-                util.print_return(f"Filtering {(' ' * (max_length - len(str(i)))) + str(i)}/{total} {current.title}")
-            if match:
+            if self.check_filters(current, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
                 logger.info(util.adjust_space(f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}"))
                 if current in collection_items:
                     self.plex_map[current.ratingKey] = None
@@ -1488,6 +1391,98 @@ class CollectionBuilder:
         util.print_end()
         logger.info("")
         logger.info(f"{total} {media_type} Processed")
+
+    def check_filters(self, current, display):
+        if self.filters:
+            util.print_return(f"Filtering {display} {current.title}")
+            for filter_method, filter_data in self.filters:
+                modifier = filter_method[-4:]
+                method = filter_method[:-4] if modifier in [".not", ".lte", ".gte"] else filter_method
+                method_name = filter_translation[method] if method in filter_translation else method
+                if method_name == "max_age":
+                    threshold_date = datetime.now() - timedelta(days=filter_data)
+                    if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
+                        return False
+                elif method_name == "original_language":
+                    movie = None
+                    for key, value in self.library.movie_map.items():
+                        if current.ratingKey in value:
+                            try:
+                                movie = self.config.TMDb.get_movie(key)
+                                break
+                            except Failed:
+                                pass
+                    if movie is None:
+                        logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
+                        continue
+                    if (modifier == ".not" and movie.original_language in filter_data) or (modifier != ".not" and movie.original_language not in filter_data):
+                        return False
+                elif method_name == "audio_track_title":
+                    jailbreak = False
+                    for media in current.media:
+                        for part in media.parts:
+                            for audio in part.audioStreams():
+                                for check_title in filter_data:
+                                    title = audio.title if audio.title else ""
+                                    if check_title.lower() in title.lower():
+                                        jailbreak = True
+                                        break
+                                if jailbreak: break
+                            if jailbreak: break
+                        if jailbreak: break
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
+                        return False
+                elif method_name == "filepath":
+                    jailbreak = False
+                    for location in current.locations:
+                        for check_text in filter_data:
+                            if check_text.lower() in location.lower():
+                                jailbreak = True
+                                break
+                        if jailbreak: break
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
+                        return False
+                elif modifier in [".gte", ".lte"]:
+                    if method_name == "vote_count":
+                        tmdb_item = None
+                        for key, value in self.library.movie_map.items():
+                            if current.ratingKey in value:
+                                try:
+                                    tmdb_item = self.config.TMDb.get_movie(
+                                        key) if self.library.is_movie else self.config.TMDb.get_show(key)
+                                    break
+                                except Failed:
+                                    pass
+                        if tmdb_item is None:
+                            logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
+                            continue
+                        attr = tmdb_item.vote_count
+                    else:
+                        attr = getattr(current, method_name) / 60000 if method_name == "duration" else getattr(current, method_name)
+                    if attr is None or (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
+                        return False
+                else:
+                    attrs = []
+                    if method_name in ["video_resolution", "audio_language", "subtitle_language"]:
+                        for media in current.media:
+                            if method_name == "video_resolution":
+                                attrs.extend([media.videoResolution])
+                            for part in media.parts:
+                                if method_name == "audio_language":
+                                    attrs.extend([a.language for a in part.audioStreams()])
+                                if method_name == "subtitle_language":
+                                    attrs.extend([s.language for s in part.subtitleStreams()])
+                    elif method_name in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:
+                        attrs = [str(getattr(current, method_name))]
+                    elif method_name in ["actors", "countries", "directors", "genres", "writers", "collections"]:
+                        attrs = [getattr(x, "tag") for x in getattr(current, method_name)]
+                    else:
+                        raise Failed(f"Filter Error: filter: {method_name} not supported")
+
+                    if (not list(set(filter_data) & set(attrs)) and modifier != ".not") or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+                        return False
+            util.print_return(f"Filtering {display} {current.title}")
+        return True
 
     def run_missing(self):
         arr_filters = []
