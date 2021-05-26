@@ -144,9 +144,9 @@ def update_libraries(config):
         logger.info("")
         util.separator(f"Mapping {library.name} Library", space=False, border=False)
         logger.info("")
-        movie_map, show_map = map_guids(config, library)
+        library.map_guids(config)
         if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
-            mass_metadata(config, library, movie_map, show_map)
+            mass_metadata(config, library)
         for metadata in library.metadata_files:
             logger.info("")
             util.separator(f"Running Metadata File\n{metadata.path}")
@@ -164,7 +164,7 @@ def update_libraries(config):
                 logger.info("")
                 util.separator(f"{'Test ' if config.test_mode else ''}Collections")
                 logger.removeHandler(library_handler)
-                run_collection(config, library, metadata, collections_to_run, movie_map, show_map)
+                run_collection(config, library, metadata, collections_to_run)
                 logger.addHandler(library_handler)
 
         if not config.test_mode and not config.requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
@@ -221,13 +221,13 @@ def update_libraries(config):
                 logger.info("")
                 util.separator(f"{library.name} Library Run Again")
                 logger.info("")
-                movie_map, show_map = map_guids(config, library)
+                library.map_guids(config)
                 for builder in library.run_again:
                     logger.info("")
                     util.separator(f"{builder.name} Collection")
                     logger.info("")
                     try:
-                        builder.run_collections_again(movie_map, show_map)
+                        builder.run_collections_again()
                     except Failed as e:
                         util.print_stacktrace()
                         util.print_multiline(e, error=True)
@@ -244,33 +244,7 @@ def update_libraries(config):
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
-def map_guids(config, library):
-    movie_map = {}
-    show_map = {}
-    logger.info(f"Loading {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
-    logger.info("")
-    items = library.Plex.all()
-    logger.info(f"Mapping {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
-    logger.info("")
-    for i, item in enumerate(items, 1):
-        util.print_return(f"Processing: {i}/{len(items)} {item.title}")
-        id_type, main_id = config.Convert.get_id(item, library)
-        if main_id:
-            if not isinstance(main_id, list):
-                main_id = [main_id]
-            if id_type == "movie":
-                for m in main_id:
-                    if m in movie_map:              movie_map[m].append(item.ratingKey)
-                    else:                           movie_map[m] = [item.ratingKey]
-            elif id_type == "show":
-                for m in main_id:
-                    if m in show_map:               show_map[m].append(item.ratingKey)
-                    else:                           show_map[m] = [item.ratingKey]
-    logger.info("")
-    logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}"))
-    return movie_map, show_map
-
-def mass_metadata(config, library, movie_map, show_map):
+def mass_metadata(config, library):
     logger.info("")
     util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
@@ -290,15 +264,9 @@ def mass_metadata(config, library, movie_map, show_map):
                 else:
                     tvdb_id = t_id
         if not tmdb_id and not tvdb_id:
-            for tmdb, rating_keys in movie_map.items():
-                if item.ratingKey in rating_keys:
-                    tmdb_id = tmdb
-                    break
+            tmdb_id = library.get_tmdb_from_map(item)
         if not tmdb_id and not tvdb_id and library.is_show:
-            for tvdb, rating_keys in show_map.items():
-                if item.ratingKey in rating_keys:
-                    tvdb_id = tvdb
-                    break
+            tmdb_id = library.get_tvdb_from_map(item)
 
         if library.Radarr and library.radarr_add_all and tmdb_id:
             radarr_adds.append(tmdb_id)
@@ -387,7 +355,7 @@ def mass_metadata(config, library, movie_map, show_map):
         except Failed as e:
             logger.error(e)
 
-def run_collection(config, library, metadata, requested_collections, movie_map, show_map):
+def run_collection(config, library, metadata, requested_collections):
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
@@ -456,13 +424,13 @@ def run_collection(config, library, metadata, requested_collections, movie_map, 
                     for filter_key, filter_value in builder.filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
-                builder.collect_rating_keys(movie_map, show_map)
+                builder.collect_rating_keys()
 
                 if len(builder.rating_keys) > 0 and builder.build_collection:
                     logger.info("")
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
-                    builder.add_to_collection(movie_map)
+                    builder.add_to_collection()
                 if len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0:
                     logger.info("")
                     util.separator(f"Missing from Library", space=False, border=False)
