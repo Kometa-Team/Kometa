@@ -28,7 +28,7 @@ method_alias = {
     "writers": "writer",
     "years": "year"
 }
-filter_alias = {
+filter_translation = {
     "actor": "actors",
     "audience_rating": "audienceRating",
     "collection": "collections",
@@ -1384,7 +1384,7 @@ class CollectionBuilder:
                 for filter_method, filter_data in self.filters:
                     modifier = filter_method[-4:]
                     method = filter_method[:-4] if modifier in [".not", ".lte", ".gte"] else filter_method
-                    method_name = filter_alias[method] if method in filter_alias else method
+                    method_name = filter_translation[method] if method in filter_translation else method
                     if method_name == "max_age":
                         threshold_date = datetime.now() - timedelta(days=filter_data)
                         if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
