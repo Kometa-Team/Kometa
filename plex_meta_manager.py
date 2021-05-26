@@ -164,7 +164,7 @@ def update_libraries(config):
                 logger.info("")
                 util.separator(f"{'Test ' if config.test_mode else ''}Collections")
                 logger.removeHandler(library_handler)
-                run_collection(config, library, metadata, movie_map, show_map)
+                run_collection(config, library, metadata, collections_to_run, movie_map, show_map)
                 logger.addHandler(library_handler)
 
         if not config.test_mode and not config.requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
@@ -390,9 +390,9 @@ def mass_metadata(config, library, movie_map, show_map):
         except Failed as e:
             logger.error(e)
 
-def run_collection(config, library, metadata, movie_map, show_map):
+def run_collection(config, library, metadata, requested_collections, movie_map, show_map):
     logger.info("")
-    for mapping_name, collection_attrs in config.requested_collections.items():
+    for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
         if config.test_mode and ("test" not in collection_attrs or collection_attrs["test"] is not True):
             no_template_test = True
