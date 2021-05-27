@@ -551,7 +551,7 @@ class CollectionBuilder:
                 for smart_key, smart_data in filter_dict.items():
                     smart, smart_mod, smart_final = self._split(smart_key)
 
-                    def build_url_arg(arg, mod=None, arg_s=None, mod_s=None, param_s=None):
+                    def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
                         arg_key = plex.search_translation[smart] if smart in plex.search_translation else smart
                         if mod is None:
                             mod = plex.modifier_translation[smart_mod] if smart_mod in plex.modifier_translation else smart_mod
@@ -561,17 +561,16 @@ class CollectionBuilder:
                             mod_s = "does not contain" if smart_mod == ".not" else "contains"
                         elif mod_s is None:
                             mod_s = plex.mod_displays[smart_mod]
-                        if param_s is None:
-                            param_s = smart.title().replace('_', ' ')
+                        param_s = plex.search_display[smart] if smart in plex.search_display else smart.title().replace('_', ' ')
                         display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                         return f"{arg_key}{mod}={arg}&", display_line
 
-                    if smart_final in plex.movie_only_smart_searches and self.library.is_show:
-                        raise Failed(f"Collection Error: {smart_final} smart filter attribute only works for movie libraries")
-                    elif smart_final in plex.show_only_smart_searches and self.library.is_movie:
-                        raise Failed(f"Collection Error: {smart_final} smart filter attribute only works for show libraries")
-                    elif smart_final not in plex.smart_searches:
+                    if smart_final not in plex.searches and smart_final not in ["any", "all"] and smart_mod != ".and":
                         raise Failed(f"Collection Error: {smart_final} is not a valid smart filter attribute")
+                    elif smart_final in plex.movie_only_searches and self.library.is_show:
+                        raise Failed(f"Collection Error: {smart_final} smart filter attribute only works for movie libraries")
+                    elif smart_final in plex.show_only_searches and self.library.is_movie:
+                        raise Failed(f"Collection Error: {smart_final} smart filter attribute only works for show libraries")
                     elif smart_data is None:
                         raise Failed(f"Collection Error: {smart_final} smart filter attribute is blank")
                     elif smart in ["all", "any"]:
@@ -589,16 +588,16 @@ class CollectionBuilder:
                         validation = self.validate_attribute(smart, smart_mod, smart_final, smart_data, validate, smart=True)
                         if validation is None:
                             continue
-                        elif smart in ["added", "episode_added", "release", "episode_air_date"] and smart_mod in ["", ".not"]:
+                        elif smart in plex.date_searches and smart_mod in ["", ".not"]:
                             last_text = "is not in the last" if smart_mod == ".not" else "is in the last"
                             last_mod = "%3E%3E" if smart_mod == "" else "%3C%3C"
                             results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
-                        elif smart in ["duration"] and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
+                        elif smart == "duration" and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
                             results, display_add = build_url_arg(validation * 60000)
-                        elif smart == "hdr":
-                            hdr_mod = "" if validation else "!"
-                            hdr_arg = "true" if validation else "false"
-                            results, display_add = build_url_arg(1, mod=hdr_mod, arg_s=hdr_arg, mod_s="is", param_s="HDR")
+                        elif smart in plex.boolean_searches:
+                            bool_mod = "" if validation else "!"
+                            bool_arg = "true" if validation else "false"
+                            results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
                         elif (smart in ["title", "episode_title", "studio", "decade", "year", "episode_year"] or smart in plex.tags) and smart_mod in ["", ".not", ".begins", ".ends"]:
                             results = ""
                             display_add = ""
@@ -730,21 +729,21 @@ class CollectionBuilder:
                 elif method_name == "sync_mode":
                     if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
                     else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
-                elif method_name in ["label", "label.remove", "label.sync"]:
+                elif method_name == "label":
                     if "label" in self.data and "label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use label and label.sync together")
                     if "label.remove" in self.data and "label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use label.remove and label.sync together")
-                    if method_name == "label" and "label_sync_mode" in self.data and self.data["label_sync_mode"] == "sync":
+                    if method_final == "label" and "label_sync_mode" in self.data and self.data["label_sync_mode"] == "sync":
                         self.details["label.sync"] = util.get_list(method_data)
                     else:
-                        self.details[method_name] = util.get_list(method_data)
-                elif method_name in ["item_label", "item_label.remove", "item_label.sync"]:
+                        self.details[method_final] = util.get_list(method_data)
+                elif method_name == "item_label":
                     if "item_label" in self.data and "item_label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
                     if "item_label.remove" in self.data and "item_label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
-                    self.item_details[method_name] = util.get_list(method_data)
+                    self.item_details[method_final] = util.get_list(method_data)
                 elif method_name in plex.item_advance_keys:
                     key, options = plex.item_advance_keys[method_name]
                     if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
@@ -799,31 +798,8 @@ class CollectionBuilder:
                     self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
                 elif method_name == "sonarr_tag":
                     self.sonarr_options["tag"] = util.get_list(method_data)
-                elif method_name in ["title", "title.and", "title.not", "title.begins", "studio.ends", "studio", "studio.and", "studio.not", "studio.begins", "studio.ends"]:
-                    self.methods.append(("plex_search", [{method_name: util.get_list(method_data, split=False)}]))
-                elif method_name in ["year.gt", "year.gte", "year.lt", "year.lte"]:
-                    self.methods.append(("plex_search", [{method_name: util.check_year(method_data, self.current_year, method_name)}]))
-                elif method_name in ["added.before", "added.after", "release.before", "release.after"]:
-                    self.methods.append(("plex_search", [{method_name: util.check_date(method_data, method_name, return_string=True, plex_date=True)}]))
-                elif method_name in ["added", "added.not", "release", "release.not", "duration.gt", "duration.gte", "duration.lt", "duration.lte"]:
-                    self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, minimum=1)}]))
-                elif method_name in ["user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte", "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte", "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte"]:
-                    self.methods.append(("plex_search", [{method_name: util.check_number(method_data, method_name, number_type="float", minimum=0, maximum=10)}]))
-                elif method_name in ["decade", "year", "year.not"]:
-                    self.methods.append(("plex_search", [{method_name: util.get_year_list(method_data, self.current_year, method_name)}]))
-                elif method_name in plex.searches:
-                    if method_name in plex.tmdb_searches:
-                        final_values = []
-                        for value in util.get_list(method_data):
-                            if value.lower() == "tmdb" and "tmdb_person" in self.details:
-                                for name in self.details["tmdb_person"]:
-                                    final_values.append(name)
-                            else:
-                                final_values.append(value)
-                    else:
-                        final_values = method_data
-                    search = self.library.validate_search_list(final_values, os.path.splitext(method_name)[0])
-                    self.methods.append(("plex_search", [{method_name: search}]))
+                elif method_final in plex.searches:
+                    self.methods.append(("plex_search", [{method_name: self.validate_attribute(method_name, method_mod, method_final, method_data, True)}]))
                 elif method_name == "plex_all":
                     self.methods.append((method_name, [""]))
                 elif method_name == "anidb_popular":
@@ -1334,7 +1310,7 @@ class CollectionBuilder:
             return util.check_number(data, final, number_type="float", minimum=0, maximum=10)
         elif attribute in ["decade", "year", "episode_year"] and modifier in ["", ".not"]:
             return smart_pair(util.get_year_list(data, self.current_year, final))
-        elif attribute == "hdr":
+        elif attribute in plex.boolean_searches:
             return util.get_bool(attribute, data)
         else:
             raise Failed(f"Collection Error: modifier: {modifier} not supported with the {attribute} attribute")
@@ -1358,6 +1334,7 @@ class CollectionBuilder:
             current = self.library.fetchItem(item.ratingKey if isinstance(item, (Movie, Show)) else int(item))
             if not isinstance(current, (Movie, Show)):
                 raise NotFound
+            return current
         except (BadRequest, NotFound):
             raise Failed(f"Plex Error: Item {item} not found")
 
