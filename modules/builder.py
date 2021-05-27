@@ -647,8 +647,11 @@ class CollectionBuilder:
                 raise Failed(f"Collection Error: {base} must be a dictionary: {smart_filter[smart_methods[base]]}")
             built_filter, filter_text = _filter(smart_filter[smart_methods[base]], validate, is_all=base_all)
             self.smart_filter_details = f"{filter_details}Filter:{filter_text}"
-            final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
-            self.smart_url = f"?type={self.smart_type_key}&{f'limit={limit}&' if limit else ''}sort={smart_sorts[smart_sort]}&{final_filter}"
+            if len(built_filter) > 0:
+                final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
+                self.smart_url = f"?type={self.smart_type_key}&{f'limit={limit}&' if limit else ''}sort={smart_sorts[smart_sort]}&{final_filter}"
+            else:
+                raise Failed("Collection Error: No Filter Created")
 
         def cant_interact(attr1, attr2, fail=False):
             if getattr(self, attr1) and getattr(self, attr2):
