@@ -1,5 +1,5 @@
 import glob, logging, os, requests
-from modules import util
+from modules import builder, util
 from modules.meta import Metadata
 from modules.util import Failed
 import plexapi
@@ -19,14 +19,14 @@ search_translation = {
     "content_rating": "contentRating",
     "subtitle_language": "subtitleLanguage",
     "added": "addedAt",
-    "originally_available": "originallyAvailableAt",
+    "release": "originallyAvailableAt",
     "audience_rating": "audienceRating",
     "critic_rating": "rating",
     "user_rating": "userRating",
     "plays": "viewCount",
     "episode_title": "episode.title",
     "episode_added": "episode.addedAt",
-    "episode_originally_available": "episode.originallyAvailableAt",
+    "episode_air_date": "episode.originallyAvailableAt",
     "episode_year": "episode.year",
     "episode_user_rating": "episode.userRating",
     "episode_plays": "episode.viewCount"
@@ -91,26 +91,41 @@ searches = [
     "producer", "producer.and", "producer.not",
     "subtitle_language", "subtitle_language.and", "subtitle_language.not",
     "writer", "writer.and", "writer.not",
-    "decade", "resolution",
+    "decade", "resolution", "hdr",
     "added", "added.not", "added.before", "added.after",
-    "originally_available", "originally_available.not",
-    "originally_available.before", "originally_available.after",
+    "release", "release.not",
+    "release.before", "release.after",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte",
+    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
     "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
     "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
-    "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte"
+    "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte",
+    "episode_title", "episode_title.and", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
+    "episode_air_date", "episode_air_date.not",
+    "episode_air_date.before", "episode_air_date.after",
+    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
+    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
+    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
 movie_only_searches = [
-    "audio_language", "audio_language.and", "audio_language.not",
     "country", "country.and", "country.not",
-    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
+    "director", "director.and", "director.not",
+    "producer", "producer.and", "producer.not",
+    "writer", "writer.and", "writer.not",
     "decade", "resolution",
-    "originally_available.before", "originally_available.after",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
     "network", "network.and", "network.not",
+    "episode_title", "episode_title.and", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
+    "episode_air_date", "episode_air_date.not",
+    "episode_air_date.before", "episode_air_date.after",
+    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
+    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
+    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
 tmdb_searches = [
     "actor", "actor.and", "actor.not",
@@ -122,6 +137,7 @@ sorts = {
     None: None,
     "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
     "originally_available.asc": "originallyAvailableAt:asc", "originally_available.desc": "originallyAvailableAt:desc",
+    "release.asc": "originallyAvailableAt:asc", "release.desc": "originallyAvailableAt:desc",
     "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
     "audience_rating.asc": "audienceRating:asc", "audience_rating.desc": "audienceRating:desc",
     "duration.asc": "duration:asc", "duration.desc": "duration:desc",
@@ -185,8 +201,8 @@ smart_searches = [
     "writer", "writer.not",
     "decade", "resolution", "hdr",
     "added", "added.not", "added.before", "added.after",
-    "originally_available", "originally_available.not",
-    "originally_available.before", "originally_available.after",
+    "release", "release.not",
+    "release.before", "release.after",
     "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte",
     "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
@@ -195,8 +211,8 @@ smart_searches = [
     "year", "year.not", "year.gt", "year.gte", "year.lt","year.lte",
     "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
-    "episode_originally_available", "episode_originally_available.not",
-    "episode_originally_available.before", "episode_originally_available.after",
+    "episode_air_date", "episode_air_date.not",
+    "episode_air_date.before", "episode_air_date.after",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt","episode_year.lte",
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt","episode_user_rating.lte",
     "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte"
@@ -207,16 +223,15 @@ movie_only_smart_searches = [
     "producer", "producer.not",
     "writer", "writer.not",
     "decade",
-    "originally_available", "originally_available.not",
-    "originally_available.before", "originally_available.after",
     "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_smart_searches = [
+    "network", "network.not",
     "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
-    "episode_originally_available", "episode_originally_available.not",
-    "episode_originally_available.before", "episode_originally_available.after",
+    "episode_air_date", "episode_air_date.not",
+    "episode_air_date.before", "episode_air_date.after",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt","episode_year.lte",
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt","episode_user_rating.lte",
     "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte"
@@ -225,6 +240,7 @@ movie_smart_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
     "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
     "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
@@ -238,6 +254,7 @@ show_smart_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
     "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
     "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
@@ -259,6 +276,7 @@ episode_smart_sorts = {
     "show.desc": "show.titleSort%3Adesc%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
     "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
     "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
     "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
@@ -551,9 +569,9 @@ class PlexAPI:
                 else:
                     search, modifier = os.path.splitext(str(search_method).lower())
                     final_search = search_translation[search] if search in search_translation else search
-                    if search in ["added", "originally_available"] and modifier == "":
+                    if search in ["added", "release", "episode_air_date"] and modifier == "":
                         final_mod = ">>"
-                    elif search in ["added", "originally_available"] and modifier == ".not":
+                    elif search in ["added", "release", "episode_air_date"] and modifier == ".not":
                         final_mod = "<<"
                     elif search in ["critic_rating", "audience_rating"] and modifier == ".gt":
                         final_mod = "__gt"
@@ -565,12 +583,12 @@ class PlexAPI:
 
                     if search == "duration":
                         search_terms[final_method] = search_data * 60000
-                    elif search in ["added", "originally_available"] and modifier in ["", ".not"]:
+                    elif search in ["added", "release", "episode_air_date"] and modifier in ["", ".not"]:
                         search_terms[final_method] = f"{search_data}d"
                     else:
                         search_terms[final_method] = search_data
 
-                    if search in ["added", "originally_available"] or modifier in [".gt", ".gte", ".lt", ".lte", ".before", ".after"]:
+                    if search in ["added", "release", "episode_air_date", "hdr"] or modifier in [".gt", ".gte", ".lt", ".lte", ".before", ".after"]:
                         ors = f"{search_method}({search_data}"
                     else:
                         ors = ""
@@ -722,10 +740,9 @@ class PlexAPI:
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
         return False
 
-    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, key=None):
+    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
         updated = False
-        if key is None:
-            key = f"{attr}s"
+        key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
             item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
             input_tags = []
