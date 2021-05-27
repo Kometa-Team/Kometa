@@ -257,7 +257,7 @@ def mass_metadata(config, library):
         tvdb_id = None
         imdb_id = None
         if config.Cache:
-            t_id, guid_media_type, _ = config.Cache.config.Cache.query_guid_map(item.guid)
+            t_id, guid_media_type, _ = config.Cache.query_guid_map(item.guid)
             if t_id:
                 if "movie" in guid_media_type:
                     tmdb_id = t_id
