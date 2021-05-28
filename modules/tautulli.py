@@ -10,15 +10,15 @@ builders = ["tautulli_popular", "tautulli_watched"]
 
 class TautulliAPI:
     def __init__(self, params):
+        self.url = params["url"]
+        self.apikey = params["apikey"]
         try:
-            response = self._request(f"{params['url']}/api/v2?apikey={params['apikey']}&cmd=get_library_names")
+            response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_library_names")
         except Exception:
             util.print_stacktrace()
             raise Failed("Tautulli Error: Invalid url")
         if response["response"]["result"] != "success":
             raise Failed(f"Tautulli Error: {response['response']['message']}")
-        self.url = params["url"]
-        self.apikey = params["apikey"]
 
     def get_items(self, library, params):
         query_size = int(params["list_size"]) + int(params["list_buffer"])
