@@ -726,9 +726,6 @@ class CollectionBuilder:
                 elif method_name == "file_background":
                     if os.path.exists(method_data):                             self.backgrounds[method_name] = os.path.abspath(method_data)
                     else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
-                elif method_name == "sync_mode":
-                    if str(method_data).lower() in ["append", "sync"]:          self.details[method_name] = method_data.lower()
-                    else:                                                       raise Failed("Collection Error: sync_mode attribute must be either 'append' or 'sync'")
                 elif method_name == "label":
                     if "label" in self.data and "label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use label and label.sync together")
