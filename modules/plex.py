@@ -129,17 +129,14 @@ show_only_searches = [
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
-tmdb_searches = [
-    "actor", "actor.and", "actor.not",
-    "director", "director.and", "director.not",
-    "producer", "producer.and", "producer.not",
-    "writer", "writer.and", "writer.not"
-]
-boolean_searches = [
+number_attributes = ["plays", "episode_plays", "added", "episode_added", "release", "episode_air_date", "duration", "tmdb_vote_count"]
+float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
+boolean_attributes = [
     "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
 ]
-date_searches = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"]
+tmdb_attributes = ["actor", "director", "producer", "writer"]
+date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"]
 search_display = {
     "added": "Date Added",
     "release": "Release Date",
@@ -530,9 +527,9 @@ class PlexAPI:
                 else:
                     search, modifier = os.path.splitext(str(search_method).lower())
                     final_search = search_translation[search] if search in search_translation else search
-                    if search in date_searches and modifier == "":
+                    if search in date_attributes and modifier == "":
                         final_mod = ">>"
-                    elif search in date_searches and modifier == ".not":
+                    elif search in date_attributes and modifier == ".not":
                         final_mod = "<<"
                     elif search in ["critic_rating", "audience_rating"] and modifier == ".gt":
                         final_mod = "__gt"
@@ -544,7 +541,7 @@ class PlexAPI:
 
                     if search == "duration":
                         search_terms[final_method] = search_data * 60000
-                    elif search in date_searches and modifier in ["", ".not"]:
+                    elif search in date_attributes and modifier in ["", ".not"]:
                         search_terms[final_method] = f"{search_data}d"
                     else:
                         search_terms[final_method] = search_data
