@@ -25,11 +25,12 @@ method_alias = {
     "labels": "label",
     "rating": "critic_rating",
     "show_user_rating": "user_rating",
+    "video_resolution": "resolution",
     "play": "plays", "show_plays": "plays", "show_play": "plays", "episode_play": "episode_plays",
     "originally_available": "release", "episode_originally_available": "episode_air_date",
     "episode_release": "episode_air_date", "episode_released": "episode_air_date",
     "show_originally_available": "release", "show_release": "release", "show_air_date": "release",
-    "released": "release", "show_released": "release",
+    "released": "release", "show_released": "release", "max_age": "release",
     "studios": "studio",
     "networks": "network",
     "producers": "producer",
@@ -49,7 +50,9 @@ filter_translation = {
     "label": "labels",
     "producer": "producers",
     "release": "originallyAvailableAt",
-    "tmdb_vote_count": "vote_count",
+    "added": "addedAt",
+    "last_played": "lastViewedAt",
+    "plays": "viewCount",
     "user_rating": "userRating",
     "writer": "writers"
 }
@@ -155,27 +158,31 @@ boolean_details = [
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
-    "audio_track_title", "audio_track_title.not",
+    "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends",
     "collection", "collection.not",
     "content_rating", "content_rating.not",
     "country", "country.not",
     "director", "director.not",
     "filepath", "filepath.not",
     "genre", "genre.not",
-    "max_age",
-    "release.gte", "release.lte",
-    "title", "title.not",
-    "tmdb_vote_count.gte", "tmdb_vote_count.lte",
-    "duration.gte", "duration.lte",
+    "label", "label.not",
+    "producer", "producer.not",
+    "release", "release.not", "release.before", "release.after",
+    "added", "added.not", "added.before", "added.after",
+    "last_played", "last_played.not", "last_played.before", "last_played.after",
+    "title", "title.not", "title.begins", "title.ends",
+    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
+    "tmdb_vote_count.gt", "tmdb_vote_count.gte", "tmdb_vote_count.lt", "tmdb_vote_count.lte",
+    "duration.gt", "duration.gte", "duration.lt", "duration.lte",
     "original_language", "original_language.not",
-    "user_rating.gte", "user_rating.lte",
-    "audience_rating.gte", "audience_rating.lte",
-    "critic_rating.gte", "critic_rating.lte",
-    "studio", "studio.not",
+    "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
+    "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
+    "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
+    "studio", "studio.not", "studio.begins", "studio.ends",
     "subtitle_language", "subtitle_language.not",
-    "video_resolution", "video_resolution.not",
+    "resolution", "resolution.not",
     "writer", "writer.not",
-    "year", "year.gte", "year.lte", "year.not"
+    "year", "year.gt", "year.gte", "year.lt", "year.lte", "year.not"
 ]
 movie_only_filters = [
     "audio_language", "audio_language.not",
@@ -185,9 +192,10 @@ movie_only_filters = [
     "duration.gte", "duration.lte",
     "original_language", "original_language.not",
     "subtitle_language", "subtitle_language.not",
-    "video_resolution", "video_resolution.not",
+    "resolution", "resolution.not",
     "writer", "writer.not"
 ]
+show_only_filters = ["network"]
 
 class CollectionBuilder:
     def __init__(self, config, library, metadata, name, data):
@@ -588,13 +596,13 @@ class CollectionBuilder:
                         validation = self.validate_attribute(smart, smart_mod, smart_final, smart_data, validate, smart=True)
                         if validation is None:
                             continue
-                        elif smart in plex.date_searches and smart_mod in ["", ".not"]:
+                        elif smart in plex.date_attributes and smart_mod in ["", ".not"]:
                             last_text = "is not in the last" if smart_mod == ".not" else "is in the last"
                             last_mod = "%3E%3E" if smart_mod == "" else "%3C%3C"
                             results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
                         elif smart == "duration" and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
                             results, display_add = build_url_arg(validation * 60000)
-                        elif smart in plex.boolean_searches:
+                        elif smart in plex.boolean_attributes:
                             bool_mod = "" if validation else "!"
                             bool_arg = "true" if validation else "false"
                             results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
@@ -862,40 +870,25 @@ class CollectionBuilder:
                                 logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute {data_in[methods_in[int_method]]} invalid must an integer >= {minimum} using {default_in} as default")
                             return default_in
                         if method_name == "filters":
-                            for filter_name, filter_data in method_data.items():
-                                modifier = filter_name[-4:].lower()
-                                modifier = modifier if modifier in [".not", ".lte", ".gte"] else ""
-                                method = filter_name[:-4].lower() if modifier in [".not", ".lte", ".gte"] else filter_name.lower()
-                                if method in method_alias:
-                                    filter_method = f"{method_alias[method]}{modifier}"
-                                    logger.warning(f"Collection Warning: {filter_name} filter will run as {filter_method}")
+                            validate = True
+                            if "validate" in method_data:
+                                if method_data["validate"] is None:
+                                    raise Failed("Collection Error: validate filter attribute is blank")
+                                if not isinstance(method_data["validate"], bool):
+                                    raise Failed("Collection Error: validate filter attribute must be either true or false")
+                                validate = method_data["validate"]
+                            for filter_method, filter_data in method_data.items():
+                                filter_attr, modifier, filter_final = self._split(filter_method)
+                                if filter_final not in all_filters:
+                                    raise Failed(f"Collection Error: {filter_final} is not a valid filter attribute")
+                                elif filter_final in movie_only_filters and self.library.is_show:
+                                    raise Failed(f"Collection Error: {filter_final} filter attribute only works for movie libraries")
+                                elif filter_final in show_only_filters and self.library.is_movie:
+                                    raise Failed(f"Collection Error: {filter_final} filter attribute only works for show libraries")
+                                elif filter_final is None:
+                                    raise Failed(f"Collection Error: {filter_final} filter attribute is blank")
                                 else:
-                                    filter_method = f"{method}{modifier}"
-                                if filter_method in movie_only_filters and self.library.is_show:
-                                    raise Failed(f"Collection Error: {filter_method} filter only works for movie libraries")
-                                elif filter_data is None:
-                                    raise Failed(f"Collection Error: {filter_method} filter is blank")
-                                elif filter_method == "year":
-                                    valid_data = util.get_year_list(filter_data, self.current_year, f"{filter_method} filter")
-                                elif filter_method in ["max_age", "duration.gte", "duration.lte", "tmdb_vote_count.gte", "tmdb_vote_count.lte"]:
-                                    valid_data = util.check_number(filter_data, f"{filter_method} filter", minimum=1)
-                                elif filter_method in ["year.gte", "year.lte"]:
-                                    valid_data = util.check_year(filter_data, self.current_year, f"{filter_method} filter")
-                                elif filter_method in ["user_rating.gte", "user_rating.lte", "audience_rating.gte", "audience_rating.lte", "critic_rating.gte", "critic_rating.lte"]:
-                                    valid_data = util.check_number(filter_data, f"{filter_method} filter", number_type="float", minimum=0.1, maximum=10)
-                                elif filter_method in ["release.gte", "release.lte"]:
-                                    valid_data = util.check_date(filter_data, f"{filter_method} filter")
-                                elif filter_method in ["original_language", "original_language.not"]:
-                                    valid_data = util.get_list(filter_data, lower=True)
-                                elif filter_method in ["collection", "collection.not"]:
-                                    valid_data = filter_data if isinstance(filter_data, list) else [filter_data]
-                                elif filter_method in ["title", "title.not"]:
-                                    valid_data = util.get_list(filter_data, split=False)
-                                elif filter_method in all_filters:
-                                    valid_data = util.get_list(filter_data)
-                                else:
-                                    raise Failed(f"Collection Error: {filter_method} filter not supported")
-                                self.filters.append((filter_method, valid_data))
+                                    self.filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
                         elif method_name == "plex_collectionless":
                             new_dictionary = {}
                             dict_methods = {dm.lower(): dm for dm in method_data}
@@ -928,7 +921,9 @@ class CollectionBuilder:
                                 validate = method_data["validate"]
                             for search_name, search_data in method_data.items():
                                 search, modifier, search_final = self._split(search_name)
-                                if search_final in plex.movie_only_searches and self.library.is_show:
+                                if search_final not in plex.searches:
+                                    raise Failed(f"Collection Error: {search_final} is not a valid plex search attribute")
+                                elif search_final in plex.movie_only_searches and self.library.is_show:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for movie libraries")
                                 elif search_final in plex.show_only_searches and self.library.is_movie:
                                     raise Failed(f"Collection Error: {search_final} plex search attribute only works for show libraries")
@@ -946,8 +941,6 @@ class CollectionBuilder:
                                         raise Failed(f"Collection Warning: plex search limit attribute: {search_data} must be an integer greater then 0")
                                     else:
                                         searches[search] = search_data
-                                elif search_final not in plex.searches:
-                                    raise Failed(f"Collection Error: {search_final} is not a valid plex search attribute")
                                 else:
                                     searches[search_final] = self.validate_attribute(search, modifier, search_final, search_data, validate)
                             if len(searches) > 0:
@@ -1277,10 +1270,14 @@ class CollectionBuilder:
     def validate_attribute(self, attribute, modifier, final, data, validate, smart=False):
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if smart else list_to_pair
-        if attribute in ["title", "studio", "episode_title"] and modifier in ["", ".and", ".not", ".begins", ".ends"]:
+        if attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".and", ".not", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
-        elif attribute in plex.tags and modifier in ["", ".and", ".not", ".begins", ".ends"]:
-            if final in plex.tmdb_searches:
+        elif attribute == "original_language":
+            return util.get_list(data, lower=True)
+        elif attribute == "filepath":
+            return util.get_list(data)
+        elif attribute in plex.tags and modifier in ["", ".and", ".not"]:
+            if attribute in plex.tmdb_attributes:
                 final_values = []
                 for value in util.get_list(data):
                     if value.lower() == "tmdb" and "tmdb_person" in self.details:
@@ -1299,18 +1296,18 @@ class CollectionBuilder:
                     logger.error(e)
         elif attribute in ["year", "episode_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:#
             return util.check_year(data, self.current_year, final)
-        elif attribute in ["added", "episode_added", "release", "episode_air_date"] and modifier in [".before", ".after"]:#
+        elif attribute in plex.date_attributes and modifier in [".before", ".after"]:#
             return util.check_date(data, final, return_string=True, plex_date=True)
-        elif attribute in ["plays", "episode_plays", "added", "episode_added", "release", "episode_air_date", "duration"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
+        elif attribute in plex.number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
             return util.check_number(data, final, minimum=1)
-        elif attribute in ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"] and modifier in [".gt", ".gte", ".lt", ".lte"]:
+        elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
             return util.check_number(data, final, number_type="float", minimum=0, maximum=10)
         elif attribute in ["decade", "year", "episode_year"] and modifier in ["", ".not"]:
             return smart_pair(util.get_year_list(data, self.current_year, final))
-        elif attribute in plex.boolean_searches:
+        elif attribute in plex.boolean_attributes:
             return util.get_bool(attribute, data)
         else:
-            raise Failed(f"Collection Error: modifier: {modifier} not supported with the {attribute} attribute")
+            raise Failed(f"Collection Error: {final} attribute not supported")
 
     def _split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
@@ -1363,23 +1360,50 @@ class CollectionBuilder:
     def check_filters(self, current, display):
         if self.filters:
             util.print_return(f"Filtering {display} {current.title}")
+            current_date = datetime.now()
             for filter_method, filter_data in self.filters:
-                modifier = filter_method[-4:]
-                method = filter_method[:-4] if modifier in [".not", ".lte", ".gte"] else filter_method
-                method_name = filter_translation[method] if method in filter_translation else method
-                if method_name == "max_age":
-                    threshold_date = datetime.now() - timedelta(days=filter_data)
-                    if current.originallyAvailableAt is None or current.originallyAvailableAt < threshold_date:
-                        return False
-                elif method_name == "title":
+                filter_attr, modifier, filter_final = self._split(filter_method)
+                filter_actual = filter_translation[filter_attr] if filter_attr in filter_translation else filter_attr
+                if filter_attr in ["release", "added", "last_played"]:
+                    current_data = getattr(current, filter_actual)
+                    if modifier in ["", ".not"]:
+                        threshold_date = current_date - timedelta(days=filter_data)
+                        if (modifier == "" and (current_data is None or current_data < threshold_date)) \
+                                or (modifier == ".not" and current_data and current_data >= threshold_date):
+                            return False
+                    else:
+                        if (modifier == ".before" and (current_data is None or current_data >= filter_data)) \
+                                or (modifier == ".after" and (current_data is None or current_data <= filter_data)):
+                            return False
+                elif filter_attr == "audio_track_title":
                     jailbreak = False
-                    for check_title in filter_data:
-                        if check_title.lower() in current.title.lower():
+                    for media in current.media:
+                        for part in media.parts:
+                            for audio in part.audioStreams():
+                                for check_title in filter_data:
+                                    title = audio.title if audio.title else ""
+                                    if (modifier in ["", ".not"] and check_title.lower() in title.lower()) \
+                                            or (modifier == ".begins" and title.lower().startswith(check_title.lower())) \
+                                            or (modifier == ".ends" and title.lower().endswith(check_title.lower())):
+                                        jailbreak = True
+                                        break
+                                if jailbreak: break
+                            if jailbreak: break
+                        if jailbreak: break
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends"]):
+                        return False
+                elif filter_attr in ["title", "studio"]:
+                    jailbreak = False
+                    current_data = getattr(current, filter_actual)
+                    for check_data in filter_data:
+                        if (modifier in ["", ".not"] and check_data.lower() in current_data.lower()) \
+                                or (modifier == ".begins" and current_data.lower().startswith(check_data.lower())) \
+                                or (modifier == ".ends" and current_data.lower().endswith(check_data.lower())):
                             jailbreak = True
                             break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends"]):
                         return False
-                elif method_name == "original_language":
+                elif filter_attr == "original_language":
                     movie = None
                     for key, value in self.library.movie_map.items():
                         if current.ratingKey in value:
@@ -1391,24 +1415,10 @@ class CollectionBuilder:
                     if movie is None:
                         logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
                         continue
-                    if (modifier == ".not" and movie.original_language in filter_data) or (modifier != ".not" and movie.original_language not in filter_data):
+                    if (modifier == ".not" and movie.original_language in filter_data) \
+                            or (modifier == "" and movie.original_language not in filter_data):
                         return False
-                elif method_name == "audio_track_title":
-                    jailbreak = False
-                    for media in current.media:
-                        for part in media.parts:
-                            for audio in part.audioStreams():
-                                for check_title in filter_data:
-                                    title = audio.title if audio.title else ""
-                                    if check_title.lower() in title.lower():
-                                        jailbreak = True
-                                        break
-                                if jailbreak: break
-                            if jailbreak: break
-                        if jailbreak: break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
-                        return False
-                elif method_name == "filepath":
+                elif filter_attr == "filepath":
                     jailbreak = False
                     for location in current.locations:
                         for check_text in filter_data:
@@ -1416,16 +1426,15 @@ class CollectionBuilder:
                                 jailbreak = True
                                 break
                         if jailbreak: break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier != ".not"):
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier == ""):
                         return False
-                elif modifier in [".gte", ".lte"]:
-                    if method_name == "vote_count":
+                elif modifier in [".gt", ".gte", ".lt", ".lte"]:
+                    if filter_attr == "tmdb_vote_count":
                         tmdb_item = None
                         for key, value in self.library.movie_map.items():
                             if current.ratingKey in value:
                                 try:
-                                    tmdb_item = self.config.TMDb.get_movie(
-                                        key) if self.library.is_movie else self.config.TMDb.get_show(key)
+                                    tmdb_item = self.config.TMDb.get_movie(key) if self.library.is_movie else self.config.TMDb.get_show(key)
                                     break
                                 except Failed:
                                     pass
@@ -1433,29 +1442,35 @@ class CollectionBuilder:
                             logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
                             continue
                         attr = tmdb_item.vote_count
+                    elif filter_attr == "duration":
+                        attr = getattr(current, filter_actual) / 60000
                     else:
-                        attr = getattr(current, method_name) / 60000 if method_name == "duration" else getattr(current, method_name)
-                    if attr is None or (modifier == ".lte" and attr > filter_data) or (modifier == ".gte" and attr < filter_data):
+                        attr = getattr(current, filter_actual)
+                    if attr is None or (modifier == ".gt" and attr <= filter_data) \
+                            or (modifier == ".gte" and attr < filter_data) \
+                            or (modifier == ".lt" and attr >= filter_data) \
+                            or (modifier == ".lte" and attr > filter_data):
                         return False
                 else:
                     attrs = []
-                    if method_name in ["video_resolution", "audio_language", "subtitle_language"]:
+                    if filter_attr in ["resolution", "audio_language", "subtitle_language"]:
                         for media in current.media:
-                            if method_name == "video_resolution":
+                            if filter_attr == "resolution":
                                 attrs.extend([media.videoResolution])
                             for part in media.parts:
-                                if method_name == "audio_language":
+                                if filter_attr == "audio_language":
                                     attrs.extend([a.language for a in part.audioStreams()])
-                                if method_name == "subtitle_language":
+                                if filter_attr == "subtitle_language":
                                     attrs.extend([s.language for s in part.subtitleStreams()])
-                    elif method_name in ["contentRating", "studio", "year", "rating", "originallyAvailableAt"]:
-                        attrs = [str(getattr(current, method_name))]
-                    elif method_name in ["actors", "countries", "directors", "genres", "writers", "collections"]:
-                        attrs = [getattr(x, "tag") for x in getattr(current, method_name)]
+                    elif filter_attr in ["content_rating", "year", "rating"]:
+                        attrs = [str(getattr(current, filter_actual))]
+                    elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection"]:
+                        attrs = [attr.tag for attr in getattr(current, filter_actual)]
                     else:
-                        raise Failed(f"Filter Error: filter: {method_name} not supported")
+                        raise Failed(f"Filter Error: filter: {filter_final} not supported")
 
-                    if (not list(set(filter_data) & set(attrs)) and modifier != ".not") or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+                    if (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                            or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                         return False
             util.print_return(f"Filtering {display} {current.title}")
         return True
