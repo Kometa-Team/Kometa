@@ -2,7 +2,6 @@ import logging, requests
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.video import Movie, Show
 from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -12,7 +11,7 @@ builders = ["tautulli_popular", "tautulli_watched"]
 class TautulliAPI:
     def __init__(self, params):
         try:
-            response = requests.get(f"{params['url']}/api/v2?apikey={params['apikey']}&cmd=get_library_names").json()
+            response = self._request(f"{params['url']}/api/v2?apikey={params['apikey']}&cmd=get_library_names")
         except Exception:
             util.print_stacktrace()
             raise Failed("Tautulli Error: Invalid url")
@@ -65,5 +64,5 @@ class TautulliAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def _request(self, url):
-        logger.debug(f"Tautulli URL: {url.replace(self.apikey, '################################')}")
+        logger.debug(f"Tautulli URL: {url.replace(self.apikey, '###############')}")
         return requests.get(url).json()
