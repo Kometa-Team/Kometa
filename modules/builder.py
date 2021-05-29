@@ -1176,7 +1176,7 @@ class CollectionBuilder:
                     display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                     return f"{arg_key}{mod}={arg}&", display_line
 
-                if final not in plex.searches and final not in ["any", "all"] and modifier != ".and":
+                if final not in plex.searches and final not in ["any", "all"]:
                     raise Failed(f"Collection Error: {final} is not a valid {method} attribute")
                 elif final in plex.movie_only_searches and self.library.is_show:
                     raise Failed(f"Collection Error: {final} {method} attribute only works for movie libraries")
@@ -1251,13 +1251,13 @@ class CollectionBuilder:
     def validate_attribute(self, attribute, modifier, final, data, validate, smart=False):
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if smart else list_to_pair
-        if attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".and", ".not", ".begins", ".ends"]:
+        if attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".not", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "original_language":
             return util.get_list(data, lower=True)
         elif attribute == "filepath":
             return util.get_list(data)
-        elif attribute in plex.tags and modifier in ["", ".and", ".not"]:
+        elif attribute in plex.tags and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
                 for value in util.get_list(data):
