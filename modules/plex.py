@@ -194,7 +194,7 @@ tags = [
     "subtitle_language",
     "writer"
 ]
-movie_smart_sorts = {
+movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
@@ -208,7 +208,7 @@ movie_smart_sorts = {
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "random": "random"
 }
-show_smart_sorts = {
+show_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
@@ -221,14 +221,14 @@ show_smart_sorts = {
     "episode_added.asc": "episode.addedAt", "episode_added.desc": "episode.addedAt%3Adesc",
     "random": "random"
 }
-season_smart_sorts = {
+season_sorts = {
     "season.asc": "season.index%2Cseason.titleSort", "season.desc": "season.index%3Adesc%2Cseason.titleSort",
     "show.asc": "show.titleSort%2Cindex", "show.desc": "show.titleSort%3Adesc%2Cindex",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "random": "random"
 }
-episode_smart_sorts = {
+episode_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "show.asc": "show.titleSort%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
     "show.desc": "show.titleSort%3Adesc%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
@@ -243,11 +243,11 @@ episode_smart_sorts = {
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "random": "random"
 }
-smart_types = {
-    "movies": (1, movie_smart_sorts),
-    "shows": (2, show_smart_sorts),
-    "seasons": (3, season_smart_sorts),
-    "episodes": (4, episode_smart_sorts),
+sort_types = {
+    "movies": (1, movie_sorts),
+    "shows": (2, show_sorts),
+    "seasons": (3, season_sorts),
+    "episodes": (4, episode_sorts),
 }
 
 class PlexAPI:
@@ -433,7 +433,7 @@ class PlexAPI:
         if title not in labels:
             raise Failed(f"Plex Error: Label: {title} does not exist")
         smart_type = 1 if self.is_movie else 2
-        sort_type = movie_smart_sorts[sort] if self.is_movie else show_smart_sorts[sort]
+        sort_type = movie_sorts[sort] if self.is_movie else show_sorts[sort]
         return smart_type, f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
 
     def test_smart_filter(self, uri_args):
@@ -515,56 +515,8 @@ class PlexAPI:
             logger.info(f"Processing {pretty} {media_type}s")
             items = self.get_all()
         elif method == "plex_search":
-            search_terms = {}
-            has_processed = False
-            search_limit = None
-            search_sort = None
-            for search_method, search_data in data.items():
-                if search_method == "limit":
-                    search_limit = search_data
-                elif search_method == "sort_by":
-                    search_sort = search_data
-                else:
-                    search, modifier = os.path.splitext(str(search_method).lower())
-                    final_search = search_translation[search] if search in search_translation else search
-                    if search in date_attributes and modifier == "":
-                        final_mod = ">>"
-                    elif search in date_attributes and modifier == ".not":
-                        final_mod = "<<"
-                    elif search in ["critic_rating", "audience_rating"] and modifier == ".gt":
-                        final_mod = "__gt"
-                    elif search in ["critic_rating", "audience_rating"] and modifier == ".lt":
-                        final_mod = "__lt"
-                    else:
-                        final_mod = modifiers[modifier] if modifier in modifiers else ""
-                    final_method = f"{final_search}{final_mod}"
-
-                    if search == "duration":
-                        search_terms[final_method] = search_data * 60000
-                    elif search in date_attributes and modifier in ["", ".not"]:
-                        search_terms[final_method] = f"{search_data}d"
-                    else:
-                        search_terms[final_method] = search_data
-
-                    if search in ["added", "release", "episode_air_date", "hdr"] or modifier in [".gt", ".gte", ".lt", ".lte", ".before", ".after"]:
-                        ors = f"{search_method}({search_data}"
-                    else:
-                        ors = ""
-                        conjunction = " AND " if final_mod == "&" else " OR "
-                        for o, param in enumerate(search_data):
-                            or_des = conjunction if o > 0 else f"{search_method}("
-                            ors += f"{or_des}{param}"
-                    if has_processed:
-                        logger.info(f"                        AND {ors})")
-                    else:
-                        logger.info(f"Processing {pretty}: {ors})")
-                        has_processed = True
-            if search_sort:
-                logger.info(f"                        SORT BY {search_sort}")
-            if search_limit:
-                logger.info(f"                        LIMIT {search_limit}")
-            logger.debug(f"Search: {search_terms}")
-            items = self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
+            util.print_multiline(data[1], info=True)
+            items = self.get_filter_items(data[2])
         elif method == "plex_collectionless":
             good_collections = []
             logger.info("Collections Excluded")
