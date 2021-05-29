@@ -475,14 +475,15 @@ class CollectionBuilder:
                 logger.warning("Collection Error: smart_label attribute is blank defaulting to random")
             else:
                 logger.debug(f"Value: {self.data[methods['smart_label']]}")
-                if (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_smart_sorts) \
-                        or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_smart_sorts):
+                if (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_sorts) \
+                        or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_sorts):
                     self.smart_sort = str(self.data[methods["smart_label"]]).lower()
                 else:
                     logger.warning(f"Collection Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
 
         self.smart_url = None
         self.smart_type_key = None
+        self.smart_filter_details = ""
         if "smart_url" in methods:
             logger.info("")
             logger.info("Validating Method: smart_url")
@@ -495,143 +496,8 @@ class CollectionBuilder:
                 except ValueError:
                     raise Failed("Collection Error: smart_url is incorrectly formatted")
 
-        self.smart_filter_details = ""
         if "smart_filter" in methods:
-            logger.info("")
-            logger.info("Validating Method: smart_filter")
-            filter_details = "\n"
-            smart_filter = self.data[methods["smart_filter"]]
-            if smart_filter is None:
-                raise Failed(f"Collection Error: smart_filter attribute is blank")
-            if not isinstance(smart_filter, dict):
-                raise Failed(f"Collection Error: smart_filter must be a dictionary: {smart_filter}")
-            logger.debug(f"Value: {self.data[methods['smart_filter']]}")
-            smart_methods = {m.lower(): m for m in smart_filter}
-            if "any" in smart_methods and "all" in smart_methods:
-                raise Failed(f"Collection Error: Cannot have more then one base")
-            if "any" not in smart_methods and "all" not in smart_methods:
-                raise Failed(f"Collection Error: Must have either any or all as a base for the filter")
-
-            if "type" in smart_methods and self.library.is_show:
-                if smart_filter[smart_methods["type"]] not in ["shows", "seasons", "episodes"]:
-                    raise Failed(f"Collection Error: type: {smart_filter[smart_methods['type']]} is invalid, must be either shows, season, or episodes")
-                smart_type = smart_filter[smart_methods["type"]]
-            elif self.library.is_show:
-                smart_type = "shows"
-            else:
-                smart_type = "movies"
-            filter_details += f"Smart {smart_type.capitalize()[:-1]} Filter\n"
-            self.smart_type_key, smart_sorts = plex.smart_types[smart_type]
-
-            smart_sort = "random"
-            if "sort_by" in smart_methods:
-                if smart_filter[smart_methods["sort_by"]] is None:
-                    raise Failed(f"Collection Error: sort_by attribute is blank")
-                if smart_filter[smart_methods["sort_by"]] not in smart_sorts:
-                    raise Failed(f"Collection Error: sort_by: {smart_filter[smart_methods['sort_by']]} is invalid")
-                smart_sort = smart_filter[smart_methods["sort_by"]]
-            filter_details += f"Sort By: {smart_sort}\n"
-
-            limit = None
-            if "limit" in smart_methods:
-                if smart_filter[smart_methods["limit"]] is None:
-                    raise Failed("Collection Error: limit attribute is blank")
-                if not isinstance(smart_filter[smart_methods["limit"]], int) or smart_filter[smart_methods["limit"]] < 1:
-                    raise Failed("Collection Error: limit attribute must be an integer greater then 0")
-                limit = smart_filter[smart_methods["limit"]]
-                filter_details += f"Limit: {limit}\n"
-
-            validate = True
-            if "validate" in smart_methods:
-                if smart_filter[smart_methods["validate"]] is None:
-                    raise Failed("Collection Error: validate attribute is blank")
-                if not isinstance(smart_filter[smart_methods["validate"]], bool):
-                    raise Failed("Collection Error: validate attribute must be either true or false")
-                validate = smart_filter[smart_methods["validate"]]
-                filter_details += f"Validate: {validate}\n"
-
-            def _filter(filter_dict, is_all=True, level=1):
-                output = ""
-                display = f"\n{'  ' * level}Match {'all' if is_all else 'any'} of the following:"
-                level += 1
-                indent = f"\n{'  ' * level}"
-                conjunction = f"{'and' if is_all else 'or'}=1&"
-                for smart_key, smart_data in filter_dict.items():
-                    smart, smart_mod, smart_final = self._split(smart_key)
-
-                    def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
-                        arg_key = plex.search_translation[smart] if smart in plex.search_translation else smart
-                        if mod is None:
-                            mod = plex.modifier_translation[smart_mod] if smart_mod in plex.modifier_translation else smart_mod
-                        if arg_s is None:
-                            arg_s = arg
-                        if smart in string_filters and smart_mod in ["", ".not"]:
-                            mod_s = "does not contain" if smart_mod == ".not" else "contains"
-                        elif mod_s is None:
-                            mod_s = plex.mod_displays[smart_mod]
-                        param_s = plex.search_display[smart] if smart in plex.search_display else smart.title().replace('_', ' ')
-                        display_line = f"{indent}{param_s} {mod_s} {arg_s}"
-                        return f"{arg_key}{mod}={arg}&", display_line
-
-                    if smart_final not in plex.searches and smart_final not in ["any", "all"] and smart_mod != ".and":
-                        raise Failed(f"Collection Error: {smart_final} is not a valid smart filter attribute")
-                    elif smart_final in plex.movie_only_searches and self.library.is_show:
-                        raise Failed(f"Collection Error: {smart_final} smart filter attribute only works for movie libraries")
-                    elif smart_final in plex.show_only_searches and self.library.is_movie:
-                        raise Failed(f"Collection Error: {smart_final} smart filter attribute only works for show libraries")
-                    elif smart_data is None:
-                        raise Failed(f"Collection Error: {smart_final} smart filter attribute is blank")
-                    elif smart in ["all", "any"]:
-                        dicts = util.get_list(smart_data)
-                        results = ""
-                        display_add = ""
-                        for dict_data in dicts:
-                            if not isinstance(dict_data, dict):
-                                raise Failed(f"Collection Error: {smart} must be either a dictionary or list of dictionaries")
-                            inside_filter, inside_display = _filter(dict_data, is_all=smart == "all", level=level)
-                            if len(inside_filter) > 0:
-                                display_add += inside_display
-                                results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
-                    else:
-                        validation = self.validate_attribute(smart, smart_mod, smart_final, smart_data, validate, smart=True)
-                        if validation is None:
-                            continue
-                        elif smart in plex.date_attributes and smart_mod in ["", ".not"]:
-                            last_text = "is not in the last" if smart_mod == ".not" else "is in the last"
-                            last_mod = "%3E%3E" if smart_mod == "" else "%3C%3C"
-                            results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
-                        elif smart == "duration" and smart_mod in [".gt", ".gte", ".lt", ".lte"]:
-                            results, display_add = build_url_arg(validation * 60000)
-                        elif smart in plex.boolean_attributes:
-                            bool_mod = "" if validation else "!"
-                            bool_arg = "true" if validation else "false"
-                            results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
-                        elif (smart in ["title", "episode_title", "studio", "decade", "year", "episode_year"] or smart in plex.tags) and smart_mod in ["", ".not", ".begins", ".ends"]:
-                            results = ""
-                            display_add = ""
-                            for og_value, result in validation:
-                                built_arg = build_url_arg(quote(result) if smart in string_filters else result, arg_s=og_value)
-                                display_add += built_arg[1]
-                                results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
-                        else:
-                            results, display_add = build_url_arg(validation)
-                    display += display_add
-                    output += f"{conjunction if len(output) > 0 else ''}{results}"
-                return output, display
-
-            base = "all" if "all" in smart_methods else "any"
-            base_all = base == "all"
-            if smart_filter[smart_methods[base]] is None:
-                raise Failed(f"Collection Error: {base} attribute is blank")
-            if not isinstance(smart_filter[smart_methods[base]], dict):
-                raise Failed(f"Collection Error: {base} must be a dictionary: {smart_filter[smart_methods[base]]}")
-            built_filter, filter_text = _filter(smart_filter[smart_methods[base]], is_all=base_all)
-            self.smart_filter_details = f"{filter_details}Filter:{filter_text}"
-            if len(built_filter) > 0:
-                final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
-                self.smart_url = f"?type={self.smart_type_key}&{f'limit={limit}&' if limit else ''}sort={smart_sorts[smart_sort]}&{final_filter}"
-            else:
-                raise Failed("Collection Error: No Filter Created")
+            self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], smart=True, display=True)
 
         def cant_interact(attr1, attr2, fail=False):
             if getattr(self, attr1) and getattr(self, attr2):
@@ -804,7 +670,7 @@ class CollectionBuilder:
                 elif method_name == "sonarr_tag":
                     self.sonarr_options["tag"] = util.get_list(method_data)
                 elif method_final in plex.searches:
-                    self.methods.append(("plex_search", [{method_name: self.validate_attribute(method_name, method_mod, method_final, method_data, True)}]))
+                    self.methods.append(("plex_search", [self.build_filter("plex_search", {"all": {method_name: method_data}}, smart=False)]))
                 elif method_name == "plex_all":
                     self.methods.append((method_name, [""]))
                 elif method_name == "anidb_popular":
@@ -911,42 +777,7 @@ class CollectionBuilder:
                             new_dictionary["exclude"] = exact_list
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "plex_search":
-                            searches = {}
-                            validate = True
-                            if "validate" in method_data:
-                                if method_data["validate"] is None:
-                                    raise Failed("Collection Error: validate plex search attribute is blank")
-                                if not isinstance(method_data["validate"], bool):
-                                    raise Failed("Collection Error: validate plex search attribute must be either true or false")
-                                validate = method_data["validate"]
-                            for search_name, search_data in method_data.items():
-                                search, modifier, search_final = self._split(search_name)
-                                if search_final not in plex.searches:
-                                    raise Failed(f"Collection Error: {search_final} is not a valid plex search attribute")
-                                elif search_final in plex.movie_only_searches and self.library.is_show:
-                                    raise Failed(f"Collection Error: {search_final} plex search attribute only works for movie libraries")
-                                elif search_final in plex.show_only_searches and self.library.is_movie:
-                                    raise Failed(f"Collection Error: {search_final} plex search attribute only works for show libraries")
-                                elif search_data is None:
-                                    raise Failed(f"Collection Error: {search_final} plex search attribute is blank")
-                                elif search == "sort_by":
-                                    if str(search_data).lower() in plex.sorts:
-                                        searches[search] = str(search_data).lower()
-                                    else:
-                                        logger.warning(f"Collection Error: {search_data} is not a valid plex search sort defaulting to title.asc")
-                                elif search == "limit":
-                                    if not search_data:
-                                        raise Failed(f"Collection Warning: plex search limit attribute is blank")
-                                    elif not isinstance(search_data, int) and search_data > 0:
-                                        raise Failed(f"Collection Warning: plex search limit attribute: {search_data} must be an integer greater then 0")
-                                    else:
-                                        searches[search] = search_data
-                                else:
-                                    searches[search_final] = self.validate_attribute(search, modifier, search_final, search_data, validate)
-                            if len(searches) > 0:
-                                self.methods.append((method_name, [searches]))
-                            else:
-                                raise Failed("Collection Error: no valid plex search attributes")
+                            self.methods.append((method_name, [self.build_filter("plex_search", method_data, smart=False)]))
                         elif method_name == "tmdb_discover":
                             new_dictionary = {"limit": 100}
                             for discover_name, discover_data in method_data.items():
@@ -1266,6 +1097,156 @@ class CollectionBuilder:
                 elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
                 elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
+
+    def build_filter(self, method, plex_filter, smart=False, display=False):
+        if display:
+            logger.info("")
+            logger.info(f"Validating Method: {method}")
+        if plex_filter is None:
+            raise Failed(f"Collection Error: {method} attribute is blank")
+        if not isinstance(plex_filter, dict):
+            raise Failed(f"Collection Error: {method} must be a dictionary: {plex_filter}")
+        if display:
+            logger.debug(f"Value: {plex_filter}")
+
+        filter_alias = {m.lower(): m for m in plex_filter}
+
+        if "any" in filter_alias and "all" in filter_alias:
+            raise Failed(f"Collection Error: Cannot have more then one base")
+
+        if smart and "type" in filter_alias and self.library.is_show:
+            if plex_filter[filter_alias["type"]] not in ["shows", "seasons", "episodes"]:
+                raise Failed(f"Collection Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either shows, season, or episodes")
+            sort_type = plex_filter[filter_alias["type"]]
+        elif self.library.is_show:
+            sort_type = "shows"
+        else:
+            sort_type = "movies"
+        ms = method.split("_")
+        filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()[:-1]} {ms[1].capitalize()}\n"
+        type_key, sorts = plex.sort_types[sort_type]
+
+        sort = "random"
+        if "sort_by" in filter_alias:
+            if plex_filter[filter_alias["sort_by"]] is None:
+                raise Failed(f"Collection Error: sort_by attribute is blank")
+            if plex_filter[filter_alias["sort_by"]] not in sorts:
+                raise Failed(f"Collection Error: sort_by: {plex_filter[filter_alias['sort_by']]} is invalid")
+            sort = plex_filter[filter_alias["sort_by"]]
+        filter_details += f"Sort By: {sort}\n"
+
+        limit = None
+        if "limit" in filter_alias:
+            if plex_filter[filter_alias["limit"]] is None:
+                raise Failed("Collection Error: limit attribute is blank")
+            if not isinstance(plex_filter[filter_alias["limit"]], int) or plex_filter[filter_alias["limit"]] < 1:
+                raise Failed("Collection Error: limit attribute must be an integer greater then 0")
+            limit = plex_filter[filter_alias["limit"]]
+            filter_details += f"Limit: {limit}\n"
+
+        validate = True
+        if "validate" in filter_alias:
+            if plex_filter[filter_alias["validate"]] is None:
+                raise Failed("Collection Error: validate attribute is blank")
+            if not isinstance(plex_filter[filter_alias["validate"]], bool):
+                raise Failed("Collection Error: validate attribute must be either true or false")
+            validate = plex_filter[filter_alias["validate"]]
+            filter_details += f"Validate: {validate}\n"
+
+        def _filter(filter_dict, is_all=True, level=1):
+            output = ""
+            display = f"\n{'  ' * level}Match {'all' if is_all else 'any'} of the following:"
+            level += 1
+            indent = f"\n{'  ' * level}"
+            conjunction = f"{'and' if is_all else 'or'}=1&"
+            for _key, _data in filter_dict.items():
+                attr, modifier, final = self._split(_key)
+
+                def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
+                    arg_key = plex.search_translation[attr] if attr in plex.search_translation else attr
+                    if mod is None:
+                        mod = plex.modifier_translation[modifier] if modifier in plex.modifier_translation else modifier
+                    if arg_s is None:
+                        arg_s = arg
+                    if attr in string_filters and modifier in ["", ".not"]:
+                        mod_s = "does not contain" if modifier == ".not" else "contains"
+                    elif mod_s is None:
+                        mod_s = plex.mod_displays[modifier]
+                    param_s = plex.search_display[attr] if attr in plex.search_display else attr.title().replace('_', ' ')
+                    display_line = f"{indent}{param_s} {mod_s} {arg_s}"
+                    return f"{arg_key}{mod}={arg}&", display_line
+
+                if final not in plex.searches and final not in ["any", "all"] and modifier != ".and":
+                    raise Failed(f"Collection Error: {final} is not a valid {method} attribute")
+                elif final in plex.movie_only_searches and self.library.is_show:
+                    raise Failed(f"Collection Error: {final} {method} attribute only works for movie libraries")
+                elif final in plex.show_only_searches and self.library.is_movie:
+                    raise Failed(f"Collection Error: {final} {method} attribute only works for show libraries")
+                elif _data is None:
+                    raise Failed(f"Collection Error: {final} {method} attribute is blank")
+                elif attr in ["all", "any"]:
+                    dicts = util.get_list(_data)
+                    results = ""
+                    display_add = ""
+                    for dict_data in dicts:
+                        if not isinstance(dict_data, dict):
+                            raise Failed(f"Collection Error: {attr} must be either a dictionary or list of dictionaries")
+                        inside_filter, inside_display = _filter(dict_data, is_all=attr == "all", level=level)
+                        if len(inside_filter) > 0:
+                            display_add += inside_display
+                            results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
+                else:
+                    validation = self.validate_attribute(attr, modifier, final, _data, validate, smart=True)
+                    if validation is None:
+                        continue
+                    elif attr in plex.date_attributes and modifier in ["", ".not"]:
+                        last_text = "is not in the last" if modifier == ".not" else "is in the last"
+                        last_mod = "%3E%3E" if modifier == "" else "%3C%3C"
+                        results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
+                    elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
+                        results, display_add = build_url_arg(validation * 60000)
+                    elif attr in plex.boolean_attributes:
+                        bool_mod = "" if validation else "!"
+                        bool_arg = "true" if validation else "false"
+                        results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
+                    elif (attr in ["title", "episode_title", "studio", "decade", "year", "episode_year"] or attr in plex.tags) and modifier in ["", ".not", ".begins", ".ends"]:
+                        results = ""
+                        display_add = ""
+                        for og_value, result in validation:
+                            built_arg = build_url_arg(quote(result) if attr in string_filters else result, arg_s=og_value)
+                            display_add += built_arg[1]
+                            results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
+                    else:
+                        results, display_add = build_url_arg(validation)
+                display += display_add
+                output += f"{conjunction if len(output) > 0 else ''}{results}"
+            return output, display
+
+        if "any" not in filter_alias and "all" not in filter_alias:
+            base_dict = {}
+            for alias_key, alias_value in filter_alias.items():
+                if alias_key not in ["type", "sort_by", "limit", "validate"]:
+                    base_dict[alias_value] = plex_filter[alias_value]
+            base_all = True
+            if len(base_dict) == 0:
+                raise Failed(f"Collection Error: Must have either any or all as a base for {method}")
+        else:
+            base = "all" if "all" in filter_alias else "any"
+            base_all = base == "all"
+            if plex_filter[filter_alias[base]] is None:
+                raise Failed(f"Collection Error: {base} attribute is blank")
+            if not isinstance(plex_filter[filter_alias[base]], dict):
+                raise Failed(f"Collection Error: {base} must be a dictionary: {plex_filter[filter_alias[base]]}")
+            base_dict = plex_filter[filter_alias[base]]
+        built_filter, filter_text = _filter(base_dict, is_all=base_all)
+        filter_details = f"{filter_details}Filter:{filter_text}"
+        if len(built_filter) > 0:
+            final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
+            filter_url = f"?type={type_key}&{f'limit={limit}&' if limit else ''}sort={sorts[sort]}&{final_filter}"
+        else:
+            raise Failed("Collection Error: No Filter Created")
+
+        return type_key, filter_details, filter_url
 
     def validate_attribute(self, attribute, modifier, final, data, validate, smart=False):
         def smart_pair(list_to_pair):

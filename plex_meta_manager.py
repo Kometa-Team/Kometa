@@ -413,6 +413,7 @@ def run_collection(config, library, metadata, requested_collections):
                 util.print_multiline(builder.schedule, info=True)
 
             if len(builder.smart_filter_details) > 0:
+                logger.info("")
                 util.print_multiline(builder.smart_filter_details, info=True)
 
             if not builder.smart_url:
