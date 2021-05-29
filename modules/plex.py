@@ -77,20 +77,20 @@ item_advance_keys = {
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
 searches = [
-    "title", "title.and", "title.not", "title.begins", "title.ends",
-    "studio", "studio.and", "studio.not", "studio.begins", "studio.ends",
-    "actor", "actor.and", "actor.not",
-    "audio_language", "audio_language.and", "audio_language.not",
-    "collection", "collection.and", "collection.not",
-    "content_rating", "content_rating.and", "content_rating.not",
-    "country", "country.and", "country.not",
-    "director", "director.and", "director.not",
-    "genre", "genre.and", "genre.not",
-    "label", "label.and", "label.not",
-    "network", "network.and", "network.not",
-    "producer", "producer.and", "producer.not",
-    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
-    "writer", "writer.and", "writer.not",
+    "title", "title.not", "title.begins", "title.ends",
+    "studio", "studio.not", "studio.begins", "studio.ends",
+    "actor", "actor.not",
+    "audio_language", "audio_language.not",
+    "collection", "collection.not",
+    "content_rating", "content_rating.not",
+    "country", "country.not",
+    "director", "director.not",
+    "genre", "genre.not",
+    "label", "label.not",
+    "network", "network.not",
+    "producer", "producer.not",
+    "subtitle_language", "subtitle_language.not",
+    "writer", "writer.not",
     "decade", "resolution", "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
     "last_played", "last_played.not", "last_played.before", "last_played.after",
     "added", "added.not", "added.before", "added.after",
@@ -102,7 +102,7 @@ searches = [
     "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
     "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
-    "episode_title", "episode_title.and", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not", "episode_air_date.before", "episode_air_date.after",
     "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
@@ -111,17 +111,17 @@ searches = [
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
 movie_only_searches = [
-    "country", "country.and", "country.not",
-    "director", "director.and", "director.not",
-    "producer", "producer.and", "producer.not",
-    "writer", "writer.and", "writer.not",
+    "country", "country.not",
+    "director", "director.not",
+    "producer", "producer.not",
+    "writer", "writer.not",
     "decade", "duplicate", "unplayed", "progress", "trash",
     "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
-    "network", "network.and", "network.not",
-    "episode_title", "episode_title.and", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "network", "network.not",
+    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not",
     "episode_air_date.before", "episode_air_date.after",
@@ -155,7 +155,6 @@ sorts = {
     "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
 }
 modifiers = {
-    ".and": "&",
     ".not": "!",
     ".begins": "<",
     ".ends": ">",
