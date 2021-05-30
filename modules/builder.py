@@ -497,7 +497,7 @@ class CollectionBuilder:
                     raise Failed("Collection Error: smart_url is incorrectly formatted")
 
         if "smart_filter" in methods:
-            self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], smart=True, display=True)
+            self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], smart=True)
 
         def cant_interact(attr1, attr2, fail=False):
             if getattr(self, attr1) and getattr(self, attr2):
@@ -670,7 +670,7 @@ class CollectionBuilder:
                 elif method_name == "sonarr_tag":
                     self.sonarr_options["tag"] = util.get_list(method_data)
                 elif method_final in plex.searches:
-                    self.methods.append(("plex_search", [self.build_filter("plex_search", {"all": {method_name: method_data}}, smart=False)]))
+                    self.methods.append(("plex_search", [self.build_filter("plex_search", {"any": {method_name: method_data}})]))
                 elif method_name == "plex_all":
                     self.methods.append((method_name, [""]))
                 elif method_name == "anidb_popular":
@@ -777,7 +777,7 @@ class CollectionBuilder:
                             new_dictionary["exclude"] = exact_list
                             self.methods.append((method_name, [new_dictionary]))
                         elif method_name == "plex_search":
-                            self.methods.append((method_name, [self.build_filter("plex_search", method_data, smart=False)]))
+                            self.methods.append((method_name, [self.build_filter("plex_search", method_data)]))
                         elif method_name == "tmdb_discover":
                             new_dictionary = {"limit": 100}
                             for discover_name, discover_data in method_data.items():
@@ -1098,15 +1098,15 @@ class CollectionBuilder:
                 elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
                 else:                                               logger.error(f"Collection Error: {method} method not supported")
 
-    def build_filter(self, method, plex_filter, smart=False, display=False):
-        if display:
+    def build_filter(self, method, plex_filter, smart=False):
+        if smart:
             logger.info("")
             logger.info(f"Validating Method: {method}")
         if plex_filter is None:
             raise Failed(f"Collection Error: {method} attribute is blank")
         if not isinstance(plex_filter, dict):
             raise Failed(f"Collection Error: {method} must be a dictionary: {plex_filter}")
-        if display:
+        if smart:
             logger.debug(f"Value: {plex_filter}")
 
         filter_alias = {m.lower(): m for m in plex_filter}
@@ -1126,7 +1126,7 @@ class CollectionBuilder:
         filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()[:-1]} {ms[1].capitalize()}\n"
         type_key, sorts = plex.sort_types[sort_type]
 
-        sort = "random"
+        sort = "random" if smart else "title.asc"
         if "sort_by" in filter_alias:
             if plex_filter[filter_alias["sort_by"]] is None:
                 raise Failed(f"Collection Error: sort_by attribute is blank")
@@ -1176,7 +1176,7 @@ class CollectionBuilder:
                     display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                     return f"{arg_key}{mod}={arg}&", display_line
 
-                if final not in plex.searches and final not in ["any", "all"]:
+                if final not in plex.searches and not final.startswith(("any", "all")):
                     raise Failed(f"Collection Error: {final} is not a valid {method} attribute")
                 elif final in plex.movie_only_searches and self.library.is_show:
                     raise Failed(f"Collection Error: {final} {method} attribute only works for movie libraries")
@@ -1184,7 +1184,7 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: {final} {method} attribute only works for show libraries")
                 elif _data is None:
                     raise Failed(f"Collection Error: {final} {method} attribute is blank")
-                elif attr in ["all", "any"]:
+                elif final.startswith(("any", "all")):
                     dicts = util.get_list(_data)
                     results = ""
                     display_add = ""
@@ -1196,7 +1196,7 @@ class CollectionBuilder:
                             display_add += inside_display
                             results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                 else:
-                    validation = self.validate_attribute(attr, modifier, final, _data, validate, smart=True)
+                    validation = self.validate_attribute(attr, modifier, final, _data, validate, pairs=True)
                     if validation is None:
                         continue
                     elif attr in plex.date_attributes and modifier in ["", ".not"]:
@@ -1224,9 +1224,16 @@ class CollectionBuilder:
 
         if "any" not in filter_alias and "all" not in filter_alias:
             base_dict = {}
+            any_dicts = []
             for alias_key, alias_value in filter_alias.items():
-                if alias_key not in ["type", "sort_by", "limit", "validate"]:
+                if alias_key in plex.and_searches:
+                    base_dict[alias_value[:-4]] = plex_filter[alias_value]
+                elif alias_key in plex.or_searches:
+                    any_dicts.append({alias_value: plex_filter[alias_value]})
+                elif alias_key in plex.searches:
                     base_dict[alias_value] = plex_filter[alias_value]
+            if len(any_dicts) > 0:
+                base_dict["any"] = any_dicts
             base_all = True
             if len(base_dict) == 0:
                 raise Failed(f"Collection Error: Must have either any or all as a base for {method}")
@@ -1248,9 +1255,9 @@ class CollectionBuilder:
 
         return type_key, filter_details, filter_url
 
-    def validate_attribute(self, attribute, modifier, final, data, validate, smart=False):
+    def validate_attribute(self, attribute, modifier, final, data, validate, pairs=False):
         def smart_pair(list_to_pair):
-            return [(t, t) for t in list_to_pair] if smart else list_to_pair
+            return [(t, t) for t in list_to_pair] if pairs else list_to_pair
         if attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".not", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "original_language":
@@ -1269,7 +1276,7 @@ class CollectionBuilder:
             else:
                 final_values = util.get_list(data)
             try:
-                return self.library.validate_search_list(final_values, attribute, title=not smart, pairs=smart)
+                return self.library.validate_search_list(final_values, attribute, title=not pairs, pairs=pairs)
             except Failed as e:
                 if validate:
                     raise
