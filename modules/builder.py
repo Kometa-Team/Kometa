@@ -186,10 +186,10 @@ all_filters = [
 ]
 movie_only_filters = [
     "audio_language", "audio_language.not",
-    "audio_track_title", "audio_track_title.not",
+    "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends",
     "country", "country.not",
     "director", "director.not",
-    "duration.gte", "duration.lte",
+    "duration.gt", "duration.gte", "duration.lt", "duration.lte",
     "original_language", "original_language.not",
     "subtitle_language", "subtitle_language.not",
     "resolution", "resolution.not",
@@ -1306,6 +1306,10 @@ class CollectionBuilder:
             attribute = "radarr_add" if self.library.is_movie else "sonarr_add"
         elif attribute.lower() in ["arr_tag", "arr_folder"]:
             attribute = f"{'rad' if self.library.is_movie else 'son'}{attribute.lower()}"
+        elif attribute in plex.date_attributes and modifier in [".gt", ".gte"]:
+            modifier = ".after"
+        elif attribute in plex.date_attributes and modifier in [".lt", ".lte"]:
+            modifier = ".before"
         final = f"{attribute}{modifier}"
         if text != final:
             logger.warning(f"Collection Warning: {text} attribute will run as {final}")
@@ -1359,10 +1363,9 @@ class CollectionBuilder:
                         if (modifier == "" and (current_data is None or current_data < threshold_date)) \
                                 or (modifier == ".not" and current_data and current_data >= threshold_date):
                             return False
-                    else:
-                        if (modifier == ".before" and (current_data is None or current_data >= filter_data)) \
-                                or (modifier == ".after" and (current_data is None or current_data <= filter_data)):
-                            return False
+                    elif (modifier == ".before" and (current_data is None or current_data >= filter_data)) \
+                            or (modifier == ".after" and (current_data is None or current_data <= filter_data)):
+                        return False
                 elif filter_attr == "audio_track_title":
                     jailbreak = False
                     for media in current.media:
@@ -1377,6 +1380,18 @@ class CollectionBuilder:
                                         break
                                 if jailbreak: break
                             if jailbreak: break
+                        if jailbreak: break
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends"]):
+                        return False
+                elif filter_attr == "filepath":
+                    jailbreak = False
+                    for location in current.locations:
+                        for check_text in filter_data:
+                            if (modifier in ["", ".not"] and check_text.lower() in location.lower()) \
+                                    or (modifier == ".begins" and location.lower().startswith(check_text.lower())) \
+                                    or (modifier == ".ends" and location.lower().endswith(check_text.lower())):
+                                jailbreak = True
+                                break
                         if jailbreak: break
                     if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends"]):
                         return False
@@ -1405,16 +1420,6 @@ class CollectionBuilder:
                         continue
                     if (modifier == ".not" and movie.original_language in filter_data) \
                             or (modifier == "" and movie.original_language not in filter_data):
-                        return False
-                elif filter_attr == "filepath":
-                    jailbreak = False
-                    for location in current.locations:
-                        for check_text in filter_data:
-                            if check_text.lower() in location.lower():
-                                jailbreak = True
-                                break
-                        if jailbreak: break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier == ""):
                         return False
                 elif modifier in [".gt", ".gte", ".lt", ".lte"]:
                     if filter_attr == "tmdb_vote_count":
@@ -1480,7 +1485,9 @@ class CollectionBuilder:
                 for filter_method, filter_data in arr_filters:
                     if (filter_method == "original_language" and movie.original_language not in filter_data) \
                             or (filter_method == "original_language.not" and movie.original_language in filter_data) \
+                            or (filter_method == "tmdb_vote_count.gt" and movie.vote_count <= filter_data) \
                             or (filter_method == "tmdb_vote_count.gte" and movie.vote_count < filter_data) \
+                            or (filter_method == "tmdb_vote_count.lt" and movie.vote_count >= filter_data) \
                             or (filter_method == "tmdb_vote_count.lte" and movie.vote_count > filter_data):
                         match = False
                         break
@@ -1515,7 +1522,9 @@ class CollectionBuilder:
                 if arr_filters:
                     show = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(missing_id))
                     for filter_method, filter_data in arr_filters:
-                        if (filter_method == "tmdb_vote_count.gte" and show.vote_count < filter_data) \
+                        if (filter_method == "tmdb_vote_count.gt" and show.vote_count <= filter_data) \
+                                or (filter_method == "tmdb_vote_count.gte" and show.vote_count < filter_data) \
+                                or (filter_method == "tmdb_vote_count.lt" and show.vote_count >= filter_data) \
                                 or (filter_method == "tmdb_vote_count.lte" and show.vote_count > filter_data):
                             match = False
                             break
