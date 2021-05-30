@@ -110,6 +110,16 @@ searches = [
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
+and_searches = [
+    "title.and", "studio.and", "actor.and", "audio_language.and", "collection.and",
+    "content_rating.and", "country.and",  "director.and", "genre.and", "label.and",
+    "network.and", "producer.and", "subtitle_language.and", "writer.and"
+]
+or_searches = [
+    "title", "studio", "actor", "audio_language", "collection", "content_rating",
+    "country", "director", "genre", "label", "network", "producer", "subtitle_language",
+    "writer", "decade", "resolution", "year", "episode_title", "episode_year"
+]
 movie_only_searches = [
     "country", "country.not",
     "director", "director.not",
