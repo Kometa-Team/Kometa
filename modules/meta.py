@@ -118,7 +118,7 @@ class Metadata:
                     else:
                         logger.error(f"Metadata Error: {attr} attribute is blank")
 
-            def edit_tags(attr, obj, group, alias, key=None, extra=None, movie_library=False):
+            def edit_tags(attr, obj, group, alias, extra=None, movie_library=False):
                 if movie_library and not self.library.is_movie and (attr in alias or f"{attr}.sync" in alias or f"{attr}.remove" in alias):
                     logger.error(f"Metadata Error: {attr} attribute only works for movie libraries")
                 elif attr in alias and f"{attr}.sync" in alias:
@@ -137,7 +137,7 @@ class Metadata:
                         add_tags.extend(extra)
                     remove_tags = util.get_list(group[alias[f"{attr}.remove"]]) if f"{attr}.remove" in alias else None
                     sync_tags = util.get_list(group[alias[f"{attr}.sync"]]) if f"{attr}.sync" in alias else None
-                    return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, key=key)
+                    return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
                 return False
 
             def set_image(attr, obj, group, alias, poster=True, url=True):
@@ -252,30 +252,18 @@ class Metadata:
                 updated = True
 
             advance_edits = {}
-            add_advanced_edit("episode_sorting", item, meta, methods, show_library=True)
-            add_advanced_edit("keep_episodes", item, meta, methods, show_library=True)
-            add_advanced_edit("delete_episodes", item, meta, methods, show_library=True)
-            add_advanced_edit("season_display", item, meta, methods, show_library=True)
-            add_advanced_edit("episode_ordering", item, meta, methods, show_library=True)
-            add_advanced_edit("metadata_language", item, meta, methods, new_agent=True)
-            add_advanced_edit("use_original_title", item, meta, methods, new_agent=True)
+            for advance_edit in ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering", "metadata_language", "use_original_title"]:
+                is_show = advance_edit in ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering"]
+                is_new_agent = advance_edit in ["metadata_language", "use_original_title"]
+                add_advanced_edit(advance_edit, item, meta, methods, show_library=is_show, new_agent=is_new_agent)
             if self.library.edit_item(item, mapping_name, item_type, advance_edits, advanced=True):
                 updated = True
 
-            if edit_tags("genre", item, meta, methods, extra=genres):
-                updated = True
-            if edit_tags("label", item, meta, methods):
-                updated = True
-            if edit_tags("collection", item, meta, methods):
-                updated = True
-            if edit_tags("country", item, meta, methods, key="countries", movie_library=True):
-                updated = True
-            if edit_tags("director", item, meta, methods, movie_library=True):
-                updated = True
-            if edit_tags("producer", item, meta, methods, movie_library=True):
-                updated = True
-            if edit_tags("writer", item, meta, methods, movie_library=True):
-                updated = True
+            for tag_edit in ["genre", "label", "collection", "country", "director", "producer", "writer"]:
+                is_movie = tag_edit in ["country", "director", "producer", "writer"]
+                has_extra = genres if tag_edit == "genre" else None
+                if edit_tags(tag_edit, item, meta, methods, movie_library=is_movie, extra=has_extra):
+                    updated = True
 
             logger.info(f"{item_type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 

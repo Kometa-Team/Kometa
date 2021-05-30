@@ -16,6 +16,8 @@ class Cache:
                 else:
                     logger.info(f"Using cache database at {cache}")
                 cursor.execute("DROP TABLE IF EXISTS guids")
+                cursor.execute("DROP TABLE IF EXISTS imdb_to_tvdb_map")
+                cursor.execute("DROP TABLE IF EXISTS tmdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS imdb_map")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guid_map (
@@ -34,17 +36,17 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS imdb_to_tvdb_map (
+                    """CREATE TABLE IF NOT EXISTS imdb_to_tvdb_map2 (
                     INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
-                    tvdb_id TEXT UNIQUE,
+                    tvdb_id TEXT,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tmdb_to_tvdb_map (
+                    """CREATE TABLE IF NOT EXISTS tmdb_to_tvdb_map2 (
                     INTEGER PRIMARY KEY,
                     tmdb_id TEXT UNIQUE,
-                    tvdb_id TEXT UNIQUE,
+                    tvdb_id TEXT,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
@@ -110,18 +112,18 @@ class Cache:
     def query_imdb_to_tvdb_map(self, _id, imdb=True):
         from_id = "imdb_id" if imdb else "tvdb_id"
         to_id = "tvdb_id" if imdb else "imdb_id"
-        return self._query_map("imdb_to_tvdb_map", _id, from_id, to_id)
+        return self._query_map("imdb_to_tvdb_map2", _id, from_id, to_id)
 
     def update_imdb_to_tvdb_map(self, expired, imdb_id, tvdb_id):
-        self._update_map("imdb_to_tvdb_map", "imdb_id", imdb_id, "tvdb_id", tvdb_id, expired)
+        self._update_map("imdb_to_tvdb_map2", "imdb_id", imdb_id, "tvdb_id", tvdb_id, expired)
 
     def query_tmdb_to_tvdb_map(self, _id, tmdb=True):
         from_id = "tmdb_id" if tmdb else "tvdb_id"
         to_id = "tvdb_id" if tmdb else "tmdb_id"
-        return self._query_map("tmdb_to_tvdb_map", _id, from_id, to_id)
+        return self._query_map("tmdb_to_tvdb_map2", _id, from_id, to_id)
 
     def update_tmdb_to_tvdb_map(self, expired, tmdb_id, tvdb_id):
-        self._update_map("tmdb_to_tvdb_map", "tmdb_id", tmdb_id, "tvdb_id", tvdb_id, expired)
+        self._update_map("tmdb_to_tvdb_map2", "tmdb_id", tmdb_id, "tvdb_id", tvdb_id, expired)
 
     def query_letterboxd_map(self, letterboxd_id):
         return self._query_map("letterboxd_map", letterboxd_id, "letterboxd_id", "tmdb_id")

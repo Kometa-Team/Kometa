@@ -62,7 +62,6 @@ class IMDbAPI:
         current_url = self._fix_url(imdb_url)
         total, item_count = self._total(current_url, language)
         header = {"Accept-Language": language}
-        length = 0
         imdb_ids = []
         if "&start=" in current_url:        current_url = re.sub("&start=\\d+", "", current_url)
         if "&count=" in current_url:        current_url = re.sub("&count=\\d+", "", current_url)
@@ -74,7 +73,7 @@ class IMDbAPI:
         num_of_pages = math.ceil(int(limit) / item_count)
         for i in range(1, num_of_pages + 1):
             start_num = (i - 1) * item_count + 1
-            length = util.print_return(length, f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
+            util.print_return(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
             if imdb_url.startswith(self.urls["keyword"]):
                 response = self._request(f"{current_url}&page={i}", header)
             else:
@@ -83,7 +82,7 @@ class IMDbAPI:
                 imdb_ids.extend(response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst")[:remainder])
             else:
                 imdb_ids.extend(response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst"))
-        util.print_end(length)
+        util.print_end()
         if imdb_ids:                        return imdb_ids
         else:                               raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
@@ -111,11 +110,10 @@ class IMDbAPI:
             logger.info(f"Processing {pretty}: {status}{data['url']}")
             imdb_ids = self._ids_from_url(data["url"], language, data["limit"])
             total_ids = len(imdb_ids)
-            length = 0
             for i, imdb in enumerate(imdb_ids, 1):
-                length = util.print_return(length, f"Converting IMDb ID {i}/{total_ids}")
+                util.print_return(f"Converting IMDb ID {i}/{total_ids}")
                 run_convert(imdb)
-            logger.info(util.adjust_space(length, f"Processed {total_ids} IMDb IDs"))
+            logger.info(util.adjust_space(f"Processed {total_ids} IMDb IDs"))
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
         logger.debug("")

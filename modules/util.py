@@ -26,6 +26,7 @@ def retry_if_not_plex(exception):
 
 separating_character = "="
 screen_width = 100
+spacing = 0
 
 days_alias = {
     "monday": 0, "mon": 0, "m": 0,
@@ -154,13 +155,6 @@ pretty_ids = {
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
-
-def adjust_space(old_length, display_title):
-    display_title = str(display_title)
-    space_length = old_length - len(display_title)
-    if space_length > 0:
-        display_title += " " * space_length
-    return display_title
 
 def make_ordinal(n):
     n = int(n)
@@ -391,12 +385,22 @@ def apply_formatter(handler, border=True):
         text = f"[%(asctime)s] %(filename)-27s %(levelname)-10s {text}"
     handler.setFormatter(logging.Formatter(text))
 
-def print_return(length, text):
-    print(adjust_space(length, f"| {text}"), end="\r")
-    return len(text) + 2
+def adjust_space(display_title):
+    display_title = str(display_title)
+    space_length = spacing - len(display_title)
+    if space_length > 0:
+        display_title += " " * space_length
+    return display_title
 
-def print_end(length):
-    print(adjust_space(length, " "), end="\r")
+def print_return(text):
+    print(adjust_space(f"| {text}"), end="\r")
+    global spacing
+    spacing = len(text) + 2
+
+def print_end():
+    print(adjust_space(" "), end="\r")
+    global spacing
+    spacing = 0
 
 def validate_filename(filename):
     if is_valid_filename(filename):

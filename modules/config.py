@@ -138,6 +138,9 @@ class Config:
             elif data[attribute] is None:
                 if default_is_none is True:                                         return None
                 else:                                                               message = f"{text} is blank"
+            elif var_type == "url":
+                if data[attribute].endswith(("\\", "/")):                           return data[attribute][:-1]
+                else:                                                               return data[attribute]
             elif var_type == "bool":
                 if isinstance(data[attribute], bool):                               return data[attribute]
                 else:                                                               message = f"{text} must be either true or false"
@@ -279,7 +282,7 @@ class Config:
         logger.info("Connecting to Plex Libraries...")
 
         self.general["plex"] = {}
-        self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", default_is_none=True)
+        self.general["plex"]["url"] = check_for_attribute(self.data, "url", parent="plex", var_type="url", default_is_none=True)
         self.general["plex"]["token"] = check_for_attribute(self.data, "token", parent="plex", default_is_none=True)
         self.general["plex"]["timeout"] = check_for_attribute(self.data, "timeout", parent="plex", var_type="int", default=60)
         self.general["plex"]["clean_bundles"] = check_for_attribute(self.data, "clean_bundles", parent="plex", var_type="bool", default=False)
@@ -287,7 +290,7 @@ class Config:
         self.general["plex"]["optimize"] = check_for_attribute(self.data, "optimize", parent="plex", var_type="bool", default=False)
 
         self.general["radarr"] = {}
-        self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", default_is_none=True)
+        self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", var_type="url", default_is_none=True)
         self.general["radarr"]["token"] = check_for_attribute(self.data, "token", parent="radarr", default_is_none=True)
         self.general["radarr"]["version"] = check_for_attribute(self.data, "version", parent="radarr", test_list=radarr_versions, default="v3")
         self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False)
@@ -299,7 +302,7 @@ class Config:
         self.general["radarr"]["search"] = check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
 
         self.general["sonarr"] = {}
-        self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", default_is_none=True)
+        self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", var_type="url", default_is_none=True)
         self.general["sonarr"]["token"] = check_for_attribute(self.data, "token", parent="sonarr", default_is_none=True)
         self.general["sonarr"]["version"] = check_for_attribute(self.data, "version", parent="sonarr", test_list=sonarr_versions, default="v3")
         self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False)
@@ -314,7 +317,7 @@ class Config:
         self.general["sonarr"]["cutoff_search"] = check_for_attribute(self.data, "cutoff_search", parent="sonarr", var_type="bool", default=False)
 
         self.general["tautulli"] = {}
-        self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", default_is_none=True)
+        self.general["tautulli"]["url"] = check_for_attribute(self.data, "url", parent="tautulli", var_type="url", default_is_none=True)
         self.general["tautulli"]["apikey"] = check_for_attribute(self.data, "apikey", parent="tautulli", default_is_none=True)
 
         self.libraries = []
@@ -440,13 +443,13 @@ class Config:
                     params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"))]
                 params["default_dir"] = default_dir
                 params["plex"] = {}
-                params["plex"]["url"] = check_for_attribute(lib, "url", parent="plex", default=self.general["plex"]["url"], req_default=True, save=False)
+                params["plex"]["url"] = check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False)
                 params["plex"]["token"] = check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False)
                 params["plex"]["timeout"] = check_for_attribute(lib, "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False)
                 params["plex"]["clean_bundles"] = check_for_attribute(lib, "clean_bundles", parent="plex", var_type="bool", default=self.general["plex"]["clean_bundles"], save=False)
                 params["plex"]["empty_trash"] = check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False)
                 params["plex"]["optimize"] = check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
-                library = PlexAPI(params, self.TMDb, self.TVDb)
+                library = PlexAPI(params)
                 logger.info("")
                 logger.info(f"{display_name} Library Connection Successful")
             except Failed as e:
@@ -462,7 +465,7 @@ class Config:
                 logger.info("")
                 radarr_params = {}
                 try:
-                    radarr_params["url"] = check_for_attribute(lib, "url", parent="radarr", default=self.general["radarr"]["url"], req_default=True, save=False)
+                    radarr_params["url"] = check_for_attribute(lib, "url", parent="radarr", var_type="url", default=self.general["radarr"]["url"], req_default=True, save=False)
                     radarr_params["token"] = check_for_attribute(lib, "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False)
                     radarr_params["version"] = check_for_attribute(lib, "version", parent="radarr", test_list=radarr_versions, default=self.general["radarr"]["version"], save=False)
                     radarr_params["add"] = check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
@@ -486,7 +489,7 @@ class Config:
                 logger.info("")
                 sonarr_params = {}
                 try:
-                    sonarr_params["url"] = check_for_attribute(lib, "url", parent="sonarr", default=self.general["sonarr"]["url"], req_default=True, save=False)
+                    sonarr_params["url"] = check_for_attribute(lib, "url", parent="sonarr", var_type="url", default=self.general["sonarr"]["url"], req_default=True, save=False)
                     sonarr_params["token"] = check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False)
                     sonarr_params["version"] = check_for_attribute(lib, "version", parent="sonarr", test_list=sonarr_versions, default=self.general["sonarr"]["version"], save=False)
                     sonarr_params["add"] = check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
@@ -516,7 +519,7 @@ class Config:
                 logger.info("")
                 tautulli_params = {}
                 try:
-                    tautulli_params["url"] = check_for_attribute(lib, "url", parent="tautulli", default=self.general["tautulli"]["url"], req_default=True, save=False)
+                    tautulli_params["url"] = check_for_attribute(lib, "url", parent="tautulli", var_type="url", default=self.general["tautulli"]["url"], req_default=True, save=False)
                     tautulli_params["apikey"] = check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
                     library.Tautulli = TautulliAPI(tautulli_params)
                 except Failed as e:
