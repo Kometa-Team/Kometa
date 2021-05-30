@@ -105,7 +105,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.9.3                                                                   "))
+    logger.info(util.centered("    Version: 1.10.0                                                                  "))
     if time_scheduled:              start_type = f"{time_scheduled} "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
@@ -144,9 +144,9 @@ def update_libraries(config):
         logger.info("")
         util.separator(f"Mapping {library.name} Library", space=False, border=False)
         logger.info("")
-        movie_map, show_map = map_guids(config, library)
+        library.map_guids(config)
         if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
-            mass_metadata(config, library, movie_map, show_map)
+            mass_metadata(config, library)
         for metadata in library.metadata_files:
             logger.info("")
             util.separator(f"Running Metadata File\n{metadata.path}")
@@ -164,7 +164,7 @@ def update_libraries(config):
                 logger.info("")
                 util.separator(f"{'Test ' if config.test_mode else ''}Collections")
                 logger.removeHandler(library_handler)
-                run_collection(config, library, metadata, collections_to_run, movie_map, show_map)
+                run_collection(config, library, metadata, collections_to_run)
                 logger.addHandler(library_handler)
 
         if not config.test_mode and not config.requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
@@ -205,12 +205,11 @@ def update_libraries(config):
         logger.info("")
         util.separator("Run Again")
         logger.info("")
-        length = 0
         for x in range(1, config.general["run_again_delay"] + 1):
-            length = util.print_return(length, f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
+            util.print_return(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
             for y in range(60):
                 time.sleep(1)
-        util.print_end(length)
+        util.print_end()
         for library in config.libraries:
             if library.run_again:
                 col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, f"library.log")
@@ -222,13 +221,13 @@ def update_libraries(config):
                 logger.info("")
                 util.separator(f"{library.name} Library Run Again")
                 logger.info("")
-                movie_map, show_map = map_guids(config, library)
+                library.map_guids(config)
                 for builder in library.run_again:
                     logger.info("")
                     util.separator(f"{builder.name} Collection")
                     logger.info("")
                     try:
-                        builder.run_collections_again(movie_map, show_map)
+                        builder.run_collections_again()
                     except Failed as e:
                         util.print_stacktrace()
                         util.print_multiline(e, error=True)
@@ -245,35 +244,7 @@ def update_libraries(config):
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
-def map_guids(config, library):
-    movie_map = {}
-    show_map = {}
-    length = 0
-    logger.info(f"Loading {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
-    logger.info("")
-    items = library.Plex.all()
-    logger.info(f"Mapping {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
-    logger.info("")
-    for i, item in enumerate(items, 1):
-        length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
-        id_type, main_id = config.Convert.get_id(item, library, length)
-        if main_id:
-            if not isinstance(main_id, list):
-                main_id = [main_id]
-            if id_type == "movie":
-                for m in main_id:
-                    if m in movie_map:              movie_map[m].append(item.ratingKey)
-                    else:                           movie_map[m] = [item.ratingKey]
-            elif id_type == "show":
-                for m in main_id:
-                    if m in show_map:               show_map[m].append(item.ratingKey)
-                    else:                           show_map[m] = [item.ratingKey]
-    logger.info("")
-    logger.info(util.adjust_space(length, f"Processed {len(items)} {'Movies' if library.is_movie else 'Shows'}"))
-    return movie_map, show_map
-
-def mass_metadata(config, library, movie_map, show_map):
-    length = 0
+def mass_metadata(config, library):
     logger.info("")
     util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
@@ -281,27 +252,21 @@ def mass_metadata(config, library, movie_map, show_map):
     sonarr_adds = []
     items = library.Plex.all()
     for i, item in enumerate(items, 1):
-        length = util.print_return(length, f"Processing: {i}/{len(items)} {item.title}")
+        util.print_return(f"Processing: {i}/{len(items)} {item.title}")
         tmdb_id = None
         tvdb_id = None
         imdb_id = None
         if config.Cache:
-            t_id, guid_media_type, _ = config.Cache.config.Cache.query_guid_map(item.guid)
+            t_id, guid_media_type, _ = config.Cache.query_guid_map(item.guid)
             if t_id:
                 if "movie" in guid_media_type:
                     tmdb_id = t_id
                 else:
                     tvdb_id = t_id
         if not tmdb_id and not tvdb_id:
-            for tmdb, rating_keys in movie_map.items():
-                if item.ratingKey in rating_keys:
-                    tmdb_id = tmdb
-                    break
+            tmdb_id = library.get_tmdb_from_map(item)
         if not tmdb_id and not tvdb_id and library.is_show:
-            for tvdb, rating_keys in show_map.items():
-                if item.ratingKey in rating_keys:
-                    tvdb_id = tvdb
-                    break
+            tmdb_id = library.get_tvdb_from_map(item)
 
         if library.Radarr and library.radarr_add_all and tmdb_id:
             radarr_adds.append(tmdb_id)
@@ -316,9 +281,9 @@ def mass_metadata(config, library, movie_map, show_map):
                 try:
                     tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
                 except Failed as e:
-                    logger.info(util.adjust_space(length, str(e)))
+                    logger.info(util.adjust_space(str(e)))
             else:
-                logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
+                logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
 
         omdb_item = None
         if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
@@ -331,9 +296,9 @@ def mass_metadata(config, library, movie_map, show_map):
                     try:
                         omdb_item = config.OMDb.get_omdb(imdb_id)
                     except Failed as e:
-                        logger.info(util.adjust_space(length, str(e)))
+                        logger.info(util.adjust_space(str(e)))
                 else:
-                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
 
         if not tmdb_item and not omdb_item:
             continue
@@ -355,7 +320,7 @@ def mass_metadata(config, library, movie_map, show_map):
                     library.query_data(item.addGenre, genre)
                     display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
                 if len(display_str) > 0:
-                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Genres | {display_str}"))
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | Genres | {display_str}"))
             except Failed:
                 pass
         if library.mass_audience_rating_update or library.mass_critic_rating_update:
@@ -367,14 +332,14 @@ def mass_metadata(config, library, movie_map, show_map):
                 else:
                     raise Failed
                 if new_rating is None:
-                    logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | No Rating Found"))
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
                 else:
                     if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
                         library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                        logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
                     if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
                         library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
-                        logger.info(util.adjust_space(length, f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
             except Failed:
                 pass
 
@@ -390,7 +355,7 @@ def mass_metadata(config, library, movie_map, show_map):
         except Failed as e:
             logger.error(e)
 
-def run_collection(config, library, metadata, requested_collections, movie_map, show_map):
+def run_collection(config, library, metadata, requested_collections):
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
@@ -448,6 +413,7 @@ def run_collection(config, library, metadata, requested_collections, movie_map, 
                 util.print_multiline(builder.schedule, info=True)
 
             if len(builder.smart_filter_details) > 0:
+                logger.info("")
                 util.print_multiline(builder.smart_filter_details, info=True)
 
             if not builder.smart_url:
@@ -459,13 +425,13 @@ def run_collection(config, library, metadata, requested_collections, movie_map, 
                     for filter_key, filter_value in builder.filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
-                builder.collect_rating_keys(movie_map, show_map)
+                builder.collect_rating_keys()
 
                 if len(builder.rating_keys) > 0 and builder.build_collection:
                     logger.info("")
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
-                    builder.add_to_collection(movie_map)
+                    builder.add_to_collection()
                 if len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0:
                     logger.info("")
                     util.separator(f"Missing from Library", space=False, border=False)
@@ -479,6 +445,12 @@ def run_collection(config, library, metadata, requested_collections, movie_map, 
                 util.separator(f"Updating Details of {mapping_name} Collection", space=False, border=False)
                 logger.info("")
                 builder.update_details()
+
+            if len(builder.item_details) > 0:
+                logger.info("")
+                util.separator(f"Updating Details of the Items in  {mapping_name} Collection", space=False, border=False)
+                logger.info("")
+                builder.update_item_details()
 
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
@@ -497,7 +469,6 @@ try:
     if run or test or collections or libraries or resume:
         start(config_file, is_test=test, requested_collections=collections, requested_libraries=libraries, resume_from=resume)
     else:
-        time_length = 0
         for time_to_run in times_to_run:
             schedule.every().day.at(time_to_run).do(start, config_file, time_scheduled=time_to_run)
         while True:
@@ -517,7 +488,7 @@ try:
                 minutes = int((seconds % 3600) // 60)
                 time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                 time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                time_length = util.print_return(time_length, f"Current Time: {current} | {time_str} until the next run at {og_time_str} {times_to_run}")
+                util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} {times_to_run}")
             time.sleep(60)
 except KeyboardInterrupt:
     util.separator("Exiting Plex Meta Manager")

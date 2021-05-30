@@ -1,5 +1,5 @@
 import glob, logging, os, requests
-from modules import util
+from modules import builder, util
 from modules.meta import Metadata
 from modules.util import Failed
 import plexapi
@@ -19,14 +19,14 @@ search_translation = {
     "content_rating": "contentRating",
     "subtitle_language": "subtitleLanguage",
     "added": "addedAt",
-    "originally_available": "originallyAvailableAt",
+    "release": "originallyAvailableAt",
     "audience_rating": "audienceRating",
     "critic_rating": "rating",
     "user_rating": "userRating",
     "plays": "viewCount",
     "episode_title": "episode.title",
     "episode_added": "episode.addedAt",
-    "episode_originally_available": "episode.originallyAvailableAt",
+    "episode_air_date": "episode.originallyAvailableAt",
     "episode_year": "episode.year",
     "episode_user_rating": "episode.userRating",
     "episode_plays": "episode.viewCount"
@@ -77,58 +77,94 @@ item_advance_keys = {
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
 searches = [
-    "title", "title.and", "title.not", "title.begins", "title.ends",
-    "studio", "studio.and", "studio.not", "studio.begins", "studio.ends",
-    "actor", "actor.and", "actor.not",
-    "audio_language", "audio_language.and", "audio_language.not",
-    "collection", "collection.and", "collection.not",
-    "content_rating", "content_rating.and", "content_rating.not",
-    "country", "country.and", "country.not",
-    "director", "director.and", "director.not",
-    "genre", "genre.and", "genre.not",
-    "label", "label.and", "label.not",
-    "network", "network.and", "network.not",
-    "producer", "producer.and", "producer.not",
-    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
-    "writer", "writer.and", "writer.not",
-    "decade", "resolution",
+    "title", "title.not", "title.begins", "title.ends",
+    "studio", "studio.not", "studio.begins", "studio.ends",
+    "actor", "actor.not",
+    "audio_language", "audio_language.not",
+    "collection", "collection.not",
+    "content_rating", "content_rating.not",
+    "country", "country.not",
+    "director", "director.not",
+    "genre", "genre.not",
+    "label", "label.not",
+    "network", "network.not",
+    "producer", "producer.not",
+    "subtitle_language", "subtitle_language.not",
+    "writer", "writer.not",
+    "decade", "resolution", "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
+    "last_played", "last_played.not", "last_played.before", "last_played.after",
     "added", "added.not", "added.before", "added.after",
-    "originally_available", "originally_available.not",
-    "originally_available.before", "originally_available.after",
+    "release", "release.not", "release.before", "release.after",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte",
+    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
     "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
     "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
-    "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte"
+    "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte",
+    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
+    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
+    "episode_air_date", "episode_air_date.not", "episode_air_date.before", "episode_air_date.after",
+    "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
+    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
+    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
+    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
+]
+and_searches = [
+    "title.and", "studio.and", "actor.and", "audio_language.and", "collection.and",
+    "content_rating.and", "country.and",  "director.and", "genre.and", "label.and",
+    "network.and", "producer.and", "subtitle_language.and", "writer.and"
+]
+or_searches = [
+    "title", "studio", "actor", "audio_language", "collection", "content_rating",
+    "country", "director", "genre", "label", "network", "producer", "subtitle_language",
+    "writer", "decade", "resolution", "year", "episode_title", "episode_year"
 ]
 movie_only_searches = [
-    "audio_language", "audio_language.and", "audio_language.not",
-    "country", "country.and", "country.not",
-    "subtitle_language", "subtitle_language.and", "subtitle_language.not",
-    "decade", "resolution",
-    "originally_available.before", "originally_available.after",
+    "country", "country.not",
+    "director", "director.not",
+    "producer", "producer.not",
+    "writer", "writer.not",
+    "decade", "duplicate", "unplayed", "progress", "trash",
+    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
-    "network", "network.and", "network.not",
+    "network", "network.not",
+    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
+    "episode_air_date", "episode_air_date.not",
+    "episode_air_date.before", "episode_air_date.after",
+    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
+    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
+    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
-tmdb_searches = [
-    "actor", "actor.and", "actor.not",
-    "director", "director.and", "director.not",
-    "producer", "producer.and", "producer.not",
-    "writer", "writer.and", "writer.not"
+number_attributes = ["plays", "episode_plays", "added", "episode_added", "release", "episode_air_date", "duration", "tmdb_vote_count"]
+float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
+boolean_attributes = [
+    "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
+    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
 ]
+tmdb_attributes = ["actor", "director", "producer", "writer"]
+date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"]
+search_display = {
+    "added": "Date Added",
+    "release": "Release Date",
+    "hdr": "HDR",
+    "progress": "In Progress",
+    "episode_progress": "Episode In Progress"
+}
 sorts = {
     None: None,
     "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
     "originally_available.asc": "originallyAvailableAt:asc", "originally_available.desc": "originallyAvailableAt:desc",
+    "release.asc": "originallyAvailableAt:asc", "release.desc": "originallyAvailableAt:desc",
     "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
     "audience_rating.asc": "audienceRating:asc", "audience_rating.desc": "audienceRating:desc",
     "duration.asc": "duration:asc", "duration.desc": "duration:desc",
     "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
 }
 modifiers = {
-    ".and": "&",
     ".not": "!",
     ".begins": "<",
     ".ends": ">",
@@ -167,64 +203,11 @@ tags = [
     "subtitle_language",
     "writer"
 ]
-smart_searches = [
-    "all", "any",
-    "title", "title.not", "title.begins", "title.ends",
-    "studio", "studio.not", "studio.begins", "studio.ends",
-    "actor", "actor.not",
-    "audio_language", "audio_language.not",
-    "collection", "collection.not",
-    "content_rating", "content_rating.not",
-    "country", "country.not",
-    "director", "director.not",
-    "genre", "genre.not",
-    "label", "label.not",
-    "network", "network.not",
-    "producer", "producer.not",
-    "subtitle_language", "subtitle_language.not",
-    "writer", "writer.not",
-    "decade", "resolution", "hdr",
-    "added", "added.not", "added.before", "added.after",
-    "originally_available", "originally_available.not",
-    "originally_available.before", "originally_available.after",
-    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
-    "duration.gt", "duration.gte", "duration.lt", "duration.lte",
-    "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
-    "audience_rating.gt", "audience_rating.gte", "audience_rating.lt","audience_rating.lte",
-    "critic_rating.gt", "critic_rating.gte", "critic_rating.lt","critic_rating.lte",
-    "year", "year.not", "year.gt", "year.gte", "year.lt","year.lte",
-    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
-    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
-    "episode_originally_available", "episode_originally_available.not",
-    "episode_originally_available.before", "episode_originally_available.after",
-    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt","episode_year.lte",
-    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt","episode_user_rating.lte",
-    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte"
-]
-movie_only_smart_searches = [
-    "country", "country.not",
-    "director", "director.not",
-    "producer", "producer.not",
-    "writer", "writer.not",
-    "decade",
-    "originally_available", "originally_available.not",
-    "originally_available.before", "originally_available.after",
-    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
-    "duration.gt", "duration.gte", "duration.lt", "duration.lte"
-]
-show_only_smart_searches = [
-    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
-    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
-    "episode_originally_available", "episode_originally_available.not",
-    "episode_originally_available.before", "episode_originally_available.after",
-    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt","episode_year.lte",
-    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt","episode_user_rating.lte",
-    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte"
-]
-movie_smart_sorts = {
+movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
     "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
     "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
@@ -234,10 +217,11 @@ movie_smart_sorts = {
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "random": "random"
 }
-show_smart_sorts = {
+show_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
     "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
     "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
@@ -246,19 +230,20 @@ show_smart_sorts = {
     "episode_added.asc": "episode.addedAt", "episode_added.desc": "episode.addedAt%3Adesc",
     "random": "random"
 }
-season_smart_sorts = {
+season_sorts = {
     "season.asc": "season.index%2Cseason.titleSort", "season.desc": "season.index%3Adesc%2Cseason.titleSort",
     "show.asc": "show.titleSort%2Cindex", "show.desc": "show.titleSort%3Adesc%2Cindex",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "random": "random"
 }
-episode_smart_sorts = {
+episode_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "show.asc": "show.titleSort%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
     "show.desc": "show.titleSort%3Adesc%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
     "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
     "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
     "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
@@ -267,15 +252,15 @@ episode_smart_sorts = {
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "random": "random"
 }
-smart_types = {
-    "movies": (1, movie_smart_sorts),
-    "shows": (2, show_smart_sorts),
-    "seasons": (3, season_smart_sorts),
-    "episodes": (4, episode_smart_sorts),
+sort_types = {
+    "movies": (1, movie_sorts),
+    "shows": (2, show_sorts),
+    "seasons": (3, season_sorts),
+    "episodes": (4, episode_sorts),
 }
 
 class PlexAPI:
-    def __init__(self, params, TMDb, TVDb):
+    def __init__(self, params):
         try:
             self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
         except Unauthorized:
@@ -318,8 +303,6 @@ class PlexAPI:
             for ad in params["asset_directory"]:
                 logger.info(f"Using Asset Directory: {ad}")
 
-        self.TMDb = TMDb
-        self.TVDb = TVDb
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
@@ -351,6 +334,10 @@ class PlexAPI:
         self.empty_trash = params["plex"]["empty_trash"]
         self.optimize = params["plex"]["optimize"]
         self.missing = {}
+        self.movie_map = {}
+        self.show_map = {}
+        self.movie_rating_key_map = {}
+        self.show_rating_key_map = {}
         self.run_again = []
 
     def get_all_collections(self):
@@ -455,7 +442,7 @@ class PlexAPI:
         if title not in labels:
             raise Failed(f"Plex Error: Label: {title} does not exist")
         smart_type = 1 if self.is_movie else 2
-        sort_type = movie_smart_sorts[sort] if self.is_movie else show_smart_sorts[sort]
+        sort_type = movie_sorts[sort] if self.is_movie else show_sorts[sort]
         return smart_type, f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
 
     def test_smart_filter(self, uri_args):
@@ -537,56 +524,8 @@ class PlexAPI:
             logger.info(f"Processing {pretty} {media_type}s")
             items = self.get_all()
         elif method == "plex_search":
-            search_terms = {}
-            has_processed = False
-            search_limit = None
-            search_sort = None
-            for search_method, search_data in data.items():
-                if search_method == "limit":
-                    search_limit = search_data
-                elif search_method == "sort_by":
-                    search_sort = search_data
-                else:
-                    search, modifier = os.path.splitext(str(search_method).lower())
-                    final_search = search_translation[search] if search in search_translation else search
-                    if search in ["added", "originally_available"] and modifier == "":
-                        final_mod = ">>"
-                    elif search in ["added", "originally_available"] and modifier == ".not":
-                        final_mod = "<<"
-                    elif search in ["critic_rating", "audience_rating"] and modifier == ".gt":
-                        final_mod = "__gt"
-                    elif search in ["critic_rating", "audience_rating"] and modifier == ".lt":
-                        final_mod = "__lt"
-                    else:
-                        final_mod = modifiers[modifier] if modifier in modifiers else ""
-                    final_method = f"{final_search}{final_mod}"
-
-                    if search == "duration":
-                        search_terms[final_method] = search_data * 60000
-                    elif search in ["added", "originally_available"] and modifier in ["", ".not"]:
-                        search_terms[final_method] = f"{search_data}d"
-                    else:
-                        search_terms[final_method] = search_data
-
-                    if search in ["added", "originally_available"] or modifier in [".gt", ".gte", ".lt", ".lte", ".before", ".after"]:
-                        ors = f"{search_method}({search_data}"
-                    else:
-                        ors = ""
-                        conjunction = " AND " if final_mod == "&" else " OR "
-                        for o, param in enumerate(search_data):
-                            or_des = conjunction if o > 0 else f"{search_method}("
-                            ors += f"{or_des}{param}"
-                    if has_processed:
-                        logger.info(f"                        AND {ors})")
-                    else:
-                        logger.info(f"Processing {pretty}: {ors})")
-                        has_processed = True
-            if search_sort:
-                logger.info(f"                        SORT BY {search_sort}")
-            if search_limit:
-                logger.info(f"                        LIMIT {search_limit}")
-            logger.debug(f"Search: {search_terms}")
-            items = self.search(sort=sorts[search_sort], maxresults=search_limit, **search_terms)
+            util.print_multiline(data[1], info=True)
+            items = self.get_filter_items(data[2])
         elif method == "plex_collectionless":
             good_collections = []
             logger.info("Collections Excluded")
@@ -612,9 +551,8 @@ class PlexAPI:
                 logger.info(col.title)
             collection_indexes = [c.index for c in good_collections]
             all_items = self.get_all()
-            length = 0
             for i, item in enumerate(all_items, 1):
-                length = util.print_return(length, f"Processing: {i}/{len(all_items)} {item.title}")
+                util.print_return(f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
                 self.query(item.reload)
                 for collection in item.collections:
@@ -623,7 +561,7 @@ class PlexAPI:
                         break
                 if add_item:
                     items.append(item)
-            logger.info(util.adjust_space(length, f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}"))
+            logger.info(util.adjust_space(f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}"))
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
@@ -665,6 +603,42 @@ class PlexAPI:
         name = collection.title if isinstance(collection, Collections) else str(collection)
         return name, self.get_collection_items(collection, smart_label_collection)
 
+    def map_guids(self, config):
+        logger.info(f"Loading {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
+        logger.info("")
+        items = self.Plex.all()
+        logger.info(f"Mapping {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
+        logger.info("")
+        for i, item in enumerate(items, 1):
+            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:
+                id_type, main_id = config.Convert.get_id(item, self)
+                if main_id:
+                    if not isinstance(main_id, list):
+                        main_id = [main_id]
+                    if id_type == "movie":
+                        self.movie_rating_key_map[item.ratingKey] = main_id[0]
+                        for m in main_id:
+                            if m in self.movie_map:
+                                self.movie_map[m].append(item.ratingKey)
+                            else:
+                                self.movie_map[m] = [item.ratingKey]
+                    elif id_type == "show":
+                        self.show_rating_key_map[item.ratingKey] = main_id[0]
+                        for m in main_id:
+                            if m in self.show_map:
+                                self.show_map[m].append(item.ratingKey)
+                            else:
+                                self.show_map[m] = [item.ratingKey]
+        logger.info("")
+        logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if self.is_movie else 'Shows'}"))
+
+    def get_tmdb_from_map(self, item):
+        return self.movie_rating_key_map[item.ratingKey] if item.ratingKey in self.movie_rating_key_map else None
+
+    def get_tvdb_from_map(self, item):
+        return self.show_rating_key_map[item.ratingKey] if item.ratingKey in self.show_rating_key_map else None
+
     def search_item(self, data, year=None):
         kwargs = {}
         if year is not None:
@@ -685,10 +659,9 @@ class PlexAPI:
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
         return False
 
-    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, key=None):
+    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
         updated = False
-        if key is None:
-            key = f"{attr}s"
+        key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
             item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
             input_tags = []
