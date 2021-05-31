@@ -721,240 +721,241 @@ class CollectionBuilder:
                     self.summaries[method_name] = config.Letterboxd.get_list_description(values[0], self.library.Plex.language)
                     self.methods.append((method_name[:-8], values))
                 elif method_name in dictionary_builders:
-                    if isinstance(method_data, dict):
-                        def get_int(parent, int_method, data_in, methods_in, default_in, minimum=1, maximum=None):
-                            if int_method not in methods_in:
-                                logger.warning(f"Collection Warning: {parent} {int_method} attribute not found using {default_in} as default")
-                            elif not data_in[methods_in[int_method]]:
-                                logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute is blank using {default_in} as default")
-                            elif isinstance(data_in[methods_in[int_method]], int) and data_in[methods_in[int_method]] >= minimum:
-                                if maximum is None or data_in[methods_in[int_method]] <= maximum:
-                                    return data_in[methods_in[int_method]]
+                    for dict_data in util.get_list(method_data):
+                        if isinstance(dict_data, dict):
+                            def get_int(parent, int_method, data_in, methods_in, default_in, minimum=1, maximum=None):
+                                if int_method not in methods_in:
+                                    logger.warning(f"Collection Warning: {parent} {int_method} attribute not found using {default_in} as default")
+                                elif not data_in[methods_in[int_method]]:
+                                    logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute is blank using {default_in} as default")
+                                elif isinstance(data_in[methods_in[int_method]], int) and data_in[methods_in[int_method]] >= minimum:
+                                    if maximum is None or data_in[methods_in[int_method]] <= maximum:
+                                        return data_in[methods_in[int_method]]
+                                    else:
+                                        logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute {data_in[methods_in[int_method]]} invalid must an integer <= {maximum} using {default_in} as default")
                                 else:
-                                    logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute {data_in[methods_in[int_method]]} invalid must an integer <= {maximum} using {default_in} as default")
-                            else:
-                                logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute {data_in[methods_in[int_method]]} invalid must an integer >= {minimum} using {default_in} as default")
-                            return default_in
-                        if method_name == "filters":
-                            validate = True
-                            if "validate" in method_data:
-                                if method_data["validate"] is None:
-                                    raise Failed("Collection Error: validate filter attribute is blank")
-                                if not isinstance(method_data["validate"], bool):
-                                    raise Failed("Collection Error: validate filter attribute must be either true or false")
-                                validate = method_data["validate"]
-                            for filter_method, filter_data in method_data.items():
-                                filter_attr, modifier, filter_final = self._split(filter_method)
-                                if filter_final not in all_filters:
-                                    raise Failed(f"Collection Error: {filter_final} is not a valid filter attribute")
-                                elif filter_final in movie_only_filters and self.library.is_show:
-                                    raise Failed(f"Collection Error: {filter_final} filter attribute only works for movie libraries")
-                                elif filter_final in show_only_filters and self.library.is_movie:
-                                    raise Failed(f"Collection Error: {filter_final} filter attribute only works for show libraries")
-                                elif filter_final is None:
-                                    raise Failed(f"Collection Error: {filter_final} filter attribute is blank")
-                                else:
-                                    self.filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
-                        elif method_name == "plex_collectionless":
-                            new_dictionary = {}
-                            dict_methods = {dm.lower(): dm for dm in method_data}
-                            prefix_list = []
-                            if "exclude_prefix" in dict_methods and method_data[dict_methods["exclude_prefix"]]:
-                                if isinstance(method_data[dict_methods["exclude_prefix"]], list):
-                                    prefix_list.extend([exclude for exclude in method_data[dict_methods["exclude_prefix"]] if exclude])
-                                else:
-                                    prefix_list.append(str(method_data[dict_methods["exclude_prefix"]]))
-                            exact_list = []
-                            if "exclude" in dict_methods and method_data[dict_methods["exclude"]]:
-                                if isinstance(method_data[dict_methods["exclude"]], list):
-                                    exact_list.extend([exclude for exclude in method_data[dict_methods["exclude"]] if exclude])
-                                else:
-                                    exact_list.append(str(method_data[dict_methods["exclude"]]))
-                            if len(prefix_list) == 0 and len(exact_list) == 0:
-                                raise Failed("Collection Error: you must have at least one exclusion")
-                            exact_list.append(self.name)
-                            new_dictionary["exclude_prefix"] = prefix_list
-                            new_dictionary["exclude"] = exact_list
-                            self.methods.append((method_name, [new_dictionary]))
-                        elif method_name == "plex_search":
-                            self.methods.append((method_name, [self.build_filter("plex_search", method_data)]))
-                        elif method_name == "tmdb_discover":
-                            new_dictionary = {"limit": 100}
-                            for discover_name, discover_data in method_data.items():
-                                discover_final = discover_name.lower()
-                                if discover_data:
-                                    if (self.library.is_movie and discover_final in tmdb.discover_movie) or (self.library.is_show and discover_final in tmdb.discover_tv):
-                                        if discover_final == "language":
-                                            if re.compile("([a-z]{2})-([A-Z]{2})").match(str(discover_data)):
-                                                new_dictionary[discover_final] = str(discover_data)
-                                            else:
-                                                raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} must match pattern ([a-z]{{2}})-([A-Z]{{2}}) e.g. en-US")
-                                        elif discover_final == "region":
-                                            if re.compile("^[A-Z]{2}$").match(str(discover_data)):
-                                                new_dictionary[discover_final] = str(discover_data)
-                                            else:
-                                                raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} must match pattern ^[A-Z]{{2}}$ e.g. US")
-                                        elif discover_final == "sort_by":
-                                            if (self.library.is_movie and discover_data in tmdb.discover_movie_sort) or (self.library.is_show and discover_data in tmdb.discover_tv_sort):
+                                    logger.warning(f"Collection Warning: {parent} {methods_in[int_method]} attribute {data_in[methods_in[int_method]]} invalid must an integer >= {minimum} using {default_in} as default")
+                                return default_in
+                            if method_name == "filters":
+                                validate = True
+                                if "validate" in dict_data:
+                                    if dict_data["validate"] is None:
+                                        raise Failed("Collection Error: validate filter attribute is blank")
+                                    if not isinstance(dict_data["validate"], bool):
+                                        raise Failed("Collection Error: validate filter attribute must be either true or false")
+                                    validate = dict_data["validate"]
+                                for filter_method, filter_data in dict_data.items():
+                                    filter_attr, modifier, filter_final = self._split(filter_method)
+                                    if filter_final not in all_filters:
+                                        raise Failed(f"Collection Error: {filter_final} is not a valid filter attribute")
+                                    elif filter_final in movie_only_filters and self.library.is_show:
+                                        raise Failed(f"Collection Error: {filter_final} filter attribute only works for movie libraries")
+                                    elif filter_final in show_only_filters and self.library.is_movie:
+                                        raise Failed(f"Collection Error: {filter_final} filter attribute only works for show libraries")
+                                    elif filter_final is None:
+                                        raise Failed(f"Collection Error: {filter_final} filter attribute is blank")
+                                    else:
+                                        self.filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
+                            elif method_name == "plex_collectionless":
+                                new_dictionary = {}
+                                dict_methods = {dm.lower(): dm for dm in dict_data}
+                                prefix_list = []
+                                if "exclude_prefix" in dict_methods and dict_data[dict_methods["exclude_prefix"]]:
+                                    if isinstance(dict_data[dict_methods["exclude_prefix"]], list):
+                                        prefix_list.extend([exclude for exclude in dict_data[dict_methods["exclude_prefix"]] if exclude])
+                                    else:
+                                        prefix_list.append(str(dict_data[dict_methods["exclude_prefix"]]))
+                                exact_list = []
+                                if "exclude" in dict_methods and dict_data[dict_methods["exclude"]]:
+                                    if isinstance(dict_data[dict_methods["exclude"]], list):
+                                        exact_list.extend([exclude for exclude in dict_data[dict_methods["exclude"]] if exclude])
+                                    else:
+                                        exact_list.append(str(dict_data[dict_methods["exclude"]]))
+                                if len(prefix_list) == 0 and len(exact_list) == 0:
+                                    raise Failed("Collection Error: you must have at least one exclusion")
+                                exact_list.append(self.name)
+                                new_dictionary["exclude_prefix"] = prefix_list
+                                new_dictionary["exclude"] = exact_list
+                                self.methods.append((method_name, [new_dictionary]))
+                            elif method_name == "plex_search":
+                                self.methods.append((method_name, [self.build_filter("plex_search", dict_data)]))
+                            elif method_name == "tmdb_discover":
+                                new_dictionary = {"limit": 100}
+                                for discover_name, discover_data in dict_data.items():
+                                    discover_final = discover_name.lower()
+                                    if discover_data:
+                                        if (self.library.is_movie and discover_final in tmdb.discover_movie) or (self.library.is_show and discover_final in tmdb.discover_tv):
+                                            if discover_final == "language":
+                                                if re.compile("([a-z]{2})-([A-Z]{2})").match(str(discover_data)):
+                                                    new_dictionary[discover_final] = str(discover_data)
+                                                else:
+                                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} must match pattern ([a-z]{{2}})-([A-Z]{{2}}) e.g. en-US")
+                                            elif discover_final == "region":
+                                                if re.compile("^[A-Z]{2}$").match(str(discover_data)):
+                                                    new_dictionary[discover_final] = str(discover_data)
+                                                else:
+                                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} must match pattern ^[A-Z]{{2}}$ e.g. US")
+                                            elif discover_final == "sort_by":
+                                                if (self.library.is_movie and discover_data in tmdb.discover_movie_sort) or (self.library.is_show and discover_data in tmdb.discover_tv_sort):
+                                                    new_dictionary[discover_final] = discover_data
+                                                else:
+                                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} is invalid")
+                                            elif discover_final == "certification_country":
+                                                if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
+                                                    new_dictionary[discover_final] = discover_data
+                                                else:
+                                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be used with either certification, certification.lte, or certification.gte")
+                                            elif discover_final in ["certification", "certification.lte", "certification.gte"]:
+                                                if "certification_country" in dict_data:
+                                                    new_dictionary[discover_final] = discover_data
+                                                else:
+                                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be used with certification_country")
+                                            elif discover_final in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
+                                                if discover_data is True:
+                                                    new_dictionary[discover_final] = discover_data
+                                            elif discover_final in tmdb.discover_dates:
+                                                new_dictionary[discover_final] = util.check_date(discover_data, f"{method_name} attribute {discover_final}", return_string=True)
+                                            elif discover_final in ["primary_release_year", "year", "first_air_date_year"]:
+                                                new_dictionary[discover_final] = util.check_number(discover_data, f"{method_name} attribute {discover_final}", minimum=1800, maximum=self.current_year + 1)
+                                            elif discover_final in ["vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte"]:
+                                                new_dictionary[discover_final] = util.check_number(discover_data, f"{method_name} attribute {discover_final}", minimum=1)
+                                            elif discover_final in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
                                                 new_dictionary[discover_final] = discover_data
                                             else:
-                                                raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} is invalid")
-                                        elif discover_final == "certification_country":
-                                            if "certification" in method_data or "certification.lte" in method_data or "certification.gte" in method_data:
+                                                raise Failed(f"Collection Error: {method_name} attribute {discover_final} not supported")
+                                        elif discover_final == "limit":
+                                            if isinstance(discover_data, int) and discover_data > 0:
                                                 new_dictionary[discover_final] = discover_data
                                             else:
-                                                raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be used with either certification, certification.lte, or certification.gte")
-                                        elif discover_final in ["certification", "certification.lte", "certification.gte"]:
-                                            if "certification_country" in method_data:
-                                                new_dictionary[discover_final] = discover_data
-                                            else:
-                                                raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be used with certification_country")
-                                        elif discover_final in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
-                                            if discover_data is True:
-                                                new_dictionary[discover_final] = discover_data
-                                        elif discover_final in tmdb.discover_dates:
-                                            new_dictionary[discover_final] = util.check_date(discover_data, f"{method_name} attribute {discover_final}", return_string=True)
-                                        elif discover_final in ["primary_release_year", "year", "first_air_date_year"]:
-                                            new_dictionary[discover_final] = util.check_number(discover_data, f"{method_name} attribute {discover_final}", minimum=1800, maximum=self.current_year + 1)
-                                        elif discover_final in ["vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte"]:
-                                            new_dictionary[discover_final] = util.check_number(discover_data, f"{method_name} attribute {discover_final}", minimum=1)
-                                        elif discover_final in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
-                                            new_dictionary[discover_final] = discover_data
+                                                raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be a valid number greater then 0")
                                         else:
                                             raise Failed(f"Collection Error: {method_name} attribute {discover_final} not supported")
-                                    elif discover_final == "limit":
-                                        if isinstance(discover_data, int) and discover_data > 0:
-                                            new_dictionary[discover_final] = discover_data
-                                        else:
-                                            raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be a valid number greater then 0")
                                     else:
-                                        raise Failed(f"Collection Error: {method_name} attribute {discover_final} not supported")
+                                        raise Failed(f"Collection Error: {method_name} parameter {discover_final} is blank")
+                                if len(new_dictionary) > 1:
+                                    self.methods.append((method_name, [new_dictionary]))
                                 else:
-                                    raise Failed(f"Collection Error: {method_name} parameter {discover_final} is blank")
-                            if len(new_dictionary) > 1:
+                                    raise Failed(f"Collection Error: {method_name} had no valid fields")
+                            elif "tautulli" in method_name:
+                                new_dictionary = {}
+                                if method_name == "tautulli_popular":
+                                    new_dictionary["list_type"] = "popular"
+                                elif method_name == "tautulli_watched":
+                                    new_dictionary["list_type"] = "watched"
+                                else:
+                                    raise Failed(f"Collection Error: {method_name} attribute not supported")
+                                dict_methods = {dm.lower(): dm for dm in dict_data}
+                                new_dictionary["list_days"] = get_int(method_name, "list_days", dict_data, dict_methods, 30)
+                                new_dictionary["list_size"] = get_int(method_name, "list_size", dict_data, dict_methods, 10)
+                                new_dictionary["list_buffer"] = get_int(method_name, "list_buffer", dict_data, dict_methods, 20)
                                 self.methods.append((method_name, [new_dictionary]))
-                            else:
-                                raise Failed(f"Collection Error: {method_name} had no valid fields")
-                        elif "tautulli" in method_name:
-                            new_dictionary = {}
-                            if method_name == "tautulli_popular":
-                                new_dictionary["list_type"] = "popular"
-                            elif method_name == "tautulli_watched":
-                                new_dictionary["list_type"] = "watched"
-                            else:
-                                raise Failed(f"Collection Error: {method_name} attribute not supported")
-                            dict_methods = {dm.lower(): dm for dm in method_data}
-                            new_dictionary["list_days"] = get_int(method_name, "list_days", method_data, dict_methods, 30)
-                            new_dictionary["list_size"] = get_int(method_name, "list_size", method_data, dict_methods, 10)
-                            new_dictionary["list_buffer"] = get_int(method_name, "list_buffer", method_data, dict_methods, 20)
-                            self.methods.append((method_name, [new_dictionary]))
-                        elif method_name == "mal_season":
-                            new_dictionary = {"sort_by": "anime_num_list_users"}
-                            dict_methods = {dm.lower(): dm for dm in method_data}
-                            if "sort_by" not in dict_methods:
-                                logger.warning("Collection Warning: mal_season sort_by attribute not found using members as default")
-                            elif not method_data[dict_methods["sort_by"]]:
-                                logger.warning("Collection Warning: mal_season sort_by attribute is blank using members as default")
-                            elif method_data[dict_methods["sort_by"]] not in mal.season_sort:
-                                logger.warning(f"Collection Warning: mal_season sort_by attribute {method_data[dict_methods['sort_by']]} invalid must be either 'members' or 'score' using members as default")
-                            else:
-                                new_dictionary["sort_by"] = mal.season_sort[method_data[dict_methods["sort_by"]]]
+                            elif method_name == "mal_season":
+                                new_dictionary = {"sort_by": "anime_num_list_users"}
+                                dict_methods = {dm.lower(): dm for dm in dict_data}
+                                if "sort_by" not in dict_methods:
+                                    logger.warning("Collection Warning: mal_season sort_by attribute not found using members as default")
+                                elif not dict_data[dict_methods["sort_by"]]:
+                                    logger.warning("Collection Warning: mal_season sort_by attribute is blank using members as default")
+                                elif dict_data[dict_methods["sort_by"]] not in mal.season_sort:
+                                    logger.warning(f"Collection Warning: mal_season sort_by attribute {dict_data[dict_methods['sort_by']]} invalid must be either 'members' or 'score' using members as default")
+                                else:
+                                    new_dictionary["sort_by"] = mal.season_sort[dict_data[dict_methods["sort_by"]]]
 
-                            if self.current_time.month in [1, 2, 3]:                new_dictionary["season"] = "winter"
-                            elif self.current_time.month in [4, 5, 6]:              new_dictionary["season"] = "spring"
-                            elif self.current_time.month in [7, 8, 9]:              new_dictionary["season"] = "summer"
-                            elif self.current_time.month in [10, 11, 12]:           new_dictionary["season"] = "fall"
-
-                            if "season" not in dict_methods:
-                                logger.warning(f"Collection Warning: mal_season season attribute not found using the current season: {new_dictionary['season']} as default")
-                            elif not method_data[dict_methods["season"]]:
-                                logger.warning(f"Collection Warning: mal_season season attribute is blank using the current season: {new_dictionary['season']} as default")
-                            elif method_data[dict_methods["season"]] not in util.pretty_seasons:
-                                logger.warning(f"Collection Warning: mal_season season attribute {method_data[dict_methods['season']]} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
-                            else:
-                                new_dictionary["season"] = method_data[dict_methods["season"]]
-
-                            new_dictionary["year"] = get_int(method_name, "year", method_data, dict_methods, self.current_time.year, minimum=1917, maximum=self.current_time.year + 1)
-                            new_dictionary["limit"] = get_int(method_name, "limit", method_data, dict_methods, 100, maximum=500)
-                            self.methods.append((method_name, [new_dictionary]))
-                        elif method_name == "mal_userlist":
-                            new_dictionary = {"status": "all", "sort_by": "list_score"}
-                            dict_methods = {dm.lower(): dm for dm in method_data}
-                            if "username" not in dict_methods:
-                                raise Failed("Collection Error: mal_userlist username attribute is required")
-                            elif not method_data[dict_methods["username"]]:
-                                raise Failed("Collection Error: mal_userlist username attribute is blank")
-                            else:
-                                new_dictionary["username"] = method_data[dict_methods["username"]]
-
-                            if "status" not in dict_methods:
-                                logger.warning("Collection Warning: mal_season status attribute not found using all as default")
-                            elif not method_data[dict_methods["status"]]:
-                                logger.warning("Collection Warning: mal_season status attribute is blank using all as default")
-                            elif method_data[dict_methods["status"]] not in mal.userlist_status:
-                                logger.warning(f"Collection Warning: mal_season status attribute {method_data[dict_methods['status']]} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default")
-                            else:
-                                new_dictionary["status"] = mal.userlist_status[method_data[dict_methods["status"]]]
-
-                            if "sort_by" not in dict_methods:
-                                logger.warning("Collection Warning: mal_season sort_by attribute not found using score as default")
-                            elif not method_data[dict_methods["sort_by"]]:
-                                logger.warning("Collection Warning: mal_season sort_by attribute is blank using score as default")
-                            elif method_data[dict_methods["sort_by"]] not in mal.userlist_sort:
-                                logger.warning(f"Collection Warning: mal_season sort_by attribute {method_data[dict_methods['sort_by']]} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default")
-                            else:
-                                new_dictionary["sort_by"] = mal.userlist_sort[method_data[dict_methods["sort_by"]]]
-
-                            new_dictionary["limit"] = get_int(method_name, "limit", method_data, dict_methods, 100, maximum=1000)
-                            self.methods.append((method_name, [new_dictionary]))
-                        elif "anilist" in method_name:
-                            new_dictionary = {"sort_by": "score"}
-                            dict_methods = {dm.lower(): dm for dm in method_data}
-                            if method_name == "anilist_season":
-                                if self.current_time.month in [12, 1, 2]:               new_dictionary["season"] = "winter"
-                                elif self.current_time.month in [3, 4, 5]:              new_dictionary["season"] = "spring"
-                                elif self.current_time.month in [6, 7, 8]:              new_dictionary["season"] = "summer"
-                                elif self.current_time.month in [9, 10, 11]:            new_dictionary["season"] = "fall"
+                                if self.current_time.month in [1, 2, 3]:                new_dictionary["season"] = "winter"
+                                elif self.current_time.month in [4, 5, 6]:              new_dictionary["season"] = "spring"
+                                elif self.current_time.month in [7, 8, 9]:              new_dictionary["season"] = "summer"
+                                elif self.current_time.month in [10, 11, 12]:           new_dictionary["season"] = "fall"
 
                                 if "season" not in dict_methods:
-                                    logger.warning(f"Collection Warning: anilist_season season attribute not found using the current season: {new_dictionary['season']} as default")
-                                elif not method_data[dict_methods["season"]]:
-                                    logger.warning(f"Collection Warning: anilist_season season attribute is blank using the current season: {new_dictionary['season']} as default")
-                                elif method_data[dict_methods["season"]] not in util.pretty_seasons:
-                                    logger.warning(f"Collection Warning: anilist_season season attribute {method_data[dict_methods['season']]} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
+                                    logger.warning(f"Collection Warning: mal_season season attribute not found using the current season: {new_dictionary['season']} as default")
+                                elif not dict_data[dict_methods["season"]]:
+                                    logger.warning(f"Collection Warning: mal_season season attribute is blank using the current season: {new_dictionary['season']} as default")
+                                elif dict_data[dict_methods["season"]] not in util.pretty_seasons:
+                                    logger.warning(f"Collection Warning: mal_season season attribute {dict_data[dict_methods['season']]} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
                                 else:
-                                    new_dictionary["season"] = method_data[dict_methods["season"]]
+                                    new_dictionary["season"] = dict_data[dict_methods["season"]]
 
-                                new_dictionary["year"] = get_int(method_name, "year", method_data, dict_methods, self.current_time.year, minimum=1917, maximum=self.current_time.year + 1)
-                            elif method_name == "anilist_genre":
-                                if "genre" not in dict_methods:
-                                    raise Failed(f"Collection Warning: anilist_genre genre attribute not found")
-                                elif not method_data[dict_methods["genre"]]:
-                                    raise Failed(f"Collection Warning: anilist_genre genre attribute is blank")
+                                new_dictionary["year"] = get_int(method_name, "year", dict_data, dict_methods, self.current_time.year, minimum=1917, maximum=self.current_time.year + 1)
+                                new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 100, maximum=500)
+                                self.methods.append((method_name, [new_dictionary]))
+                            elif method_name == "mal_userlist":
+                                new_dictionary = {"status": "all", "sort_by": "list_score"}
+                                dict_methods = {dm.lower(): dm for dm in dict_data}
+                                if "username" not in dict_methods:
+                                    raise Failed("Collection Error: mal_userlist username attribute is required")
+                                elif not dict_data[dict_methods["username"]]:
+                                    raise Failed("Collection Error: mal_userlist username attribute is blank")
                                 else:
-                                    new_dictionary["genre"] = self.config.AniList.validate_genre(method_data[dict_methods["genre"]])
-                            elif method_name == "anilist_tag":
-                                if "tag" not in dict_methods:
-                                    raise Failed(f"Collection Warning: anilist_tag tag attribute not found")
-                                elif not method_data[dict_methods["tag"]]:
-                                    raise Failed(f"Collection Warning: anilist_tag tag attribute is blank")
+                                    new_dictionary["username"] = dict_data[dict_methods["username"]]
+
+                                if "status" not in dict_methods:
+                                    logger.warning("Collection Warning: mal_season status attribute not found using all as default")
+                                elif not dict_data[dict_methods["status"]]:
+                                    logger.warning("Collection Warning: mal_season status attribute is blank using all as default")
+                                elif dict_data[dict_methods["status"]] not in mal.userlist_status:
+                                    logger.warning(f"Collection Warning: mal_season status attribute {dict_data[dict_methods['status']]} invalid must be either 'all', 'watching', 'completed', 'on_hold', 'dropped' or 'plan_to_watch' using all as default")
                                 else:
-                                    new_dictionary["tag"] = self.config.AniList.validate_tag(method_data[dict_methods["tag"]])
+                                    new_dictionary["status"] = mal.userlist_status[dict_data[dict_methods["status"]]]
 
-                            if "sort_by" not in dict_methods:
-                                logger.warning(f"Collection Warning: {method_name} sort_by attribute not found using score as default")
-                            elif not method_data[dict_methods["sort_by"]]:
-                                logger.warning(f"Collection Warning: {method_name} sort_by attribute is blank using score as default")
-                            elif str(method_data[dict_methods["sort_by"]]).lower() not in ["score", "popular"]:
-                                logger.warning(f"Collection Warning: {method_name} sort_by attribute {method_data[dict_methods['sort_by']]} invalid must be either 'score' or 'popular' using score as default")
-                            else:
-                                new_dictionary["sort_by"] = method_data[dict_methods["sort_by"]]
+                                if "sort_by" not in dict_methods:
+                                    logger.warning("Collection Warning: mal_season sort_by attribute not found using score as default")
+                                elif not dict_data[dict_methods["sort_by"]]:
+                                    logger.warning("Collection Warning: mal_season sort_by attribute is blank using score as default")
+                                elif dict_data[dict_methods["sort_by"]] not in mal.userlist_sort:
+                                    logger.warning(f"Collection Warning: mal_season sort_by attribute {dict_data[dict_methods['sort_by']]} invalid must be either 'score', 'last_updated', 'title' or 'start_date' using score as default")
+                                else:
+                                    new_dictionary["sort_by"] = mal.userlist_sort[dict_data[dict_methods["sort_by"]]]
 
-                            new_dictionary["limit"] = get_int(method_name, "limit", method_data, dict_methods, 0, maximum=500)
+                                new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 100, maximum=1000)
+                                self.methods.append((method_name, [new_dictionary]))
+                            elif "anilist" in method_name:
+                                new_dictionary = {"sort_by": "score"}
+                                dict_methods = {dm.lower(): dm for dm in dict_data}
+                                if method_name == "anilist_season":
+                                    if self.current_time.month in [12, 1, 2]:               new_dictionary["season"] = "winter"
+                                    elif self.current_time.month in [3, 4, 5]:              new_dictionary["season"] = "spring"
+                                    elif self.current_time.month in [6, 7, 8]:              new_dictionary["season"] = "summer"
+                                    elif self.current_time.month in [9, 10, 11]:            new_dictionary["season"] = "fall"
 
-                            self.methods.append((method_name, [new_dictionary]))
-                    else:
-                        raise Failed(f"Collection Error: {method_name} attribute is not a dictionary: {method_data}")
+                                    if "season" not in dict_methods:
+                                        logger.warning(f"Collection Warning: anilist_season season attribute not found using the current season: {new_dictionary['season']} as default")
+                                    elif not dict_data[dict_methods["season"]]:
+                                        logger.warning(f"Collection Warning: anilist_season season attribute is blank using the current season: {new_dictionary['season']} as default")
+                                    elif dict_data[dict_methods["season"]] not in util.pretty_seasons:
+                                        logger.warning(f"Collection Warning: anilist_season season attribute {dict_data[dict_methods['season']]} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
+                                    else:
+                                        new_dictionary["season"] = dict_data[dict_methods["season"]]
+
+                                    new_dictionary["year"] = get_int(method_name, "year", dict_data, dict_methods, self.current_time.year, minimum=1917, maximum=self.current_time.year + 1)
+                                elif method_name == "anilist_genre":
+                                    if "genre" not in dict_methods:
+                                        raise Failed(f"Collection Warning: anilist_genre genre attribute not found")
+                                    elif not dict_data[dict_methods["genre"]]:
+                                        raise Failed(f"Collection Warning: anilist_genre genre attribute is blank")
+                                    else:
+                                        new_dictionary["genre"] = self.config.AniList.validate_genre(dict_data[dict_methods["genre"]])
+                                elif method_name == "anilist_tag":
+                                    if "tag" not in dict_methods:
+                                        raise Failed(f"Collection Warning: anilist_tag tag attribute not found")
+                                    elif not dict_data[dict_methods["tag"]]:
+                                        raise Failed(f"Collection Warning: anilist_tag tag attribute is blank")
+                                    else:
+                                        new_dictionary["tag"] = self.config.AniList.validate_tag(dict_data[dict_methods["tag"]])
+
+                                if "sort_by" not in dict_methods:
+                                    logger.warning(f"Collection Warning: {method_name} sort_by attribute not found using score as default")
+                                elif not dict_data[dict_methods["sort_by"]]:
+                                    logger.warning(f"Collection Warning: {method_name} sort_by attribute is blank using score as default")
+                                elif str(dict_data[dict_methods["sort_by"]]).lower() not in ["score", "popular"]:
+                                    logger.warning(f"Collection Warning: {method_name} sort_by attribute {dict_data[dict_methods['sort_by']]} invalid must be either 'score' or 'popular' using score as default")
+                                else:
+                                    new_dictionary["sort_by"] = dict_data[dict_methods["sort_by"]]
+
+                                new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 0, maximum=500)
+
+                                self.methods.append((method_name, [new_dictionary]))
+                        else:
+                            raise Failed(f"Collection Error: {method_name} attribute is not a dictionary: {dict_data}")
                 elif method_name in numbered_builders:
                     list_count = util.regex_first_int(method_data, "List Size", default=10)
                     if list_count < 1:
