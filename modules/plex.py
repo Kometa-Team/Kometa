@@ -260,7 +260,8 @@ sort_types = {
 }
 
 class PlexAPI:
-    def __init__(self, params):
+    def __init__(self, config, params):
+        self.config = config
         try:
             self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
         except Unauthorized:
@@ -285,7 +286,7 @@ class PlexAPI:
         self.metadata_files = []
         for file_type, metadata_file in params["metadata_path"]:
             try:
-                meta_obj = Metadata(self, file_type, metadata_file)
+                meta_obj = Metadata(config, self, file_type, metadata_file)
                 if meta_obj.collections:
                     self.collections.extend([c for c in meta_obj.collections])
                 if meta_obj.metadata:
@@ -603,7 +604,7 @@ class PlexAPI:
         name = collection.title if isinstance(collection, Collections) else str(collection)
         return name, self.get_collection_items(collection, smart_label_collection)
 
-    def map_guids(self, config):
+    def map_guids(self):
         logger.info(f"Loading {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
         logger.info("")
         items = self.Plex.all()
@@ -612,7 +613,7 @@ class PlexAPI:
         for i, item in enumerate(items, 1):
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
             if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:
-                id_type, main_id = config.Convert.get_id(item, self)
+                id_type, main_id = self.config.Convert.get_id(item, self)
                 if main_id:
                     if not isinstance(main_id, list):
                         main_id = [main_id]

@@ -8,7 +8,8 @@ from ruamel import yaml
 logger = logging.getLogger("Plex Meta Manager")
 
 class Metadata:
-    def __init__(self, library, file_type, path):
+    def __init__(self, config, library, file_type, path):
+        self.config = config
         self.library = library
         self.type = file_type
         self.path = path
