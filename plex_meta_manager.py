@@ -144,7 +144,7 @@ def update_libraries(config):
         logger.info("")
         util.separator(f"Mapping {library.name} Library", space=False, border=False)
         logger.info("")
-        library.map_guids(config)
+        library.map_guids()
         if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
             mass_metadata(config, library)
         for metadata in library.metadata_files:
@@ -221,7 +221,7 @@ def update_libraries(config):
                 logger.info("")
                 util.separator(f"{library.name} Library Run Again")
                 logger.info("")
-                library.map_guids(config)
+                library.map_guids()
                 for builder in library.run_again:
                     logger.info("")
                     util.separator(f"{builder.name} Collection")

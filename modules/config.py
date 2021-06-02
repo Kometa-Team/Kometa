@@ -449,7 +449,7 @@ class Config:
                 params["plex"]["clean_bundles"] = check_for_attribute(lib, "clean_bundles", parent="plex", var_type="bool", default=self.general["plex"]["clean_bundles"], save=False)
                 params["plex"]["empty_trash"] = check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False)
                 params["plex"]["optimize"] = check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
-                library = PlexAPI(params)
+                library = PlexAPI(self, params)
                 logger.info("")
                 logger.info(f"{display_name} Library Connection Successful")
             except Failed as e:
