@@ -308,7 +308,8 @@ class PlexAPI:
         self.Sonarr = None
         self.Tautulli = None
         self.name = params["name"]
-        self.mapping_name, output = util.validate_filename(params["mapping_name"])
+        self.original_mapping_name = params["mapping_name"]
+        self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         if output:
             logger.info(output)
         self.missing_path = os.path.join(params["default_dir"], f"{self.name}_missing.yml")
@@ -425,7 +426,7 @@ class PlexAPI:
         self.reload(item)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def upload_image(self, item, location, poster=True, url=True):
+    def _upload_image(self, item, location, poster=True, url=True):
         if poster and url:
             item.uploadPoster(url=location)
         elif poster:
@@ -434,6 +435,25 @@ class PlexAPI:
             item.uploadArt(url=location)
         else:
             item.uploadArt(filepath=location)
+
+    def upload_image(self, attr, item, location, name="", poster=True, url=True):
+        image_type = "poster" if poster else "background"
+        message = f"{name}{image_type} to [{'URL' if url else 'File'}] {location}"
+        try:
+            image = None
+            if self.config.Cache:
+                image = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, image_type)
+            if image is None or (image_type == "poster" and image != item.thumb) or (image_type == "background" and image != item.art):
+                self._upload_image(item, location, poster=poster, url=url)
+                if self.config.Cache:
+                    self.reload(item)
+                    compare = location if url else os.stat(location).st_size
+                    self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, image_type, item.thumb if image_type == "poster" else item.art, compare)
+                logger.info(f"Detail: {attr} updated {message}")
+            else:
+                logger.info(f"Detail: {name}{image_type} update not needed")
+        except BadRequest:
+            logger.error(f"Detail: {attr} failed to update {message}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
@@ -725,14 +745,12 @@ class PlexAPI:
             if len(matches) > 0:
                 poster_image = os.path.abspath(matches[0])
                 if upload:
-                    self.upload_image(item, poster_image, url=False)
-                    logger.info(f"Detail: asset_directory updated {item.title}'s poster to [file] {poster_image}")
+                    self.upload_image("asset_directory", item, poster_image, name=f"{item.title}'s ", url=False)
             matches = glob.glob(background_filter)
             if len(matches) > 0:
                 background_image = os.path.abspath(matches[0])
                 if upload:
-                    self.upload_image(item, background_image, poster=False, url=False)
-                    logger.info(f"Detail: asset_directory updated {item.title}'s background to [file] {background_image}")
+                    self.upload_image("asset_directory", item, background_image, name=f"{item.title}'s ", poster=False, url=False)
             if collection_mode:
                 for ite in self.query(item.items):
                     self.update_item_from_assets(ite, dirs=[os.path.join(ad, name)])
@@ -747,8 +765,7 @@ class PlexAPI:
                     matches = glob.glob(season_filter)
                     if len(matches) > 0:
                         season_path = os.path.abspath(matches[0])
-                        self.upload_image(season, season_path, url=False)
-                        logger.info(f"Detail: asset_directory updated {item.title} Season {season.seasonNumber}'s poster to [file] {season_path}")
+                        self.upload_image("asset_directory", season, season_path, name=f"{item.title} Season {season.seasonNumber}'s ", url=False)
                     for episode in self.query(season.episodes):
                         if self.asset_folders:
                             episode_filter = os.path.join(ad, name, f"{episode.seasonEpisode.upper()}.*")
@@ -757,6 +774,5 @@ class PlexAPI:
                         matches = glob.glob(episode_filter)
                         if len(matches) > 0:
                             episode_path = os.path.abspath(matches[0])
-                            self.upload_image(episode, episode_path, url=False)
-                            logger.info(f"Detail: asset_directory updated {item.title} {episode.seasonEpisode.upper()}'s poster to [file] {episode_path}")
+                            self.upload_image("asset_directory", episode, episode_path, name=f"{item.title} {episode.seasonEpisode.upper()}'s ", url=False)
         return None, None
