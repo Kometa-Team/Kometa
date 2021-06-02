@@ -405,12 +405,16 @@ class PlexAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_guids(self, item):
+        self.reload(item)
+        return item.guids
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def reload(self, item):
         item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
                     includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
                     includeFields='', includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
                     includeOnDeck=False, includePopularLeaves=False, includePreferences=False, includeRelated=False,
                     includeRelatedCount=0, includeReviews=False, includeStations=False)
-        return item.guids
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def edit_query(self, item, edits, advanced=False):
@@ -418,7 +422,7 @@ class PlexAPI:
             item.editAdvanced(**edits)
         else:
             item.edit(**edits)
-        item.reload()
+        self.reload(item)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def upload_image(self, item, location, poster=True, url=True):
@@ -570,7 +574,7 @@ class PlexAPI:
             for i, item in enumerate(all_items, 1):
                 util.print_return(f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
-                self.query(item.reload)
+                self.reload(item)
                 for collection in item.collections:
                     if collection.id in collection_indexes:
                         add_item = False
