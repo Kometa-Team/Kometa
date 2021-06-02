@@ -59,7 +59,7 @@ for time_to_run in times_to_run:
 
 util.separating_character = os.environ.get("PMM_DIVIDER")[0] if os.environ.get("PMM_DIVIDER") else args.divider[0]
 
-screen_width = os.environ.get("PMM_WIDTH") if os.environ.get("PMM_WIDTH") else args.width
+screen_width = int(os.environ.get("PMM_WIDTH")) if os.environ.get("PMM_WIDTH") else args.width
 if 90 <= screen_width <= 300:
     util.screen_width = screen_width
 else:
