@@ -158,19 +158,19 @@ boolean_details = [
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
-    "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends",
+    "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
     "collection", "collection.not",
     "content_rating", "content_rating.not",
     "country", "country.not",
     "director", "director.not",
-    "filepath", "filepath.not",
+    "filepath", "filepath.not", "filepath.begins", "filepath.ends", "filepath.regex",
     "genre", "genre.not",
     "label", "label.not",
     "producer", "producer.not",
     "release", "release.not", "release.before", "release.after",
     "added", "added.not", "added.before", "added.after",
     "last_played", "last_played.not", "last_played.before", "last_played.after",
-    "title", "title.not", "title.begins", "title.ends",
+    "title", "title.not", "title.begins", "title.ends", "title.regex",
     "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "tmdb_vote_count.gt", "tmdb_vote_count.gte", "tmdb_vote_count.lt", "tmdb_vote_count.lte",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte",
@@ -178,7 +178,7 @@ all_filters = [
     "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
     "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
     "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
-    "studio", "studio.not", "studio.begins", "studio.ends",
+    "studio", "studio.not", "studio.begins", "studio.ends", "studio.regex",
     "subtitle_language", "subtitle_language.not",
     "resolution", "resolution.not",
     "writer", "writer.not",
@@ -186,7 +186,7 @@ all_filters = [
 ]
 movie_only_filters = [
     "audio_language", "audio_language.not",
-    "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends",
+    "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
     "country", "country.not",
     "director", "director.not",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte",
@@ -1259,7 +1259,22 @@ class CollectionBuilder:
     def validate_attribute(self, attribute, modifier, final, data, validate, pairs=False):
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if pairs else list_to_pair
-        if attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".not", ".begins", ".ends"]:
+        if modifier == ".regex":
+            regex_list = util.get_list(data, split=False)
+            valid_regex = []
+            for reg in regex_list:
+                try:
+                    re.compile(reg)
+                    valid_regex.append(reg)
+                except re.error:
+                    util.print_stacktrace()
+                    err = f"Regex Error: Regular Expression Invalid: {reg}"
+                    if validate:
+                        raise Failed(err)
+                    else:
+                        logger.error(err)
+            return valid_regex
+        elif attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".not", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "original_language":
             return util.get_list(data, lower=True)
@@ -1376,13 +1391,14 @@ class CollectionBuilder:
                                     title = audio.title if audio.title else ""
                                     if (modifier in ["", ".not"] and check_title.lower() in title.lower()) \
                                             or (modifier == ".begins" and title.lower().startswith(check_title.lower())) \
-                                            or (modifier == ".ends" and title.lower().endswith(check_title.lower())):
+                                            or (modifier == ".ends" and title.lower().endswith(check_title.lower())) \
+                                            or (modifier == ".regex" and re.compile(check_title).match(title)):
                                         jailbreak = True
                                         break
                                 if jailbreak: break
                             if jailbreak: break
                         if jailbreak: break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends"]):
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"]):
                         return False
                 elif filter_attr == "filepath":
                     jailbreak = False
@@ -1390,11 +1406,12 @@ class CollectionBuilder:
                         for check_text in filter_data:
                             if (modifier in ["", ".not"] and check_text.lower() in location.lower()) \
                                     or (modifier == ".begins" and location.lower().startswith(check_text.lower())) \
-                                    or (modifier == ".ends" and location.lower().endswith(check_text.lower())):
+                                    or (modifier == ".ends" and location.lower().endswith(check_text.lower())) \
+                                    or (modifier == ".regex" and re.compile(check_text).match(location)):
                                 jailbreak = True
                                 break
                         if jailbreak: break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends"]):
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"]):
                         return False
                 elif filter_attr in ["title", "studio"]:
                     jailbreak = False
@@ -1402,10 +1419,11 @@ class CollectionBuilder:
                     for check_data in filter_data:
                         if (modifier in ["", ".not"] and check_data.lower() in current_data.lower()) \
                                 or (modifier == ".begins" and current_data.lower().startswith(check_data.lower())) \
-                                or (modifier == ".ends" and current_data.lower().endswith(check_data.lower())):
+                                or (modifier == ".ends" and current_data.lower().endswith(check_data.lower())) \
+                                or (modifier == ".regex" and re.compile(check_data).match(current_data)):
                             jailbreak = True
                             break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends"]):
+                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"]):
                         return False
                 elif filter_attr == "original_language":
                     movie = None
