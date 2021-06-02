@@ -167,9 +167,9 @@ all_filters = [
     "genre", "genre.not",
     "label", "label.not",
     "producer", "producer.not",
-    "release", "release.not", "release.before", "release.after",
-    "added", "added.not", "added.before", "added.after",
-    "last_played", "last_played.not", "last_played.before", "last_played.after",
+    "release", "release.not", "release.before", "release.after", "release.regex",
+    "added", "added.not", "added.before", "added.after", "added.regex",
+    "last_played", "last_played.not", "last_played.before", "last_played.after", "last_played.regex",
     "title", "title.not", "title.begins", "title.ends", "title.regex",
     "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "tmdb_vote_count.gt", "tmdb_vote_count.gte", "tmdb_vote_count.lt", "tmdb_vote_count.lte",
@@ -1372,7 +1372,7 @@ class CollectionBuilder:
             for filter_method, filter_data in self.filters:
                 filter_attr, modifier, filter_final = self._split(filter_method)
                 filter_actual = filter_translation[filter_attr] if filter_attr in filter_translation else filter_attr
-                if filter_attr in ["release", "added", "last_played"]:
+                if filter_attr in ["release", "added", "last_played"] and modifier != ".regex":
                     current_data = getattr(current, filter_actual)
                     if modifier in ["", ".not"]:
                         threshold_date = current_date - timedelta(days=filter_data)
@@ -1381,6 +1381,17 @@ class CollectionBuilder:
                             return False
                     elif (modifier == ".before" and (current_data is None or current_data >= filter_data)) \
                             or (modifier == ".after" and (current_data is None or current_data <= filter_data)):
+                        return False
+                elif filter_attr in ["release", "added", "last_played"] and modifier == ".regex":
+                    jailbreak = False
+                    current_data = getattr(current, filter_actual)
+                    if current_data is None:
+                        return False
+                    for check_data in filter_data:
+                        if re.compile(check_data).match(current_data.strftime("%m/%d/%Y")):
+                            jailbreak = True
+                            break
+                    if not jailbreak:
                         return False
                 elif filter_attr == "audio_track_title":
                     jailbreak = False
