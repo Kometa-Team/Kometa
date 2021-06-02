@@ -143,9 +143,7 @@ class Metadata:
 
             def set_image(attr, obj, group, alias, poster=True, url=True):
                 if group[alias[attr]]:
-                    message = f"{'poster' if poster else 'background'} to [{'URL' if url else 'File'}] {group[alias[attr]]}"
-                    self.library.upload_image(obj, group[alias[attr]], poster=poster, url=url)
-                    logger.info(f"Detail: {attr} updated {message}")
+                    self.library.upload_image(attr, obj, group[alias[attr]], poster=poster, url=url)
                 else:
                     logger.error(f"Metadata Error: {attr} attribute is blank")
 
