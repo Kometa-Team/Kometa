@@ -250,7 +250,7 @@ def mass_metadata(config, library):
     logger.info("")
     radarr_adds = []
     sonarr_adds = []
-    items = library.Plex.all()
+    items = library.get_all()
     for i, item in enumerate(items, 1):
         util.print_return(f"Processing: {i}/{len(items)} {item.title}")
         tmdb_id = None

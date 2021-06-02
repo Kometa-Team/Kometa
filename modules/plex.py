@@ -364,9 +364,24 @@ class PlexAPI:
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_all(self):
-        return self.Plex.all()
+        logger.info(f"Loading All {'Movie' if self.is_movie else 'Show'}s from Library: {self.name}")
+        logger.info("")
+        key = f"/library/sections/{self.Plex.key}/all?type={utils.searchType(self.Plex.TYPE)}"
+        container_start = 0
+        container_size = plexapi.X_PLEX_CONTAINER_SIZE
+        results = []
+        while self.Plex._totalViewSize is None or container_start <= self.Plex._totalViewSize:
+            results.extend(self.fetchItems(key, container_start, container_size))
+            util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
+            container_start += container_size
+        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {'Movies' if self.is_movie else 'Shows'}"))
+        logger.info("")
+        return results
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def fetchItems(self, key, container_start, container_size):
+        return self.Plex.fetchItems(key, container_start=container_start, container_size=container_size)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def server_search(self, data):
@@ -605,9 +620,7 @@ class PlexAPI:
         return name, self.get_collection_items(collection, smart_label_collection)
 
     def map_guids(self):
-        logger.info(f"Loading {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
-        logger.info("")
-        items = self.Plex.all()
+        items = self.get_all()
         logger.info(f"Mapping {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
         logger.info("")
         for i, item in enumerate(items, 1):
