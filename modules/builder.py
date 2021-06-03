@@ -167,7 +167,7 @@ all_filters = [
     "genre", "genre.not",
     "label", "label.not",
     "producer", "producer.not",
-    "release", "release.not", "release.before", "release.after", "release.regex",
+    "release", "release.not", "release.before", "release.after", "release.regex", "history",
     "added", "added.not", "added.before", "added.after", "added.regex",
     "last_played", "last_played.not", "last_played.before", "last_played.after", "last_played.regex",
     "title", "title.not", "title.begins", "title.ends", "title.regex",
@@ -1268,7 +1268,7 @@ class CollectionBuilder:
                     valid_regex.append(reg)
                 except re.error:
                     util.print_stacktrace()
-                    err = f"Regex Error: Regular Expression Invalid: {reg}"
+                    err = f"Collection Error: Regular Expression Invalid: {reg}"
                     if validate:
                         raise Failed(err)
                     else:
@@ -1280,6 +1280,13 @@ class CollectionBuilder:
             return util.get_list(data, lower=True)
         elif attribute == "filepath":
             return util.get_list(data)
+        elif attribute == "history":
+            try:
+                return util.check_number(data, final, minimum=0, maximum=30)
+            except Failed:
+                if str(data).lower() in ["day", "month"]:
+                    return data.lower()
+            raise Failed(f"Collection Error: history attribute invalid: {data} must be a number between 0-30, day, or month")
         elif attribute in plex.tags and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
@@ -1436,6 +1443,24 @@ class CollectionBuilder:
                             break
                     if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"]):
                         return False
+                elif filter_attr == "history":
+                    item_date = current.originallyAvailableAt
+                    if item_date is None:
+                        return False
+                    elif filter_data == "day":
+                        if item_date.month != current_date.month or item_date.day != current_date.day:
+                            return False
+                    elif filter_data == "month":
+                        if item_date.month != current_date.month:
+                            return False
+                    else:
+                        date_match = False
+                        for i in range(filter_data):
+                            check_date = current_date - timedelta(days=i)
+                            if item_date.month == check_date.month and item_date.day == check_date.day:
+                                date_match = True
+                        if date_match is False:
+                            return False
                 elif filter_attr == "original_language":
                     movie = None
                     for key, value in self.library.movie_map.items():
