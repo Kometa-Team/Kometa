@@ -349,7 +349,7 @@ def regex_first_int(data, id_type, default=None):
 
 def centered(text, sep=" "):
     if len(text) > screen_width - 2:
-        raise Failed("text must be shorter then screen_width")
+        return text
     space = screen_width - len(text) - 2
     text = f" {text} "
     if space % 2 == 1:

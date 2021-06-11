@@ -413,8 +413,8 @@ class PlexAPI:
     def reload(self, item):
         item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
                     includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                    includeFields='', includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                    includeOnDeck=False, includePopularLeaves=False, includePreferences=False, includeRelated=False,
+                    includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
                     includeRelatedCount=0, includeReviews=False, includeStations=False)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -442,17 +442,22 @@ class PlexAPI:
         try:
             image = None
             if self.config.Cache:
-                image = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, image_type)
-            if image is None or (image_type == "poster" and image != item.thumb) or (image_type == "background" and image != item.art):
+                image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, image_type)
+                compare = location if url else os.stat(location).st_size
+                if compare != image_compare:
+                    image = None
+            if image is None \
+                    or (image_type == "poster" and image != item.thumb) \
+                    or (image_type == "background" and image != item.art):
                 self._upload_image(item, location, poster=poster, url=url)
                 if self.config.Cache:
                     self.reload(item)
-                    compare = location if url else os.stat(location).st_size
                     self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, image_type, item.thumb if image_type == "poster" else item.art, compare)
                 logger.info(f"Detail: {attr} updated {message}")
             else:
                 logger.info(f"Detail: {name}{image_type} update not needed")
         except BadRequest:
+            util.print_stacktrace()
             logger.error(f"Detail: {attr} failed to update {message}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
