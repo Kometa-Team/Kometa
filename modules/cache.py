@@ -85,6 +85,7 @@ class Cache:
                     rating_key TEXT,
                     library TEXT,
                     type TEXT,
+                    overlay TEXT,
                     compare TEXT,
                     location TEXT)"""
                 )
@@ -246,4 +247,4 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO image_map(rating_key, library) VALUES(?, ?)", (rating_key, library))
-                cursor.execute("UPDATE poster_map SET location = ?, compare = ? WHERE rating_key = ? AND library = ? AND type = ?", (location, compare, rating_key, library, image_type))
+                cursor.execute("UPDATE image_map SET location = ?, compare = ? WHERE rating_key = ? AND library = ? AND type = ?", (location, compare, rating_key, library, image_type))

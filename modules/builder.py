@@ -1676,6 +1676,7 @@ class CollectionBuilder:
         elif "tmdb_collection_details" in self.summaries:   summary = get_summary("tmdb_collection_details", self.summaries)
         elif "trakt_list_details" in self.summaries:        summary = get_summary("trakt_list_details", self.summaries)
         elif "tmdb_list_details" in self.summaries:         summary = get_summary("tmdb_list_details", self.summaries)
+        elif "letterboxd_list_details" in self.summaries:   summary = get_summary("letterboxd_list_details", self.summaries)
         elif "tmdb_actor_details" in self.summaries:        summary = get_summary("tmdb_actor_details", self.summaries)
         elif "tmdb_crew_details" in self.summaries:         summary = get_summary("tmdb_crew_details", self.summaries)
         elif "tmdb_director_details" in self.summaries:     summary = get_summary("tmdb_director_details", self.summaries)
