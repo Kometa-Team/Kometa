@@ -1,4 +1,4 @@
-import logging, re, signal, sys, time, traceback
+import logging, os, re, signal, sys, time, traceback
 from datetime import datetime
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -17,6 +17,16 @@ class TimeoutExpired(Exception):
 
 class Failed(Exception):
     pass
+
+class Image:
+    def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True):
+        self.attribute = attribute
+        self.location = location
+        self.prefix = prefix
+        self.is_poster = is_poster
+        self.is_url = is_url
+        self.compare = location if is_url else os.stat(location).st_size
+        self.message = f"{prefix}{'poster' if is_poster else 'background'} to [{'URL' if is_url else 'File'}] {location}"
 
 def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)

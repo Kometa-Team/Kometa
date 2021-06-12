@@ -246,5 +246,5 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO image_map(rating_key, library) VALUES(?, ?)", (rating_key, library))
+                cursor.execute("INSERT OR IGNORE INTO image_map(rating_key, library, type) VALUES(?, ?, ?)", (rating_key, library, image_type))
                 cursor.execute("UPDATE image_map SET location = ?, compare = ? WHERE rating_key = ? AND library = ? AND type = ?", (location, compare, rating_key, library, image_type))

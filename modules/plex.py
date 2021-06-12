@@ -1,7 +1,7 @@
 import glob, logging, os, requests
 from modules import builder, util
 from modules.meta import Metadata
-from modules.util import Failed
+from modules.util import Failed, Image
 import plexapi
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -426,39 +426,59 @@ class PlexAPI:
         self.reload(item)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def _upload_image(self, item, location, poster=True, url=True):
-        if poster and url:
-            item.uploadPoster(url=location)
-        elif poster:
-            item.uploadPoster(filepath=location)
-        elif url:
-            item.uploadArt(url=location)
+    def _upload_image(self, item, image):
+        if image.is_poster and image.is_url:
+            item.uploadPoster(url=image.location)
+        elif image.is_poster:
+            item.uploadPoster(filepath=image.location)
+        elif image.is_url:
+            item.uploadArt(url=image.location)
         else:
-            item.uploadArt(filepath=location)
+            item.uploadArt(filepath=image.location)
+        self.reload(item)
 
-    def upload_image(self, attr, item, location, name="", poster=True, url=True):
-        image_type = "poster" if poster else "background"
-        message = f"{name}{image_type} to [{'URL' if url else 'File'}] {location}"
-        try:
-            image = None
-            if self.config.Cache:
-                image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, image_type)
-                compare = location if url else os.stat(location).st_size
-                if compare != image_compare:
-                    image = None
-            if image is None \
-                    or (image_type == "poster" and image != item.thumb) \
-                    or (image_type == "background" and image != item.art):
-                self._upload_image(item, location, poster=poster, url=url)
+    def upload_images(self, item, poster=None, background=None):
+        poster_uploaded = False
+        if poster is not None:
+            try:
+                image = None
                 if self.config.Cache:
-                    self.reload(item)
-                    self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, image_type, item.thumb if image_type == "poster" else item.art, compare)
-                logger.info(f"Detail: {attr} updated {message}")
-            else:
-                logger.info(f"Detail: {name}{image_type} update not needed")
-        except BadRequest:
-            util.print_stacktrace()
-            logger.error(f"Detail: {attr} failed to update {message}")
+                    image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
+                    if str(poster.compare) != str(image_compare):
+                        image = None
+                if image is None or image != item.thumb:
+                    self._upload_image(item, poster)
+                    poster_uploaded = True
+                    logger.info(f"Detail: {poster.attribute} updated {poster.message}")
+                else:
+                    logger.info(f"Detail: {poster.prefix}poster update not needed")
+            except BadRequest:
+                util.print_stacktrace()
+                logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
+
+        background_uploaded = False
+        if background is not None:
+            try:
+                image = None
+                if self.config.Cache:
+                    image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "background")
+                    if str(background.compare) != str(image_compare):
+                        image = None
+                if image is None or image != item.art:
+                    self._upload_image(item, background)
+                    background_uploaded = True
+                    logger.info(f"Detail: {background.attribute} updated {background.message}")
+                else:
+                    logger.info(f"Detail: {background.prefix}background update not needed")
+            except BadRequest:
+                util.print_stacktrace()
+                logger.error(f"Detail: {background.attribute} failed to update {background.message}")
+
+        if self.config.Cache:
+            if poster_uploaded:
+                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "poster", item.thumb, poster.compare)
+            if background_uploaded:
+                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "background", item.art, background.compare)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
@@ -736,6 +756,8 @@ class PlexAPI:
         elif not name:
             name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
         for ad in dirs:
+            poster = None
+            background = None
             poster_image = None
             background_image = None
             if self.asset_folders:
@@ -750,12 +772,14 @@ class PlexAPI:
             if len(matches) > 0:
                 poster_image = os.path.abspath(matches[0])
                 if upload:
-                    self.upload_image("asset_directory", item, poster_image, name=f"{item.title}'s ", url=False)
+                    poster = Image("asset_directory", poster_image, prefix=f"{item.title}'s ", is_url=False)
             matches = glob.glob(background_filter)
             if len(matches) > 0:
                 background_image = os.path.abspath(matches[0])
                 if upload:
-                    self.upload_image("asset_directory", item, background_image, name=f"{item.title}'s ", poster=False, url=False)
+                    background = Image("asset_directory", background_image, prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+            if poster or background:
+                self.upload_images(item, poster=poster, background=background)
             if collection_mode:
                 for ite in self.query(item.items):
                     self.update_item_from_assets(ite, dirs=[os.path.join(ad, name)])
@@ -770,7 +794,7 @@ class PlexAPI:
                     matches = glob.glob(season_filter)
                     if len(matches) > 0:
                         season_path = os.path.abspath(matches[0])
-                        self.upload_image("asset_directory", season, season_path, name=f"{item.title} Season {season.seasonNumber}'s ", url=False)
+                        self.upload_images(season, poster=Image("asset_directory", season_path, prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False))
                     for episode in self.query(season.episodes):
                         if self.asset_folders:
                             episode_filter = os.path.join(ad, name, f"{episode.seasonEpisode.upper()}.*")
@@ -779,5 +803,5 @@ class PlexAPI:
                         matches = glob.glob(episode_filter)
                         if len(matches) > 0:
                             episode_path = os.path.abspath(matches[0])
-                            self.upload_image("asset_directory", episode, episode_path, name=f"{item.title} {episode.seasonEpisode.upper()}'s ", url=False)
+                            self.upload_images(episode, poster=Image("asset_directory", episode_path, prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False))
         return None, None
