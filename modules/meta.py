@@ -1,7 +1,7 @@
 import logging, os, re, requests
 from datetime import datetime
 from modules import plex, util
-from modules.util import Failed
+from modules.util import Failed, Image
 from plexapi.exceptions import NotFound
 from ruamel import yaml
 
@@ -141,21 +141,26 @@ class Metadata:
                     return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
                 return False
 
-            def set_image(attr, obj, group, alias, poster=True, url=True):
+            def set_image(attr, group, alias, is_poster=True, is_url=True):
                 if group[alias[attr]]:
-                    self.library.upload_image(attr, obj, group[alias[attr]], poster=poster, url=url)
+                    return Image(attr, group[alias[attr]], is_poster=is_poster, is_url=is_url)
                 else:
                     logger.error(f"Metadata Error: {attr} attribute is blank")
 
             def set_images(obj, group, alias):
+                poster = None
+                background = None
                 if "url_poster" in alias:
-                    set_image("url_poster", obj, group, alias)
+                    poster = set_image("url_poster", group, alias)
                 elif "file_poster" in alias:
-                    set_image("file_poster", obj, group, alias, url=False)
+                    poster = set_image("file_poster", group, alias, is_url=False)
                 if "url_background" in alias:
-                    set_image("url_background", obj, group, alias, poster=False)
+                    background = set_image("url_background", group, alias, is_poster=False)
                 elif "file_background" in alias:
-                    set_image("file_background", obj, group, alias, poster=False, url=False)
+                    background = set_image("file_background", group, alias, is_poster=False, is_url=False)
+
+                if poster or background:
+                    self.library.upload_images(obj, poster=poster, background=background)
 
             logger.info("")
             util.separator()
