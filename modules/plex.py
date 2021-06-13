@@ -24,6 +24,7 @@ search_translation = {
     "critic_rating": "rating",
     "user_rating": "userRating",
     "plays": "viewCount",
+    "unplayed": "unwatched",
     "episode_title": "episode.title",
     "episode_added": "episode.addedAt",
     "episode_air_date": "episode.originallyAvailableAt",
