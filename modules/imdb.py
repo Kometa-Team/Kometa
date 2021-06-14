@@ -8,7 +8,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["imdb_list", "imdb_id"]
 
-class IMDbAPI:
+class IMDb:
     def __init__(self, config):
         self.config = config
         self.urls = {

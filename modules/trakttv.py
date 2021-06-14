@@ -3,7 +3,7 @@ from modules import util
 from modules.util import Failed, TimeoutExpired
 from retrying import retry
 from ruamel import yaml
-from trakt import Trakt
+from trakt import Trakt as TraktAPI
 from trakt.objects.episode import Episode
 from trakt.objects.movie import Movie
 from trakt.objects.season import Season
@@ -23,7 +23,7 @@ builders = [
     "trakt_watchlist"
 ]
 
-class TraktAPI:
+class Trakt:
     def __init__(self, params, authorization=None):
         self.base_url = "https://api.trakt.tv"
         self.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
@@ -36,20 +36,20 @@ class TraktAPI:
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
         self.authorization = authorization
-        Trakt.configuration.defaults.client(self.client_id, self.client_secret)
+        TraktAPI.configuration.defaults.client(self.client_id, self.client_secret)
         if not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
 
     def _authorization(self):
-        url = Trakt["oauth"].authorize_url(self.redirect_uri)
+        url = TraktAPI["oauth"].authorize_url(self.redirect_uri)
         logger.info(f"Navigate to: {url}")
         logger.info("If you get an OAuth error your client_id or client_secret is invalid")
         webbrowser.open(url, new=2)
         try:                                pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
         except TimeoutExpired:              raise Failed("Input Timeout: Trakt pin required.")
         if not pin:                         raise Failed("Trakt Error: No input Trakt pin required.")
-        new_authorization = Trakt["oauth"].token(pin, self.redirect_uri)
+        new_authorization = TraktAPI["oauth"].token(pin, self.redirect_uri)
         if not new_authorization:
             raise Failed("Trakt Error: Invalid trakt pin. If you're sure you typed it in correctly your client_id or client_secret may be invalid")
         if not self._save(new_authorization):
@@ -57,8 +57,8 @@ class TraktAPI:
 
     def _check(self, authorization):
         try:
-            with Trakt.configuration.oauth.from_response(authorization, refresh=True):
-                if Trakt["users/settings"].get():
+            with TraktAPI.configuration.oauth.from_response(authorization, refresh=True):
+                if TraktAPI["users/settings"].get():
                     return True
         except ValueError: pass
         return False
@@ -66,7 +66,7 @@ class TraktAPI:
     def _refresh(self):
         if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
-            refreshed_authorization = Trakt["oauth"].token_refresh(self.authorization["refresh_token"], self.redirect_uri)
+            refreshed_authorization = TraktAPI["oauth"].token_refresh(self.authorization["refresh_token"], self.redirect_uri)
             return self._save(refreshed_authorization)
         return False
 
@@ -86,13 +86,13 @@ class TraktAPI:
                 logger.info(f"Saving authorization information to {self.config_path}")
                 yaml.round_trip_dump(config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
             self.authorization = authorization
-            Trakt.configuration.defaults.oauth.from_response(self.authorization)
+            TraktAPI.configuration.defaults.oauth.from_response(self.authorization)
             return True
         return False
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def convert(self, external_id, from_source, to_source, media_type):
-        lookup = Trakt["search"].lookup(external_id, from_source, media_type)
+        lookup = TraktAPI["search"].lookup(external_id, from_source, media_type)
         if lookup:
             lookup = lookup[0] if isinstance(lookup, list) else lookup
             if lookup.get_key(to_source):
@@ -107,13 +107,13 @@ class TraktAPI:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def _user_list(self, list_type, data, is_movie):
-        items = Trakt[f"users/{data}/{list_type}"].movies() if is_movie else Trakt[f"users/{data}/{list_type}"].shows()
+        items = TraktAPI[f"users/{data}/{list_type}"].movies() if is_movie else TraktAPI[f"users/{data}/{list_type}"].shows()
         if items is None:                   raise Failed("Trakt Error: No List found")
         else:                               return [i for i in items]
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def standard_list(self, data):
-        try:                                trakt_list = Trakt[requests.utils.urlparse(data).path].get()
+        try:                                trakt_list = TraktAPI[requests.utils.urlparse(data).path].get()
         except AttributeError:              trakt_list = None
         if trakt_list is None:              raise Failed("Trakt Error: No List found")
         else:                               return trakt_list

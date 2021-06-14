@@ -103,7 +103,7 @@ class Metadata:
                         logger.error(f"Metadata Error: {name} attribute is blank")
 
             def add_advanced_edit(attr, obj, group, alias, show_library=False, new_agent=False):
-                key, options = plex.advance_keys[attr]
+                key, options = plex.item_advance_keys[f"item_{attr}"]
                 if attr in alias:
                     if new_agent and self.library.agent not in plex.new_plex_agents:
                         logger.error(f"Metadata Error: {attr} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")

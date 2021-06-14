@@ -8,7 +8,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["tautulli_popular", "tautulli_watched"]
 
-class TautulliAPI:
+class Tautulli:
     def __init__(self, params):
         self.url = params["url"]
         self.apikey = params["apikey"]

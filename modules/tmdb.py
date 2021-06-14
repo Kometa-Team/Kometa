@@ -108,7 +108,7 @@ discover_tv_sort = [
     "popularity.desc", "popularity.asc"
 ]
 
-class TMDbAPI:
+class TMDb:
     def __init__(self, config, params):
         self.config = config
         self.TMDb = tmdbv3api.TMDb()

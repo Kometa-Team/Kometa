@@ -72,7 +72,7 @@ userlist_status = [
     "plan_to_watch"
 ]
 
-class MyAnimeListAPI:
+class MyAnimeList:
     def __init__(self, params, config, authorization=None):
         self.config = config
         self.urls = {

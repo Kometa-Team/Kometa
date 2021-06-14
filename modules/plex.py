@@ -58,15 +58,6 @@ metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
-advance_keys = {
-    "episode_sorting": ("episodeSort", episode_sorting_options),
-    "keep_episodes": ("autoDeletionItemPolicyUnwatchedLibrary", keep_episodes_options),
-    "delete_episodes": ("autoDeletionItemPolicyWatchedLibrary", delete_episodes_options),
-    "season_display": ("flattenSeasons", season_display_options),
-    "episode_ordering": ("showOrdering", episode_ordering_options),
-    "metadata_language": ("languageOverride", metadata_language_options),
-    "use_original_title": ("useOriginalTitle", use_original_title_options)
-}
 item_advance_keys = {
     "item_episode_sorting": ("episodeSort", episode_sorting_options),
     "item_keep_episodes": ("autoDeletionItemPolicyUnwatchedLibrary", keep_episodes_options),
@@ -260,7 +251,7 @@ sort_types = {
     "episodes": (4, episode_sorts),
 }
 
-class PlexAPI:
+class Plex:
     def __init__(self, config, params):
         self.config = config
         try:

@@ -74,7 +74,7 @@ class TVDbObj:
         self.is_movie = is_movie
         self.TVDb = TVDb
 
-class TVDbAPI:
+class TVDb:
     def __init__(self, config):
         self.config = config
         self.site_url = "https://www.thetvdb.com"
