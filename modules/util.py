@@ -88,6 +88,7 @@ pretty_names = {
     "anilist_studio": "AniList Studio",
     "anilist_tag": "AniList Tag",
     "anilist_top_rated": "AniList Top Rated",
+    "icheckmovies_list": "I Check Movies List",
     "imdb_list": "IMDb List",
     "imdb_id": "IMDb ID",
     "letterboxd_list": "Letterboxd List",

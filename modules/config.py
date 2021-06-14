@@ -5,6 +5,7 @@ from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
+from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
@@ -276,6 +277,7 @@ class Config:
         self.Convert = Convert(self)
         self.AniList = AniList(self)
         self.Letterboxd = Letterboxd(self)
+        self.ICheckMovies = ICheckMovies(self)
 
         util.separator()
 
