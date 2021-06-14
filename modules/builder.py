@@ -714,6 +714,11 @@ class CollectionBuilder:
                             list_count = 0
                         new_list.append({"url": imdb_url, "limit": list_count})
                     self.methods.append((method_name, new_list))
+                elif method_name == "icheckmovies_list":
+                    valid_lists = []
+                    for icheckmovies_list in util.get_list(method_data, split=False):
+                        valid_lists.append(config.ICheckMovies.validate_icheckmovies_list(icheckmovies_list, self.library.Plex.language))
+                    self.methods.append((method_name, valid_lists))
                 elif method_name == "letterboxd_list":
                     self.methods.append((method_name, util.get_list(method_data, split=False)))
                 elif method_name == "letterboxd_list_details":
@@ -1094,6 +1099,7 @@ class CollectionBuilder:
                 elif "mal" in method:                               check_map(self.config.MyAnimeList.get_items(method, value))
                 elif "tvdb" in method:                              check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
                 elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language, self.library.is_movie))
+                elif "icheckmovies" in method:                      check_map(self.config.ICheckMovies.get_items(method, value, self.library.Plex.language))
                 elif "letterboxd" in method:                        check_map(self.config.Letterboxd.get_items(method, value, self.library.Plex.language))
                 elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
                 elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
