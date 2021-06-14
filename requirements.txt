@@ -3,6 +3,7 @@
 PlexAPI==4.5.2
 tmdbv3api==1.7.5
 trakt.py==4.3.0
+arrapi==1.0.0
 # More common, flexible
 lxml
 requests>=2.4.2
