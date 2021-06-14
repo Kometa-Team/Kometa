@@ -8,7 +8,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["letterboxd_list", "letterboxd_list_details"]
 
-class LetterboxdAPI:
+class Letterboxd:
     def __init__(self, config):
         self.config = config
         self.url = "https://letterboxd.com"

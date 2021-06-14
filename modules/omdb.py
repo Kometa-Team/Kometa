@@ -31,7 +31,7 @@ class OMDbObj:
         self.imdb_id = data["imdbID"]
         self.type = data["Type"]
 
-class OMDbAPI:
+class OMDb:
     def __init__(self, params, Cache=None):
         self.url = "http://www.omdbapi.com/"
         self.apikey = params["apikey"]

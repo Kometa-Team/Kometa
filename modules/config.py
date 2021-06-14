@@ -1,21 +1,21 @@
 import logging, os
 from datetime import datetime
 from modules import util
-from modules.anidb import AniDBAPI
-from modules.anilist import AniListAPI
+from modules.anidb import AniDB
+from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
-from modules.imdb import IMDbAPI
-from modules.letterboxd import LetterboxdAPI
-from modules.mal import MyAnimeListAPI
-from modules.omdb import OMDbAPI
-from modules.plex import PlexAPI
+from modules.imdb import IMDb
+from modules.letterboxd import Letterboxd
+from modules.mal import MyAnimeList
+from modules.omdb import OMDb
+from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
-from modules.tautulli import TautulliAPI
-from modules.tmdb import TMDbAPI
-from modules.trakttv import TraktAPI
-from modules.tvdb import TVDbAPI
+from modules.tautulli import Tautulli
+from modules.tmdb import TMDb
+from modules.trakttv import Trakt
+from modules.tvdb import TVDb
 from modules.util import Failed
 from ruamel import yaml
 
@@ -214,7 +214,7 @@ class Config:
             try:                                self.tmdb["apikey"] = check_for_attribute(self.data, "apikey", parent="tmdb", throw=True)
             except Failed as e:                 raise Failed(e)
             self.tmdb["language"] = check_for_attribute(self.data, "language", parent="tmdb", default="en")
-            self.TMDb = TMDbAPI(self, self.tmdb)
+            self.TMDb = TMDb(self, self.tmdb)
             logger.info(f"TMDb Connection {'Failed' if self.TMDb is None else 'Successful'}")
         else:
             raise Failed("Config Error: tmdb attribute not found")
@@ -227,7 +227,7 @@ class Config:
             self.omdb = {}
             try:
                 self.omdb["apikey"] = check_for_attribute(self.data, "apikey", parent="omdb", throw=True)
-                self.OMDb = OMDbAPI(self.omdb, Cache=self.Cache)
+                self.OMDb = OMDb(self.omdb, Cache=self.Cache)
             except Failed as e:
                 logger.error(e)
             logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
@@ -245,7 +245,7 @@ class Config:
                 self.trakt["client_secret"] = check_for_attribute(self.data, "client_secret", parent="trakt", throw=True)
                 self.trakt["config_path"] = self.config_path
                 authorization = self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] and self.data["trakt"]["authorization"] else None
-                self.Trakt = TraktAPI(self.trakt, authorization)
+                self.Trakt = Trakt(self.trakt, authorization)
             except Failed as e:
                 logger.error(e)
             logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
@@ -263,19 +263,19 @@ class Config:
                 self.mal["client_secret"] = check_for_attribute(self.data, "client_secret", parent="mal", throw=True)
                 self.mal["config_path"] = self.config_path
                 authorization = self.data["mal"]["authorization"] if "authorization" in self.data["mal"] and self.data["mal"]["authorization"] else None
-                self.MyAnimeList = MyAnimeListAPI(self.mal, self, authorization)
+                self.MyAnimeList = MyAnimeList(self.mal, self, authorization)
             except Failed as e:
                 logger.error(e)
             logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
         else:
             logger.warning("mal attribute not found")
 
-        self.TVDb = TVDbAPI(self)
-        self.IMDb = IMDbAPI(self)
-        self.AniDB = AniDBAPI(self)
+        self.TVDb = TVDb(self)
+        self.IMDb = IMDb(self)
+        self.AniDB = AniDB(self)
         self.Convert = Convert(self)
-        self.AniList = AniListAPI(self)
-        self.Letterboxd = LetterboxdAPI(self)
+        self.AniList = AniList(self)
+        self.Letterboxd = Letterboxd(self)
 
         util.separator()
 
@@ -447,7 +447,7 @@ class Config:
                 params["plex"]["clean_bundles"] = check_for_attribute(lib, "clean_bundles", parent="plex", var_type="bool", default=self.general["plex"]["clean_bundles"], save=False)
                 params["plex"]["empty_trash"] = check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False)
                 params["plex"]["optimize"] = check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
-                library = PlexAPI(self, params)
+                library = Plex(self, params)
                 logger.info("")
                 logger.info(f"{display_name} Library Connection Successful")
             except Failed as e:
@@ -517,7 +517,7 @@ class Config:
                 try:
                     tautulli_params["url"] = check_for_attribute(lib, "url", parent="tautulli", var_type="url", default=self.general["tautulli"]["url"], req_default=True, save=False)
                     tautulli_params["apikey"] = check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
-                    library.Tautulli = TautulliAPI(tautulli_params)
+                    library.Tautulli = Tautulli(tautulli_params)
                 except Failed as e:
                     util.print_multiline(e, error=True)
                     logger.info("")

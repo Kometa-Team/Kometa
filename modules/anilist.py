@@ -22,7 +22,7 @@ pretty_names = {
 tag_query = "query{MediaTagCollection {name}}"
 genre_query = "query{GenreCollection}"
 
-class AniListAPI:
+class AniList:
     def __init__(self, config):
         self.config = config
         self.url = "https://graphql.anilist.co"
