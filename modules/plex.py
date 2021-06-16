@@ -5,7 +5,7 @@ from modules.util import Failed, Image
 import plexapi
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.collection import Collections
+from plexapi.collection import Collection
 from plexapi.server import PlexServer
 from retrying import retry
 from ruamel import yaml
@@ -377,10 +377,6 @@ class Plex:
         return self.Plex.fetchItems(key, container_start=container_start, container_size=container_size)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def server_search(self, data):
-        return self.PlexServer.search(data)
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def query(self, method):
         return method()
 
@@ -532,24 +528,20 @@ class Plex:
         self.test_smart_filter(uri_args)
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
-    def smart(self, collection):
-        return utils.cast(bool, self.get_collection(collection)._data.attrib.get('smart', '0'))
-
     def smart_filter(self, collection):
-        smart_filter = self.get_collection(collection)._data.attrib.get('content')
+        smart_filter = self.get_collection(collection).content
         return smart_filter[smart_filter.index("?"):]
 
     def get_collection(self, data):
         if isinstance(data, int):
             collection = self.fetchItem(data)
-        elif isinstance(data, Collections):
+        elif isinstance(data, Collection):
             collection = data
         else:
             collection = util.choose_from_list(self.search(title=str(data), libtype="collection"), "collection", str(data), exact=True)
         if collection:
             return collection
-        else:
-            raise Failed(f"Plex Error: Collection {data} not found")
+        raise Failed(f"Plex Error: Collection {data} not found")
 
     def validate_collections(self, collections):
         valid_collections = []
@@ -630,9 +622,9 @@ class Plex:
 
     def get_collection_items(self, collection, smart_label_collection):
         if smart_label_collection:
-            return self.get_labeled_items(collection.title if isinstance(collection, Collections) else str(collection))
-        elif isinstance(collection, Collections):
-            if self.smart(collection):
+            return self.get_labeled_items(collection.title if isinstance(collection, Collection) else str(collection))
+        elif isinstance(collection, Collection):
+            if collection.smart:
                 return self.get_filter_items(self.smart_filter(collection))
             else:
                 return self.query(collection.items)
@@ -644,7 +636,7 @@ class Plex:
         return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
 
     def get_collection_name_and_items(self, collection, smart_label_collection):
-        name = collection.title if isinstance(collection, Collections) else str(collection)
+        name = collection.title if isinstance(collection, Collection) else str(collection)
         return name, self.get_collection_items(collection, smart_label_collection)
 
     def map_guids(self):
