@@ -474,9 +474,10 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
+        final_search = search_translation[search_name] if search_name in search_translation else search_name
         try:
             choices = {}
-            for choice in self.Plex.listFilterChoices(search_name):
+            for choice in self.Plex.listFilterChoices(final_search):
                 choices[choice.title.lower()] = choice.title if title else choice.key
                 choices[choice.key.lower()] = choice.title if title else choice.key
             return choices
@@ -537,20 +538,6 @@ class Plex:
     def smart_filter(self, collection):
         smart_filter = self.get_collection(collection)._data.attrib.get('content')
         return smart_filter[smart_filter.index("?"):]
-
-    def validate_search_list(self, data, search_name, title=True, pairs=False):
-        final_search = search_translation[search_name] if search_name in search_translation else search_name
-        search_choices = self.get_search_choices(final_search, title=title)
-        valid_list = []
-        for value in util.get_list(data):
-            if str(value).lower() in search_choices:
-                if pairs:
-                    valid_list.append((value, search_choices[str(value).lower()]))
-                else:
-                    valid_list.append(search_choices[str(value).lower()])
-            else:
-                raise Failed(f"Plex Error: {search_name}: {value} not found")
-        return valid_list
 
     def get_collection(self, data):
         if isinstance(data, int):

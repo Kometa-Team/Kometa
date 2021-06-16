@@ -1304,13 +1304,21 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data)
-            try:
-                return self.library.validate_search_list(final_values, attribute, title=not pairs, pairs=pairs)
-            except Failed as e:
-                if validate:
-                    raise
+            search_choices = self.library.get_search_choices(attribute, title=not pairs)
+            valid_list = []
+            for value in final_values:
+                if str(value).lower() in search_choices:
+                    if pairs:
+                        valid_list.append((value, search_choices[str(value).lower()]))
+                    else:
+                        valid_list.append(search_choices[str(value).lower()])
                 else:
-                    logger.error(e)
+                    error = f"Plex Error: {attribute}: {value} not found"
+                    if validate:
+                        raise Failed(error)
+                    else:
+                        logger.error(error)
+            return valid_list
         elif attribute in ["year", "episode_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:#
             return util.check_year(data, self.current_year, final)
         elif attribute in plex.date_attributes and modifier in [".before", ".after"]:#
