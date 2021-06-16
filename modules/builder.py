@@ -1042,8 +1042,7 @@ class CollectionBuilder:
         if self.build_collection:
             try:
                 self.obj = self.library.get_collection(self.name)
-                collection_smart = self.library.smart(self.obj)
-                if (self.smart and not collection_smart) or (not self.smart and collection_smart):
+                if (self.smart and not self.obj.smart) or (not self.smart and self.obj.smart):
                     logger.info("")
                     logger.error(f"Collection Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
                     self.library.query(self.obj.delete)
