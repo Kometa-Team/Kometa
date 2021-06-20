@@ -155,7 +155,7 @@ class Cache:
                 if row and row[to_id]:
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
-                    id_to_return = int(row[to_id])
+                    id_to_return = row[to_id] if to_id == "imdb_id" else int(row[to_id])
                     expired = time_between_insertion.days > self.expiration
         return id_to_return, expired
 
