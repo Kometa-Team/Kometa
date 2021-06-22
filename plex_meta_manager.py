@@ -252,6 +252,7 @@ def mass_metadata(config, library):
     sonarr_adds = []
     items = library.get_all()
     for i, item in enumerate(items, 1):
+        library.reload(item)
         util.print_return(f"Processing: {i}/{len(items)} {item.title}")
         tmdb_id = None
         tvdb_id = None
@@ -313,12 +314,18 @@ def mass_metadata(config, library):
                     raise Failed
                 item_genres = [genre.tag for genre in item.genres]
                 display_str = ""
-                for genre in (g for g in item_genres if g not in new_genres):
-                    library.query_data(item.removeGenre, genre)
-                    display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
+                add_genre = []
                 for genre in (g for g in new_genres if g not in item_genres):
-                    library.query_data(item.addGenre, genre)
+                    add_genre.append(genre)
                     display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
+                if len(add_genre) > 0:
+                    library.query_data(item.addGenre, add_genre)
+                remove_genre = []
+                for genre in (g for g in item_genres if g not in new_genres):
+                    remove_genre.append(genre)
+                    display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
+                if len(remove_genre) > 0:
+                    library.query_data(item.removeGenre, remove_genre)
                 if len(display_str) > 0:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | Genres | {display_str}"))
             except Failed:
