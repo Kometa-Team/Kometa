@@ -1232,11 +1232,12 @@ class CollectionBuilder:
             base_dict = {}
             any_dicts = []
             for alias_key, alias_value in filter_alias.items():
-                if alias_key in plex.and_searches:
+                _, _, final = self._split(alias_key)
+                if final in plex.and_searches:
                     base_dict[alias_value[:-4]] = plex_filter[alias_value]
-                elif alias_key in plex.or_searches:
+                elif final in plex.or_searches:
                     any_dicts.append({alias_value: plex_filter[alias_value]})
-                elif alias_key in plex.searches:
+                elif final in plex.searches:
                     base_dict[alias_value] = plex_filter[alias_value]
             if len(any_dicts) > 0:
                 base_dict["any"] = any_dicts
