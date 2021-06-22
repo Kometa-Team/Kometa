@@ -10,6 +10,7 @@ from plexapi.server import PlexServer
 from retrying import retry
 from ruamel import yaml
 from urllib import parse
+from xml.etree.ElementTree import ParseError
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -260,7 +261,7 @@ class Plex:
             raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:
             raise Failed(f"Plex Error: {e}")
-        except requests.exceptions.ConnectionError:
+        except (requests.exceptions.ConnectionError, ParseError):
             util.print_stacktrace()
             raise Failed("Plex Error: Plex url is invalid")
         self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"]), None)
@@ -697,16 +698,19 @@ class Plex:
         updated = False
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
+            _add_tags = [f"{t[:1].upper()}{t[1:]}" for t in add_tags] if add_tags else None
+            _remove_tags = [f"{t[:1].upper()}{t[1:]}" for t in remove_tags] if remove_tags else None
+            _sync_tags = [t.lower() for t in sync_tags] if sync_tags else None
             item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
             input_tags = []
-            if add_tags:
-                input_tags.extend(add_tags)
-            if sync_tags:
-                input_tags.extend(sync_tags)
-            if sync_tags or remove_tags:
+            if _add_tags:
+                input_tags.extend(_add_tags)
+            if _sync_tags:
+                input_tags.extend(_sync_tags)
+            if _sync_tags or _remove_tags:
                 remove_method = getattr(obj, f"remove{attr.capitalize()}")
                 for tag in item_tags:
-                    if (sync_tags and tag not in sync_tags) or (remove_tags and tag in remove_tags):
+                    if (_sync_tags and tag.lower() not in _sync_tags) or (_remove_tags and tag in _remove_tags):
                         updated = True
                         self.query_data(remove_method, tag)
                         logger.info(f"Detail: {attr.capitalize()} {tag} removed")
@@ -719,18 +723,61 @@ class Plex:
                         logger.info(f"Detail: {attr.capitalize()} {tag} added")
         return updated
 
-    def update_item_from_assets(self, item, collection_mode=False, upload=True, dirs=None, name=None):
-        if dirs is None:
-            dirs = self.asset_directory
-        if not name and collection_mode:
-            name = item.title
-        elif not name:
-            name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
-        for ad in dirs:
+    def update_item_from_assets(self, item):
+        name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
+        for ad in self.asset_directory:
             poster = None
             background = None
-            poster_image = None
-            background_image = None
+            item_dir = None
+            if self.asset_folders:
+                if os.path.isdir(os.path.join(ad, name)):
+                    item_dir = os.path.join(ad, name)
+                else:
+                    matches = glob.glob(os.path.join(ad, "*", name))
+                    if len(matches) > 0:
+                        item_dir = os.path.abspath(matches[0])
+                if item_dir is None:
+                    continue
+                poster_filter = os.path.join(item_dir, "poster.*")
+                background_filter = os.path.join(item_dir, "background.*")
+            else:
+                poster_filter = os.path.join(ad, f"{name}.*")
+                background_filter = os.path.join(ad, f"{name}_background.*")
+            matches = glob.glob(poster_filter)
+            if len(matches) > 0:
+                poster = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
+            matches = glob.glob(background_filter)
+            if len(matches) > 0:
+                background = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+            if self.is_show:
+                for season in self.query(item.seasons):
+                    if item_dir:
+                        season_filter = os.path.join(item_dir, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
+                    else:
+                        season_filter = os.path.join(ad, f"{name}_Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
+                    matches = glob.glob(season_filter)
+                    if len(matches) > 0:
+                        season_poster = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
+                        self.upload_images(season, poster=season_poster)
+                    for episode in self.query(season.episodes):
+                        if item_dir:
+                            episode_filter = os.path.join(item_dir, f"{episode.seasonEpisode.upper()}.*")
+                        else:
+                            episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
+                        matches = glob.glob(episode_filter)
+                        if len(matches) > 0:
+                            episode_poster = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
+                            self.upload_images(episode, poster=episode_poster)
+            if poster or background:
+                return poster, background
+        return None, None
+
+    def find_collection_assets(self, item, name=None):
+        if name is None:
+            name = item.title
+        for ad in self.asset_directory:
+            poster = None
+            background = None
             if self.asset_folders:
                 if not os.path.isdir(os.path.join(ad, name)):
                     continue
@@ -741,38 +788,10 @@ class Plex:
                 background_filter = os.path.join(ad, f"{name}_background.*")
             matches = glob.glob(poster_filter)
             if len(matches) > 0:
-                poster_image = os.path.abspath(matches[0])
-                if upload:
-                    poster = Image("asset_directory", poster_image, prefix=f"{item.title}'s ", is_url=False)
+                poster = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
             matches = glob.glob(background_filter)
             if len(matches) > 0:
-                background_image = os.path.abspath(matches[0])
-                if upload:
-                    background = Image("asset_directory", background_image, prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+                background = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
-                self.upload_images(item, poster=poster, background=background)
-            if collection_mode:
-                for ite in self.query(item.items):
-                    self.update_item_from_assets(ite, dirs=[os.path.join(ad, name)])
-            if not upload:
-                return poster_image, background_image
-            if self.is_show and not collection_mode:
-                for season in self.query(item.seasons):
-                    if self.asset_folders:
-                        season_filter = os.path.join(ad, name, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
-                    else:
-                        season_filter = os.path.join(ad, f"{name}_Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
-                    matches = glob.glob(season_filter)
-                    if len(matches) > 0:
-                        season_path = os.path.abspath(matches[0])
-                        self.upload_images(season, poster=Image("asset_directory", season_path, prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False))
-                    for episode in self.query(season.episodes):
-                        if self.asset_folders:
-                            episode_filter = os.path.join(ad, name, f"{episode.seasonEpisode.upper()}.*")
-                        else:
-                            episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
-                        matches = glob.glob(episode_filter)
-                        if len(matches) > 0:
-                            episode_path = os.path.abspath(matches[0])
-                            self.upload_images(episode, poster=Image("asset_directory", episode_path, prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False))
+                return poster, background
         return None, None

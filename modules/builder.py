@@ -131,13 +131,25 @@ all_details = [
     "url_background", "tmdb_background", "tvdb_background", "file_background",
     "name_mapping", "label", "show_filtered", "show_missing", "save_missing"
 ]
-collectionless_details = [
-    "sort_title", "content_rating",
-    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography",
-    "collection_order", "plex_collectionless",
-    "url_poster", "tmdb_poster", "tmdb_profile", "file_poster",
-    "url_background", "file_background",
-    "name_mapping", "label", "label_sync_mode", "test"
+summary_details = [
+    "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary",
+    "tvdb_description", "trakt_description", "letterboxd_description"
+]
+poster_details = [
+    "url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"
+]
+background_details = [
+    "url_background", "tmdb_background", "tvdb_background", "file_background"
+]
+boolean_details = [
+    "show_filtered",
+    "show_missing",
+    "save_missing"
+]
+string_details = [
+    "sort_title",
+    "content_rating",
+    "name_mapping"
 ]
 ignored_details = [
     "smart_filter",
@@ -148,13 +160,13 @@ ignored_details = [
     "sync_mode",
     "template",
     "test",
-    "tmdb_person"
+    "tmdb_person",
+    "build_collection"
 ]
-boolean_details = [
-    "show_filtered",
-    "show_missing",
-    "save_missing"
-]
+collectionless_details = [
+    "collection_order", "plex_collectionless",
+    "label", "label_sync_mode", "test"
+] + poster_details + background_details + summary_details + string_details
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
@@ -439,7 +451,7 @@ class CollectionBuilder:
         if "build_collection" in methods:
             logger.info("")
             logger.info("Validating Method: build_collection")
-            if not self.data[methods["build_collection"]]:
+            if self.data[methods["build_collection"]] is None:
                 logger.warning(f"Collection Warning: build_collection attribute is blank defaulting to true")
             else:
                 logger.debug(f"Value: {self.data[methods['build_collection']]}")
@@ -627,8 +639,8 @@ class CollectionBuilder:
                         self.item_details[method_name] = str(method_data).lower()
                 elif method_name in boolean_details:
                     self.details[method_name] = util.get_bool(method_name, method_data)
-                elif method_name in all_details:
-                    self.details[method_name] = method_data
+                elif method_name in string_details:
+                    self.details[method_name] = str(method_data)
                 elif method_name == "radarr_add":
                     self.add_to_radarr = util.get_bool(method_name, method_data)
                 elif method_name == "radarr_folder":
@@ -1651,6 +1663,8 @@ class CollectionBuilder:
                     logger.error(e)
 
         for item in items:
+            poster, background = self.library.update_item_from_assets(item)
+            self.library.upload_images(item, poster=poster, background=background)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
@@ -1745,7 +1759,7 @@ class CollectionBuilder:
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error("Collection Error: name_mapping attribute is blank")
-            poster_image, background_image = self.library.update_item_from_assets(self.obj, collection_mode=True, upload=False, name=name_mapping)
+            poster_image, background_image = self.library.find_collection_assets(self.obj, name=name_mapping)
             if poster_image:
                 self.posters["asset_directory"] = poster_image
             if background_image:
@@ -1767,7 +1781,7 @@ class CollectionBuilder:
         elif "tmdb_poster" in self.posters:                 poster = Image("tmdb_poster", self.posters["tmdb_poster"])
         elif "tmdb_profile" in self.posters:                poster = Image("tmdb_poster", self.posters["tmdb_profile"])
         elif "tvdb_poster" in self.posters:                 poster = Image("tvdb_poster", self.posters["tvdb_poster"])
-        elif "asset_directory" in self.posters:             poster = Image("asset_directory", self.posters["asset_directory"], is_url=False)
+        elif "asset_directory" in self.posters:             poster = self.posters["asset_directory"]
         elif "tmdb_person" in self.posters:                 poster = Image("tmdb_person", self.posters["tmdb_person"])
         elif "tmdb_collection_details" in self.posters:     poster = Image("tmdb_collection_details", self.posters["tmdb_collection_details"])
         elif "tmdb_actor_details" in self.posters:          poster = Image("tmdb_actor_details", self.posters["tmdb_actor_details"])
@@ -1786,7 +1800,7 @@ class CollectionBuilder:
         elif "file_background" in self.backgrounds:         background = Image("file_background", self.backgrounds["file_background"], is_poster=False, is_url=False)
         elif "tmdb_background" in self.backgrounds:         background = Image("tmdb_background", self.backgrounds["tmdb_background"], is_poster=False)
         elif "tvdb_background" in self.backgrounds:         background = Image("tvdb_background", self.backgrounds["tvdb_background"], is_poster=False)
-        elif "asset_directory" in self.backgrounds:         background = Image("asset_directory", self.backgrounds["asset_directory"], is_poster=False, is_url=False)
+        elif "asset_directory" in self.backgrounds:         background = self.backgrounds["asset_directory"]
         elif "tmdb_collection_details" in self.backgrounds: background = Image("tmdb_collection_details", self.backgrounds["tmdb_collection_details"], is_poster=False)
         elif "tmdb_movie_details" in self.backgrounds:      background = Image("tmdb_movie_details", self.backgrounds["tmdb_movie_details"], is_poster=False)
         elif "tvdb_movie_details" in self.backgrounds:      background = Image("tvdb_movie_details", self.backgrounds["tvdb_movie_details"], is_poster=False)
