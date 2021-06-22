@@ -189,9 +189,11 @@ def update_libraries(config):
                 util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library", space=False, border=False)
                 logger.info("")
                 for col in unmanaged_collections:
-                    library.update_item_from_assets(col, collection_mode=True)
+                    poster, background = library.find_collection_assets(col)
+                    library.upload_images(col, poster=poster, background=background)
                 for item in library.get_all():
-                    library.update_item_from_assets(item)
+                    poster, background = library.update_item_from_assets(item)
+                    library.upload_images(item, poster=poster, background=background)
 
         logger.removeHandler(library_handler)
 
@@ -298,6 +300,9 @@ def mass_metadata(config, library):
                         omdb_item = config.OMDb.get_omdb(imdb_id)
                     except Failed as e:
                         logger.info(util.adjust_space(str(e)))
+                    except Exception:
+                        logger.error(f"IMDb ID: {imdb_id}")
+                        raise
                 else:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
 
@@ -453,11 +458,10 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 builder.update_details()
 
-            if len(builder.item_details) > 0:
-                logger.info("")
-                util.separator(f"Updating Details of the Items in  {mapping_name} Collection", space=False, border=False)
-                logger.info("")
-                builder.update_item_details()
+            logger.info("")
+            util.separator(f"Updating Details of the Items in {mapping_name} Collection", space=False, border=False)
+            logger.info("")
+            builder.update_item_details()
 
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)

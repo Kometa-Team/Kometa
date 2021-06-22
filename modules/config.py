@@ -23,14 +23,12 @@ from ruamel import yaml
 logger = logging.getLogger("Plex Meta Manager")
 
 sync_modes = {"append": "Only Add Items to the Collection", "sync": "Add & Remove Items from the Collection"}
-radarr_versions = {"v2": "For Radarr 0.2", "v3": "For Radarr 3.0"}
 radarr_availabilities = {
     "announced": "For Announced",
     "cinemas": "For In Cinemas",
     "released": "For Released",
     "db": "For PreDB"
 }
-sonarr_versions = {"v2": "For Sonarr 0.2", "v3": "For Sonarr 3.0"}
 sonarr_monitors = {
     "all": "Monitor all episodes except specials",
     "future": "Monitor episodes that have not aired yet",
@@ -58,6 +56,7 @@ class Config:
         else:                                                               raise Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
         logger.info(f"Using {self.config_path} as config")
 
+        self.default_dir = default_dir
         self.test_mode = is_test
         self.run_start_time = time_scheduled
         self.run_hour = datetime.strptime(time_scheduled, "%H:%M").hour
