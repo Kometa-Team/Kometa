@@ -68,6 +68,8 @@ class Convert:
                 if len(unconverted_ids) == 100:
                     unconverted_id_sets.append(unconverted_ids)
                     unconverted_ids = []
+        if len(unconverted_ids) > 0:
+            unconverted_id_sets.append(unconverted_ids)
         for unconverted_id_set in unconverted_id_sets:
             for anime_ids in self._request(unconverted_id_set):
                 if anime_ids:
