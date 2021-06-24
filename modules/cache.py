@@ -190,6 +190,7 @@ class Cache:
                     omdb_dict["imdbVotes"] = row["imdb_votes"] if row["imdb_votes"] else None
                     omdb_dict["Metascore"] = row["metacritic_rating"] if row["metacritic_rating"] else None
                     omdb_dict["Type"] = row["type"] if row["type"] else None
+                    omdb_dict["Response"] = "True"
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     expired = time_between_insertion.days > self.expiration
