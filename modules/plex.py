@@ -698,29 +698,24 @@ class Plex:
         updated = False
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
-            _add_tags = [f"{t[:1].upper()}{t[1:]}" for t in add_tags] if add_tags else None
-            _remove_tags = [f"{t[:1].upper()}{t[1:]}" for t in remove_tags] if remove_tags else None
-            _sync_tags = [t.lower() for t in sync_tags] if sync_tags else None
-            item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
-            input_tags = []
-            if _add_tags:
-                input_tags.extend(_add_tags)
-            if _sync_tags:
-                input_tags.extend(_sync_tags)
-            if _sync_tags or _remove_tags:
-                remove_method = getattr(obj, f"remove{attr.capitalize()}")
-                for tag in item_tags:
-                    if (_sync_tags and tag.lower() not in _sync_tags) or (_remove_tags and tag in _remove_tags):
-                        updated = True
-                        self.query_data(remove_method, tag)
-                        logger.info(f"Detail: {attr.capitalize()} {tag} removed")
-            if input_tags:
-                add_method = getattr(obj, f"add{attr.capitalize()}")
-                for tag in input_tags:
-                    if tag not in item_tags:
-                        updated = True
-                        self.query_data(add_method, tag)
-                        logger.info(f"Detail: {attr.capitalize()} {tag} added")
+            _add_tags = add_tags if add_tags else []
+            _remove = [t.lower() for t in remove_tags] if remove_tags else []
+            _sync_tags = sync_tags if sync_tags else []
+            _sync = [t.lower() for t in _sync_tags]
+            item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
+            _add = _add_tags + _sync_tags
+            if _add:
+                add = [f"{t[:1].upper()}{t[1:]}" for t in _add if t.lower() not in item_tags]
+                if add:
+                    updated = True
+                    self.query_data(getattr(obj, f"add{attr.capitalize()}"), add)
+                    logger.info(f"Detail: {attr.capitalize()} {add} added")
+            if _remove or _sync:
+                remove = [t for t in item_tags if t not in _sync or t in _remove]
+                if remove:
+                    updated = True
+                    self.query_data(getattr(obj, f"remove{attr.capitalize()}"), remove)
+                    logger.info(f"Detail: {attr.capitalize()} {remove} removed")
         return updated
 
     def update_item_from_assets(self, item):
