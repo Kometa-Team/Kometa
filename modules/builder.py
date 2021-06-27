@@ -1474,7 +1474,7 @@ class CollectionBuilder:
             if (filter_method.startswith("original_language") and self.library.is_movie) or filter_method.startswith("tmdb_vote_count"):
                 arr_filters.append((filter_method, filter_data))
         if len(self.missing_movies) > 0:
-            missing_movies_with_names = []
+            missing_movies_formatted = []
             for missing_id in self.missing_movies:
                 try:
                     movie = self.config.TMDb.get_movie(missing_id)
@@ -1492,17 +1492,19 @@ class CollectionBuilder:
                         match = False
                         break
                 if match:
-                    missing_movies_with_names.append((movie.title, missing_id))
+                    release_date_year_match = re.search("^(\d+)", movie.release_date)
+                    year = release_date_year_match.group(1) if release_date_year_match else '?'
+                    missing_movies_formatted.append(("{movie.title} ({year})", missing_id))
                     if self.details["show_missing"] is True:
                         logger.info(f"{self.name} Collection | ? | {movie.title} (TMDb: {missing_id})")
                 elif self.details["show_filtered"] is True:
                     logger.info(f"{self.name} Collection | X | {movie.title} (TMDb: {missing_id})")
             logger.info("")
-            logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
+            logger.info(f"{len(missing_movies_formatted)} Movie{'s' if len(missing_movies_formatted) > 1 else ''} Missing")
             if self.details["save_missing"] is True:
-                self.library.add_missing(self.name, missing_movies_with_names, True)
+                self.library.add_missing(self.name, missing_movies_formatted, True)
             if (self.add_to_radarr and self.library.Radarr) or self.run_again:
-                missing_tmdb_ids = [missing_id for title, missing_id in missing_movies_with_names]
+                missing_tmdb_ids = [missing_id for missing_movie_formatted, missing_id in missing_movies_formatted]
                 if self.add_to_radarr and self.library.Radarr:
                     try:
                         self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_options)
