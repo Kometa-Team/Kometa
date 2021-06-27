@@ -1383,8 +1383,9 @@ class CollectionBuilder:
             except Failed as e:
                 logger.error(e)
                 continue
+            current_title = f"{current.title} ({current.year})" if current.year else current.title
             if self.check_filters(current, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
-                logger.info(util.adjust_space(f"{name} Collection | {'=' if current in collection_items else '+'} | {current.title}"))
+                logger.info(util.adjust_space(f"{name} Collection | {'=' if current in collection_items else '+'} | {current_title}"))
                 if current in collection_items:
                     self.plex_map[current.ratingKey] = None
                 elif self.smart_label_collection:
@@ -1392,7 +1393,7 @@ class CollectionBuilder:
                 else:
                     self.library.query_data(current.addCollection, name)
             elif self.details["show_filtered"] is True:
-                logger.info(f"{name} Collection | X | {current.title}")
+                logger.info(f"{name} Collection | X | {current_title}")
         media_type = f"{'Movie' if self.library.is_movie else 'Show'}{'s' if total > 1 else ''}"
         util.print_end()
         logger.info("")
@@ -1572,12 +1573,13 @@ class CollectionBuilder:
                             or (filter_method == "tmdb_vote_count.lte" and movie.vote_count > filter_data):
                         match = False
                         break
+                current_title = f"{movie.title} ({util.check_date(movie.release_date, 'test', plex_date=True).year})" if movie.release_date else movie.title
                 if match:
-                    missing_movies_with_names.append((movie.title, missing_id))
+                    missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} Collection | ? | {movie.title} (TMDb: {missing_id})")
+                        logger.info(f"{self.name} Collection | ? | {current_title} (TMDb: {missing_id})")
                 elif self.details["show_filtered"] is True:
-                    logger.info(f"{self.name} Collection | X | {movie.title} (TMDb: {missing_id})")
+                    logger.info(f"{self.name} Collection | X | {current_title} (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
             if self.details["save_missing"] is True:
@@ -1829,13 +1831,15 @@ class CollectionBuilder:
                 except (BadRequest, NotFound):
                     logger.error(f"Plex Error: Item {rating_key} not found")
                     continue
+                current_title = f"{current.title} ({current.year})" if current.year else current.title
                 if current in collection_items:
-                    logger.info(f"{name} Collection | = | {current.title}")
-                elif self.smart_label_collection:
-                    self.library.query_data(current.addLabel, name)
+                    logger.info(f"{name} Collection | = | {current_title}")
                 else:
-                    self.library.query_data(current.addCollection, name)
-                    logger.info(f"{name} Collection | + | {current.title}")
+                    if self.smart_label_collection:
+                        self.library.query_data(current.addLabel, name)
+                    else:
+                        self.library.query_data(current.addCollection, name)
+                    logger.info(f"{name} Collection | + | {current_title}")
             logger.info(f"{len(rating_keys)} {'Movie' if self.library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
 
         if len(self.run_again_movies) > 0:
@@ -1848,7 +1852,8 @@ class CollectionBuilder:
                         logger.error(e)
                         continue
                     if self.details["show_missing"] is True:
-                        logger.info(f"{name} Collection | ? | {movie.title} (TMDb: {missing_id})")
+                        current_title = f"{movie.title} ({util.check_date(movie.release_date, 'test', plex_date=True).year})" if movie.release_date else movie.title
+                        logger.info(f"{name} Collection | ? | {current_title} (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(self.run_again_movies)} Movie{'s' if len(self.run_again_movies) > 1 else ''} Missing")
 
