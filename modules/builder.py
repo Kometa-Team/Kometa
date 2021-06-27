@@ -1492,13 +1492,11 @@ class CollectionBuilder:
                         match = False
                         break
                 if match:
-                    release_date_year_match = re.search("^(\d+)", movie.release_date)
-                    year = release_date_year_match.group(1) if release_date_year_match else '?'
-                    missing_movies_formatted.append(("{movie.title} ({year})", missing_id))
+                    missing_movies_formatted.append(("{movie.title} ({movie.year})", missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} Collection | ? | {movie.title} (TMDb: {missing_id})")
+                        logger.info(f"{self.name} Collection | ? | {movie.title} ({movie.year}) (TMDb: {missing_id})")
                 elif self.details["show_filtered"] is True:
-                    logger.info(f"{self.name} Collection | X | {movie.title} (TMDb: {missing_id})")
+                    logger.info(f"{self.name} Collection | X | {movie.title} ({movie.year}) (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_movies_formatted)} Movie{'s' if len(missing_movies_formatted) > 1 else ''} Missing")
             if self.details["save_missing"] is True:
@@ -1769,7 +1767,7 @@ class CollectionBuilder:
                         logger.error(e)
                         continue
                     if self.details["show_missing"] is True:
-                        logger.info(f"{name} Collection | ? | {movie.title} (TMDb: {missing_id})")
+                        logger.info(f"{name} Collection | ? | {movie.title} ({movie.year}) (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(self.run_again_movies)} Movie{'s' if len(self.run_again_movies) > 1 else ''} Missing")
 
