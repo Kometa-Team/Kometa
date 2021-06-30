@@ -140,7 +140,8 @@ boolean_details = [
     "visible_shared",
     "show_filtered",
     "show_missing",
-    "save_missing"
+    "save_missing",
+    "item_assets"
 ]
 string_details = [
     "sort_title",
@@ -215,7 +216,8 @@ class CollectionBuilder:
         self.details = {
             "show_filtered": self.library.show_filtered,
             "show_missing": self.library.show_missing,
-            "save_missing": self.library.save_missing
+            "save_missing": self.library.save_missing,
+            "item_assets": False
         }
         self.item_details = {}
         self.radarr_options = {}
@@ -1682,8 +1684,9 @@ class CollectionBuilder:
         for item in items:
             if int(item.ratingKey) in rating_keys:
                 rating_keys.remove(int(item.ratingKey))
-            poster, background = self.library.update_item_from_assets(item)
-            self.library.upload_images(item, poster=poster, background=background, overlay=overlay)
+            if self.details["item_assets"]:
+                poster, background = self.library.update_item_from_assets(item)
+                self.library.upload_images(item, poster=poster, background=background, overlay=overlay)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
