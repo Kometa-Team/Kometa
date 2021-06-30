@@ -135,6 +135,9 @@ background_details = [
     "url_background", "tmdb_background", "tvdb_background", "file_background"
 ]
 boolean_details = [
+    "visible_library",
+    "visible_home",
+    "visible_shared",
     "show_filtered",
     "show_missing",
     "save_missing"
@@ -1771,6 +1774,25 @@ class CollectionBuilder:
                     or plex.collection_order_keys[int(self.obj.collectionSort)] != self.details["collection_order"]:
                 self.library.collection_order_query(self.obj, self.details["collection_order"])
                 logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
+
+        if "visible_library" in self.details or "visible_home" in self.details or "visible_shared" in self.details:
+            visibility = self.library.collection_visibility(self.obj)
+            visible_library = None
+            visible_home = None
+            visible_shared = None
+
+            if "visible_library" in self.details and self.details["visible_library"] != visibility["library"]:
+                visible_library = self.details["visible_library"]
+
+            if "visible_home" in self.details and self.details["visible_home"] != visibility["library"]:
+                visible_home = self.details["visible_home"]
+
+            if "visible_shared" in self.details and self.details["visible_shared"] != visibility["library"]:
+                visible_shared = self.details["visible_shared"]
+
+            if visible_library is not None or visible_home is not None or visible_shared is not None:
+                self.library.collection_visibility_update(self.obj, visibility=visibility, library=visible_library, home=visible_home, shared=visible_shared)
+                logger.info("Detail: Collection visibility updated")
 
         add_tags = self.details["label"] if "label" in self.details else None
         remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
