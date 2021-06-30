@@ -1,7 +1,7 @@
 import glob, logging, os, plexapi, requests, shutil
 from modules import builder, util
 from modules.meta import Metadata
-from modules.util import Failed, Image
+from modules.util import Failed, ImageData
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
@@ -765,10 +765,10 @@ class Plex:
                 background_filter = os.path.join(ad, f"{name}_background.*")
             matches = glob.glob(poster_filter)
             if len(matches) > 0:
-                poster = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
+                poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
             matches = glob.glob(background_filter)
             if len(matches) > 0:
-                background = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+                background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if self.is_show:
                 for season in self.query(item.seasons):
                     if item_dir:
@@ -777,7 +777,7 @@ class Plex:
                         season_filter = os.path.join(ad, f"{name}_Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
                     matches = glob.glob(season_filter)
                     if len(matches) > 0:
-                        season_poster = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
+                        season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
                         self.upload_images(season, poster=season_poster)
                     for episode in self.query(season.episodes):
                         if item_dir:
@@ -786,7 +786,7 @@ class Plex:
                             episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
                         matches = glob.glob(episode_filter)
                         if len(matches) > 0:
-                            episode_poster = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
+                            episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
             if poster or background:
                 return poster, background
@@ -808,10 +808,10 @@ class Plex:
                 background_filter = os.path.join(ad, f"{name}_background.*")
             matches = glob.glob(poster_filter)
             if len(matches) > 0:
-                poster = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
+                poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
             matches = glob.glob(background_filter)
             if len(matches) > 0:
-                background = Image("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+                background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
                 return poster, background
         return None, None
