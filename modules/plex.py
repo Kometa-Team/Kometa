@@ -516,6 +516,7 @@ class Plex:
         elif put:               method = self.Plex._server._session.put
         else:                   method = None
         self.Plex._server.query(key, method=method)
+        return self.Plex._server.query(key, method=method)
 
     def smart_label_url(self, title, sort):
         labels = self.get_labels()
@@ -557,6 +558,26 @@ class Plex:
     def smart_filter(self, collection):
         smart_filter = self.get_collection(collection).content
         return smart_filter[smart_filter.index("?"):]
+
+    def collection_visibility(self, collection):
+        try:
+            attrs = self._query(f"/hubs/sections/{self.Plex.key}/manage?metadataItemId={collection.ratingKey}")[0].attrib
+            return {
+                "library": utils.cast(bool, attrs.get("promotedToRecommended", "0")),
+                "home": utils.cast(bool, attrs.get("promotedToOwnHome", "0")),
+                "shared": utils.cast(bool, attrs.get("promotedToSharedHome", "0"))
+            }
+        except IndexError:
+            return {"library": False, "home": False, "shared": False}
+
+    def collection_visibility_update(self, collection, visibility=None, library=None, home=None, shared=None):
+        if visibility is None:
+            visibility = self.collection_visibility(collection)
+        key = f"/hubs/sections/{self.Plex.key}/manage?metadataItemId={collection.ratingKey}"
+        key += f"&promotedToRecommended={1 if (library is None and visibility['library']) or library else 0}"
+        key += f"&promotedToOwnHome={1 if (home is None and visibility['home']) or home else 0}"
+        key += f"&promotedToSharedHome={1 if (shared is None and visibility['shared']) or shared else 0}"
+        self._query(key, post=True)
 
     def get_collection(self, data):
         if isinstance(data, int):
