@@ -18,7 +18,7 @@ class TimeoutExpired(Exception):
 class Failed(Exception):
     pass
 
-class Image:
+class ImageData:
     def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True):
         self.attribute = attribute
         self.location = location

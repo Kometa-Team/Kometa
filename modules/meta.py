@@ -1,7 +1,7 @@
 import logging, os, re, requests
 from datetime import datetime
 from modules import plex, util
-from modules.util import Failed, Image
+from modules.util import Failed, ImageData
 from plexapi.exceptions import NotFound
 from ruamel import yaml
 
@@ -143,7 +143,7 @@ class Metadata:
 
             def set_image(attr, group, alias, is_poster=True, is_url=True):
                 if group[alias[attr]]:
-                    return Image(attr, group[alias[attr]], is_poster=is_poster, is_url=is_url)
+                    return ImageData(attr, group[alias[attr]], is_poster=is_poster, is_url=is_url)
                 else:
                     logger.error(f"Metadata Error: {attr} attribute is blank")
 
