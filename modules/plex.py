@@ -1,12 +1,12 @@
-import glob, logging, os, requests
+import glob, logging, os, plexapi, requests, shutil
 from modules import builder, util
 from modules.meta import Metadata
 from modules.util import Failed, Image
-import plexapi
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
 from plexapi.server import PlexServer
+from PIL import Image
 from retrying import retry
 from ruamel import yaml
 from urllib import parse
@@ -334,6 +334,7 @@ class Plex:
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
         self.run_again = []
+        self.overlays = []
 
     def get_all_collections(self):
         return self.search(libtype="collection")
@@ -426,13 +427,18 @@ class Plex:
             item.uploadArt(filepath=image.location)
         self.reload(item)
 
-    def upload_images(self, item, poster=None, background=None):
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def _upload_file_poster(self, item, image):
+        item.uploadPoster(filepath=image)
+        self.reload(item)
+
+    def upload_images(self, item, poster=None, background=None, overlay=None):
         poster_uploaded = False
         if poster is not None:
             try:
                 image = None
                 if self.config.Cache:
-                    image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
+                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
                     if str(poster.compare) != str(image_compare):
                         image = None
                 if image is None or image != item.thumb:
@@ -444,6 +450,25 @@ class Plex:
             except BadRequest:
                 util.print_stacktrace()
                 logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
+
+        overlay_name = ""
+        if overlay is not None:
+            overlay_name, overlay_folder, overlay_image, temp_image = overlay
+            image_overlay = None
+            if self.config.Cache:
+                image, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
+            if poster_uploaded or not image_overlay or image_overlay != overlay_name:
+                og_image = requests.get(item.posterUrl).content
+                with open(temp_image, "wb") as handler:
+                    handler.write(og_image)
+                shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
+                new_poster = Image.open(temp_image)
+                new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
+                new_poster.paste(overlay_image, (0, 0), overlay_image)
+                new_poster.save(temp_image)
+                self._upload_file_poster(item, temp_image)
+                poster_uploaded = True
+                logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
 
         background_uploaded = False
         if background is not None:
@@ -465,9 +490,9 @@ class Plex:
 
         if self.config.Cache:
             if poster_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "poster", item.thumb, poster.compare)
+                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "poster", item.thumb, poster.compare if poster else "", overlay_name)
             if background_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "background", item.art, background.compare)
+                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "background", item.art, background.compare, "")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):

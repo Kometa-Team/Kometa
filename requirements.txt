@@ -11,3 +11,4 @@ ruamel.yaml
 schedule
 retrying
 pathvalidate
+pillow

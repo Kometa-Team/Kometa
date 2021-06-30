@@ -233,6 +233,17 @@ class Cache:
                 cursor.execute("INSERT OR IGNORE INTO anime_map(anidb) VALUES(?)", (anime_ids["anidb"],))
                 cursor.execute("UPDATE anime_map SET anilist = ?, myanimelist = ?, kitsu = ?, expiration_date = ? WHERE anidb = ?", (anime_ids["anidb"], anime_ids["myanimelist"], anime_ids["kitsu"], expiration_date.strftime("%Y-%m-%d"), anime_ids["anidb"]))
 
+    def query_image_map_overlay(self, library, image_type, overlay):
+        rks = []
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM image_map WHERE overlay = ? AND library = ? AND type = ?", (overlay, library, image_type))
+                rows = cursor.fetchall()
+                for row in rows:
+                    rks.append(int(row["rating_key"]))
+        return rks
+
     def query_image_map(self, rating_key, library, image_type):
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
@@ -240,12 +251,12 @@ class Cache:
                 cursor.execute(f"SELECT * FROM image_map WHERE rating_key = ? AND library = ? AND type = ?", (rating_key, library, image_type))
                 row = cursor.fetchone()
                 if row and row["location"]:
-                    return row["location"], row["compare"]
-        return None, None
+                    return row["location"], row["compare"], row["overlay"]
+        return None, None, None
 
-    def update_image_map(self, rating_key, library, image_type, location, compare):
+    def update_image_map(self, rating_key, library, image_type, location, compare, overlay):
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO image_map(rating_key, library, type) VALUES(?, ?, ?)", (rating_key, library, image_type))
-                cursor.execute("UPDATE image_map SET location = ?, compare = ? WHERE rating_key = ? AND library = ? AND type = ?", (location, compare, rating_key, library, image_type))
+                cursor.execute("UPDATE image_map SET location = ?, compare = ?, overlay = ? WHERE rating_key = ? AND library = ? AND type = ?", (location, compare, overlay, rating_key, library, image_type))

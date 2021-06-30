@@ -2,6 +2,7 @@ import logging, os, re
 from datetime import datetime, timedelta
 from modules import anidb, anilist, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed, Image
+from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show
 from urllib.parse import quote
@@ -627,6 +628,14 @@ class CollectionBuilder:
                     if "item_label.remove" in self.data and "item_label.sync" in self.data:
                         raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
                     self.item_details[method_final] = util.get_list(method_data)
+                elif method_name == "item_overlay":
+                    overlay = os.path.join(config.default_dir, "overlays", method_data, "overlay.png")
+                    if not os.path.exists(overlay):
+                        raise Failed(f"Collection Error: {method_data} overlay image not found at {overlay}")
+                    if method_data in self.library.overlays:
+                        raise Failed(f"Each Overlay can only be used once per Library")
+                    self.library.overlays.append(method_data)
+                    self.item_details[method_name] = method_data
                 elif method_name in plex.item_advance_keys:
                     key, options = plex.item_advance_keys[method_name]
                     if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
@@ -1664,9 +1673,22 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
 
+        overlay = None
+        overlay_folder = None
+        rating_keys = []
+        if "item_overlay" in self.item_details:
+            overlay_name = self.item_details["item_overlay"]
+            rating_keys = self.config.Cache.query_image_map_overlay(self.library.original_mapping_name, "poster", overlay_name)
+            overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
+            overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png"))
+            temp_image = os.path.join(overlay_folder, f"temp.png")
+            overlay = (overlay_name, overlay_folder, overlay_image, temp_image)
+
         for item in items:
+            if int(item.ratingKey) in rating_keys:
+                rating_keys.remove(int(item.ratingKey))
             poster, background = self.library.update_item_from_assets(item)
-            self.library.upload_images(item, poster=poster, background=background)
+            self.library.upload_images(item, poster=poster, background=background, overlay=overlay)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
@@ -1675,6 +1697,18 @@ class CollectionBuilder:
                     if getattr(item, key) != options[method_data]:
                         advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, "Movie" if self.library.is_movie else "Show", advance_edits, advanced=True)
+
+        for rating_key in rating_keys:
+            try:
+                item = self.fetch_item(rating_key)
+            except Failed as e:
+                logger.error(e)
+                continue
+            og_image = os.path.join(overlay_folder, f"{rating_key}.png")
+            if os.path.exists(og_image):
+                self.library._upload_file_poster(item, og_image)
+                os.remove(og_image)
+                self.config.Cache.update_image_map(item.ratingKey, self.library.original_mapping_name, "poster", "", "", "")
 
     def update_details(self):
         if not self.obj and self.smart_url:
@@ -1835,10 +1869,7 @@ class CollectionBuilder:
                 if current in collection_items:
                     logger.info(f"{name} Collection | = | {current_title}")
                 else:
-                    if self.smart_label_collection:
-                        self.library.query_data(current.addLabel, name)
-                    else:
-                        self.library.query_data(current.addCollection, name)
+                    self.library.query_data(current.addLabel if self.smart_label_collection else current.addCollection, name)
                     logger.info(f"{name} Collection | + | {current_title}")
             logger.info(f"{len(rating_keys)} {'Movie' if self.library.is_movie else 'Show'}{'s' if len(rating_keys) > 1 else ''} Processed")
 
