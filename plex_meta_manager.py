@@ -192,8 +192,7 @@ def update_libraries(config):
                     poster, background = library.find_collection_assets(col)
                     library.upload_images(col, poster=poster, background=background)
                 for item in library.get_all():
-                    poster, background = library.update_item_from_assets(item)
-                    library.upload_images(item, poster=poster, background=background)
+                    library.update_item_from_assets(item)
 
         logger.removeHandler(library_handler)
 

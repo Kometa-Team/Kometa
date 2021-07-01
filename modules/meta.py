@@ -17,7 +17,7 @@ class Metadata:
         logger.info("")
         logger.info(f"Loading Metadata {file_type}: {path}")
         def get_dict(attribute, attr_data, check_list=None):
-            if attribute in attr_data:
+            if attr_data and attribute in attr_data:
                 if attr_data[attribute]:
                     if isinstance(attr_data[attribute], dict):
                         if check_list:
