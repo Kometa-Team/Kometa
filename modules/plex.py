@@ -764,8 +764,9 @@ class Plex:
                     logger.info(f"Detail: {attr.capitalize()} {remove} removed")
         return updated
 
-    def update_item_from_assets(self, item):
+    def update_item_from_assets(self, item, overlay=None):
         name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
+        found_one = False
         for ad in self.asset_directory:
             poster = None
             background = None
@@ -779,6 +780,7 @@ class Plex:
                         item_dir = os.path.abspath(matches[0])
                 if item_dir is None:
                     continue
+                found_one = True
                 poster_filter = os.path.join(item_dir, "poster.*")
                 background_filter = os.path.join(item_dir, "background.*")
             else:
@@ -790,6 +792,8 @@ class Plex:
             matches = glob.glob(background_filter)
             if len(matches) > 0:
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+            if poster or background:
+                self.upload_images(item, poster=poster, background=background, overlay=overlay)
             if self.is_show:
                 for season in self.query(item.seasons):
                     if item_dir:
@@ -809,9 +813,8 @@ class Plex:
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
-            if poster or background:
-                return poster, background
-        return None, None
+        if not found_one:
+            logger.error(f"Asset Warning: No asset folder found called '{name}'")
 
     def find_collection_assets(self, item, name=None):
         if name is None:
