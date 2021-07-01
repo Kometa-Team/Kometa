@@ -1675,7 +1675,8 @@ class CollectionBuilder:
         rating_keys = []
         if "item_overlay" in self.item_details:
             overlay_name = self.item_details["item_overlay"]
-            rating_keys = self.config.Cache.query_image_map_overlay(self.library.original_mapping_name, "poster", overlay_name)
+            if self.config.Cache:
+                rating_keys = self.config.Cache.query_image_map_overlay(self.library.original_mapping_name, "poster", overlay_name)
             overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
             overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png"))
             temp_image = os.path.join(overlay_folder, f"temp.png")
@@ -1684,7 +1685,7 @@ class CollectionBuilder:
         for item in items:
             if int(item.ratingKey) in rating_keys:
                 rating_keys.remove(int(item.ratingKey))
-            if self.details["item_assets"]:
+            if self.details["item_assets"] or overlay is not None:
                 self.library.update_item_from_assets(item, overlay=overlay)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             advance_edits = {}
