@@ -1819,10 +1819,10 @@ class CollectionBuilder:
                 self.backgrounds["asset_directory"] = background_image
 
         poster = None
-        if len(self.posters) > 1:
-            logger.info(f"{len(self.posters)} posters found:")
+        if len(self.posters) > 0:
+            logger.debug(f"{len(self.posters)} posters found:")
             for p in self.posters:
-                logger.info(f"Method: {p} Poster: {self.posters[p]}")
+                logger.debug(f"Method: {p} Poster: {self.posters[p]}")
 
             if "url_poster" in self.posters:                    poster = ImageData("url_poster", self.posters["url_poster"])
             elif "file_poster" in self.posters:                 poster = ImageData("file_poster", self.posters["file_poster"], is_url=False)
@@ -1845,10 +1845,10 @@ class CollectionBuilder:
             logger.info("No poster collection detail or asset folder found")
 
         background = None
-        if len(self.backgrounds) > 1:
-            logger.info(f"{len(self.backgrounds)} backgrounds found:")
+        if len(self.backgrounds) > 0:
+            logger.debug(f"{len(self.backgrounds)} backgrounds found:")
             for b in self.backgrounds:
-                logger.info(f"Method: {b} Background: {self.backgrounds[b]}")
+                logger.debug(f"Method: {b} Background: {self.backgrounds[b]}")
 
             if "url_background" in self.backgrounds:            background = ImageData("url_background", self.backgrounds["url_background"], is_poster=False)
             elif "file_background" in self.backgrounds:         background = ImageData("file_background", self.backgrounds["file_background"], is_poster=False, is_url=False)
