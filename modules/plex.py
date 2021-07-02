@@ -475,7 +475,7 @@ class Plex:
             try:
                 image = None
                 if self.config.Cache:
-                    image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "background")
+                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "background")
                     if str(background.compare) != str(image_compare):
                         image = None
                 if image is None or image != item.art:
