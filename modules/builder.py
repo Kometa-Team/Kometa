@@ -611,26 +611,35 @@ class CollectionBuilder:
                     if os.path.exists(method_data):                             self.backgrounds[method_name] = os.path.abspath(method_data)
                     else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
                 elif method_name == "label":
-                    if "label" in self.data and "label.sync" in self.data:
-                        raise Failed(f"Collection Error: Cannot use label and label.sync together")
-                    if "label.remove" in self.data and "label.sync" in self.data:
-                        raise Failed(f"Collection Error: Cannot use label.remove and label.sync together")
-                    if method_final == "label" and "label_sync_mode" in self.data and self.data["label_sync_mode"] == "sync":
+                    if "label" in methods and "label.sync" in methods:
+                        raise Failed("Collection Error: Cannot use label and label.sync together")
+                    if "label.remove" in methods and "label.sync" in methods:
+                        raise Failed("Collection Error: Cannot use label.remove and label.sync together")
+                    if method_final == "label" and "label_sync_mode" in methods and self.data[methods["label_sync_mode"]] == "sync":
                         self.details["label.sync"] = util.get_list(method_data)
                     else:
                         self.details[method_final] = util.get_list(method_data)
                 elif method_name == "item_label":
-                    if "item_label" in self.data and "item_label.sync" in self.data:
+                    if "item_label" in methods and "item_label.sync" in methods:
                         raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
-                    if "item_label.remove" in self.data and "item_label.sync" in self.data:
+                    if "item_label.remove" in methods and "item_label.sync" in methods:
                         raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
                     self.item_details[method_final] = util.get_list(method_data)
+                elif method_name in ["item_radarr_tag", "item_sonarr_tag"]:
+                    if method_name in methods and f"{method_name}.sync" in methods:
+                        raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.sync together")
+                    if f"{method_name}.remove" in methods and f"{method_name}.sync" in methods:
+                        raise Failed(f"Collection Error: Cannot use {method_name}.remove and {method_name}.sync together")
+                    if method_name in methods and f"{method_name}.remove" in methods:
+                        raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.remove together")
+                    self.item_details[method_name] = util.get_list(method_data)
+                    self.item_details["apply_tags"] = method_mod[1:] if method_mod else ""
                 elif method_name == "item_overlay":
                     overlay = os.path.join(config.default_dir, "overlays", method_data, "overlay.png")
                     if not os.path.exists(overlay):
                         raise Failed(f"Collection Error: {method_data} overlay image not found at {overlay}")
                     if method_data in self.library.overlays:
-                        raise Failed(f"Each Overlay can only be used once per Library")
+                        raise Failed("Each Overlay can only be used once per Library")
                     self.library.overlays.append(method_data)
                     self.item_details[method_name] = method_data
                 elif method_name in plex.item_advance_keys:
@@ -1357,10 +1366,10 @@ class CollectionBuilder:
         attribute = method_alias[attribute] if attribute in method_alias else attribute
         modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
 
-        if attribute.lower() == "add_to_arr":
+        if attribute == "add_to_arr":
             attribute = "radarr_add" if self.library.is_movie else "sonarr_add"
-        elif attribute.lower() in ["arr_tag", "arr_folder"]:
-            attribute = f"{'rad' if self.library.is_movie else 'son'}{attribute.lower()}"
+        elif attribute in ["arr_tag", "arr_folder"]:
+            attribute = f"{'rad' if self.library.is_movie else 'son'}{attribute}"
         elif attribute in plex.date_attributes and modifier in [".gt", ".gte"]:
             modifier = ".after"
         elif attribute in plex.date_attributes and modifier in [".lt", ".lte"]:
@@ -1682,12 +1691,18 @@ class CollectionBuilder:
             temp_image = os.path.join(overlay_folder, f"temp.png")
             overlay = (overlay_name, overlay_folder, overlay_image, temp_image)
 
+        tmdb_ids = []
+        tvdb_ids = []
         for item in items:
             if int(item.ratingKey) in rating_keys:
                 rating_keys.remove(int(item.ratingKey))
             if self.details["item_assets"] or overlay is not None:
                 self.library.update_item_from_assets(item, overlay=overlay)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+            if "item_radarr_tag" in self.item_details and item.ratingKey in self.library.movie_rating_key_map:
+                tmdb_ids.append(self.library.movie_rating_key_map[item.ratingKey])
+            if "item_sonarr_tag" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
+                tvdb_ids.append(self.library.show_rating_key_map[item.ratingKey])
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
                 if method_name in plex.item_advance_keys:
@@ -1695,6 +1710,12 @@ class CollectionBuilder:
                     if getattr(item, key) != options[method_data]:
                         advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, "Movie" if self.library.is_movie else "Show", advance_edits, advanced=True)
+
+        if len(tmdb_ids) > 0:
+            self.library.Radarr.edit_tags(tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
+
+        if len(tvdb_ids) > 0:
+            self.library.Sonarr.edit_tags(tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
 
         for rating_key in rating_keys:
             try:
