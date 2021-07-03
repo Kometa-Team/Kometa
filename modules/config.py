@@ -320,8 +320,7 @@ class Config:
         self.general["tautulli"]["apikey"] = check_for_attribute(self.data, "apikey", parent="tautulli", default_is_none=True)
 
         self.libraries = []
-        try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
-        except Failed as e:             raise Failed(e)
+        libs = check_for_attribute(self.data, "libraries", throw=True)
 
         for library_name, lib in libs.items():
             if self.requested_libraries and library_name not in self.requested_libraries:
@@ -457,6 +456,7 @@ class Config:
                 logger.info("")
                 logger.info(f"{display_name} Library Connection Successful")
             except Failed as e:
+                util.print_stacktrace()
                 util.print_multiline(e, error=True)
                 logger.info(f"{display_name} Library Connection Failed")
                 continue
@@ -480,6 +480,7 @@ class Config:
                     radarr_params["search"] = check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
                     library.Radarr = Radarr(radarr_params)
                 except Failed as e:
+                    util.print_stacktrace()
                     util.print_multiline(e, error=True)
                     logger.info("")
                 logger.info(f"{display_name} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
@@ -509,6 +510,7 @@ class Config:
                     sonarr_params["cutoff_search"] = check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False)
                     library.Sonarr = Sonarr(sonarr_params)
                 except Failed as e:
+                    util.print_stacktrace()
                     util.print_multiline(e, error=True)
                     logger.info("")
                 logger.info(f"{display_name} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
@@ -525,6 +527,7 @@ class Config:
                     tautulli_params["apikey"] = check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
                     library.Tautulli = Tautulli(tautulli_params)
                 except Failed as e:
+                    util.print_stacktrace()
                     util.print_multiline(e, error=True)
                     logger.info("")
                 logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
