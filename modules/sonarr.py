@@ -17,6 +17,11 @@ monitor_translation = {
     "latest": "latestSeason",
     "none": "none"
 }
+apply_tags_translation = {
+    "": "add",
+    "sync": "replace",
+    "remove": "remove"
+}
 
 class Sonarr:
     def __init__(self, params):
@@ -40,7 +45,7 @@ class Sonarr:
 
     def add_tvdb(self, tvdb_ids, **options):
         logger.info("")
-        util.separator(f"Adding to Sonarr", space=False, border=False)
+        util.separator("Adding to Sonarr", space=False, border=False)
         logger.debug("")
         logger.debug(f"TVDb IDs: {tvdb_ids}")
         folder = options["folder"] if "folder" in options else self.root_folder_path
@@ -70,6 +75,24 @@ class Sonarr:
                 logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
             logger.info(f"{len(exists)} Series already existing in Sonarr")
 
-        for series in invalid:
+        if len(invalid) > 0:
+            for tvdb_id in invalid:
+                logger.info("")
+                logger.info(f"Invalid TVDb ID | {tvdb_id}")
+
+    def edit_tags(self, tvdb_ids, tags, apply_tags):
+        logger.info("")
+        logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Sonarr Tags: {tags}")
+
+        edited, not_exists = self.api.edit_multiple_series(tvdb_ids, tags=tags, apply_tags=apply_tags)
+
+        if len(edited) > 0:
             logger.info("")
-            logger.info(f"Invalid TVDb ID | {series}")
+            for series in edited:
+                logger.info(f"Radarr Tags | {series.title:<25} | {series.tags}")
+            logger.info(f"{len(edited)} Series edited in Sonarr")
+
+        if len(not_exists) > 0:
+            logger.info("")
+            for tvdb_id in not_exists:
+                logger.info(f"TVDb ID Not in Sonarr | {tvdb_id}")

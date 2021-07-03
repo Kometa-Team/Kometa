@@ -12,6 +12,11 @@ availability_translation = {
     "released": "released",
     "db": "preDB"
 }
+apply_tags_translation = {
+    "": "add",
+    "sync": "replace",
+    "remove": "remove"
+}
 
 class Radarr:
     def __init__(self, params):
@@ -31,7 +36,7 @@ class Radarr:
 
     def add_tmdb(self, tmdb_ids, **options):
         logger.info("")
-        util.separator(f"Adding to Radarr", space=False, border=False)
+        util.separator("Adding to Radarr", space=False, border=False)
         logger.debug("")
         logger.debug(f"TMDb IDs: {tmdb_ids}")
         folder = options["folder"] if "folder" in options else self.root_folder_path
@@ -57,6 +62,25 @@ class Radarr:
                 logger.info(f"Already in Radarr | {movie.tmdbId:<6} | {movie.title}")
             logger.info(f"{len(exists)} Movie{'s' if len(exists) > 1 else ''} already existing in Radarr")
 
-        for movie in invalid:
+        if len(invalid) > 0:
             logger.info("")
-            logger.info(f"Invalid TMDb ID | {movie}")
+            for tmdb_id in invalid:
+                logger.info(f"Invalid TMDb ID | {tmdb_id}")
+
+    def edit_tags(self, tmdb_ids, tags, apply_tags):
+        logger.info("")
+        logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Radarr Tags: {tags}")
+
+        edited, not_exists = self.api.edit_multiple_movies(tmdb_ids, tags=tags, apply_tags=apply_tags)
+
+        if len(edited) > 0:
+            logger.info("")
+            for movie in edited:
+                logger.info(f"Radarr Tags | {movie.title:<25} | {movie.tags}")
+            logger.info(f"{len(edited)} Movie{'s' if len(edited) > 1 else ''} edited in Radarr")
+
+        if len(not_exists) > 0:
+            logger.info("")
+            for tmdb_id in not_exists:
+                logger.info(f"TMDb ID Not in Radarr | {tmdb_id}")
+
