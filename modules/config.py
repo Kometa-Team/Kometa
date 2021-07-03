@@ -403,6 +403,11 @@ class Config:
             else:
                 params["mass_critic_rating_update"] = None
 
+            if lib and "split_duplicates" in lib and lib["split_duplicates"]:
+                params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False)
+            else:
+                params["split_duplicates"] = None
+
             if lib and "radarr_add_all" in lib and lib["radarr_add_all"]:
                 params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False)
             else:

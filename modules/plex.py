@@ -318,9 +318,10 @@ class Plex:
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
+        self.split_duplicates = params["split_duplicates"]
         self.radarr_add_all = params["radarr_add_all"]
         self.sonarr_add_all = params["sonarr_add_all"]
-        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update or self.radarr_add_all or self.sonarr_add_all
+        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update or self.split_duplicates or self.radarr_add_all or self.sonarr_add_all
         self.plex = params["plex"]
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
