@@ -6,7 +6,7 @@ from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = ["icheckmovies_list"]
+builders = ["icheckmovies_list", "icheckmovies_list_details"]
 
 class ICheckMovies:
     def __init__(self, config):
@@ -21,6 +21,10 @@ class ICheckMovies:
         response = self._request(list_url, language)
         imdb_urls = response.xpath("//a[@class='optionIcon optionIMDB external']/@href")
         return [t[t.find("/tt") + 1:-1] for t in imdb_urls]
+
+    def get_list_description(self, list_url, language):
+        descriptions = self._request(list_url, language).xpath("//div[@class='span-19 last']/p/em/text()")
+        return descriptions[0] if len(descriptions) > 0 and len(descriptions[0]) > 0 else None
 
     def validate_icheckmovies_list(self, list_url, language):
         list_url = list_url.strip()
