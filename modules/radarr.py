@@ -32,9 +32,8 @@ class Radarr:
     def add_tmdb(self, tmdb_ids, **options):
         logger.info("")
         util.separator(f"Adding to Radarr", space=False, border=False)
-        logger.info("")
-        logger.debug(f"TMDb IDs: {tmdb_ids}")
         logger.debug("")
+        logger.debug(f"TMDb IDs: {tmdb_ids}")
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
         availability = availability_translation[options["availability"] if "availability" in options else self.availability]
@@ -47,14 +46,17 @@ class Radarr:
             raise Failed(f"Radarr Error: {e}")
 
         if len(added) > 0:
+            logger.info("")
             for movie in added:
                 logger.info(f"Added to Radarr | {movie.tmdbId:<6} | {movie.title}")
             logger.info(f"{len(added)} Movie{'s' if len(added) > 1 else ''} added to Radarr")
 
         if len(exists) > 0:
+            logger.info("")
             for movie in exists:
                 logger.info(f"Already in Radarr | {movie.tmdbId:<6} | {movie.title}")
             logger.info(f"{len(exists)} Movie{'s' if len(exists) > 1 else ''} already existing in Radarr")
 
         for movie in invalid:
+            logger.info("")
             logger.info(f"Invalid TMDb ID | {movie}")

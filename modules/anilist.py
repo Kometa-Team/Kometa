@@ -243,7 +243,7 @@ class AniList:
             raise Failed(f"AniList Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.anilist_to_ids(anilist_ids)
         logger.debug("")
-        logger.debug(f"AniList IDs Found: {anilist_ids}")
-        logger.debug(f"Shows Found: {show_ids}")
-        logger.debug(f"Movies Found: {movie_ids}")
+        logger.debug(f"{len(anilist_ids)} AniList IDs Found: {anilist_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

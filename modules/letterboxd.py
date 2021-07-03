@@ -69,5 +69,5 @@ class Letterboxd:
         else:
             logger.error(f"Letterboxd Error: No List Items found in {data}")
         logger.debug("")
-        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
         return movie_ids, []

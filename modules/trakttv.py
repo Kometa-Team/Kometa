@@ -181,6 +181,6 @@ class Trakt:
                     show_ids.append(int(trakt_item.show.pk[1]))
             logger.debug(f"Trakt {media_type} Found: {trakt_items}")
         logger.debug("")
-        logger.debug(f"TMDb IDs Found: {movie_ids}")
-        logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids
