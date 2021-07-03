@@ -60,7 +60,7 @@ class AniDB:
             else:                                               raise Failed(f"AniDB Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.anidb_to_ids(anidb_ids)
         logger.debug("")
-        logger.debug(f"AniDB IDs Found: {anidb_ids}")
-        logger.debug(f"TMDb IDs Found: {movie_ids}")
-        logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"{len(anidb_ids)} AniDB IDs Found: {anidb_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

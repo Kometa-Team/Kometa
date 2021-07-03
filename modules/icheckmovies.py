@@ -47,5 +47,5 @@ class ICheckMovies:
         else:
             raise Failed(f"ICheckMovies Error: Method {method} not supported")
         logger.debug("")
-        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
         return movie_ids, []

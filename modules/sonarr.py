@@ -41,9 +41,8 @@ class Sonarr:
     def add_tvdb(self, tvdb_ids, **options):
         logger.info("")
         util.separator(f"Adding to Sonarr", space=False, border=False)
-        logger.info("")
-        logger.debug(f"TVDb IDs: {tvdb_ids}")
         logger.debug("")
+        logger.debug(f"TVDb IDs: {tvdb_ids}")
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
@@ -60,14 +59,17 @@ class Sonarr:
             raise Failed(f"Sonarr Error: {e}")
 
         if len(added) > 0:
+            logger.info("")
             for series in added:
                 logger.info(f"Added to Sonarr | {series.tvdbId:<6} | {series.title}")
             logger.info(f"{len(added)} Series added to Sonarr")
 
         if len(exists) > 0:
+            logger.info("")
             for series in exists:
                 logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
             logger.info(f"{len(exists)} Series already existing in Sonarr")
 
         for series in invalid:
+            logger.info("")
             logger.info(f"Invalid TVDb ID | {series}")
