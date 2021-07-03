@@ -249,6 +249,11 @@ def mass_metadata(config, library):
     logger.info("")
     util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
+    if library.split_duplicates:
+        items = library.search(**{"duplicate": True})
+        for item in items:
+            item.split()
+            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
     radarr_adds = []
     sonarr_adds = []
     items = library.get_all()
