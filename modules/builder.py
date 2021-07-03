@@ -1,6 +1,6 @@
 import logging, os, re
 from datetime import datetime, timedelta
-from modules import anidb, anilist, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed, ImageData
 from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
@@ -58,7 +58,7 @@ filter_translation = {
     "writer": "writers"
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
-all_builders = anidb.builders + anilist.builders + imdb.builders + letterboxd.builders + mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakttv.builders + tvdb.builders
+all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakttv.builders + tvdb.builders
 dictionary_builders = [
     "filters",
     "anilist_genre",
@@ -82,6 +82,8 @@ show_only_builders = [
 movie_only_builders = [
     "letterboxd_list",
     "letterboxd_list_details",
+    "icheckmovies_list",
+    "icheckmovies_list_details",
     "tmdb_collection",
     "tmdb_collection_details",
     "tmdb_movie",
@@ -126,7 +128,7 @@ smart_url_collection_invalid = [
 ]
 summary_details = [
     "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary",
-    "tvdb_description", "trakt_description", "letterboxd_description"
+    "tvdb_description", "trakt_description", "letterboxd_description", "icheckmovies_description"
 ]
 poster_details = [
     "url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"
@@ -570,6 +572,8 @@ class CollectionBuilder:
                     self.summaries[method_name] = config.Trakt.standard_list(config.Trakt.validate_trakt(util.get_list(method_data))[0]).description
                 elif method_name == "letterboxd_description":
                     self.summaries[method_name] = config.Letterboxd.get_list_description(method_data, self.library.Plex.language)
+                elif method_name == "icheckmovies_description":
+                    self.summaries[method_name] = config.ICheckMovies.get_list_description(method_data, self.library.Plex.language)
                 elif method_name == "collection_mode":
                     if str(method_data).lower() == "default":
                         self.details[method_name] = "default"
@@ -746,6 +750,12 @@ class CollectionBuilder:
                     for icheckmovies_list in util.get_list(method_data, split=False):
                         valid_lists.append(config.ICheckMovies.validate_icheckmovies_list(icheckmovies_list, self.library.Plex.language))
                     self.methods.append((method_name, valid_lists))
+                elif method_name == "icheckmovies_list_details":
+                    valid_lists = []
+                    for icheckmovies_list in util.get_list(method_data, split=False):
+                        valid_lists.append(config.ICheckMovies.validate_icheckmovies_list(icheckmovies_list, self.library.Plex.language))
+                    self.methods.append((method_name[:-8], valid_lists))
+                    self.summaries[method_name] = config.ICheckMovies.get_list_description(method_data, self.library.Plex.language)
                 elif method_name == "letterboxd_list":
                     self.methods.append((method_name, util.get_list(method_data, split=False)))
                 elif method_name == "letterboxd_list_details":
@@ -1760,6 +1770,7 @@ class CollectionBuilder:
         elif "trakt_list_details" in self.summaries:        summary = get_summary("trakt_list_details", self.summaries)
         elif "tmdb_list_details" in self.summaries:         summary = get_summary("tmdb_list_details", self.summaries)
         elif "letterboxd_list_details" in self.summaries:   summary = get_summary("letterboxd_list_details", self.summaries)
+        elif "icheckmovies_list_details" in self.summaries: summary = get_summary("icheckmovies_list_details", self.summaries)
         elif "tmdb_actor_details" in self.summaries:        summary = get_summary("tmdb_actor_details", self.summaries)
         elif "tmdb_crew_details" in self.summaries:         summary = get_summary("tmdb_crew_details", self.summaries)
         elif "tmdb_director_details" in self.summaries:     summary = get_summary("tmdb_director_details", self.summaries)
