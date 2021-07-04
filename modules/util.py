@@ -287,8 +287,9 @@ def unix_input(prompt, timeout=60):
     prompt = f"| {prompt}: "
     signal.signal(signal.SIGALRM, alarm_handler)
     signal.alarm(timeout)
-    try:            return input(prompt)
-    finally:        signal.alarm(0)
+    try:                return input(prompt)
+    except EOFError:    raise Failed("Input Failed")
+    finally:            signal.alarm(0)
 
 def old_windows_input(prompt, timeout=60, timer=time.monotonic):
     prompt = f"| {prompt}: "

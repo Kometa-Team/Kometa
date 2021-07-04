@@ -1325,11 +1325,11 @@ class CollectionBuilder:
             return util.get_list(data)
         elif attribute == "history":
             try:
-                return util.check_number(data, final, minimum=0, maximum=30)
+                return util.check_number(data, final, minimum=1, maximum=30)
             except Failed:
                 if str(data).lower() in ["day", "month"]:
                     return data.lower()
-            raise Failed(f"Collection Error: history attribute invalid: {data} must be a number between 0-30, day, or month")
+            raise Failed(f"Collection Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
         elif attribute in plex.tags and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
