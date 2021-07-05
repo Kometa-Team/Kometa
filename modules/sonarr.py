@@ -84,7 +84,7 @@ class Sonarr:
         logger.info("")
         logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Sonarr Tags: {tags}")
 
-        edited, not_exists = self.api.edit_multiple_series(tvdb_ids, tags=tags, apply_tags=apply_tags)
+        edited, not_exists = self.api.edit_multiple_series(tvdb_ids, tags=tags, apply_tags=apply_tags_translation[apply_tags])
 
         if len(edited) > 0:
             logger.info("")
