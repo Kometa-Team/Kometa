@@ -1,14 +1,15 @@
 import logging, os, re, requests
 from datetime import datetime
 from modules import plex, util
-from modules.util import Failed
+from modules.util import Failed, ImageData
 from plexapi.exceptions import NotFound
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
 class Metadata:
-    def __init__(self, library, file_type, path):
+    def __init__(self, config, library, file_type, path):
+        self.config = config
         self.library = library
         self.type = file_type
         self.path = path
@@ -16,7 +17,7 @@ class Metadata:
         logger.info("")
         logger.info(f"Loading Metadata {file_type}: {path}")
         def get_dict(attribute, attr_data, check_list=None):
-            if attribute in attr_data:
+            if attr_data and attribute in attr_data:
                 if attr_data[attribute]:
                     if isinstance(attr_data[attribute], dict):
                         if check_list:
@@ -102,7 +103,7 @@ class Metadata:
                         logger.error(f"Metadata Error: {name} attribute is blank")
 
             def add_advanced_edit(attr, obj, group, alias, show_library=False, new_agent=False):
-                key, options = plex.advance_keys[attr]
+                key, options = plex.item_advance_keys[f"item_{attr}"]
                 if attr in alias:
                     if new_agent and self.library.agent not in plex.new_plex_agents:
                         logger.error(f"Metadata Error: {attr} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
@@ -140,23 +141,26 @@ class Metadata:
                     return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
                 return False
 
-            def set_image(attr, obj, group, alias, poster=True, url=True):
+            def set_image(attr, group, alias, is_poster=True, is_url=True):
                 if group[alias[attr]]:
-                    message = f"{'poster' if poster else 'background'} to [{'URL' if url else 'File'}] {group[alias[attr]]}"
-                    self.library.upload_image(obj, group[alias[attr]], poster=poster, url=url)
-                    logger.info(f"Detail: {attr} updated {message}")
+                    return ImageData(attr, group[alias[attr]], is_poster=is_poster, is_url=is_url)
                 else:
                     logger.error(f"Metadata Error: {attr} attribute is blank")
 
             def set_images(obj, group, alias):
+                poster = None
+                background = None
                 if "url_poster" in alias:
-                    set_image("url_poster", obj, group, alias)
+                    poster = set_image("url_poster", group, alias)
                 elif "file_poster" in alias:
-                    set_image("file_poster", obj, group, alias, url=False)
+                    poster = set_image("file_poster", group, alias, is_url=False)
                 if "url_background" in alias:
-                    set_image("url_background", obj, group, alias, poster=False)
+                    background = set_image("url_background", group, alias, is_poster=False)
                 elif "file_background" in alias:
-                    set_image("file_background", obj, group, alias, poster=False, url=False)
+                    background = set_image("file_background", group, alias, is_poster=False, is_url=False)
+
+                if poster or background:
+                    self.library.upload_images(obj, poster=poster, background=background)
 
             logger.info("")
             util.separator()

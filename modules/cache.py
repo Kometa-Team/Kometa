@@ -79,6 +79,16 @@ class Cache:
                     kitsu TEXT,
                     expiration_date TEXT)"""
                 )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS image_map (
+                    INTEGER PRIMARY KEY,
+                    rating_key TEXT,
+                    library TEXT,
+                    type TEXT,
+                    overlay TEXT,
+                    compare TEXT,
+                    location TEXT)"""
+                )
         self.expiration = expiration
         self.cache_path = cache
 
@@ -145,7 +155,7 @@ class Cache:
                 if row and row[to_id]:
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
-                    id_to_return = int(row[to_id])
+                    id_to_return = row[to_id] if to_id == "imdb_id" else int(row[to_id])
                     expired = time_between_insertion.days > self.expiration
         return id_to_return, expired
 
@@ -180,6 +190,7 @@ class Cache:
                     omdb_dict["imdbVotes"] = row["imdb_votes"] if row["imdb_votes"] else None
                     omdb_dict["Metascore"] = row["metacritic_rating"] if row["metacritic_rating"] else None
                     omdb_dict["Type"] = row["type"] if row["type"] else None
+                    omdb_dict["Response"] = "True"
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     expired = time_between_insertion.days > self.expiration
@@ -221,3 +232,31 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO anime_map(anidb) VALUES(?)", (anime_ids["anidb"],))
                 cursor.execute("UPDATE anime_map SET anilist = ?, myanimelist = ?, kitsu = ?, expiration_date = ? WHERE anidb = ?", (anime_ids["anidb"], anime_ids["myanimelist"], anime_ids["kitsu"], expiration_date.strftime("%Y-%m-%d"), anime_ids["anidb"]))
+
+    def query_image_map_overlay(self, library, image_type, overlay):
+        rks = []
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM image_map WHERE overlay = ? AND library = ? AND type = ?", (overlay, library, image_type))
+                rows = cursor.fetchall()
+                for row in rows:
+                    rks.append(int(row["rating_key"]))
+        return rks
+
+    def query_image_map(self, rating_key, library, image_type):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM image_map WHERE rating_key = ? AND library = ? AND type = ?", (rating_key, library, image_type))
+                row = cursor.fetchone()
+                if row and row["location"]:
+                    return row["location"], row["compare"], row["overlay"]
+        return None, None, None
+
+    def update_image_map(self, rating_key, library, image_type, location, compare, overlay):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO image_map(rating_key, library, type) VALUES(?, ?, ?)", (rating_key, library, image_type))
+                cursor.execute("UPDATE image_map SET location = ?, compare = ?, overlay = ? WHERE rating_key = ? AND library = ? AND type = ?", (location, compare, overlay, rating_key, library, image_type))

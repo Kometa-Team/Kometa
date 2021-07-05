@@ -74,7 +74,7 @@ class TVDbObj:
         self.is_movie = is_movie
         self.TVDb = TVDb
 
-class TVDbAPI:
+class TVDb:
     def __init__(self, config):
         self.config = config
         self.site_url = "https://www.thetvdb.com"
@@ -164,6 +164,6 @@ class TVDbAPI:
         else:
             raise Failed(f"TVDb Error: Method {method} not supported")
         logger.debug("")
-        logger.debug(f"TMDb IDs Found: {movie_ids}")
-        logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

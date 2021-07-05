@@ -8,7 +8,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["imdb_list", "imdb_id"]
 
-class IMDbAPI:
+class IMDb:
     def __init__(self, config):
         self.config = config
         self.urls = {
@@ -94,13 +94,15 @@ class IMDbAPI:
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         show_ids = []
         movie_ids = []
+        fail_ids = []
         def run_convert(imdb_id):
             tvdb_id = self.config.Convert.imdb_to_tvdb(imdb_id) if not is_movie else None
             tmdb_id = self.config.Convert.imdb_to_tmdb(imdb_id) if tvdb_id is None else None
-            if not tmdb_id and not tvdb_id:
-                logger.error(f"Convert Error: No {'' if is_movie else 'TVDb ID or '}TMDb ID found for IMDb: {imdb_id}")
             if tmdb_id:                     movie_ids.append(tmdb_id)
-            if tvdb_id:                     show_ids.append(tvdb_id)
+            elif tvdb_id:                   show_ids.append(tvdb_id)
+            else:
+                logger.error(f"Convert Error: No {'' if is_movie else 'TVDb ID or '}TMDb ID found for IMDb: {imdb_id}")
+                fail_ids.append(imdb_id)
 
         if method == "imdb_id":
             logger.info(f"Processing {pretty}: {data}")
@@ -117,6 +119,7 @@ class IMDbAPI:
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
         logger.debug("")
-        logger.debug(f"TMDb IDs Found: {movie_ids}")
-        logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"{len(fail_ids)} IMDb IDs Failed to Convert: {fail_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

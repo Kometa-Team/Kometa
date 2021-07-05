@@ -12,7 +12,10 @@ __pycache__/
 /test.py
 logs/
 config/*
+!config/overlays/
 !config/*.template
+*.png
+!overlay.png
 build/
 develop-eggs/
 dist/

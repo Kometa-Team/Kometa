@@ -6,8 +6,11 @@ from retrying import retry
 logger = logging.getLogger("Plex Meta Manager")
 
 class OMDbObj:
-    def __init__(self, data):
+    def __init__(self, imdb_id, data):
+        self._imdb_id = imdb_id
         self._data = data
+        if data["Response"] == "False":
+            raise Failed(f"OMDb Error: {data['Error']} IMDb ID: {imdb_id}")
         self.title = data["Title"]
         try:
             self.year = int(data["Year"])
@@ -31,7 +34,7 @@ class OMDbObj:
         self.imdb_id = data["imdbID"]
         self.type = data["Type"]
 
-class OMDbAPI:
+class OMDb:
     def __init__(self, params, Cache=None):
         self.url = "http://www.omdbapi.com/"
         self.apikey = params["apikey"]
@@ -45,10 +48,10 @@ class OMDbAPI:
         if self.Cache:
             omdb_dict, expired = self.Cache.query_omdb(imdb_id)
             if omdb_dict and expired is False:
-                return OMDbObj(omdb_dict)
+                return OMDbObj(imdb_id, omdb_dict)
         response = requests.get(self.url, params={"i": imdb_id, "apikey": self.apikey})
         if response.status_code < 400:
-            omdb = OMDbObj(response.json())
+            omdb = OMDbObj(imdb_id, response.json())
             if self.Cache:
                 self.Cache.update_omdb(expired, omdb)
             return omdb

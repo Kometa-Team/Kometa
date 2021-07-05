@@ -1,4 +1,4 @@
-import logging, re, signal, sys, time, traceback
+import logging, os, re, signal, sys, time, traceback
 from datetime import datetime
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -17,6 +17,16 @@ class TimeoutExpired(Exception):
 
 class Failed(Exception):
     pass
+
+class ImageData:
+    def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True):
+        self.attribute = attribute
+        self.location = location
+        self.prefix = prefix
+        self.is_poster = is_poster
+        self.is_url = is_url
+        self.compare = location if is_url else os.stat(location).st_size
+        self.message = f"{prefix}{'poster' if is_poster else 'background'} to [{'URL' if is_url else 'File'}] {location}"
 
 def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)
@@ -78,6 +88,7 @@ pretty_names = {
     "anilist_studio": "AniList Studio",
     "anilist_tag": "AniList Tag",
     "anilist_top_rated": "AniList Top Rated",
+    "icheckmovies_list": "I Check Movies List",
     "imdb_list": "IMDb List",
     "imdb_id": "IMDb ID",
     "letterboxd_list": "Letterboxd List",
@@ -276,8 +287,9 @@ def unix_input(prompt, timeout=60):
     prompt = f"| {prompt}: "
     signal.signal(signal.SIGALRM, alarm_handler)
     signal.alarm(timeout)
-    try:            return input(prompt)
-    finally:        signal.alarm(0)
+    try:                return input(prompt)
+    except EOFError:    raise Failed("Input Failed")
+    finally:            signal.alarm(0)
 
 def old_windows_input(prompt, timeout=60, timer=time.monotonic):
     prompt = f"| {prompt}: "
@@ -349,7 +361,7 @@ def regex_first_int(data, id_type, default=None):
 
 def centered(text, sep=" "):
     if len(text) > screen_width - 2:
-        raise Failed("text must be shorter then screen_width")
+        return text
     space = screen_width - len(text) - 2
     text = f" {text} "
     if space % 2 == 1:
