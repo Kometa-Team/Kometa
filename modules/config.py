@@ -1,35 +1,34 @@
 import logging, os
 from datetime import datetime
 from modules import util
-from modules.anidb import AniDBAPI
-from modules.anilist import AniListAPI
+from modules.anidb import AniDB
+from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
-from modules.imdb import IMDbAPI
-from modules.letterboxd import LetterboxdAPI
-from modules.mal import MyAnimeListAPI
-from modules.omdb import OMDbAPI
-from modules.plex import PlexAPI
-from modules.radarr import RadarrAPI
-from modules.sonarr import SonarrAPI
-from modules.tautulli import TautulliAPI
-from modules.tmdb import TMDbAPI
-from modules.trakttv import TraktAPI
-from modules.tvdb import TVDbAPI
+from modules.icheckmovies import ICheckMovies
+from modules.imdb import IMDb
+from modules.letterboxd import Letterboxd
+from modules.mal import MyAnimeList
+from modules.omdb import OMDb
+from modules.plex import Plex
+from modules.radarr import Radarr
+from modules.sonarr import Sonarr
+from modules.tautulli import Tautulli
+from modules.tmdb import TMDb
+from modules.trakttv import Trakt
+from modules.tvdb import TVDb
 from modules.util import Failed
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
 sync_modes = {"append": "Only Add Items to the Collection", "sync": "Add & Remove Items from the Collection"}
-radarr_versions = {"v2": "For Radarr 0.2", "v3": "For Radarr 3.0"}
 radarr_availabilities = {
     "announced": "For Announced",
     "cinemas": "For In Cinemas",
     "released": "For Released",
     "db": "For PreDB"
 }
-sonarr_versions = {"v2": "For Sonarr 0.2", "v3": "For Sonarr 3.0"}
 sonarr_monitors = {
     "all": "Monitor all episodes except specials",
     "future": "Monitor episodes that have not aired yet",
@@ -57,6 +56,7 @@ class Config:
         else:                                                               raise Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
         logger.info(f"Using {self.config_path} as config")
 
+        self.default_dir = default_dir
         self.test_mode = is_test
         self.run_start_time = time_scheduled
         self.run_hour = datetime.strptime(time_scheduled, "%H:%M").hour
@@ -214,7 +214,7 @@ class Config:
             try:                                self.tmdb["apikey"] = check_for_attribute(self.data, "apikey", parent="tmdb", throw=True)
             except Failed as e:                 raise Failed(e)
             self.tmdb["language"] = check_for_attribute(self.data, "language", parent="tmdb", default="en")
-            self.TMDb = TMDbAPI(self, self.tmdb)
+            self.TMDb = TMDb(self, self.tmdb)
             logger.info(f"TMDb Connection {'Failed' if self.TMDb is None else 'Successful'}")
         else:
             raise Failed("Config Error: tmdb attribute not found")
@@ -227,7 +227,7 @@ class Config:
             self.omdb = {}
             try:
                 self.omdb["apikey"] = check_for_attribute(self.data, "apikey", parent="omdb", throw=True)
-                self.OMDb = OMDbAPI(self.omdb, Cache=self.Cache)
+                self.OMDb = OMDb(self.omdb, Cache=self.Cache)
             except Failed as e:
                 logger.error(e)
             logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
@@ -245,7 +245,7 @@ class Config:
                 self.trakt["client_secret"] = check_for_attribute(self.data, "client_secret", parent="trakt", throw=True)
                 self.trakt["config_path"] = self.config_path
                 authorization = self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] and self.data["trakt"]["authorization"] else None
-                self.Trakt = TraktAPI(self.trakt, authorization)
+                self.Trakt = Trakt(self.trakt, authorization)
             except Failed as e:
                 logger.error(e)
             logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
@@ -263,19 +263,20 @@ class Config:
                 self.mal["client_secret"] = check_for_attribute(self.data, "client_secret", parent="mal", throw=True)
                 self.mal["config_path"] = self.config_path
                 authorization = self.data["mal"]["authorization"] if "authorization" in self.data["mal"] and self.data["mal"]["authorization"] else None
-                self.MyAnimeList = MyAnimeListAPI(self.mal, self, authorization)
+                self.MyAnimeList = MyAnimeList(self.mal, self, authorization)
             except Failed as e:
                 logger.error(e)
             logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
         else:
             logger.warning("mal attribute not found")
 
-        self.TVDb = TVDbAPI(self)
-        self.IMDb = IMDbAPI(self)
-        self.AniDB = AniDBAPI(self)
+        self.TVDb = TVDb(self)
+        self.IMDb = IMDb(self)
+        self.AniDB = AniDB(self)
         self.Convert = Convert(self)
-        self.AniList = AniListAPI(self)
-        self.Letterboxd = LetterboxdAPI(self)
+        self.AniList = AniList(self)
+        self.Letterboxd = Letterboxd(self)
+        self.ICheckMovies = ICheckMovies(self)
 
         util.separator()
 
@@ -292,7 +293,6 @@ class Config:
         self.general["radarr"] = {}
         self.general["radarr"]["url"] = check_for_attribute(self.data, "url", parent="radarr", var_type="url", default_is_none=True)
         self.general["radarr"]["token"] = check_for_attribute(self.data, "token", parent="radarr", default_is_none=True)
-        self.general["radarr"]["version"] = check_for_attribute(self.data, "version", parent="radarr", test_list=radarr_versions, default="v3")
         self.general["radarr"]["add"] = check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False)
         self.general["radarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True)
         self.general["radarr"]["monitor"] = check_for_attribute(self.data, "monitor", parent="radarr", var_type="bool", default=True)
@@ -304,7 +304,6 @@ class Config:
         self.general["sonarr"] = {}
         self.general["sonarr"]["url"] = check_for_attribute(self.data, "url", parent="sonarr", var_type="url", default_is_none=True)
         self.general["sonarr"]["token"] = check_for_attribute(self.data, "token", parent="sonarr", default_is_none=True)
-        self.general["sonarr"]["version"] = check_for_attribute(self.data, "version", parent="sonarr", test_list=sonarr_versions, default="v3")
         self.general["sonarr"]["add"] = check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False)
         self.general["sonarr"]["root_folder_path"] = check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True)
         self.general["sonarr"]["monitor"] = check_for_attribute(self.data, "monitor", parent="sonarr", test_list=sonarr_monitors, default="all")
@@ -321,8 +320,7 @@ class Config:
         self.general["tautulli"]["apikey"] = check_for_attribute(self.data, "apikey", parent="tautulli", default_is_none=True)
 
         self.libraries = []
-        try:                            libs = check_for_attribute(self.data, "libraries", throw=True)
-        except Failed as e:             raise Failed(e)
+        libs = check_for_attribute(self.data, "libraries", throw=True)
 
         for library_name, lib in libs.items():
             if self.requested_libraries and library_name not in self.requested_libraries:
@@ -404,6 +402,11 @@ class Config:
             else:
                 params["mass_critic_rating_update"] = None
 
+            if lib and "split_duplicates" in lib and lib["split_duplicates"]:
+                params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False)
+            else:
+                params["split_duplicates"] = None
+
             if lib and "radarr_add_all" in lib and lib["radarr_add_all"]:
                 params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False)
             else:
@@ -449,10 +452,11 @@ class Config:
                 params["plex"]["clean_bundles"] = check_for_attribute(lib, "clean_bundles", parent="plex", var_type="bool", default=self.general["plex"]["clean_bundles"], save=False)
                 params["plex"]["empty_trash"] = check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False)
                 params["plex"]["optimize"] = check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
-                library = PlexAPI(params)
+                library = Plex(self, params)
                 logger.info("")
                 logger.info(f"{display_name} Library Connection Successful")
             except Failed as e:
+                util.print_stacktrace()
                 util.print_multiline(e, error=True)
                 logger.info(f"{display_name} Library Connection Failed")
                 continue
@@ -467,7 +471,6 @@ class Config:
                 try:
                     radarr_params["url"] = check_for_attribute(lib, "url", parent="radarr", var_type="url", default=self.general["radarr"]["url"], req_default=True, save=False)
                     radarr_params["token"] = check_for_attribute(lib, "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False)
-                    radarr_params["version"] = check_for_attribute(lib, "version", parent="radarr", test_list=radarr_versions, default=self.general["radarr"]["version"], save=False)
                     radarr_params["add"] = check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False)
                     radarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False)
                     radarr_params["monitor"] = check_for_attribute(lib, "monitor", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor"], save=False)
@@ -475,8 +478,9 @@ class Config:
                     radarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False)
                     radarr_params["tag"] = check_for_attribute(lib, "search", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
                     radarr_params["search"] = check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
-                    library.Radarr = RadarrAPI(radarr_params)
+                    library.Radarr = Radarr(radarr_params)
                 except Failed as e:
+                    util.print_stacktrace()
                     util.print_multiline(e, error=True)
                     logger.info("")
                 logger.info(f"{display_name} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
@@ -491,7 +495,6 @@ class Config:
                 try:
                     sonarr_params["url"] = check_for_attribute(lib, "url", parent="sonarr", var_type="url", default=self.general["sonarr"]["url"], req_default=True, save=False)
                     sonarr_params["token"] = check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False)
-                    sonarr_params["version"] = check_for_attribute(lib, "version", parent="sonarr", test_list=sonarr_versions, default=self.general["sonarr"]["version"], save=False)
                     sonarr_params["add"] = check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False)
                     sonarr_params["root_folder_path"] = check_for_attribute(lib, "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False)
                     sonarr_params["monitor"] = check_for_attribute(lib, "monitor", parent="sonarr", test_list=sonarr_monitors, default=self.general["sonarr"]["monitor"], save=False)
@@ -505,8 +508,9 @@ class Config:
                     sonarr_params["tag"] = check_for_attribute(lib, "search", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
                     sonarr_params["search"] = check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
                     sonarr_params["cutoff_search"] = check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False)
-                    library.Sonarr = SonarrAPI(sonarr_params, library.Plex.language)
+                    library.Sonarr = Sonarr(sonarr_params)
                 except Failed as e:
+                    util.print_stacktrace()
                     util.print_multiline(e, error=True)
                     logger.info("")
                 logger.info(f"{display_name} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
@@ -521,8 +525,9 @@ class Config:
                 try:
                     tautulli_params["url"] = check_for_attribute(lib, "url", parent="tautulli", var_type="url", default=self.general["tautulli"]["url"], req_default=True, save=False)
                     tautulli_params["apikey"] = check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
-                    library.Tautulli = TautulliAPI(tautulli_params)
+                    library.Tautulli = Tautulli(tautulli_params)
                 except Failed as e:
+                    util.print_stacktrace()
                     util.print_multiline(e, error=True)
                     logger.info("")
                 logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")

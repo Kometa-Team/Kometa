@@ -108,7 +108,7 @@ discover_tv_sort = [
     "popularity.desc", "popularity.asc"
 ]
 
-class TMDbAPI:
+class TMDb:
     def __init__(self, config, params):
         self.config = config
         self.TMDb = tmdbv3api.TMDb()
@@ -362,6 +362,6 @@ class TMDbAPI:
             if not is_movie and len(show_ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(show_ids)} Show{'' if len(show_ids) == 1 else 's'})")
         logger.debug("")
-        logger.debug(f"TMDb IDs Found: {movie_ids}")
-        logger.debug(f"TVDb IDs Found: {show_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

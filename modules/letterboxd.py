@@ -8,7 +8,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["letterboxd_list", "letterboxd_list_details"]
 
-class LetterboxdAPI:
+class Letterboxd:
     def __init__(self, config):
         self.config = config
         self.url = "https://letterboxd.com"
@@ -69,5 +69,5 @@ class LetterboxdAPI:
         else:
             logger.error(f"Letterboxd Error: No List Items found in {data}")
         logger.debug("")
-        logger.debug(f"TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
         return movie_ids, []

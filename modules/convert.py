@@ -53,21 +53,20 @@ class Convert:
         unconverted_id_sets = []
 
         for anime_dict in all_ids:
-            if self.config.Cache:
-                for id_type, anime_id in anime_dict.items():
+            for id_type, anime_id in anime_dict.items():
+                query_ids = None
+                expired = None
+                if self.config.Cache:
                     query_ids, expired = self.config.Cache.query_anime_map(anime_id, id_type)
                     if query_ids and not expired:
                         converted_ids.append(query_ids)
-                    else:
-                        unconverted_ids.append({id_type: anime_id})
-                        if len(unconverted_ids) == 100:
-                            unconverted_id_sets.append(unconverted_ids)
-                            unconverted_ids = []
-            else:
-                unconverted_ids.append(anime_dict)
-                if len(unconverted_ids) == 100:
-                    unconverted_id_sets.append(unconverted_ids)
-                    unconverted_ids = []
+                if query_ids is None or expired:
+                    unconverted_ids.append(anime_dict)
+                    if len(unconverted_ids) == 100:
+                        unconverted_id_sets.append(unconverted_ids)
+                        unconverted_ids = []
+        if len(unconverted_ids) > 0:
+            unconverted_id_sets.append(unconverted_ids)
         for unconverted_id_set in unconverted_id_sets:
             for anime_ids in self._request(unconverted_id_set):
                 if anime_ids:

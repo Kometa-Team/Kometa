@@ -1,7 +1,8 @@
-import logging, requests
+import logging
 from modules import util
 from modules.util import Failed
-from retrying import retry
+from arrapi import RadarrAPI
+from arrapi.exceptions import ArrException, Invalid
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -11,122 +12,75 @@ availability_translation = {
     "released": "released",
     "db": "preDB"
 }
+apply_tags_translation = {
+    "": "add",
+    "sync": "replace",
+    "remove": "remove"
+}
 
-class RadarrAPI:
+class Radarr:
     def __init__(self, params):
         self.url = params["url"]
         self.token = params["token"]
-        self.version = params["version"]
-        self.base_url = f"{self.url}/api{'/v3' if self.version == 'v3' else ''}/"
         try:
-            result = requests.get(f"{self.base_url}system/status", params={"apikey": f"{self.token}"}).json()
-        except Exception:
-            util.print_stacktrace()
-            raise Failed(f"Radarr Error: Could not connect to Radarr at {self.url}")
-        if "error" in result and result["error"] == "Unauthorized":
-            raise Failed("Radarr Error: Invalid API Key")
-        if "version" not in result:
-            raise Failed("Radarr Error: Unexpected Response Check URL")
+            self.api = RadarrAPI(self.url, self.token)
+        except ArrException as e:
+            raise Failed(e)
         self.add = params["add"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
         self.availability = params["availability"]
-        self.quality_profile_id = self.get_profile_id(params["quality_profile"])
+        self.quality_profile = params["quality_profile"]
         self.tag = params["tag"]
-        self.tags = self.get_tags()
         self.search = params["search"]
-
-    def get_profile_id(self, profile_name):
-        profiles = ""
-        for profile in self._get("qualityProfile" if self.version == "v3" else "profile"):
-            if len(profiles) > 0:
-                profiles += ", "
-            profiles += profile["name"]
-            if profile["name"] == profile_name:
-                return profile["id"]
-        raise Failed(f"Radarr Error: quality_profile: {profile_name} does not exist in radarr. Profiles available: {profiles}")
-
-    def get_tags(self):
-        return {tag["label"]: tag["id"] for tag in self._get("tag")}
-
-    def add_tags(self, tags):
-        added = False
-        for label in tags:
-            if str(label).lower() not in self.tags:
-                added = True
-                self._post("tag", {"label": str(label).lower()})
-        if added:
-            self.tags = self.get_tags()
-
-    def lookup(self, tmdb_id):
-        results = self._get("movie/lookup", params={"term": f"tmdb:{tmdb_id}"})
-        if results:
-            return results[0]
-        else:
-            raise Failed(f"Sonarr Error: TMDb ID: {tmdb_id} not found")
 
     def add_tmdb(self, tmdb_ids, **options):
         logger.info("")
-        util.separator(f"Adding to Radarr", space=False, border=False)
-        logger.info("")
+        util.separator("Adding to Radarr", space=False, border=False)
+        logger.debug("")
         logger.debug(f"TMDb IDs: {tmdb_ids}")
-        tag_nums = []
-        add_count = 0
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
-        availability = options["availability"] if "availability" in options else self.availability
-        quality_profile_id = self.get_profile_id(options["quality"]) if "quality" in options else self.quality_profile_id
+        availability = availability_translation[options["availability"] if "availability" in options else self.availability]
+        quality_profile = options["quality"] if "quality" in options else self.quality_profile
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
-        if tags:
-            self.add_tags(tags)
-            tag_nums = [self.tags[label.lower()] for label in tags if label.lower() in self.tags]
-        for tmdb_id in tmdb_ids:
-            try:
-                movie_info = self.lookup(tmdb_id)
-            except Failed as e:
-                logger.error(e)
-                continue
+        try:
+            added, exists, invalid = self.api.add_multiple_movies(tmdb_ids, folder, quality_profile, monitor, search, availability, tags)
+        except Invalid as e:
+            raise Failed(f"Radarr Error: {e}")
 
-            poster_url = None
-            for image in movie_info["images"]:
-                if "coverType" in image and image["coverType"] == "poster" and "remoteUrl" in image:
-                    poster_url = image["remoteUrl"]
+        if len(added) > 0:
+            logger.info("")
+            for movie in added:
+                logger.info(f"Added to Radarr | {movie.tmdbId:<6} | {movie.title}")
+            logger.info(f"{len(added)} Movie{'s' if len(added) > 1 else ''} added to Radarr")
 
-            url_json = {
-                "title": movie_info["title"],
-                f"{'qualityProfileId' if self.version == 'v3' else 'profileId'}": quality_profile_id,
-                "year": int(movie_info["year"]),
-                "tmdbid": int(tmdb_id),
-                "titleslug": movie_info["titleSlug"],
-                "minimumAvailability": availability_translation[availability],
-                "monitored": monitor,
-                "rootFolderPath": folder,
-                "images": [{"covertype": "poster", "url": poster_url}],
-                "addOptions": {"searchForMovie": search}
-            }
-            if tag_nums:
-                url_json["tags"] = tag_nums
-            response = self._post("movie", url_json)
-            if response.status_code < 400:
-                logger.info(f"Added to Radarr | {tmdb_id:<6} | {movie_info['title']}")
-                add_count += 1
-            else:
-                try:
-                    logger.error(f"Radarr Error: ({tmdb_id}) {movie_info['title']}: ({response.status_code}) {response.json()[0]['errorMessage']}")
-                except KeyError:
-                    logger.debug(url_json)
-                    logger.error(f"Radarr Error: {response.json()}")
-        logger.info(f"{add_count} Movie{'s' if add_count > 1 else ''} added to Radarr")
+        if len(exists) > 0:
+            logger.info("")
+            for movie in exists:
+                logger.info(f"Already in Radarr | {movie.tmdbId:<6} | {movie.title}")
+            logger.info(f"{len(exists)} Movie{'s' if len(exists) > 1 else ''} already existing in Radarr")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def _get(self, url, params=None):
-        url_params = {"apikey": f"{self.token}"}
-        if params:
-            for param in params:
-                url_params[param] = params[param]
-        return requests.get(f"{self.base_url}{url}", params=url_params).json()
+        if len(invalid) > 0:
+            logger.info("")
+            for tmdb_id in invalid:
+                logger.info(f"Invalid TMDb ID | {tmdb_id}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def _post(self, url, url_json):
-        return requests.post(f"{self.base_url}{url}", json=url_json, params={"apikey": f"{self.token}"})
+    def edit_tags(self, tmdb_ids, tags, apply_tags):
+        logger.info("")
+        logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Radarr Tags: {tags}")
+
+        edited, not_exists = self.api.edit_multiple_movies(tmdb_ids, tags=tags, apply_tags=apply_tags)
+
+        if len(edited) > 0:
+            logger.info("")
+            for movie in edited:
+                logger.info(f"Radarr Tags | {movie.title:<25} | {movie.tags}")
+            logger.info(f"{len(edited)} Movie{'s' if len(edited) > 1 else ''} edited in Radarr")
+
+        if len(not_exists) > 0:
+            logger.info("")
+            for tmdb_id in not_exists:
+                logger.info(f"TMDb ID Not in Radarr | {tmdb_id}")
+

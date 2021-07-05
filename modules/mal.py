@@ -72,7 +72,7 @@ userlist_status = [
     "plan_to_watch"
 ]
 
-class MyAnimeListAPI:
+class MyAnimeList:
     def __init__(self, params, config, authorization=None):
         self.config = config
         self.urls = {
@@ -214,7 +214,7 @@ class MyAnimeListAPI:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.myanimelist_to_ids(mal_ids)
         logger.debug("")
-        logger.debug(f"MyAnimeList IDs Found: {mal_ids}")
-        logger.debug(f"Shows Found: {show_ids}")
-        logger.debug(f"Movies Found: {movie_ids}")
+        logger.debug(f"{len(mal_ids)} MyAnimeList IDs Found: {mal_ids}")
+        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
+        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
         return movie_ids, show_ids

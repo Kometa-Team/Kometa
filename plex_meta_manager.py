@@ -59,7 +59,7 @@ for time_to_run in times_to_run:
 
 util.separating_character = os.environ.get("PMM_DIVIDER")[0] if os.environ.get("PMM_DIVIDER") else args.divider[0]
 
-screen_width = os.environ.get("PMM_WIDTH") if os.environ.get("PMM_WIDTH") else args.width
+screen_width = int(os.environ.get("PMM_WIDTH")) if os.environ.get("PMM_WIDTH") else args.width
 if 90 <= screen_width <= 300:
     util.screen_width = screen_width
 else:
@@ -105,7 +105,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.10.0                                                                  "))
+    logger.info(util.centered("    Version: 1.11.0                                                                  "))
     if time_scheduled:              start_type = f"{time_scheduled} "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
@@ -144,7 +144,7 @@ def update_libraries(config):
         logger.info("")
         util.separator(f"Mapping {library.name} Library", space=False, border=False)
         logger.info("")
-        library.map_guids(config)
+        library.map_guids()
         if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
             mass_metadata(config, library)
         for metadata in library.metadata_files:
@@ -189,7 +189,8 @@ def update_libraries(config):
                 util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library", space=False, border=False)
                 logger.info("")
                 for col in unmanaged_collections:
-                    library.update_item_from_assets(col, collection_mode=True)
+                    poster, background = library.find_collection_assets(col)
+                    library.upload_images(col, poster=poster, background=background)
                 for item in library.get_all():
                     library.update_item_from_assets(item)
 
@@ -221,7 +222,7 @@ def update_libraries(config):
                 logger.info("")
                 util.separator(f"{library.name} Library Run Again")
                 logger.info("")
-                library.map_guids(config)
+                library.map_guids()
                 for builder in library.run_again:
                     logger.info("")
                     util.separator(f"{builder.name} Collection")
@@ -248,10 +249,16 @@ def mass_metadata(config, library):
     logger.info("")
     util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
+    if library.split_duplicates:
+        items = library.search(**{"duplicate": True})
+        for item in items:
+            item.split()
+            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
     radarr_adds = []
     sonarr_adds = []
-    items = library.Plex.all()
+    items = library.get_all()
     for i, item in enumerate(items, 1):
+        library.reload(item)
         util.print_return(f"Processing: {i}/{len(items)} {item.title}")
         tmdb_id = None
         tvdb_id = None
@@ -297,6 +304,9 @@ def mass_metadata(config, library):
                         omdb_item = config.OMDb.get_omdb(imdb_id)
                     except Failed as e:
                         logger.info(util.adjust_space(str(e)))
+                    except Exception:
+                        logger.error(f"IMDb ID: {imdb_id}")
+                        raise
                 else:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
 
@@ -313,12 +323,18 @@ def mass_metadata(config, library):
                     raise Failed
                 item_genres = [genre.tag for genre in item.genres]
                 display_str = ""
-                for genre in (g for g in item_genres if g not in new_genres):
-                    library.query_data(item.removeGenre, genre)
-                    display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
+                add_genre = []
                 for genre in (g for g in new_genres if g not in item_genres):
-                    library.query_data(item.addGenre, genre)
+                    add_genre.append(genre)
                     display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
+                if len(add_genre) > 0:
+                    library.query_data(item.addGenre, add_genre)
+                remove_genre = []
+                for genre in (g for g in item_genres if g not in new_genres):
+                    remove_genre.append(genre)
+                    display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
+                if len(remove_genre) > 0:
+                    library.query_data(item.removeGenre, remove_genre)
                 if len(display_str) > 0:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | Genres | {display_str}"))
             except Failed:
@@ -446,11 +462,10 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 builder.update_details()
 
-            if len(builder.item_details) > 0:
-                logger.info("")
-                util.separator(f"Updating Details of the Items in  {mapping_name} Collection", space=False, border=False)
-                logger.info("")
-                builder.update_item_details()
+            logger.info("")
+            util.separator(f"Updating Details of the Items in {mapping_name} Collection", space=False, border=False)
+            logger.info("")
+            builder.update_item_details()
 
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
