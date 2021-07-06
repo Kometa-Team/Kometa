@@ -420,3 +420,18 @@ def validate_filename(filename):
     else:
         mapping_name = sanitize_filename(filename)
         return mapping_name, f"Log Folder Name: {filename} is invalid using {mapping_name}"
+
+def is_locked(filepath):
+    locked = None
+    file_object = None
+    if os.path.exists(filepath):
+        try:
+            file_object = open(filepath, 'a', 8)
+            if file_object:
+                locked = False
+        except IOError as message:
+            locked = True
+        finally:
+            if file_object:
+                file_object.close()
+    return locked

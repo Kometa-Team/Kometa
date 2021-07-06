@@ -1,4 +1,4 @@
-import glob, logging, os, plexapi, requests, shutil
+import glob, logging, os, plexapi, requests, shutil, time
 from modules import builder, util
 from modules.meta import Metadata
 from modules.util import Failed, ImageData
@@ -463,6 +463,8 @@ class Plex:
                 with open(temp_image, "wb") as handler:
                     handler.write(og_image)
                 shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
+                while util.is_locked(temp_image):
+                    time.sleep(1)
                 new_poster = Image.open(temp_image)
                 new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
                 new_poster.paste(overlay_image, (0, 0), overlay_image)
