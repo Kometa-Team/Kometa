@@ -1710,9 +1710,8 @@ class CollectionBuilder:
             if self.details["item_assets"] or overlay is not None:
                 try:
                     self.library.update_item_from_assets(item, overlay=overlay)
-                except UnidentifiedImageError:
-                    util.print_stacktrace()
-                    logger.error(f"Overlay Error: Overlay Failed for {item.title}")
+                except Failed as e:
+                    logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             if "item_radarr_tag" in self.item_details and item.ratingKey in self.library.movie_rating_key_map:
                 tmdb_ids.append(self.library.movie_rating_key_map[item.ratingKey])

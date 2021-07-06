@@ -459,7 +459,10 @@ class Plex:
             if self.config.Cache:
                 image, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
             if poster_uploaded or not image_overlay or image_overlay != overlay_name:
-                og_image = requests.get(item.posterUrl).content
+                response = requests.get(item.posterUrl)
+                if response.status_code >= 400:
+                    raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
+                og_image = response.content
                 with open(temp_image, "wb") as handler:
                     handler.write(og_image)
                 shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
