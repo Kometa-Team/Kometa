@@ -1664,6 +1664,7 @@ class CollectionBuilder:
                     logger.info("")
                     util.separator(f"Removed from {self.name} Collection", space=False, border=False)
                     logger.info("")
+                self.library.reload(item)
                 logger.info(f"{self.name} Collection | - | {item.title}")
                 if self.smart_label_collection:
                     self.library.query_data(item.removeLabel, self.name)
