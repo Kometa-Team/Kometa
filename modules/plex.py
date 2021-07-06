@@ -503,6 +503,8 @@ class Plex:
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
+        if final_search == "resolution" and self.is_show:
+            final_search = "episode.resolution"
         try:
             choices = {}
             for choice in self.Plex.listFilterChoices(final_search):
