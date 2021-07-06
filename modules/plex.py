@@ -814,7 +814,9 @@ class Plex:
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
-        if not found_one:
+        if not found_one and overlay:
+            self.upload_images(item, overlay=overlay)
+        elif not found_one:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
 
     def find_collection_assets(self, item, name=None):
