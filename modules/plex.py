@@ -1,4 +1,4 @@
-import glob, logging, os, plexapi, requests, shutil
+import glob, logging, os, plexapi, requests, shutil, time
 from modules import builder, util
 from modules.meta import Metadata
 from modules.util import Failed, ImageData
@@ -459,10 +459,15 @@ class Plex:
             if self.config.Cache:
                 image, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
             if poster_uploaded or not image_overlay or image_overlay != overlay_name:
-                og_image = requests.get(item.posterUrl).content
+                response = requests.get(item.posterUrl)
+                if response.status_code >= 400:
+                    raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
+                og_image = response.content
                 with open(temp_image, "wb") as handler:
                     handler.write(og_image)
                 shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
+                while util.is_locked(temp_image):
+                    time.sleep(1)
                 new_poster = Image.open(temp_image)
                 new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
                 new_poster.paste(overlay_image, (0, 0), overlay_image)
@@ -498,6 +503,8 @@ class Plex:
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
+        if final_search == "resolution" and self.is_show:
+            final_search = "episode.resolution"
         try:
             choices = {}
             for choice in self.Plex.listFilterChoices(final_search):
@@ -814,7 +821,9 @@ class Plex:
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
-        if not found_one:
+        if not found_one and overlay:
+            self.upload_images(item, overlay=overlay)
+        elif not found_one:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
 
     def find_collection_assets(self, item, name=None):

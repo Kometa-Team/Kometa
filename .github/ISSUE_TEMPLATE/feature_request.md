@@ -7,6 +7,10 @@ assignees: 'meisnate12'
 
 ---
 
+<!---
+Please make sure you submit all Pull Requests to the develop branch not the master branch.
+--->
+
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
