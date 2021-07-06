@@ -89,7 +89,7 @@ class Sonarr:
         if len(edited) > 0:
             logger.info("")
             for series in edited:
-                logger.info(f"Radarr Tags | {series.title:<25} | {series.tags}")
+                logger.info(f"Sonarr Tags | {series.title:<25} | {series.tags}")
             logger.info(f"{len(edited)} Series edited in Sonarr")
 
         if len(not_exists) > 0:
