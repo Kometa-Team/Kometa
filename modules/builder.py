@@ -2,7 +2,7 @@ import logging, os, re
 from datetime import datetime, timedelta
 from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed, ImageData
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show
 from urllib.parse import quote
@@ -1664,6 +1664,7 @@ class CollectionBuilder:
                     logger.info("")
                     util.separator(f"Removed from {self.name} Collection", space=False, border=False)
                     logger.info("")
+                self.library.reload(item)
                 logger.info(f"{self.name} Collection | - | {item.title}")
                 if self.smart_label_collection:
                     self.library.query_data(item.removeLabel, self.name)
@@ -1707,7 +1708,10 @@ class CollectionBuilder:
             if int(item.ratingKey) in rating_keys:
                 rating_keys.remove(int(item.ratingKey))
             if self.details["item_assets"] or overlay is not None:
-                self.library.update_item_from_assets(item, overlay=overlay)
+                try:
+                    self.library.update_item_from_assets(item, overlay=overlay)
+                except Failed as e:
+                    logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             if "item_radarr_tag" in self.item_details and item.ratingKey in self.library.movie_rating_key_map:
                 tmdb_ids.append(self.library.movie_rating_key_map[item.ratingKey])
