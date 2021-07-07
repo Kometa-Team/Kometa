@@ -117,7 +117,7 @@ numbered_builders = [
     "trakt_watched",
     "trakt_collected"
 ]
-smart_collection_invalid = ["collection_mode", "collection_order"]
+smart_collection_invalid = ["collection_order"]
 smart_url_collection_invalid = [
     "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label",
     "radarr_add", "radarr_folder", "radarr_monitor", "radarr_availability", 
