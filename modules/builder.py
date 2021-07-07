@@ -1098,33 +1098,57 @@ class CollectionBuilder:
         logger.info("Validation Successful")
 
     def collect_rating_keys(self):
+        filtered_keys = {}
+        name = self.obj.title if self.obj else self.name
         def add_rating_keys(keys):
             if not isinstance(keys, list):
                 keys = [keys]
+            total = len(keys)
+            max_length = len(str(total))
+            for i, key in enumerate(keys, 1):
+                if key not in self.rating_keys:
+                    if key in filtered_keys:
+                        if self.details["show_filtered"] is True:
+                            logger.info(f"{filtered_keys[key][0]} Collection | X | {filtered_keys[key][1]}")
+                    else:
+                        try:
+                            current = self.fetch_item(key)
+                        except Failed as e:
+                            logger.error(e)
+                            continue
+                        current_title = f"{current.title} ({current.year})" if current.year else current.title
+                        if self.check_filters(current, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
+                            self.rating_keys.append(key)
+                        else:
+                            if key not in filtered_keys:
+                                filtered_keys[key] = (name, current_title)
+                            if self.details["show_filtered"] is True:
+                                logger.info(f"{name} Collection | X | {current_title}")
+
             self.rating_keys.extend([key for key in keys if key not in self.rating_keys])
+        def check_map(input_ids):
+            movie_ids, show_ids = input_ids
+            items_found_inside = 0
+            if len(movie_ids) > 0:
+                items_found_inside += len(movie_ids)
+                for movie_id in movie_ids:
+                    if movie_id in self.library.movie_map:
+                        add_rating_keys(self.library.movie_map[movie_id])
+                    elif movie_id not in self.missing_movies:
+                        self.missing_movies.append(movie_id)
+            if len(show_ids) > 0:
+                items_found_inside += len(show_ids)
+                for show_id in show_ids:
+                    if show_id in self.library.show_map:
+                        add_rating_keys(self.library.show_map[show_id])
+                    elif show_id not in self.missing_shows:
+                        self.missing_shows.append(show_id)
+            return items_found_inside
         for method, values in self.methods:
             logger.debug("")
             logger.debug(f"Method: {method}")
             logger.debug(f"Values: {values}")
             for value in values:
-                def check_map(input_ids):
-                    movie_ids, show_ids = input_ids
-                    items_found_inside = 0
-                    if len(movie_ids) > 0:
-                        items_found_inside += len(movie_ids)
-                        for movie_id in movie_ids:
-                            if movie_id in self.library.movie_map:
-                                add_rating_keys(self.library.movie_map[movie_id])
-                            elif movie_id not in self.missing_movies:
-                                self.missing_movies.append(movie_id)
-                    if len(show_ids) > 0:
-                        items_found_inside += len(show_ids)
-                        for show_id in show_ids:
-                            if show_id in self.library.show_map:
-                                add_rating_keys(self.library.show_map[show_id])
-                            elif show_id not in self.missing_shows:
-                                self.missing_shows.append(show_id)
-                    return items_found_inside
                 logger.debug("")
                 logger.debug(f"Value: {value}")
                 logger.info("")
@@ -1409,16 +1433,14 @@ class CollectionBuilder:
                 logger.error(e)
                 continue
             current_title = f"{current.title} ({current.year})" if current.year else current.title
-            if self.check_filters(current, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
-                logger.info(util.adjust_space(f"{name} Collection | {'=' if current in collection_items else '+'} | {current_title}"))
-                if current in collection_items:
-                    self.plex_map[current.ratingKey] = None
-                elif self.smart_label_collection:
-                    self.library.query_data(current.addLabel, name)
-                else:
-                    self.library.query_data(current.addCollection, name)
-            elif self.details["show_filtered"] is True:
-                logger.info(f"{name} Collection | X | {current_title}")
+            current_operation = "=" if current in collection_items else "+"
+            logger.info(util.adjust_space(f"{name} Collection | {current_operation} | {current_title}"))
+            if current in collection_items:
+                self.plex_map[current.ratingKey] = None
+            elif self.smart_label_collection:
+                self.library.query_data(current.addLabel, name)
+            else:
+                self.library.query_data(current.addCollection, name)
         media_type = f"{'Movie' if self.library.is_movie else 'Show'}{'s' if total > 1 else ''}"
         util.print_end()
         logger.info("")
