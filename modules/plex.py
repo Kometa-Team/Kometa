@@ -372,7 +372,6 @@ class Plex:
             util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
         logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {'Movies' if self.is_movie else 'Shows'}"))
-        logger.info("")
         return results
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
