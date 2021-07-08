@@ -1105,11 +1105,14 @@ class CollectionBuilder:
                 keys = [keys]
             total = len(keys)
             max_length = len(str(total))
+            if self.filters and self.details["show_filtered"] is True:
+                logger.info("")
+                logger.info("Filtering Builder:")
             for i, key in enumerate(keys, 1):
                 if key not in self.rating_keys:
                     if key in filtered_keys:
                         if self.details["show_filtered"] is True:
-                            logger.info(f"{filtered_keys[key][0]} Collection | X | {filtered_keys[key][1]}")
+                            logger.info(f"{name} Collection | X | {filtered_keys[key]}")
                     else:
                         try:
                             current = self.fetch_item(key)
@@ -1121,7 +1124,7 @@ class CollectionBuilder:
                             self.rating_keys.append(key)
                         else:
                             if key not in filtered_keys:
-                                filtered_keys[key] = (name, current_title)
+                                filtered_keys[key] = current_title
                             if self.details["show_filtered"] is True:
                                 logger.info(f"{name} Collection | X | {current_title}")
         def check_map(input_ids):
@@ -1143,12 +1146,9 @@ class CollectionBuilder:
                         self.missing_shows.append(show_id)
             return items_found_inside
         for method, values in self.methods:
-            logger.debug("")
-            logger.debug(f"Method: {method}")
-            logger.debug(f"Values: {values}")
             for value in values:
                 logger.debug("")
-                logger.debug(f"Value: {value}")
+                logger.debug(f"Builder: {method}: {value}")
                 logger.info("")
                 if "plex" in method:                                add_rating_keys(self.library.get_items(method, value))
                 elif "tautulli" in method:                          add_rating_keys(self.library.Tautulli.get_items(self.library, value))

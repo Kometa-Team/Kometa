@@ -362,7 +362,6 @@ class Plex:
 
     def get_all(self):
         logger.info(f"Loading All {'Movie' if self.is_movie else 'Show'}s from Library: {self.name}")
-        logger.info("")
         key = f"/library/sections/{self.Plex.key}/all?type={utils.searchType(self.Plex.TYPE)}"
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
