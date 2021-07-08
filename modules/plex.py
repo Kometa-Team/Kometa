@@ -523,7 +523,6 @@ class Plex:
         if post:                method = self.Plex._server._session.post
         elif put:               method = self.Plex._server._session.put
         else:                   method = None
-        self.Plex._server.query(key, method=method)
         return self.Plex._server.query(key, method=method)
 
     def smart_label_url(self, title, sort):
