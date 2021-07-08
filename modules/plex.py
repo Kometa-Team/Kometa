@@ -362,7 +362,6 @@ class Plex:
 
     def get_all(self):
         logger.info(f"Loading All {'Movie' if self.is_movie else 'Show'}s from Library: {self.name}")
-        logger.info("")
         key = f"/library/sections/{self.Plex.key}/all?type={utils.searchType(self.Plex.TYPE)}"
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
@@ -372,7 +371,6 @@ class Plex:
             util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
         logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {'Movies' if self.is_movie else 'Shows'}"))
-        logger.info("")
         return results
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -523,7 +521,6 @@ class Plex:
         if post:                method = self.Plex._server._session.post
         elif put:               method = self.Plex._server._session.put
         else:                   method = None
-        self.Plex._server.query(key, method=method)
         return self.Plex._server.query(key, method=method)
 
     def smart_label_url(self, title, sort):
