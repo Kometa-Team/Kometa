@@ -1124,8 +1124,6 @@ class CollectionBuilder:
                                 filtered_keys[key] = (name, current_title)
                             if self.details["show_filtered"] is True:
                                 logger.info(f"{name} Collection | X | {current_title}")
-
-            self.rating_keys.extend([key for key in keys if key not in self.rating_keys])
         def check_map(input_ids):
             movie_ids, show_ids = input_ids
             items_found_inside = 0
