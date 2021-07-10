@@ -114,7 +114,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     start_time = datetime.now()
     if time_scheduled is None:
         time_scheduled = start_time.strftime("%H:%M")
-    util.separator(f"Starting {start_type}Run")
+    util.separator(f"Starting {start_type}Run\n{str(datetime.now())}")
     try:
         config = Config(default_dir, config_path=config_path, is_test=is_test,
                         time_scheduled=time_scheduled, requested_collections=requested_collections,
@@ -124,7 +124,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
         util.print_stacktrace()
         logger.critical(e)
     logger.info("")
-    util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
+    util.separator(f"Finished {start_type}Run\n{str(datetime.now())}\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
     logger.removeHandler(file_handler)
 
 def update_libraries(config):
