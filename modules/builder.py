@@ -1092,6 +1092,7 @@ class CollectionBuilder:
                 for item in self.library.get_collection_items(self.obj, self.smart_label_collection):
                     self.plex_map[item.ratingKey] = item
         else:
+            self.obj = None
             self.sync = False
             self.run_again = False
         logger.info("")
