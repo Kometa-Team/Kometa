@@ -771,6 +771,7 @@ class Plex:
     def update_item_from_assets(self, item, overlay=None):
         name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
         found_one = False
+        uploaded = False
         for ad in self.asset_directory:
             poster = None
             background = None
@@ -797,6 +798,7 @@ class Plex:
             if len(matches) > 0:
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
+                uploaded = True
                 self.upload_images(item, poster=poster, background=background, overlay=overlay)
             if self.is_show:
                 for season in self.query(item.seasons):
@@ -821,6 +823,8 @@ class Plex:
             self.upload_images(item, overlay=overlay)
         elif not found_one:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
+        elif not uploaded:
+            logger.error(f"Asset Warning: No poster or background found in an assets folder")
 
     def find_collection_assets(self, item, name=None):
         if name is None:
