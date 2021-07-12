@@ -771,10 +771,10 @@ class Plex:
     def update_item_from_assets(self, item, overlay=None):
         logger.debug(item.locations)
         logger.debug(item.locations[0])
-        logger.debug(os.path.dirname(item.locations[0]))
-        logger.debug(os.path.basename(os.path.dirname(item.locations[0])))
+        logger.debug(os.path.dirname(str(item.locations[0])))
+        logger.debug(os.path.basename(os.path.dirname(str(item.locations[0]))))
 
-        name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
+        name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
         logger.debug(name)
         found_folder = False
         uploaded = False
