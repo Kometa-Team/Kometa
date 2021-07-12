@@ -773,6 +773,9 @@ class Plex:
         logger.debug(item.locations[0])
         logger.debug(os.path.dirname(str(item.locations[0])))
         logger.debug(os.path.basename(os.path.dirname(str(item.locations[0]))))
+        logger.debug(os.path.dirname(os.path.abspath(item.locations[0])))
+        logger.debug(os.path.basename(os.path.dirname(os.path.abspath(item.locations[0]))))
+
 
         name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
         logger.debug(name)
