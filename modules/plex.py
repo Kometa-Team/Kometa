@@ -750,23 +750,22 @@ class Plex:
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
             _add_tags = add_tags if add_tags else []
-            _remove = [t.lower() for t in remove_tags] if remove_tags else []
+            _remove_tags = remove_tags if remove_tags else []
             _sync_tags = sync_tags if sync_tags else []
-            _sync = [t.lower() for t in _sync_tags]
-            item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
-            _add = _add_tags + _sync_tags
+            try:
+                _item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
+            except BadRequest:
+                _item_tags = []
+            _add = [f"{t[:1].upper()}{t[1:]}" for t in _add_tags + _sync_tags if t.lower() not in _item_tags]
+            _remove = [t for t in _item_tags if (_sync_tags and t not in _sync_tags) or t in _remove_tags]
             if _add:
-                add = [f"{t[:1].upper()}{t[1:]}" for t in _add if t.lower() not in item_tags]
-                if add:
-                    updated = True
-                    self.query_data(getattr(obj, f"add{attr.capitalize()}"), add)
-                    logger.info(f"Detail: {attr.capitalize()} {add} added")
-            if _remove or _sync:
-                remove = [t for t in item_tags if t not in _sync or t in _remove]
-                if remove:
-                    updated = True
-                    self.query_data(getattr(obj, f"remove{attr.capitalize()}"), remove)
-                    logger.info(f"Detail: {attr.capitalize()} {remove} removed")
+                updated = True
+                self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
+                logger.info(f"Detail: {attr.capitalize()} {_add} added")
+            if _remove:
+                updated = True
+                self.query_data(getattr(obj, f"remove{attr.capitalize()}"), _remove)
+                logger.info(f"Detail: {attr.capitalize()} {_remove} removed")
         return updated
 
     def update_item_from_assets(self, item, overlay=None):
