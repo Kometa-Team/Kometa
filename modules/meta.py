@@ -81,19 +81,21 @@ class Metadata:
             edits = {}
             advance_edits = {}
 
-            def add_edit(name, current, group, alias, key=None, value=None, var_type="str"):
+            def add_edit(name, current_item, group, alias, key=None, value=None, var_type="str"):
                 if value or name in alias:
                     if value or group[alias[name]]:
                         if key is None:         key = name
                         if value is None:       value = group[alias[name]]
                         try:
+                            current = str(getattr(current_item, key, ""))
                             if var_type == "date":
                                 final_value = util.check_date(value, name, return_string=True, plex_date=True)
+                                current = current[:-9]
                             elif var_type == "float":
                                 final_value = util.check_number(value, name, number_type="float", minimum=0, maximum=10)
                             else:
                                 final_value = value
-                            if str(current) != str(final_value):
+                            if current != str(final_value):
                                 edits[f"{key}.value"] = final_value
                                 edits[f"{key}.locked"] = 1
                                 logger.info(f"Detail: {name} updated to {final_value}")
@@ -242,16 +244,16 @@ class Metadata:
                 genres = [genre.name for genre in tmdb_item.genres]
 
             edits = {}
-            add_edit("title", item.title, meta, methods, value=title)
-            add_edit("sort_title", item.titleSort, meta, methods, key="titleSort")
-            add_edit("originally_available", str(item.originallyAvailableAt)[:-9], meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
-            add_edit("critic_rating", item.rating, meta, methods, value=rating, key="rating", var_type="float")
-            add_edit("audience_rating", item.audienceRating, meta, methods, key="audienceRating", var_type="float")
-            add_edit("content_rating", item.contentRating, meta, methods, key="contentRating")
-            add_edit("original_title", item.originalTitle, meta, methods, key="originalTitle", value=original_title)
-            add_edit("studio", item.studio, meta, methods, value=studio)
-            add_edit("tagline", item.tagline, meta, methods, value=tagline)
-            add_edit("summary", item.summary, meta, methods, value=summary)
+            add_edit("title", item, meta, methods, value=title)
+            add_edit("sort_title", item, meta, methods, key="titleSort")
+            add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
+            add_edit("critic_rating", item, meta, methods, value=rating, key="rating", var_type="float")
+            add_edit("audience_rating", item, meta, methods, key="audienceRating", var_type="float")
+            add_edit("content_rating", item, meta, methods, key="contentRating")
+            add_edit("original_title", item, meta, methods, key="originalTitle", value=original_title)
+            add_edit("studio", item, meta, methods, value=studio)
+            add_edit("tagline", item, meta, methods, value=tagline)
+            add_edit("summary", item, meta, methods, value=summary)
             if self.library.edit_item(item, mapping_name, item_type, edits):
                 updated = True
 
@@ -306,8 +308,8 @@ class Metadata:
                                         logger.error("Metadata Error: sub attribute must be True or False")
 
                                 edits = {}
-                                add_edit("title", season.title, season_dict, season_methods, value=title)
-                                add_edit("summary", season.summary, season_dict, season_methods)
+                                add_edit("title", season, season_dict, season_methods, value=title)
+                                add_edit("summary", season, season_dict, season_methods)
                                 if self.library.edit_item(season, season_id, "Season", edits):
                                     updated = True
                                 set_images(season, season_dict, season_methods)
@@ -352,13 +354,11 @@ class Metadata:
                                     else:
                                         logger.error("Metadata Error: sub attribute must be True or False")
                                 edits = {}
-                                add_edit("title", episode.title, episode_dict, episode_methods, value=title)
-                                add_edit("sort_title", episode.titleSort, episode_dict, episode_methods,
-                                         key="titleSort")
-                                add_edit("rating", episode.rating, episode_dict, episode_methods)
-                                add_edit("originally_available", str(episode.originallyAvailableAt)[:-9],
-                                         episode_dict, episode_methods, key="originallyAvailableAt")
-                                add_edit("summary", episode.summary, episode_dict, episode_methods)
+                                add_edit("title", episode, episode_dict, episode_methods, value=title)
+                                add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
+                                add_edit("rating", episode, episode_dict, episode_methods, var_type="float")
+                                add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
+                                add_edit("summary", episode, episode_dict, episode_methods)
                                 if self.library.edit_item(episode, f"{season_id} Episode: {episode_id}", "Season", edits):
                                     updated = True
                                 if edit_tags("director", episode, episode_dict, episode_methods):
