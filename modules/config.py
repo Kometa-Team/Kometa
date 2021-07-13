@@ -108,6 +108,7 @@ class Config:
             if "omdb" in new_config:                        new_config["omdb"] = new_config.pop("omdb")
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
+            if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
             yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=ind, block_seq_indent=bsi)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
@@ -270,9 +271,29 @@ class Config:
         else:
             logger.warning("mal attribute not found")
 
+        util.separator()
+
+        self.AniDB = None
+        anidb_username = check_for_attribute(self.data, "username", parent="anidb", throw=False, default=False)
+        anidb_password = check_for_attribute(self.data, "username", parent="anidb", throw=False, default=False)
+        if "anidb" in self.data and anidb_username and anidb_password:
+            logger.info("Connecting to AniDB...")
+            self.anidb = {}
+            try:
+                self.anidb["username"] = check_for_attribute(self.data, "username", parent="anidb", throw=True)
+                self.anidb["password"] = check_for_attribute(self.data, "password", parent="anidb", throw=True)
+                self.AniDB = AniDB(self.anidb, self)
+            except Failed as e:
+                logger.error(e)
+            logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
+        else:
+            logger.info("Using guest authentication for AniDB")
+            self.AniDB = AniDB(None, self)
+
+        util.separator()
+
         self.TVDb = TVDb(self)
         self.IMDb = IMDb(self)
-        self.AniDB = AniDB(self)
         self.Convert = Convert(self)
         self.AniList = AniList(self)
         self.Letterboxd = Letterboxd(self)
