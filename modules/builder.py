@@ -61,6 +61,7 @@ modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakttv.builders + tvdb.builders
 dictionary_builders = [
     "filters",
+    "anidb_tag",
     "anilist_genre",
     "anilist_season",
     "anilist_tag",
@@ -949,6 +950,17 @@ class CollectionBuilder:
                                     new_dictionary["sort_by"] = mal.userlist_sort[dict_data[dict_methods["sort_by"]]]
 
                                 new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 100, maximum=1000)
+                                self.methods.append((method_name, [new_dictionary]))
+                            elif method_name == "anidb_tag":
+                                new_dictionary = {}
+                                dict_methods = {dm.lower(): dm for dm in dict_data}
+                                if "tag" not in dict_methods:
+                                    raise Failed("Collection Error: anidb_tag tag attribute is required")
+                                elif not dict_data[dict_methods["tag"]]:
+                                    raise Failed("Collection Error: anidb_tag tag attribute is blank")
+                                else:
+                                    new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["username"]], "AniDB Tag ID")
+                                new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 0, minimum=0)
                                 self.methods.append((method_name, [new_dictionary]))
                             elif "anilist" in method_name:
                                 new_dictionary = {"sort_by": "score"}
