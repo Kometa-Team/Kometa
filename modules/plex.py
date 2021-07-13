@@ -769,18 +769,9 @@ class Plex:
         return updated
 
     def update_item_from_assets(self, item, overlay=None):
-        logger.debug(item.locations)
-        logger.debug(item.locations[0])
-        logger.debug(os.path.dirname(str(item.locations[0])))
-        logger.debug(os.path.basename(os.path.dirname(str(item.locations[0]))))
-        logger.debug(os.path.dirname(os.path.abspath(item.locations[0])))
-        logger.debug(os.path.basename(os.path.dirname(os.path.abspath(item.locations[0]))))
-
-
         name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
         logger.debug(name)
         found_folder = False
-        uploaded = False
         for ad in self.asset_directory:
             poster = None
             background = None
@@ -800,11 +791,9 @@ class Plex:
             else:
                 poster_filter = os.path.join(ad, f"{name}.*")
                 background_filter = os.path.join(ad, f"{name}_background.*")
-            logger.debug(f"Poster Filter: {poster_filter}")
             matches = glob.glob(poster_filter)
             if len(matches) > 0:
                 poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
-            logger.debug(f"Background Filter: {background_filter}")
             matches = glob.glob(background_filter)
             if len(matches) > 0:
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
@@ -829,12 +818,12 @@ class Plex:
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
-        if not found_folder and overlay:
+        if not poster and overlay:
             self.upload_images(item, overlay=overlay)
-        elif self.asset_folders and not found_folder:
+        if not overlay and self.asset_folders and not found_folder:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
         elif not poster and not background:
-            logger.error(f"Asset Warning: No poster or background found in an assets folder for {name}")
+            logger.error(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
 
     def find_collection_assets(self, item, name=None):
         if name is None:
