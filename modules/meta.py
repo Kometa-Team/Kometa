@@ -366,7 +366,7 @@ class Metadata:
                                 if edit_tags("writer", episode, episode_dict, episode_methods):
                                     updated = True
                                 set_images(episode, episode_dict, episode_methods)
-                            logger.info(f"Episode S{episode_id}E{season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                            logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
                         else:
                             logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
                 else:
