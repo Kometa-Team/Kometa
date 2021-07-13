@@ -1,4 +1,4 @@
-import logging, os
+import logging, os, requests
 from datetime import datetime
 from modules import util
 from modules.anidb import AniDB
@@ -188,6 +188,8 @@ class Config:
                     util.print_multiline(options)
             return default
 
+        self.session = requests.Session()
+
         self.general = {}
         self.general["cache"] = check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True)
         self.general["cache_expiration"] = check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
@@ -274,9 +276,8 @@ class Config:
         util.separator()
 
         self.AniDB = None
-        anidb_username = check_for_attribute(self.data, "username", parent="anidb", throw=False, default=False)
-        anidb_password = check_for_attribute(self.data, "username", parent="anidb", throw=False, default=False)
-        if "anidb" in self.data and anidb_username and anidb_password:
+        if "anidb" in self.data:
+            util.separator()
             logger.info("Connecting to AniDB...")
             self.anidb = {}
             try:
@@ -285,12 +286,9 @@ class Config:
                 self.AniDB = AniDB(self.anidb, self)
             except Failed as e:
                 logger.error(e)
-            logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
-        else:
-            logger.info("Using guest authentication for AniDB")
+            logger.info(f"My Anime List Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
+        if self.AniDB is None:
             self.AniDB = AniDB(None, self)
-
-        util.separator()
 
         self.TVDb = TVDb(self)
         self.IMDb = IMDb(self)
