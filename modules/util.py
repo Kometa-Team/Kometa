@@ -280,6 +280,9 @@ def logger_input(prompt, timeout=60):
     elif hasattr(signal, "SIGALRM"):        return unix_input(prompt, timeout)
     else:                                   raise SystemError("Input Timeout not supported on this system")
 
+def header(language="en-US,en;q=0.5"):
+    return {"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}
+
 def alarm_handler(signum, frame):
     raise TimeoutExpired
 

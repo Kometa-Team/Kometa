@@ -1,4 +1,4 @@
-import logging, os, re, requests
+import logging, os, re
 from datetime import datetime
 from modules import plex, util
 from modules.util import Failed, ImageData
@@ -7,13 +7,14 @@ from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
+github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
+
 class Metadata:
     def __init__(self, config, library, file_type, path):
         self.config = config
         self.library = library
         self.type = file_type
         self.path = path
-        self.github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
         logger.info("")
         logger.info(f"Loading Metadata {file_type}: {path}")
         def get_dict(attribute, attr_data, check_list=None):
@@ -37,8 +38,8 @@ class Metadata:
             return None
         try:
             if file_type in ["URL", "Git"]:
-                content_path = path if file_type == "URL" else f"{self.github_base}{path}.yml"
-                response = requests.get(content_path)
+                content_path = path if file_type == "URL" else f"{github_base}{path}.yml"
+                response = self.config.get(content_path)
                 if response.status_code >= 400:
                     raise Failed(f"URL Error: No file found at {content_path}")
                 content = response.content

@@ -24,7 +24,8 @@ builders = [
 ]
 
 class Trakt:
-    def __init__(self, params, authorization=None):
+    def __init__(self, config, params, authorization=None):
+        self.config = config
         self.base_url = "https://api.trakt.tv"
         self.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
         self.aliases = {
@@ -118,9 +119,8 @@ class Trakt:
         if trakt_list is None:              raise Failed("Trakt Error: No List found")
         else:                               return trakt_list
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def _request(self, url):
-        return requests.get(url, headers={"Content-Type": "application/json", "trakt-api-version": "2", "trakt-api-key": self.client_id}).json()
+        return self.config.get_json(url, headers={"Content-Type": "application/json", "trakt-api-version": "2", "trakt-api-key": self.client_id})
 
     def _collection(self, username, is_movie):
         items = self._request(f"{self.base_url}/users/{username}/collection/{'movies' if is_movie else 'shows'}")

@@ -1,22 +1,17 @@
 import logging, re, requests
-from lxml import html
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest
-from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
+
+arms_url = "https://relations.yuna.moe/api/ids"
+anidb_url = "https://raw.githubusercontent.com/Anime-Lists/anime-lists/master/anime-list-master.xml"
 
 class Convert:
     def __init__(self, config):
         self.config = config
-        self.arms_url = "https://relations.yuna.moe/api/ids"
-        self.anidb_url = "https://raw.githubusercontent.com/Anime-Lists/anime-lists/master/anime-list-master.xml"
-        self.AniDBIDs = self._get_anidb()
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def _get_anidb(self):
-        return html.fromstring(requests.get(self.anidb_url).content)
+        self.AniDBIDs = self.config.get_html(anidb_url)
 
     def _anidb(self, input_id, to_id, fail=False):
         ids = self.AniDBIDs.xpath(f"//anime[contains(@anidbid, '{input_id}')]/@{to_id}")
@@ -32,10 +27,6 @@ class Convert:
         if fail:
             raise Failed(fail_text)
         return [] if to_id == "imdbid" else None
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def _request(self, ids):
-        return requests.post(self.arms_url, json=ids).json()
 
     def _arms_ids(self, anilist_ids=None, anidb_ids=None, mal_ids=None):
         all_ids = []
@@ -68,7 +59,7 @@ class Convert:
         if len(unconverted_ids) > 0:
             unconverted_id_sets.append(unconverted_ids)
         for unconverted_id_set in unconverted_id_sets:
-            for anime_ids in self._request(unconverted_id_set):
+            for anime_ids in self.config.post_json(arms_url, json=unconverted_id_set):
                 if anime_ids:
                     if self.config.Cache:
                         self.config.Cache.update_anime_map(False, anime_ids)

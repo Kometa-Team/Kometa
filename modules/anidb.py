@@ -1,52 +1,48 @@
-import logging, requests, time
-from lxml import html
+import logging, time
 from modules import util
 from modules.util import Failed
-from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["anidb_id", "anidb_relation", "anidb_popular", "anidb_tag"]
+base_url = "https://anidb.net"
+urls = {
+    "anime": f"{base_url}/anime",
+    "popular": f"{base_url}/latest/anime/popular/?h=1",
+    "relation": "/relation/graph",
+    "tag": f"{base_url}/tag",
+    "login": f"{base_url}/perl-bin/animedb.pl"
+}
 
 class AniDB:
-    def __init__(self, params, config):
+    def __init__(self, config, params):
         self.config = config
-
-        self.urls = {
-            "anime": "https://anidb.net/anime",
-            "popular": "https://anidb.net/latest/anime/popular/?h=1",
-            "relation": "/relation/graph",
-            "anidb_tag": "https://anidb.net/tag",
-            "login": "https://anidb.net/perl-bin/animedb.pl"
-        }
+        self.username = params["username"] if params else None
+        self.password = params["password"] if params else None
         if params:
-            if not self._login(params["username"], params["password"]).xpath("//li[@class='sub-menu my']/@title"):
+            if not self._login(self.username, self.password).xpath("//li[@class='sub-menu my']/@title"):
                 raise Failed("AniDB Error: Login failed")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def _request(self, url, language):
-        return html.fromstring(self.config.session.get(url, headers={"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}).content)
+    def _request(self, url, language=None, postData=None):
+        if postData:
+            return self.config.post_html(url, postData, headers=util.header(language))
+        else:
+            return self.config.get_html(url, headers=util.header(language))
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def _login(self, username, password):
-        data = {
-            "show": "main",
-            "xuser": username,
-            "xpass": password,
-            "xdoautologin": "on"
-        }
-        return html.fromstring(self.config.session.post(self.urls["login"], data, headers={"Accept-Language": "en-US,en;q=0.5", "User-Agent": "Mozilla/5.0 x64"}).content)
+        data = {"show": "main", "xuser": username, "xpass": password, "xdoautologin": "on"}
+        return self._request(urls["login"], postData=data)
 
     def _popular(self, language):
-        response = self._request(self.urls["popular"], language)
+        response = self._request(urls["popular"], language=language)
         return util.get_int_list(response.xpath("//td[@class='name anime']/a/@href"), "AniDB ID")
 
     def _relations(self, anidb_id, language):
-        response = self._request(f"{self.urls['anime']}/{anidb_id}{self.urls['relation']}", language)
+        response = self._request(f"{urls['anime']}/{anidb_id}{urls['relation']}", language=language)
         return util.get_int_list(response.xpath("//area/@href"), "AniDB ID")
 
     def _validate(self, anidb_id, language):
-        response = self._request(f"{self.urls['anime']}/{anidb_id}", language)
+        response = self._request(f"{urls['anime']}/{anidb_id}", language=language)
         ids = response.xpath(f"//*[text()='a{anidb_id}']/text()")
         if len(ids) > 0:
             return util.regex_first_int(ids[0], "AniDB ID")
@@ -65,16 +61,15 @@ class AniDB:
 
     def _tag(self, tag, limit, language):
         anidb_ids = []
-        current_url = f"{self.urls['anidb_tag']}/{tag}"
+        current_url = f"{urls['tag']}/{tag}"
         while True:
-            response = self._request(current_url, language)
-            int_list = util.get_int_list(response.xpath("//td[@class='name main anime']/a/@href"), "AniDB ID")
-            anidb_ids.extend(int_list)
+            response = self._request(current_url, language=language)
+            anidb_ids.extend(util.get_int_list(response.xpath("//td[@class='name main anime']/a/@href"), "AniDB ID"))
             next_page_list = response.xpath("//li[@class='next']/a/@href")
             if len(anidb_ids) >= limit or len(next_page_list) == 0:
                 break
             time.sleep(2)
-            current_url = f"https://anidb.net{next_page_list[0]}"
+            current_url = f"{base_url}{next_page_list[0]}"
         return anidb_ids[:limit]
 
     def get_items(self, method, data, language):

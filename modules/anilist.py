@@ -1,4 +1,4 @@
-import logging, requests, time
+import logging, time
 from modules import util
 from modules.util import Failed
 from retrying import retry
@@ -19,13 +19,13 @@ pretty_names = {
     "score": "Average Score",
     "popular": "Popularity"
 }
+base_url = "https://graphql.anilist.co"
 tag_query = "query{MediaTagCollection {name}}"
 genre_query = "query{GenreCollection}"
 
 class AniList:
     def __init__(self, config):
         self.config = config
-        self.url = "https://graphql.anilist.co"
         self.tags = {}
         self.genres = {}
         self.tags = {t["name"].lower(): t["name"] for t in self._request(tag_query, {})["data"]["MediaTagCollection"]}
@@ -33,7 +33,7 @@ class AniList:
 
     @retry(stop_max_attempt_number=2, retry_on_exception=util.retry_if_not_failed)
     def _request(self, query, variables):
-        response = requests.post(self.url, json={"query": query, "variables": variables})
+        response = self.config.post(base_url, json={"query": query, "variables": variables})
         json_obj = response.json()
         if "errors" in json_obj:
             if json_obj['errors'][0]['message'] == "Too Many Requests.":

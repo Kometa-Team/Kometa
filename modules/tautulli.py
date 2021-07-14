@@ -1,15 +1,15 @@
-import logging, requests
+import logging
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound
-from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["tautulli_popular", "tautulli_watched"]
 
 class Tautulli:
-    def __init__(self, params):
+    def __init__(self, config, params):
+        self.config = config
         self.url = params["url"]
         self.apikey = params["apikey"]
         try:
@@ -62,7 +62,6 @@ class Tautulli:
         if section_id:              return section_id
         else:                       raise Failed(f"Tautulli Error: No Library named {library_name} in the response")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def _request(self, url):
         logger.debug(f"Tautulli URL: {url.replace(self.apikey, '###############')}")
-        return requests.get(url).json()
+        return self.config.get_json(url)

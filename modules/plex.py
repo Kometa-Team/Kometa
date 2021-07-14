@@ -255,8 +255,12 @@ sort_types = {
 class Plex:
     def __init__(self, config, params):
         self.config = config
+        self.plex = params["plex"]
+        self.url = params["plex"]["url"]
+        self.token = params["plex"]["token"]
+        self.timeout = params["plex"]["timeout"]
         try:
-            self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
+            self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
         except Unauthorized:
             raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:
@@ -322,10 +326,6 @@ class Plex:
         self.radarr_add_all = params["radarr_add_all"]
         self.sonarr_add_all = params["sonarr_add_all"]
         self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update or self.split_duplicates or self.radarr_add_all or self.sonarr_add_all
-        self.plex = params["plex"]
-        self.url = params["plex"]["url"]
-        self.token = params["plex"]["token"]
-        self.timeout = params["plex"]["timeout"]
         self.clean_bundles = params["plex"]["clean_bundles"]
         self.empty_trash = params["plex"]["empty_trash"]
         self.optimize = params["plex"]["optimize"]
@@ -427,7 +427,7 @@ class Plex:
         self.reload(item)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def _upload_file_poster(self, item, image):
+    def upload_file_poster(self, item, image):
         item.uploadPoster(filepath=image)
         self.reload(item)
 
@@ -470,7 +470,7 @@ class Plex:
                 new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
                 new_poster.paste(overlay_image, (0, 0), overlay_image)
                 new_poster.save(temp_image)
-                self._upload_file_poster(item, temp_image)
+                self.upload_file_poster(item, temp_image)
                 poster_uploaded = True
                 logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
 
@@ -772,9 +772,9 @@ class Plex:
         name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
         logger.debug(name)
         found_folder = False
+        poster = None
+        background = None
         for ad in self.asset_directory:
-            poster = None
-            background = None
             item_dir = None
             if self.asset_folders:
                 if os.path.isdir(os.path.join(ad, name)):

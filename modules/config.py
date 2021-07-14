@@ -1,5 +1,6 @@
 import logging, os, requests
 from datetime import datetime
+from lxml import html
 from modules import util
 from modules.anidb import AniDB
 from modules.anilist import AniList
@@ -18,6 +19,7 @@ from modules.tmdb import TMDb
 from modules.trakttv import Trakt
 from modules.tvdb import TVDb
 from modules.util import Failed
+from retrying import retry
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -230,7 +232,7 @@ class Config:
             self.omdb = {}
             try:
                 self.omdb["apikey"] = check_for_attribute(self.data, "apikey", parent="omdb", throw=True)
-                self.OMDb = OMDb(self.omdb, Cache=self.Cache)
+                self.OMDb = OMDb(self, self.omdb)
             except Failed as e:
                 logger.error(e)
             logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
@@ -248,7 +250,7 @@ class Config:
                 self.trakt["client_secret"] = check_for_attribute(self.data, "client_secret", parent="trakt", throw=True)
                 self.trakt["config_path"] = self.config_path
                 authorization = self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] and self.data["trakt"]["authorization"] else None
-                self.Trakt = Trakt(self.trakt, authorization)
+                self.Trakt = Trakt(self, self.trakt, authorization)
             except Failed as e:
                 logger.error(e)
             logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
@@ -266,7 +268,7 @@ class Config:
                 self.mal["client_secret"] = check_for_attribute(self.data, "client_secret", parent="mal", throw=True)
                 self.mal["config_path"] = self.config_path
                 authorization = self.data["mal"]["authorization"] if "authorization" in self.data["mal"] and self.data["mal"]["authorization"] else None
-                self.MyAnimeList = MyAnimeList(self.mal, self, authorization)
+                self.MyAnimeList = MyAnimeList(self, self.mal, authorization)
             except Failed as e:
                 logger.error(e)
             logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
@@ -283,12 +285,12 @@ class Config:
             try:
                 self.anidb["username"] = check_for_attribute(self.data, "username", parent="anidb", throw=True)
                 self.anidb["password"] = check_for_attribute(self.data, "password", parent="anidb", throw=True)
-                self.AniDB = AniDB(self.anidb, self)
+                self.AniDB = AniDB(self, self.anidb)
             except Failed as e:
                 logger.error(e)
             logger.info(f"My Anime List Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
         if self.AniDB is None:
-            self.AniDB = AniDB(None, self)
+            self.AniDB = AniDB(self, None)
 
         self.TVDb = TVDb(self)
         self.IMDb = IMDb(self)
@@ -497,7 +499,7 @@ class Config:
                     radarr_params["quality_profile"] = check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False)
                     radarr_params["tag"] = check_for_attribute(lib, "tag", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False)
                     radarr_params["search"] = check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
-                    library.Radarr = Radarr(radarr_params)
+                    library.Radarr = Radarr(self, radarr_params)
                 except Failed as e:
                     util.print_stacktrace()
                     util.print_multiline(e, error=True)
@@ -527,7 +529,7 @@ class Config:
                     sonarr_params["tag"] = check_for_attribute(lib, "tag", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False)
                     sonarr_params["search"] = check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False)
                     sonarr_params["cutoff_search"] = check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False)
-                    library.Sonarr = Sonarr(sonarr_params)
+                    library.Sonarr = Sonarr(self, sonarr_params)
                 except Failed as e:
                     util.print_stacktrace()
                     util.print_multiline(e, error=True)
@@ -544,7 +546,7 @@ class Config:
                 try:
                     tautulli_params["url"] = check_for_attribute(lib, "url", parent="tautulli", var_type="url", default=self.general["tautulli"]["url"], req_default=True, save=False)
                     tautulli_params["apikey"] = check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
-                    library.Tautulli = Tautulli(tautulli_params)
+                    library.Tautulli = Tautulli(self, tautulli_params)
                 except Failed as e:
                     util.print_stacktrace()
                     util.print_multiline(e, error=True)
@@ -563,3 +565,22 @@ class Config:
 
         util.separator()
 
+    def get_html(self, url, headers=None):
+        return html.fromstring(self.get(url, headers=headers).content)
+
+    def get_json(self, url, headers=None):
+        return self.get(url, headers=headers).json()
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def get(self, url, headers=None, params=None):
+        return self.session.get(url, headers=headers, params=params)
+
+    def post_html(self, url, data=None, json=None, headers=None):
+        return html.fromstring(self.post(url, data=data, json=json, headers=headers).content)
+
+    def post_json(self, url, data=None, json=None, headers=None):
+        return self.post(url, data=data, json=json, headers=headers).json()
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    def post(self, url, data=None, json=None, headers=None):
+        return self.session.post(url, data=data, json=json, headers=headers)
