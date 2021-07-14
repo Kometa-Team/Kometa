@@ -1,7 +1,6 @@
-import logging, re, requests, secrets, webbrowser
+import logging, re, secrets, webbrowser
 from modules import util
 from modules.util import Failed, TimeoutExpired
-from retrying import retry
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -71,18 +70,17 @@ userlist_status = [
     "dropped",
     "plan_to_watch"
 ]
-
+urls = {
+    "oauth_token": "https://myanimelist.net/v1/oauth2/token",
+    "oauth_authorize": "https://myanimelist.net/v1/oauth2/authorize",
+    "ranking": "https://api.myanimelist.net/v2/anime/ranking",
+    "season": "https://api.myanimelist.net/v2/anime/season",
+    "suggestions": "https://api.myanimelist.net/v2/anime/suggestions",
+    "user": "https://api.myanimelist.net/v2/users"
+}
 class MyAnimeList:
-    def __init__(self, params, config, authorization=None):
+    def __init__(self, config, params, authorization=None):
         self.config = config
-        self.urls = {
-            "oauth_token": "https://myanimelist.net/v1/oauth2/token",
-            "oauth_authorize": "https://myanimelist.net/v1/oauth2/authorize",
-            "ranking": "https://api.myanimelist.net/v2/anime/ranking",
-            "season": "https://api.myanimelist.net/v2/anime/season",
-            "suggestions": "https://api.myanimelist.net/v2/anime/suggestions",
-            "user": "https://api.myanimelist.net/v2/users"
-        }
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
@@ -93,7 +91,7 @@ class MyAnimeList:
 
     def _authorization(self):
         code_verifier = secrets.token_urlsafe(100)[:128]
-        url = f"{self.urls['oauth_authorize']}?response_type=code&client_id={self.client_id}&code_challenge={code_verifier}"
+        url = f"{urls['oauth_authorize']}?response_type=code&client_id={self.client_id}&code_challenge={code_verifier}"
         logger.info("")
         logger.info(f"Navigate to: {url}")
         logger.info("")
@@ -122,7 +120,7 @@ class MyAnimeList:
 
     def _check(self, authorization):
         try:
-            self._request(self.urls["suggestions"], authorization=authorization)
+            self._request(urls["suggestions"], authorization=authorization)
             return True
         except Failed as e:
             logger.debug(e)
@@ -158,14 +156,12 @@ class MyAnimeList:
             return True
         return False
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def _oauth(self, data):
-        return requests.post(self.urls["oauth_token"], data).json()
+        return self.config.post_json(urls["oauth_token"], data=data)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def _request(self, url, authorization=None):
         new_authorization = authorization if authorization else self.authorization
-        response = requests.get(url, headers={"Authorization": f"Bearer {new_authorization['access_token']}"}).json()
+        response = self.config.get_json(url, headers={"Authorization": f"Bearer {new_authorization['access_token']}"})
         if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
         else:                           return response
 
@@ -174,23 +170,23 @@ class MyAnimeList:
         return [d["node"]["id"] for d in data["data"]] if "data" in data else []
 
     def _username(self):
-        return self._request(f"{self.urls['user']}/@me")["name"]
+        return self._request(f"{urls['user']}/@me")["name"]
 
     def _ranked(self, ranking_type, limit):
-        url = f"{self.urls['ranking']}?ranking_type={ranking_type}&limit={limit}"
+        url = f"{urls['ranking']}?ranking_type={ranking_type}&limit={limit}"
         return self._parse_request(url)
 
     def _season(self, season, year, sort_by, limit):
-        url = f"{self.urls['season']}/{year}/{season}?sort={sort_by}&limit={limit}"
+        url = f"{urls['season']}/{year}/{season}?sort={sort_by}&limit={limit}"
         return self._parse_request(url)
 
     def _suggestions(self, limit):
-        url = f"{self.urls['suggestions']}?limit={limit}"
+        url = f"{urls['suggestions']}?limit={limit}"
         return self._parse_request(url)
 
     def _userlist(self, username, status, sort_by, limit):
         final_status = "" if status == "all" else f"status={status}&"
-        url = f"{self.urls['user']}/{username}/animelist?{final_status}sort={sort_by}&limit={limit}"
+        url = f"{urls['user']}/{username}/animelist?{final_status}sort={sort_by}&limit={limit}"
         return self._parse_request(url)
 
     def get_items(self, method, data):

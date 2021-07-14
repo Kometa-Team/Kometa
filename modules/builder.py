@@ -2,7 +2,7 @@ import logging, os, re
 from datetime import datetime, timedelta
 from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
 from modules.util import Failed, ImageData
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show
 from urllib.parse import quote
@@ -1238,7 +1238,7 @@ class CollectionBuilder:
             indent = f"\n{'  ' * level}"
             conjunction = f"{'and' if is_all else 'or'}=1&"
             for _key, _data in filter_dict.items():
-                attr, modifier, final = self._split(_key)
+                attr, modifier, final_attr = self._split(_key)
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
                     arg_key = plex.search_translation[attr] if attr in plex.search_translation else attr
@@ -1254,15 +1254,15 @@ class CollectionBuilder:
                     display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                     return f"{arg_key}{mod}={arg}&", display_line
 
-                if final not in plex.searches and not final.startswith(("any", "all")):
-                    raise Failed(f"Collection Error: {final} is not a valid {method} attribute")
-                elif final in plex.movie_only_searches and self.library.is_show:
-                    raise Failed(f"Collection Error: {final} {method} attribute only works for movie libraries")
-                elif final in plex.show_only_searches and self.library.is_movie:
-                    raise Failed(f"Collection Error: {final} {method} attribute only works for show libraries")
+                if final_attr not in plex.searches and not final_attr.startswith(("any", "all")):
+                    raise Failed(f"Collection Error: {final_attr} is not a valid {method} attribute")
+                elif final_attr in plex.movie_only_searches and self.library.is_show:
+                    raise Failed(f"Collection Error: {final_attr} {method} attribute only works for movie libraries")
+                elif final_attr in plex.show_only_searches and self.library.is_movie:
+                    raise Failed(f"Collection Error: {final_attr} {method} attribute only works for show libraries")
                 elif _data is None:
-                    raise Failed(f"Collection Error: {final} {method} attribute is blank")
-                elif final.startswith(("any", "all")):
+                    raise Failed(f"Collection Error: {final_attr} {method} attribute is blank")
+                elif final_attr.startswith(("any", "all")):
                     dicts = util.get_list(_data)
                     results = ""
                     display_add = ""
@@ -1274,7 +1274,7 @@ class CollectionBuilder:
                             display_add += inside_display
                             results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                 else:
-                    validation = self.validate_attribute(attr, modifier, final, _data, validate, pairs=True)
+                    validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, pairs=True)
                     if validation is None:
                         continue
                     elif attr in plex.date_attributes and modifier in ["", ".not"]:
@@ -1436,7 +1436,6 @@ class CollectionBuilder:
     def add_to_collection(self):
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
         total = len(self.rating_keys)
-        max_length = len(str(total))
         for i, item in enumerate(self.rating_keys, 1):
             try:
                 current = self.fetch_item(item)
@@ -1772,7 +1771,7 @@ class CollectionBuilder:
                 continue
             og_image = os.path.join(overlay_folder, f"{rating_key}.png")
             if os.path.exists(og_image):
-                self.library._upload_file_poster(item, og_image)
+                self.library.upload_file_poster(item, og_image)
                 os.remove(og_image)
                 self.config.Cache.update_image_map(item.ratingKey, self.library.original_mapping_name, "poster", "", "", "")
 

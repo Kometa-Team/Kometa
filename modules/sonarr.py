@@ -24,7 +24,8 @@ apply_tags_translation = {
 }
 
 class Sonarr:
-    def __init__(self, params):
+    def __init__(self, config, params):
+        self.config = config
         self.url = params["url"]
         self.token = params["token"]
         try:

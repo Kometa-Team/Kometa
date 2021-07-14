@@ -19,7 +19,8 @@ apply_tags_translation = {
 }
 
 class Radarr:
-    def __init__(self, params):
+    def __init__(self, config, params):
+        self.config = config
         self.url = params["url"]
         self.token = params["token"]
         try:
@@ -83,4 +84,3 @@ class Radarr:
             logger.info("")
             for tmdb_id in not_exists:
                 logger.info(f"TMDb ID Not in Radarr | {tmdb_id}")
-
