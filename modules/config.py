@@ -16,7 +16,7 @@ from modules.radarr import Radarr
 from modules.sonarr import Sonarr
 from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
-from modules.trakttv import Trakt
+from modules.trakt import Trakt
 from modules.tvdb import TVDb
 from modules.util import Failed
 from retrying import retry
