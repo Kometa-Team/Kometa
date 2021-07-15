@@ -1,6 +1,6 @@
 import logging, os, re
 from datetime import datetime, timedelta
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakttv, tvdb, util
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakt, tvdb, util
 from modules.util import Failed, ImageData
 from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
@@ -58,7 +58,7 @@ filter_translation = {
     "writer": "writers"
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
-all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakttv.builders + tvdb.builders
+all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakt.builders + tvdb.builders
 dictionary_builders = [
     "filters",
     "anidb_tag",
@@ -570,7 +570,7 @@ class CollectionBuilder:
                 elif method_name == "tvdb_description":
                     self.summaries[method_name] = config.TVDb.get_list_description(method_data, self.library.Plex.language)
                 elif method_name == "trakt_description":
-                    self.summaries[method_name] = config.Trakt.standard_list(config.Trakt.validate_trakt(util.get_list(method_data))[0]).description
+                    self.summaries[method_name] = config.Trakt.list_description(config.Trakt.validate_trakt(util.get_list(method_data), self.library.is_movie)[0])
                 elif method_name == "letterboxd_description":
                     self.summaries[method_name] = config.Letterboxd.get_list_description(method_data, self.library.Plex.language)
                 elif method_name == "icheckmovies_description":
@@ -719,15 +719,13 @@ class CollectionBuilder:
                 elif method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
                     self.methods.append((method_name, config.AniList.validate_anilist_ids(util.get_int_list(method_data, "AniList ID"), studio=method_name == "anilist_studio")))
                 elif method_name == "trakt_list":
-                    self.methods.append((method_name, config.Trakt.validate_trakt(util.get_list(method_data))))
+                    self.methods.append((method_name, config.Trakt.validate_trakt(util.get_list(method_data), self.library.is_movie)))
                 elif method_name == "trakt_list_details":
-                    valid_list = config.Trakt.validate_trakt(util.get_list(method_data))
-                    item = config.Trakt.standard_list(valid_list[0])
-                    if hasattr(item, "description") and item.description:
-                        self.summaries[method_name] = item.description
+                    valid_list = config.Trakt.validate_trakt(util.get_list(method_data), self.library.is_movie)
+                    self.summaries[method_name] = config.Trakt.list_description(valid_list[0])
                     self.methods.append((method_name[:-8], valid_list))
                 elif method_name in ["trakt_watchlist", "trakt_collection"]:
-                    self.methods.append((method_name, config.Trakt.validate_trakt(util.get_list(method_data), trakt_type=method_name[6:], is_movie=self.library.is_movie)))
+                    self.methods.append((method_name, config.Trakt.validate_trakt(util.get_list(method_data), self.library.is_movie, trakt_type=method_name[6:])))
                 elif method_name == "imdb_list":
                     new_list = []
                     for imdb_list in util.get_list(method_data, split=False):

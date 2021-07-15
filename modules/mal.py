@@ -78,6 +78,7 @@ urls = {
     "suggestions": "https://api.myanimelist.net/v2/anime/suggestions",
     "user": "https://api.myanimelist.net/v2/users"
 }
+
 class MyAnimeList:
     def __init__(self, config, params, authorization=None):
         self.config = config

@@ -1,10 +1,6 @@
-# Remove
-# Less common, pinned
 PlexAPI==4.6.1
 tmdbv3api==1.7.5
-trakt.py==4.3.0
 arrapi==1.0.2
-# More common, flexible
 lxml
 requests>=2.4.2
 ruamel.yaml
