@@ -24,7 +24,7 @@ class Radarr:
         self.url = params["url"]
         self.token = params["token"]
         try:
-            self.api = RadarrAPI(self.url, self.token)
+            self.api = RadarrAPI(self.url, self.token, session=self.config.session)
         except ArrException as e:
             raise Failed(e)
         self.add = params["add"]

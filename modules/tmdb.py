@@ -111,7 +111,7 @@ discover_tv_sort = [
 class TMDb:
     def __init__(self, config, params):
         self.config = config
-        self.TMDb = tmdbv3api.TMDb()
+        self.TMDb = tmdbv3api.TMDb(session=self.config.session)
         self.TMDb.api_key = params["apikey"]
         self.TMDb.language = params["language"]
         response = tmdbv3api.Configuration().info()

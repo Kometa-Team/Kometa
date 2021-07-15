@@ -29,7 +29,7 @@ class Sonarr:
         self.url = params["url"]
         self.token = params["token"]
         try:
-            self.api = SonarrAPI(self.url, self.token)
+            self.api = SonarrAPI(self.url, self.token, session=self.config.session)
         except ArrException as e:
             raise Failed(e)
         self.add = params["add"]
