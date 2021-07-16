@@ -186,7 +186,7 @@ class Config:
                 raise Failed(f"Config Error: {message}")
             if do_print:
                 util.print_multiline(f"Config Warning: {message}")
-                if attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
+                if data and attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
                     util.print_multiline(options)
             return default
 
