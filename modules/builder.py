@@ -1732,9 +1732,12 @@ class CollectionBuilder:
             temp_image = os.path.join(overlay_folder, f"temp.png")
             overlay = (overlay_name, overlay_folder, overlay_image, temp_image)
 
+        logger.debug(rating_keys)
+
         tmdb_ids = []
         tvdb_ids = []
         for item in items:
+            logger.debug(item.ratingKey)
             if int(item.ratingKey) in rating_keys:
                 rating_keys.remove(int(item.ratingKey))
             if self.details["item_assets"] or overlay is not None:
@@ -1760,6 +1763,8 @@ class CollectionBuilder:
 
         if len(tvdb_ids) > 0:
             self.library.Sonarr.edit_tags(tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
+
+        logger.debug(rating_keys)
 
         for rating_key in rating_keys:
             try:
