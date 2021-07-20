@@ -6,22 +6,23 @@ logger = logging.getLogger("Plex Meta Manager")
 
 class Cache:
     def __init__(self, config_path, expiration):
-        cache = f"{os.path.splitext(config_path)[0]}.cache"
-        with sqlite3.connect(cache) as connection:
+        self.cache_path = f"{os.path.splitext(config_path)[0]}.cache"
+        self.expiration = expiration
+        with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='guid_map'")
                 if cursor.fetchone()[0] == 0:
-                    logger.info(f"Initializing cache database at {cache}")
+                    logger.info(f"Initializing cache database at {self.cache_path}")
                 else:
-                    logger.info(f"Using cache database at {cache}")
+                    logger.info(f"Using cache database at {self.cache_path}")
                 cursor.execute("DROP TABLE IF EXISTS guids")
                 cursor.execute("DROP TABLE IF EXISTS imdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS tmdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS imdb_map")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guid_map (
-                    INTEGER PRIMARY KEY,
+                    key INTEGER PRIMARY KEY,
                     plex_guid TEXT UNIQUE,
                     t_id TEXT,
                     media_type TEXT,
@@ -29,7 +30,7 @@ class Cache:
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS imdb_to_tmdb_map (
-                    INTEGER PRIMARY KEY,
+                    key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     tmdb_id TEXT,
                     media_type TEXT,
@@ -37,28 +38,28 @@ class Cache:
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS imdb_to_tvdb_map2 (
-                    INTEGER PRIMARY KEY,
+                    key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     tvdb_id TEXT,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS tmdb_to_tvdb_map2 (
-                    INTEGER PRIMARY KEY,
+                    key INTEGER PRIMARY KEY,
                     tmdb_id TEXT UNIQUE,
                     tvdb_id TEXT,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS letterboxd_map (
-                    INTEGER PRIMARY KEY,
+                    key INTEGER PRIMARY KEY,
                     letterboxd_id TEXT UNIQUE,
                     tmdb_id TEXT,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS omdb_data (
-                    INTEGER PRIMARY KEY,
+                    key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     title TEXT,
                     year INTEGER,
@@ -72,7 +73,7 @@ class Cache:
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS anime_map (
-                    INTEGER PRIMARY KEY,
+                    key INTEGER PRIMARY KEY,
                     anidb TEXT UNIQUE,
                     anilist TEXT,
                     myanimelist TEXT,
@@ -80,17 +81,21 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS image_map (
-                    INTEGER PRIMARY KEY,
-                    rating_key TEXT,
-                    library TEXT,
-                    type TEXT,
-                    overlay TEXT,
-                    compare TEXT,
-                    location TEXT)"""
+                    """CREATE TABLE IF NOT EXISTS image_maps (
+                    key INTEGER PRIMARY KEY,
+                    library TEXT UNIQUE)"""
                 )
-        self.expiration = expiration
-        self.cache_path = cache
+                cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
+                if cursor.fetchone()[0] > 0:
+                    cursor.execute(f"SELECT DISTINCT library FROM image_map")
+                    for library in cursor.fetchall():
+                        table_name = self.get_image_table_name(library["library"])
+                        cursor.execute(f"SELECT DISTINCT * FROM image_map WHERE library='{library['library']}'")
+                        for row in cursor.fetchall():
+                            if row["type"] == "poster":
+                                final_table = table_name if row["type"] == "poster" else f"{table_name}_backgrounds"
+                                self.update_image_map(row["rating_key"], final_table, row["location"], row["compare"], row["overlay"])
+                    cursor.execute("DROP TABLE IF EXISTS image_map")
 
     def query_guid_map(self, plex_guid):
         id_to_return = None
@@ -233,30 +238,63 @@ class Cache:
                 cursor.execute("INSERT OR IGNORE INTO anime_map(anidb) VALUES(?)", (anime_ids["anidb"],))
                 cursor.execute("UPDATE anime_map SET anilist = ?, myanimelist = ?, kitsu = ?, expiration_date = ? WHERE anidb = ?", (anime_ids["anidb"], anime_ids["myanimelist"], anime_ids["kitsu"], expiration_date.strftime("%Y-%m-%d"), anime_ids["anidb"]))
 
-    def query_image_map_overlay(self, library, image_type, overlay):
+    def get_image_table_name(self, library):
+        table_name = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM image_maps WHERE library = ?", (library,))
+                row = cursor.fetchone()
+                if row and row["key"]:
+                    table_name = f"image_map_{row['key']}"
+                else:
+                    cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
+                    cursor.execute(f"SELECT * FROM image_maps WHERE library = ?", (library,))
+                    row = cursor.fetchone()
+                    if row and row["key"]:
+                        table_name = f"image_map_{row['key']}"
+                        cursor.execute(
+                            f"""CREATE TABLE IF NOT EXISTS {table_name} (
+                            key INTEGER PRIMARY KEY,
+                            rating_key TEXT UNIQUE,
+                            overlay TEXT,
+                            compare TEXT,
+                            location TEXT)"""
+                        )
+                        cursor.execute(
+                            f"""CREATE TABLE IF NOT EXISTS {table_name}_backgrounds (
+                            key INTEGER PRIMARY KEY,
+                            rating_key TEXT UNIQUE,
+                            overlay TEXT,
+                            compare TEXT,
+                            location TEXT)"""
+                        )
+        return table_name
+
+    def query_image_map_overlay(self, table_name, overlay):
         rks = []
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute(f"SELECT * FROM image_map WHERE overlay = ? AND library = ? AND type = ?", (overlay, library, image_type))
+                cursor.execute(f"SELECT * FROM {table_name} WHERE overlay = ?", (overlay,))
                 rows = cursor.fetchall()
                 for row in rows:
                     rks.append(int(row["rating_key"]))
         return rks
 
-    def query_image_map(self, rating_key, library, image_type):
+    def query_image_map(self, rating_key, table_name):
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute(f"SELECT * FROM image_map WHERE rating_key = ? AND library = ? AND type = ?", (rating_key, library, image_type))
+                cursor.execute(f"SELECT * FROM {table_name} WHERE rating_key = ?", (rating_key,))
                 row = cursor.fetchone()
                 if row and row["location"]:
                     return row["location"], row["compare"], row["overlay"]
         return None, None, None
 
-    def update_image_map(self, rating_key, library, image_type, location, compare, overlay):
+    def update_image_map(self, rating_key, table_name, location, compare, overlay):
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO image_map(rating_key, library, type) VALUES(?, ?, ?)", (rating_key, library, image_type))
-                cursor.execute("UPDATE image_map SET location = ?, compare = ?, overlay = ? WHERE rating_key = ? AND library = ? AND type = ?", (location, compare, overlay, rating_key, library, image_type))
+                cursor.execute(f"INSERT OR IGNORE INTO {table_name}(rating_key) VALUES(?)", (rating_key,))
+                cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ?, overlay = ? WHERE rating_key = ?", (location, compare, overlay, rating_key))
