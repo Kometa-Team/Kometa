@@ -309,6 +309,7 @@ class Plex:
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         if output:
             logger.info(output)
+        self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
         self.missing_path = os.path.join(params["default_dir"], f"{self.name}_missing.yml")
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
@@ -416,8 +417,6 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _upload_image(self, item, image):
-        logger.debug(item)
-        logger.debug(image)
         if image.is_poster and image.is_url:
             item.uploadPoster(url=image.location)
         elif image.is_poster:
@@ -430,8 +429,6 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def upload_file_poster(self, item, image):
-        logger.debug(item)
-        logger.debug(image)
         item.uploadPoster(filepath=image)
         self.reload(item)
 
@@ -441,13 +438,9 @@ class Plex:
             try:
                 image = None
                 if self.config.Cache:
-                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
-                    logger.debug(poster.compare)
-                    logger.debug(image_compare)
+                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
                     if str(poster.compare) != str(image_compare):
                         image = None
-                logger.debug(image)
-                logger.debug(item.thumb)
                 if image is None or image != item.thumb:
                     self._upload_image(item, poster)
                     poster_uploaded = True
@@ -463,11 +456,8 @@ class Plex:
             overlay_name, overlay_folder, overlay_image, temp_image = overlay
             image_overlay = None
             if self.config.Cache:
-                _, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
+                _, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
             if poster_uploaded or not image_overlay or image_overlay != overlay_name:
-                logger.debug(poster_uploaded)
-                logger.debug(image_overlay)
-                logger.debug(overlay_name)
                 response = requests.get(item.posterUrl)
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
@@ -490,7 +480,7 @@ class Plex:
             try:
                 image = None
                 if self.config.Cache:
-                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "background")
+                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_background")
                     if str(background.compare) != str(image_compare):
                         image = None
                 if image is None or image != item.art:
@@ -505,9 +495,9 @@ class Plex:
 
         if self.config.Cache:
             if poster_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "poster", item.thumb, poster.compare if poster else "", overlay_name)
+                self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, item.thumb, poster.compare if poster else "", overlay_name)
             if background_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "background", item.art, background.compare, "")
+                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare, "")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):

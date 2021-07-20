@@ -1726,18 +1726,15 @@ class CollectionBuilder:
         if "item_overlay" in self.item_details:
             overlay_name = self.item_details["item_overlay"]
             if self.config.Cache:
-                rating_keys = self.config.Cache.query_image_map_overlay(self.library.original_mapping_name, "poster", overlay_name)
+                rating_keys = self.config.Cache.query_image_map_overlay(self.library.image_table_name, overlay_name)
             overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
             overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png"))
             temp_image = os.path.join(overlay_folder, f"temp.png")
             overlay = (overlay_name, overlay_folder, overlay_image, temp_image)
 
-        logger.debug(rating_keys)
-
         tmdb_ids = []
         tvdb_ids = []
         for item in items:
-            logger.debug(item.ratingKey)
             if int(item.ratingKey) in rating_keys:
                 rating_keys.remove(int(item.ratingKey))
             if self.details["item_assets"] or overlay is not None:
@@ -1764,8 +1761,6 @@ class CollectionBuilder:
         if len(tvdb_ids) > 0:
             self.library.Sonarr.edit_tags(tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
 
-        logger.debug(rating_keys)
-
         for rating_key in rating_keys:
             try:
                 item = self.fetch_item(rating_key)
@@ -1776,7 +1771,7 @@ class CollectionBuilder:
             if os.path.exists(og_image):
                 self.library.upload_file_poster(item, og_image)
                 os.remove(og_image)
-                self.config.Cache.update_image_map(item.ratingKey, self.library.original_mapping_name, "poster", "", "", "")
+                self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, "", "", "")
 
     def update_details(self):
         if not self.obj and self.smart_url:
