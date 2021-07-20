@@ -416,6 +416,8 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _upload_image(self, item, image):
+        logger.debug(item)
+        logger.debug(image)
         if image.is_poster and image.is_url:
             item.uploadPoster(url=image.location)
         elif image.is_poster:
@@ -428,6 +430,8 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def upload_file_poster(self, item, image):
+        logger.debug(item)
+        logger.debug(image)
         item.uploadPoster(filepath=image)
         self.reload(item)
 
@@ -438,8 +442,12 @@ class Plex:
                 image = None
                 if self.config.Cache:
                     image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
+                    logger.debug(poster.compare)
+                    logger.debug(image_compare)
                     if str(poster.compare) != str(image_compare):
                         image = None
+                logger.debug(image)
+                logger.debug(item.thumb)
                 if image is None or image != item.thumb:
                     self._upload_image(item, poster)
                     poster_uploaded = True
@@ -455,8 +463,11 @@ class Plex:
             overlay_name, overlay_folder, overlay_image, temp_image = overlay
             image_overlay = None
             if self.config.Cache:
-                image, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
+                _, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
             if poster_uploaded or not image_overlay or image_overlay != overlay_name:
+                logger.debug(poster_uploaded)
+                logger.debug(image_overlay)
+                logger.debug(overlay_name)
                 response = requests.get(item.posterUrl)
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
