@@ -13,7 +13,7 @@ class Letterboxd:
 
     def _parse_list(self, list_url, language):
         response = self.config.get_html(list_url, headers=util.header(language))
-        letterboxd_ids = response.xpath("//li[@class='poster-container']/div/@data-film-id")
+        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container')]/div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
             slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-film-slug")
