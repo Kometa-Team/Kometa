@@ -22,13 +22,16 @@ class ICheckMovies:
         descriptions = self._request(list_url, language, "//div[@class='span-19 last']/p/em/text()")
         return descriptions[0] if len(descriptions) > 0 and len(descriptions[0]) > 0 else None
 
-    def validate_icheckmovies_list(self, list_url, language):
-        list_url = list_url.strip()
-        if not list_url.startswith(base_url):
-            raise Failed(f"ICheckMovies Error: {list_url} must begin with: {base_url}")
-        if len(self._parse_list(list_url, language)) > 0:
-            return list_url
-        raise Failed(f"ICheckMovies Error: {list_url} failed to parse")
+    def validate_icheckmovies_lists(self, icheckmovies_lists, language):
+        valid_lists = []
+        for icheckmovies_list in util.get_list(icheckmovies_lists, split=False):
+            list_url = icheckmovies_list.strip()
+            if not list_url.startswith(base_url):
+                raise Failed(f"ICheckMovies Error: {list_url} must begin with: {base_url}")
+            if len(self._parse_list(list_url, language)) > 0:
+                valid_lists.append(list_url)
+            raise Failed(f"ICheckMovies Error: {list_url} failed to parse")
+        return valid_lists
 
     def get_items(self, method, data, language):
         pretty = util.pretty_names[method] if method in util.pretty_names else method

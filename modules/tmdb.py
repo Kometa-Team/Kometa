@@ -273,15 +273,17 @@ class TMDb:
             if count == amount: break
         return ids, amount
 
-    def validate_tmdb_list(self, tmdb_list, tmdb_type):
+    def validate_tmdb_ids(self, tmdb_ids, tmdb_method):
+        tmdb_list = util.get_int_list(tmdb_ids, f"TMDb {type_map[tmdb_method]} ID")
         tmdb_values = []
         for tmdb_id in tmdb_list:
-            try:                                        tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_type))
+            try:                                        tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_method))
             except Failed as e:                         logger.error(e)
         if len(tmdb_values) == 0:                   raise Failed(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
         return tmdb_values
 
-    def validate_tmdb(self, tmdb_id, tmdb_type):
+    def validate_tmdb(self, tmdb_id, tmdb_method):
+        tmdb_type = type_map[tmdb_method]
         if tmdb_type == "Movie":                    self.get_movie(tmdb_id)
         elif tmdb_type == "Show":                   self.get_show(tmdb_id)
         elif tmdb_type == "Collection":             self.get_collection(tmdb_id)

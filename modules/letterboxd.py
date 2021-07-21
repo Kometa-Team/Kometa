@@ -38,6 +38,17 @@ class Letterboxd:
         descriptions = response.xpath("//meta[@property='og:description']/@content")
         return descriptions[0] if len(descriptions) > 0 and len(descriptions[0]) > 0 else None
 
+    def validate_letterboxd_lists(self, letterboxd_lists, language):
+        valid_lists = []
+        for letterboxd_list in util.get_list(letterboxd_lists, split=False):
+            list_url = letterboxd_list.strip()
+            if not list_url.startswith(base_url):
+                raise Failed(f"Letterboxd Error: {list_url} must begin with: {base_url}")
+            if len(self._parse_list(list_url, language)) > 0:
+                valid_lists.append(list_url)
+            raise Failed(f"Letterboxd Error: {list_url} failed to parse")
+        return valid_lists
+
     def get_items(self, method, data, language):
         pretty = util.pretty_names[method] if method in util.pretty_names else method
         movie_ids = []

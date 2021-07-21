@@ -534,8 +534,7 @@ class CollectionBuilder:
                 continue
             logger.info("")
             logger.info(f"Validating Method: {method_key}")
-            if "trakt" in method_key.lower() and not config.Trakt:                      raise Failed(f"Collection Error: {method_key} requires Trakt todo be configured")
-            elif "imdb" in method_key.lower() and not config.IMDb:                      raise Failed(f"Collection Error: {method_key} requires TMDb or Trakt to be configured")
+            if "trakt" in method_key.lower() and not config.Trakt:                      raise Failed(f"Collection Error: {method_key} requires Trakt to be configured")
             elif "radarr" in method_key.lower() and not self.library.Radarr:            raise Failed(f"Collection Error: {method_key} requires Radarr to be configured")
             elif "sonarr" in method_key.lower() and not self.library.Sonarr:            raise Failed(f"Collection Error: {method_key} requires Sonarr to be configured")
             elif "tautulli" in method_key.lower() and not self.library.Tautulli:        raise Failed(f"Collection Error: {method_key} requires Tautulli to be configured")
@@ -570,7 +569,7 @@ class CollectionBuilder:
                 elif method_name == "tvdb_description":
                     self.summaries[method_name] = config.TVDb.get_list_description(method_data, self.library.Plex.language)
                 elif method_name == "trakt_description":
-                    self.summaries[method_name] = config.Trakt.list_description(config.Trakt.validate_trakt(util.get_list(method_data), self.library.is_movie)[0])
+                    self.summaries[method_name] = config.Trakt.list_description(config.Trakt.validate_trakt(method_data, self.library.is_movie)[0])
                 elif method_name == "letterboxd_description":
                     self.summaries[method_name] = config.Letterboxd.get_list_description(method_data, self.library.Plex.language)
                 elif method_name == "icheckmovies_description":
@@ -702,65 +701,55 @@ class CollectionBuilder:
                 elif method_name == "sonarr_tag":
                     self.sonarr_options["tag"] = util.get_list(method_data)
                 elif method_final in plex.searches:
-                    self.methods.append(("plex_search", [self.build_filter("plex_search", {"any": {method_name: method_data}})]))
+                    self.methods.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
                 elif method_name == "plex_all":
-                    self.methods.append((method_name, [""]))
+                    self.methods.append((method_name, True))
                 elif method_name == "anidb_popular":
                     list_count = util.regex_first_int(method_data, "List Size", default=40)
                     if 1 <= list_count <= 30:
-                        self.methods.append((method_name, [list_count]))
+                        self.methods.append((method_name, list_count))
                     else:
                         logger.warning("Collection Error: anidb_popular must be an integer between 1 and 30 defaulting to 30")
-                        self.methods.append((method_name, [30]))
+                        self.methods.append((method_name, 30))
                 elif method_name == "mal_id":
-                    self.methods.append((method_name, util.get_int_list(method_data, "MyAnimeList ID")))
+                    for mal_id in util.get_int_list(method_data, "MyAnimeList ID"):
+                        self.methods.append((method_name, mal_id))
                 elif method_name in ["anidb_id", "anidb_relation"]:
-                    self.methods.append((method_name, config.AniDB.validate_anidb_list(util.get_int_list(method_data, "AniDB ID"), self.library.Plex.language)))
+                    for anidb_id in config.AniDB.validate_anidb_ids(method_data, self.library.Plex.language):
+                        self.methods.append((method_name, anidb_id))
                 elif method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
-                    self.methods.append((method_name, config.AniList.validate_anilist_ids(util.get_int_list(method_data, "AniList ID"), studio=method_name == "anilist_studio")))
+                    for anilist_id in config.AniList.validate_anilist_ids(method_data, studio=method_name == "anilist_studio"):
+                        self.methods.append((method_name, anilist_id))
                 elif method_name == "trakt_list":
-                    self.methods.append((method_name, config.Trakt.validate_trakt(util.get_list(method_data), self.library.is_movie)))
+                    for trakt_list in config.Trakt.validate_trakt(method_data, self.library.is_movie):
+                        self.methods.append((method_name, trakt_list))
                 elif method_name == "trakt_list_details":
-                    valid_list = config.Trakt.validate_trakt(util.get_list(method_data), self.library.is_movie)
-                    self.summaries[method_name] = config.Trakt.list_description(valid_list[0])
-                    self.methods.append((method_name[:-8], valid_list))
+                    trakt_lists = config.Trakt.validate_trakt(method_data, self.library.is_movie)
+                    self.summaries[method_name] = config.Trakt.list_description(trakt_lists[0])
+                    for trakt_list in trakt_lists:
+                        self.methods.append((method_name[:-8], trakt_list))
                 elif method_name in ["trakt_watchlist", "trakt_collection"]:
-                    self.methods.append((method_name, config.Trakt.validate_trakt(util.get_list(method_data), self.library.is_movie, trakt_type=method_name[6:])))
+                    for trakt_list in config.Trakt.validate_trakt(method_data, self.library.is_movie, trakt_type=method_name[6:]):
+                        self.methods.append((method_name, trakt_list))
                 elif method_name == "imdb_list":
-                    new_list = []
-                    for imdb_list in util.get_list(method_data, split=False):
-                        if isinstance(imdb_list, dict):
-                            dict_methods = {dm.lower(): dm for dm in imdb_list}
-                            if "url" in dict_methods and imdb_list[dict_methods["url"]]:
-                                imdb_url = config.IMDb.validate_imdb_url(imdb_list[dict_methods["url"]], self.library.Plex.language)
-                            else:
-                                raise Failed("Collection Error: imdb_list attribute url is required")
-                            if "limit" in dict_methods and imdb_list[dict_methods["limit"]]:
-                                list_count = util.regex_first_int(imdb_list[dict_methods["limit"]], "List Limit", default=0)
-                            else:
-                                list_count = 0
-                        else:
-                            imdb_url = config.IMDb.validate_imdb_url(str(imdb_list), self.library.Plex.language)
-                            list_count = 0
-                        new_list.append({"url": imdb_url, "limit": list_count})
-                    self.methods.append((method_name, new_list))
+                    for imdb_dict in self.config.IMDb.validate_imdb_lists(method_data, self.library.Plex.language):
+                        self.methods.append((method_name, imdb_dict))
                 elif method_name == "icheckmovies_list":
-                    valid_lists = []
-                    for icheckmovies_list in util.get_list(method_data, split=False):
-                        valid_lists.append(config.ICheckMovies.validate_icheckmovies_list(icheckmovies_list, self.library.Plex.language))
-                    self.methods.append((method_name, valid_lists))
+                    for icheckmovies_list in self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.library.Plex.language):
+                        self.methods.append((method_name, icheckmovies_list))
                 elif method_name == "icheckmovies_list_details":
-                    valid_lists = []
-                    for icheckmovies_list in util.get_list(method_data, split=False):
-                        valid_lists.append(config.ICheckMovies.validate_icheckmovies_list(icheckmovies_list, self.library.Plex.language))
-                    self.methods.append((method_name[:-8], valid_lists))
-                    self.summaries[method_name] = config.ICheckMovies.get_list_description(method_data, self.library.Plex.language)
+                    icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.library.Plex.language)
+                    for icheckmovies_list in icheckmovies_lists:
+                        self.methods.append((method_name[:-8], icheckmovies_list))
+                    self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0], self.library.Plex.language)
                 elif method_name == "letterboxd_list":
-                    self.methods.append((method_name, util.get_list(method_data, split=False)))
+                    for letterboxd_list in self.config.Letterboxd.validate_letterboxd_lists(method_data, self.library.Plex.language):
+                        self.methods.append((method_name, letterboxd_list))
                 elif method_name == "letterboxd_list_details":
-                    values = util.get_list(method_data, split=False)
-                    self.summaries[method_name] = config.Letterboxd.get_list_description(values[0], self.library.Plex.language)
-                    self.methods.append((method_name[:-8], values))
+                    letterboxd_lists = self.config.Letterboxd.validate_letterboxd_lists(method_data, self.library.Plex.language)
+                    for letterboxd_list in letterboxd_lists:
+                        self.methods.append((method_name[:-8], letterboxd_list))
+                    self.summaries[method_name] = config.Letterboxd.get_list_description(letterboxd_lists[0], self.library.Plex.language)
                 elif method_name in dictionary_builders:
                     for dict_data in util.get_list(method_data):
                         if isinstance(dict_data, dict):
@@ -817,9 +806,9 @@ class CollectionBuilder:
                                 exact_list.append(self.name)
                                 new_dictionary["exclude_prefix"] = prefix_list
                                 new_dictionary["exclude"] = exact_list
-                                self.methods.append((method_name, [new_dictionary]))
+                                self.methods.append((method_name, new_dictionary))
                             elif method_name == "plex_search":
-                                self.methods.append((method_name, [self.build_filter("plex_search", dict_data)]))
+                                self.methods.append((method_name, self.build_filter("plex_search", dict_data)))
                             elif method_name == "tmdb_discover":
                                 new_dictionary = {"limit": 100}
                                 for discover_name, discover_data in dict_data.items():
@@ -874,7 +863,7 @@ class CollectionBuilder:
                                     else:
                                         raise Failed(f"Collection Error: {method_name} parameter {discover_final} is blank")
                                 if len(new_dictionary) > 1:
-                                    self.methods.append((method_name, [new_dictionary]))
+                                    self.methods.append((method_name, new_dictionary))
                                 else:
                                     raise Failed(f"Collection Error: {method_name} had no valid fields")
                             elif "tautulli" in method_name:
@@ -889,7 +878,7 @@ class CollectionBuilder:
                                 new_dictionary["list_days"] = get_int(method_name, "list_days", dict_data, dict_methods, 30)
                                 new_dictionary["list_size"] = get_int(method_name, "list_size", dict_data, dict_methods, 10)
                                 new_dictionary["list_buffer"] = get_int(method_name, "list_buffer", dict_data, dict_methods, 20)
-                                self.methods.append((method_name, [new_dictionary]))
+                                self.methods.append((method_name, new_dictionary))
                             elif method_name == "mal_season":
                                 new_dictionary = {"sort_by": "anime_num_list_users"}
                                 dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -918,7 +907,7 @@ class CollectionBuilder:
 
                                 new_dictionary["year"] = get_int(method_name, "year", dict_data, dict_methods, self.current_time.year, minimum=1917, maximum=self.current_time.year + 1)
                                 new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 100, maximum=500)
-                                self.methods.append((method_name, [new_dictionary]))
+                                self.methods.append((method_name, new_dictionary))
                             elif method_name == "mal_userlist":
                                 new_dictionary = {"status": "all", "sort_by": "list_score"}
                                 dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -948,7 +937,7 @@ class CollectionBuilder:
                                     new_dictionary["sort_by"] = mal.userlist_sort[dict_data[dict_methods["sort_by"]]]
 
                                 new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 100, maximum=1000)
-                                self.methods.append((method_name, [new_dictionary]))
+                                self.methods.append((method_name, new_dictionary))
                             elif method_name == "anidb_tag":
                                 new_dictionary = {}
                                 dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -959,7 +948,7 @@ class CollectionBuilder:
                                 else:
                                     new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["username"]], "AniDB Tag ID")
                                 new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 0, minimum=0)
-                                self.methods.append((method_name, [new_dictionary]))
+                                self.methods.append((method_name, new_dictionary))
                             elif "anilist" in method_name:
                                 new_dictionary = {"sort_by": "score"}
                                 dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -1005,7 +994,7 @@ class CollectionBuilder:
 
                                 new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 0, maximum=500)
 
-                                self.methods.append((method_name, [new_dictionary]))
+                                self.methods.append((method_name, new_dictionary))
                         else:
                             raise Failed(f"Collection Error: {method_name} attribute is not a dictionary: {dict_data}")
                 elif method_name in numbered_builders:
@@ -1013,7 +1002,7 @@ class CollectionBuilder:
                     if list_count < 1:
                         logger.warning(f"Collection Warning: {method_name} must be an integer greater then 0 defaulting to 10")
                         list_count = 10
-                    self.methods.append((method_name, [list_count]))
+                    self.methods.append((method_name, list_count))
                 elif "tvdb" in method_name:
                     values = util.get_list(method_data)
                     if method_name[-8:] == "_details":
@@ -1035,11 +1024,10 @@ class CollectionBuilder:
                                 self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
                         elif method_name == "tvdb_list_details":
                             self.summaries[method_name] = config.TVDb.get_list_description(values[0], self.library.Plex.language)
-                        self.methods.append((method_name[:-8], values))
-                    else:
-                        self.methods.append((method_name, values))
+                    for value in values:
+                        self.methods.append((method_name[:-8] if method_name[-8:] == "_details" else method_name, value))
                 elif method_name in tmdb.builders:
-                    values = config.TMDb.validate_tmdb_list(util.get_int_list(method_data, f"TMDb {tmdb.type_map[method_name]} ID"), tmdb.type_map[method_name])
+                    values = config.TMDb.validate_tmdb_ids(method_data, method_name)
                     if method_name[-8:] == "_details":
                         if method_name in ["tmdb_collection_details", "tmdb_movie_details", "tmdb_show_details"]:
                             item = config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
@@ -1059,11 +1047,11 @@ class CollectionBuilder:
                             item = config.TMDb.get_list(values[0])
                             if hasattr(item, "description") and item.description:
                                 self.summaries[method_name] = item.description
-                        self.methods.append((method_name[:-8], values))
-                    else:
-                        self.methods.append((method_name, values))
+                    for value in values:
+                        self.methods.append((method_name[:-8] if method_name[-8:] == "_details" else method_name, value))
                 elif method_name in all_builders:
-                    self.methods.append((method_name, util.get_list(method_data)))
+                    for value in util.get_list(method_data):
+                        self.methods.append((method_name, value))
                 elif method_name not in ignored_details:
                     raise Failed(f"Collection Error: {method_name} attribute not supported")
             elif method_key.lower() in all_builders or method_key.lower() in method_alias or method_key.lower() in plex.searches:
@@ -1156,23 +1144,22 @@ class CollectionBuilder:
                     elif show_id not in self.missing_shows:
                         self.missing_shows.append(show_id)
             return items_found_inside
-        for method, values in self.methods:
-            for value in values:
-                logger.debug("")
-                logger.debug(f"Builder: {method}: {value}")
-                logger.info("")
-                if "plex" in method:                                add_rating_keys(self.library.get_items(method, value))
-                elif "tautulli" in method:                          add_rating_keys(self.library.Tautulli.get_items(self.library, value))
-                elif "anidb" in method:                             check_map(self.config.AniDB.get_items(method, value, self.library.Plex.language))
-                elif "anilist" in method:                           check_map(self.config.AniList.get_items(method, value))
-                elif "mal" in method:                               check_map(self.config.MyAnimeList.get_items(method, value))
-                elif "tvdb" in method:                              check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
-                elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language, self.library.is_movie))
-                elif "icheckmovies" in method:                      check_map(self.config.ICheckMovies.get_items(method, value, self.library.Plex.language))
-                elif "letterboxd" in method:                        check_map(self.config.Letterboxd.get_items(method, value, self.library.Plex.language))
-                elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
-                elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
-                else:                                               logger.error(f"Collection Error: {method} method not supported")
+        for method, value in self.methods:
+            logger.debug("")
+            logger.debug(f"Builder: {method}: {value}")
+            logger.info("")
+            if "plex" in method:                                add_rating_keys(self.library.get_items(method, value))
+            elif "tautulli" in method:                          add_rating_keys(self.library.Tautulli.get_items(self.library, value))
+            elif "anidb" in method:                             check_map(self.config.AniDB.get_items(method, value, self.library.Plex.language))
+            elif "anilist" in method:                           check_map(self.config.AniList.get_items(method, value))
+            elif "mal" in method:                               check_map(self.config.MyAnimeList.get_items(method, value))
+            elif "tvdb" in method:                              check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
+            elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language, self.library.is_movie))
+            elif "icheckmovies" in method:                      check_map(self.config.ICheckMovies.get_items(method, value, self.library.Plex.language))
+            elif "letterboxd" in method:                        check_map(self.config.Letterboxd.get_items(method, value, self.library.Plex.language))
+            elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
+            elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
+            else:                                               logger.error(f"Collection Error: {method} method not supported")
 
     def build_filter(self, method, plex_filter, smart=False):
         if smart:
@@ -1389,9 +1376,9 @@ class CollectionBuilder:
                     else:
                         logger.error(error)
             return valid_list
-        elif attribute in ["year", "episode_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:#
+        elif attribute in ["year", "episode_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:
             return util.check_year(data, self.current_year, final)
-        elif attribute in plex.date_attributes and modifier in [".before", ".after"]:#
+        elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
             return util.check_date(data, final, return_string=True, plex_date=True)
         elif attribute in plex.number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
             return util.check_number(data, final, minimum=1)

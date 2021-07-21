@@ -16,7 +16,7 @@ class IMDb:
     def __init__(self, config):
         self.config = config
 
-    def validate_imdb_url(self, imdb_url, language):
+    def _validate_url(self, imdb_url, language):
         imdb_url = imdb_url.strip()
         if not imdb_url.startswith(urls["list"]) and not imdb_url.startswith(urls["search"]) and not imdb_url.startswith(urls["keyword"]):
             raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n{urls['list']} (For Lists)\n{urls['search']} (For Searches)\n{urls['keyword']} (For Keyword Searches)")
@@ -24,6 +24,25 @@ class IMDb:
         if total > 0:
             return imdb_url
         raise Failed(f"IMDb Error: {imdb_url} failed to parse")
+
+    def validate_imdb_lists(self, imdb_lists, language):
+        valid_lists = []
+        for imdb_list in util.get_list(imdb_lists, split=False):
+            if isinstance(imdb_list, dict):
+                dict_methods = {dm.lower(): dm for dm in imdb_list}
+                if "url" in dict_methods and imdb_list[dict_methods["url"]]:
+                    imdb_url = self._validate_url(imdb_list[dict_methods["url"]], language)
+                else:
+                    raise Failed("Collection Error: imdb_list attribute url is required")
+                if "limit" in dict_methods and imdb_list[dict_methods["limit"]]:
+                    list_count = util.regex_first_int(imdb_list[dict_methods["limit"]], "List Limit", default=0)
+                else:
+                    list_count = 0
+            else:
+                imdb_url = self._validate_url(str(imdb_list), language)
+                list_count = 0
+            valid_lists.append({"url": imdb_url, "limit": list_count})
+        return valid_lists
 
     def _fix_url(self, imdb_url):
         if imdb_url.startswith(urls["list"]):

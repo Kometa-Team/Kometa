@@ -205,6 +205,7 @@ class AniList:
         raise Failed(f"AniList Error: Tag: {tag} does not exist")
 
     def validate_anilist_ids(self, anilist_ids, studio=False):
+        anilist_id_list = util.get_int_list(anilist_ids, "AniList ID")
         anilist_values = []
         for anilist_id in anilist_ids:
             if studio:              query = "query ($id: Int) {Studio(id: $id) {name}}"
