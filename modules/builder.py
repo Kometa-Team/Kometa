@@ -1458,7 +1458,7 @@ class CollectionBuilder:
                     elif modifier in [".before", ".after"]:
                         if current_data is None:
                             return False
-                        filter_date = util.validate_date(filter_data)
+                        filter_date = util.validate_date(filter_data, filter_final)
                         if (modifier == ".before" and current_data >= filter_date) or (modifier == ".after" and current_data <= filter_date):
                             return False
                 elif filter_attr in ["release", "added", "last_played"] and modifier == ".regex":

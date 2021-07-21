@@ -253,7 +253,7 @@ class TMDb:
         count = 0
         for date_attr in discover_dates:
             if date_attr in attrs:
-                attrs[date_attr] = util.validate_date(attrs[date_attr], return_as="%Y-%m-%d")
+                attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
         self.Discover.discover_movies(attrs) if is_movie else self.Discover.discover_tv_shows(attrs)
         total_pages = int(self.TMDb.total_pages)
         total_results = int(self.TMDb.total_results)
