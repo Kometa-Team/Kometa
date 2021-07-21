@@ -48,7 +48,8 @@ class AniDB:
             return util.regex_first_int(ids[0], "AniDB ID")
         raise Failed(f"AniDB Error: AniDB ID: {anidb_id} not found")
 
-    def validate_anidb_list(self, anidb_list, language):
+    def validate_anidb_ids(self, anidb_ids, language):
+        anidb_list = util.get_int_list(anidb_ids, "AniDB ID")
         anidb_values = []
         for anidb_id in anidb_list:
             try:

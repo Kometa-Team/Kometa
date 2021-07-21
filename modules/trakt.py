@@ -146,7 +146,8 @@ class Trakt:
         elif is_movie:                              return [item["movie"]["ids"]["tmdb"] for item in items], []
         else:                                       return [], [item["show"]["ids"]["tvdb"] for item in items]
 
-    def validate_trakt(self, values, is_movie, trakt_type="list"):
+    def validate_trakt(self, trakt_lists, is_movie, trakt_type="list"):
+        values = util.get_list(trakt_lists)
         trakt_values = []
         for value in values:
             try:
