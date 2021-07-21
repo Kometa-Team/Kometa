@@ -1468,9 +1468,12 @@ class CollectionBuilder:
                         if (modifier == "" and (current_data is None or current_data < threshold_date)) \
                                 or (modifier == ".not" and current_data and current_data >= threshold_date):
                             return False
-                    elif (modifier == ".before" and (current_data is None or current_data >= filter_data)) \
-                            or (modifier == ".after" and (current_data is None or current_data <= filter_data)):
-                        return False
+                    elif modifier in [".before", ".after"]:
+                        if current_data is None:
+                            return False
+                        filter_date = datetime.strptime(str(filter_data), "%m/%d/%Y")
+                        if (modifier == ".before" and current_data >= filter_data) or (modifier == ".after" and current_data <= filter_data):
+                            return False
                 elif filter_attr in ["release", "added", "last_played"] and modifier == ".regex":
                     jailbreak = False
                     current_data = getattr(current, filter_actual)
