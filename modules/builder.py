@@ -844,7 +844,7 @@ class CollectionBuilder:
                                                 if discover_data is True:
                                                     new_dictionary[discover_final] = discover_data
                                             elif discover_final in tmdb.discover_dates:
-                                                new_dictionary[discover_final] = util.check_date(discover_data, f"{method_name} attribute {discover_final}", return_string=True)
+                                                new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} attribute {discover_final}", return_as="%m/%d/%Y")
                                             elif discover_final in ["primary_release_year", "year", "first_air_date_year"]:
                                                 new_dictionary[discover_final] = util.check_number(discover_data, f"{method_name} attribute {discover_final}", minimum=1800, maximum=self.current_year + 1)
                                             elif discover_final in ["vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte"]:
@@ -1379,7 +1379,7 @@ class CollectionBuilder:
         elif attribute in ["year", "episode_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:
             return util.check_year(data, self.current_year, final)
         elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
-            return util.check_date(data, final, return_string=True, plex_date=True)
+            return util.validate_date(data, final, return_as="%Y-%m-%d")
         elif attribute in plex.number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
             return util.check_number(data, final, minimum=1)
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
@@ -1458,8 +1458,8 @@ class CollectionBuilder:
                     elif modifier in [".before", ".after"]:
                         if current_data is None:
                             return False
-                        filter_date = datetime.strptime(str(filter_data), "%m/%d/%Y")
-                        if (modifier == ".before" and current_data >= filter_data) or (modifier == ".after" and current_data <= filter_data):
+                        filter_date = util.validate_date(filter_data)
+                        if (modifier == ".before" and current_data >= filter_date) or (modifier == ".after" and current_data <= filter_date):
                             return False
                 elif filter_attr in ["release", "added", "last_played"] and modifier == ".regex":
                     jailbreak = False
@@ -1618,7 +1618,7 @@ class CollectionBuilder:
                             or (filter_method == "tmdb_vote_count.lte" and movie.vote_count > filter_data):
                         match = False
                         break
-                current_title = f"{movie.title} ({util.check_date(movie.release_date, 'test', plex_date=True).year})" if movie.release_date else movie.title
+                current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
                 if match:
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
@@ -1958,7 +1958,7 @@ class CollectionBuilder:
                         logger.error(e)
                         continue
                     if self.details["show_missing"] is True:
-                        current_title = f"{movie.title} ({util.check_date(movie.release_date, 'test', plex_date=True).year})" if movie.release_date else movie.title
+                        current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
                         logger.info(f"{name} Collection | ? | {current_title} (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(self.run_again_movies)} Movie{'s' if len(self.run_again_movies) > 1 else ''} Missing")
