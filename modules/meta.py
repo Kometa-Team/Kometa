@@ -90,7 +90,7 @@ class Metadata:
                         try:
                             current = str(getattr(current_item, key, ""))
                             if var_type == "date":
-                                final_value = util.check_date(value, name, return_string=True, plex_date=True)
+                                final_value = util.validate_date(value, name, return_as="%Y-%m-%d")
                                 current = current[:-9]
                             elif var_type == "float":
                                 final_value = util.check_number(value, name, number_type="float", minimum=0, maximum=10)
