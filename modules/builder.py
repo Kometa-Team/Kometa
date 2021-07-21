@@ -163,10 +163,18 @@ ignored_details = [
     "tmdb_person",
     "build_collection"
 ]
+details = [
+    "collection_mode", "collection_order", "label"
+] + boolean_details + string_details
 collectionless_details = [
     "collection_order", "plex_collectionless",
     "label", "label_sync_mode", "test"
 ] + poster_details + background_details + summary_details + string_details
+item_details = [
+    "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"
+] + plex.item_advance_keys
+radarr_details = ["radarr_add", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
+sonarr_details = ["sonarr_add", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"]
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
@@ -216,6 +224,7 @@ class CollectionBuilder:
         self.metadata = metadata
         self.name = name
         self.data = data
+        self.language = self.library.Plex.language
         self.details = {
             "show_filtered": self.library.show_filtered,
             "show_missing": self.library.show_missing,
@@ -381,7 +390,7 @@ class CollectionBuilder:
                             try:
                                 if 0 <= int(param) <= 23:
                                     self.schedule += f"\nScheduled to run only on the {util.make_ordinal(param)} hour"
-                                    if config.run_hour == int(param):
+                                    if self.config.run_hour == int(param):
                                         skip_collection = False
                                 else:
                                     raise ValueError
@@ -467,12 +476,12 @@ class CollectionBuilder:
                 logger.debug(f"Value: {self.data[methods['tmdb_person']]}")
                 valid_names = []
                 for tmdb_id in util.get_int_list(self.data[methods["tmdb_person"]], "TMDb Person ID"):
-                    person = config.TMDb.get_person(tmdb_id)
+                    person = self.config.TMDb.get_person(tmdb_id)
                     valid_names.append(person.name)
                     if hasattr(person, "biography") and person.biography:
                         self.summaries["tmdb_person"] = person.biography
                     if hasattr(person, "profile_path") and person.profile_path:
-                        self.posters["tmdb_person"] = f"{config.TMDb.image_url}{person.profile_path}"
+                        self.posters["tmdb_person"] = f"{self.config.TMDb.image_url}{person.profile_path}"
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
@@ -534,11 +543,11 @@ class CollectionBuilder:
                 continue
             logger.info("")
             logger.info(f"Validating Method: {method_key}")
-            if "trakt" in method_key.lower() and not config.Trakt:                      raise Failed(f"Collection Error: {method_key} requires Trakt to be configured")
+            if "trakt" in method_key.lower() and not self.config.Trakt:                 raise Failed(f"Collection Error: {method_key} requires Trakt to be configured")
             elif "radarr" in method_key.lower() and not self.library.Radarr:            raise Failed(f"Collection Error: {method_key} requires Radarr to be configured")
             elif "sonarr" in method_key.lower() and not self.library.Sonarr:            raise Failed(f"Collection Error: {method_key} requires Sonarr to be configured")
             elif "tautulli" in method_key.lower() and not self.library.Tautulli:        raise Failed(f"Collection Error: {method_key} requires Tautulli to be configured")
-            elif "mal" in method_key.lower() and not config.MyAnimeList:                raise Failed(f"Collection Error: {method_key} requires MyAnimeList to be configured")
+            elif "mal" in method_key.lower() and not self.config.MyAnimeList:           raise Failed(f"Collection Error: {method_key} requires MyAnimeList to be configured")
             elif method_data is not None:
                 logger.debug(f"Value: {method_data}")
                 method_name, method_mod, method_final = self._split(method_key)
@@ -556,150 +565,22 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: {method_name} attribute does not work for Collectionless collection")
                 elif self.smart_url and (method_name in all_builders or method_name in smart_url_collection_invalid):
                     raise Failed(f"Collection Error: {method_name} builder not allowed when using smart_filter")
-                elif method_name == "summary":
-                    self.summaries[method_name] = method_data
-                elif method_name == "tmdb_summary":
-                    self.summaries[method_name] = config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, "TMDb ID"), self.library.is_movie).overview
-                elif method_name == "tmdb_description":
-                    self.summaries[method_name] = config.TMDb.get_list(util.regex_first_int(method_data, "TMDb List ID")).description
-                elif method_name == "tmdb_biography":
-                    self.summaries[method_name] = config.TMDb.get_person(util.regex_first_int(method_data, "TMDb Person ID")).biography
-                elif method_name == "tvdb_summary":
-                    self.summaries[method_name] = config.TVDb.get_movie_or_show(method_data, self.library.Plex.language, self.library.is_movie).summary
-                elif method_name == "tvdb_description":
-                    self.summaries[method_name] = config.TVDb.get_list_description(method_data, self.library.Plex.language)
-                elif method_name == "trakt_description":
-                    self.summaries[method_name] = config.Trakt.list_description(config.Trakt.validate_trakt(method_data, self.library.is_movie)[0])
-                elif method_name == "letterboxd_description":
-                    self.summaries[method_name] = config.Letterboxd.get_list_description(method_data, self.library.Plex.language)
-                elif method_name == "icheckmovies_description":
-                    self.summaries[method_name] = config.ICheckMovies.get_list_description(method_data, self.library.Plex.language)
-                elif method_name == "collection_mode":
-                    if str(method_data).lower() == "default":
-                        self.details[method_name] = "default"
-                    elif str(method_data).lower() == "hide":
-                        self.details[method_name] = "hide"
-                    elif str(method_data).lower() in ["hide_items", "hideitems"]:
-                        self.details[method_name] = "hideItems"
-                    elif str(method_data).lower() in ["show_items", "showitems"]:
-                        self.details[method_name] = "showItems"
-                    else:
-                        raise Failed(f"Collection Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
-                elif method_name == "collection_order":
-                    if str(method_data).lower() == "release":
-                        self.details[method_name] = "release"
-                    elif str(method_data).lower() == "alpha":
-                        self.details[method_name] = "alpha"
-                    else:
-                        raise Failed(f"Collection Error: {method_data} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)")
-                elif method_name == "url_poster":
-                    self.posters[method_name] = method_data
-                elif method_name == "tmdb_poster":
-                    self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path}"
-                elif method_name == "tmdb_profile":
-                    self.posters[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_person(util.regex_first_int(method_data, 'TMDb Person ID')).profile_path}"
-                elif method_name == "tvdb_poster":
-                    self.posters[method_name] = f"{config.TVDb.get_movie_or_series(method_data, self.library.Plex.language, self.library.is_movie).poster_path}"
-                elif method_name == "file_poster":
-                    if os.path.exists(method_data):
-                        self.posters[method_name] = os.path.abspath(method_data)
-                    else:
-                        raise Failed(f"Collection Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
-                elif method_name == "url_background":
-                    self.backgrounds[method_name] = method_data
-                elif method_name == "tmdb_background":
-                    self.backgrounds[method_name] = f"{config.TMDb.image_url}{config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path}"
-                elif method_name == "tvdb_background":
-                    self.posters[method_name] = f"{config.TVDb.get_movie_or_series(method_data, self.library.Plex.language, self.library.is_movie).background_path}"
-                elif method_name == "file_background":
-                    if os.path.exists(method_data):                             self.backgrounds[method_name] = os.path.abspath(method_data)
-                    else:                                                       raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
-                elif method_name == "label":
-                    if "label" in methods and "label.sync" in methods:
-                        raise Failed("Collection Error: Cannot use label and label.sync together")
-                    if "label.remove" in methods and "label.sync" in methods:
-                        raise Failed("Collection Error: Cannot use label.remove and label.sync together")
-                    if method_final == "label" and "label_sync_mode" in methods and self.data[methods["label_sync_mode"]] == "sync":
-                        self.details["label.sync"] = util.get_list(method_data)
-                    else:
-                        self.details[method_final] = util.get_list(method_data)
-                elif method_name == "item_label":
-                    if "item_label" in methods and "item_label.sync" in methods:
-                        raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
-                    if "item_label.remove" in methods and "item_label.sync" in methods:
-                        raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
-                    self.item_details[method_final] = util.get_list(method_data)
-                elif method_name in ["item_radarr_tag", "item_sonarr_tag"]:
-                    if method_name in methods and f"{method_name}.sync" in methods:
-                        raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.sync together")
-                    if f"{method_name}.remove" in methods and f"{method_name}.sync" in methods:
-                        raise Failed(f"Collection Error: Cannot use {method_name}.remove and {method_name}.sync together")
-                    if method_name in methods and f"{method_name}.remove" in methods:
-                        raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.remove together")
-                    self.item_details[method_name] = util.get_list(method_data)
-                    self.item_details["apply_tags"] = method_mod[1:] if method_mod else ""
-                elif method_name == "item_overlay":
-                    overlay = os.path.join(config.default_dir, "overlays", method_data, "overlay.png")
-                    if not os.path.exists(overlay):
-                        raise Failed(f"Collection Error: {method_data} overlay image not found at {overlay}")
-                    if method_data in self.library.overlays:
-                        raise Failed("Each Overlay can only be used once per Library")
-                    self.library.overlays.append(method_data)
-                    self.item_details[method_name] = method_data
-                elif method_name in plex.item_advance_keys:
-                    key, options = plex.item_advance_keys[method_name]
-                    if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
-                        logger.error(f"Metadata Error: {method_name} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
-                    elif method_name in advance_show and not self.library.is_show:
-                        logger.error(f"Metadata Error: {method_name} attribute only works for show libraries")
-                    elif str(method_data).lower() not in options:
-                        logger.error(f"Metadata Error: {method_data} {method_name} attribute invalid")
-                    else:
-                        self.item_details[method_name] = str(method_data).lower()
-                elif method_name in boolean_details:
-                    self.details[method_name] = util.get_bool(method_name, method_data)
-                elif method_name in string_details:
-                    self.details[method_name] = str(method_data)
-                elif method_name == "radarr_add":
-                    self.add_to_radarr = util.get_bool(method_name, method_data)
-                elif method_name == "radarr_folder":
-                    self.radarr_options["folder"] = method_data
-                elif method_name in ["radarr_monitor", "radarr_search"]:
-                    self.radarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
-                elif method_name == "radarr_availability":
-                    if str(method_data).lower() in radarr.availability_translation:
-                        self.radarr_options["availability"] = str(method_data).lower()
-                    else:
-                        raise Failed(f"Collection Error: {method_name} attribute must be either announced, cinemas, released or db")
-                elif method_name == "radarr_quality":
-                    self.library.Radarr.get_profile_id(method_data)
-                    self.radarr_options["quality"] = method_data
-                elif method_name == "radarr_tag":
-                    self.radarr_options["tag"] = util.get_list(method_data)
-                elif method_name == "sonarr_add":
-                    self.add_to_sonarr = util.get_bool(method_name, method_data)
-                elif method_name == "sonarr_folder":
-                    self.sonarr_options["folder"] = method_data
-                elif method_name == "sonarr_monitor":
-                    if str(method_data).lower() in sonarr.monitor_translation:
-                        self.sonarr_options["monitor"] = str(method_data).lower()
-                    else:
-                        raise Failed(f"Collection Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
-                elif method_name == "sonarr_quality":
-                    self.library.Sonarr.get_profile_id(method_data, "quality_profile")
-                    self.sonarr_options["quality"] = method_data
-                elif method_name == "sonarr_language":
-                    self.library.Sonarr.get_profile_id(method_data, "language_profile")
-                    self.sonarr_options["language"] = method_data
-                elif method_name == "sonarr_series":
-                    if str(method_data).lower() in sonarr.series_type:
-                        self.sonarr_options["series"] = str(method_data).lower()
-                    else:
-                        raise Failed(f"Collection Error: {method_name} attribute must be either standard, daily, or anime")
-                elif method_name in ["sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
-                    self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
-                elif method_name == "sonarr_tag":
-                    self.sonarr_options["tag"] = util.get_list(method_data)
+                elif method_name in summary_details:
+                    self._summary(method_name, method_data)
+                elif method_name in poster_details:
+                    self._poster(method_name, method_data)
+                elif method_name in background_details:
+                    self._background(method_name, method_data)
+                elif method_name in details:
+                    self._details(method_name, method_data, method_final, methods)
+                elif method_name in details:
+                    self._details(method_name, method_data, method_final, methods)
+                elif method_name in item_details:
+                    self._item_details(method_name, method_data, method_mod, method_final, methods)
+                elif method_name in radarr_details:
+                    self._radarr(method_name, method_data)
+                elif method_name in sonarr_details:
+                    self._sonarr(method_name, method_data)
                 elif method_final in plex.searches:
                     self.methods.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
                 elif method_name == "plex_all":
@@ -715,41 +596,41 @@ class CollectionBuilder:
                     for mal_id in util.get_int_list(method_data, "MyAnimeList ID"):
                         self.methods.append((method_name, mal_id))
                 elif method_name in ["anidb_id", "anidb_relation"]:
-                    for anidb_id in config.AniDB.validate_anidb_ids(method_data, self.library.Plex.language):
+                    for anidb_id in self.config.AniDB.validate_anidb_ids(method_data, self.language):
                         self.methods.append((method_name, anidb_id))
                 elif method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
-                    for anilist_id in config.AniList.validate_anilist_ids(method_data, studio=method_name == "anilist_studio"):
+                    for anilist_id in self.config.AniList.validate_anilist_ids(method_data, studio=method_name == "anilist_studio"):
                         self.methods.append((method_name, anilist_id))
                 elif method_name == "trakt_list":
-                    for trakt_list in config.Trakt.validate_trakt(method_data, self.library.is_movie):
+                    for trakt_list in self.config.Trakt.validate_trakt(method_data, self.library.is_movie):
                         self.methods.append((method_name, trakt_list))
                 elif method_name == "trakt_list_details":
-                    trakt_lists = config.Trakt.validate_trakt(method_data, self.library.is_movie)
-                    self.summaries[method_name] = config.Trakt.list_description(trakt_lists[0])
+                    trakt_lists = self.config.Trakt.validate_trakt(method_data, self.library.is_movie)
+                    self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
                     for trakt_list in trakt_lists:
                         self.methods.append((method_name[:-8], trakt_list))
                 elif method_name in ["trakt_watchlist", "trakt_collection"]:
-                    for trakt_list in config.Trakt.validate_trakt(method_data, self.library.is_movie, trakt_type=method_name[6:]):
+                    for trakt_list in self.config.Trakt.validate_trakt(method_data, self.library.is_movie, trakt_type=method_name[6:]):
                         self.methods.append((method_name, trakt_list))
                 elif method_name == "imdb_list":
-                    for imdb_dict in self.config.IMDb.validate_imdb_lists(method_data, self.library.Plex.language):
+                    for imdb_dict in self.config.IMDb.validate_imdb_lists(method_data, self.language):
                         self.methods.append((method_name, imdb_dict))
                 elif method_name == "icheckmovies_list":
-                    for icheckmovies_list in self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.library.Plex.language):
+                    for icheckmovies_list in self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language):
                         self.methods.append((method_name, icheckmovies_list))
                 elif method_name == "icheckmovies_list_details":
-                    icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.library.Plex.language)
+                    icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language)
                     for icheckmovies_list in icheckmovies_lists:
                         self.methods.append((method_name[:-8], icheckmovies_list))
-                    self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0], self.library.Plex.language)
+                    self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0], self.language)
                 elif method_name == "letterboxd_list":
-                    for letterboxd_list in self.config.Letterboxd.validate_letterboxd_lists(method_data, self.library.Plex.language):
+                    for letterboxd_list in self.config.Letterboxd.validate_letterboxd_lists(method_data, self.language):
                         self.methods.append((method_name, letterboxd_list))
                 elif method_name == "letterboxd_list_details":
-                    letterboxd_lists = self.config.Letterboxd.validate_letterboxd_lists(method_data, self.library.Plex.language)
+                    letterboxd_lists = self.config.Letterboxd.validate_letterboxd_lists(method_data, self.language)
                     for letterboxd_list in letterboxd_lists:
                         self.methods.append((method_name[:-8], letterboxd_list))
-                    self.summaries[method_name] = config.Letterboxd.get_list_description(letterboxd_lists[0], self.library.Plex.language)
+                    self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0], self.language)
                 elif method_name in dictionary_builders:
                     for dict_data in util.get_list(method_data):
                         if isinstance(dict_data, dict):
@@ -1007,44 +888,44 @@ class CollectionBuilder:
                     values = util.get_list(method_data)
                     if method_name[-8:] == "_details":
                         if method_name == "tvdb_movie_details":
-                            item = config.TVDb.get_movie(self.library.Plex.language, values[0])
+                            item = self.config.TVDb.get_movie(self.language, values[0])
                             if hasattr(item, "description") and item.description:
                                 self.summaries[method_name] = item.description
                             if hasattr(item, "background_path") and item.background_path:
-                                self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.background_path}"
+                                self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{item.background_path}"
                             if hasattr(item, "poster_path") and item.poster_path:
-                                self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
+                                self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
                         elif method_name == "tvdb_show_details":
-                            item = config.TVDb.get_series(self.library.Plex.language, values[0])
+                            item = self.config.TVDb.get_series(self.language, values[0])
                             if hasattr(item, "description") and item.description:
                                 self.summaries[method_name] = item.description
                             if hasattr(item, "background_path") and item.background_path:
-                                self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.background_path}"
+                                self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{item.background_path}"
                             if hasattr(item, "poster_path") and item.poster_path:
-                                self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
+                                self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
                         elif method_name == "tvdb_list_details":
-                            self.summaries[method_name] = config.TVDb.get_list_description(values[0], self.library.Plex.language)
+                            self.summaries[method_name] = self.config.TVDb.get_list_description(values[0], self.language)
                     for value in values:
                         self.methods.append((method_name[:-8] if method_name[-8:] == "_details" else method_name, value))
                 elif method_name in tmdb.builders:
-                    values = config.TMDb.validate_tmdb_ids(method_data, method_name)
+                    values = self.config.TMDb.validate_tmdb_ids(method_data, method_name)
                     if method_name[-8:] == "_details":
                         if method_name in ["tmdb_collection_details", "tmdb_movie_details", "tmdb_show_details"]:
-                            item = config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
+                            item = self.config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
                             if hasattr(item, "overview") and item.overview:
                                 self.summaries[method_name] = item.overview
                             if hasattr(item, "backdrop_path") and item.backdrop_path:
-                                self.backgrounds[method_name] = f"{config.TMDb.image_url}{item.backdrop_path}"
+                                self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{item.backdrop_path}"
                             if hasattr(item, "poster_path") and item.poster_path:
-                                self.posters[method_name] = f"{config.TMDb.image_url}{item.poster_path}"
+                                self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
                         elif method_name in ["tmdb_actor_details", "tmdb_crew_details", "tmdb_director_details", "tmdb_producer_details", "tmdb_writer_details"]:
-                            item = config.TMDb.get_person(values[0])
+                            item = self.config.TMDb.get_person(values[0])
                             if hasattr(item, "biography") and item.biography:
                                 self.summaries[method_name] = item.biography
                             if hasattr(item, "profile_path") and item.profile_path:
-                                self.posters[method_name] = f"{config.TMDb.image_url}{item.profile_path}"
+                                self.posters[method_name] = f"{self.config.TMDb.image_url}{item.profile_path}"
                         else:
-                            item = config.TMDb.get_list(values[0])
+                            item = self.config.TMDb.get_list(values[0])
                             if hasattr(item, "description") and item.description:
                                 self.summaries[method_name] = item.description
                     for value in values:
@@ -1095,6 +976,162 @@ class CollectionBuilder:
             self.run_again = False
         logger.info("")
         logger.info("Validation Successful")
+
+    def _summary(self, method_name, method_data):
+        if method_name == "summary":
+            self.summaries[method_name] = method_data
+        elif method_name == "tmdb_summary":
+            self.summaries[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, "TMDb ID"), self.library.is_movie).overview
+        elif method_name == "tmdb_description":
+            self.summaries[method_name] = self.config.TMDb.get_list(util.regex_first_int(method_data, "TMDb List ID")).description
+        elif method_name == "tmdb_biography":
+            self.summaries[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, "TMDb Person ID")).biography
+        elif method_name == "tvdb_summary":
+            self.summaries[method_name] = self.config.TVDb.get_movie_or_show(method_data, self.language, self.library.is_movie).summary
+        elif method_name == "tvdb_description":
+            self.summaries[method_name] = self.config.TVDb.get_list_description(method_data, self.language)
+        elif method_name == "trakt_description":
+            self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_trakt(method_data, self.library.is_movie)[0])
+        elif method_name == "letterboxd_description":
+            self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
+        elif method_name == "icheckmovies_description":
+            self.summaries[method_name] = self.config.ICheckMovies.get_list_description(method_data, self.language)
+
+    def _poster(self, method_name, method_data):
+        if method_name == "url_poster":
+            self.posters[method_name] = method_data
+        elif method_name == "tmdb_poster":
+            url_slug = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path
+            self.posters[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+        elif method_name == "tmdb_profile":
+            url_slug = self.config.TMDb.get_person(util.regex_first_int(method_data, 'TMDb Person ID')).profile_path
+            self.posters[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+        elif method_name == "tvdb_poster":
+            self.posters[method_name] = f"{self.config.TVDb.get_movie_or_series(method_data, self.language, self.library.is_movie).poster_path}"
+        elif method_name == "file_poster":
+            if os.path.exists(method_data):
+                self.posters[method_name] = os.path.abspath(method_data)
+            else:
+                raise Failed(f"Collection Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
+
+    def _background(self, method_name, method_data):
+        if method_name == "url_background":
+            self.backgrounds[method_name] = method_data
+        elif method_name == "tmdb_background":
+            url_slug = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path
+            self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+        elif method_name == "tvdb_background":
+            self.posters[method_name] = f"{self.config.TVDb.get_movie_or_series(method_data, self.language, self.library.is_movie).background_path}"
+        elif method_name == "file_background":
+            if os.path.exists(method_data):
+                self.backgrounds[method_name] = os.path.abspath(method_data)
+            else:
+                raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
+
+    def _details(self, method_name, method_data, method_final, methods):
+        if method_name == "collection_mode":
+            if str(method_data).lower() in plex.collection_mode_options:
+                self.details[method_name] = plex.collection_mode_options[str(method_data).lower()]
+            else:
+                raise Failed(f"Collection Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
+        elif method_name == "collection_order":
+            if str(method_data).lower() in plex.collection_order_options:
+                self.details[method_name] = plex.collection_order_options[str(method_data).lower()]
+            else:
+                raise Failed(f"Collection Error: {method_data} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)")
+        elif method_name == "label":
+            if "label" in methods and "label.sync" in methods:
+                raise Failed("Collection Error: Cannot use label and label.sync together")
+            if "label.remove" in methods and "label.sync" in methods:
+                raise Failed("Collection Error: Cannot use label.remove and label.sync together")
+            if method_final == "label" and "label_sync_mode" in methods and self.data[methods["label_sync_mode"]] == "sync":
+                self.details["label.sync"] = util.get_list(method_data)
+            else:
+                self.details[method_final] = util.get_list(method_data)
+        elif method_name in boolean_details:
+            self.details[method_name] = util.get_bool(method_name, method_data)
+        elif method_name in string_details:
+            self.details[method_name] = str(method_data)
+
+    def _item_details(self, method_name, method_data, method_mod, method_final, methods):
+        if method_name == "item_label":
+            if "item_label" in methods and "item_label.sync" in methods:
+                raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
+            if "item_label.remove" in methods and "item_label.sync" in methods:
+                raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
+            self.item_details[method_final] = util.get_list(method_data)
+        elif method_name in ["item_radarr_tag", "item_sonarr_tag"]:
+            if method_name in methods and f"{method_name}.sync" in methods:
+                raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.sync together")
+            if f"{method_name}.remove" in methods and f"{method_name}.sync" in methods:
+                raise Failed(f"Collection Error: Cannot use {method_name}.remove and {method_name}.sync together")
+            if method_name in methods and f"{method_name}.remove" in methods:
+                raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.remove together")
+            self.item_details[method_name] = util.get_list(method_data)
+            self.item_details["apply_tags"] = method_mod[1:] if method_mod else ""
+        elif method_name == "item_overlay":
+            overlay = os.path.join(self.config.default_dir, "overlays", method_data, "overlay.png")
+            if not os.path.exists(overlay):
+                raise Failed(f"Collection Error: {method_data} overlay image not found at {overlay}")
+            if method_data in self.library.overlays:
+                raise Failed("Each Overlay can only be used once per Library")
+            self.library.overlays.append(method_data)
+            self.item_details[method_name] = method_data
+        elif method_name in plex.item_advance_keys:
+            key, options = plex.item_advance_keys[method_name]
+            if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
+                logger.error(
+                    f"Metadata Error: {method_name} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+            elif method_name in advance_show and not self.library.is_show:
+                logger.error(f"Metadata Error: {method_name} attribute only works for show libraries")
+            elif str(method_data).lower() not in options:
+                logger.error(f"Metadata Error: {method_data} {method_name} attribute invalid")
+            else:
+                self.item_details[method_name] = str(method_data).lower()
+
+    def _radarr(self, method_name, method_data):
+        if method_name == "radarr_add":
+            self.add_to_radarr = util.get_bool(method_name, method_data)
+        elif method_name == "radarr_folder":
+            self.radarr_options["folder"] = method_data
+        elif method_name in ["radarr_monitor", "radarr_search"]:
+            self.radarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
+        elif method_name == "radarr_availability":
+            if str(method_data).lower() in radarr.availability_translation:
+                self.radarr_options["availability"] = str(method_data).lower()
+            else:
+                raise Failed(f"Collection Error: {method_name} attribute must be either announced, cinemas, released or db")
+        elif method_name == "radarr_quality":
+            self.library.Radarr.get_profile_id(method_data)
+            self.radarr_options["quality"] = method_data
+        elif method_name == "radarr_tag":
+            self.radarr_options["tag"] = util.get_list(method_data)
+
+    def _sonarr(self, method_name, method_data):
+        if method_name == "sonarr_add":
+            self.add_to_sonarr = util.get_bool(method_name, method_data)
+        elif method_name == "sonarr_folder":
+            self.sonarr_options["folder"] = method_data
+        elif method_name == "sonarr_monitor":
+            if str(method_data).lower() in sonarr.monitor_translation:
+                self.sonarr_options["monitor"] = str(method_data).lower()
+            else:
+                raise Failed(f"Collection Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
+        elif method_name == "sonarr_quality":
+            self.library.Sonarr.get_profile_id(method_data, "quality_profile")
+            self.sonarr_options["quality"] = method_data
+        elif method_name == "sonarr_language":
+            self.library.Sonarr.get_profile_id(method_data, "language_profile")
+            self.sonarr_options["language"] = method_data
+        elif method_name == "sonarr_series":
+            if str(method_data).lower() in sonarr.series_type:
+                self.sonarr_options["series"] = str(method_data).lower()
+            else:
+                raise Failed(f"Collection Error: {method_name} attribute must be either standard, daily, or anime")
+        elif method_name in ["sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
+            self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
+        elif method_name == "sonarr_tag":
+            self.sonarr_options["tag"] = util.get_list(method_data)
 
     def collect_rating_keys(self):
         filtered_keys = {}
@@ -1150,13 +1187,13 @@ class CollectionBuilder:
             logger.info("")
             if "plex" in method:                                add_rating_keys(self.library.get_items(method, value))
             elif "tautulli" in method:                          add_rating_keys(self.library.Tautulli.get_items(self.library, value))
-            elif "anidb" in method:                             check_map(self.config.AniDB.get_items(method, value, self.library.Plex.language))
+            elif "anidb" in method:                             check_map(self.config.AniDB.get_items(method, value, self.language))
             elif "anilist" in method:                           check_map(self.config.AniList.get_items(method, value))
             elif "mal" in method:                               check_map(self.config.MyAnimeList.get_items(method, value))
-            elif "tvdb" in method:                              check_map(self.config.TVDb.get_items(method, value, self.library.Plex.language))
-            elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.library.Plex.language, self.library.is_movie))
-            elif "icheckmovies" in method:                      check_map(self.config.ICheckMovies.get_items(method, value, self.library.Plex.language))
-            elif "letterboxd" in method:                        check_map(self.config.Letterboxd.get_items(method, value, self.library.Plex.language))
+            elif "tvdb" in method:                              check_map(self.config.TVDb.get_items(method, value, self.language))
+            elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.language, self.library.is_movie))
+            elif "icheckmovies" in method:                      check_map(self.config.ICheckMovies.get_items(method, value, self.language))
+            elif "letterboxd" in method:                        check_map(self.config.Letterboxd.get_items(method, value, self.language))
             elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
             elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
             else:                                               logger.error(f"Collection Error: {method} method not supported")
@@ -1642,7 +1679,7 @@ class CollectionBuilder:
             missing_shows_with_names = []
             for missing_id in self.missing_shows:
                 try:
-                    title = str(self.config.TVDb.get_series(self.library.Plex.language, missing_id).title.encode("ascii", "replace").decode())
+                    title = str(self.config.TVDb.get_series(self.language, missing_id).title.encode("ascii", "replace").decode())
                 except Failed as e:
                     logger.error(e)
                     continue
@@ -1968,7 +2005,7 @@ class CollectionBuilder:
             for missing_id in self.run_again_shows:
                 if missing_id not in self.library.show_map:
                     try:
-                        title = str(self.config.TVDb.get_series(self.library.Plex.language, missing_id).title.encode("ascii", "replace").decode())
+                        title = str(self.config.TVDb.get_series(self.language, missing_id).title.encode("ascii", "replace").decode())
                     except Failed as e:
                         logger.error(e)
                         continue

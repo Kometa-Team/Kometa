@@ -57,6 +57,18 @@ plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
+collection_mode_options = {
+    "default": "default",
+    "hide": "hide",
+    "hide_items": "hideItems",
+    "hideitems": "hideItems",
+    "show_items": "showItems",
+    "showitems": "showItems"
+}
+collection_order_options = {
+    "release": "release",
+    "alpha": "alpha"
+}
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 item_advance_keys = {
