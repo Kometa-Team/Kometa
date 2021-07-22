@@ -171,8 +171,10 @@ collectionless_details = [
     "label", "label_sync_mode", "test"
 ] + poster_details + background_details + summary_details + string_details
 item_details = [
-    "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"
-] + plex.item_advance_keys
+    "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay",
+    "item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display",
+    "item_episode_ordering", "item_metadata_language", "item_use_original_title"
+]
 radarr_details = ["radarr_add", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = ["sonarr_add", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"]
 all_filters = [
