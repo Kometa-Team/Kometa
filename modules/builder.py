@@ -583,26 +583,24 @@ class CollectionBuilder:
                     self._radarr(method_name, method_data)
                 elif method_name in sonarr_details:
                     self._sonarr(method_name, method_data)
+                elif method_name in anidb.builders:
+                    self._anidb(method_name, method_data)
+                elif method_name in anilist.builders:
+                    self._anilist(method_name, method_data)
+                elif method_name in icheckmovies.builders:
+                    self._icheckmovies(method_name, method_data)
+
+
+
+
+
                 elif method_final in plex.searches:
                     self.methods.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
                 elif method_name == "plex_all":
                     self.methods.append((method_name, True))
-                elif method_name == "anidb_popular":
-                    list_count = util.regex_first_int(method_data, "List Size", default=40)
-                    if 1 <= list_count <= 30:
-                        self.methods.append((method_name, list_count))
-                    else:
-                        logger.warning("Collection Error: anidb_popular must be an integer between 1 and 30 defaulting to 30")
-                        self.methods.append((method_name, 30))
                 elif method_name == "mal_id":
                     for mal_id in util.get_int_list(method_data, "MyAnimeList ID"):
                         self.methods.append((method_name, mal_id))
-                elif method_name in ["anidb_id", "anidb_relation"]:
-                    for anidb_id in self.config.AniDB.validate_anidb_ids(method_data, self.language):
-                        self.methods.append((method_name, anidb_id))
-                elif method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
-                    for anilist_id in self.config.AniList.validate_anilist_ids(method_data, studio=method_name == "anilist_studio"):
-                        self.methods.append((method_name, anilist_id))
                 elif method_name == "trakt_list":
                     for trakt_list in self.config.Trakt.validate_trakt(method_data, self.library.is_movie):
                         self.methods.append((method_name, trakt_list))
@@ -617,14 +615,6 @@ class CollectionBuilder:
                 elif method_name == "imdb_list":
                     for imdb_dict in self.config.IMDb.validate_imdb_lists(method_data, self.language):
                         self.methods.append((method_name, imdb_dict))
-                elif method_name == "icheckmovies_list":
-                    for icheckmovies_list in self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language):
-                        self.methods.append((method_name, icheckmovies_list))
-                elif method_name == "icheckmovies_list_details":
-                    icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language)
-                    for icheckmovies_list in icheckmovies_lists:
-                        self.methods.append((method_name[:-8], icheckmovies_list))
-                    self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0], self.language)
                 elif method_name == "letterboxd_list":
                     for letterboxd_list in self.config.Letterboxd.validate_letterboxd_lists(method_data, self.language):
                         self.methods.append((method_name, letterboxd_list))
@@ -820,63 +810,6 @@ class CollectionBuilder:
                                     new_dictionary["sort_by"] = mal.userlist_sort[dict_data[dict_methods["sort_by"]]]
 
                                 new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 100, maximum=1000)
-                                self.methods.append((method_name, new_dictionary))
-                            elif method_name == "anidb_tag":
-                                new_dictionary = {}
-                                dict_methods = {dm.lower(): dm for dm in dict_data}
-                                if "tag" not in dict_methods:
-                                    raise Failed("Collection Error: anidb_tag tag attribute is required")
-                                elif not dict_data[dict_methods["tag"]]:
-                                    raise Failed("Collection Error: anidb_tag tag attribute is blank")
-                                else:
-                                    new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["username"]], "AniDB Tag ID")
-                                new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 0, minimum=0)
-                                self.methods.append((method_name, new_dictionary))
-                            elif "anilist" in method_name:
-                                new_dictionary = {"sort_by": "score"}
-                                dict_methods = {dm.lower(): dm for dm in dict_data}
-                                if method_name == "anilist_season":
-                                    if self.current_time.month in [12, 1, 2]:               new_dictionary["season"] = "winter"
-                                    elif self.current_time.month in [3, 4, 5]:              new_dictionary["season"] = "spring"
-                                    elif self.current_time.month in [6, 7, 8]:              new_dictionary["season"] = "summer"
-                                    elif self.current_time.month in [9, 10, 11]:            new_dictionary["season"] = "fall"
-
-                                    if "season" not in dict_methods:
-                                        logger.warning(f"Collection Warning: anilist_season season attribute not found using the current season: {new_dictionary['season']} as default")
-                                    elif not dict_data[dict_methods["season"]]:
-                                        logger.warning(f"Collection Warning: anilist_season season attribute is blank using the current season: {new_dictionary['season']} as default")
-                                    elif dict_data[dict_methods["season"]] not in util.pretty_seasons:
-                                        logger.warning(f"Collection Warning: anilist_season season attribute {dict_data[dict_methods['season']]} invalid must be either 'winter', 'spring', 'summer' or 'fall' using the current season: {new_dictionary['season']} as default")
-                                    else:
-                                        new_dictionary["season"] = dict_data[dict_methods["season"]]
-
-                                    new_dictionary["year"] = get_int(method_name, "year", dict_data, dict_methods, self.current_time.year, minimum=1917, maximum=self.current_time.year + 1)
-                                elif method_name == "anilist_genre":
-                                    if "genre" not in dict_methods:
-                                        raise Failed(f"Collection Warning: anilist_genre genre attribute not found")
-                                    elif not dict_data[dict_methods["genre"]]:
-                                        raise Failed(f"Collection Warning: anilist_genre genre attribute is blank")
-                                    else:
-                                        new_dictionary["genre"] = self.config.AniList.validate_genre(dict_data[dict_methods["genre"]])
-                                elif method_name == "anilist_tag":
-                                    if "tag" not in dict_methods:
-                                        raise Failed(f"Collection Warning: anilist_tag tag attribute not found")
-                                    elif not dict_data[dict_methods["tag"]]:
-                                        raise Failed(f"Collection Warning: anilist_tag tag attribute is blank")
-                                    else:
-                                        new_dictionary["tag"] = self.config.AniList.validate_tag(dict_data[dict_methods["tag"]])
-
-                                if "sort_by" not in dict_methods:
-                                    logger.warning(f"Collection Warning: {method_name} sort_by attribute not found using score as default")
-                                elif not dict_data[dict_methods["sort_by"]]:
-                                    logger.warning(f"Collection Warning: {method_name} sort_by attribute is blank using score as default")
-                                elif str(dict_data[dict_methods["sort_by"]]).lower() not in ["score", "popular"]:
-                                    logger.warning(f"Collection Warning: {method_name} sort_by attribute {dict_data[dict_methods['sort_by']]} invalid must be either 'score' or 'popular' using score as default")
-                                else:
-                                    new_dictionary["sort_by"] = dict_data[dict_methods["sort_by"]]
-
-                                new_dictionary["limit"] = get_int(method_name, "limit", dict_data, dict_methods, 0, maximum=500)
-
                                 self.methods.append((method_name, new_dictionary))
                         else:
                             raise Failed(f"Collection Error: {method_name} attribute is not a dictionary: {dict_data}")
@@ -1134,6 +1067,56 @@ class CollectionBuilder:
             self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
         elif method_name == "sonarr_tag":
             self.sonarr_options["tag"] = util.get_list(method_data)
+
+    def _anidb(self, method_name, method_data):
+        if method_name == "anidb_popular":
+            self.methods.append((method_name, util.parse_int(method_name, method_data, 30, maximum=30)))
+        elif method_name in ["anidb_id", "anidb_relation"]:
+            for anidb_id in self.config.AniDB.validate_anidb_ids(method_data, self.language):
+                self.methods.append((method_name, anidb_id))
+        elif method_name == "anidb_tag":
+            for dict_data, dict_methods in util.validate_dict_list(method_name, method_data):
+                new_dictionary = {}
+                if "tag" not in dict_methods:
+                    raise Failed("Collection Error: anidb_tag tag attribute is required")
+                elif not dict_data[dict_methods["tag"]]:
+                    raise Failed("Collection Error: anidb_tag tag attribute is blank")
+                else:
+                    new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["username"]], "AniDB Tag ID")
+                new_dictionary["limit"] = util.parse_int_from_dict(method_name, "limit", dict_data, dict_methods, 0, minimum=0)
+                self.methods.append((method_name, new_dictionary))
+
+    def _anilist(self, method_name, method_data):
+        if method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
+            for anilist_id in self.config.AniList.validate_anilist_ids(method_data, studio=method_name == "anilist_studio"):
+                self.methods.append((method_name, anilist_id))
+        elif method_name in ["anilist_popular", "anilist_top_rated"]:
+            self.methods.append((method_name, util.parse_int(method_name, method_data, 10)))
+        elif method_name in ["anilist_season", "anilist_genre", "anilist_tag"]:
+            for dict_data, dict_methods in util.validate_dict_list(method_name, method_data):
+                new_dictionary = {}
+                if method_name == "anilist_season":
+                    if self.current_time.month in [12, 1, 2]:       new_dictionary["season"] = "winter"
+                    elif self.current_time.month in [3, 4, 5]:      new_dictionary["season"] = "spring"
+                    elif self.current_time.month in [6, 7, 8]:      new_dictionary["season"] = "summer"
+                    elif self.current_time.month in [9, 10, 11]:    new_dictionary["season"] = "fall"
+                    new_dictionary["season"] = util.parse_from_dict(method_name, "season", dict_data, dict_methods, default=new_dictionary["season"], options=["winter", "spring", "summer", "fall"])
+                    new_dictionary["year"] = util.parse_int_from_dict(method_name, "year", dict_data, dict_methods, self.current_time.year, minimum=1917, maximum=self.current_time.year + 1)
+                elif method_name == "anilist_genre":
+                    new_dictionary["genre"] = self.config.AniList.validate_genre(util.parse_from_dict(method_name, "genre", dict_data, dict_methods))
+                elif method_name == "anilist_tag":
+                    new_dictionary["tag"] = self.config.AniList.validate_tag(util.parse_from_dict(method_name, "tag", dict_data, dict_methods))
+                new_dictionary["sort_by"] = util.parse_from_dict(method_name, "sort_by", dict_data, dict_methods, default="score", options=["score", "popular"])
+                new_dictionary["limit"] = util.parse_int_from_dict(method_name, "limit", dict_data, dict_methods, 0, maximum=500)
+                self.methods.append((method_name, new_dictionary))
+
+    def _icheckmovies(self, method_name, method_data):
+        if method_name.startswith("icheckmovies_list"):
+            icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language)
+            for icheckmovies_list in icheckmovies_lists:
+                self.methods.append(("icheckmovies_list", icheckmovies_list))
+            if method_name.endswith("_details"):
+                self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0], self.language)
 
     def collect_rating_keys(self):
         filtered_keys = {}
