@@ -438,3 +438,51 @@ def is_locked(filepath):
             if file_object:
                 file_object.close()
     return locked
+
+def validate_dict_list(method_name, data):
+    final_list = []
+    for dict_data in get_list(data):
+        if isinstance(dict_data, dict):
+            final_list.append((dict_data, {dm.lower(): dm for dm in dict_data}))
+        else:
+            raise Failed(f"Collection Error: {method_name} attribute is not a dictionary: {dict_data}")
+    return final_list
+
+def parse_int(method, data, default=10, minimum=1, maximum=None):
+    list_count = regex_first_int(data, "List Size", default=default)
+    if maximum is None and list_count < minimum:
+        logger.warning(f"Collection Warning: {method} must an integer >= {minimum} using {default} as default")
+    elif maximum is not None and (list_count < minimum or list_count > maximum):
+        logger.warning(f"Collection Warning: {method} must an integer between {minimum} and {maximum} using {default} as default")
+    else:
+        return list_count
+    return default
+
+def parse_from_dict(parent, method, data, methods, default=None, options=None):
+    message = ""
+    if method not in methods:
+        message = f"Collection Warning: {parent} {method} attribute not found"
+    elif data[methods[method]] is None:
+        message = f"Collection Warning: {parent} {method} attribute is blank"
+    elif options is not None and str(data[methods[method]]).lower() not in options:
+        message = f"Collection Warning: {parent} {method} attribute {data[methods[method]]} must be in {options}"
+    else:
+        return data[methods[method]]
+    if default is None:
+        raise Failed(message)
+    else:
+        logger.warning(f"{message} using {default} as default")
+        return default
+
+def parse_int_from_dict(parent, method, data, methods, default, minimum=1, maximum=None):
+    if method not in methods:
+        logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default} as default")
+    elif not data[methods[method]]:
+        logger.warning(f"Collection Warning: {parent} {methods[method]} attribute is blank using {default} as default")
+    elif maximum is None and (not isinstance(data[methods[method]], int) or data[methods[method]] < minimum):
+        logger.warning(f"Collection Warning: {parent} {methods[method]} attribute {data[methods[method]]} must an integer >= {minimum} using {default} as default")
+    elif maximum is not None and (not isinstance(data[methods[method]], int) or data[methods[method]] < minimum or data[methods[method]] > maximum):
+        logger.warning(f"Collection Warning: {parent} {methods[method]} attribute {data[methods[method]]} must an integer between {minimum} and {maximum} using {default} as default")
+    else:
+        return data[methods[method]]
+    return default
