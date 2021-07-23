@@ -31,12 +31,13 @@ mal_ranked_name = {
     "mal_popular": "bypopularity",
     "mal_favorite": "favorite"
 }
-season_sort = {
+season_sort_translation = {
     "anime_score": "anime_score",
     "anime_num_list_users": "anime_num_list_users",
     "score": "anime_score",
     "members": "anime_num_list_users"
 }
+season_sort_options = ["score", "members"]
 pretty_names = {
     "anime_score": "Score",
     "anime_num_list_users": "Members",
@@ -51,7 +52,7 @@ pretty_names = {
     "dropped": "Dropped",
     "plan_to_watch": "Plan to Watch"
 }
-userlist_sort = {
+userlist_sort_translation = {
     "score": "list_score",
     "list_score": "list_score",
     "last_updated": "list_updated_at",
@@ -62,6 +63,7 @@ userlist_sort = {
     "start_date": "anime_start_date",
     "anime_start_date": "anime_start_date"
 }
+userlist_sort_options = ["score", "last_updated", "title", "start_date"]
 userlist_status = [
     "all",
     "watching",
