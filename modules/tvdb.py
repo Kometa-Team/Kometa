@@ -87,7 +87,7 @@ class TVDb:
     def __init__(self, config):
         self.config = config
 
-    def get_movie_or_series(self, language, tvdb_url, is_movie):
+    def get_item(self, language, tvdb_url, is_movie):
         return self.get_movie(language, tvdb_url) if is_movie else self.get_series(language, tvdb_url)
 
     def get_series(self, language, tvdb_url):

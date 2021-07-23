@@ -458,21 +458,24 @@ def parse_int(method, data, default=10, minimum=1, maximum=None):
         return list_count
     return default
 
-def parse_from_dict(parent, method, data, methods, default=None, options=None):
+def parse_from_dict(parent, method, data, methods, default=None, options=None, translation=None):
     message = ""
+    if options is None and translation is not None:
+        options = [o for o in translation]
     if method not in methods:
-        message = f"Collection Warning: {parent} {method} attribute not found"
+        message = f"{parent} {method} attribute not found"
     elif data[methods[method]] is None:
-        message = f"Collection Warning: {parent} {method} attribute is blank"
-    elif options is not None and str(data[methods[method]]).lower() not in options:
-        message = f"Collection Warning: {parent} {method} attribute {data[methods[method]]} must be in {options}"
+        message = f"{parent} {method} attribute is blank"
+    elif (translation is not None and str(data[methods[method]]).lower() not in translation) or \
+            (options is not None and translation is None and str(data[methods[method]]).lower() not in options):
+        message = f"{parent} {method} attribute {data[methods[method]]} must be in {options}"
     else:
-        return data[methods[method]]
+        return translation[data[methods[method]]] if translation is not None else data[methods[method]]
     if default is None:
-        raise Failed(message)
+        raise Failed(f"Collection Error: {message}")
     else:
-        logger.warning(f"{message} using {default} as default")
-        return default
+        logger.warning(f"Collection Warning: {message} using {default} as default")
+        return translation[default] if translation is not None else default
 
 def parse_int_from_dict(parent, method, data, methods, default, minimum=1, maximum=None):
     if method not in methods:
@@ -486,3 +489,8 @@ def parse_int_from_dict(parent, method, data, methods, default, minimum=1, maxim
     else:
         return data[methods[method]]
     return default
+
+def parse_list(method, data, methods):
+    if method in methods and data[methods[method]]:
+        return [i for i in data[methods[method]] if i] if isinstance(data[methods[method]], list) else [str(data[methods[method]])]
+    return []
