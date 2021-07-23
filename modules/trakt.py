@@ -9,15 +9,8 @@ redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
 redirect_uri_encoded = redirect_uri.replace(":", "%3A")
 base_url = "https://api.trakt.tv"
 builders = [
-    "trakt_collected",
-    "trakt_collection",
-    "trakt_list",
-    "trakt_list_details",
-    "trakt_popular",
-    "trakt_recommended",
-    "trakt_trending",
-    "trakt_watched",
-    "trakt_watchlist"
+    "trakt_collected", "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular",
+    "trakt_recommended", "trakt_trending", "trakt_watched", "trakt_watchlist"
 ]
 
 class Trakt:

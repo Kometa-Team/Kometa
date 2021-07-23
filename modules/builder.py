@@ -10,7 +10,6 @@ from urllib.parse import quote
 logger = logging.getLogger("Plex Meta Manager")
 
 string_filters = ["title", "episode_title", "studio"]
-image_file_details = ["file_poster", "file_background", "asset_directory"]
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
 method_alias = {
@@ -58,116 +57,26 @@ filter_translation = {
     "writer": "writers"
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
-all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakt.builders + tvdb.builders
-dictionary_builders = [
-    "filters",
-    "anidb_tag",
-    "anilist_genre",
-    "anilist_season",
-    "anilist_tag",
-    "mal_season",
-    "mal_userlist",
-    "plex_collectionless",
-    "plex_search",
-    "tautulli_popular",
-    "tautulli_watched",
-    "tmdb_discover"
-]
-show_only_builders = [
-    "tmdb_network",
-    "tmdb_show",
-    "tmdb_show_details",
-    "tvdb_show",
-    "tvdb_show_details"
-]
+all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + \
+               mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakt.builders + tvdb.builders
+show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details"]
 movie_only_builders = [
-    "letterboxd_list",
-    "letterboxd_list_details",
-    "icheckmovies_list",
-    "icheckmovies_list_details",
-    "tmdb_collection",
-    "tmdb_collection_details",
-    "tmdb_movie",
-    "tmdb_movie_details",
-    "tmdb_now_playing",
-    "tvdb_movie",
-    "tvdb_movie_details"
-]
-numbered_builders = [
-    "anidb_popular",
-    "anilist_popular",
-    "anilist_top_rated",
-    "mal_all",
-    "mal_airing",
-    "mal_upcoming",
-    "mal_tv",
-    "mal_ova",
-    "mal_movie",
-    "mal_special",
-    "mal_popular",
-    "mal_favorite",
-    "mal_suggested",
-    "tmdb_popular",
-    "tmdb_top_rated",
-    "tmdb_now_playing",
-    "tmdb_trending_daily",
-    "tmdb_trending_weekly",
-    "trakt_trending",
-    "trakt_popular",
-    "trakt_recommended",
-    "trakt_watched",
-    "trakt_collected"
-]
-smart_invalid = ["collection_order"]
-smart_url_invalid = [
-    "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label",
-    "radarr_add", "radarr_folder", "radarr_monitor", "radarr_availability", 
-    "radarr_quality", "radarr_tag", "radarr_search",
-    "sonarr_add", "sonarr_folder", "sonarr_monitor", "sonarr_quality", "sonarr_language", 
-    "sonarr_series", "sonarr_season", "sonarr_tag", "sonarr_search", "sonarr_cutoff_search",
-    "filters"
+    "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details",
+    "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
+    "tvdb_movie", "tvdb_movie_details"
 ]
 summary_details = [
     "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary",
     "tvdb_description", "trakt_description", "letterboxd_description", "icheckmovies_description"
 ]
-poster_details = [
-    "url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"
-]
-background_details = [
-    "url_background", "tmdb_background", "tvdb_background", "file_background"
-]
-boolean_details = [
-    "visible_library",
-    "visible_home",
-    "visible_shared",
-    "show_filtered",
-    "show_missing",
-    "save_missing",
-    "item_assets"
-]
-string_details = [
-    "sort_title",
-    "content_rating",
-    "name_mapping"
-]
-ignored_details = [
-    "smart_filter",
-    "smart_label",
-    "smart_url",
-    "run_again",
-    "schedule",
-    "sync_mode",
-    "template",
-    "test",
-    "tmdb_person",
-    "build_collection"
-]
+poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
+background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
+boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "item_assets"]
+string_details = ["sort_title", "content_rating", "name_mapping"]
+ignored_details = ["smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "tmdb_person", "build_collection"]
 details = ["collection_mode", "collection_order", "label"] + boolean_details + string_details
-collectionless_details = [
-    "collection_order", "plex_collectionless",
-    "label", "label_sync_mode", "test"
-] + poster_details + background_details + summary_details + string_details
+collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
+                         poster_details + background_details + summary_details + string_details
 item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + list(plex.item_advance_keys.keys())
 radarr_details = ["radarr_add", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = ["sonarr_add", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"]
@@ -212,6 +121,8 @@ movie_only_filters = [
     "writer", "writer.not"
 ]
 show_only_filters = ["network"]
+smart_invalid = ["collection_order"]
+smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 
 class CollectionBuilder:
     def __init__(self, config, library, metadata, name, data):

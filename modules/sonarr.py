@@ -8,20 +8,25 @@ logger = logging.getLogger("Plex Meta Manager")
 
 series_type = ["standard", "daily", "anime"]
 monitor_translation = {
-    "all": "all",
-    "future": "future",
-    "missing": "missing",
-    "existing": "existing",
-    "pilot": "pilot",
-    "first": "firstSeason",
-    "latest": "latestSeason",
-    "none": "none"
+    "all": "all", "future": "future", "missing": "missing", "existing": "existing",
+    "pilot": "pilot", "first": "firstSeason", "latest": "latestSeason", "none": "none"
 }
-apply_tags_translation = {
-    "": "add",
-    "sync": "replace",
-    "remove": "remove"
+series_type_descriptions = {
+    "standard": "Episodes released with SxxEyy pattern",
+    "daily": "Episodes released daily or less frequently that use year-month-day (2017-05-25)",
+    "anime": "Episodes released using an absolute episode number"
 }
+monitor_descriptions = {
+    "all": "Monitor all episodes except specials",
+    "future": "Monitor episodes that have not aired yet",
+    "missing": "Monitor episodes that do not have files or have not aired yet",
+    "existing": "Monitor episodes that have files or have not aired yet",
+    "pilot": "Monitor the first episode. All other episodes will be ignored",
+    "first": "Monitor all episodes of the first season. All other seasons will be ignored",
+    "latest": "Monitor all episodes of the latest season and future seasons",
+    "none": "No episodes will be monitored"
+}
+apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
 
 class Sonarr:
     def __init__(self, config, params):
