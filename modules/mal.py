@@ -6,79 +6,36 @@ from ruamel import yaml
 logger = logging.getLogger("Plex Meta Manager")
 
 builders = [
-    "mal_id",
-    "mal_all",
-    "mal_airing",
-    "mal_upcoming",
-    "mal_tv",
-    "mal_ova",
-    "mal_movie",
-    "mal_special",
-    "mal_popular",
-    "mal_favorite",
-    "mal_season",
-    "mal_suggested",
-    "mal_userlist"
+    "mal_id", "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie",
+    "mal_special", "mal_popular", "mal_favorite", "mal_season", "mal_suggested", "mal_userlist"
 ]
 mal_ranked_name = {
-    "mal_all": "all",
-    "mal_airing": "airing",
-    "mal_upcoming": "upcoming",
-    "mal_tv": "tv",
-    "mal_ova": "ova",
-    "mal_movie": "movie",
-    "mal_special": "special",
-    "mal_popular": "bypopularity",
-    "mal_favorite": "favorite"
+    "mal_all": "all", "mal_airing": "airing", "mal_upcoming": "upcoming", "mal_tv": "tv", "mal_ova": "ova",
+    "mal_movie": "movie", "mal_special": "special", "mal_popular": "bypopularity", "mal_favorite": "favorite"
 }
-season_sort_translation = {
-    "anime_score": "anime_score",
-    "anime_num_list_users": "anime_num_list_users",
-    "score": "anime_score",
-    "members": "anime_num_list_users"
-}
+season_sort_translation = {"score": "anime_score", "anime_score": "anime_score", "members": "anime_num_list_users", "anime_num_list_users": "anime_num_list_users"}
 season_sort_options = ["score", "members"]
 pretty_names = {
-    "anime_score": "Score",
-    "anime_num_list_users": "Members",
-    "list_score": "Score",
-    "list_updated_at": "Last Updated",
-    "anime_title": "Title",
-    "anime_start_date": "Start Date",
-    "all": "All Anime",
-    "watching": "Currently Watching",
-    "completed": "Completed",
-    "on_hold": "On Hold",
-    "dropped": "Dropped",
-    "plan_to_watch": "Plan to Watch"
+    "anime_score": "Score", "list_score": "Score", "anime_num_list_users": "Members", "list_updated_at": "Last Updated",
+    "anime_title": "Title", "anime_start_date": "Start Date", "all": "All Anime", "watching": "Currently Watching",
+    "completed": "Completed", "on_hold": "On Hold", "dropped": "Dropped", "plan_to_watch": "Plan to Watch"
 }
 userlist_sort_translation = {
-    "score": "list_score",
-    "list_score": "list_score",
-    "last_updated": "list_updated_at",
-    "list_updated": "list_updated_at",
-    "list_updated_at": "list_updated_at",
-    "title": "anime_title",
-    "anime_title": "anime_title",
-    "start_date": "anime_start_date",
-    "anime_start_date": "anime_start_date"
+    "score": "list_score", "list_score": "list_score",
+    "last_updated": "list_updated_at", "list_updated": "list_updated_at", "list_updated_at": "list_updated_at",
+    "title": "anime_title", "anime_title": "anime_title",
+    "start_date": "anime_start_date", "anime_start_date": "anime_start_date"
 }
 userlist_sort_options = ["score", "last_updated", "title", "start_date"]
-userlist_status = [
-    "all",
-    "watching",
-    "completed",
-    "on_hold",
-    "dropped",
-    "plan_to_watch"
-]
+userlist_status = ["all", "watching", "completed", "on_hold", "dropped", "plan_to_watch"]
+base_url = "https://myanimelist.net"
 urls = {
-    "oauth_token": "https://myanimelist.net/v1/oauth2/token",
-    "oauth_authorize": "https://myanimelist.net/v1/oauth2/authorize",
-    "ranking": "https://api.myanimelist.net/v2/anime/ranking",
-    "season": "https://api.myanimelist.net/v2/anime/season",
-    "suggestions": "https://api.myanimelist.net/v2/anime/suggestions",
-    "user": "https://api.myanimelist.net/v2/users"
+    "oauth_token": f"{base_url}/v1/oauth2/token",
+    "oauth_authorize": f"{base_url}/v1/oauth2/authorize",
+    "ranking": f"{base_url}/v2/anime/ranking",
+    "season": f"{base_url}/v2/anime/season",
+    "suggestions": f"{base_url}/v2/anime/suggestions",
+    "user": f"{base_url}/v2/users"
 }
 
 class MyAnimeList:

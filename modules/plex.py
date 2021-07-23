@@ -34,16 +34,8 @@ search_translation = {
     "episode_plays": "episode.viewCount"
 }
 modifier_translation = {
-    "": "",
-    ".not": "!",
-    ".gt": "%3E%3E",
-    ".gte": "%3E",
-    ".lt": "%3C%3C",
-    ".lte": "%3C",
-    ".before": "%3C%3C",
-    ".after": "%3E%3E",
-    ".begins": "%3C",
-    ".ends": "%3E"
+    "": "", ".not": "!", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
+    ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E"
 }
 episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
@@ -58,17 +50,11 @@ metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
 collection_mode_options = {
-    "default": "default",
-    "hide": "hide",
-    "hide_items": "hideItems",
-    "hideitems": "hideItems",
-    "show_items": "showItems",
-    "showitems": "showItems"
+    "default": "default", "hide": "hide",
+    "hide_items": "hideItems", "hideitems": "hideItems",
+    "show_items": "showItems", "showitems": "showItems"
 }
-collection_order_options = {
-    "release": "release",
-    "alpha": "alpha"
-}
+collection_order_options = {"release": "release", "alpha": "alpha"}
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 item_advance_keys = {
@@ -126,13 +112,9 @@ or_searches = [
     "writer", "decade", "resolution", "year", "episode_title", "episode_year"
 ]
 movie_only_searches = [
-    "country", "country.not",
-    "director", "director.not",
-    "producer", "producer.not",
-    "writer", "writer.not",
+    "country", "country.not", "director", "director.not", "producer", "producer.not", "writer", "writer.not",
     "decade", "duplicate", "unplayed", "progress", "trash",
-    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
-    "duration.gt", "duration.gte", "duration.lt", "duration.lte"
+    "plays.gt", "plays.gte", "plays.lt", "plays.lte", "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
     "network", "network.not",
@@ -152,13 +134,7 @@ boolean_attributes = [
 ]
 tmdb_attributes = ["actor", "director", "producer", "writer"]
 date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"]
-search_display = {
-    "added": "Date Added",
-    "release": "Release Date",
-    "hdr": "HDR",
-    "progress": "In Progress",
-    "episode_progress": "Episode In Progress"
-}
+search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 sorts = {
     None: None,
     "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
@@ -169,44 +145,14 @@ sorts = {
     "duration.asc": "duration:asc", "duration.desc": "duration:desc",
     "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
 }
-modifiers = {
-    ".not": "!",
-    ".begins": "<",
-    ".ends": ">",
-    ".before": "<<",
-    ".after": ">>",
-    ".gt": ">>",
-    ".gte": "__gte",
-    ".lt": "<<",
-    ".lte": "__lte"
-}
+modifiers = {".not": "!", ".begins": "<", ".ends": ">", ".before": "<<", ".after": ">>", ".gt": ">>", ".gte": "__gte", ".lt": "<<", ".lte": "__lte"}
 mod_displays = {
-    "": "is",
-    ".not": "is not",
-    ".begins": "begins with",
-    ".ends": "ends with",
-    ".before": "is before",
-    ".after": "is after",
-    ".gt": "is greater than",
-    ".gte": "is greater than or equal",
-    ".lt": "is less than",
-    ".lte": "is less than or equal"
+    "": "is", ".not": "is not", ".begins": "begins with", ".ends": "ends with", ".before": "is before", ".after": "is after",
+    ".gt": "is greater than", ".gte": "is greater than or equal", ".lt": "is less than", ".lte": "is less than or equal"
 }
 tags = [
-    "actor",
-    "audio_language",
-    "collection",
-    "content_rating",
-    "country",
-    "director",
-    "genre",
-    "label",
-    "network",
-    "producer",
-    "resolution",
-    "studio",
-    "subtitle_language",
-    "writer"
+    "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label",
+    "network", "producer", "resolution", "studio", "subtitle_language", "writer"
 ]
 movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
@@ -257,12 +203,7 @@ episode_sorts = {
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "random": "random"
 }
-sort_types = {
-    "movies": (1, movie_sorts),
-    "shows": (2, show_sorts),
-    "seasons": (3, season_sorts),
-    "episodes": (4, episode_sorts),
-}
+sort_types = {"movies": (1, movie_sorts), "shows": (2, show_sorts), "seasons": (3, season_sorts), "episodes": (4, episode_sorts)}
 
 class Plex:
     def __init__(self, config, params):

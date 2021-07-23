@@ -6,17 +6,9 @@ from arrapi.exceptions import ArrException, Invalid
 
 logger = logging.getLogger("Plex Meta Manager")
 
-availability_translation = {
-    "announced": "announced",
-    "cinemas": "inCinemas",
-    "released": "released",
-    "db": "preDB"
-}
-apply_tags_translation = {
-    "": "add",
-    "sync": "replace",
-    "remove": "remove"
-}
+availability_translation = {"announced": "announced", "cinemas": "inCinemas", "released": "released", "db": "preDB"}
+apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
+availability_descriptions = {"announced": "For Announced", "cinemas": "For In Cinemas", "released": "For Released", "db": "For PreDB"}
 
 class Radarr:
     def __init__(self, config, params):

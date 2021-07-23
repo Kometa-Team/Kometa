@@ -4,25 +4,14 @@ from modules.util import Failed
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = [
-    "tvdb_list",
-    "tvdb_list_details",
-    "tvdb_movie",
-    "tvdb_movie_details",
-    "tvdb_show",
-    "tvdb_show_details"
-]
+builders = ["tvdb_list", "tvdb_list_details", "tvdb_movie", "tvdb_movie_details", "tvdb_show", "tvdb_show_details"]
 base_url = "https://www.thetvdb.com"
 alt_url = "https://thetvdb.com"
 urls = {
-    "list": f"{base_url}/lists/",
-    "alt_list": f"{alt_url}/lists/",
-    "series": f"{base_url}/series/",
-    "alt_series": f"{alt_url}/series/",
-    "movies": f"{base_url}/movies/",
-    "alt_movies": f"{alt_url}/movies/",
-    "series_id": f"{base_url}/dereferrer/series/",
-    "movie_id": f"{base_url}/dereferrer/movie/"
+    "list": f"{base_url}/lists/", "alt_list": f"{alt_url}/lists/",
+    "series": f"{base_url}/series/", "alt_series": f"{alt_url}/series/",
+    "movies": f"{base_url}/movies/", "alt_movies": f"{alt_url}/movies/",
+    "series_id": f"{base_url}/dereferrer/series/", "movie_id": f"{base_url}/dereferrer/movie/"
 }
 
 class TVDbObj:

@@ -6,19 +6,10 @@ from retrying import retry
 logger = logging.getLogger("Plex Meta Manager")
 
 builders = [
-    "anilist_genre",
-    "anilist_id",
-    "anilist_popular",
-    "anilist_relations",
-    "anilist_season",
-    "anilist_studio",
-    "anilist_tag",
-    "anilist_top_rated"
+    "anilist_genre", "anilist_id", "anilist_popular", "anilist_relations",
+    "anilist_season", "anilist_studio", "anilist_tag", "anilist_top_rated"
 ]
-pretty_names = {
-    "score": "Average Score",
-    "popular": "Popularity"
-}
+pretty_names = {"score": "Average Score", "popular": "Popularity"}
 base_url = "https://graphql.anilist.co"
 tag_query = "query{MediaTagCollection {name}}"
 genre_query = "query{GenreCollection}"
