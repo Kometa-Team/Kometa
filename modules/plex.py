@@ -420,7 +420,7 @@ class Plex:
                 shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
                 while util.is_locked(temp_image):
                     time.sleep(1)
-                new_poster = Image.open(temp_image)
+                new_poster = Image.open(temp_image).convert("RGBA")
                 new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
                 new_poster.paste(overlay_image, (0, 0), overlay_image)
                 new_poster.save(temp_image)

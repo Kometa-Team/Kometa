@@ -28,9 +28,10 @@ class ICheckMovies:
             list_url = icheckmovies_list.strip()
             if not list_url.startswith(base_url):
                 raise Failed(f"ICheckMovies Error: {list_url} must begin with: {base_url}")
-            if len(self._parse_list(list_url, language)) > 0:
+            elif len(self._parse_list(list_url, language)) > 0:
                 valid_lists.append(list_url)
-            raise Failed(f"ICheckMovies Error: {list_url} failed to parse")
+            else:
+                raise Failed(f"ICheckMovies Error: {list_url} failed to parse")
         return valid_lists
 
     def get_items(self, method, data, language):
