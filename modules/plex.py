@@ -33,6 +33,12 @@ search_translation = {
     "episode_user_rating": "episode.userRating",
     "episode_plays": "episode.viewCount"
 }
+show_translation = {
+    "hdr": "episode.hdr",
+    "audioLanguage": "episode.audioLanguage",
+    "subtitleLanguage": "episode.subtitleLanguage",
+    "resolution": "episode.resolution"
+}
 modifier_translation = {
     "": "", ".not": "!", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E"
@@ -455,8 +461,7 @@ class Plex:
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
-        if final_search == "resolution" and self.is_show:
-            final_search = "episode.resolution"
+        final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         try:
             choices = {}
             for choice in self.Plex.listFilterChoices(final_search):
@@ -464,7 +469,8 @@ class Plex:
                 choices[choice.key.lower()] = choice.title if title else choice.key
             return choices
         except NotFound:
-            raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
+            logger.debug(f"Search Attribute: {final_search}")
+            raise Failed(f"Collection Error: plex search attribute: {search_name} not supported")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_labels(self):
