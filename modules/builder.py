@@ -1070,6 +1070,7 @@ class CollectionBuilder:
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
                     arg_key = plex.search_translation[attr] if attr in plex.search_translation else attr
+                    arg_key = plex.show_translation[arg_key] if self.library.is_show and arg_key in plex.show_translation else arg_key
                     if mod is None:
                         mod = plex.modifier_translation[modifier] if modifier in plex.modifier_translation else modifier
                     if arg_s is None:
