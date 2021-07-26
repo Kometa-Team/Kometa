@@ -39,12 +39,12 @@ urls = {
 }
 
 class MyAnimeList:
-    def __init__(self, config, params, authorization=None):
+    def __init__(self, config, params):
         self.config = config
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
-        self.authorization = authorization
+        self.authorization = params["authorization"]
         if not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
