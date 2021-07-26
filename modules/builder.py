@@ -867,7 +867,7 @@ class CollectionBuilder:
         else:
             values = self.config.TMDb.validate_tmdb_ids(method_data, method_name)
             if method_name.endswith("_details"):
-                if method_name.beginswith(("tmdb_collection", "tmdb_movie", "tmdb_show")):
+                if method_name.startswith(("tmdb_collection", "tmdb_movie", "tmdb_show")):
                     item = self.config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
                     if hasattr(item, "overview") and item.overview:
                         self.summaries[method_name] = item.overview
@@ -875,13 +875,13 @@ class CollectionBuilder:
                         self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{item.backdrop_path}"
                     if hasattr(item, "poster_path") and item.poster_path:
                         self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
-                elif method_name.beginswith(("tmdb_actor", "tmdb_crew", "tmdb_director", "tmdb_producer", "tmdb_writer")):
+                elif method_name.startswith(("tmdb_actor", "tmdb_crew", "tmdb_director", "tmdb_producer", "tmdb_writer")):
                     item = self.config.TMDb.get_person(values[0])
                     if hasattr(item, "biography") and item.biography:
                         self.summaries[method_name] = item.biography
                     if hasattr(item, "profile_path") and item.profile_path:
                         self.posters[method_name] = f"{self.config.TMDb.image_url}{item.profile_path}"
-                elif method_name.beginswith("tmdb_list"):
+                elif method_name.startswith("tmdb_list"):
                     item = self.config.TMDb.get_list(values[0])
                     if hasattr(item, "description") and item.description:
                         self.summaries[method_name] = item.description
