@@ -198,7 +198,7 @@ class AniList:
     def validate_anilist_ids(self, anilist_ids, studio=False):
         anilist_id_list = util.get_int_list(anilist_ids, "AniList ID")
         anilist_values = []
-        for anilist_id in anilist_ids:
+        for anilist_id in anilist_id_list:
             if studio:              query = "query ($id: Int) {Studio(id: $id) {name}}"
             else:                   query = "query ($id: Int) {Media(id: $id) {id}}"
             try:
