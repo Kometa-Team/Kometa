@@ -376,6 +376,10 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _upload_image(self, item, image):
+        logger.debug(item)
+        logger.debug(image.is_poster)
+        logger.debug(image.is_url)
+        logger.debug(image.location)
         if image.is_poster and image.is_url:
             item.uploadPoster(url=image.location)
         elif image.is_poster:
@@ -388,6 +392,8 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def upload_file_poster(self, item, image):
+        logger.debug(item)
+        logger.debug(image)
         item.uploadPoster(filepath=image)
         self.reload(item)
 
@@ -546,13 +552,13 @@ class Plex:
 
     def get_collection(self, data):
         if isinstance(data, int):
-            collection = self.fetchItem(data)
+            return self.fetchItem(data)
         elif isinstance(data, Collection):
-            collection = data
+            return data
         else:
-            collection = util.choose_from_list(self.search(title=str(data), libtype="collection"), "collection", str(data), exact=True)
-        if collection:
-            return collection
+            for d in self.search(title=str(data), libtype="collection"):
+                if d.title == data:
+                    return d
         raise Failed(f"Plex Error: Collection {data} not found")
 
     def validate_collections(self, collections):
@@ -689,7 +695,10 @@ class Plex:
         kwargs = {}
         if year is not None:
             kwargs["year"] = year
-        return util.choose_from_list(self.search(title=str(data), **kwargs), "movie" if self.is_movie else "show", str(data), exact=True)
+        for d in self.search(title=str(data), **kwargs):
+            if d.title == data:
+                return d
+        return None
 
     def edit_item(self, item, name, item_type, edits, advanced=False):
         if len(edits) > 0:

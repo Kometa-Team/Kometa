@@ -93,48 +93,13 @@ def tab_new_lines(data):
     return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
 
 def make_ordinal(n):
-    n = int(n)
-    suffix = ["th", "st", "nd", "rd", "th"][min(n % 10, 4)]
-    if 11 <= (n % 100) <= 13:
-        suffix = "th"
-    return str(n) + suffix
+    return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
 
-def choose_from_list(datalist, description, data=None, list_type="title", exact=False):
-    if len(datalist) > 0:
-        if len(datalist) == 1 and (description != "collection" or datalist[0].title == data):
-            return datalist[0]
-        zero_option = f"Create New Collection: {data}" if description == "collection" else "Do Nothing"
-        message = f"Multiple {description}s Found\n0) {zero_option}"
-        for i, d in enumerate(datalist, 1):
-            if list_type == "title":
-                if d.title == data:
-                    return d
-                message += f"\n{i}) {d.title}"
-            else:
-                message += f"\n{i}) [{d[0]}] {d[1]}"
-        if exact:
-            return None
-        print_multiline(message, info=True)
-        while True:
-            try:
-                selection = int(logger_input(f"Choose {description} number")) - 1
-                if selection >= 0:                                          return datalist[selection]
-                elif selection == -1:                                       return None
-                else:                                                       logger.info(f"Invalid {description} number")
-            except IndexError:                                          logger.info(f"Invalid {description} number")
-            except TimeoutExpired:
-                if list_type == "title":
-                    logger.warning(f"Input Timeout: using {data}")
-                    return None
-                else:
-                    logger.warning(f"Input Timeout: using {datalist[0][1]}")
-                    return datalist[0]
-    else:
-        return None
-
-def get_bool(method_name, method_data):
+def parse_bool(method_name, method_data):
     if isinstance(method_data, bool):
         return method_data
+    elif isinstance(method_data, int):
+        return method_data > 0
     elif str(method_data).lower() in ["t", "true"]:
         return True
     elif str(method_data).lower() in ["f", "false"]:

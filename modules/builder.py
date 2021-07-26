@@ -296,7 +296,7 @@ class CollectionBuilder:
                         if run_time.startswith("hour"):
                             try:
                                 if 0 <= int(param) <= 23:
-                                    self.schedule += f"\nScheduled to run only on the {util.make_ordinal(param)} hour"
+                                    self.schedule += f"\nScheduled to run only on the {util.make_ordinal(int(param))} hour"
                                     if self.config.run_hour == int(param):
                                         skip_collection = False
                                 else:
@@ -314,7 +314,7 @@ class CollectionBuilder:
                         elif run_time.startswith("month"):
                             try:
                                 if 1 <= int(param) <= 31:
-                                    self.schedule += f"\nScheduled monthly on the {util.make_ordinal(param)}"
+                                    self.schedule += f"\nScheduled monthly on the {util.make_ordinal(int(param))}"
                                     if self.current_time.day == int(param) or (self.current_time.day == last_day.day and int(param) > last_day.day):
                                         skip_collection = False
                                 else:
@@ -349,7 +349,7 @@ class CollectionBuilder:
                 logger.warning(f"Collection Warning: run_again attribute is blank defaulting to false")
             else:
                 logger.debug(f"Value: {self.data[methods['run_again']]}")
-                self.run_again = util.get_bool("run_again", self.data[methods["run_again"]])
+                self.run_again = util.parse_bool("run_again", self.data[methods["run_again"]])
 
         self.sync = self.library.sync_mode == "sync"
         if "sync_mode" in methods:
@@ -372,7 +372,7 @@ class CollectionBuilder:
                 logger.warning(f"Collection Warning: build_collection attribute is blank defaulting to true")
             else:
                 logger.debug(f"Value: {self.data[methods['build_collection']]}")
-                self.build_collection = util.get_bool("build_collection", self.data[methods["build_collection"]])
+                self.build_collection = util.parse_bool("build_collection", self.data[methods["build_collection"]])
 
         if "tmdb_person" in methods:
             logger.info("")
@@ -596,7 +596,7 @@ class CollectionBuilder:
             else:
                 self.details[method_final] = util.get_list(method_data)
         elif method_name in boolean_details:
-            self.details[method_name] = util.get_bool(method_name, method_data)
+            self.details[method_name] = util.parse_bool(method_name, method_data)
         elif method_name in string_details:
             self.details[method_name] = str(method_data)
 
@@ -638,11 +638,11 @@ class CollectionBuilder:
 
     def _radarr(self, method_name, method_data):
         if method_name == "radarr_add":
-            self.add_to_radarr = util.get_bool(method_name, method_data)
+            self.add_to_radarr = util.parse_bool(method_name, method_data)
         elif method_name == "radarr_folder":
             self.radarr_options["folder"] = method_data
         elif method_name in ["radarr_monitor", "radarr_search"]:
-            self.radarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
+            self.radarr_options[method_name[7:]] = util.parse_bool(method_name, method_data)
         elif method_name == "radarr_availability":
             if str(method_data).lower() in radarr.availability_translation:
                 self.radarr_options["availability"] = str(method_data).lower()
@@ -656,7 +656,7 @@ class CollectionBuilder:
 
     def _sonarr(self, method_name, method_data):
         if method_name == "sonarr_add":
-            self.add_to_sonarr = util.get_bool(method_name, method_data)
+            self.add_to_sonarr = util.parse_bool(method_name, method_data)
         elif method_name == "sonarr_folder":
             self.sonarr_options["folder"] = method_data
         elif method_name == "sonarr_monitor":
@@ -676,7 +676,7 @@ class CollectionBuilder:
             else:
                 raise Failed(f"Collection Error: {method_name} attribute must be either standard, daily, or anime")
         elif method_name in ["sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
-            self.sonarr_options[method_name[7:]] = util.get_bool(method_name, method_data)
+            self.sonarr_options[method_name[7:]] = util.parse_bool(method_name, method_data)
         elif method_name == "sonarr_tag":
             self.sonarr_options["tag"] = util.get_list(method_data)
 
@@ -1231,7 +1231,7 @@ class CollectionBuilder:
         elif attribute in ["decade", "year", "episode_year"] and modifier in ["", ".not"]:
             return smart_pair(util.get_year_list(data, self.current_year, final))
         elif attribute in plex.boolean_attributes:
-            return util.get_bool(attribute, data)
+            return util.parse_bool(attribute, data)
         else:
             raise Failed(f"Collection Error: {final} attribute not supported")
 
