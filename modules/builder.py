@@ -1561,7 +1561,7 @@ class CollectionBuilder:
             if self.config.Cache:
                 rating_keys = self.config.Cache.query_image_map_overlay(self.library.image_table_name, overlay_name)
             overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
-            overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png"))
+            overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png")).convert("RGBA")
             temp_image = os.path.join(overlay_folder, f"temp.png")
             overlay = (overlay_name, overlay_folder, overlay_image, temp_image)
 
