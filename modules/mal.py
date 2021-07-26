@@ -28,10 +28,10 @@ userlist_sort_translation = {
 }
 userlist_sort_options = ["score", "last_updated", "title", "start_date"]
 userlist_status = ["all", "watching", "completed", "on_hold", "dropped", "plan_to_watch"]
-base_url = "https://myanimelist.net"
+base_url = "https://api.myanimelist.net"
 urls = {
-    "oauth_token": f"{base_url}/v1/oauth2/token",
-    "oauth_authorize": f"{base_url}/v1/oauth2/authorize",
+    "oauth_token": f"https://myanimelist.net/v1/oauth2/token",
+    "oauth_authorize": f"https://myanimelist.net/v1/oauth2/authorize",
     "ranking": f"{base_url}/v2/anime/ranking",
     "season": f"{base_url}/v2/anime/season",
     "suggestions": f"{base_url}/v2/anime/suggestions",
