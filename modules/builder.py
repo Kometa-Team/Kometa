@@ -127,7 +127,7 @@ custom_sort_builders = [
     #"tmdb_collection", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     #"tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
     #"tvdb_list",
-    "imdb_list"
+    "imdb_list", "tmdb_list"
     #"trakt_list", "trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected",
     #"tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
     #"anidb_popular",
