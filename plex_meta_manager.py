@@ -463,6 +463,12 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 builder.update_details()
 
+            if builder.custom_sort:
+                logger.info("")
+                util.separator(f"Sorting {mapping_name} Collection", space=False, border=False)
+                logger.info("")
+                builder.sort_collection()
+
             logger.info("")
             util.separator(f"Updating Details of the Items in {mapping_name} Collection", space=False, border=False)
             logger.info("")

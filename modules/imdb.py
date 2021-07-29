@@ -13,7 +13,7 @@ urls = {
     "keyword": f"{base_url}/search/keyword/"
 }
 xpath = {
-    "imdb_id": "//div[contains(@class, 'lister-item-image')]//@data-tconst",
+    "imdb_id": "//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst",
     "list": "//div[@class='desc lister-total-num-results']/text()",
     "search": "//div[@class='desc']/span/text()",
     "keyword": "//div[@class='desc']/text()"
@@ -91,6 +91,7 @@ class IMDb:
             time.sleep(2)
         util.print_end()
         if len(imdb_ids) > 0:
+            logger.debug(f"{len(imdb_ids)} IMDb IDs Found: {imdb_ids}")
             return imdb_ids
         raise ValueError(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
