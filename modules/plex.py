@@ -60,7 +60,7 @@ collection_mode_options = {
     "hide_items": "hideItems", "hideitems": "hideItems",
     "show_items": "showItems", "showitems": "showItems"
 }
-collection_order_options = {"release": "release", "alpha": "alpha"}
+collection_order_options = ["release", "alpha", "custom"]
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 item_advance_keys = {

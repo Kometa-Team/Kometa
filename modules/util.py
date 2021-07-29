@@ -349,7 +349,6 @@ def parse_int(method, data, default=10, minimum=1, maximum=None):
     return default
 
 def parse_from_dict(parent, method, data, methods, default=None, options=None, translation=None):
-    message = ""
     if options is None and translation is not None:
         options = [o for o in translation]
     if method not in methods:
