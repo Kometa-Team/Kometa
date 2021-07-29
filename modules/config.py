@@ -540,8 +540,8 @@ class Config:
 
         util.separator()
 
-    def get_html(self, url, headers=None):
-        return html.fromstring(self.get(url, headers=headers).content)
+    def get_html(self, url, headers=None, params=None):
+        return html.fromstring(self.get(url, headers=headers, params=params).content)
 
     def get_json(self, url, headers=None):
         return self.get(url, headers=headers).json()

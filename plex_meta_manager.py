@@ -504,7 +504,7 @@ try:
                 minutes = int((seconds % 3600) // 60)
                 time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                 time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} {times_to_run}")
+                util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} {util.compile_list(times_to_run)}")
             time.sleep(60)
 except KeyboardInterrupt:
     util.separator("Exiting Plex Meta Manager")
