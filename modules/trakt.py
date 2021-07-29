@@ -12,6 +12,10 @@ builders = [
     "trakt_collected", "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular",
     "trakt_recommended", "trakt_trending", "trakt_watched", "trakt_watchlist"
 ]
+sorts = [
+    "rank", "added", "title", "released", "runtime", "popularity",
+    "percentage", "votes", "random", "my_rating", "watched", "collected"
+]
 
 class Trakt:
     def __init__(self, config, params):
@@ -140,7 +144,7 @@ class Trakt:
         else:                                       return [], [item["show"]["ids"]["tvdb"] for item in items]
 
     def validate_trakt(self, trakt_lists, is_movie, trakt_type="list"):
-        values = util.get_list(trakt_lists)
+        values = util.get_list(trakt_lists, split=False)
         trakt_values = []
         for value in values:
             try:

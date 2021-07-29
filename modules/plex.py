@@ -423,6 +423,8 @@ class Plex:
             if self.config.Cache:
                 _, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
             if poster_uploaded or not image_overlay or image_overlay != overlay_name:
+                if not item.posterUrl:
+                    raise Failed(f"Overlay Error: No existing poster to Overlay for {item.title}")
                 response = requests.get(item.posterUrl)
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")

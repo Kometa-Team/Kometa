@@ -124,16 +124,16 @@ show_only_filters = ["network"]
 smart_invalid = ["collection_order"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
-    #"tmdb_collection", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
-    #"tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
-    #"tvdb_list",
-    "imdb_list", "tmdb_list"
-    #"trakt_list", "trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected",
-    #"tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
-    #"anidb_popular",
-    #"anilist_top_rated", "anilist_popular", "anilist_season", "anilist_studio", "anilist_genre", "anilist_tag",
-    #"mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
-    #"mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season"
+    "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
+    "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
+    "tvdb_list",
+    "imdb_list",
+    "trakt_list", "trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected",
+    "tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
+    "anidb_popular",
+    "anilist_top_rated", "anilist_popular", "anilist_season", "anilist_studio", "anilist_genre", "anilist_tag",
+    "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
+    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season"
 ]
 
 class CollectionBuilder:
