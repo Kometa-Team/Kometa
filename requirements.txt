@@ -1,4 +1,4 @@
-PlexAPI==4.6.1
+PlexAPI==4.7.0
 tmdbv3api==1.7.6
 arrapi==1.1.1
 lxml

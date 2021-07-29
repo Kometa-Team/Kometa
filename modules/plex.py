@@ -489,6 +489,12 @@ class Plex:
         else:                   method = None
         return self.Plex._server.query(key, method=method)
 
+    def moveItem(self, collection, item, after=None):
+        key = f"{collection.key}/items/{item}/move"
+        if after:
+            key += f"?after={after}"
+        self._query(key, put=True)
+
     def smart_label_url(self, title, sort):
         labels = self.get_labels()
         if title not in labels:

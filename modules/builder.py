@@ -124,15 +124,16 @@ show_only_filters = ["network"]
 smart_invalid = ["collection_order"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
-    "tmdb_collection", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
-    "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
-    "tvdb_list", "imdb_list",
-    "trakt_list", "trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected",
-    "tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
-    "anidb_popular",
-    "anilist_top_rated", "anilist_popular", "anilist_season", "anilist_studio", "anilist_genre", "anilist_tag",
-    "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
-    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season"
+    #"tmdb_collection", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
+    #"tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
+    #"tvdb_list",
+    "imdb_list"
+    #"trakt_list", "trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected",
+    #"tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
+    #"anidb_popular",
+    #"anilist_top_rated", "anilist_popular", "anilist_season", "anilist_studio", "anilist_genre", "anilist_tag",
+    #"mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
+    #"mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season"
 ]
 
 class CollectionBuilder:
@@ -385,7 +386,7 @@ class CollectionBuilder:
                 logger.debug(f"Value: {self.data[methods['build_collection']]}")
                 self.build_collection = util.parse_bool("build_collection", self.data[methods["build_collection"]])
 
-        self.sort_collection = False
+        self.custom_sort = False
         if "collection_order" in methods:
             logger.info("")
             logger.info("Validating Method: collection_order")
@@ -393,8 +394,8 @@ class CollectionBuilder:
                 raise Failed(f"Collection Warning: collection_order attribute is blank")
             elif self.data[methods["collection_order"]].lower() in plex.collection_order_options:
                 self.details["collection_order"] = self.data[methods["collection_order"]].lower()
-                if self.data[methods["collection_order"]].lower() == "custom":
-                    self.sort_collection = True
+                if self.data[methods["collection_order"]].lower() == "custom" and self.build_collection:
+                    self.custom_sort = True
             else:
                 raise Failed(f"Collection Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)")
 
@@ -511,10 +512,10 @@ class CollectionBuilder:
             elif method_name == "filters":                                              self._filters(method_name, method_data)
             else:                                                                       raise Failed(f"Collection Error: {method_final} attribute not supported")
 
-        if self.sort_collection and len(self.builders) > 1:
+        if self.custom_sort and len(self.builders) > 1:
             raise Failed("Collection Error: collection_order: custom can only be used with a single builder per collection")
 
-        if self.sort_collection and self.builders[0][0] not in custom_sort_builders:
+        if self.custom_sort and self.builders[0][0] not in custom_sort_builders:
             raise Failed(f"Collection Error: collection_order: custom cannot be used with {self.builders[0][0]}")
 
         if self.add_to_radarr is None:
@@ -1790,6 +1791,20 @@ class CollectionBuilder:
 
         if poster or background:
             self.library.upload_images(self.obj, poster=poster, background=background)
+
+    def sort_collection(self):
+        items = self.library.get_collection_items(self.obj, self.smart_label_collection)
+        keys = {item.ratingKey: item for item in items}
+        previous = None
+        for ki, key in enumerate(self.rating_keys):
+            if key != items[ki].ratingKey:
+                logger.info(f"Moving {keys[key].title} {'after {}'.format(keys[previous].title) if previous else 'to the beginning'}")
+                self.library.moveItem(self.obj, key, after=previous)
+                for ii, item in enumerate(items):
+                    if key == item.ratingKey:
+                        items.insert(ki, items.pop(ii))
+                        break
+            previous = key
 
     def run_collections_again(self):
         self.obj = self.library.get_collection(self.name)
