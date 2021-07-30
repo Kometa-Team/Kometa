@@ -30,11 +30,11 @@ class IMDb:
             if not isinstance(imdb_dict, dict):
                 imdb_dict = {"url": imdb_dict}
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
-            imdb_url = util.parse_from_dict("imdb_list", "url", imdb_dict, dict_methods).strip()
+            imdb_url = util.parse("url", imdb_dict, methods=dict_methods, parent="imdb_list").strip()
             if not imdb_url.startswith((urls["list"], urls["search"], urls["keyword"])):
                 raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n{urls['list']} (For Lists)\n{urls['search']} (For Searches)\n{urls['keyword']} (For Keyword Searches)")
             self._total(imdb_url, language)
-            list_count = util.parse_int_from_dict("imdb_list", "limit", imdb_dict, dict_methods, 0, minimum=0) if "limit" in dict_methods else 0
+            list_count = util.parse("limit", imdb_dict, datatype="int", methods=dict_methods, default=0, parent="imdb_list", minimum=0) if "limit" in dict_methods else 0
             valid_lists.append({"url": imdb_url, "limit": list_count})
         return valid_lists
 

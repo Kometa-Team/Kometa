@@ -93,7 +93,7 @@ class Metadata:
                                 final_value = util.validate_date(value, name, return_as="%Y-%m-%d")
                                 current = current[:-9]
                             elif var_type == "float":
-                                final_value = util.check_number(value, name, number_type="float", minimum=0, maximum=10)
+                                final_value = util.parse(name, value, datatype="float", minimum=0, maximum=10)
                             else:
                                 final_value = value
                             if current != str(final_value):
@@ -170,7 +170,7 @@ class Metadata:
             logger.info("")
             year = None
             if "year" in methods:
-                year = util.check_number(meta[methods["year"]], "year", minimum=1800, maximum=datetime.now().year + 1)
+                year = util.parse("year", meta, datatype="int", methods=methods, minimum=1800, maximum=datetime.now().year + 1)
 
             title = mapping_name
             if "title" in methods:

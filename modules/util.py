@@ -95,18 +95,6 @@ def tab_new_lines(data):
 def make_ordinal(n):
     return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
 
-def parse_bool(method_name, method_data):
-    if isinstance(method_data, bool):
-        return method_data
-    elif isinstance(method_data, int):
-        return method_data > 0
-    elif str(method_data).lower() in ["t", "true"]:
-        return True
-    elif str(method_data).lower() in ["f", "false"]:
-        return False
-    else:
-        raise Failed(f"Collection Error: {method_name} attribute: {method_data} invalid must be either true or false")
-
 def compile_list(data):
     if isinstance(data, list):
         text = ""
@@ -126,39 +114,11 @@ def get_list(data, lower=False, split=True, int_list=False):
     else:                           return [d.strip() for d in str(data).split(",")]
 
 def get_int_list(data, id_type):
-    values = get_list(data)
     int_values = []
-    for value in values:
+    for value in get_list(data):
         try:                        int_values.append(regex_first_int(value, id_type))
         except Failed as e:         logger.error(e)
     return int_values
-
-def get_year_list(data, current_year, method):
-    final_years = []
-    values = get_list(data)
-    for value in values:
-        final_years.append(check_year(value, current_year, method))
-    return final_years
-
-def check_year(year, current_year, method):
-    return check_number(year, method, minimum=1800, maximum=current_year)
-
-def check_number(value, method, number_type="int", minimum=None, maximum=None):
-    if number_type == "int":
-        try:                                                    num_value = int(str(value))
-        except ValueError:                                      raise Failed(f"Collection Error: {method}: {value} must be an integer")
-    elif number_type == "float":
-        try:                                                    num_value = float(str(value))
-        except ValueError:                                      raise Failed(f"Collection Error: {method}: {value} must be a number")
-    else:                                                   raise Failed(f"Number Type: {number_type} invalid")
-    if minimum is not None and maximum is not None and (num_value < minimum or num_value > maximum):
-        raise Failed(f"Collection Error: {method}: {num_value} must be between {minimum} and {maximum}")
-    elif minimum is not None and num_value < minimum:
-        raise Failed(f"Collection Error: {method}: {num_value} is less then  {minimum}")
-    elif maximum is not None and num_value > maximum:
-        raise Failed(f"Collection Error: {method}: {num_value} is greater then  {maximum}")
-    else:
-        return num_value
 
 def validate_date(date_text, method, return_as=None):
     try:                                    date_obg = datetime.strptime(str(date_text), "%Y-%m-%d" if "-" in str(date_text) else "%m/%d/%Y")
@@ -183,22 +143,6 @@ def unix_input(prompt, timeout=60):
     try:                return input(prompt)
     except EOFError:    raise Failed("Input Failed")
     finally:            signal.alarm(0)
-
-def old_windows_input(prompt, timeout=60, timer=time.monotonic):
-    prompt = f"| {prompt}: "
-    sys.stdout.write(prompt)
-    sys.stdout.flush()
-    endtime = timer() + timeout
-    result = []
-    while timer() < endtime:
-        if msvcrt.kbhit():
-            result.append(msvcrt.getwche())
-            if result[-1] == "\n":
-                out = "".join(result[:-1])
-                logger.debug(f"{prompt[2:]}{out}")
-                return out
-        time.sleep(0.04)
-    raise TimeoutExpired
 
 def windows_input(prompt, timeout=5):
     sys.stdout.write(f"| {prompt}: ")
@@ -322,64 +266,66 @@ def is_locked(filepath):
             file_object = open(filepath, 'a', 8)
             if file_object:
                 locked = False
-        except IOError as message:
+        except IOError:
             locked = True
         finally:
             if file_object:
                 file_object.close()
     return locked
 
-def validate_dict_list(method_name, data):
-    final_list = []
-    for dict_data in get_list(data):
-        if isinstance(dict_data, dict):
-            final_list.append((dict_data, {dm.lower(): dm for dm in dict_data}))
-        else:
-            raise Failed(f"Collection Error: {method_name} attribute is not a dictionary: {dict_data}")
-    return final_list
-
-def parse_int(method, data, default=10, minimum=1, maximum=None):
-    list_count = regex_first_int(data, "List Size", default=default)
-    if maximum is None and list_count < minimum:
-        logger.warning(f"Collection Warning: {method} must an integer >= {minimum} using {default} as default")
-    elif maximum is not None and (list_count < minimum or list_count > maximum):
-        logger.warning(f"Collection Warning: {method} must an integer between {minimum} and {maximum} using {default} as default")
-    else:
-        return list_count
-    return default
-
-def parse_from_dict(parent, method, data, methods, default=None, options=None, translation=None):
+def parse(attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None):
+    display = f"{parent + ' ' if parent else ''}{attribute} attribute"
     if options is None and translation is not None:
         options = [o for o in translation]
-    if method not in methods:
-        message = f"{parent} {method} attribute not found"
-    elif data[methods[method]] is None:
-        message = f"{parent} {method} attribute is blank"
-    elif (translation is not None and str(data[methods[method]]).lower() not in translation) or \
-            (options is not None and translation is None and str(data[methods[method]]).lower() not in options):
-        message = f"{parent} {method} attribute {data[methods[method]]} must be in {options}"
+    value = data[methods[attribute]] if methods and attribute in methods else data
+
+    if datatype == "list":
+        if methods and attribute in methods and data[methods[attribute]]:
+            return [v for v in value if v] if isinstance(value, list) else [str(value)]
+        return []
+    elif datatype == "dictlist":
+        final_list = []
+        for dict_data in get_list(value):
+            if isinstance(dict_data, dict):
+                final_list.append((dict_data, {dm.lower(): dm for dm in dict_data}))
+            else:
+                raise Failed(f"Collection Error: {display} {dict_data} is not a dictionary")
+        return final_list
+    elif methods and attribute not in methods:
+        message = f"{display} not found"
+    elif value is None:
+        message = f"{display} is blank"
+    elif datatype == "bool":
+        if isinstance(value, bool):
+            return value
+        elif isinstance(value, int):
+            return value > 0
+        elif str(value).lower() in ["t", "true"]:
+            return True
+        elif str(value).lower() in ["f", "false"]:
+            return False
+        else:
+            message = f"{display} must be either true or false"
+    elif datatype in ["int", "float"]:
+        try:
+            value = int(str(value)) if datatype == "int" else float(str(value))
+            if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
+                return value
+        except ValueError:
+            pass
+        pre = f"{display} {value} must {'an integer' if datatype == 'int' else 'a number'}"
+        if maximum is None:
+            message = f"{pre} {minimum} or greater"
+        else:
+            message = f"{pre} between {minimum} and {maximum}"
+    elif (translation is not None and str(value).lower() not in translation) or \
+            (options is not None and translation is None and str(value).lower() not in options):
+        message = f"{display} {value} must be in {options}"
     else:
-        return translation[data[methods[method]]] if translation is not None else data[methods[method]]
+        return translation[value] if translation is not None else value
+
     if default is None:
         raise Failed(f"Collection Error: {message}")
     else:
         logger.warning(f"Collection Warning: {message} using {default} as default")
         return translation[default] if translation is not None else default
-
-def parse_int_from_dict(parent, method, data, methods, default, minimum=1, maximum=None):
-    if method not in methods:
-        logger.warning(f"Collection Warning: {parent} {method} attribute not found using {default} as default")
-    elif not data[methods[method]]:
-        logger.warning(f"Collection Warning: {parent} {methods[method]} attribute is blank using {default} as default")
-    elif maximum is None and (not isinstance(data[methods[method]], int) or data[methods[method]] < minimum):
-        logger.warning(f"Collection Warning: {parent} {methods[method]} attribute {data[methods[method]]} must an integer >= {minimum} using {default} as default")
-    elif maximum is not None and (not isinstance(data[methods[method]], int) or data[methods[method]] < minimum or data[methods[method]] > maximum):
-        logger.warning(f"Collection Warning: {parent} {methods[method]} attribute {data[methods[method]]} must an integer between {minimum} and {maximum} using {default} as default")
-    else:
-        return data[methods[method]]
-    return default
-
-def parse_list(method, data, methods):
-    if method in methods and data[methods[method]]:
-        return [i for i in data[methods[method]] if i] if isinstance(data[methods[method]], list) else [str(data[methods[method]])]
-    return []
