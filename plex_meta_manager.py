@@ -448,7 +448,9 @@ def run_collection(config, library, metadata, requested_collections):
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
                     builder.add_to_collection()
-                if len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0:
+                if (builder.details["show_missing"] is True or builder.details["save_missing"] is True
+                        or (library.Radarr and builder.add_to_radarr) or (library.Sonarr and builder.add_to_sonarr)) \
+                        and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     if builder.details["show_missing"] is True:
                         logger.info("")
                         util.separator(f"Missing from Library", space=False, border=False)
