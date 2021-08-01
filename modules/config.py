@@ -14,6 +14,7 @@ from modules.omdb import OMDb
 from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
+from modules.stevenlu import StevenLu
 from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
 from modules.trakt import Trakt
@@ -274,6 +275,7 @@ class Config:
         self.AniList = AniList(self)
         self.Letterboxd = Letterboxd(self)
         self.ICheckMovies = ICheckMovies(self)
+        self.StevenLu = StevenLu(self)
 
         util.separator()
 

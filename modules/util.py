@@ -67,7 +67,7 @@ pretty_names = {
     "mal_favorite": "MyAnimeList Favorite", "mal_season": "MyAnimeList Season",
     "mal_suggested": "MyAnimeList Suggested", "mal_userlist": "MyAnimeList Userlist",
     "plex_all": "Plex All", "plex_collection": "Plex Collection", "plex_search": "Plex Search",
-    "tautulli_popular": "Tautulli Popular", "tautulli_watched": "Tautulli Watched",
+    "stevenlu_popular": "Steven Lu Popular", "tautulli_popular": "Tautulli Popular", "tautulli_watched": "Tautulli Watched",
     "tmdb_actor": "TMDb Actor", "tmdb_actor_details": "TMDb Actor",
     "tmdb_collection": "TMDb Collection", "tmdb_collection_details": "TMDb Collection",
     "tmdb_company": "TMDb Company", "tmdb_crew": "TMDb Crew", "tmdb_crew_details": "TMDb Crew",
