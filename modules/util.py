@@ -53,40 +53,6 @@ pretty_months = {
     7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
 }
 pretty_seasons = {"winter": "Winter", "spring": "Spring", "summer": "Summer", "fall": "Fall"}
-pretty_names = {
-    "anidb_id": "AniDB ID", "anidb_relation": "AniDB Relation", "anidb_popular": "AniDB Popular",
-    "anilist_genre": "AniList Genre", "anilist_id": "AniList ID", "anilist_popular": "AniList Popular",
-    "anilist_relations": "AniList Relations", "anilist_season": "AniList Season", "anilist_studio": "AniList Studio",
-    "anilist_tag": "AniList Tag", "anilist_top_rated": "AniList Top Rated",
-    "icheckmovies_list": "I Check Movies List",
-    "imdb_list": "IMDb List", "imdb_id": "IMDb ID",
-    "letterboxd_list": "Letterboxd List", "letterboxd_list_details": "Letterboxd List",
-    "mal_id": "MyAnimeList ID", "mal_all": "MyAnimeList All", "mal_airing": "MyAnimeList Airing",
-    "mal_upcoming": "MyAnimeList Upcoming", "mal_tv": "MyAnimeList TV", "mal_ova": "MyAnimeList OVA",
-    "mal_movie": "MyAnimeList Movie", "mal_special": "MyAnimeList Special", "mal_popular": "MyAnimeList Popular",
-    "mal_favorite": "MyAnimeList Favorite", "mal_season": "MyAnimeList Season",
-    "mal_suggested": "MyAnimeList Suggested", "mal_userlist": "MyAnimeList Userlist",
-    "plex_all": "Plex All", "plex_collection": "Plex Collection", "plex_search": "Plex Search",
-    "stevenlu_popular": "Steven Lu Popular", "tautulli_popular": "Tautulli Popular", "tautulli_watched": "Tautulli Watched",
-    "tmdb_actor": "TMDb Actor", "tmdb_actor_details": "TMDb Actor",
-    "tmdb_collection": "TMDb Collection", "tmdb_collection_details": "TMDb Collection",
-    "tmdb_company": "TMDb Company", "tmdb_crew": "TMDb Crew", "tmdb_crew_details": "TMDb Crew",
-    "tmdb_director": "TMDb Director", "tmdb_director_details": "TMDb Director", "tmdb_discover": "TMDb Discover",
-    "tmdb_keyword": "TMDb Keyword", "tmdb_list": "TMDb List", "tmdb_list_details": "TMDb List",
-    "tmdb_movie": "TMDb Movie", "tmdb_movie_details": "TMDb Movie", "tmdb_network": "TMDb Network",
-    "tmdb_now_playing": "TMDb Now Playing", "tmdb_person": "TMDb Person", "tmdb_popular": "TMDb Popular",
-    "tmdb_producer": "TMDb Producer", "tmdb_producer_details": "TMDb Producer",
-    "tmdb_show": "TMDb Show", "tmdb_show_details": "TMDb Show", "tmdb_top_rated": "TMDb Top Rated",
-    "tmdb_trending_daily": "TMDb Trending Daily", "tmdb_trending_weekly": "TMDb Trending Weekly",
-    "tmdb_writer": "TMDb Writer", "tmdb_writer_details": "TMDb Writer",
-    "trakt_collected": "Trakt Collected", "trakt_collection": "Trakt Collection",
-    "trakt_list": "Trakt List", "trakt_list_details": "Trakt List",
-    "trakt_popular": "Trakt Popular", "trakt_recommended": "Trakt Recommended", "trakt_trending": "Trakt Trending",
-    "trakt_watched": "Trakt Watched", "trakt_watchlist": "Trakt Watchlist",
-    "tvdb_list": "TVDb List", "tvdb_list_details": "TVDb List",
-    "tvdb_movie": "TVDb Movie", "tvdb_movie_details": "TVDb Movie",
-    "tvdb_show": "TVDb Show", "tvdb_show_details": "TVDb Show"
-}
 pretty_ids = {"anidbid": "AniDB", "imdbid": "IMDb", "mal_id": "MyAnimeList", "themoviedb_id": "TMDb", "thetvdb_id": "TVDb", "tvdbid": "TVDb"}
 
 def tab_new_lines(data):

@@ -210,27 +210,31 @@ class AniList:
         raise Failed(f"AniList Error: No valid AniList IDs in {anilist_ids}")
 
     def get_items(self, method, data):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
         if method == "anilist_id":
+            logger.info(f"Processing AniList ID: {data}")
             anilist_id, name = self._validate(data)
             anilist_ids = [anilist_id]
-            logger.info(f"Processing {pretty}: ({data}) {name}")
-        elif method in ["anilist_popular", "anilist_top_rated"]:
-            anilist_ids = self._popular(data) if method == "anilist_popular" else self._top_rated(data)
-            logger.info(f"Processing {pretty}: {data} Anime")
+        elif method == "anilist_popular":
+            logger.info(f"Processing AniList Popular: {data} Anime")
+            anilist_ids = self._popular(data)
+        elif method == "anilist_top_rated":
+            logger.info(f"Processing AniList Top Rated: {data} Anime")
+            anilist_ids = self._top_rated(data)
         elif method == "anilist_season":
+            logger.info(f"Processing AniList Season: {data['limit'] if data['limit'] > 0 else 'All'} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
             anilist_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])
-            logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "anilist_genre":
+            logger.info(f"Processing AniList Genre: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Genre: {data['genre']} sorted by {pretty_names[data['sort_by']]}")
             anilist_ids = self._genre(data["genre"], data["sort_by"], data["limit"])
-            logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Genre: {data['genre']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "anilist_tag":
+            logger.info(f"Processing AniList Tag: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag: {data['tag']} sorted by {pretty_names[data['sort_by']]}")
             anilist_ids = self._tag(data["tag"], data["sort_by"], data["limit"])
-            logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag: {data['tag']} sorted by {pretty_names[data['sort_by']]}")
-        elif method in ["anilist_studio", "anilist_relations"]:
-            if method == "anilist_studio":          anilist_ids, name = self._studio(data)
-            else:                                   anilist_ids, _, name = self._relations(data)
-            logger.info(f"Processing {pretty}: ({data}) {name} ({len(anilist_ids)} Anime)")
+        elif method == "anilist_studio":
+            anilist_ids, name = self._studio(data)
+            logger.info(f"Processing AniList Studio: ({data}) {name} ({len(anilist_ids)} Anime)")
+        elif method == "anilist_relations":
+            anilist_ids, _, name = self._relations(data)
+            logger.info(f"Processing AniList Relations: ({data}) {name} ({len(anilist_ids)} Anime)")
         else:
             raise Failed(f"AniList Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.anilist_to_ids(anilist_ids)

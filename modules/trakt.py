@@ -162,7 +162,7 @@ class Trakt:
         return trakt_values
 
     def get_items(self, method, data, is_movie):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
+        pretty = method.replace("_", " ").title()
         media_type = "Movie" if is_movie else "Show"
         if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
             movie_ids, show_ids = self._pagenation(method[6:], data, is_movie)

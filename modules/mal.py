@@ -13,6 +13,12 @@ mal_ranked_name = {
     "mal_all": "all", "mal_airing": "airing", "mal_upcoming": "upcoming", "mal_tv": "tv", "mal_ova": "ova",
     "mal_movie": "movie", "mal_special": "special", "mal_popular": "bypopularity", "mal_favorite": "favorite"
 }
+mal_ranked_pretty = {
+    "mal_all": "MyAnimeList All", "mal_airing": "MyAnimeList Airing",
+    "mal_upcoming": "MyAnimeList Upcoming", "mal_tv": "MyAnimeList TV", "mal_ova": "MyAnimeList OVA",
+    "mal_movie": "MyAnimeList Movie", "mal_special": "MyAnimeList Special", "mal_popular": "MyAnimeList Popular",
+    "mal_favorite": "MyAnimeList Favorite"
+}
 season_sort_translation = {"score": "anime_score", "anime_score": "anime_score", "members": "anime_num_list_users", "anime_num_list_users": "anime_num_list_users"}
 season_sort_options = ["score", "members"]
 pretty_names = {
@@ -150,22 +156,21 @@ class MyAnimeList:
         return self._parse_request(url)
 
     def get_items(self, method, data):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
         if method == "mal_id":
+            logger.info(f"Processing MyAnimeList ID: {data}")
             mal_ids = [data]
-            logger.info(f"Processing {pretty}: {data}")
         elif method in mal_ranked_name:
+            logger.info(f"Processing {mal_ranked_pretty[method]}: {data} Anime")
             mal_ids = self._ranked(mal_ranked_name[method], data)
-            logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "mal_season":
+            logger.info(f"Processing MyAnimeList Season: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
             mal_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])
-            logger.info(f"Processing {pretty}: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
         elif method == "mal_suggested":
+            logger.info(f"Processing MyAnimeList Suggested: {data} Anime")
             mal_ids = self._suggestions(data)
-            logger.info(f"Processing {pretty}: {data} Anime")
         elif method == "mal_userlist":
+            logger.info(f"Processing MyAnimeList Userlist: {data['limit']} Anime from {self._username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
             mal_ids = self._userlist(data["username"], data["status"], data["sort_by"], data["limit"])
-            logger.info(f"Processing {pretty}: {data['limit']} Anime from {self._username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.myanimelist_to_ids(mal_ids)
