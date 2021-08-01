@@ -1,5 +1,4 @@
 import logging
-from modules import util
 from modules.util import Failed
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -12,11 +11,10 @@ class StevenLu:
         self.config = config
 
     def get_items(self, method):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
         movie_ids = []
         fail_ids = []
         if method == "stevenlu_popular":
-            logger.info(f"Processing {pretty} Movies")
+            logger.info(f"Processing StevenLu Popular Movies")
             for i in self.config.get_json(base_url):
                 tmdb_id = self.config.Convert.imdb_to_tmdb(i["imdb_id"])
                 if tmdb_id:

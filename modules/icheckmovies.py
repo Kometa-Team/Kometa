@@ -35,10 +35,9 @@ class ICheckMovies:
         return valid_lists
 
     def get_items(self, method, data, language):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
         movie_ids = []
         if method == "icheckmovies_list":
-            logger.info(f"Processing {pretty}: {data}")
+            logger.info(f"Processing ICheckMovies List: {data}")
             imdb_ids = self._parse_list(data, language)
             total_ids = len(imdb_ids)
             for i, imdb_id in enumerate(imdb_ids, 1):

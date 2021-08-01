@@ -74,19 +74,21 @@ class AniDB:
         return anidb_ids[:limit]
 
     def get_items(self, method, data, language):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
         anidb_ids = []
         if method == "anidb_popular":
-            logger.info(f"Processing {pretty}: {data} Anime")
+            logger.info(f"Processing AniDB Popular: {data} Anime")
             anidb_ids.extend(self._popular(language)[:data])
         elif method == "anidb_tag":
+            logger.info(f"Processing AniDB Tag: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag ID: {data['tag']}")
             anidb_ids = self._tag(data["tag"], data["limit"], language)
-            logger.info(f"Processing {pretty}: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag ID: {data['tag']}")
+        elif method == "anidb_id":
+            logger.info(f"Processing AniDB ID: {data}")
+            anidb_ids.append(data)
+        elif method == "anidb_relation":
+            logger.info(f"Processing AniDB Relation: {data}")
+            anidb_ids.extend(self._relations(data, language))
         else:
-            logger.info(f"Processing {pretty}: {data}")
-            if method == "anidb_id":                            anidb_ids.append(data)
-            elif method == "anidb_relation":                    anidb_ids.extend(self._relations(data, language))
-            else:                                               raise Failed(f"AniDB Error: Method {method} not supported")
+            raise Failed(f"AniDB Error: Method {method} not supported")
         movie_ids, show_ids = self.config.Convert.anidb_to_ids(anidb_ids)
         logger.debug("")
         logger.debug(f"{len(anidb_ids)} AniDB IDs Found: {anidb_ids}")

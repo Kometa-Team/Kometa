@@ -136,18 +136,17 @@ class TVDb:
             raise Failed(f"TVDb Error: {tvdb_url} must begin with {urls['list']}")
 
     def get_items(self, method, data, language):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
         show_ids = []
         movie_ids = []
-        logger.info(f"Processing {pretty}: {data}")
         if method == "tvdb_show":
+            logger.info(f"Processing TVDb Show: {data}")
             show_ids.append(self.get_series(language, data).id)
         elif method == "tvdb_movie":
+            logger.info(f"Processing TVDb Movie: {data}")
             movie_ids.append(self.get_movie(language, data).tmdb_id)
         elif method == "tvdb_list":
-            tmdb_ids, tvdb_ids = self._ids_from_url(data, language)
-            movie_ids.extend(tmdb_ids)
-            show_ids.extend(tvdb_ids)
+            logger.info(f"Processing TVDb List: {data}")
+            movie_ids, show_ids = self._ids_from_url(data, language)
         else:
             raise Failed(f"TVDb Error: Method {method} not supported")
         logger.debug("")

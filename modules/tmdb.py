@@ -232,7 +232,7 @@ class TMDb:
         return tmdb_id
 
     def get_items(self, method, data, is_movie):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
+        pretty = method.replace("_", " ").title().replace("Tmdb", "TMDb")
         media_type = "Movie" if is_movie else "Show"
         movie_ids = []
         show_ids = []

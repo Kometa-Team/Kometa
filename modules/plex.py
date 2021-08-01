@@ -579,17 +579,17 @@ class Plex:
         return valid_collections
 
     def get_items(self, method, data):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
         media_type = "Movie" if self.is_movie else "Show"
         items = []
         if method == "plex_all":
-            logger.info(f"Processing {pretty} {media_type}s")
+            logger.info(f"Processing Plex All {media_type}s")
             items = self.get_all()
         elif method == "plex_search":
             util.print_multiline(data[1], info=True)
             items = self.get_filter_items(data[2])
         elif method == "plex_collectionless":
             good_collections = []
+            logger.info(f"Processing Plex Collectionless")
             logger.info("Collections Excluded")
             for col in self.get_all_collections():
                 keep_collection = True

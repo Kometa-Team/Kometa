@@ -96,7 +96,6 @@ class IMDb:
         raise ValueError(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
     def get_items(self, method, data, language, is_movie):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
         show_ids = []
         movie_ids = []
         fail_ids = []
@@ -110,11 +109,11 @@ class IMDb:
                 fail_ids.append(imdb_id)
 
         if method == "imdb_id":
-            logger.info(f"Processing {pretty}: {data}")
+            logger.info(f"Processing IMDb ID: {data}")
             run_convert(data)
         elif method == "imdb_list":
             status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
-            logger.info(f"Processing {pretty}: {status}{data['url']}")
+            logger.info(f"Processing IMDb List: {status}{data['url']}")
             imdb_ids = self._ids_from_url(data["url"], language, data["limit"])
             total_ids = len(imdb_ids)
             for i, imdb in enumerate(imdb_ids, 1):
