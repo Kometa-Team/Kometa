@@ -1,6 +1,6 @@
 import logging, os, re
 from datetime import datetime, timedelta
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, tautulli, tmdb, trakt, tvdb, util
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
 from modules.util import Failed, ImageData
 from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
@@ -58,10 +58,10 @@ filter_translation = {
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + \
-               mal.builders + plex.builders + tautulli.builders + tmdb.builders + trakt.builders + tvdb.builders
+               mal.builders + plex.builders + stevenlu.builders + tautulli.builders + tmdb.builders + trakt.builders + tvdb.builders
 show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details"]
 movie_only_builders = [
-    "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details",
+    "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
     "tvdb_movie", "tvdb_movie_details"
 ]
@@ -506,6 +506,7 @@ class CollectionBuilder:
                 elif method_name in imdb.builders:                                          self._imdb(method_name, method_data)
                 elif method_name in mal.builders:                                           self._mal(method_name, method_data)
                 elif method_name in plex.builders or method_final in plex.searches:         self._plex(method_name, method_data)
+                elif method_name in stevenlu.builders:                                      self._stevenlu(method_name, method_data)
                 elif method_name in tautulli.builders:                                      self._tautulli(method_name, method_data)
                 elif method_name in tmdb.builders:                                          self._tmdb(method_name, method_data)
                 elif method_name in trakt.builders:                                         self._trakt(method_name, method_data)
@@ -826,6 +827,9 @@ class CollectionBuilder:
         else:
             self.builders.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
 
+    def _stevenlu(self, method_name, method_data):
+        self.builders.append((method_name, util.parse(method_name, method_data, "bool")))
+
     def _tautulli(self, method_name, method_data):
         for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
             self.builders.append((method_name, {
@@ -1032,6 +1036,7 @@ class CollectionBuilder:
             elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.language, self.library.is_movie))
             elif "icheckmovies" in method:                      check_map(self.config.ICheckMovies.get_items(method, value, self.language))
             elif "letterboxd" in method:                        check_map(self.config.Letterboxd.get_items(method, value, self.language))
+            elif "stevenlu" in method:                          check_map(self.config.StevenLu.get_items(method))
             elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
             elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
             else:                                               logger.error(f"Collection Error: {method} method not supported")
