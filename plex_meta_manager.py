@@ -105,7 +105,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.11.3-beta3                                                            "))
+    logger.info(util.centered("    Version: 1.11.3-beta4                                                            "))
     if time_scheduled:              start_type = f"{time_scheduled} "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
@@ -256,6 +256,8 @@ def mass_metadata(config, library):
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
     radarr_adds = []
     sonarr_adds = []
+    trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
+
     items = library.get_all()
     for i, item in enumerate(items, 1):
         library.reload(item)
@@ -339,11 +341,11 @@ def mass_metadata(config, library):
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | Genres | {display_str}"))
             except Failed:
                 pass
-        if library.mass_audience_rating_update or library.mass_critic_rating_update:
+        if library.mass_audience_rating_update:
             try:
-                if tmdb_item and library.mass_genre_update == "tmdb":
+                if tmdb_item and library.mass_audience_rating_update == "tmdb":
                     new_rating = tmdb_item.vote_average
-                elif omdb_item and library.mass_genre_update in ["omdb", "imdb"]:
+                elif omdb_item and library.mass_audience_rating_update in ["omdb", "imdb"]:
                     new_rating = omdb_item.imdb_rating
                 else:
                     raise Failed
@@ -353,9 +355,35 @@ def mass_metadata(config, library):
                     if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
                         library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
                         logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
+            except Failed:
+                pass
+        if library.mass_critic_rating_update:
+            try:
+                if tmdb_item and library.mass_critic_rating_update == "tmdb":
+                    new_rating = tmdb_item.vote_average
+                elif omdb_item and library.mass_critic_rating_update in ["omdb", "imdb"]:
+                    new_rating = omdb_item.imdb_rating
+                else:
+                    raise Failed
+                if new_rating is None:
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
+                else:
                     if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
                         library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
                         logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
+            except Failed:
+                pass
+        if library.mass_trakt_rating_update:
+            try:
+                if library.is_movie and tmdb_id in trakt_ratings:
+                    new_rating = trakt_ratings[tmdb_id]
+                elif library.is_show and tvdb_id in trakt_ratings:
+                    new_rating = trakt_ratings[tvdb_id]
+                else:
+                    raise Failed
+                if str(item.userRating) != str(new_rating):
+                    library.edit_query(item, {"userRating.value": new_rating, "userRating.locked": 1})
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | User Rating | {new_rating}"))
             except Failed:
                 pass
 
