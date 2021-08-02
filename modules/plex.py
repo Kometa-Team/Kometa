@@ -280,6 +280,7 @@ class Plex:
         self.show_missing = params["show_missing"]
         self.save_missing = params["save_missing"]
         self.released_missing_only = params["released_missing_only"]
+        self.create_asset_folders = params["create_asset_folders"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
@@ -746,7 +747,7 @@ class Plex:
                 logger.info(f"Detail: {attr.capitalize()} {_remove} removed")
         return updated
 
-    def update_item_from_assets(self, item, overlay=None):
+    def update_item_from_assets(self, item, overlay=None, create=False):
         name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
         logger.debug(name)
         found_folder = False
@@ -798,12 +799,15 @@ class Plex:
                             self.upload_images(episode, poster=episode_poster)
         if not poster and overlay:
             self.upload_images(item, overlay=overlay)
-        if not overlay and self.asset_folders and not found_folder:
+        if create and self.asset_folders and not found_folder:
+            os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
+            logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
+        elif not overlay and self.asset_folders and not found_folder:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
         elif not poster and not background:
             logger.error(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
 
-    def find_collection_assets(self, item, name=None):
+    def find_collection_assets(self, item, name=None, create=False):
         if name is None:
             name = item.title
         for ad in self.asset_directory:
@@ -825,4 +829,7 @@ class Plex:
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
                 return poster, background
+        if create and self.asset_folders and not os.path.isdir(os.path.join(self.asset_directory[0], name)):
+            os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
+            logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
         return None, None

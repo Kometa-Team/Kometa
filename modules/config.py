@@ -183,7 +183,8 @@ class Config:
             "show_filtered": check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False),
             "show_missing": check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True),
             "save_missing": check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True),
-            "released_missing_only": check_for_attribute(self.data, "released_missing_only", parent="settings", var_type="bool", default=False)
+            "released_missing_only": check_for_attribute(self.data, "released_missing_only", parent="settings", var_type="bool", default=False),
+            "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False)
         }
         if self.general["cache"]:
             util.separator()
@@ -349,6 +350,7 @@ class Config:
             params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
             params["save_missing"] = check_for_attribute(lib, "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
             params["released_missing_only"] = check_for_attribute(lib, "released_missing_only", parent="settings", var_type="bool", default=self.general["released_missing_only"], do_print=False, save=False)
+            params["create_asset_folders"] = check_for_attribute(lib, "create_asset_folders", parent="settings", var_type="bool", default=self.general["create_asset_folders"], do_print=False, save=False)
 
             if lib and "mass_genre_update" in lib and lib["mass_genre_update"]:
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
