@@ -148,6 +148,7 @@ class CollectionBuilder:
             "show_filtered": self.library.show_filtered,
             "show_missing": self.library.show_missing,
             "save_missing": self.library.save_missing,
+            "released_missing_only": self.library.released_missing_only,
             "item_assets": False
         }
         self.item_details = {}
@@ -155,6 +156,8 @@ class CollectionBuilder:
         self.sonarr_options = {}
         self.missing_movies = []
         self.missing_shows = []
+        self.filtered_missing_movies = []
+        self.filtered_missing_shows = []
         self.builders = []
         self.filters = []
         self.rating_keys = []
@@ -1013,15 +1016,37 @@ class CollectionBuilder:
                 for movie_id in movie_ids:
                     if movie_id in self.library.movie_map:
                         add_rating_keys(self.library.movie_map[movie_id])
-                    elif movie_id not in self.missing_movies:
-                        self.missing_movies.append(movie_id)
+                    elif movie_id not in self.missing_movies and movie_id not in self.filtered_missing_movies:
+                        filter_missing = False
+                        if self.details["released_missing_only"]:
+                            try:
+                                movie = self.config.TMDb.get_movie(movie_id)
+                                if util.validate_date(movie.release_date, "") > self.current_time:
+                                    filter_missing = True
+                            except Failed:
+                                pass
+                        if filter_missing:
+                            self.filtered_missing_movies.append(movie_id)
+                        else:
+                            self.missing_movies.append(movie_id)
             if len(show_ids) > 0:
                 items_found_inside += len(show_ids)
                 for show_id in show_ids:
                     if show_id in self.library.show_map:
                         add_rating_keys(self.library.show_map[show_id])
-                    elif show_id not in self.missing_shows:
-                        self.missing_shows.append(show_id)
+                    elif show_id not in self.missing_shows and show_id not in self.filtered_missing_shows:
+                        filter_missing = False
+                        if self.details["released_missing_only"]:
+                            try:
+                                show = self.config.TMDb.get_show(show_id)
+                                if util.validate_date(show.first_air_date, "") > self.current_time:
+                                    filter_missing = True
+                            except Failed:
+                                pass
+                        if filter_missing:
+                            self.filtered_missing_shows.append(show_id)
+                        else:
+                            self.missing_shows.append(show_id)
             return items_found_inside
         for method, value in self.builders:
             logger.debug("")
@@ -1329,14 +1354,13 @@ class CollectionBuilder:
     def check_filters(self, current, display):
         if self.filters:
             util.print_return(f"Filtering {display} {current.title}")
-            current_date = datetime.now()
             for filter_method, filter_data in self.filters:
                 filter_attr, modifier, filter_final = self._split(filter_method)
                 filter_actual = filter_translation[filter_attr] if filter_attr in filter_translation else filter_attr
                 if filter_attr in ["release", "added", "last_played"] and modifier != ".regex":
                     current_data = getattr(current, filter_actual)
                     if modifier in ["", ".not"]:
-                        threshold_date = current_date - timedelta(days=filter_data)
+                        threshold_date = self.current_time - timedelta(days=filter_data)
                         if (modifier == "" and (current_data is None or current_data < threshold_date)) \
                                 or (modifier == ".not" and current_data and current_data >= threshold_date):
                             return False
@@ -1405,15 +1429,15 @@ class CollectionBuilder:
                     if item_date is None:
                         return False
                     elif filter_data == "day":
-                        if item_date.month != current_date.month or item_date.day != current_date.day:
+                        if item_date.month != self.current_time.month or item_date.day != self.current_time.day:
                             return False
                     elif filter_data == "month":
-                        if item_date.month != current_date.month:
+                        if item_date.month != self.current_time.month:
                             return False
                     else:
                         date_match = False
                         for i in range(filter_data):
-                            check_date = current_date - timedelta(days=i)
+                            check_date = self.current_time - timedelta(days=i)
                             if item_date.month == check_date.month and item_date.day == check_date.day:
                                 date_match = True
                         if date_match is False:

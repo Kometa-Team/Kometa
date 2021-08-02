@@ -182,7 +182,8 @@ class Config:
             "show_unmanaged": check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True),
             "show_filtered": check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False),
             "show_missing": check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True),
-            "save_missing": check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True)
+            "save_missing": check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True),
+            "released_missing_only": check_for_attribute(self.data, "released_missing_only", parent="settings", var_type="bool", default=False)
         }
         if self.general["cache"]:
             util.separator()
@@ -326,14 +327,11 @@ class Config:
             if self.requested_libraries and library_name not in self.requested_libraries:
                 continue
             util.separator()
-            params = {}
-            params["mapping_name"] = str(library_name)
-            if lib and "library_name" in lib and lib["library_name"]:
-                params["name"] = str(lib["library_name"])
-                display_name = f"{params['name']} ({params['mapping_name']})"
-            else:
-                params["name"] = params["mapping_name"]
-                display_name = params["mapping_name"]
+            params = {
+                "mapping_name": str(library_name),
+                "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
+            }
+            display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
             util.separator(f"{display_name} Configuration")
             logger.info("")
@@ -343,40 +341,14 @@ class Config:
             if params["asset_directory"] is None:
                 logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
-            if lib and "settings" in lib and lib["settings"] and "asset_folders" in lib["settings"]:
-                params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
-            else:
-                params["asset_folders"] = check_for_attribute(lib, "asset_folders", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
-
-            if lib and "settings" in lib and lib["settings"] and "assets_for_all" in lib["settings"]:
-                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
-            else:
-                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
-
-            if lib and "settings" in lib and lib["settings"] and "sync_mode" in lib["settings"]:
-                params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
-            else:
-                params["sync_mode"] = check_for_attribute(lib, "sync_mode", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
-
-            if lib and "settings" in lib and lib["settings"] and "show_unmanaged" in lib["settings"]:
-                params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
-            else:
-                params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
-
-            if lib and "settings" in lib and lib["settings"] and "show_filtered" in lib["settings"]:
-                params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
-            else:
-                params["show_filtered"] = check_for_attribute(lib, "show_filtered", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
-
-            if lib and "settings" in lib and lib["settings"] and "show_missing" in lib["settings"]:
-                params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
-            else:
-                params["show_missing"] = check_for_attribute(lib, "show_missing", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
-
-            if lib and "settings" in lib and lib["settings"] and "save_missing" in lib["settings"]:
-                params["save_missing"] = check_for_attribute(lib, "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
-            else:
-                params["save_missing"] = check_for_attribute(lib, "save_missing", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
+            params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
+            params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
+            params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
+            params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
+            params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
+            params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
+            params["save_missing"] = check_for_attribute(lib, "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
+            params["released_missing_only"] = check_for_attribute(lib, "released_missing_only", parent="settings", var_type="bool", default=self.general["released_missing_only"], do_print=False, save=False)
 
             if lib and "mass_genre_update" in lib and lib["mass_genre_update"]:
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
