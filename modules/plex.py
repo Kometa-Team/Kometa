@@ -491,7 +491,7 @@ class Plex:
         else:                   method = None
         return self.Plex._server.query(key, method=method)
 
-    def moveItem(self, collection, item, after=None):
+    def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
         if after:
             key += f"?after={after}"
