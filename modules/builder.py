@@ -1808,15 +1808,9 @@ class CollectionBuilder:
         previous = None
         logger.debug(keys)
         logger.debug(self.rating_keys)
-        for ki, key in enumerate(self.rating_keys):
-            logger.debug(items)
-            if key != items[ki].ratingKey:
-                logger.info(f"Moving {keys[key].title} {'after {}'.format(keys[previous].title) if previous else 'to the beginning'}")
-                self.library.moveItem(self.obj, key, after=previous)
-                for ii, item in enumerate(items):
-                    if key == item.ratingKey:
-                        items.insert(ki, items.pop(ii))
-                        break
+        for key in self.rating_keys:
+            logger.info(f"Moving {keys[key].title} {'after {}'.format(keys[previous].title) if previous else 'to the beginning'}")
+            self.library.move_item(self.obj, key, after=previous)
             previous = key
 
     def run_collections_again(self):
