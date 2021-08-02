@@ -279,6 +279,7 @@ class Plex:
         self.show_filtered = params["show_filtered"]
         self.show_missing = params["show_missing"]
         self.save_missing = params["save_missing"]
+        self.released_missing_only = params["released_missing_only"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
