@@ -149,6 +149,7 @@ class CollectionBuilder:
             "show_missing": self.library.show_missing,
             "save_missing": self.library.save_missing,
             "released_missing_only": self.library.released_missing_only,
+            "create_asset_folders": self.library.create_asset_folders,
             "item_assets": False
         }
         self.item_details = {}

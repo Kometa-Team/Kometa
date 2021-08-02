@@ -189,10 +189,10 @@ def update_libraries(config):
                 util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library", space=False, border=False)
                 logger.info("")
                 for col in unmanaged_collections:
-                    poster, background = library.find_collection_assets(col)
+                    poster, background = library.find_collection_assets(col, create=library.create_asset_folders)
                     library.upload_images(col, poster=poster, background=background)
                 for item in library.get_all():
-                    library.update_item_from_assets(item)
+                    library.update_item_from_assets(item, create=library.create_asset_folders)
 
         logger.removeHandler(library_handler)
 
