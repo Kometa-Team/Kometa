@@ -101,31 +101,47 @@ class Trakt:
             "trakt-api-version": "2",
             "trakt-api-key": self.client_id
         }
-        response = self.config.get(url, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Failed(f"({response.status_code}) {response.reason}")
+        output_json = []
+        pages = 1
+        current = 1
+        while current <= pages:
+            if pages == 1:
+                response = self.config.get(f"{base_url}{url}", headers=headers)
+                if "X-Pagination-Page-Count" in response.headers:
+                    pages = int(response.headers["X-Pagination-Page-Count"])
+            else:
+                response = self.config.get(f"{base_url}{url}?page={current}", headers=headers)
+            if response.status_code == 200:
+                output_json.extend(response.json())
+            else:
+                raise Failed(f"({response.status_code}) {response.reason}")
+            current += 1
+        return output_json
+
+    def user_ratings(self, is_movie):
+        media = "movie" if is_movie else "show"
+        id_type = "tmdb" if is_movie else "tvdb"
+        return {int(i[media]["ids"][id_type]): i["rating"] for i in self._request(f"/users/me/ratings/{media}s")}
 
     def convert(self, external_id, from_source, to_source, media_type):
         path = f"/search/{from_source}/{external_id}"
         if from_source in ["tmdb", "tvdb"]:
             path = f"{path}?type={media_type}"
-        lookup = self._request(f"{base_url}{path}")
+        lookup = self._request(path)
         if lookup and media_type in lookup[0] and to_source in lookup[0][media_type]["ids"]:
             return lookup[0][media_type]["ids"][to_source]
         raise Failed(f"Trakt Error: No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
 
     def list_description(self, data):
         try:
-            return self._request(f"{base_url}{requests.utils.urlparse(data).path}")["description"]
+            return self._request(requests.utils.urlparse(data).path)["description"]
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
 
     def _user_list(self, list_type, data, is_movie):
         path = f"{requests.utils.urlparse(data).path}/items" if list_type == "list" else f"/users/{data}/{list_type}"
         try:
-            items = self._request(f"{base_url}{path}/{'movies' if is_movie else 'shows'}")
+            items = self._request(f"{path}/{'movies' if is_movie else 'shows'}")
         except Failed:
             raise Failed(f"Trakt Error: {'List' if list_type == 'list' else 'User'} {data} not found")
         if len(items) == 0:
@@ -137,7 +153,7 @@ class Trakt:
         else:                                       return [], [item["show"]["ids"]["tvdb"] for item in items]
 
     def _pagenation(self, pagenation, amount, is_movie):
-        items = self._request(f"{base_url}/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
+        items = self._request(f"/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
         if pagenation == "popular" and is_movie:    return [item["ids"]["tmdb"] for item in items], []
         elif pagenation == "popular":               return [], [item["ids"]["tvdb"] for item in items]
         elif is_movie:                              return [item["movie"]["ids"]["tmdb"] for item in items], []

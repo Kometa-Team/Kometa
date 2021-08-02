@@ -352,44 +352,29 @@ class Config:
             params["released_missing_only"] = check_for_attribute(lib, "released_missing_only", parent="settings", var_type="bool", default=self.general["released_missing_only"], do_print=False, save=False)
             params["create_asset_folders"] = check_for_attribute(lib, "create_asset_folders", parent="settings", var_type="bool", default=self.general["create_asset_folders"], do_print=False, save=False)
 
-            if lib and "mass_genre_update" in lib and lib["mass_genre_update"]:
-                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
-                if self.OMDb is None and params["mass_genre_update"] == "omdb":
-                    params["mass_genre_update"] = None
-                    logger.error("Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection")
-            else:
+            params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=lib and "mass_genre_update" in lib)
+            if self.OMDb is None and params["mass_genre_update"] == "omdb":
                 params["mass_genre_update"] = None
+                logger.error("Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection")
 
-            if lib and "mass_audience_rating_update" in lib and lib["mass_audience_rating_update"]:
-                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
-                if self.OMDb is None and params["mass_audience_rating_update"] == "omdb":
-                    params["mass_audience_rating_update"] = None
-                    logger.error("Config Error: mass_audience_rating_update cannot be omdb without a successful OMDb Connection")
-            else:
+            params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=lib and "mass_audience_rating_update" in lib)
+            if self.OMDb is None and params["mass_audience_rating_update"] == "omdb":
                 params["mass_audience_rating_update"] = None
+                logger.error("Config Error: mass_audience_rating_update cannot be omdb without a successful OMDb Connection")
 
-            if lib and "mass_critic_rating_update" in lib and lib["mass_critic_rating_update"]:
-                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
-                if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
-                    params["mass_critic_rating_update"] = None
-                    logger.error("Config Error: mass_critic_rating_update cannot be omdb without a successful OMDb Connection")
-            else:
+            params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=lib and "mass_audience_rating_update" in lib)
+            if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
                 params["mass_critic_rating_update"] = None
+                logger.error("Config Error: mass_critic_rating_update cannot be omdb without a successful OMDb Connection")
 
-            if lib and "split_duplicates" in lib and lib["split_duplicates"]:
-                params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False)
-            else:
-                params["split_duplicates"] = None
+            params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=lib and "mass_trakt_rating_update" in lib)
+            if self.Trakt is None and params["mass_trakt_rating_update"]:
+                params["mass_trakt_rating_update"] = None
+                logger.error("Config Error: mass_trakt_rating_update cannot run without a successful Trakt Connection")
 
-            if lib and "radarr_add_all" in lib and lib["radarr_add_all"]:
-                params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False)
-            else:
-                params["radarr_add_all"] = None
-
-            if lib and "sonarr_add_all" in lib and lib["sonarr_add_all"]:
-                params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False)
-            else:
-                params["sonarr_add_all"] = None
+            params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=lib and "split_duplicates" in lib)
+            params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False, do_print=lib and "radarr_add_all" in lib)
+            params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=lib and "sonarr_add_all" in lib)
 
             try:
                 if lib and "metadata_path" in lib:

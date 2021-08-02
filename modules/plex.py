@@ -284,6 +284,7 @@ class Plex:
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
+        self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
         self.split_duplicates = params["split_duplicates"]
         self.radarr_add_all = params["radarr_add_all"]
         self.sonarr_add_all = params["sonarr_add_all"]
