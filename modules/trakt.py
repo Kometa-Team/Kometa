@@ -112,7 +112,11 @@ class Trakt:
             else:
                 response = self.config.get(f"{base_url}{url}?page={current}", headers=headers)
             if response.status_code == 200:
-                output_json.extend(response.json())
+                json_data = response.json()
+                if isinstance(json_data, dict):
+                    return json_data
+                else:
+                    output_json.extend(response.json())
             else:
                 raise Failed(f"({response.status_code}) {response.reason}")
             current += 1
