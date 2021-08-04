@@ -288,7 +288,8 @@ class Plex:
         self.split_duplicates = params["split_duplicates"]
         self.radarr_add_all = params["radarr_add_all"]
         self.sonarr_add_all = params["sonarr_add_all"]
-        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update or self.split_duplicates or self.radarr_add_all or self.sonarr_add_all
+        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update \
+                           or self.mass_trakt_rating_update or self.split_duplicates or self.radarr_add_all or self.sonarr_add_all
         self.clean_bundles = params["plex"]["clean_bundles"]
         self.empty_trash = params["plex"]["empty_trash"]
         self.optimize = params["plex"]["optimize"]
@@ -677,24 +678,15 @@ class Plex:
             if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:
                 id_type, main_id = self.config.Convert.get_id(item, self)
                 if main_id:
-                    if not isinstance(main_id, list):
-                        main_id = [main_id]
                     if id_type == "movie":
                         self.movie_rating_key_map[item.ratingKey] = main_id[0]
-                        for m in main_id:
-                            if m in self.movie_map:
-                                self.movie_map[m].append(item.ratingKey)
-                            else:
-                                self.movie_map[m] = [item.ratingKey]
+                        util.add_dict_list(main_id, item.ratingKey, self.movie_map)
                     elif id_type == "show":
                         self.show_rating_key_map[item.ratingKey] = main_id[0]
-                        for m in main_id:
-                            if m in self.show_map:
-                                self.show_map[m].append(item.ratingKey)
-                            else:
-                                self.show_map[m] = [item.ratingKey]
+                        util.add_dict_list(main_id, item.ratingKey, self.show_map)
         logger.info("")
         logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if self.is_movie else 'Shows'}"))
+        return items
 
     def get_tmdb_from_map(self, item):
         return self.movie_rating_key_map[item.ratingKey] if item.ratingKey in self.movie_rating_key_map else None

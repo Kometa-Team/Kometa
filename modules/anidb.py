@@ -19,9 +19,8 @@ class AniDB:
         self.config = config
         self.username = params["username"] if params else None
         self.password = params["password"] if params else None
-        if params:
-            if not self._login(self.username, self.password).xpath("//li[@class='sub-menu my']/@title"):
-                raise Failed("AniDB Error: Login failed")
+        if params and not self._login(self.username, self.password).xpath("//li[@class='sub-menu my']/@title"):
+            raise Failed("AniDB Error: Login failed")
 
     def _request(self, url, language=None, post=None):
         if post:
