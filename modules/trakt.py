@@ -142,6 +142,16 @@ class Trakt:
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
 
+    def _parse(self, items, top=True, is_movie=True):
+        ids = []
+        for item in items:
+            data = item["movie" if is_movie else "show"] if top else item
+            if data["ids"]["tmdb" if is_movie else "tvdb"]:
+                ids.append(data["ids"]["tmdb" if is_movie else "tvdb"])
+            else:
+                logger.error(f"Trakt Error: No {'TMDb' if is_movie else 'TVDb'} ID found for {data['title']} ({data['year']})")
+        return (ids, []) if is_movie else ([], ids)
+
     def _user_list(self, list_type, data, is_movie):
         path = f"{requests.utils.urlparse(data).path}/items" if list_type == "list" else f"/users/{data}/{list_type}"
         try:
@@ -153,15 +163,11 @@ class Trakt:
                 raise Failed(f"Trakt Error: List {data} is empty")
             else:
                 raise Failed(f"Trakt Error: {data}'s {list_type.capitalize()} is empty")
-        if is_movie:                                return [item["movie"]["ids"]["tmdb"] for item in items], []
-        else:                                       return [], [item["show"]["ids"]["tvdb"] for item in items]
+        return self._parse(items, is_movie=is_movie)
 
     def _pagenation(self, pagenation, amount, is_movie):
         items = self._request(f"/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
-        if pagenation == "popular" and is_movie:    return [item["ids"]["tmdb"] for item in items], []
-        elif pagenation == "popular":               return [], [item["ids"]["tvdb"] for item in items]
-        elif is_movie:                              return [item["movie"]["ids"]["tmdb"] for item in items], []
-        else:                                       return [], [item["show"]["ids"]["tvdb"] for item in items]
+        return self._parse(items, top=pagenation != "popular", is_movie=is_movie)
 
     def validate_trakt(self, trakt_lists, is_movie, trakt_type="list"):
         values = util.get_list(trakt_lists, split=False)
@@ -185,14 +191,14 @@ class Trakt:
         pretty = method.replace("_", " ").title()
         media_type = "Movie" if is_movie else "Show"
         if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
-            movie_ids, show_ids = self._pagenation(method[6:], data, is_movie)
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+            movie_ids, show_ids = self._pagenation(method[6:], data, is_movie)
         elif method in ["trakt_collection", "trakt_watchlist"]:
-            movie_ids, show_ids = self._user_list(method[6:], data, is_movie)
             logger.info(f"Processing {pretty} {media_type}s for {data}")
-        elif method == "trakt_list":
             movie_ids, show_ids = self._user_list(method[6:], data, is_movie)
+        elif method == "trakt_list":
             logger.info(f"Processing {pretty}: {data}")
+            movie_ids, show_ids = self._user_list(method[6:], data, is_movie)
         else:
             raise Failed(f"Trakt Error: Method {method} not supported")
         logger.debug("")
