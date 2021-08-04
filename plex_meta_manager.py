@@ -144,9 +144,9 @@ def update_libraries(config):
         logger.info("")
         util.separator(f"Mapping {library.name} Library", space=False, border=False)
         logger.info("")
-        library.map_guids()
+        items = library.map_guids()
         if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
-            mass_metadata(config, library)
+            mass_metadata(config, library, items)
         for metadata in library.metadata_files:
             logger.info("")
             util.separator(f"Running Metadata File\n{metadata.path}")
@@ -245,7 +245,7 @@ def update_libraries(config):
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
-def mass_metadata(config, library):
+def mass_metadata(config, library, items):
     logger.info("")
     util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
     logger.info("")
@@ -258,7 +258,6 @@ def mass_metadata(config, library):
     sonarr_adds = []
     trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
-    items = library.get_all()
     for i, item in enumerate(items, 1):
         library.reload(item)
         util.print_return(f"Processing: {i}/{len(items)} {item.title}")
@@ -290,7 +289,7 @@ def mass_metadata(config, library):
                 try:
                     tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
                 except Failed as e:
-                    logger.info(util.adjust_space(str(e)))
+                    logger.error(util.adjust_space(str(e)))
             else:
                 logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
 
@@ -305,7 +304,7 @@ def mass_metadata(config, library):
                     try:
                         omdb_item = config.OMDb.get_omdb(imdb_id)
                     except Failed as e:
-                        logger.info(util.adjust_space(str(e)))
+                        logger.error(util.adjust_space(str(e)))
                     except Exception:
                         logger.error(f"IMDb ID: {imdb_id}")
                         raise

@@ -1,7 +1,6 @@
 import logging, time
 from modules import util
 from modules.util import Failed
-from retrying import retry
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -22,7 +21,6 @@ class AniList:
         self.tags = {t["name"].lower(): t["name"] for t in self._request(tag_query, {})["data"]["MediaTagCollection"]}
         self.genres = {g.lower(): g for g in self._request(genre_query, {})["data"]["GenreCollection"]}
 
-    @retry(stop_max_attempt_number=2, retry_on_exception=util.retry_if_not_failed)
     def _request(self, query, variables):
         response = self.config.post(base_url, json={"query": query, "variables": variables})
         json_obj = response.json()
