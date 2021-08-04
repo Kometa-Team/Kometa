@@ -7,4 +7,13 @@
 README.md
 LICENSE
 .gitignore
+.dockerignore
 .git
+.github
+*.psd
+config/**/*
+config
+Dockerfile
+venv
+.idea
+test.py
