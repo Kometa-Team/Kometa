@@ -75,7 +75,7 @@ class TMDb:
             id_to_return = self.Movie.external_ids(tmdb_id)[convert_to] if is_movie else self.TV.external_ids(tmdb_id)[convert_to]
             if not id_to_return or (convert_to == "tvdb_id" and id_to_return == 0):
                 raise Failed(f"TMDb Error: No {convert_to.upper().replace('B_', 'b ')} found for TMDb ID {tmdb_id}")
-            return id_to_return
+            return id_to_return if convert_to == "imdb_id" else int(id_to_return)
         except TMDbException:
             raise Failed(f"TMDb Error: TMDb {'Movie' if is_movie else 'Show'} ID: {tmdb_id} not found")
 

@@ -120,16 +120,15 @@ class Convert:
         try:
             imdb_id = self.config.TMDb.convert_from(tmdb_id, "imdb_id", is_movie)
         except Failed:
-            if self.config.Trakt:
-                try:
-                    imdb_id = self.config.Trakt.convert(tmdb_id, "tmdb", "imdb", "movie" if is_movie else "show")
-                except Failed:
-                    pass
-        if fail and imdb_id is None:
+            pass
+        if imdb_id:
+            if self.config.Cache:
+                self.config.Cache.update_imdb_to_tmdb_map(media_type, expired, imdb_id, tmdb_id)
+            return imdb_id
+        elif fail:
             raise Failed(f"Convert Error: No IMDb ID Found for TMDb ID: {tmdb_id}")
-        if self.config.Cache and imdb_id:
-            self.config.Cache.update_imdb_to_tmdb_map(media_type, expired, imdb_id, tmdb_id)
-        return imdb_id
+        else:
+            return None
 
     def imdb_to_tmdb(self, imdb_id, is_movie=True, fail=False):
         media_type = "movie" if is_movie else "show"
@@ -142,16 +141,15 @@ class Convert:
         try:
             tmdb_id = self.config.TMDb.convert_to(imdb_id, "imdb_id", is_movie)
         except Failed:
-            if self.config.Trakt:
-                try:
-                    tmdb_id = self.config.Trakt.convert(imdb_id, "imdb", "tmdb", media_type)
-                except Failed:
-                    pass
-        if fail and tmdb_id is None:
+            pass
+        if tmdb_id:
+            if self.config.Cache:
+                self.config.Cache.update_imdb_to_tmdb_map(media_type, expired, imdb_id, tmdb_id)
+            return tmdb_id
+        elif fail:
             raise Failed(f"Convert Error: No TMDb ID Found for IMDb ID: {imdb_id}")
-        if self.config.Cache and tmdb_id:
-            self.config.Cache.update_imdb_to_tmdb_map(media_type, expired, imdb_id, tmdb_id)
-        return tmdb_id
+        else:
+            return None
 
     def tmdb_to_tvdb(self, tmdb_id, fail=False):
         expired = False
@@ -161,18 +159,17 @@ class Convert:
                 return cache_id
         tvdb_id = None
         try:
-            tvdb_id = int(self.config.TMDb.convert_from(tmdb_id, "tvdb_id", False))
+            tvdb_id = self.config.TMDb.convert_from(tmdb_id, "tvdb_id", False)
         except Failed:
-            if self.config.Trakt:
-                try:
-                    tvdb_id = int(self.config.Trakt.convert(tmdb_id, "tmdb", "tvdb", "show"))
-                except Failed:
-                    pass
-        if fail and tvdb_id is None:
+            pass
+        if tvdb_id:
+            if self.config.Cache:
+                self.config.Cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
+            return tvdb_id
+        elif fail:
             raise Failed(f"Convert Error: No TVDb ID Found for TMDb ID: {tmdb_id}")
-        if self.config.Cache and tvdb_id:
-            self.config.Cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
-        return tvdb_id
+        else:
+            return None
 
     def tvdb_to_tmdb(self, tvdb_id, fail=False):
         expired = False
@@ -184,16 +181,15 @@ class Convert:
         try:
             tmdb_id = self.config.TMDb.convert_to(tvdb_id, "tvdb_id", False)
         except Failed:
-            if self.config.Trakt:
-                try:
-                    tmdb_id = self.config.Trakt.convert(tvdb_id, "tvdb", "tmdb", "show")
-                except Failed:
-                    pass
-        if fail and tmdb_id is None:
+            pass
+        if tmdb_id:
+            if self.config.Cache:
+                self.config.Cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
+            return tmdb_id
+        elif fail:
             raise Failed(f"Convert Error: No TMDb ID Found for TVDb ID: {tvdb_id}")
-        if self.config.Cache and tmdb_id:
-            self.config.Cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
-        return tmdb_id
+        else:
+            return None
 
     def tvdb_to_imdb(self, tvdb_id, fail=False):
         expired = False
@@ -205,16 +201,15 @@ class Convert:
         try:
             imdb_id = self.tmdb_to_imdb(self.tvdb_to_tmdb(tvdb_id, fail=True), is_movie=False, fail=True)
         except Failed:
-            if self.config.Trakt:
-                try:
-                    imdb_id = self.config.Trakt.convert(tvdb_id, "tvdb", "imdb", "show")
-                except Failed:
-                    pass
-        if fail and imdb_id is None:
+            pass
+        if imdb_id:
+            if self.config.Cache:
+                self.config.Cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
+            return imdb_id
+        elif fail:
             raise Failed(f"Convert Error: No IMDb ID Found for TVDb ID: {tvdb_id}")
-        if self.config.Cache and imdb_id:
-            self.config.Cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
-        return imdb_id
+        else:
+            return None
 
     def imdb_to_tvdb(self, imdb_id, fail=False):
         expired = False
@@ -226,16 +221,15 @@ class Convert:
         try:
             tvdb_id = self.tmdb_to_tvdb(self.imdb_to_tmdb(imdb_id, is_movie=False, fail=True), fail=True)
         except Failed:
-            if self.config.Trakt:
-                try:
-                    tvdb_id = self.config.Trakt.convert(imdb_id, "imdb", "tvdb", "show")
-                except Failed:
-                    pass
-        if fail and tvdb_id is None:
+            pass
+        if tvdb_id:
+            if self.config.Cache:
+                self.config.Cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
+            return tvdb_id
+        elif fail:
             raise Failed(f"Convert Error: No TVDb ID Found for IMDb ID: {imdb_id}")
-        if self.config.Cache and tvdb_id:
-            self.config.Cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
-        return tvdb_id
+        else:
+            return None
 
     def get_id(self, item, library):
         expired = None
