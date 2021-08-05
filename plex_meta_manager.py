@@ -276,6 +276,20 @@ def mass_metadata(config, library, items):
         if not tmdb_id and not tvdb_id and library.is_show:
             tmdb_id = library.get_tvdb_from_map(item)
 
+        if library.mass_trakt_rating_update:
+            try:
+                if library.is_movie and tmdb_id in trakt_ratings:
+                    new_rating = trakt_ratings[tmdb_id]
+                elif library.is_show and tvdb_id in trakt_ratings:
+                    new_rating = trakt_ratings[tvdb_id]
+                else:
+                    raise Failed
+                if str(item.userRating) != str(new_rating):
+                    library.edit_query(item, {"userRating.value": new_rating, "userRating.locked": 1})
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | User Rating | {new_rating}"))
+            except Failed:
+                pass
+
         if library.Radarr and library.radarr_add_all and tmdb_id:
             radarr_adds.append(tmdb_id)
         if library.Sonarr and library.sonarr_add_all and tvdb_id:
@@ -370,19 +384,6 @@ def mass_metadata(config, library, items):
                     if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
                         library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
                         logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
-            except Failed:
-                pass
-        if library.mass_trakt_rating_update:
-            try:
-                if library.is_movie and tmdb_id in trakt_ratings:
-                    new_rating = trakt_ratings[tmdb_id]
-                elif library.is_show and tvdb_id in trakt_ratings:
-                    new_rating = trakt_ratings[tvdb_id]
-                else:
-                    raise Failed
-                if str(item.userRating) != str(new_rating):
-                    library.edit_query(item, {"userRating.value": new_rating, "userRating.locked": 1})
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | User Rating | {new_rating}"))
             except Failed:
                 pass
 
@@ -498,9 +499,6 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 builder.sort_collection()
 
-            logger.info("")
-            util.separator(f"Updating Details of the Items in {mapping_name} Collection", space=False, border=False)
-            logger.info("")
             builder.update_item_details()
 
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
