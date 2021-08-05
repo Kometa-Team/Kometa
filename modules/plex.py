@@ -725,8 +725,8 @@ class Plex:
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
             _add_tags = add_tags if add_tags else []
-            _remove_tags = remove_tags if remove_tags else []
-            _sync_tags = sync_tags if sync_tags else []
+            _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
+            _sync_tags = [t.lower() for t in sync_tags] if sync_tags else []
             try:
                 _item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
             except BadRequest:
@@ -738,11 +738,11 @@ class Plex:
             if _add:
                 updated = True
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
-                logger.info(f"Detail: {attr.capitalize()} {_add} added")
+                logger.info(f"Detail: {attr.capitalize()} {util.compile_list(_add)} added")
             if _remove:
                 updated = True
                 self.query_data(getattr(obj, f"remove{attr.capitalize()}"), _remove)
-                logger.info(f"Detail: {attr.capitalize()} {_remove} removed")
+                logger.info(f"Detail: {attr.capitalize()} {util.compile_list(_remove)} removed")
         return updated
 
     def update_item_from_assets(self, item, overlay=None, create=False):
