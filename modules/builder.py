@@ -1607,12 +1607,20 @@ class CollectionBuilder:
             items = self.library.get_collection_items(self.obj, self.smart_label_collection)
         else:
             items = []
+            logger.info("")
+            util.separator(f"Items Found for {self.name} Collection", space=False, border=False)
+            logger.info("")
             for rk in self.rating_keys:
                 try:
-                    items.append(self.fetch_item(rk))
+                    item = self.fetch_item(rk)
+                    logger.info(f"{item.title} (Rating Key: {rk})")
+                    items.append(item)
                 except Failed as e:
                     logger.error(e)
 
+        logger.info("")
+        util.separator(f"Updating Details of the Items in {self.name} Collection", space=False, border=False)
+        logger.info("")
         overlay = None
         overlay_folder = None
         rating_keys = []
