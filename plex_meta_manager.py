@@ -152,7 +152,7 @@ def update_libraries(config):
             util.separator(f"Running Metadata File\n{metadata.path}")
             if not config.test_mode and not config.resume_from and not collection_only:
                 try:
-                    metadata.update_metadata(config.TMDb, config.test_mode)
+                    metadata.update_metadata()
                 except Failed as e:
                     logger.error(e)
             collections_to_run = metadata.get_collections(config.requested_collections)

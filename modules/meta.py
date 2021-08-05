@@ -67,7 +67,7 @@ class Metadata:
         else:
             return self.collections
 
-    def update_metadata(self, TMDb, test):
+    def update_metadata(self):
         if not self.metadata:
             return None
         logger.info("")
@@ -75,7 +75,7 @@ class Metadata:
         logger.info("")
         for mapping_name, meta in self.metadata.items():
             methods = {mm.lower(): mm for mm in meta}
-            if test and ("test" not in methods or meta[methods["test"]] is not True):
+            if self.config.test and ("test" not in methods or meta[methods["test"]] is not True):
                 continue
 
             updated = False
@@ -212,13 +212,13 @@ class Metadata:
                             logger.error("Metadata Error: tmdb_show attribute is blank")
                         else:
                             tmdb_is_movie = False
-                            tmdb_item = TMDb.get_show(util.regex_first_int(data, "Show"))
+                            tmdb_item = self.config.TMDb.get_show(util.regex_first_int(data, "Show"))
                     elif "tmdb_movie" in methods:
                         if meta[methods["tmdb_movie"]] is None:
                             logger.error("Metadata Error: tmdb_movie attribute is blank")
                         else:
                             tmdb_is_movie = True
-                            tmdb_item = TMDb.get_movie(util.regex_first_int(meta[methods["tmdb_movie"]], "Movie"))
+                            tmdb_item = self.config.TMDb.get_movie(util.regex_first_int(meta[methods["tmdb_movie"]], "Movie"))
                 except Failed as e:
                     logger.error(e)
 
