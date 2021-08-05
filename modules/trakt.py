@@ -107,7 +107,7 @@ class Trakt:
         while current <= pages:
             if pages == 1:
                 response = self.config.get(f"{base_url}{url}", headers=headers)
-                if "X-Pagination-Page-Count" in response.headers:
+                if "X-Pagination-Page-Count" in response.headers and "?" not in url:
                     pages = int(response.headers["X-Pagination-Page-Count"])
             else:
                 response = self.config.get(f"{base_url}{url}?page={current}", headers=headers)

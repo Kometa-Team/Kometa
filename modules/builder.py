@@ -1029,7 +1029,7 @@ class CollectionBuilder:
                 movie_rating_keys = []
                 for movie_id in movie_ids:
                     if movie_id in self.library.movie_map:
-                        movie_rating_keys.append(self.library.movie_map[movie_id])
+                        movie_rating_keys.append(self.library.movie_map[movie_id][0])
                     elif movie_id not in self.missing_movies:
                         self.missing_movies.append(movie_id)
                 add_rating_keys(movie_rating_keys)
@@ -1038,7 +1038,7 @@ class CollectionBuilder:
                 show_rating_keys = []
                 for show_id in show_ids:
                     if show_id in self.library.show_map:
-                        show_rating_keys.append(self.library.show_map[show_id])
+                        show_rating_keys.append(self.library.show_map[show_id][0])
                     elif show_id not in self.missing_shows:
                         self.missing_shows.append(show_id)
                 add_rating_keys(show_rating_keys)
