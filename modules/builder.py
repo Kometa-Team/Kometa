@@ -110,6 +110,7 @@ all_filters = [
     "writer", "writer.not",
     "year", "year.gt", "year.gte", "year.lt", "year.lte", "year.not"
 ]
+tmdb_filters = ("original_language", "tmdb_vote_count", "year")
 movie_only_filters = [
     "audio_language", "audio_language.not",
     "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
@@ -158,10 +159,9 @@ class CollectionBuilder:
         self.sonarr_options = {}
         self.missing_movies = []
         self.missing_shows = []
-        self.filtered_missing_movies = []
-        self.filtered_missing_shows = []
         self.builders = []
         self.filters = []
+        self.tmdb_filters = []
         self.rating_keys = []
         self.run_again_movies = []
         self.run_again_shows = []
@@ -177,8 +177,8 @@ class CollectionBuilder:
         methods = {m.lower(): m for m in self.data}
 
         if "template" in methods:
-            logger.info("")
-            logger.info("Validating Method: template")
+            logger.debug("")
+            logger.debug("Validating Method: template")
             if not self.metadata.templates:
                 raise Failed("Collection Error: No templates found")
             elif not self.data[methods["template"]]:
@@ -290,8 +290,8 @@ class CollectionBuilder:
                                     continue
 
         if "schedule" in methods:
-            logger.info("")
-            logger.info("Validating Method: schedule")
+            logger.debug("")
+            logger.debug("Validating Method: schedule")
             if not self.data[methods["schedule"]]:
                 raise Failed("Collection Error: schedule attribute is blank")
             else:
@@ -359,29 +359,29 @@ class CollectionBuilder:
 
         self.validate_builders = True
         if "validate_builders" in methods:
-            logger.info("")
-            logger.info("Validating Method: validate_builders")
-            logger.info(f"Value: {data[methods['validate_builders']]}")
+            logger.debug("")
+            logger.debug("Validating Method: validate_builders")
+            logger.debug(f"Value: {data[methods['validate_builders']]}")
             self.validate_builders = util.parse("validate_builders", self.data, datatype="bool", methods=methods, default=True)
 
         self.run_again = False
         if "run_again" in methods:
-            logger.info("")
-            logger.info("Validating Method: run_again")
-            logger.info(f"Value: {data[methods['run_again']]}")
+            logger.debug("")
+            logger.debug("Validating Method: run_again")
+            logger.debug(f"Value: {data[methods['run_again']]}")
             self.run_again = util.parse("run_again", self.data, datatype="bool", methods=methods, default=False)
 
         self.build_collection = True
         if "build_collection" in methods:
-            logger.info("")
-            logger.info("Validating Method: build_collection")
-            logger.info(f"Value: {data[methods['build_collection']]}")
+            logger.debug("")
+            logger.debug("Validating Method: build_collection")
+            logger.debug(f"Value: {data[methods['build_collection']]}")
             self.build_collection = util.parse("build_collection", self.data, datatype="bool", methods=methods, default=True)
 
         self.sync = self.library.sync_mode == "sync"
         if "sync_mode" in methods:
-            logger.info("")
-            logger.info("Validating Method: sync_mode")
+            logger.debug("")
+            logger.debug("Validating Method: sync_mode")
             if not self.data[methods["sync_mode"]]:
                 logger.warning(f"Collection Warning: sync_mode attribute is blank using general: {self.library.sync_mode}")
             else:
@@ -393,20 +393,22 @@ class CollectionBuilder:
 
         self.custom_sort = False
         if "collection_order" in methods:
-            logger.info("")
-            logger.info("Validating Method: collection_order")
+            logger.debug("")
+            logger.debug("Validating Method: collection_order")
             if self.data[methods["collection_order"]] is None:
                 raise Failed(f"Collection Warning: collection_order attribute is blank")
-            elif self.data[methods["collection_order"]].lower() in plex.collection_order_options:
-                self.details["collection_order"] = self.data[methods["collection_order"]].lower()
-                if self.data[methods["collection_order"]].lower() == "custom" and self.build_collection:
-                    self.custom_sort = True
             else:
-                raise Failed(f"Collection Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)")
+                logger.debug(f"Value: {self.data[methods['collection_order']]}")
+                if self.data[methods["collection_order"]].lower() in plex.collection_order_options:
+                    self.details["collection_order"] = self.data[methods["collection_order"]].lower()
+                    if self.data[methods["collection_order"]].lower() == "custom" and self.build_collection:
+                        self.custom_sort = True
+                else:
+                    raise Failed(f"Collection Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)")
 
         if "tmdb_person" in methods:
-            logger.info("")
-            logger.info("Validating Method: tmdb_person")
+            logger.debug("")
+            logger.debug("Validating Method: tmdb_person")
             if not self.data[methods["tmdb_person"]]:
                 raise Failed("Collection Error: tmdb_person attribute is blank")
             else:
@@ -427,8 +429,8 @@ class CollectionBuilder:
         self.smart_sort = "random"
         self.smart_label_collection = False
         if "smart_label" in methods:
-            logger.info("")
-            logger.info("Validating Method: smart_label")
+            logger.debug("")
+            logger.debug("Validating Method: smart_label")
             self.smart_label_collection = True
             if not self.data[methods["smart_label"]]:
                 logger.warning("Collection Error: smart_label attribute is blank defaulting to random")
@@ -444,8 +446,8 @@ class CollectionBuilder:
         self.smart_type_key = None
         self.smart_filter_details = ""
         if "smart_url" in methods:
-            logger.info("")
-            logger.info("Validating Method: smart_url")
+            logger.debug("")
+            logger.debug("Validating Method: smart_url")
             if not self.data[methods["smart_url"]]:
                 raise Failed("Collection Error: smart_url attribute is blank")
             else:
@@ -523,6 +525,8 @@ class CollectionBuilder:
                     raise
                 else:
                     logger.error(e)
+
+        self.tmdb_filters = [(fm, fd) for fm, fd in self.filters if fm.startswith(tmdb_filters)]
 
         if self.custom_sort and len(self.builders) > 1:
             raise Failed("Collection Error: collection_order: custom can only be used with a single builder per collection")
@@ -969,16 +973,22 @@ class CollectionBuilder:
                 validate = dict_data["validate"]
             for filter_method, filter_data in dict_data.items():
                 filter_attr, modifier, filter_final = self._split(filter_method)
+                message = None
                 if filter_final not in all_filters:
-                    raise Failed(f"Collection Error: {filter_final} is not a valid filter attribute")
+                    message = f"Collection Error: {filter_final} is not a valid filter attribute"
                 elif filter_final in movie_only_filters and self.library.is_show:
-                    raise Failed(f"Collection Error: {filter_final} filter attribute only works for movie libraries")
+                    message = f"Collection Error: {filter_final} filter attribute only works for movie libraries"
                 elif filter_final in show_only_filters and self.library.is_movie:
-                    raise Failed(f"Collection Error: {filter_final} filter attribute only works for show libraries")
+                    message = f"Collection Error: {filter_final} filter attribute only works for show libraries"
                 elif filter_final is None:
-                    raise Failed(f"Collection Error: {filter_final} filter attribute is blank")
+                    message = f"Collection Error: {filter_final} filter attribute is blank"
                 else:
                     self.filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
+                if message:
+                    if validate:
+                        raise Failed(message)
+                    else:
+                        logger.error(message)
 
     def collect_rating_keys(self):
         filtered_keys = {}
@@ -1018,37 +1028,15 @@ class CollectionBuilder:
                 for movie_id in movie_ids:
                     if movie_id in self.library.movie_map:
                         add_rating_keys(self.library.movie_map[movie_id])
-                    elif movie_id not in self.missing_movies and movie_id not in self.filtered_missing_movies:
-                        filter_missing = False
-                        if self.details["released_missing_only"]:
-                            try:
-                                movie = self.config.TMDb.get_movie(movie_id)
-                                if util.validate_date(movie.release_date, "") > self.current_time:
-                                    filter_missing = True
-                            except Failed:
-                                pass
-                        if filter_missing:
-                            self.filtered_missing_movies.append(movie_id)
-                        else:
-                            self.missing_movies.append(movie_id)
+                    elif movie_id not in self.missing_movies:
+                        self.missing_movies.append(movie_id)
             if len(show_ids) > 0:
                 items_found_inside += len(show_ids)
                 for show_id in show_ids:
                     if show_id in self.library.show_map:
                         add_rating_keys(self.library.show_map[show_id])
-                    elif show_id not in self.missing_shows and show_id not in self.filtered_missing_shows:
-                        filter_missing = False
-                        if self.details["released_missing_only"]:
-                            try:
-                                show = self.config.TMDb.get_show(show_id)
-                                if util.validate_date(show.first_air_date, "") > self.current_time:
-                                    filter_missing = True
-                            except Failed:
-                                pass
-                        if filter_missing:
-                            self.filtered_missing_shows.append(show_id)
-                        else:
-                            self.missing_shows.append(show_id)
+                    elif show_id not in self.missing_shows:
+                        self.missing_shows.append(show_id)
             return items_found_inside
         for method, value in self.builders:
             logger.debug("")
@@ -1067,6 +1055,31 @@ class CollectionBuilder:
             elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
             elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
             else:                                               logger.error(f"Collection Error: {method} method not supported")
+
+    def tmdb_filter(self, item_id, is_movie, item=None):
+        filter_missing = False
+        if self.tmdb_filters or self.details["released_missing_only"]:
+            try:
+                if item is None:
+                    item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_movie(self.config.Convert.tvdb_to_tmdb(item_id))
+                if self.details["released_missing_only"]:
+                    if util.validate_date(item.release_date if is_movie else item.first_air_date, "") > self.current_time:
+                        return True
+                for filter_method, filter_data in self.tmdb_filters:
+                    if (filter_method == "original_language" and item.original_language not in filter_data) \
+                            or (filter_method == "original_language.not" and item.original_language in filter_data) \
+                            or (filter_method == "tmdb_vote_count.gt" and item.vote_count <= filter_data) \
+                            or (filter_method == "tmdb_vote_count.gte" and item.vote_count < filter_data) \
+                            or (filter_method == "tmdb_vote_count.lt" and item.vote_count >= filter_data) \
+                            or (filter_method == "tmdb_vote_count.lte" and item.vote_count > filter_data) \
+                            or (filter_method == "year.gt" and item.year <= filter_data) \
+                            or (filter_method == "year.gte" and item.year < filter_data) \
+                            or (filter_method == "year.lt" and item.year >= filter_data) \
+                            or (filter_method == "year.lte" and item.year > filter_data):
+                        return True
+            except Failed:
+                return True
+        return filter_missing
 
     def build_filter(self, method, plex_filter, smart=False):
         if smart:
@@ -1500,10 +1513,6 @@ class CollectionBuilder:
         return True
 
     def run_missing(self):
-        arr_filters = []
-        for filter_method, filter_data in self.filters:
-            if (filter_method.startswith("original_language") and self.library.is_movie) or filter_method.startswith("tmdb_vote_count"):
-                arr_filters.append((filter_method, filter_data))
         if len(self.missing_movies) > 0:
             missing_movies_with_names = []
             for missing_id in self.missing_movies:
@@ -1512,23 +1521,14 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
                     continue
-                match = True
-                for filter_method, filter_data in arr_filters:
-                    if (filter_method == "original_language" and movie.original_language not in filter_data) \
-                            or (filter_method == "original_language.not" and movie.original_language in filter_data) \
-                            or (filter_method == "tmdb_vote_count.gt" and movie.vote_count <= filter_data) \
-                            or (filter_method == "tmdb_vote_count.gte" and movie.vote_count < filter_data) \
-                            or (filter_method == "tmdb_vote_count.lt" and movie.vote_count >= filter_data) \
-                            or (filter_method == "tmdb_vote_count.lte" and movie.vote_count > filter_data):
-                        match = False
-                        break
                 current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
-                if match:
+                if self.tmdb_filter(missing_id, True, item=movie):
+                    if self.details["show_filtered"] is True and self.details["show_missing"] is True:
+                        logger.info(f"{self.name} Collection | X | {current_title} (TMDb: {missing_id})")
+                else:
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
                         logger.info(f"{self.name} Collection | ? | {current_title} (TMDb: {missing_id})")
-                elif self.details["show_filtered"] is True:
-                    logger.info(f"{self.name} Collection | X | {current_title} (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
             if self.details["save_missing"] is True:
@@ -1546,26 +1546,18 @@ class CollectionBuilder:
             missing_shows_with_names = []
             for missing_id in self.missing_shows:
                 try:
-                    title = str(self.config.TVDb.get_series(self.language, missing_id).title.encode("ascii", "replace").decode())
+                    show = self.config.TVDb.get_series(self.language, missing_id)
                 except Failed as e:
                     logger.error(e)
                     continue
-                match = True
-                if arr_filters:
-                    show = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(missing_id))
-                    for filter_method, filter_data in arr_filters:
-                        if (filter_method == "tmdb_vote_count.gt" and show.vote_count <= filter_data) \
-                                or (filter_method == "tmdb_vote_count.gte" and show.vote_count < filter_data) \
-                                or (filter_method == "tmdb_vote_count.lt" and show.vote_count >= filter_data) \
-                                or (filter_method == "tmdb_vote_count.lte" and show.vote_count > filter_data):
-                            match = False
-                            break
-                if match:
-                    missing_shows_with_names.append((title, missing_id))
+                current_title = str(show.title.encode("ascii", "replace").decode())
+                if self.tmdb_filter(missing_id, False):
+                    if self.details["show_filtered"] is True and self.details["show_missing"] is True:
+                        logger.info(f"{self.name} Collection | X | {current_title} (TVDb: {missing_id})")
+                else:
+                    missing_shows_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} Collection | ? | {title} (TVDB: {missing_id})")
-                elif self.details["show_filtered"] is True:
-                    logger.info(f"{self.name} Collection | X | {title} (TVDb: {missing_id})")
+                        logger.info(f"{self.name} Collection | ? | {current_title} (TVDB: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
             if self.details["save_missing"] is True:

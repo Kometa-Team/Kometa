@@ -132,14 +132,17 @@ show_only_searches = [
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
-number_attributes = ["plays", "episode_plays", "added", "episode_added", "release", "episode_air_date", "duration", "tmdb_vote_count"]
+number_attributes = [
+    "plays", "episode_plays", "duration", "tmdb_vote_count", "last_episode_aired"
+    "added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"
+]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
 boolean_attributes = [
     "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
 ]
 tmdb_attributes = ["actor", "director", "producer", "writer"]
-date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"]
+date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played", "last_episode_aired"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 sorts = {
     None: None,

@@ -315,6 +315,7 @@ class Convert:
                 update_cache(tmdb_id, "TMDb", "show_movie")
                 return "movie", tmdb_id
             else:
+                logger.debug(f"TMDb: {tmdb_id}, IMDb: {imdb_id}, TVDb: {tvdb_id}")
                 raise Failed(f"No ID to convert")
         except Failed as e:
             logger.info(util.adjust_space(f"Mapping Error | {item.guid:<46} | {e} for {item.title}"))
