@@ -1390,16 +1390,13 @@ class CollectionBuilder:
                     tmdb_item = None
                 if filter_attr in ["release", "added", "last_played", "last_episode_aired"] and modifier != ".regex":
                     if filter_attr == "last_episode_aired":
-                        current_data = tmdb_item.last_air_date
-                        if current_data is None:
+                        if tmdb_item.last_air_date is None:
                             return False
-                        current_data = util.validate_date(current_data, "TMDB Last Air Date")
+                        current_data = util.validate_date(tmdb_item.last_air_date, "TMDB Last Air Date")
                     else:
                         current_data = getattr(current, filter_actual)
                     if current_data is None:
                         return False
-                    if filter_attr == "last_episode_aired":
-                        current_data = util.validate_date(current_data, "TMDB First Air Date")
                     if modifier in ["", ".not"]:
                         threshold_date = self.current_time - timedelta(days=filter_data)
                         if (modifier == "" and (current_data is None or current_data < threshold_date)) \
