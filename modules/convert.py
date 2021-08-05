@@ -241,7 +241,7 @@ class Convert:
             cache_id, media_type, expired = self.config.Cache.query_guid_map(item.guid)
             if cache_id and not expired:
                 media_id_type = "movie" if "movie" in media_type else "show"
-                return media_id_type, util.get_list(cache_id, int_list=True)
+                return media_id_type, cache_id
         try:
             guid = requests.utils.urlparse(item.guid)
             item_type = guid.scheme.split(".")[-1]
