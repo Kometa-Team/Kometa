@@ -1026,18 +1026,22 @@ class CollectionBuilder:
             items_found_inside = 0
             if len(movie_ids) > 0:
                 items_found_inside += len(movie_ids)
+                movie_rating_keys = []
                 for movie_id in movie_ids:
                     if movie_id in self.library.movie_map:
-                        add_rating_keys(self.library.movie_map[movie_id])
+                        movie_rating_keys.append(self.library.movie_map[movie_id])
                     elif movie_id not in self.missing_movies:
                         self.missing_movies.append(movie_id)
+                add_rating_keys(movie_rating_keys)
             if len(show_ids) > 0:
                 items_found_inside += len(show_ids)
+                show_rating_keys = []
                 for show_id in show_ids:
                     if show_id in self.library.show_map:
-                        add_rating_keys(self.library.show_map[show_id])
+                        show_rating_keys.append(self.library.show_map[show_id])
                     elif show_id not in self.missing_shows:
                         self.missing_shows.append(show_id)
+                add_rating_keys(show_rating_keys)
             return items_found_inside
         for method, value in self.builders:
             logger.debug("")
