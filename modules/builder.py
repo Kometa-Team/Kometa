@@ -1374,7 +1374,8 @@ class CollectionBuilder:
                 filter_attr, modifier, filter_final = self._split(filter_method)
                 filter_actual = filter_translation[filter_attr] if filter_attr in filter_translation else filter_attr
                 if filter_attr in ["tmdb_vote_count", "original_language", "last_episode_aired"]:
-                    if current.ratingKey not in self.library.movie_rating_key_map:
+                    if (self.library.is_movie and current.ratingKey not in self.library.movie_rating_key_map) \
+                            or (self.library.is_show and current.ratingKey not in self.library.show_rating_key_map):
                         logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
                         continue
                     if self.library.is_movie:
