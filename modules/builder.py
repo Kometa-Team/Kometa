@@ -71,7 +71,7 @@ summary_details = [
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
-boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "item_assets"]
+boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "item_assets", "create_asset_folders", "released_missing_only"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = ["smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "tmdb_person", "build_collection", "collection_order", "validate_builders"]
 details = ["collection_mode", "collection_order", "label"] + boolean_details + string_details
@@ -638,7 +638,8 @@ class CollectionBuilder:
             else:
                 self.details[method_final] = util.get_list(method_data)
         elif method_name in boolean_details:
-            self.details[method_name] = util.parse(method_name, method_data, datatype="bool")
+            default = self.details[method_name] if method_name in self.details else None
+            self.details[method_name] = util.parse(method_name, method_data, datatype="bool", default=default)
         elif method_name in string_details:
             self.details[method_name] = str(method_data)
 
@@ -1243,7 +1244,6 @@ class CollectionBuilder:
     def validate_attribute(self, attribute, modifier, final, data, validate, pairs=False):
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if pairs else list_to_pair
-        logger.debug(f"{attribute} {modifier}")
         if modifier == ".regex":
             regex_list = util.get_list(data, split=False)
             valid_regex = []

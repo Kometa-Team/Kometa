@@ -133,7 +133,7 @@ show_only_searches = [
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
 number_attributes = [
-    "plays", "episode_plays", "duration", "tmdb_vote_count", "last_episode_aired"
+    "plays", "episode_plays", "duration", "tmdb_vote_count", "last_episode_aired",
     "added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"
 ]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
