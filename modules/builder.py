@@ -1376,12 +1376,16 @@ class CollectionBuilder:
                 if filter_attr in ["tmdb_vote_count", "original_language", "last_episode_aired"]:
                     if (self.library.is_movie and current.ratingKey not in self.library.movie_rating_key_map) \
                             or (self.library.is_show and current.ratingKey not in self.library.show_rating_key_map):
-                        logger.warning(f"Filter Error: No TMDb ID found for {current.title}")
-                        continue
-                    if self.library.is_movie:
-                        tmdb_item = self.config.TMDb.get_movie(self.library.movie_rating_key_map[current.ratingKey])
-                    else:
-                        tmdb_item = self.config.TMDb.get_show(self.library.show_rating_key_map[current.ratingKey])
+                        logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {current.title}")
+                        return False
+                    try:
+                        if self.library.is_movie:
+                            tmdb_item = self.config.TMDb.get_movie(self.library.movie_rating_key_map[current.ratingKey])
+                        else:
+                            tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[current.ratingKey]))
+                    except Failed as e:
+                        logger.error(e)
+                        return False
                 else:
                     tmdb_item = None
                 if filter_attr in ["release", "added", "last_played", "last_episode_aired"] and modifier != ".regex":
