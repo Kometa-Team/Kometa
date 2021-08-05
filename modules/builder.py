@@ -1243,6 +1243,7 @@ class CollectionBuilder:
     def validate_attribute(self, attribute, modifier, final, data, validate, pairs=False):
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if pairs else list_to_pair
+        logger.debug(f"{attribute} {modifier}")
         if modifier == ".regex":
             regex_list = util.get_list(data, split=False)
             valid_regex = []
