@@ -733,6 +733,8 @@ class Plex:
                 _item_tags = []
             _add = [f"{t[:1].upper()}{t[1:]}" for t in _add_tags + _sync_tags if t.lower() not in _item_tags]
             _remove = [t for t in _item_tags if (_sync_tags and t not in _sync_tags) or t in _remove_tags]
+            logger.debug(_add)
+            logger.debug(_remove)
             if _add:
                 updated = True
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
