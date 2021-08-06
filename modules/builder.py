@@ -1405,7 +1405,7 @@ class CollectionBuilder:
                         return False
                     if not self.check_tmdb_filter(t_id, current.ratingKey in self.library.movie_rating_key_map):
                         return False
-                if filter_attr in ["release", "added", "last_played"]:
+                elif filter_attr in ["release", "added", "last_played"]:
                     if not util.date_filter(getattr(current, filter_actual), modifier, filter_data, filter_final, self.current_time):
                         return False
                 elif filter_attr == "audio_track_title":
