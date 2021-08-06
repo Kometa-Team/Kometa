@@ -1076,9 +1076,11 @@ class CollectionBuilder:
                         if (modifier == ".not" and item.original_language in filter_data) \
                                 or (modifier == "" and item.original_language not in filter_data):
                             return False
-                    elif filter_attr in ["last_episode_aired"]:
+                    elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
                         tmdb_date = None
-                        if filter_attr == "last_episode_aired":
+                        if filter_attr == "first_episode_aired":
+                            tmdb_date = item.first_air_date
+                        elif filter_attr == "last_episode_aired":
                             tmdb_date = item.last_air_date
                         if not util.date_filter(tmdb_date, modifier, filter_data, filter_final, self.current_time):
                             return False
