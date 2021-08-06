@@ -142,7 +142,7 @@ boolean_attributes = [
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
 ]
 tmdb_attributes = ["actor", "director", "producer", "writer"]
-date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played", "last_episode_aired"]
+date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played", "first_episode_aired", "last_episode_aired"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 sorts = {
     None: None,
