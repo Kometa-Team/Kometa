@@ -1061,30 +1061,38 @@ class CollectionBuilder:
             elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
             else:                                               logger.error(f"Collection Error: {method} method not supported")
 
-    def tmdb_filter(self, item_id, is_movie, item=None):
-        filter_missing = False
+    def check_tmdb_filter(self, item_id, is_movie, item=None):
         if self.tmdb_filters or self.details["released_missing_only"]:
             try:
                 if item is None:
-                    item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_movie(self.config.Convert.tvdb_to_tmdb(item_id))
+                    item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
                 if self.details["released_missing_only"]:
                     if util.validate_date(item.release_date if is_movie else item.first_air_date, "") > self.current_time:
-                        return True
+                        return False
                 for filter_method, filter_data in self.tmdb_filters:
-                    if (filter_method == "original_language" and item.original_language not in filter_data) \
-                            or (filter_method == "original_language.not" and item.original_language in filter_data) \
-                            or (filter_method == "tmdb_vote_count.gt" and item.vote_count <= filter_data) \
-                            or (filter_method == "tmdb_vote_count.gte" and item.vote_count < filter_data) \
-                            or (filter_method == "tmdb_vote_count.lt" and item.vote_count >= filter_data) \
-                            or (filter_method == "tmdb_vote_count.lte" and item.vote_count > filter_data) \
-                            or (filter_method == "year.gt" and item.year <= filter_data) \
-                            or (filter_method == "year.gte" and item.year < filter_data) \
-                            or (filter_method == "year.lt" and item.year >= filter_data) \
-                            or (filter_method == "year.lte" and item.year > filter_data):
-                        return True
+                    filter_attr, modifier, filter_final = self._split(filter_method)
+                    if filter_attr == "original_language":
+                        if (modifier == ".not" and item.original_language in filter_data) \
+                                or (modifier == "" and item.original_language not in filter_data):
+                            return False
+                    elif modifier in [".gt", ".gte", ".lt", ".lte"]:
+                        attr = None
+                        if filter_attr == "tmdb_vote_count":
+                            attr = item.vote_count
+                        elif filter_attr == "year" and is_movie:
+                            attr = item.year
+                        elif filter_attr == "year" and not is_movie:
+                            air_date = item.first_air_date
+                            if air_date:
+                                attr = util.validate_date(air_date, "Year Filter").year
+                        if attr is None or (modifier == ".gt" and attr <= filter_data) \
+                                or (modifier == ".gte" and attr < filter_data) \
+                                or (modifier == ".lt" and attr >= filter_data) \
+                                or (modifier == ".lte" and attr > filter_data):
+                            return False
             except Failed:
-                return True
-        return filter_missing
+                return False
+        return True
 
     def build_filter(self, method, plex_filter, smart=False):
         if smart:
@@ -1529,13 +1537,13 @@ class CollectionBuilder:
                     logger.error(e)
                     continue
                 current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
-                if self.tmdb_filter(missing_id, True, item=movie):
-                    if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} Collection | X | {current_title} (TMDb: {missing_id})")
-                else:
+                if self.check_tmdb_filter(missing_id, True, item=movie):
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
                         logger.info(f"{self.name} Collection | ? | {current_title} (TMDb: {missing_id})")
+                else:
+                    if self.details["show_filtered"] is True and self.details["show_missing"] is True:
+                        logger.info(f"{self.name} Collection | X | {current_title} (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
             if self.details["save_missing"] is True:
@@ -1558,13 +1566,13 @@ class CollectionBuilder:
                     logger.error(e)
                     continue
                 current_title = str(show.title.encode("ascii", "replace").decode())
-                if self.tmdb_filter(missing_id, False):
-                    if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} Collection | X | {current_title} (TVDb: {missing_id})")
-                else:
+                if self.check_tmdb_filter(missing_id, False):
                     missing_shows_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
                         logger.info(f"{self.name} Collection | ? | {current_title} (TVDB: {missing_id})")
+                else:
+                    if self.details["show_filtered"] is True and self.details["show_missing"] is True:
+                        logger.info(f"{self.name} Collection | X | {current_title} (TVDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
             if self.details["save_missing"] is True:

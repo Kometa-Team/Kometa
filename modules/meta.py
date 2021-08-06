@@ -75,7 +75,7 @@ class Metadata:
         logger.info("")
         for mapping_name, meta in self.metadata.items():
             methods = {mm.lower(): mm for mm in meta}
-            if self.config.test and ("test" not in methods or meta[methods["test"]] is not True):
+            if self.config.test_mode and ("test" not in methods or meta[methods["test"]] is not True):
                 continue
 
             updated = False
