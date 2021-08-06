@@ -1061,12 +1061,12 @@ class CollectionBuilder:
             elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
             else:                                               logger.error(f"Collection Error: {method} method not supported")
 
-    def check_tmdb_filter(self, item_id, is_movie, item=None):
-        if self.tmdb_filters or self.details["released_missing_only"]:
+    def check_tmdb_filter(self, item_id, is_movie, item=None, check_released=False):
+        if self.tmdb_filters or check_released:
             try:
                 if item is None:
                     item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
-                if self.details["released_missing_only"]:
+                if check_released:
                     if util.validate_date(item.release_date if is_movie else item.first_air_date, "") > self.current_time:
                         return False
                 for filter_method, filter_data in self.tmdb_filters:
@@ -1074,6 +1074,12 @@ class CollectionBuilder:
                     if filter_attr == "original_language":
                         if (modifier == ".not" and item.original_language in filter_data) \
                                 or (modifier == "" and item.original_language not in filter_data):
+                            return False
+                    elif filter_attr in ["last_episode_aired"]:
+                        tmdb_date = None
+                        if filter_attr == "last_episode_aired":
+                            tmdb_date = item.last_air_date
+                        if not util.date_filter(tmdb_date, modifier, filter_data, filter_final, self.current_time):
                             return False
                     elif modifier in [".gt", ".gte", ".lt", ".lte"]:
                         attr = None
@@ -1085,10 +1091,7 @@ class CollectionBuilder:
                             air_date = item.first_air_date
                             if air_date:
                                 attr = util.validate_date(air_date, "Year Filter").year
-                        if attr is None or (modifier == ".gt" and attr <= filter_data) \
-                                or (modifier == ".gte" and attr < filter_data) \
-                                or (modifier == ".lt" and attr >= filter_data) \
-                                or (modifier == ".lte" and attr > filter_data):
+                        if util.number_filter(attr, modifier, filter_data):
                             return False
             except Failed:
                 return False
@@ -1386,46 +1389,22 @@ class CollectionBuilder:
                 filter_attr, modifier, filter_final = self._split(filter_method)
                 filter_actual = filter_translation[filter_attr] if filter_attr in filter_translation else filter_attr
                 if filter_attr in ["tmdb_vote_count", "original_language", "last_episode_aired"]:
-                    if (self.library.is_movie and current.ratingKey not in self.library.movie_rating_key_map) \
-                            or (self.library.is_show and current.ratingKey not in self.library.show_rating_key_map):
+                    if current.ratingKey not in self.library.movie_rating_key_map and current.ratingKey not in self.library.show_rating_key_map:
                         logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {current.title}")
                         return False
                     try:
-                        if self.library.is_movie:
-                            tmdb_item = self.config.TMDb.get_movie(self.library.movie_rating_key_map[current.ratingKey])
+                        if current.ratingKey in self.library.movie_rating_key_map:
+                            t_id = self.library.movie_rating_key_map[current.ratingKey]
                         else:
-                            tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[current.ratingKey]))
+                            t_id = self.library.show_rating_key_map[current.ratingKey]
                     except Failed as e:
                         logger.error(e)
                         return False
-                else:
-                    tmdb_item = None
-                if filter_attr in ["release", "added", "last_played", "last_episode_aired"] and modifier != ".regex":
-                    if filter_attr == "last_episode_aired":
-                        if tmdb_item.last_air_date is None:
-                            return False
-                        current_data = util.validate_date(tmdb_item.last_air_date, "TMDB Last Air Date")
-                    else:
-                        current_data = getattr(current, filter_actual)
-                    if current_data is None:
+                    if not self.check_tmdb_filter(t_id, current.ratingKey in self.library.movie_rating_key_map):
                         return False
-                    if modifier in ["", ".not"]:
-                        threshold_date = self.current_time - timedelta(days=filter_data)
-                        if (modifier == "" and (current_data is None or current_data < threshold_date)) \
-                                or (modifier == ".not" and current_data and current_data >= threshold_date):
-                            return False
-                    elif modifier in [".before", ".after"]:
-                        filter_date = util.validate_date(filter_data, filter_final)
-                        if (modifier == ".before" and current_data >= filter_date) or (modifier == ".after" and current_data <= filter_date):
-                            return False
-                    elif modifier == ".regex":
-                        jailbreak = False
-                        for check_data in filter_data:
-                            if re.compile(check_data).match(current_data.strftime("%m/%d/%Y")):
-                                jailbreak = True
-                                break
-                        if not jailbreak:
-                            return False
+                if filter_attr in ["release", "added", "last_played"]:
+                    if not util.date_filter(getattr(current, filter_actual), modifier, filter_data, filter_final, self.current_time):
+                        return False
                 elif filter_attr == "audio_track_title":
                     jailbreak = False
                     for media in current.media:
@@ -1433,10 +1412,7 @@ class CollectionBuilder:
                             for audio in part.audioStreams():
                                 for check_title in filter_data:
                                     title = audio.title if audio.title else ""
-                                    if (modifier in ["", ".not"] and check_title.lower() in title.lower()) \
-                                            or (modifier == ".begins" and title.lower().startswith(check_title.lower())) \
-                                            or (modifier == ".ends" and title.lower().endswith(check_title.lower())) \
-                                            or (modifier == ".regex" and re.compile(check_title).match(title)):
+                                    if util.string_filter(title, modifier, check_title):
                                         jailbreak = True
                                         break
                                 if jailbreak: break
@@ -1448,10 +1424,7 @@ class CollectionBuilder:
                     jailbreak = False
                     for location in current.locations:
                         for check_text in filter_data:
-                            if (modifier in ["", ".not"] and check_text.lower() in location.lower()) \
-                                    or (modifier == ".begins" and location.lower().startswith(check_text.lower())) \
-                                    or (modifier == ".ends" and location.lower().endswith(check_text.lower())) \
-                                    or (modifier == ".regex" and re.compile(check_text).match(location)):
+                            if util.string_filter(location, modifier, check_text):
                                 jailbreak = True
                                 break
                         if jailbreak: break
@@ -1461,10 +1434,7 @@ class CollectionBuilder:
                     jailbreak = False
                     current_data = getattr(current, filter_actual)
                     for check_data in filter_data:
-                        if (modifier in ["", ".not"] and check_data.lower() in current_data.lower()) \
-                                or (modifier == ".begins" and current_data.lower().startswith(check_data.lower())) \
-                                or (modifier == ".ends" and current_data.lower().endswith(check_data.lower())) \
-                                or (modifier == ".regex" and re.compile(check_data).match(current_data)):
+                        if util.string_filter(current_data, modifier, check_data):
                             jailbreak = True
                             break
                     if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"]):
@@ -1487,21 +1457,12 @@ class CollectionBuilder:
                                 date_match = True
                         if date_match is False:
                             return False
-                elif filter_attr == "original_language":
-                    if (modifier == ".not" and tmdb_item.original_language in filter_data) \
-                            or (modifier == "" and tmdb_item.original_language not in filter_data):
-                        return False
                 elif modifier in [".gt", ".gte", ".lt", ".lte"]:
-                    if filter_attr == "tmdb_vote_count":
-                        attr = tmdb_item.vote_count
-                    elif filter_attr == "duration":
+                    if filter_attr == "duration":
                         attr = getattr(current, filter_actual) / 60000
                     else:
                         attr = getattr(current, filter_actual)
-                    if attr is None or (modifier == ".gt" and attr <= filter_data) \
-                            or (modifier == ".gte" and attr < filter_data) \
-                            or (modifier == ".lt" and attr >= filter_data) \
-                            or (modifier == ".lte" and attr > filter_data):
+                    if util.number_filter(attr, modifier, filter_data):
                         return False
                 else:
                     attrs = []
@@ -1537,7 +1498,7 @@ class CollectionBuilder:
                     logger.error(e)
                     continue
                 current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
-                if self.check_tmdb_filter(missing_id, True, item=movie):
+                if self.check_tmdb_filter(missing_id, True, item=movie, check_released=self.details["released_missing_only"]):
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
                         logger.info(f"{self.name} Collection | ? | {current_title} (TMDb: {missing_id})")
@@ -1566,7 +1527,7 @@ class CollectionBuilder:
                     logger.error(e)
                     continue
                 current_title = str(show.title.encode("ascii", "replace").decode())
-                if self.check_tmdb_filter(missing_id, False):
+                if self.check_tmdb_filter(missing_id, False, check_released=self.details["released_missing_only"]):
                     missing_shows_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
                         logger.info(f"{self.name} Collection | ? | {current_title} (TVDB: {missing_id})")
