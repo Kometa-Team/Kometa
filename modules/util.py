@@ -1,5 +1,5 @@
 import logging, os, re, signal, sys, time, traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
@@ -245,6 +245,40 @@ def is_locked(filepath):
             if file_object:
                 file_object.close()
     return locked
+
+def date_filter(current, modifier, data, final, current_time):
+    if current is None:
+        return False
+    if modifier in ["", ".not"]:
+        threshold_date = current_time - timedelta(days=data)
+        if (modifier == "" and (current is None or current < threshold_date)) \
+                or (modifier == ".not" and current and current >= threshold_date):
+            return False
+    elif modifier in [".before", ".after"]:
+        filter_date = validate_date(data, final)
+        if (modifier == ".before" and current >= filter_date) or (modifier == ".after" and current <= filter_date):
+            return False
+    elif modifier == ".regex":
+        jailbreak = False
+        for check_data in data:
+            if re.compile(check_data).match(current.strftime("%m/%d/%Y")):
+                jailbreak = True
+                break
+        if not jailbreak:
+            return False
+    return True
+
+def number_filter(current, modifier, data):
+    return current is None or (modifier == ".gt" and current <= data) \
+            or (modifier == ".gte" and current < data) \
+            or (modifier == ".lt" and current >= data) \
+            or (modifier == ".lte" and current > data)
+
+def string_filter(current, modifier, data):
+    return (modifier in ["", ".not"] and data.lower() in current.lower()) \
+            or (modifier == ".begins" and current.lower().startswith(data.lower())) \
+            or (modifier == ".ends" and current.lower().endswith(data.lower())) \
+            or (modifier == ".regex" and re.compile(data).match(current))
 
 def parse(attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"
