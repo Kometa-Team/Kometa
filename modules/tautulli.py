@@ -20,7 +20,7 @@ class Tautulli:
         if response["response"]["result"] != "success":
             raise Failed(f"Tautulli Error: {response['response']['message']}")
 
-    def get_items(self, library, params):
+    def get_rating_keys(self, library, params):
         query_size = int(params["list_size"]) + int(params["list_buffer"])
         logger.info(f"Processing Tautulli Most {params['list_type'].capitalize()}: {params['list_size']} {'Movies' if library.is_movie else 'Shows'}")
         response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_home_stats&time_range={params['list_days']}&stats_count={query_size}")
@@ -50,6 +50,8 @@ class Tautulli:
                         logger.error(f"Plex Error: Item {item} not found")
                         continue
                 count += 1
+        logger.debug("")
+        logger.debug(f"{len(rating_keys)} Keys Found: {rating_keys}")
         return rating_keys
 
     def _section_id(self, library_name):

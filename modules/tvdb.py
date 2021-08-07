@@ -54,6 +54,7 @@ class TVDbObj:
         self.summary = results[0] if len(results) > 0 and len(results[0]) > 0 else None
 
         tmdb_id = None
+        imdb_id = None
         if self.is_movie:
             results = response.xpath("//*[text()='TheMovieDB.com']/@href")
             if len(results) > 0:
@@ -61,16 +62,16 @@ class TVDbObj:
                     tmdb_id = util.regex_first_int(results[0], "TMDb ID")
                 except Failed:
                     pass
-            if tmdb_id is None:
-                results = response.xpath("//*[text()='IMDB']/@href")
-                if len(results) > 0:
-                    try:
-                        tmdb_id = self.config.Convert.imdb_to_tmdb(util.get_id_from_imdb_url(results[0]), fail=True)
-                    except Failed:
-                        pass
-            if tmdb_id is None:
-                raise Failed(f"TVDB Error: No TMDb ID found for {self.title}")
+            results = response.xpath("//*[text()='IMDB']/@href")
+            if len(results) > 0:
+                try:
+                    imdb_id = util.get_id_from_imdb_url(results[0])
+                except Failed:
+                    pass
+            if tmdb_id is None and imdb_id is None:
+                raise Failed(f"TVDB Error: No TMDb ID or IMDb ID found for {self.title}")
         self.tmdb_id = tmdb_id
+        self.imdb_id = imdb_id
 
 class TVDb:
     def __init__(self, config):
@@ -99,8 +100,7 @@ class TVDb:
         return description[0] if len(description) > 0 and len(description[0]) > 0 else ""
 
     def _ids_from_url(self, tvdb_url, language):
-        show_ids = []
-        movie_ids = []
+        ids = []
         tvdb_url = tvdb_url.strip()
         if tvdb_url.startswith((urls["list"], urls["alt_list"])):
             try:
@@ -111,23 +111,23 @@ class TVDb:
                     item_url = item.xpath(".//div[@class='col-xs-12 col-sm-9 mt-2']//a/@href")[0]
                     if item_url.startswith("/series/"):
                         try:
-                            show_ids.append(self.get_series(language, f"{base_url}{item_url}").id)
+                            ids.append((self.get_series(language, f"{base_url}{item_url}").id, "tvdb"))
                         except Failed as e:
                             logger.error(f"{e} for series {title}")
                     elif item_url.startswith("/movies/"):
                         try:
-                            tmdb_id = self.get_movie(language, f"{base_url}{item_url}").tmdb_id
-                            if tmdb_id:
-                                movie_ids.append(tmdb_id)
-                            else:
-                                raise Failed(f"TVDb Error: TMDb ID not found from TVDb URL: {tvdb_url}")
+                            movie = self.get_movie(language, f"{base_url}{item_url}")
+                            if movie.tmdb_id:
+                                ids.append((movie.tmdb_id, "tmdb"))
+                            elif movie.imdb_id:
+                                ids.append((movie.imdb_id, "imdb"))
                         except Failed as e:
-                            logger.error(f"{e} for series {title}")
+                            logger.error(e)
                     else:
                         logger.error(f"TVDb Error: Skipping Movie: {title}")
                     time.sleep(2)
-                if len(show_ids) > 0 or len(movie_ids) > 0:
-                    return movie_ids, show_ids
+                if len(ids) > 0:
+                    return ids
                 raise Failed(f"TVDb Error: No TVDb IDs found at {tvdb_url}")
             except requests.exceptions.MissingSchema:
                 util.print_stacktrace()
@@ -135,21 +135,19 @@ class TVDb:
         else:
             raise Failed(f"TVDb Error: {tvdb_url} must begin with {urls['list']}")
 
-    def get_items(self, method, data, language):
-        show_ids = []
-        movie_ids = []
+    def get_tvdb_ids(self, method, data, language):
         if method == "tvdb_show":
             logger.info(f"Processing TVDb Show: {data}")
-            show_ids.append(self.get_series(language, data).id)
+            return [(self.get_series(language, data).id, "tvdb")]
         elif method == "tvdb_movie":
             logger.info(f"Processing TVDb Movie: {data}")
-            movie_ids.append(self.get_movie(language, data).tmdb_id)
+            movie = self.get_movie(language, data)
+            if movie.tmdb_id:
+                return [(movie.tmdb_id, "tmdb")]
+            elif movie.imdb_id:
+                return [(movie.imdb_id, "imdb")]
         elif method == "tvdb_list":
             logger.info(f"Processing TVDb List: {data}")
-            movie_ids, show_ids = self._ids_from_url(data, language)
+            return self._ids_from_url(data, language)
         else:
             raise Failed(f"TVDb Error: Method {method} not supported")
-        logger.debug("")
-        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
-        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
-        return movie_ids, show_ids

@@ -18,14 +18,16 @@ class Cache:
                 else:
                     logger.info(f"Using cache database at {self.cache_path}")
                 cursor.execute("DROP TABLE IF EXISTS guids")
+                cursor.execute("DROP TABLE IF EXISTS guid_map")
                 cursor.execute("DROP TABLE IF EXISTS imdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS tmdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS imdb_map")
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS guid_map (
+                    """CREATE TABLE IF NOT EXISTS guids_map (
                     key INTEGER PRIMARY KEY,
                     plex_guid TEXT UNIQUE,
                     t_id TEXT,
+                    imdb_id TEXT,
                     media_type TEXT,
                     expiration_date TEXT)"""
                 )
@@ -100,27 +102,39 @@ class Cache:
 
     def query_guid_map(self, plex_guid):
         id_to_return = None
+        imdb_id = None
         media_type = None
         expired = None
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute(f"SELECT * FROM guid_map WHERE plex_guid = ?", (plex_guid,))
+                cursor.execute(f"SELECT * FROM guids_map WHERE plex_guid = ?", (plex_guid,))
                 row = cursor.fetchone()
                 if row:
                     time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     id_to_return = util.get_list(row["t_id"], int_list=True)
+                    imdb_id = util.get_list(row["imdb_id"])
                     media_type = row["media_type"]
                     expired = time_between_insertion.days > self.expiration
-        return id_to_return, media_type, expired
+        return id_to_return, imdb_id, media_type, expired
 
-    def update_guid_map(self, media_type, plex_guid, t_id, expired):
-        self._update_map("guid_map", "plex_guid", plex_guid, "t_id", t_id, expired, media_type=media_type)
+    def update_guid_map(self, plex_guid, t_id, imdb_id, expired, media_type):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"INSERT OR IGNORE INTO guids_map(plex_guid) VALUES(?)", (plex_guid,))
+                if media_type is None:
+                    sql = f"UPDATE guids_map SET t_id = ?, imdb_id = ?, expiration_date = ? WHERE plex_guid = ?"
+                    cursor.execute(sql, (t_id, imdb_id, expiration_date.strftime("%Y-%m-%d"), plex_guid))
+                else:
+                    sql = f"UPDATE guids_map SET t_id = ?, imdb_id = ?, expiration_date = ?, media_type = ? WHERE plex_guid = ?"
+                    cursor.execute(sql, (t_id, imdb_id, expiration_date.strftime("%Y-%m-%d"), media_type, plex_guid))
 
-    def query_imdb_to_tmdb_map(self, media_type, _id, imdb=True):
+    def query_imdb_to_tmdb_map(self, _id, imdb=True, media_type=None, return_type=False):
         from_id = "imdb_id" if imdb else "tmdb_id"
         to_id = "tmdb_id" if imdb else "imdb_id"
-        return self._query_map("imdb_to_tmdb_map", _id, from_id, to_id, media_type=media_type)
+        return self._query_map("imdb_to_tmdb_map", _id, from_id, to_id, media_type=media_type, return_type=return_type)
 
     def update_imdb_to_tmdb_map(self, media_type, expired, imdb_id, tmdb_id):
         self._update_map("imdb_to_tmdb_map", "imdb_id", imdb_id, "tmdb_id", tmdb_id, expired, media_type=media_type)
@@ -147,9 +161,10 @@ class Cache:
     def update_letterboxd_map(self, expired, letterboxd_id, tmdb_id):
         self._update_map("letterboxd_map", "letterboxd_id", letterboxd_id, "tmdb_id", tmdb_id, expired)
 
-    def _query_map(self, map_name, _id, from_id, to_id, media_type=None):
+    def _query_map(self, map_name, _id, from_id, to_id, media_type=None, return_type=False):
         id_to_return = None
         expired = None
+        out_type = None
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
@@ -163,7 +178,11 @@ class Cache:
                     time_between_insertion = datetime.now() - datetime_object
                     id_to_return = row[to_id] if to_id == "imdb_id" else int(row[to_id])
                     expired = time_between_insertion.days > self.expiration
-        return id_to_return, expired
+                    out_type = row["media_type"] if return_type else None
+        if out_type:
+            return id_to_return, out_type, expired
+        else:
+            return id_to_return, expired
 
     def _update_map(self, map_name, val1_name, val1, val2_name, val2, expired, media_type=None):
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))

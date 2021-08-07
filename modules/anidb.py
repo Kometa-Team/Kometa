@@ -72,7 +72,7 @@ class AniDB:
             current_url = f"{base_url}{next_page_list[0]}"
         return anidb_ids[:limit]
 
-    def get_items(self, method, data, language):
+    def get_anidb_ids(self, method, data, language):
         anidb_ids = []
         if method == "anidb_popular":
             logger.info(f"Processing AniDB Popular: {data} Anime")
@@ -88,9 +88,6 @@ class AniDB:
             anidb_ids.extend(self._relations(data, language))
         else:
             raise Failed(f"AniDB Error: Method {method} not supported")
-        movie_ids, show_ids = self.config.Convert.anidb_to_ids(anidb_ids)
         logger.debug("")
         logger.debug(f"{len(anidb_ids)} AniDB IDs Found: {anidb_ids}")
-        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
-        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
-        return movie_ids, show_ids
+        return anidb_ids

@@ -132,10 +132,6 @@ show_only_searches = [
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
-number_attributes = [
-    "plays", "episode_plays", "duration", "tmdb_vote_count", "first_episode_aired", "last_episode_aired",
-    "added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"
-]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
 boolean_attributes = [
     "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
@@ -143,6 +139,7 @@ boolean_attributes = [
 ]
 tmdb_attributes = ["actor", "director", "producer", "writer"]
 date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played", "first_episode_aired", "last_episode_aired"]
+number_attributes = ["plays", "episode_plays", "duration", "tmdb_vote_count"] + date_attributes
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 sorts = {
     None: None,
@@ -299,6 +296,7 @@ class Plex:
         self.missing = {}
         self.movie_map = {}
         self.show_map = {}
+        self.imdb_map = {}
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
         self.run_again = []
@@ -585,7 +583,7 @@ class Plex:
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
 
-    def get_items(self, method, data):
+    def get_rating_keys(self, method, data):
         media_type = "Movie" if self.is_movie else "Show"
         items = []
         if method == "plex_all":
@@ -634,7 +632,10 @@ class Plex:
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
-            return [item.ratingKey for item in items]
+            ids = [item.ratingKey for item in items]
+            logger.debug("")
+            logger.debug(f"{len(ids)} Keys Found: {ids}")
+            return ids
         else:
             raise Failed("Plex Error: No Items found in Plex")
 
@@ -679,7 +680,7 @@ class Plex:
         for i, item in enumerate(items, 1):
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
             if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:
-                id_type, main_id = self.config.Convert.get_id(item, self)
+                id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
                 if main_id:
                     if id_type == "movie":
                         self.movie_rating_key_map[item.ratingKey] = main_id[0]
@@ -687,6 +688,8 @@ class Plex:
                     elif id_type == "show":
                         self.show_rating_key_map[item.ratingKey] = main_id[0]
                         util.add_dict_list(main_id, item.ratingKey, self.show_map)
+                if imdb_id:
+                    util.add_dict_list(imdb_id, item.ratingKey, self.imdb_map)
         logger.info("")
         logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if self.is_movie else 'Shows'}"))
         return items
