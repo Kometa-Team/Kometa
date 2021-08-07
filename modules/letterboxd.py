@@ -50,13 +50,13 @@ class Letterboxd:
                 raise Failed(f"Letterboxd Error: {list_url} failed to parse")
         return valid_lists
 
-    def get_items(self, method, data, language):
-        movie_ids = []
+    def get_tmdb_ids(self, method, data, language):
         if method == "letterboxd_list":
             logger.info(f"Processing Letterboxd List: {data}")
             items = self._parse_list(data, language)
             total_items = len(items)
             if total_items > 0:
+                ids = []
                 for i, item in enumerate(items, 1):
                     letterboxd_id, slug = item
                     util.print_return(f"Finding TMDb ID {i}/{total_items}")
@@ -72,12 +72,10 @@ class Letterboxd:
                             continue
                         if self.config.Cache:
                             self.config.Cache.update_letterboxd_map(expired, letterboxd_id, tmdb_id)
-                    movie_ids.append(tmdb_id)
+                    ids.append((tmdb_id, "tmdb"))
                 logger.info(util.adjust_space(f"Processed {total_items} TMDb IDs"))
+                return ids
             else:
-                logger.error(f"Letterboxd Error: No List Items found in {data}")
+                raise Failed(f"Letterboxd Error: No List Items found in {data}")
         else:
             raise Failed(f"Letterboxd Error: Method {method} not supported")
-        logger.debug("")
-        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
-        return movie_ids, []

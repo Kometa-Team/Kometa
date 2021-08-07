@@ -80,11 +80,24 @@ class TMDb:
             raise Failed(f"TMDb Error: TMDb {'Movie' if is_movie else 'Show'} ID: {tmdb_id} not found")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def convert_to(self, external_id, external_source, is_movie):
-        search_results = self.Movie.external(external_id=external_id, external_source=external_source)
-        search = search_results["movie_results" if is_movie else "tv_results"]
-        if len(search) == 1:        return int(search[0]["id"])
-        else:                       raise Failed(f"TMDb Error: No TMDb ID found for {external_source.upper().replace('B_', 'b ')} {external_id}")
+    def convert_to(self, external_id, external_source):
+        return self.Movie.external(external_id=external_id, external_source=external_source)
+
+    def convert_tvdb_to(self, tvdb_id):
+        search = self.convert_to(tvdb_id, "tvdb_id")
+        if len(search["tv_results"]) == 1:
+            return int(search["tv_results"][0]["id"])
+        else:
+            raise Failed(f"TMDb Error: No TMDb ID found for TVDb ID {tvdb_id}")
+
+    def convert_imdb_to(self, imdb_id):
+        search = self.convert_to(imdb_id, "imdb_id")
+        if len(search["movie_results"]) > 0:
+            return int(search["movie_results"][0]["id"]), "movie"
+        elif len(search["tv_results"]) > 0:
+            return int(search["tv_results"][0]["id"]), "show"
+        else:
+            raise Failed(f"TMDb Error: No TMDb ID found for IMDb ID {imdb_id}")
 
     def get_movie_show_or_collection(self, tmdb_id, is_movie):
         if is_movie:
@@ -140,35 +153,27 @@ class TMDb:
         except TMDbException as e:      raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
 
     def _credits(self, tmdb_id, actor=False, crew=False, director=False, producer=False, writer=False):
-        movie_ids = []
-        show_ids = []
+        ids = []
         actor_credits = self._person_credits(tmdb_id)
         if actor:
             for credit in actor_credits.cast:
                 if credit.media_type == "movie":
-                    movie_ids.append(credit.id)
+                    ids.append((credit.id, "tmdb"))
                 elif credit.media_type == "tv":
-                    try:
-                        show_ids.append(self.config.Convert.tmdb_to_tvdb(credit.id, fail=True))
-                    except Failed as e:
-                        logger.warning(e)
+                    ids.append((credit.id, "tmdb_show"))
         for credit in actor_credits.crew:
             if crew or \
                     (director and credit.department == "Directing") or  \
                     (producer and credit.department == "Production") or \
                     (writer and credit.department == "Writing"):
                 if credit.media_type == "movie":
-                    movie_ids.append(credit.id)
+                    ids.append((credit.id, "tmdb"))
                 elif credit.media_type == "tv":
-                    try:
-                        show_ids.append(self.config.Convert.tmdb_to_tvdb(credit.id, fail=True))
-                    except Failed as e:
-                        logger.warning(e)
-        return movie_ids, show_ids
+                    ids.append((credit.id, "tmdb_show"))
+        return ids
 
     def _pagenation(self, method, amount, is_movie):
         ids = []
-        count = 0
         for x in range(int(amount / 20) + 1):
             if method == "tmdb_popular":                        tmdb_items = self.Movie.popular(x + 1) if is_movie else self.TV.popular(x + 1)
             elif method == "tmdb_top_rated":                    tmdb_items = self.Movie.top_rated(x + 1) if is_movie else self.TV.top_rated(x + 1)
@@ -178,18 +183,15 @@ class TMDb:
             else:                                               raise Failed(f"TMDb Error: {method} method not supported")
             for tmdb_item in tmdb_items:
                 try:
-                    ids.append(tmdb_item.id if is_movie else self.config.Convert.tmdb_to_tvdb(tmdb_item.id, fail=True))
-                    count += 1
+                    ids.append((tmdb_item.id, "tmdb" if is_movie else "tmdb_show"))
                 except Failed as e:
                     logger.error(e)
-                    pass
-                if count == amount: break
-            if count == amount: break
+                if len(ids) == amount: break
+            if len(ids) == amount: break
         return ids
 
     def _discover(self, attrs, amount, is_movie):
         ids = []
-        count = 0
         for date_attr in discover_dates:
             if date_attr in attrs:
                 attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
@@ -202,13 +204,11 @@ class TMDb:
             tmdb_items = self.Discover.discover_movies(attrs) if is_movie else self.Discover.discover_tv_shows(attrs)
             for tmdb_item in tmdb_items:
                 try:
-                    ids.append(tmdb_item.id if is_movie else self.config.Convert.tmdb_to_tvdb(tmdb_item.id, fail=True))
-                    count += 1
+                    ids.append((tmdb_item.id, "tmdb" if is_movie else "tmdb_show"))
                 except Failed as e:
                     logger.error(e)
-                    pass
-                if count == amount: break
-            if count == amount: break
+                if len(ids) == amount: break
+            if len(ids) == amount: break
         return ids, amount
 
     def validate_tmdb_ids(self, tmdb_ids, tmdb_method):
@@ -231,11 +231,10 @@ class TMDb:
         elif tmdb_type == "List":                   self.get_list(tmdb_id)
         return tmdb_id
 
-    def get_items(self, method, data, is_movie):
+    def get_tmdb_ids(self, method, data, is_movie):
         pretty = method.replace("_", " ").title().replace("Tmdb", "TMDb")
         media_type = "Movie" if is_movie else "Show"
-        movie_ids = []
-        show_ids = []
+        ids = []
         if method in ["tmdb_discover", "tmdb_company", "tmdb_keyword"] or (method == "tmdb_network" and not is_movie):
             attrs = None
             tmdb_id = ""
@@ -255,8 +254,7 @@ class TMDb:
             else:
                 attrs = data.copy()
                 limit = int(attrs.pop("limit"))
-            if is_movie:                    movie_ids, amount = self._discover(attrs, limit, is_movie)
-            else:                           show_ids, amount = self._discover(attrs, limit, is_movie)
+            ids, amount = self._discover(attrs, limit, is_movie)
             if method in ["tmdb_company", "tmdb_network", "tmdb_keyword"]:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({amount} {media_type}{'' if amount == 1 else 's'})")
             elif method == "tmdb_discover":
@@ -264,8 +262,7 @@ class TMDb:
                 for attr, value in attrs.items():
                     logger.info(f"           {attr}: {value}")
         elif method in ["tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_trending_daily", "tmdb_trending_weekly"]:
-            if is_movie:                    movie_ids = self._pagenation(method, data, is_movie)
-            else:                           show_ids = self._pagenation(method, data, is_movie)
+            ids = self._pagenation(method, data, is_movie)
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
         else:
             tmdb_id = int(data)
@@ -274,34 +271,31 @@ class TMDb:
                 tmdb_name = tmdb_list.name
                 for tmdb_item in tmdb_list.items:
                     if tmdb_item.media_type == "movie":
-                        movie_ids.append(tmdb_item.id)
+                        ids.append((tmdb_item.id, "tmdb"))
                     elif tmdb_item.media_type == "tv":
-                        try:                    show_ids.append(self.config.Convert.tmdb_to_tvdb(tmdb_item.id, fail=True))
-                        except Failed:          pass
+                        try:
+                            ids.append((tmdb_item.id, "tmdb_show"))
+                        except Failed:
+                            pass
             elif method == "tmdb_movie":
                 tmdb_name = str(self.get_movie(tmdb_id).title)
-                movie_ids.append(tmdb_id)
+                ids.append((tmdb_id, "tmdb"))
             elif method == "tmdb_collection":
                 tmdb_items = self.get_collection(tmdb_id)
                 tmdb_name = str(tmdb_items.name)
                 for tmdb_item in tmdb_items.parts:
-                    movie_ids.append(tmdb_item["id"])
+                    ids.append((tmdb_item["id"], "tmdb"))
             elif method == "tmdb_show":
                 tmdb_name = str(self.get_show(tmdb_id).name)
-                show_ids.append(self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True))
+                ids.append((tmdb_id, "tmdb_show"))
             else:
                 tmdb_name = str(self.get_person(tmdb_id).name)
-                if method == "tmdb_actor":                  movie_ids, show_ids = self._credits(tmdb_id, actor=True)
-                elif method == "tmdb_director":             movie_ids, show_ids = self._credits(tmdb_id, director=True)
-                elif method == "tmdb_producer":             movie_ids, show_ids = self._credits(tmdb_id, producer=True)
-                elif method == "tmdb_writer":               movie_ids, show_ids = self._credits(tmdb_id, writer=True)
-                elif method == "tmdb_crew":                 movie_ids, show_ids = self._credits(tmdb_id, crew=True)
+                if method == "tmdb_actor":                  ids = self._credits(tmdb_id, actor=True)
+                elif method == "tmdb_director":             ids = self._credits(tmdb_id, director=True)
+                elif method == "tmdb_producer":             ids = self._credits(tmdb_id, producer=True)
+                elif method == "tmdb_writer":               ids = self._credits(tmdb_id, writer=True)
+                elif method == "tmdb_crew":                 ids = self._credits(tmdb_id, crew=True)
                 else:                                       raise Failed(f"TMDb Error: Method {method} not supported")
-            if len(movie_ids) > 0:
-                logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(movie_ids)} Movie{'' if len(movie_ids) == 1 else 's'})")
-            if not is_movie and len(show_ids) > 0:
-                logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(show_ids)} Show{'' if len(show_ids) == 1 else 's'})")
-        logger.debug("")
-        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
-        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
-        return movie_ids, show_ids
+            if len(ids) > 0:
+                logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(ids)} Item{'' if len(ids) == 1 else 's'})")
+        return ids

@@ -207,7 +207,7 @@ class AniList:
             return anilist_values
         raise Failed(f"AniList Error: No valid AniList IDs in {anilist_ids}")
 
-    def get_items(self, method, data):
+    def get_anilist_ids(self, method, data):
         if method == "anilist_id":
             logger.info(f"Processing AniList ID: {data}")
             anilist_id, name = self._validate(data)
@@ -235,9 +235,6 @@ class AniList:
             logger.info(f"Processing AniList Relations: ({data}) {name} ({len(anilist_ids)} Anime)")
         else:
             raise Failed(f"AniList Error: Method {method} not supported")
-        movie_ids, show_ids = self.config.Convert.anilist_to_ids(anilist_ids)
         logger.debug("")
         logger.debug(f"{len(anilist_ids)} AniList IDs Found: {anilist_ids}")
-        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
-        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
-        return movie_ids, show_ids
+        return anilist_ids

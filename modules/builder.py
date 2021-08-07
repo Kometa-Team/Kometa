@@ -164,6 +164,7 @@ class CollectionBuilder:
         self.filters = []
         self.tmdb_filters = []
         self.rating_keys = []
+        self.filtered_keys = []
         self.run_again_movies = []
         self.run_again_shows = []
         self.posters = {}
@@ -992,113 +993,112 @@ class CollectionBuilder:
                     else:
                         logger.error(message)
 
-    def collect_rating_keys(self):
-        filtered_keys = {}
-        name = self.obj.title if self.obj else self.name
-        def add_rating_keys(keys):
-            if not isinstance(keys, list):
-                keys = [keys]
-            total = len(keys)
-            max_length = len(str(total))
-            if self.filters and self.details["show_filtered"] is True:
-                logger.info("")
-                logger.info("Filtering Builder:")
-            for i, key in enumerate(keys, 1):
-                if key not in self.rating_keys:
-                    if key in filtered_keys:
-                        if self.details["show_filtered"] is True:
-                            logger.info(f"{name} Collection | X | {filtered_keys[key]}")
-                    else:
-                        try:
-                            current = self.fetch_item(key)
-                        except Failed as e:
-                            logger.error(e)
-                            continue
-                        current_title = f"{current.title} ({current.year})" if current.year else current.title
-                        if self.check_filters(current, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
-                            self.rating_keys.append(key)
-                        else:
-                            if key not in filtered_keys:
-                                filtered_keys[key] = current_title
-                            if self.details["show_filtered"] is True:
-                                logger.info(f"{name} Collection | X | {current_title}")
-        def check_map(input_ids):
-            movie_ids, show_ids = input_ids
-            items_found_inside = 0
-            if len(movie_ids) > 0:
-                items_found_inside += len(movie_ids)
-                movie_rating_keys = []
-                for movie_id in movie_ids:
-                    if movie_id in self.library.movie_map:
-                        movie_rating_keys.append(self.library.movie_map[movie_id][0])
-                    elif movie_id not in self.missing_movies:
-                        self.missing_movies.append(movie_id)
-                add_rating_keys(movie_rating_keys)
-            if len(show_ids) > 0:
-                items_found_inside += len(show_ids)
-                show_rating_keys = []
-                for show_id in show_ids:
-                    if show_id in self.library.show_map:
-                        show_rating_keys.append(self.library.show_map[show_id][0])
-                    elif show_id not in self.missing_shows:
-                        self.missing_shows.append(show_id)
-                add_rating_keys(show_rating_keys)
-            return items_found_inside
+    def find_rating_keys(self):
         for method, value in self.builders:
+            ids = []
+            rating_keys = []
             logger.debug("")
             logger.debug(f"Builder: {method}: {value}")
             logger.info("")
-            if "plex" in method:                                add_rating_keys(self.library.get_items(method, value))
-            elif "tautulli" in method:                          add_rating_keys(self.library.Tautulli.get_items(self.library, value))
-            elif "anidb" in method:                             check_map(self.config.AniDB.get_items(method, value, self.language))
-            elif "anilist" in method:                           check_map(self.config.AniList.get_items(method, value))
-            elif "mal" in method:                               check_map(self.config.MyAnimeList.get_items(method, value))
-            elif "tvdb" in method:                              check_map(self.config.TVDb.get_items(method, value, self.language))
-            elif "imdb" in method:                              check_map(self.config.IMDb.get_items(method, value, self.language, self.library.is_movie))
-            elif "icheckmovies" in method:                      check_map(self.config.ICheckMovies.get_items(method, value, self.language))
-            elif "letterboxd" in method:                        check_map(self.config.Letterboxd.get_items(method, value, self.language))
-            elif "stevenlu" in method:                          check_map(self.config.StevenLu.get_items(method))
-            elif "tmdb" in method:                              check_map(self.config.TMDb.get_items(method, value, self.library.is_movie))
-            elif "trakt" in method:                             check_map(self.config.Trakt.get_items(method, value, self.library.is_movie))
-            else:                                               logger.error(f"Collection Error: {method} method not supported")
+            if "plex" in method:
+                rating_keys = self.library.get_rating_keys(method, value)
+            elif "tautulli" in method:
+                rating_keys = self.library.Tautulli.get_rating_keys(self.library, value)
+            elif "anidb" in method:
+                anidb_ids = self.config.AniDB.get_anidb_ids(method, value, self.language)
+                ids = self.config.Convert.anidb_to_ids(anidb_ids)
+            elif "anilist" in method:
+                anilist_ids = self.config.AniList.get_anilist_ids(method, value)
+                ids = self.config.Convert.anilist_to_ids(anilist_ids)
+            elif "mal" in method:
+                mal_ids = self.config.MyAnimeList.get_mal_ids(method, value)
+                ids = self.config.Convert.myanimelist_to_ids(mal_ids)
+            elif "tvdb" in method:
+                ids = self.config.TVDb.get_tvdb_ids(method, value, self.language)
+            elif "imdb" in method:
+                ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
+            elif "icheckmovies" in method:
+                ids = self.config.ICheckMovies.get_icheckmovies_ids(method, value, self.language)
+            elif "letterboxd" in method:
+                ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
+            elif "stevenlu" in method:
+                ids = self.config.StevenLu.get_stevenlu_ids(method)
+            elif "tmdb" in method:
+                ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie)
+            elif "trakt" in method:
+                ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
+            else:
+                logger.error(f"Collection Error: {method} method not supported")
 
-    def check_tmdb_filter(self, item_id, is_movie, item=None, check_released=False):
-        if self.tmdb_filters or check_released:
-            try:
-                if item is None:
-                    item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
-                if check_released:
-                    if util.validate_date(item.release_date if is_movie else item.first_air_date, "") > self.current_time:
-                        return False
-                for filter_method, filter_data in self.tmdb_filters:
-                    filter_attr, modifier, filter_final = self._split(filter_method)
-                    if filter_attr == "original_language":
-                        if (modifier == ".not" and item.original_language in filter_data) \
-                                or (modifier == "" and item.original_language not in filter_data):
-                            return False
-                    elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
-                        tmdb_date = None
-                        if filter_attr == "first_episode_aired":
-                            tmdb_date = item.first_air_date
-                        elif filter_attr == "last_episode_aired":
-                            tmdb_date = item.last_air_date
-                        if not util.date_filter(tmdb_date, modifier, filter_data, filter_final, self.current_time):
-                            return False
-                    elif modifier in [".gt", ".gte", ".lt", ".lte"]:
-                        attr = None
-                        if filter_attr == "tmdb_vote_count":
-                            attr = item.vote_count
-                        elif filter_attr == "year" and is_movie:
-                            attr = item.year
-                        elif filter_attr == "year" and not is_movie:
-                            air_date = item.first_air_date
-                            if air_date:
-                                attr = util.validate_date(air_date, "Year Filter").year
-                        if util.number_filter(attr, modifier, filter_data):
-                            return False
-            except Failed:
-                return False
-        return True
+            if len(ids) > 0:
+                logger.debug("")
+                logger.debug(f"{len(ids)} IDs Found: {ids}")
+                total_ids = len(ids)
+                if total_ids > 0:
+                    for i, input_data in enumerate(ids, 1):
+                        input_id, id_type = input_data
+                        util.print_return(f"Parsing ID {i}/{total_ids}")
+                        if id_type == "tmdb":
+                            if input_id in self.library.movie_map:
+                                rating_keys.append(self.library.movie_map[input_id][0])
+                            elif input_id not in self.missing_movies:
+                                self.missing_movies.append(input_id)
+                        elif id_type in ["tvdb", "tmdb_show"]:
+                            if id_type == "tmdb_show":
+                                try:
+                                    input_id = self.config.Convert.tmdb_to_tvdb(input_id, fail=True)
+                                except Failed as e:
+                                    logger.error(e)
+                                    continue
+                            if input_id in self.library.show_map:
+                                rating_keys.append(self.library.show_map[input_id][0])
+                            elif input_id not in self.missing_shows:
+                                self.missing_shows.append(input_id)
+                        elif id_type == "imdb":
+                            if input_id in self.library.imdb_map:
+                                rating_keys.append(self.library.imdb_map[input_id][0])
+                            else:
+                                try:
+                                    tmdb_id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id)
+                                    if tmdb_type == "movie":
+                                        if tmdb_id not in self.missing_movies:
+                                            self.missing_movies.append(tmdb_id)
+                                    else:
+                                        tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id)
+                                        if tvdb_id not in self.missing_shows:
+                                            self.missing_shows.append(tvdb_id)
+                                except Failed as e:
+                                    logger.error(e)
+                                    continue
+                    util.print_end()
+            
+            if len(rating_keys) > 0:
+                name = self.obj.title if self.obj else self.name
+                if not isinstance(rating_keys, list):
+                    rating_keys = [rating_keys]
+                total = len(rating_keys)
+                max_length = len(str(total))
+                if self.filters and self.details["show_filtered"] is True:
+                    logger.info("")
+                    logger.info("Filtering Builder:")
+                for i, key in enumerate(rating_keys, 1):
+                    if key not in self.rating_keys:
+                        if key in self.filtered_keys:
+                            if self.details["show_filtered"] is True:
+                                logger.info(f"{name} Collection | X | {self.filtered_keys[key]}")
+                        else:
+                            try:
+                                current = self.fetch_item(key)
+                            except Failed as e:
+                                logger.error(e)
+                                continue
+                            current_title = f"{current.title} ({current.year})" if current.year else current.title
+                            if self.check_filters(current, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
+                                self.rating_keys.append(key)
+                            else:
+                                self.filtered_keys[key] = current_title
+                                if self.details["show_filtered"] is True:
+                                    logger.info(f"{name} Collection | X | {current_title}")
 
     def build_filter(self, method, plex_filter, smart=False):
         if smart:
@@ -1385,6 +1385,44 @@ class CollectionBuilder:
         logger.info("")
         logger.info(f"{total} {media_type} Processed")
 
+    def check_tmdb_filter(self, item_id, is_movie, item=None, check_released=False):
+        if self.tmdb_filters or check_released:
+            try:
+                if item is None:
+                    item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
+                if check_released:
+                    if util.validate_date(item.release_date if is_movie else item.first_air_date, "") > self.current_time:
+                        return False
+                for filter_method, filter_data in self.tmdb_filters:
+                    filter_attr, modifier, filter_final = self._split(filter_method)
+                    if filter_attr == "original_language":
+                        if (modifier == ".not" and item.original_language in filter_data) \
+                                or (modifier == "" and item.original_language not in filter_data):
+                            return False
+                    elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
+                        tmdb_date = None
+                        if filter_attr == "first_episode_aired":
+                            tmdb_date = util.validate_date(item.first_air_date, "TMDB First Air Date")
+                        elif filter_attr == "last_episode_aired":
+                            tmdb_date = util.validate_date(item.last_air_date, "TMDB Last Air Date")
+                        if util.is_date_filter(tmdb_date, modifier, filter_data, filter_final, self.current_time):
+                            return False
+                    elif modifier in [".gt", ".gte", ".lt", ".lte"]:
+                        attr = None
+                        if filter_attr == "tmdb_vote_count":
+                            attr = item.vote_count
+                        elif filter_attr == "year" and is_movie:
+                            attr = item.year
+                        elif filter_attr == "year" and not is_movie:
+                            air_date = item.first_air_date
+                            if air_date:
+                                attr = util.validate_date(air_date, "Year Filter").year
+                        if util.is_number_filter(attr, modifier, filter_data):
+                            return False
+            except Failed:
+                return False
+        return True
+
     def check_filters(self, current, display):
         if self.filters:
             util.print_return(f"Filtering {display} {current.title}")
@@ -1406,41 +1444,19 @@ class CollectionBuilder:
                     if not self.check_tmdb_filter(t_id, current.ratingKey in self.library.movie_rating_key_map):
                         return False
                 elif filter_attr in ["release", "added", "last_played"]:
-                    if not util.date_filter(getattr(current, filter_actual), modifier, filter_data, filter_final, self.current_time):
+                    if util.is_date_filter(getattr(current, filter_actual), modifier, filter_data, filter_final, self.current_time):
                         return False
-                elif filter_attr == "audio_track_title":
-                    jailbreak = False
-                    for media in current.media:
-                        for part in media.parts:
-                            for audio in part.audioStreams():
-                                for check_title in filter_data:
-                                    title = audio.title if audio.title else ""
-                                    if util.string_filter(title, modifier, check_title):
-                                        jailbreak = True
-                                        break
-                                if jailbreak: break
-                            if jailbreak: break
-                        if jailbreak: break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"]):
-                        return False
-                elif filter_attr == "filepath":
-                    jailbreak = False
-                    for location in current.locations:
-                        for check_text in filter_data:
-                            if util.string_filter(location, modifier, check_text):
-                                jailbreak = True
-                                break
-                        if jailbreak: break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"]):
-                        return False
-                elif filter_attr in ["title", "studio"]:
-                    jailbreak = False
-                    current_data = getattr(current, filter_actual)
-                    for check_data in filter_data:
-                        if util.string_filter(current_data, modifier, check_data):
-                            jailbreak = True
-                            break
-                    if (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"]):
+                elif filter_attr in ["audio_track_title", "filepath", "title", "studio"]:
+                    values = []
+                    if filter_attr == "audio_track_title":
+                        for media in current.media:
+                            for part in media.parts:
+                                values.extend([a.title for a in part.audioStreams() if a.title])
+                    elif filter_attr == "filepath":
+                        values = [loc for loc in current.locations]
+                    elif filter_attr in ["title", "studio"]:
+                        values = [getattr(current, filter_actual)]
+                    if util.is_string_filter(values, modifier, filter_data):
                         return False
                 elif filter_attr == "history":
                     item_date = current.originallyAvailableAt
@@ -1461,11 +1477,8 @@ class CollectionBuilder:
                         if date_match is False:
                             return False
                 elif modifier in [".gt", ".gte", ".lt", ".lte"]:
-                    if filter_attr == "duration":
-                        attr = getattr(current, filter_actual) / 60000
-                    else:
-                        attr = getattr(current, filter_actual)
-                    if util.number_filter(attr, modifier, filter_data):
+                    divider = 60000 if filter_attr == "duration" else 1
+                    if util.is_number_filter(getattr(current, filter_actual) / divider, modifier, filter_data):
                         return False
                 else:
                     attrs = []

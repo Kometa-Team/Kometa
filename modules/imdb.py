@@ -95,35 +95,13 @@ class IMDb:
             return imdb_ids
         raise ValueError(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
-    def get_items(self, method, data, language, is_movie):
-        show_ids = []
-        movie_ids = []
-        fail_ids = []
-        def run_convert(imdb_id):
-            tvdb_id = self.config.Convert.imdb_to_tvdb(imdb_id) if not is_movie else None
-            tmdb_id = self.config.Convert.imdb_to_tmdb(imdb_id) if tvdb_id is None else None
-            if tmdb_id:                     movie_ids.append(tmdb_id)
-            elif tvdb_id:                   show_ids.append(tvdb_id)
-            else:
-                logger.error(f"Convert Error: No {'' if is_movie else 'TVDb ID or '}TMDb ID found for IMDb: {imdb_id}")
-                fail_ids.append(imdb_id)
-
+    def get_imdb_ids(self, method, data, language):
         if method == "imdb_id":
             logger.info(f"Processing IMDb ID: {data}")
-            run_convert(data)
+            return [(data, "imdb")]
         elif method == "imdb_list":
             status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
             logger.info(f"Processing IMDb List: {status}{data['url']}")
-            imdb_ids = self._ids_from_url(data["url"], language, data["limit"])
-            total_ids = len(imdb_ids)
-            for i, imdb in enumerate(imdb_ids, 1):
-                util.print_return(f"Converting IMDb ID {i}/{total_ids}")
-                run_convert(imdb)
-            logger.info(util.adjust_space(f"Processed {total_ids} IMDb IDs"))
+            return [(i, "imdb") for i in self._ids_from_url(data["url"], language, data["limit"])]
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
-        logger.debug("")
-        logger.debug(f"{len(fail_ids)} IMDb IDs Failed to Convert: {fail_ids}")
-        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
-        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
-        return movie_ids, show_ids

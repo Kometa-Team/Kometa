@@ -246,39 +246,46 @@ def is_locked(filepath):
                 file_object.close()
     return locked
 
-def date_filter(current, modifier, data, final, current_time):
-    if current is None:
-        return False
+def is_date_filter(value, modifier, data, final, current_time):
+    if value is None:
+        return True
     if modifier in ["", ".not"]:
         threshold_date = current_time - timedelta(days=data)
-        if (modifier == "" and (current is None or current < threshold_date)) \
-                or (modifier == ".not" and current and current >= threshold_date):
-            return False
+        if (modifier == "" and (value is None or value < threshold_date)) \
+                or (modifier == ".not" and value and value >= threshold_date):
+            return True
     elif modifier in [".before", ".after"]:
         filter_date = validate_date(data, final)
-        if (modifier == ".before" and current >= filter_date) or (modifier == ".after" and current <= filter_date):
-            return False
+        if (modifier == ".before" and value >= filter_date) or (modifier == ".after" and value <= filter_date):
+            return True
     elif modifier == ".regex":
-        jailbreak = False
+        jailbreak = True
         for check_data in data:
-            if re.compile(check_data).match(current.strftime("%m/%d/%Y")):
+            if re.compile(check_data).match(value.strftime("%m/%d/%Y")):
                 jailbreak = True
                 break
         if not jailbreak:
-            return False
-    return True
+            return True
+    return False
 
-def number_filter(current, modifier, data):
-    return current is None or (modifier == ".gt" and current <= data) \
-            or (modifier == ".gte" and current < data) \
-            or (modifier == ".lt" and current >= data) \
-            or (modifier == ".lte" and current > data)
+def is_number_filter(value, modifier, data):
+    return value is None or (modifier == ".gt" and value <= data) \
+            or (modifier == ".gte" and value < data) \
+            or (modifier == ".lt" and value >= data) \
+            or (modifier == ".lte" and value > data)
 
-def string_filter(current, modifier, data):
-    return (modifier in ["", ".not"] and data.lower() in current.lower()) \
-            or (modifier == ".begins" and current.lower().startswith(data.lower())) \
-            or (modifier == ".ends" and current.lower().endswith(data.lower())) \
-            or (modifier == ".regex" and re.compile(data).match(current))
+def is_string_filter(values, modifier, data):
+    jailbreak = False
+    for value in values:
+        for check_value in data:
+            if (modifier in ["", ".not"] and check_value.lower() in value.lower()) \
+                    or (modifier == ".begins" and value.lower().startswith(check_value.lower())) \
+                    or (modifier == ".ends" and value.lower().endswith(check_value.lower())) \
+                    or (modifier == ".regex" and re.compile(check_value).match(value)):
+                jailbreak = True
+                break
+        if jailbreak: break
+    return (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"])
 
 def parse(attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"

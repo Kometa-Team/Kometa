@@ -155,7 +155,7 @@ class MyAnimeList:
         url = f"{urls['user']}/{username}/animelist?{final_status}sort={sort_by}&limit={limit}"
         return self._parse_request(url)
 
-    def get_items(self, method, data):
+    def get_mal_ids(self, method, data):
         if method == "mal_id":
             logger.info(f"Processing MyAnimeList ID: {data}")
             mal_ids = [data]
@@ -173,9 +173,6 @@ class MyAnimeList:
             mal_ids = self._userlist(data["username"], data["status"], data["sort_by"], data["limit"])
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
-        movie_ids, show_ids = self.config.Convert.myanimelist_to_ids(mal_ids)
         logger.debug("")
         logger.debug(f"{len(mal_ids)} MyAnimeList IDs Found: {mal_ids}")
-        logger.debug(f"{len(movie_ids)} TMDb IDs Found: {movie_ids}")
-        logger.debug(f"{len(show_ids)} TVDb IDs Found: {show_ids}")
-        return movie_ids, show_ids
+        return mal_ids

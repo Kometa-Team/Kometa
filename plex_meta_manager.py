@@ -265,12 +265,14 @@ def mass_metadata(config, library, items):
         tvdb_id = None
         imdb_id = None
         if config.Cache:
-            t_id, guid_media_type, _ = config.Cache.query_guid_map(item.guid)
+            t_id, i_id, guid_media_type, _ = config.Cache.query_guid_map(item.guid)
             if t_id:
                 if "movie" in guid_media_type:
                     tmdb_id = t_id[0]
                 else:
                     tvdb_id = t_id[0]
+            if i_id:
+                imdb_id = i_id[0]
         if not tmdb_id and not tvdb_id:
             tmdb_id = library.get_tmdb_from_map(item)
         if not tmdb_id and not tvdb_id and library.is_show:
@@ -469,7 +471,7 @@ def run_collection(config, library, metadata, requested_collections):
                     for filter_key, filter_value in builder.filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
-                builder.collect_rating_keys()
+                builder.find_rating_keys()
 
                 if len(builder.rating_keys) > 0 and builder.build_collection:
                     logger.info("")
