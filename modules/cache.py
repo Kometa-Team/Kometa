@@ -179,7 +179,7 @@ class Cache:
                     id_to_return = row[to_id] if to_id == "imdb_id" else int(row[to_id])
                     expired = time_between_insertion.days > self.expiration
                     out_type = row["media_type"] if return_type else None
-        if out_type:
+        if return_type:
             return id_to_return, out_type, expired
         else:
             return id_to_return, expired
