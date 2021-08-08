@@ -26,6 +26,7 @@ parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_o
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
+parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the midding section", action="store_true", default=False)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -46,6 +47,7 @@ test = check_bool("PMM_TEST", args.test)
 debug = check_bool("PMM_DEBUG", args.debug)
 run = check_bool("PMM_RUN", args.run)
 no_countdown = check_bool("PMM_NO_COUNTDOWN", args.no_countdown)
+no_missing = check_bool("PMM_NO_MISSING", args.no_missing)
 library_only = check_bool("PMM_LIBRARIES_ONLY", args.library_only)
 collection_only = check_bool("PMM_COLLECTIONS_ONLY", args.collection_only)
 collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
@@ -471,16 +473,16 @@ def run_collection(config, library, metadata, requested_collections):
                     for filter_key, filter_value in builder.filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
-                builder.find_rating_keys()
+                builder.find_rating_keys(no_missing)
 
                 if len(builder.rating_keys) > 0 and builder.build_collection:
                     logger.info("")
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
                     builder.add_to_collection()
-                if (builder.details["show_missing"] is True or builder.details["save_missing"] is True
+                if (builder.details["show_missing"] or builder.details["save_missing"]
                         or (library.Radarr and builder.add_to_radarr) or (library.Sonarr and builder.add_to_sonarr)) \
-                        and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                        and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0) and not no_missing:
                     if builder.details["show_missing"] is True:
                         logger.info("")
                         util.separator(f"Missing from Library", space=False, border=False)

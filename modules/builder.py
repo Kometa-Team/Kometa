@@ -993,7 +993,7 @@ class CollectionBuilder:
                     else:
                         logger.error(message)
 
-    def find_rating_keys(self):
+    def find_rating_keys(self, no_missing):
         for method, value in self.builders:
             ids = []
             rating_keys = []
@@ -1058,20 +1058,23 @@ class CollectionBuilder:
                             if input_id in self.library.imdb_map:
                                 rating_keys.append(self.library.imdb_map[input_id][0])
                             else:
-                                try:
-                                    tmdb_id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id)
-                                    if tmdb_type == "movie":
-                                        if tmdb_id not in self.missing_movies:
-                                            self.missing_movies.append(tmdb_id)
-                                    else:
-                                        tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id)
-                                        if tvdb_id not in self.missing_shows:
-                                            self.missing_shows.append(tvdb_id)
-                                except Failed as e:
-                                    logger.error(e)
-                                    continue
+                                if (self.details["show_missing"] or self.details["save_missing"]
+                                        or (self.library.Radarr and self.add_to_radarr)
+                                        or (self.library.Sonarr and self.add_to_sonarr)) and not no_missing:
+                                    try:
+                                        tmdb_id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id)
+                                        if tmdb_type == "movie":
+                                            if tmdb_id not in self.missing_movies:
+                                                self.missing_movies.append(tmdb_id)
+                                        else:
+                                            tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id)
+                                            if tvdb_id not in self.missing_shows:
+                                                self.missing_shows.append(tvdb_id)
+                                    except Failed as e:
+                                        logger.error(e)
+                                        continue
                     util.print_end()
-            
+
             if len(rating_keys) > 0:
                 name = self.obj.title if self.obj else self.name
                 if not isinstance(rating_keys, list):
