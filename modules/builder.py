@@ -110,8 +110,9 @@ all_filters = [
     "resolution", "resolution.not",
     "writer", "writer.not",
     "year", "year.gt", "year.gte", "year.lt", "year.lte", "year.not"
+    "tmdb_year", "tmdb_year.gt", "tmdb_year.gte", "tmdb_year.lt", "tmdb_year.lte", "tmdb_year.not"
 ]
-tmdb_filters = ("original_language", "tmdb_vote_count", "year")
+tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "first_episode_aired", "last_episode_aired"]
 movie_only_filters = [
     "audio_language", "audio_language.not",
     "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
@@ -527,8 +528,6 @@ class CollectionBuilder:
                     raise
                 else:
                     logger.error(e)
-
-        self.tmdb_filters = [(fm, fd) for fm, fd in self.filters if fm.startswith(tmdb_filters)]
 
         if self.custom_sort and len(self.builders) > 1:
             raise Failed("Collection Error: collection_order: custom can only be used with a single builder per collection")
@@ -985,6 +984,8 @@ class CollectionBuilder:
                     message = f"Collection Error: {filter_final} filter attribute only works for show libraries"
                 elif filter_final is None:
                     message = f"Collection Error: {filter_final} filter attribute is blank"
+                elif filter_attr in tmdb_filters:
+                    self.tmdb_filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
                 else:
                     self.filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
                 if message:
@@ -1319,7 +1320,7 @@ class CollectionBuilder:
                     else:
                         logger.error(error)
             return valid_list
-        elif attribute in ["year", "episode_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:
+        elif attribute in ["year", "episode_year", "tmdb_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:
             return util.parse(final, data, datatype="int", minimum=1800, maximum=self.current_year)
         elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
             return util.validate_date(data, final, return_as="%Y-%m-%d")
@@ -1327,7 +1328,7 @@ class CollectionBuilder:
             return util.parse(final, data, datatype="int")
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
             return util.parse(final, data, datatype="float", minimum=0, maximum=10)
-        elif attribute in ["decade", "year", "episode_year"] and modifier in ["", ".not"]:
+        elif attribute in ["decade", "year", "episode_year", "tmdb_year"] and modifier in ["", ".not"]:
             final_years = []
             values = util.get_list(data)
             for value in values:
@@ -1414,12 +1415,12 @@ class CollectionBuilder:
                         attr = None
                         if filter_attr == "tmdb_vote_count":
                             attr = item.vote_count
-                        elif filter_attr == "year" and is_movie:
+                        elif filter_attr == "tmdb_year" and is_movie:
                             attr = item.year
-                        elif filter_attr == "year" and not is_movie:
+                        elif filter_attr == "tmdb_year" and not is_movie:
                             air_date = item.first_air_date
                             if air_date:
-                                attr = util.validate_date(air_date, "Year Filter").year
+                                attr = util.validate_date(air_date, "TMDb Year Filter").year
                         if util.is_number_filter(attr, modifier, filter_data):
                             return False
             except Failed:
@@ -1427,26 +1428,26 @@ class CollectionBuilder:
         return True
 
     def check_filters(self, current, display):
-        if self.filters:
+        if self.filters or self.tmdb_filters:
             util.print_return(f"Filtering {display} {current.title}")
+            if self.tmdb_filters:
+                if current.ratingKey not in self.library.movie_rating_key_map and current.ratingKey not in self.library.show_rating_key_map:
+                    logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {current.title}")
+                    return False
+                try:
+                    if current.ratingKey in self.library.movie_rating_key_map:
+                        t_id = self.library.movie_rating_key_map[current.ratingKey]
+                    else:
+                        t_id = self.library.show_rating_key_map[current.ratingKey]
+                except Failed as e:
+                    logger.error(e)
+                    return False
+                if not self.check_tmdb_filter(t_id, current.ratingKey in self.library.movie_rating_key_map):
+                    return False
             for filter_method, filter_data in self.filters:
                 filter_attr, modifier, filter_final = self._split(filter_method)
                 filter_actual = filter_translation[filter_attr] if filter_attr in filter_translation else filter_attr
-                if filter_attr in ["tmdb_vote_count", "original_language", "first_episode_aired", "last_episode_aired"]:
-                    if current.ratingKey not in self.library.movie_rating_key_map and current.ratingKey not in self.library.show_rating_key_map:
-                        logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {current.title}")
-                        return False
-                    try:
-                        if current.ratingKey in self.library.movie_rating_key_map:
-                            t_id = self.library.movie_rating_key_map[current.ratingKey]
-                        else:
-                            t_id = self.library.show_rating_key_map[current.ratingKey]
-                    except Failed as e:
-                        logger.error(e)
-                        return False
-                    if not self.check_tmdb_filter(t_id, current.ratingKey in self.library.movie_rating_key_map):
-                        return False
-                elif filter_attr in ["release", "added", "last_played"]:
+                if filter_attr in ["release", "added", "last_played"]:
                     if util.is_date_filter(getattr(current, filter_actual), modifier, filter_data, filter_final, self.current_time):
                         return False
                 elif filter_attr in ["audio_track_title", "filepath", "title", "studio"]:
