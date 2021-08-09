@@ -165,7 +165,7 @@ class CollectionBuilder:
         self.filters = []
         self.tmdb_filters = []
         self.rating_keys = []
-        self.filtered_keys = []
+        self.filtered_keys = {}
         self.run_again_movies = []
         self.run_again_shows = []
         self.posters = {}
