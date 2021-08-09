@@ -1,5 +1,6 @@
 import argparse, logging, os, re, sys, time
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 try:
     import schedule
     from modules import util
@@ -26,7 +27,7 @@ parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_o
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
-parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the midding section", action="store_true", default=False)
+parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -93,7 +94,7 @@ sys.excepthook = util.my_except_hook
 def start(config_path, is_test=False, time_scheduled=None, requested_collections=None, requested_libraries=None, resume_from=None):
     file_logger = os.path.join(default_dir, "logs", "meta.log")
     should_roll_over = os.path.isfile(file_logger)
-    file_handler = logging.handlers.RotatingFileHandler(file_logger, delay=True, mode="w", backupCount=10, encoding="utf-8")
+    file_handler = RotatingFileHandler(file_logger, delay=True, mode="w", backupCount=10, encoding="utf-8")
     util.apply_formatter(file_handler)
     file_handler.addFilter(fmt_filter)
     if should_roll_over:
@@ -134,7 +135,7 @@ def update_libraries(config):
         os.makedirs(os.path.join(default_dir, "logs", library.mapping_name, "collections"), exist_ok=True)
         col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, "library.log")
         should_roll_over = os.path.isfile(col_file_logger)
-        library_handler = logging.handlers.RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
+        library_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
         util.apply_formatter(library_handler)
         if should_roll_over:
             library_handler.doRollover()
@@ -216,7 +217,7 @@ def update_libraries(config):
         for library in config.libraries:
             if library.run_again:
                 col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, f"library.log")
-                library_handler = logging.handlers.RotatingFileHandler(col_file_logger, mode="w", backupCount=3, encoding="utf-8")
+                library_handler = RotatingFileHandler(col_file_logger, mode="w", backupCount=3, encoding="utf-8")
                 util.apply_formatter(library_handler)
                 logger.addHandler(library_handler)
                 library_handler.addFilter(fmt_filter)
@@ -437,7 +438,7 @@ def run_collection(config, library, metadata, requested_collections):
         os.makedirs(collection_log_folder, exist_ok=True)
         col_file_logger = os.path.join(collection_log_folder, f"collection.log")
         should_roll_over = os.path.isfile(col_file_logger)
-        collection_handler = logging.handlers.RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
+        collection_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
         util.apply_formatter(collection_handler)
         if should_roll_over:
             collection_handler.doRollover()
