@@ -1,4 +1,4 @@
-import logging, re, secrets, webbrowser
+import logging, re, secrets, time, webbrowser
 from modules import util
 from modules.util import Failed, TimeoutExpired
 from ruamel import yaml
@@ -6,8 +6,8 @@ from ruamel import yaml
 logger = logging.getLogger("Plex Meta Manager")
 
 builders = [
-    "mal_id", "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie",
-    "mal_special", "mal_popular", "mal_favorite", "mal_season", "mal_suggested", "mal_userlist"
+    "mal_id", "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special",
+    "mal_popular", "mal_favorite", "mal_season", "mal_suggested", "mal_userlist", "mal_genre", "mal_producer"
 ]
 mal_ranked_name = {
     "mal_all": "all", "mal_airing": "airing", "mal_upcoming": "upcoming", "mal_tv": "tv", "mal_ova": "ova",
@@ -17,7 +17,7 @@ mal_ranked_pretty = {
     "mal_all": "MyAnimeList All", "mal_airing": "MyAnimeList Airing",
     "mal_upcoming": "MyAnimeList Upcoming", "mal_tv": "MyAnimeList TV", "mal_ova": "MyAnimeList OVA",
     "mal_movie": "MyAnimeList Movie", "mal_special": "MyAnimeList Special", "mal_popular": "MyAnimeList Popular",
-    "mal_favorite": "MyAnimeList Favorite"
+    "mal_favorite": "MyAnimeList Favorite", "mal_genre": "MyAnimeList Genre", "mal_producer": "MyAnimeList Producer"
 }
 season_sort_translation = {"score": "anime_score", "anime_score": "anime_score", "members": "anime_num_list_users", "anime_num_list_users": "anime_num_list_users"}
 season_sort_options = ["score", "members"]
@@ -35,6 +35,7 @@ userlist_sort_translation = {
 userlist_sort_options = ["score", "last_updated", "title", "start_date"]
 userlist_status = ["all", "watching", "completed", "on_hold", "dropped", "plan_to_watch"]
 base_url = "https://api.myanimelist.net"
+jiken_base_url = "https://api.jikan.moe/v3"
 urls = {
     "oauth_token": f"https://myanimelist.net/v1/oauth2/token",
     "oauth_authorize": f"https://myanimelist.net/v1/oauth2/authorize",
@@ -131,6 +132,11 @@ class MyAnimeList:
         if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
         else:                           return response
 
+    def _jiken_request(self, url):
+        data = self.config.get_json(f"{jiken_base_url}{url}")
+        time.sleep(2)
+        return data
+
     def _parse_request(self, url):
         data = self._request(url)
         return [d["node"]["id"] for d in data["data"]] if "data" in data else []
@@ -155,6 +161,39 @@ class MyAnimeList:
         url = f"{urls['user']}/{username}/animelist?{final_status}sort={sort_by}&limit={limit}"
         return self._parse_request(url)
 
+    def _genre(self, genre_id, limit):
+        data = self._jiken_request(f"/genre/anime/{genre_id}")
+        if "item_count" not in data:
+            raise Failed(f"MyAnimeList Error: No MyAnimeList IDs for Genre ID: {genre_id}")
+        total_items = data["item_count"]
+        if total_items < limit or limit <= 0:
+            limit = total_items
+        mal_ids = []
+        for i in range(1, int(((total_items - 1) / 100) + 2)):
+            if i > 1:
+                data = self._jiken_request(f"/genre/anime/{genre_id}/{i}")
+            mal_ids.extend([anime["mal_id"] for anime in data["anime"]])
+            if len(mal_ids) > limit:
+                return mal_ids[:limit]
+        return mal_ids
+
+    def _producer(self, producer_id, limit):
+        data = self._jiken_request(f"/producer/{producer_id}")
+        if "anime" not in data:
+            raise Failed(f"MyAnimeList Error: No MyAnimeList IDs for Producer ID: {producer_id}")
+        mal_ids = []
+        count = 1
+        while True:
+            if count > 1:
+                data = self._jiken_request(f"/producer/{producer_id}/{count}")
+            if "anime" not in data:
+                break
+            mal_ids.extend([anime["mal_id"] for anime in data["anime"]])
+            if len(mal_ids) > limit > 0:
+                return mal_ids[:limit]
+            count += 1
+        return mal_ids
+
     def get_mal_ids(self, method, data):
         if method == "mal_id":
             logger.info(f"Processing MyAnimeList ID: {data}")
@@ -162,6 +201,12 @@ class MyAnimeList:
         elif method in mal_ranked_name:
             logger.info(f"Processing {mal_ranked_pretty[method]}: {data} Anime")
             mal_ids = self._ranked(mal_ranked_name[method], data)
+        elif method == "mal_genre":
+            logger.info(f"Processing {mal_ranked_pretty[method]} ID: {data['genre_id']}")
+            mal_ids = self._genre(data["genre_id"], data["limit"])
+        elif method == "mal_producer":
+            logger.info(f"Processing {mal_ranked_pretty[method]} ID: {data['producer_id']}")
+            mal_ids = self._producer(data["producer_id"], data["limit"])
         elif method == "mal_season":
             logger.info(f"Processing MyAnimeList Season: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
             mal_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])

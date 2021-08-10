@@ -137,7 +137,7 @@ custom_sort_builders = [
     "anidb_popular",
     "anilist_top_rated", "anilist_popular", "anilist_season", "anilist_studio", "anilist_genre", "anilist_tag",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
-    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season"
+    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_producer"
 ]
 
 class CollectionBuilder:
@@ -801,22 +801,34 @@ class CollectionBuilder:
             self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
         elif method_name in ["mal_season", "mal_userlist"]:
             for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
-                new_dictionary = {}
                 if method_name == "mal_season":
-                    if self.current_time.month in [1, 2, 3]:            new_dictionary["season"] = "winter"
-                    elif self.current_time.month in [4, 5, 6]:          new_dictionary["season"] = "spring"
-                    elif self.current_time.month in [7, 8, 9]:          new_dictionary["season"] = "summer"
-                    elif self.current_time.month in [10, 11, 12]:       new_dictionary["season"] = "fall"
-                    new_dictionary["season"] = util.parse("season", dict_data, methods=dict_methods, parent=method_name, default=new_dictionary["season"], options=["winter", "spring", "summer", "fall"])
-                    new_dictionary["sort_by"] = util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="members", options=mal.season_sort_options, translation=mal.season_sort_translation)
-                    new_dictionary["year"] = util.parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_time.year, parent=method_name, minimum=1917, maximum=self.current_time.year + 1)
-                    new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=500)
+                    if self.current_time.month in [1, 2, 3]:            default_season = "winter"
+                    elif self.current_time.month in [4, 5, 6]:          default_season = "spring"
+                    elif self.current_time.month in [7, 8, 9]:          default_season = "summer"
+                    else:                                               default_season = "fall"
+                    self.builders.append((method_name, {
+                        "season": util.parse("season", dict_data, methods=dict_methods, parent=method_name, default=default_season, options=["winter", "spring", "summer", "fall"]),
+                        "sort_by": util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="members", options=mal.season_sort_options, translation=mal.season_sort_translation),
+                        "year": util.parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_time.year, parent=method_name, minimum=1917, maximum=self.current_time.year + 1),
+                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=500)
+                    }))
                 elif method_name == "mal_userlist":
-                    new_dictionary["username"] = util.parse("username", dict_data, methods=dict_methods, parent=method_name)
-                    new_dictionary["status"] = util.parse("status", dict_data, methods=dict_methods, parent=method_name, default="all", options=mal.userlist_status)
-                    new_dictionary["sort_by"] = util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=mal.userlist_sort_options, translation=mal.userlist_sort_translation)
-                    new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=1000)
-                self.builders.append((method_name, new_dictionary))
+                    self.builders.append((method_name, {
+                        "username": util.parse("username", dict_data, methods=dict_methods, parent=method_name),
+                        "status": util.parse("status", dict_data, methods=dict_methods, parent=method_name, default="all", options=mal.userlist_status),
+                        "sort_by": util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=mal.userlist_sort_options, translation=mal.userlist_sort_translation),
+                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=1000)
+                    }))
+        elif method_name in ["mal_genre", "mal_producer"]:
+            id_name = f"{method_name[4:]}_id"
+            final_data = []
+            for data in util.get_list(method_data):
+                final_data.append(data if isinstance(data, dict) else {id_name: data, "limit": 0})
+            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+                self.builders.append((method_name, {
+                    id_name: util.parse(id_name, dict_data, datatype="int", methods=dict_methods, parent=method_name, maximum=999999),
+                    "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
+                }))
 
     def _plex(self, method_name, method_data):
         if method_name == "plex_all":
