@@ -1,5 +1,6 @@
-import logging, os, re, signal, sys, time, traceback
+import glob, logging, os, re, signal, sys, time, traceback
 from datetime import datetime, timedelta
+from logging.handlers import RotatingFileHandler
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
@@ -203,7 +204,7 @@ def separator(text=None, space=True, border=True, debug=False):
 
 def apply_formatter(handler, border=True):
     text = f"| %(message)-{screen_width - 2}s |" if border else f"%(message)-{screen_width - 2}s"
-    if isinstance(handler, logging.handlers.RotatingFileHandler):
+    if isinstance(handler, RotatingFileHandler):
         text = f"[%(asctime)s] %(filename)-27s %(levelname)-10s {text}"
     handler.setFormatter(logging.Formatter(text))
 
@@ -245,6 +246,10 @@ def is_locked(filepath):
             if file_object:
                 file_object.close()
     return locked
+
+def glob_filter(filter_in):
+    filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
+    return glob.glob(filter_in)
 
 def is_date_filter(value, modifier, data, final, current_time):
     if value is None:

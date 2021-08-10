@@ -748,7 +748,6 @@ class Plex:
 
     def update_item_from_assets(self, item, overlay=None, create=False):
         name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
-        glob_name = name.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in name else name
         logger.debug(name)
         found_folder = False
         poster = None
@@ -759,7 +758,7 @@ class Plex:
                 if os.path.isdir(os.path.join(ad, name)):
                     item_dir = os.path.join(ad, name)
                 else:
-                    matches = glob.glob(os.path.join(ad, "*", glob_name))
+                    matches = util.glob_filter(os.path.join(ad, "*", name))
                     if len(matches) > 0:
                         item_dir = os.path.abspath(matches[0])
                 if item_dir is None:
@@ -768,12 +767,12 @@ class Plex:
                 poster_filter = os.path.join(item_dir, "poster.*")
                 background_filter = os.path.join(item_dir, "background.*")
             else:
-                poster_filter = os.path.join(ad, f"{glob_name}.*")
-                background_filter = os.path.join(ad, f"{glob_name}_background.*")
-            matches = glob.glob(poster_filter)
+                poster_filter = os.path.join(ad, f"{name}.*")
+                background_filter = os.path.join(ad, f"{name}_background.*")
+            matches = util.glob_filter(poster_filter)
             if len(matches) > 0:
                 poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
-            matches = glob.glob(background_filter)
+            matches = util.glob_filter(background_filter)
             if len(matches) > 0:
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
@@ -783,8 +782,8 @@ class Plex:
                     if item_dir:
                         season_filter = os.path.join(item_dir, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
                     else:
-                        season_filter = os.path.join(ad, f"{glob_name}_Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
-                    matches = glob.glob(season_filter)
+                        season_filter = os.path.join(ad, f"{name}_Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
+                    matches = util.glob_filter(season_filter)
                     if len(matches) > 0:
                         season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
                         self.upload_images(season, poster=season_poster)
@@ -792,8 +791,8 @@ class Plex:
                         if item_dir:
                             episode_filter = os.path.join(item_dir, f"{episode.seasonEpisode.upper()}.*")
                         else:
-                            episode_filter = os.path.join(ad, f"{glob_name}_{episode.seasonEpisode.upper()}.*")
-                        matches = glob.glob(episode_filter)
+                            episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
+                        matches = util.glob_filter(episode_filter)
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
@@ -810,22 +809,21 @@ class Plex:
     def find_collection_assets(self, item, name=None, create=False):
         if name is None:
             name = item.title
-        glob_name = name.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in name else name
         for ad in self.asset_directory:
             poster = None
             background = None
             if self.asset_folders:
                 if not os.path.isdir(os.path.join(ad, name)):
                     continue
-                poster_filter = os.path.join(ad, glob_name, "poster.*")
-                background_filter = os.path.join(ad, glob_name, "background.*")
+                poster_filter = os.path.join(ad, name, "poster.*")
+                background_filter = os.path.join(ad, name, "background.*")
             else:
-                poster_filter = os.path.join(ad, f"{glob_name}.*")
-                background_filter = os.path.join(ad, f"{glob_name}_background.*")
-            matches = glob.glob(poster_filter)
+                poster_filter = os.path.join(ad, f"{name}.*")
+                background_filter = os.path.join(ad, f"{name}_background.*")
+            matches = util.glob_filter(poster_filter)
             if len(matches) > 0:
                 poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
-            matches = glob.glob(background_filter)
+            matches = util.glob_filter(background_filter)
             if len(matches) > 0:
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
