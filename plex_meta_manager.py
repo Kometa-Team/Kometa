@@ -279,7 +279,7 @@ def mass_metadata(config, library, items):
         if not tmdb_id and not tvdb_id:
             tmdb_id = library.get_tmdb_from_map(item)
         if not tmdb_id and not tvdb_id and library.is_show:
-            tmdb_id = library.get_tvdb_from_map(item)
+            tvdb_id = library.get_tvdb_from_map(item)
 
         if library.mass_trakt_rating_update:
             try:
@@ -330,7 +330,17 @@ def mass_metadata(config, library, items):
                 else:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
 
-        if not tmdb_item and not omdb_item:
+        tvdb_item = None
+        if library.mass_genre_update == "tvdb":
+            if tvdb_id:
+                try:
+                    tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
+                except Failed as e:
+                    logger.error(util.adjust_space(str(e)))
+            else:
+                logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
+
+        if not tmdb_item and not omdb_item and not tvdb_item:
             continue
 
         if library.mass_genre_update:
@@ -339,6 +349,8 @@ def mass_metadata(config, library, items):
                     new_genres = [genre.name for genre in tmdb_item.genres]
                 elif omdb_item and library.mass_genre_update in ["omdb", "imdb"]:
                     new_genres = omdb_item.genres
+                elif tvdb_item and library.mass_genre_update == "tvdb":
+                    new_genres = tvdb_item.genres
                 else:
                     raise Failed
                 item_genres = [genre.tag for genre in item.genres]
