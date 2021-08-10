@@ -38,20 +38,30 @@ class TVDbObj:
         else:
             raise Failed(f"TVDb Error: Could not find a TVDb {self.media_type} ID at the URL {self.tvdb_url}")
 
-        results = response.xpath("//div[@class='change_translation_text' and @data-language='eng']/@data-title")
-        if len(results) > 0 and len(results[0]) > 0:
-            self.title = results[0]
+        def parse_page(xpath, fail=None, multi=False):
+            parse_results = response.xpath(xpath)
+            if len(parse_results) > 0:
+                parse_results = [r.strip() for r in parse_results if len(r) > 0]
+            if not multi and len(parse_results) > 0:
+                return parse_results[0]
+            elif len(parse_results) > 0:
+                return parse_results
+            elif fail is not None:
+                raise Failed(f"TVDb Error: {fail} not found from TVDb URL: {self.tvdb_url}")
+            else:
+                return None
+
+        self.title = parse_page("//div[@class='change_translation_text' and not(@style='display:none')]/@data-title", fail="Name")
+        self.poster_path = parse_page("//div[@class='row hidden-xs hidden-sm']/div/img/@src")
+        self.background_path = parse_page("(//h2[@class='mt-4' and text()='Backgrounds']/following::div/a/@href)[1]")
+        self.summary = parse_page("//div[@class='change_translation_text' and not(@style='display:none')]/p/text()[normalize-space()]")
+        if self.is_movie:
+            self.directors = parse_page("//strong[text()='Directors']/parent::li/span/a/text()[normalize-space()]")
+            self.writers = parse_page("//strong[text()='Writers']/parent::li/span/a/text()[normalize-space()]")
+            self.studios = parse_page("//strong[text()='Studio']/parent::li/span/a/text()[normalize-space()]")
         else:
-            raise Failed(f"TVDb Error: Name not found from TVDb URL: {self.tvdb_url}")
-
-        results = response.xpath("//div[@class='row hidden-xs hidden-sm']/div/img/@src")
-        self.poster_path = results[0] if len(results) > 0 and len(results[0]) > 0 else None
-
-        results = response.xpath("(//h2[@class='mt-4' and text()='Backgrounds']/following::div/a/@href)[1]")
-        self.background_path = results[0] if len(results) > 0 and len(results[0]) > 0 else None
-
-        results = response.xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
-        self.summary = results[0] if len(results) > 0 and len(results[0]) > 0 else None
+            self.networks = parse_page("//strong[text()='Networks']/parent::li/span/a/text()[normalize-space()]")
+        self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]")
 
         tmdb_id = None
         imdb_id = None
