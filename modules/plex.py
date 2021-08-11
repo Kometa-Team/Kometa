@@ -403,14 +403,16 @@ class Plex:
         self.reload(item)
 
     def upload_images(self, item, poster=None, background=None, overlay=None):
+        image = None
+        image_compare = None
         poster_uploaded = False
+        if self.config.Cache:
+            image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+
         if poster is not None:
             try:
-                image = None
-                if self.config.Cache:
-                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
-                    if str(poster.compare) != str(image_compare):
-                        image = None
+                if image_compare and str(poster.compare) != str(image_compare):
+                    image = None
                 if image is None or image != item.thumb:
                     self._upload_image(item, poster)
                     poster_uploaded = True
@@ -427,6 +429,8 @@ class Plex:
             image_overlay = None
             if self.config.Cache:
                 _, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+            if image is None or image != item.thumb:
+                image_overlay = None
             if poster_uploaded or not image_overlay or image_overlay != overlay_name:
                 if not item.posterUrl:
                     raise Failed(f"Overlay Error: No existing poster to Overlay for {item.title}")
