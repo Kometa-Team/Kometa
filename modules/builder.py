@@ -1539,17 +1539,24 @@ class CollectionBuilder:
                         logger.info(f"{self.name} Collection | X | {current_title} (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
-            if self.details["save_missing"] is True:
-                self.library.add_missing(self.name, missing_movies_with_names, True)
-            if (self.add_to_radarr and self.library.Radarr) or self.run_again:
-                missing_tmdb_ids = [missing_id for title, missing_id in missing_movies_with_names]
-                if self.add_to_radarr and self.library.Radarr:
-                    try:
-                        self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_options)
-                    except Failed as e:
-                        logger.error(e)
-                if self.run_again:
-                    self.run_again_movies.extend(missing_tmdb_ids)
+            if len(missing_movies_with_names) > 0:
+                if self.details["save_missing"] is True:
+                    self.library.add_missing(self.name, missing_movies_with_names, True)
+                if self.run_again or (self.library.Radarr and (self.add_to_radarr or "item_radarr_tag" in self.item_details)):
+                    missing_tmdb_ids = [missing_id for title, missing_id in missing_movies_with_names]
+                    if self.library.Radarr:
+                        if self.add_to_radarr:
+                            try:
+                                self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_options)
+                            except Failed as e:
+                                logger.error(e)
+                        if "item_radarr_tag" in self.item_details:
+                            try:
+                                self.library.Radarr.edit_tags(missing_tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
+                            except Failed as e:
+                                logger.error(e)
+                    if self.run_again:
+                        self.run_again_movies.extend(missing_tmdb_ids)
         if len(self.missing_shows) > 0 and self.library.is_show:
             missing_shows_with_names = []
             for missing_id in self.missing_shows:
@@ -1568,17 +1575,24 @@ class CollectionBuilder:
                         logger.info(f"{self.name} Collection | X | {current_title} (TVDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
-            if self.details["save_missing"] is True:
-                self.library.add_missing(self.name, missing_shows_with_names, False)
-            if (self.add_to_sonarr and self.library.Sonarr) or self.run_again:
-                missing_tvdb_ids = [missing_id for title, missing_id in missing_shows_with_names]
-                if self.add_to_sonarr and self.library.Sonarr:
-                    try:
-                        self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_options)
-                    except Failed as e:
-                        logger.error(e)
-                if self.run_again:
-                    self.run_again_shows.extend(missing_tvdb_ids)
+            if len(missing_shows_with_names) > 0:
+                if self.details["save_missing"] is True:
+                    self.library.add_missing(self.name, missing_shows_with_names, False)
+                if self.run_again or (self.library.Sonarr and (self.add_to_sonarr or "item_sonarr_tag" in self.item_details)):
+                    missing_tvdb_ids = [missing_id for title, missing_id in missing_shows_with_names]
+                    if self.library.Sonarr:
+                        if self.add_to_sonarr:
+                            try:
+                                self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_options)
+                            except Failed as e:
+                                logger.error(e)
+                        if "item_sonarr_tag" in self.item_details:
+                            try:
+                                self.library.Sonarr.edit_tags(missing_tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
+                            except Failed as e:
+                                logger.error(e)
+                    if self.run_again:
+                        self.run_again_shows.extend(missing_tvdb_ids)
 
     def sync_collection(self):
         count_removed = 0
