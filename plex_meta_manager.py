@@ -169,6 +169,15 @@ def update_libraries(config):
                 logger.removeHandler(library_handler)
                 run_collection(config, library, metadata, collections_to_run)
                 logger.addHandler(library_handler)
+        if library.run_sort:
+            logger.info("")
+            util.separator(f"Sorting {library.name} Library's Collections", space=False, border=False)
+            logger.info("")
+            for builder in library.run_sort:
+                logger.info("")
+                util.separator(f"Sorting {builder.name} Collection", space=False, border=False)
+                logger.info("")
+                builder.sort_collection()
 
         if not config.test_mode and not config.requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
             logger.info("")
@@ -515,10 +524,11 @@ def run_collection(config, library, metadata, requested_collections):
                 builder.update_details()
 
             if builder.custom_sort:
-                logger.info("")
-                util.separator(f"Sorting {mapping_name} Collection", space=False, border=False)
-                logger.info("")
-                builder.sort_collection()
+                library.run_sort.append(builder)
+                # logger.info("")
+                # util.separator(f"Sorting {mapping_name} Collection", space=False, border=False)
+                # logger.info("")
+                # builder.sort_collection()
 
             builder.update_item_details()
 

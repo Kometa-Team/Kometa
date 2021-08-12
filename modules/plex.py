@@ -300,6 +300,7 @@ class Plex:
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
         self.run_again = []
+        self.run_sort = []
         self.overlays = []
 
     def get_all_collections(self):
