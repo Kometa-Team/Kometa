@@ -1638,11 +1638,22 @@ class CollectionBuilder:
         logger.info("")
         overlay = None
         overlay_folder = None
+        overlay_name = ""
         rating_keys = []
         if "item_overlay" in self.item_details:
             overlay_name = self.item_details["item_overlay"]
             if self.config.Cache:
-                rating_keys = self.config.Cache.query_image_map_overlay(self.library.image_table_name, overlay_name)
+                cache_keys = self.config.Cache.query_image_map_overlay(self.library.image_table_name, overlay_name)
+                if cache_keys:
+                    for rating_key in cache_keys:
+                        try:
+                            item = self.fetch_item(rating_key)
+                        except Failed as e:
+                            logger.error(e)
+                            continue
+                        self.library.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
+                    self.config.Cache.update_remove_overlay(self.library.image_table_name, overlay_name)
+            rating_keys = [int(item.ratingKey) for item in self.library.get_labeled_items(f"{overlay_name} Overlay")]
             overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
             overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png")).convert("RGBA")
             temp_image = os.path.join(overlay_folder, f"temp.png")
@@ -1683,11 +1694,12 @@ class CollectionBuilder:
             except Failed as e:
                 logger.error(e)
                 continue
+            self.library.edit_tags("label", item, remove_tags=[f"{overlay_name} Overlay"])
             og_image = os.path.join(overlay_folder, f"{rating_key}.png")
             if os.path.exists(og_image):
                 self.library.upload_file_poster(item, og_image)
                 os.remove(og_image)
-                self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, "", "", "")
+            self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, "", "")
 
     def update_details(self):
         if not self.obj and self.smart_url:

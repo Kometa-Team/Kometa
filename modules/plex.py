@@ -1,4 +1,4 @@
-import glob, logging, os, plexapi, requests, shutil, time
+import logging, os, plexapi, requests, shutil, time
 from modules import builder, util
 from modules.meta import Metadata
 from modules.util import Failed, ImageData
@@ -365,11 +365,15 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item):
-        item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                    includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
-                    includeRelatedCount=0, includeReviews=False, includeStations=False)
+        try:
+            item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                        includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
+                        includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                        includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
+                        includeRelatedCount=0, includeReviews=False, includeStations=False)
+        except (BadRequest, NotFound) as e:
+            util.print_stacktrace()
+            raise Failed(f"Item Failed to Load: {e}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def edit_query(self, item, edits, advanced=False):
@@ -407,7 +411,7 @@ class Plex:
         image_compare = None
         poster_uploaded = False
         if self.config.Cache:
-            image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+            image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
 
         if poster is not None:
             try:
@@ -423,15 +427,13 @@ class Plex:
                 util.print_stacktrace()
                 logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
 
-        overlay_name = ""
         if overlay is not None:
             overlay_name, overlay_folder, overlay_image, temp_image = overlay
-            image_overlay = None
-            if self.config.Cache:
-                _, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
-            if image is None or image != item.thumb:
-                image_overlay = None
-            if poster_uploaded or not image_overlay or image_overlay != overlay_name:
+            item_labels = {item_tag.tag.lower(): item_tag.tag for item_tag in item.labels}
+            for item_label in item_labels:
+                if item_label.endswith(" overlay") and item_label != f"{overlay_name.lower()} overlay":
+                    raise Failed(f"Overlay Error: Poster already has an existing Overlay: {item_labels[item_label]}")
+            if poster_uploaded or image is None or image != item.thumb or f"{overlay_name.lower()} overlay" not in item_labels:
                 if not item.posterUrl:
                     raise Failed(f"Overlay Error: No existing poster to Overlay for {item.title}")
                 response = requests.get(item.posterUrl)
@@ -448,6 +450,7 @@ class Plex:
                 new_poster.paste(overlay_image, (0, 0), overlay_image)
                 new_poster.save(temp_image)
                 self.upload_file_poster(item, temp_image)
+                self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
                 poster_uploaded = True
                 logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
 
@@ -456,7 +459,7 @@ class Plex:
             try:
                 image = None
                 if self.config.Cache:
-                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds")
+                    image, image_compare = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds")
                     if str(background.compare) != str(image_compare):
                         image = None
                 if image is None or image != item.art:
@@ -471,9 +474,9 @@ class Plex:
 
         if self.config.Cache:
             if poster_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, item.thumb, poster.compare if poster else "", overlay_name)
+                self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, item.thumb, poster.compare if poster else "")
             if background_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare, "")
+                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
@@ -743,11 +746,11 @@ class Plex:
             if _add:
                 updated = True
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
-                logger.info(f"Detail: {attr.capitalize()} {util.compile_list(_add)} added")
+                logger.info(f"Detail: {attr.capitalize()} {util.compile_list(_add)} added to {obj.title}")
             if _remove:
                 updated = True
                 self.query_data(getattr(obj, f"remove{attr.capitalize()}"), _remove)
-                logger.info(f"Detail: {attr.capitalize()} {util.compile_list(_remove)} removed")
+                logger.info(f"Detail: {attr.capitalize()} {util.compile_list(_remove)} removed to {obj.title}")
         return updated
 
     def update_item_from_assets(self, item, overlay=None, create=False):
