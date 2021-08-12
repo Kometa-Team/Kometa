@@ -302,6 +302,12 @@ class Cache:
                     rks.append(int(row["rating_key"]))
         return rks
 
+    def update_remove_overlay(self, table_name, overlay):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"UPDATE {table_name} SET overlay = ? WHERE overlay = ?", ("", overlay))
+
     def query_image_map(self, rating_key, table_name):
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
@@ -309,12 +315,12 @@ class Cache:
                 cursor.execute(f"SELECT * FROM {table_name} WHERE rating_key = ?", (rating_key,))
                 row = cursor.fetchone()
                 if row and row["location"]:
-                    return row["location"], row["compare"], row["overlay"]
-        return None, None, None
+                    return row["location"], row["compare"]
+        return None, None
 
-    def update_image_map(self, rating_key, table_name, location, compare, overlay):
+    def update_image_map(self, rating_key, table_name, location, compare):
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"INSERT OR IGNORE INTO {table_name}(rating_key) VALUES(?)", (rating_key,))
-                cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ?, overlay = ? WHERE rating_key = ?", (location, compare, overlay, rating_key))
+                cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ?, overlay = ? WHERE rating_key = ?", (location, compare, "", rating_key))

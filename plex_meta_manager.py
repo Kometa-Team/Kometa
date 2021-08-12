@@ -262,7 +262,11 @@ def mass_metadata(config, library, items):
     trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
     for i, item in enumerate(items, 1):
-        library.reload(item)
+        try:
+            library.reload(item)
+        except Failed as e:
+            logger.error(e)
+            continue
         util.print_return(f"Processing: {i}/{len(items)} {item.title}")
         tmdb_id = None
         tvdb_id = None
