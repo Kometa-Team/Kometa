@@ -296,7 +296,7 @@ class Convert:
                         if tvdb:
                             tvdb_id.append(tvdb)
                     if not tvdb_id:
-                        raise Failed(f"Unable to convert TMDb ID: {util.compile_list(tmdb_id)} to TVDb ID")
+                        raise Failed(f"Unable to convert TMDb ID: {', '.join(tmdb_id)} to TVDb ID")
 
             if not imdb_id and tvdb_id:
                 for tvdb in tvdb_id:
@@ -306,8 +306,8 @@ class Convert:
 
             def update_cache(cache_ids, id_type, imdb_in, guid_type):
                 if self.config.Cache:
-                    cache_ids = util.compile_list(cache_ids)
-                    imdb_in = util.compile_list(imdb_in) if imdb_in else None
+                    cache_ids = ",".join(cache_ids)
+                    imdb_in = ",".join(imdb_in) if imdb_in else None
                     ids = f"{item.guid:<46} | {id_type} ID: {cache_ids:<7} | IMDb ID: {str(imdb_in):<10}"
                     logger.info(util.adjust_space(f" Cache  |  {'^' if expired else '+'}  | {ids} | {item.title}"))
                     self.config.Cache.update_guid_map(item.guid, cache_ids, imdb_in, expired, guid_type)

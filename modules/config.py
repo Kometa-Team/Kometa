@@ -384,21 +384,16 @@ class Config:
                     paths_to_check = lib["metadata_path"] if isinstance(lib["metadata_path"], list) else [lib["metadata_path"]]
                     for path in paths_to_check:
                         if isinstance(path, dict):
-                            if "url" in path:
-                                if path["url"] is None:
-                                    logger.error("Config Error: metadata_path url is blank")
-                                else:
-                                    params["metadata_path"].append(("URL", path["url"]))
-                            if "git" in path:
-                                if path["git"] is None:
-                                    logger.error("Config Error: metadata_path git is blank")
-                                else:
-                                    params["metadata_path"].append(("Git", path['git']))
-                            if "file" in path:
-                                if path["file"] is None:
-                                    logger.error("Config Error: metadata_path file is blank")
-                                else:
-                                    params["metadata_path"].append(("File", path['file']))
+                            def check_dict(attr, name):
+                                if attr in path:
+                                    if path[attr] is None:
+                                        logger.error(f"Config Error: metadata_path {attr} is blank")
+                                    else:
+                                        params["metadata_path"].append((name, path[attr]))
+                            check_dict("url", "URL")
+                            check_dict("git", "Git")
+                            check_dict("file", "File")
+                            check_dict("folder", "Folder")
                         else:
                             params["metadata_path"].append(("File", path))
                 else:

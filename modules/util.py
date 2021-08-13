@@ -69,15 +69,6 @@ def add_dict_list(keys, value, dict_map):
         else:
             dict_map[key] = [value]
 
-def compile_list(data):
-    if isinstance(data, list):
-        text = ""
-        for item in data:
-            text += f"{',' if len(text) > 0 else ''}{item}"
-        return text
-    else:
-        return data
-
 def get_list(data, lower=False, split=True, int_list=False):
     if data is None:                return None
     elif isinstance(data, list):    return data

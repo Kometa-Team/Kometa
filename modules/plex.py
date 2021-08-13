@@ -240,7 +240,20 @@ class Plex:
         self.metadatas = []
 
         self.metadata_files = []
+        metadata = []
         for file_type, metadata_file in params["metadata_path"]:
+            if file_type == "folder":
+                if os.path.isdir(metadata_file):
+                    yml_files = util.glob_filter(os.path.join(metadata_file, "*.yml"))
+                    if yml_files:
+                        metadata.extend([("File", yml) for yml in yml_files])
+                    else:
+                        logger.error(f"Config Error: No YAML (.yml) files found in {metadata_file}")
+                else:
+                    logger.error(f"Config Error: Folder not found: {metadata_file}")
+            else:
+                metadata.append((file_type, metadata_file))
+        for file_type, metadata_file in metadata:
             try:
                 meta_obj = Metadata(config, self, file_type, metadata_file)
                 if meta_obj.collections:
@@ -747,11 +760,11 @@ class Plex:
             if _add:
                 updated = True
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
-                logger.info(f"Detail: {attr.capitalize()} {util.compile_list(_add)} added to {obj.title}")
+                logger.info(f"Detail: {attr.capitalize()} {','.join(_add)} added to {obj.title}")
             if _remove:
                 updated = True
                 self.query_data(getattr(obj, f"remove{attr.capitalize()}"), _remove)
-                logger.info(f"Detail: {attr.capitalize()} {util.compile_list(_remove)} removed to {obj.title}")
+                logger.info(f"Detail: {attr.capitalize()} {','.join(_remove)} removed to {obj.title}")
         return updated
 
     def update_item_from_assets(self, item, overlay=None, create=False):
