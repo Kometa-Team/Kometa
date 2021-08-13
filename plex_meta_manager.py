@@ -368,17 +368,13 @@ def mass_metadata(config, library, items):
                     raise Failed
                 item_genres = [genre.tag for genre in item.genres]
                 display_str = ""
-                add_genre = []
-                for genre in (g for g in new_genres if g not in item_genres):
-                    add_genre.append(genre)
-                    display_str += f"{', ' if len(display_str) > 0 else ''}+{genre}"
+                add_genre = [genre for genre in (g for g in new_genres if g not in item_genres)]
                 if len(add_genre) > 0:
+                    display_str += f"+{', +'.join(add_genre)}"
                     library.query_data(item.addGenre, add_genre)
-                remove_genre = []
-                for genre in (g for g in item_genres if g not in new_genres):
-                    remove_genre.append(genre)
-                    display_str += f"{', ' if len(display_str) > 0 else ''}-{genre}"
+                remove_genre = [genre for genre in (g for g in item_genres if g not in new_genres)]
                 if len(remove_genre) > 0:
+                    display_str += f"-{', -'.join(remove_genre)}"
                     library.query_data(item.removeGenre, remove_genre)
                 if len(display_str) > 0:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | Genres | {display_str}"))
@@ -568,7 +564,7 @@ try:
                 minutes = int((seconds % 3600) // 60)
                 time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                 time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} {util.compile_list(times_to_run)}")
+                util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
             time.sleep(60)
 except KeyboardInterrupt:
     util.separator("Exiting Plex Meta Manager")
