@@ -31,19 +31,20 @@ class AniList:
             self.categories[media_tag["category"].lower().replace(" ", "-")] = media_tag["category"]
         self.genres = {g.lower().replace(" ", "-"): g for g in self._request(genre_query, {})["data"]["GenreCollection"]}
 
-    def _request(self, query, variables):
+    def _request(self, query, variables, level=1):
         response = self.config.post(base_url, json={"query": query, "variables": variables})
         json_obj = response.json()
         if "errors" in json_obj:
-            logger.debug(json_obj)
             if json_obj['errors'][0]['message'] == "Too Many Requests.":
-                if "Retry-After" in response.headers:
-                    time.sleep(int(response.headers["Retry-After"]))
-                raise ValueError
+                wait_time = int(response.headers["Retry-After"]) if "Retry-After" in response.headers else 0
+                time.sleep(wait_time if wait_time > 0 else 10)
+                if level < 6:
+                    return self._request(query, variables, level=level + 1)
+                raise Failed(f"AniList Error: Connection Failed")
             else:
                 raise Failed(f"AniList Error: {json_obj['errors'][0]['message']}")
         else:
-            time.sleep(0.4)
+            time.sleep(60 / 90)
         return json_obj
 
     def _validate_id(self, anilist_id):
