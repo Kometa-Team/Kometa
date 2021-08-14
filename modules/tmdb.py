@@ -21,19 +21,23 @@ type_map = {
     "tmdb_network": "Network", "tmdb_person": "Person", "tmdb_producer": "Person", "tmdb_producer_details": "Person",
     "tmdb_show": "Show", "tmdb_show_details": "Show", "tmdb_writer": "Person", "tmdb_writer_details": "Person"
 }
-discover_movie = [
+discover_all = [
     "language", "with_original_language", "region", "sort_by", "with_cast", "with_crew", "with_people",
     "certification_country", "certification", "certification.lte", "certification.gte",
     "year", "primary_release_year", "primary_release_date.gte", "primary_release_date.lte",
     "release_date.gte", "release_date.lte", "vote_count.gte", "vote_count.lte",
     "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte",
-    "with_companies", "with_genres", "without_genres", "with_keywords", "without_keywords", "include_adult"
+    "with_companies", "with_genres", "without_genres", "with_keywords", "without_keywords", "include_adult",
+    "timezone", "screened_theatrically", "include_null_first_air_dates", "limit",
+    "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks"
 ]
-discover_tv = [
-    "language", "with_original_language", "timezone", "sort_by", "screened_theatrically", "include_null_first_air_dates",
-    "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year",
-    "vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte",
-    "with_genres", "without_genres", "with_keywords", "without_keywords", "with_networks", "with_companies"
+discover_movie_only = [
+    "region", "with_cast", "with_crew", "with_people", "certification_country", "certification",
+    "year", "primary_release_year", "primary_release_date", "release_date", "include_adult"
+]
+discover_tv_only = [
+    "timezone", "screened_theatrically", "include_null_first_air_dates",
+    "air_date", "first_air_date", "first_air_date_year", "with_networks",
 ]
 discover_dates = [
     "primary_release_date.gte", "primary_release_date.lte", "release_date.gte", "release_date.lte",

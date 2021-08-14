@@ -37,7 +37,9 @@ method_alias = {
     "producers": "producer",
     "writers": "writer",
     "years": "year", "show_year": "year", "show_years": "year",
-    "show_title": "title"
+    "show_title": "title",
+    "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
+    "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent"
 }
 filter_translation = {
     "actor": "actors",
@@ -757,12 +759,45 @@ class CollectionBuilder:
                     elif self.current_time.month in [3, 4, 5]:      new_dictionary["season"] = "spring"
                     elif self.current_time.month in [6, 7, 8]:      new_dictionary["season"] = "summer"
                     elif self.current_time.month in [9, 10, 11]:    new_dictionary["season"] = "fall"
-                    new_dictionary["season"] = util.parse("season", dict_data, methods=dict_methods, parent=method_name, default=new_dictionary["season"], options=["winter", "spring", "summer", "fall"])
-                    new_dictionary["year"] = util.parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_time.year, parent=method_name, minimum=1917, maximum=self.current_time.year + 1)
+                    new_dictionary["season"] = util.parse("season", dict_data, methods=dict_methods, parent=method_name, default=new_dictionary["season"], options=util.seasons)
+                    new_dictionary["year"] = util.parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_year, parent=method_name, minimum=1917, maximum=self.current_year + 1)
                 elif method_name == "anilist_genre":
-                    new_dictionary["genre"] = self.config.AniList.validate_genre(util.parse("genre", dict_data, methods=dict_methods, parent=method_name))
+                    new_dictionary["genre"] = self.config.AniList.validate("Genre", util.parse("genre", dict_data, methods=dict_methods, parent=method_name))
                 elif method_name == "anilist_tag":
-                    new_dictionary["tag"] = self.config.AniList.validate_tag(util.parse("tag", dict_data, methods=dict_methods, parent=method_name))
+                    new_dictionary["tag"] = self.config.AniList.validate("Tag", util.parse("tag", dict_data, methods=dict_methods, parent=method_name))
+                elif method_name == "anilist_search":
+                    for search_method, search_data in dict_data.items():
+                        search_attr, modifier, search_final = self._split(search_method)
+                        if search_data is None:
+                            raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
+                        elif search_final not in anilist.searches:
+                            raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
+                        elif search_attr == "season":
+                            if self.current_time.month in [12, 1, 2]:       new_dictionary["season"] = "winter"
+                            elif self.current_time.month in [3, 4, 5]:      new_dictionary["season"] = "spring"
+                            elif self.current_time.month in [6, 7, 8]:      new_dictionary["season"] = "summer"
+                            elif self.current_time.month in [9, 10, 11]:    new_dictionary["season"] = "fall"
+                            new_dictionary["season"] = util.parse("season", dict_data, parent=method_name, default=new_dictionary["season"], options=util.seasons)
+                            if "year" not in dict_methods:
+                                logger.warning(f"Collection Warning: {method_name} {search_final} attribute must be used with the year attribute using this year by default")
+                        elif search_attr == "year":
+                            if "season" not in dict_methods:
+                                raise Failed(f"Collection Error: {method_name} {search_final} attribute must be used with the season attribute")
+                            new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=self.current_year, minimum=1917, maximum=self.current_year + 1)
+                        elif search_attr == "adult":
+                            new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="bool", parent=method_name)
+                        elif search_attr in ["episodes", "duration", "score", "popularity"]:
+                            new_dictionary[search_final] = util.parse(search_final, search_data, datatype="int", parent=method_name)
+                        elif search_attr in ["format", "status", "genre", "tag", "tag_category"]:
+                            new_dictionary[search_final] = self.config.AniList.validate(search_attr.replace("_", " ").title(), util.parse(search_final, search_data))
+                        elif search_attr in ["start", "end"]:
+                            new_dictionary[search_final] = util.validate_date(search_data, f"{method_name} {search_final} attribute", return_as="%m/%d/%Y")
+                        elif search_attr == "min_tag_percent":
+                            new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, minimum=0, maximum=100)
+                        elif search_final not in ["sort_by", "limit"]:
+                            raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
+                    if len(new_dictionary) > 0:
+                        raise Failed(f"Collection Error: {method_name} must have at least one valid search option")
                 new_dictionary["sort_by"] = util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=["score", "popular"])
                 new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name, maximum=500)
                 self.builders.append((method_name, new_dictionary))
@@ -808,9 +843,9 @@ class CollectionBuilder:
                     elif self.current_time.month in [7, 8, 9]:          default_season = "summer"
                     else:                                               default_season = "fall"
                     self.builders.append((method_name, {
-                        "season": util.parse("season", dict_data, methods=dict_methods, parent=method_name, default=default_season, options=["winter", "spring", "summer", "fall"]),
+                        "season": util.parse("season", dict_data, methods=dict_methods, parent=method_name, default=default_season, options=util.seasons),
                         "sort_by": util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="members", options=mal.season_sort_options, translation=mal.season_sort_translation),
-                        "year": util.parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_time.year, parent=method_name, minimum=1917, maximum=self.current_time.year + 1),
+                        "year": util.parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_year, parent=method_name, minimum=1917, maximum=self.current_year + 1),
                         "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=500)
                     }))
                 elif method_name == "mal_userlist":
@@ -866,58 +901,45 @@ class CollectionBuilder:
     def _tmdb(self, method_name, method_data):
         if method_name == "tmdb_discover":
             for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
-                new_dictionary = {"limit": 100}
-                for discover_name, discover_data in dict_data.items():
-                    discover_final = discover_name.lower()
-                    if discover_data:
-                        if (self.library.is_movie and discover_final in tmdb.discover_movie) or (self.library.is_show and discover_final in tmdb.discover_tv):
-                            if discover_final == "language":
-                                if re.compile("([a-z]{2})-([A-Z]{2})").match(str(discover_data)):
-                                    new_dictionary[discover_final] = str(discover_data)
-                                else:
-                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} must match pattern ([a-z]{{2}})-([A-Z]{{2}}) e.g. en-US")
-                            elif discover_final == "region":
-                                if re.compile("^[A-Z]{2}$").match(str(discover_data)):
-                                    new_dictionary[discover_final] = str(discover_data)
-                                else:
-                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} must match pattern ^[A-Z]{{2}}$ e.g. US")
-                            elif discover_final == "sort_by":
-                                if (self.library.is_movie and discover_data in tmdb.discover_movie_sort) or (self.library.is_show and discover_data in tmdb.discover_tv_sort):
-                                    new_dictionary[discover_final] = discover_data
-                                else:
-                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: {discover_data} is invalid")
-                            elif discover_final == "certification_country":
-                                if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
-                                    new_dictionary[discover_final] = discover_data
-                                else:
-                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be used with either certification, certification.lte, or certification.gte")
-                            elif discover_final in ["certification", "certification.lte", "certification.gte"]:
-                                if "certification_country" in dict_data:
-                                    new_dictionary[discover_final] = discover_data
-                                else:
-                                    raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be used with certification_country")
-                            elif discover_final in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
-                                if discover_data is True:
-                                    new_dictionary[discover_final] = discover_data
-                            elif discover_final in tmdb.discover_dates:
-                                new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} attribute {discover_final}", return_as="%m/%d/%Y")
-                            elif discover_final in ["primary_release_year", "year", "first_air_date_year"]:
-                                new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
-                            elif discover_final in ["vote_count.gte", "vote_count.lte", "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte"]:
-                                new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="int", parent=method_name)
-                            elif discover_final in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
-                                new_dictionary[discover_final] = discover_data
-                            else:
-                                raise Failed(f"Collection Error: {method_name} attribute {discover_final} not supported")
-                        elif discover_final == "limit":
-                            if isinstance(discover_data, int) and discover_data > 0:
-                                new_dictionary[discover_final] = discover_data
-                            else:
-                                raise Failed(f"Collection Error: {method_name} attribute {discover_final}: must be a valid number greater then 0")
+                new_dictionary = {"limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name)}
+                for discover_method, discover_data in dict_data.items():
+                    discover_attr, modifier, discover_final = self._split(discover_method)
+                    if discover_data is None:
+                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute is blank")
+                    elif discover_final not in tmdb.discover_all:
+                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute not supported")
+                    elif self.library.is_movie and discover_attr in tmdb.discover_tv_only:
+                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute only works for show libraries")
+                    elif self.library.is_show and discover_attr in tmdb.discover_movie_only:
+                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute only works for movie libraries")
+                    elif discover_attr in ["language", "region"]:
+                        regex = ("([a-z]{2})-([A-Z]{2})", "en-US") if discover_attr == "language" else ("^[A-Z]{2}$", "US")
+                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, parent=method_name, regex=regex)
+                    elif discover_attr == "sort_by" and self.library.is_movie:
+                        options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
+                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, parent=method_name, options=options)
+                    elif discover_attr == "certification_country":
+                        if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
+                            new_dictionary[discover_attr] = discover_data
                         else:
-                            raise Failed(f"Collection Error: {method_name} attribute {discover_final} not supported")
-                    else:
-                        raise Failed(f"Collection Error: {method_name} parameter {discover_final} is blank")
+                            raise Failed(f"Collection Error: {method_name} {discover_attr} attribute: must be used with either certification, certification.lte, or certification.gte")
+                    elif discover_attr == "certification":
+                        if "certification_country" in dict_data:
+                            new_dictionary[discover_final] = discover_data
+                        else:
+                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with certification_country")
+                    elif discover_attr in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
+                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="bool", parent=method_name)
+                    elif discover_final in tmdb.discover_dates:
+                        new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} {discover_final} attribute", return_as="%m/%d/%Y")
+                    elif discover_attr in ["primary_release_year", "year", "first_air_date_year"]:
+                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
+                    elif discover_attr in ["vote_count", "vote_average", "with_runtime"]:
+                        new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="int", parent=method_name)
+                    elif discover_final in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
+                        new_dictionary[discover_final] = discover_data
+                    elif discover_attr != "limit":
+                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute not supported")
                 if len(new_dictionary) > 1:
                     self.builders.append((method_name, new_dictionary))
                 else:
@@ -1191,7 +1213,7 @@ class CollectionBuilder:
                     if attr in string_filters and modifier in ["", ".not"]:
                         mod_s = "does not contain" if modifier == ".not" else "contains"
                     elif mod_s is None:
-                        mod_s = plex.mod_displays[modifier]
+                        mod_s = util.mod_displays[modifier]
                     param_s = plex.search_display[attr] if attr in plex.search_display else attr.title().replace('_', ' ')
                     display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                     return f"{arg_key}{mod}={arg}&", display_line
