@@ -208,7 +208,7 @@ class MyAnimeList:
             logger.info(f"Processing {mal_ranked_pretty[method]} ID: {data['producer_id']}")
             mal_ids = self._producer(data["producer_id"], data["limit"])
         elif method == "mal_season":
-            logger.info(f"Processing MyAnimeList Season: {data['limit']} Anime from {util.pretty_seasons[data['season']]} {data['year']} sorted by {pretty_names[data['sort_by']]}")
+            logger.info(f"Processing MyAnimeList Season: {data['limit']} Anime from {data['season'].title()} {data['year']} sorted by {pretty_names[data['sort_by']]}")
             mal_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])
         elif method == "mal_suggested":
             logger.info(f"Processing MyAnimeList Suggested: {data} Anime")

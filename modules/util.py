@@ -48,12 +48,16 @@ days_alias = {
     "saturday": 5, "sat": 5, "s": 5,
     "sunday": 6, "sun": 6, "su": 6, "u": 6
 }
+mod_displays = {
+    "": "is", ".not": "is not", ".begins": "begins with", ".ends": "ends with", ".before": "is before", ".after": "is after",
+    ".gt": "is greater than", ".gte": "is greater than or equal", ".lt": "is less than", ".lte": "is less than or equal"
+}
 pretty_days = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 pretty_months = {
     1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
     7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
 }
-pretty_seasons = {"winter": "Winter", "spring": "Spring", "summer": "Summer", "fall": "Fall"}
+seasons = ["winter", "spring", "summer", "fall"]
 pretty_ids = {"anidbid": "AniDB", "imdbid": "IMDb", "mal_id": "MyAnimeList", "themoviedb_id": "TMDb", "thetvdb_id": "TVDb", "tvdbid": "TVDb"}
 
 def tab_new_lines(data):
@@ -283,7 +287,7 @@ def is_string_filter(values, modifier, data):
         if jailbreak: break
     return (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"])
 
-def parse(attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None):
+def parse(attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"
     if options is None and translation is not None:
         options = [o for o in translation]
@@ -305,6 +309,12 @@ def parse(attribute, data, datatype=None, methods=None, parent=None, default=Non
         message = f"{display} not found"
     elif value is None:
         message = f"{display} is blank"
+    elif regex is not None:
+        regex_str, example = regex
+        if re.compile(regex_str).match(str(value)):
+            return str(value)
+        else:
+            message = f"{display}: {value} must match pattern {regex_str} e.g. {example}"
     elif datatype == "bool":
         if isinstance(value, bool):
             return value
@@ -330,7 +340,7 @@ def parse(attribute, data, datatype=None, methods=None, parent=None, default=Non
             message = f"{pre} between {minimum} and {maximum}"
     elif (translation is not None and str(value).lower() not in translation) or \
             (options is not None and translation is None and str(value).lower() not in options):
-        message = f"{display} {value} must be in {options}"
+        message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
     else:
         return translation[value] if translation is not None else value
 

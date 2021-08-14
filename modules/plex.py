@@ -152,10 +152,6 @@ sorts = {
     "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
 }
 modifiers = {".not": "!", ".begins": "<", ".ends": ">", ".before": "<<", ".after": ">>", ".gt": ">>", ".gte": "__gte", ".lt": "<<", ".lte": "__lte"}
-mod_displays = {
-    "": "is", ".not": "is not", ".begins": "begins with", ".ends": "ends with", ".before": "is before", ".after": "is after",
-    ".gt": "is greater than", ".gte": "is greater than or equal", ".lt": "is less than", ".lte": "is less than or equal"
-}
 tags = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label",
     "network", "producer", "resolution", "studio", "subtitle_language", "writer"
