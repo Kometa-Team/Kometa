@@ -26,6 +26,7 @@ method_alias = {
     "rating": "critic_rating",
     "show_user_rating": "user_rating",
     "video_resolution": "resolution",
+    "tmdb_trending": "tmdb_trending_daily",
     "play": "plays", "show_plays": "plays", "show_play": "plays", "episode_play": "episode_plays",
     "originally_available": "release", "episode_originally_available": "episode_air_date",
     "episode_release": "episode_air_date", "episode_released": "episode_air_date",

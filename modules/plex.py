@@ -242,7 +242,7 @@ class Plex:
         self.metadata_files = []
         metadata = []
         for file_type, metadata_file in params["metadata_path"]:
-            if file_type == "folder":
+            if file_type == "Folder":
                 if os.path.isdir(metadata_file):
                     yml_files = util.glob_filter(os.path.join(metadata_file, "*.yml"))
                     if yml_files:
