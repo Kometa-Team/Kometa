@@ -97,7 +97,7 @@ class Cache:
                         for row in cursor.fetchall():
                             if row["type"] == "poster":
                                 final_table = table_name if row["type"] == "poster" else f"{table_name}_backgrounds"
-                                self.update_image_map(row["rating_key"], final_table, row["location"], row["compare"], row["overlay"])
+                                self.update_image_map(row["rating_key"], final_table, row["location"], row["compare"], overlay=row["overlay"])
                     cursor.execute("DROP TABLE IF EXISTS image_map")
 
     def query_guid_map(self, plex_guid):
@@ -318,9 +318,9 @@ class Cache:
                     return row["location"], row["compare"]
         return None, None
 
-    def update_image_map(self, rating_key, table_name, location, compare):
+    def update_image_map(self, rating_key, table_name, location, compare, overlay=""):
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"INSERT OR IGNORE INTO {table_name}(rating_key) VALUES(?)", (rating_key,))
-                cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ?, overlay = ? WHERE rating_key = ?", (location, compare, "", rating_key))
+                cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ?, overlay = ? WHERE rating_key = ?", (location, compare, overlay, rating_key))
