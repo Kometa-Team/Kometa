@@ -791,7 +791,7 @@ class CollectionBuilder:
                         new_dictionary[search_attr] = str(search_data)
                     elif search_final not in ["sort_by", "limit"]:
                         raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
-                if len(new_dictionary) > 0:
+                if len(new_dictionary) == 0:
                     raise Failed(f"Collection Error: {method_name} must have at least one valid search option")
                 new_dictionary["sort_by"] = util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=["score", "popular"])
                 new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
