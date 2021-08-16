@@ -763,7 +763,7 @@ class CollectionBuilder:
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
                     search_attr, modifier, search_final = self._split(search_method)
-                    if search_data is None:
+                    if search_attr not in ["season", "year"] and search_data is None:
                         raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
                     elif search_final not in anilist.searches:
                         raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
