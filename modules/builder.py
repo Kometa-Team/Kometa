@@ -39,7 +39,8 @@ method_alias = {
     "years": "year", "show_year": "year", "show_years": "year",
     "show_title": "title",
     "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
-    "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent"
+    "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
+    "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search"
 }
 filter_translation = {
     "actor": "actors",
@@ -74,15 +75,15 @@ summary_details = [
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
-boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "item_assets", "create_asset_folders", "released_missing_only"]
+boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "item_assets", "missing_only_released"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = ["smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "tmdb_person", "build_collection", "collection_order", "validate_builders"]
 details = ["collection_mode", "collection_order", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + list(plex.item_advance_keys.keys())
-radarr_details = ["radarr_add", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
-sonarr_details = ["sonarr_add", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"]
+radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
+sonarr_details = ["sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"]
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
@@ -133,35 +134,34 @@ smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show
 custom_sort_builders = [
     "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
-    "tvdb_list",
-    "imdb_list",
+    "tvdb_list", "imdb_list", "stevenlu_popular", "anidb_popular",
     "trakt_list", "trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected",
     "tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
-    "anidb_popular",
-    "anilist_top_rated", "anilist_popular", "anilist_season", "anilist_studio", "anilist_genre", "anilist_tag",
+    "anilist_top_rated", "anilist_popular", "anilist_season", "anilist_studio", "anilist_genre", "anilist_tag", "anilist_search",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_producer"
 ]
 
 class CollectionBuilder:
-    def __init__(self, config, library, metadata, name, data):
+    def __init__(self, config, library, metadata, name, no_missing, data):
         self.config = config
         self.library = library
         self.metadata = metadata
         self.name = name
+        self.no_missing = no_missing
         self.data = data
         self.language = self.library.Plex.language
         self.details = {
             "show_filtered": self.library.show_filtered,
             "show_missing": self.library.show_missing,
             "save_missing": self.library.save_missing,
-            "released_missing_only": self.library.released_missing_only,
+            "missing_only_released": self.library.missing_only_released,
             "create_asset_folders": self.library.create_asset_folders,
             "item_assets": False
         }
         self.item_details = {}
-        self.radarr_options = {}
-        self.sonarr_options = {}
+        self.radarr_details = {}
+        self.sonarr_details = {}
         self.missing_movies = []
         self.missing_shows = []
         self.builders = []
@@ -175,8 +175,6 @@ class CollectionBuilder:
         self.backgrounds = {}
         self.summaries = {}
         self.schedule = ""
-        self.add_to_radarr = None
-        self.add_to_sonarr = None
         self.current_time = datetime.now()
         self.current_year = self.current_time.year
 
@@ -538,20 +536,29 @@ class CollectionBuilder:
         if self.custom_sort and self.builders[0][0] not in custom_sort_builders:
             raise Failed(f"Collection Error: collection_order: custom cannot be used with {self.builders[0][0]}")
 
-        if self.add_to_radarr is None:
-            self.add_to_radarr = self.library.Radarr.add if self.library.Radarr else False
-        if self.add_to_sonarr is None:
-            self.add_to_sonarr = self.library.Sonarr.add if self.library.Sonarr else False
+        if "add" not in self.radarr_details:
+            self.radarr_details["add"] = self.library.Radarr.add if self.library.Radarr else False
+        if "add_existing" not in self.radarr_details:
+            self.radarr_details["add_existing"] = self.library.Radarr.add_existing if self.library.Radarr else False
+
+        if "add" not in self.sonarr_details:
+            self.sonarr_details["add"] = self.library.Sonarr.add if self.library.Sonarr else False
+        if "add_existing" not in self.sonarr_details:
+            self.sonarr_details["add_existing"] = self.library.Sonarr.add_existing if self.library.Sonarr else False
             
-        if self.smart_url:
-            self.add_to_radarr = False
-            self.add_to_sonarr = False
+        if self.smart_url or self.collectionless:
+            self.radarr_details["add"] = False
+            self.radarr_details["add_existing"] = False
+            self.sonarr_details["add"] = False
+            self.sonarr_details["add_existing"] = False
 
         if self.collectionless:
-            self.add_to_radarr = False
-            self.add_to_sonarr = False
             self.details["collection_mode"] = "hide"
             self.sync = True
+
+        self.do_missing = not self.no_missing and (self.details["show_missing"] or self.details["save_missing"]
+                                                   or (self.library.Radarr and self.radarr_details["add"])
+                                                   or (self.library.Sonarr and self.sonarr_details["add"]))
 
         if self.build_collection:
             try:
@@ -684,48 +691,44 @@ class CollectionBuilder:
                 self.item_details[method_name] = str(method_data).lower()
 
     def _radarr(self, method_name, method_data):
-        if method_name == "radarr_add":
-            self.add_to_radarr = util.parse(method_name, method_data, datatype="bool")
+        if method_name in ["radarr_add", "radarr_add_existing", "radarr_monitor", "radarr_search"]:
+            self.radarr_details[method_name[7:]] = util.parse(method_name, method_data, datatype="bool")
         elif method_name == "radarr_folder":
-            self.radarr_options["folder"] = method_data
-        elif method_name in ["radarr_monitor", "radarr_search"]:
-            self.radarr_options[method_name[7:]] = util.parse(method_name, method_data, datatype="bool")
+            self.radarr_details["folder"] = method_data
         elif method_name == "radarr_availability":
             if str(method_data).lower() in radarr.availability_translation:
-                self.radarr_options["availability"] = str(method_data).lower()
+                self.radarr_details["availability"] = str(method_data).lower()
             else:
                 raise Failed(f"Collection Error: {method_name} attribute must be either announced, cinemas, released or db")
         elif method_name == "radarr_quality":
             self.library.Radarr.get_profile_id(method_data)
-            self.radarr_options["quality"] = method_data
+            self.radarr_details["quality"] = method_data
         elif method_name == "radarr_tag":
-            self.radarr_options["tag"] = util.get_list(method_data)
+            self.radarr_details["tag"] = util.get_list(method_data)
 
     def _sonarr(self, method_name, method_data):
-        if method_name == "sonarr_add":
-            self.add_to_sonarr = util.parse(method_name, method_data, datatype="bool")
+        if method_name in ["sonarr_add", "sonarr_add_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
+            self.sonarr_details[method_name[7:]] = util.parse(method_name, method_data, datatype="bool")
         elif method_name == "sonarr_folder":
-            self.sonarr_options["folder"] = method_data
+            self.sonarr_details["folder"] = method_data
         elif method_name == "sonarr_monitor":
             if str(method_data).lower() in sonarr.monitor_translation:
-                self.sonarr_options["monitor"] = str(method_data).lower()
+                self.sonarr_details["monitor"] = str(method_data).lower()
             else:
                 raise Failed(f"Collection Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
         elif method_name == "sonarr_quality":
             self.library.Sonarr.get_profile_id(method_data, "quality_profile")
-            self.sonarr_options["quality"] = method_data
+            self.sonarr_details["quality"] = method_data
         elif method_name == "sonarr_language":
             self.library.Sonarr.get_profile_id(method_data, "language_profile")
-            self.sonarr_options["language"] = method_data
+            self.sonarr_details["language"] = method_data
         elif method_name == "sonarr_series":
             if str(method_data).lower() in sonarr.series_type:
-                self.sonarr_options["series"] = str(method_data).lower()
+                self.sonarr_details["series"] = str(method_data).lower()
             else:
                 raise Failed(f"Collection Error: {method_name} attribute must be either standard, daily, or anime")
-        elif method_name in ["sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
-            self.sonarr_options[method_name[7:]] = util.parse(method_name, method_data, datatype="bool")
         elif method_name == "sonarr_tag":
-            self.sonarr_options["tag"] = util.get_list(method_data)
+            self.sonarr_details["tag"] = util.get_list(method_data)
 
     def _anidb(self, method_name, method_data):
         if method_name == "anidb_popular":
@@ -751,55 +754,47 @@ class CollectionBuilder:
                 self.builders.append((method_name, anilist_id))
         elif method_name in ["anilist_popular", "anilist_top_rated"]:
             self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
-        elif method_name in ["anilist_season", "anilist_genre", "anilist_tag"]:
+        elif method_name == "anilist_search":
+            if self.current_time.month in [12, 1, 2]:           current_season = "winter"
+            elif self.current_time.month in [3, 4, 5]:          current_season = "spring"
+            elif self.current_time.month in [6, 7, 8]:          current_season = "summer"
+            else:                                               current_season = "fall"
             for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
-                if method_name == "anilist_season":
-                    if self.current_time.month in [12, 1, 2]:       new_dictionary["season"] = "winter"
-                    elif self.current_time.month in [3, 4, 5]:      new_dictionary["season"] = "spring"
-                    elif self.current_time.month in [6, 7, 8]:      new_dictionary["season"] = "summer"
-                    elif self.current_time.month in [9, 10, 11]:    new_dictionary["season"] = "fall"
-                    new_dictionary["season"] = util.parse("season", dict_data, methods=dict_methods, parent=method_name, default=new_dictionary["season"], options=util.seasons)
-                    new_dictionary["year"] = util.parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_year, parent=method_name, minimum=1917, maximum=self.current_year + 1)
-                elif method_name == "anilist_genre":
-                    new_dictionary["genre"] = self.config.AniList.validate("Genre", util.parse("genre", dict_data, methods=dict_methods, parent=method_name))
-                elif method_name == "anilist_tag":
-                    new_dictionary["tag"] = self.config.AniList.validate("Tag", util.parse("tag", dict_data, methods=dict_methods, parent=method_name))
-                elif method_name == "anilist_search":
-                    for search_method, search_data in dict_data.items():
-                        search_attr, modifier, search_final = self._split(search_method)
-                        if search_data is None:
-                            raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
-                        elif search_final not in anilist.searches:
-                            raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
-                        elif search_attr == "season":
-                            if self.current_time.month in [12, 1, 2]:       new_dictionary["season"] = "winter"
-                            elif self.current_time.month in [3, 4, 5]:      new_dictionary["season"] = "spring"
-                            elif self.current_time.month in [6, 7, 8]:      new_dictionary["season"] = "summer"
-                            elif self.current_time.month in [9, 10, 11]:    new_dictionary["season"] = "fall"
-                            new_dictionary["season"] = util.parse("season", dict_data, parent=method_name, default=new_dictionary["season"], options=util.seasons)
-                            if "year" not in dict_methods:
-                                logger.warning(f"Collection Warning: {method_name} {search_final} attribute must be used with the year attribute using this year by default")
-                        elif search_attr == "year":
-                            if "season" not in dict_methods:
-                                raise Failed(f"Collection Error: {method_name} {search_final} attribute must be used with the season attribute")
-                            new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=self.current_year, minimum=1917, maximum=self.current_year + 1)
-                        elif search_attr == "adult":
-                            new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="bool", parent=method_name)
-                        elif search_attr in ["episodes", "duration", "score", "popularity"]:
-                            new_dictionary[search_final] = util.parse(search_final, search_data, datatype="int", parent=method_name)
-                        elif search_attr in ["format", "status", "genre", "tag", "tag_category"]:
-                            new_dictionary[search_final] = self.config.AniList.validate(search_attr.replace("_", " ").title(), util.parse(search_final, search_data))
-                        elif search_attr in ["start", "end"]:
-                            new_dictionary[search_final] = util.validate_date(search_data, f"{method_name} {search_final} attribute", return_as="%m/%d/%Y")
-                        elif search_attr == "min_tag_percent":
-                            new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, minimum=0, maximum=100)
-                        elif search_final not in ["sort_by", "limit"]:
-                            raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
-                    if len(new_dictionary) > 0:
-                        raise Failed(f"Collection Error: {method_name} must have at least one valid search option")
+                for search_method, search_data in dict_data.items():
+                    search_attr, modifier, search_final = self._split(search_method)
+                    if search_data is None:
+                        raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
+                    elif search_final not in anilist.searches:
+                        raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
+                    elif search_attr == "season":
+                        new_dictionary[search_attr] = util.parse(search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
+                        if "year" not in dict_methods:
+                            logger.warning(f"Collection Warning: {method_name} year attribute not found using this year: {self.current_year} by default")
+                            new_dictionary["year"] = self.current_year
+                    elif search_attr == "year":
+                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=self.current_year, minimum=1917, maximum=self.current_year + 1)
+                        if "season" not in dict_methods:
+                            logger.warning(f"Collection Warning: {method_name} season attribute not found using this season: {current_season} by default")
+                            new_dictionary["season"] = current_season
+                    elif search_attr == "adult":
+                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="bool", parent=method_name)
+                    elif search_attr in ["episodes", "duration", "score", "popularity"]:
+                        new_dictionary[search_final] = util.parse(search_final, search_data, datatype="int", parent=method_name)
+                    elif search_attr in ["format", "status", "genre", "tag", "tag_category"]:
+                        new_dictionary[search_final] = self.config.AniList.validate(search_attr.replace("_", " ").title(), util.parse(search_final, search_data))
+                    elif search_attr in ["start", "end"]:
+                        new_dictionary[search_final] = util.validate_date(search_data, f"{method_name} {search_final} attribute", return_as="%m/%d/%Y")
+                    elif search_attr == "min_tag_percent":
+                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, minimum=0, maximum=100)
+                    elif search_attr == "search":
+                        new_dictionary[search_attr] = str(search_data)
+                    elif search_final not in ["sort_by", "limit"]:
+                        raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
+                if len(new_dictionary) > 0:
+                    raise Failed(f"Collection Error: {method_name} must have at least one valid search option")
                 new_dictionary["sort_by"] = util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=["score", "popular"])
-                new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name, maximum=500)
+                new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
                 self.builders.append((method_name, new_dictionary))
 
     def _icheckmovies(self, method_name, method_data):
@@ -1029,7 +1024,7 @@ class CollectionBuilder:
                     else:
                         logger.error(message)
 
-    def find_rating_keys(self, no_missing):
+    def find_rating_keys(self):
         for method, value in self.builders:
             ids = []
             rating_keys = []
@@ -1094,9 +1089,7 @@ class CollectionBuilder:
                             if input_id in self.library.imdb_map:
                                 rating_keys.append(self.library.imdb_map[input_id][0])
                             else:
-                                if (self.details["show_missing"] or self.details["save_missing"]
-                                        or (self.library.Radarr and self.add_to_radarr)
-                                        or (self.library.Sonarr and self.add_to_sonarr)) and not no_missing:
+                                if self.do_missing:
                                     try:
                                         tmdb_id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id)
                                         if tmdb_type == "movie":
@@ -1553,7 +1546,7 @@ class CollectionBuilder:
                     logger.error(e)
                     continue
                 current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
-                if self.check_tmdb_filter(missing_id, True, item=movie, check_released=self.details["released_missing_only"]):
+                if self.check_tmdb_filter(missing_id, True, item=movie, check_released=self.details["missing_only_released"]):
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
                         logger.info(f"{self.name} Collection | ? | {current_title} (TMDb: {missing_id})")
@@ -1565,12 +1558,12 @@ class CollectionBuilder:
             if len(missing_movies_with_names) > 0:
                 if self.details["save_missing"] is True:
                     self.library.add_missing(self.name, missing_movies_with_names, True)
-                if self.run_again or (self.library.Radarr and (self.add_to_radarr or "item_radarr_tag" in self.item_details)):
+                if self.run_again or (self.library.Radarr and (self.radarr_details["add"] or "item_radarr_tag" in self.item_details)):
                     missing_tmdb_ids = [missing_id for title, missing_id in missing_movies_with_names]
                     if self.library.Radarr:
-                        if self.add_to_radarr:
+                        if self.radarr_details["add"]:
                             try:
-                                self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_options)
+                                self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_details)
                             except Failed as e:
                                 logger.error(e)
                         if "item_radarr_tag" in self.item_details:
@@ -1589,7 +1582,7 @@ class CollectionBuilder:
                     logger.error(e)
                     continue
                 current_title = str(show.title.encode("ascii", "replace").decode())
-                if self.check_tmdb_filter(missing_id, False, check_released=self.details["released_missing_only"]):
+                if self.check_tmdb_filter(missing_id, False, check_released=self.details["missing_only_released"]):
                     missing_shows_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
                         logger.info(f"{self.name} Collection | ? | {current_title} (TVDB: {missing_id})")
@@ -1601,12 +1594,12 @@ class CollectionBuilder:
             if len(missing_shows_with_names) > 0:
                 if self.details["save_missing"] is True:
                     self.library.add_missing(self.name, missing_shows_with_names, False)
-                if self.run_again or (self.library.Sonarr and (self.add_to_sonarr or "item_sonarr_tag" in self.item_details)):
+                if self.run_again or (self.library.Sonarr and (self.sonarr_details["add"] or "item_sonarr_tag" in self.item_details)):
                     missing_tvdb_ids = [missing_id for title, missing_id in missing_shows_with_names]
                     if self.library.Sonarr:
-                        if self.add_to_sonarr:
+                        if self.sonarr_details["add"]:
                             try:
-                                self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_options)
+                                self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_details)
                             except Failed as e:
                                 logger.error(e)
                         if "item_sonarr_tag" in self.item_details:
@@ -1693,9 +1686,9 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
-            if "item_radarr_tag" in self.item_details and item.ratingKey in self.library.movie_rating_key_map:
+            if item.ratingKey in self.library.movie_rating_key_map:
                 tmdb_ids.append(self.library.movie_rating_key_map[item.ratingKey])
-            if "item_sonarr_tag" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
+            if item.ratingKey in self.library.show_rating_key_map:
                 tvdb_ids.append(self.library.show_rating_key_map[item.ratingKey])
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
@@ -1706,10 +1699,16 @@ class CollectionBuilder:
             self.library.edit_item(item, item.title, "Movie" if self.library.is_movie else "Show", advance_edits, advanced=True)
 
         if len(tmdb_ids) > 0:
-            self.library.Radarr.edit_tags(tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
+            if "item_radarr_tag" in self.item_details:
+                self.library.Radarr.edit_tags(tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
+            if self.radarr_details["add_existing"]:
+                self.library.Radarr.add_tmdb(tmdb_ids, **self.radarr_details)
 
         if len(tvdb_ids) > 0:
-            self.library.Sonarr.edit_tags(tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
+            if "item_sonarr_tag" in self.item_details:
+                self.library.Sonarr.edit_tags(tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
+            if self.sonarr_details["add_existing"]:
+                self.library.Sonarr.add_tvdb(tvdb_ids, **self.sonarr_details)
 
         for rating_key in rating_keys:
             try:

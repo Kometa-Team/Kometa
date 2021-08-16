@@ -20,6 +20,7 @@ class Radarr:
         except ArrException as e:
             raise Failed(e)
         self.add = params["add"]
+        self.add_existing = params["add_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
         self.availability = params["availability"]

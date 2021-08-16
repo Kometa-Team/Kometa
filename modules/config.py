@@ -183,7 +183,7 @@ class Config:
             "show_filtered": check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False),
             "show_missing": check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True),
             "save_missing": check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True),
-            "released_missing_only": check_for_attribute(self.data, "released_missing_only", parent="settings", var_type="bool", default=False),
+            "missing_only_released": check_for_attribute(self.data, "missing_only_released", parent="settings", var_type="bool", default=False),
             "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False)
         }
         if self.general["cache"]:
@@ -295,6 +295,7 @@ class Config:
             "url": check_for_attribute(self.data, "url", parent="radarr", var_type="url", default_is_none=True),
             "token": check_for_attribute(self.data, "token", parent="radarr", default_is_none=True),
             "add": check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False),
+            "add_existing": check_for_attribute(self.data, "add_existing", parent="radarr", var_type="bool", default=False),
             "root_folder_path": check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True),
             "monitor": check_for_attribute(self.data, "monitor", parent="radarr", var_type="bool", default=True),
             "availability": check_for_attribute(self.data, "availability", parent="radarr", test_list=radarr.availability_descriptions, default="announced"),
@@ -306,6 +307,7 @@ class Config:
             "url": check_for_attribute(self.data, "url", parent="sonarr", var_type="url", default_is_none=True),
             "token": check_for_attribute(self.data, "token", parent="sonarr", default_is_none=True),
             "add": check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False),
+            "add_existing": check_for_attribute(self.data, "add_existing", parent="sonarr", var_type="bool", default=False),
             "root_folder_path": check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True),
             "monitor": check_for_attribute(self.data, "monitor", parent="sonarr", test_list=sonarr.monitor_descriptions, default="all"),
             "quality_profile": check_for_attribute(self.data, "quality_profile", parent="sonarr", default_is_none=True),
@@ -349,7 +351,7 @@ class Config:
             params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
             params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
             params["save_missing"] = check_for_attribute(lib, "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
-            params["released_missing_only"] = check_for_attribute(lib, "released_missing_only", parent="settings", var_type="bool", default=self.general["released_missing_only"], do_print=False, save=False)
+            params["missing_only_released"] = check_for_attribute(lib, "missing_only_released", parent="settings", var_type="bool", default=self.general["missing_only_released"], do_print=False, save=False)
             params["create_asset_folders"] = check_for_attribute(lib, "create_asset_folders", parent="settings", var_type="bool", default=self.general["create_asset_folders"], do_print=False, save=False)
 
             params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=lib and "mass_genre_update" in lib)
@@ -427,6 +429,7 @@ class Config:
                         "url": check_for_attribute(lib, "url", parent="radarr", var_type="url", default=self.general["radarr"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False),
                         "add": check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False),
+                        "add_existing": check_for_attribute(lib, "add_existing", parent="radarr", var_type="bool", default=self.general["radarr"]["add_existing"], save=False),
                         "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False),
                         "monitor": check_for_attribute(lib, "monitor", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor"], save=False),
                         "availability": check_for_attribute(lib, "availability", parent="radarr", test_list=radarr.availability_descriptions, default=self.general["radarr"]["availability"], save=False),
@@ -451,6 +454,7 @@ class Config:
                         "url": check_for_attribute(lib, "url", parent="sonarr", var_type="url", default=self.general["sonarr"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False),
                         "add": check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False),
+                        "add_existing": check_for_attribute(lib, "add_existing", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add_existing"], save=False),
                         "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False),
                         "monitor": check_for_attribute(lib, "monitor", parent="sonarr", test_list=sonarr.monitor_descriptions, default=self.general["sonarr"]["monitor"], save=False),
                         "quality_profile": check_for_attribute(lib, "quality_profile", parent="sonarr", default=self.general["sonarr"]["quality_profile"], req_default=True, save=False),

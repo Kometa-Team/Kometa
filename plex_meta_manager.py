@@ -108,7 +108,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.11.3-beta5                                                            "))
+    logger.info(util.centered("    Version: 1.12.0                                                                  "))
     if time_scheduled:              start_type = f"{time_scheduled} "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
@@ -474,7 +474,7 @@ def run_collection(config, library, metadata, requested_collections):
 
             util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
-            builder = CollectionBuilder(config, library, metadata, mapping_name, collection_attrs)
+            builder = CollectionBuilder(config, library, metadata, mapping_name, no_missing, collection_attrs)
             logger.info("")
 
             util.separator(f"Building {mapping_name} Collection", space=False, border=False)
@@ -495,16 +495,14 @@ def run_collection(config, library, metadata, requested_collections):
                     for filter_key, filter_value in builder.filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
-                builder.find_rating_keys(no_missing)
+                builder.find_rating_keys()
 
                 if len(builder.rating_keys) > 0 and builder.build_collection:
                     logger.info("")
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
                     builder.add_to_collection()
-                if (builder.details["show_missing"] or builder.details["save_missing"]
-                        or (library.Radarr and builder.add_to_radarr) or (library.Sonarr and builder.add_to_sonarr)) \
-                        and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0) and not no_missing:
+                if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     if builder.details["show_missing"] is True:
                         logger.info("")
                         util.separator(f"Missing from Library", space=False, border=False)
