@@ -14,7 +14,7 @@ mod_searches = [
     "episodes.gt", "episodes.gte", "episodes.lt", "episodes.lte", "duration.gt", "duration.gte", "duration.lt", "duration.lte",
     "score.gt", "score.gte", "score.lt", "score.lte", "popularity.gt", "popularity.gte", "popularity.lt", "popularity.lte"
 ]
-no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent"]
+no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent", "limit", "sort_by"]
 searches = mod_searches + no_mod_searches
 search_types = {
     "search": "String", "season": "MediaSeason", "seasonYear": "Int", "isAdult": "Boolean", "minimumTagRank": "Int",
