@@ -4,10 +4,7 @@ from modules.util import Failed
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = [
-    "anilist_genre", "anilist_id", "anilist_popular", "anilist_relations",
-    "anilist_season", "anilist_studio", "anilist_tag", "anilist_top_rated", "anilist_search"
-]
+builders = ["anilist_id", "anilist_popular", "anilist_relations", "anilist_studio", "anilist_top_rated", "anilist_search"]
 pretty_names = {"score": "Average Score", "popular": "Popularity"}
 attr_translation = {"year": "seasonYear", "adult": "isAdult", "start": "startDate", "end": "endDate", "tag_category": "tagCategory", "score": "averageScore", "min_tag_percent": "minimumTagRank"}
 mod_translation = {"": "in", "not": "not_in", "before": "greater", "after": "lesser", "gt": "greater", "gte": "greater", "lt": "lesser", "lte": "lesser"}
@@ -17,12 +14,13 @@ mod_searches = [
     "episodes.gt", "episodes.gte", "episodes.lt", "episodes.lte", "duration.gt", "duration.gte", "duration.lt", "duration.lte",
     "score.gt", "score.gte", "score.lt", "score.lte", "popularity.gt", "popularity.gte", "popularity.lt", "popularity.lte"
 ]
-no_mod_searches = ["season", "year", "adult", "min_tag_percent"]
+no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent"]
 searches = mod_searches + no_mod_searches
 search_types = {
-    "season": "MediaSeason", "seasonYear": "Int", "isAdult": "Boolean", "startDate": "FuzzyDateInt", "endDate": "FuzzyDateInt",
-    "format": "[MediaFormat]", "status": "[MediaStatus]", "genre": "[String]", "tag": "[String]", "tagCategory": "[String]",
-    "episodes": "Int", "duration": "Int", "averageScore": "Int", "popularity": "Int", "minimumTagRank": "Int"
+    "search": "String", "season": "MediaSeason", "seasonYear": "Int", "isAdult": "Boolean", "minimumTagRank": "Int",
+    "startDate": "FuzzyDateInt", "endDate": "FuzzyDateInt", "format": "[MediaFormat]", "status": "[MediaStatus]",
+    "genre": "[String]", "tag": "[String]", "tagCategory": "[String]",
+    "episodes": "Int", "duration": "Int", "averageScore": "Int", "popularity": "Int"
 }
 media_season = {"winter": "WINTER", "spring": "SPRING", "summer": "SUMMER", "fall": "FALL"}
 media_format = {"tv": "TV", "short": "TV_SHORT", "movie": "MOVIE", "special": "SPECIAL", "ova": "OVA", "ona": "ONA", "music": "MUSIC"}

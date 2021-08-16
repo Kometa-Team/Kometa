@@ -1,4 +1,4 @@
-import logging, re, secrets, time, webbrowser
+import logging, math, re, secrets, time, webbrowser
 from modules import util
 from modules.util import Failed, TimeoutExpired
 from ruamel import yaml
@@ -169,12 +169,26 @@ class MyAnimeList:
         if total_items < limit or limit <= 0:
             limit = total_items
         mal_ids = []
-        for i in range(1, int(((total_items - 1) / 100) + 2)):
-            if i > 1:
-                data = self._jiken_request(f"/genre/anime/{genre_id}/{i}")
-            mal_ids.extend([anime["mal_id"] for anime in data["anime"]])
-            if len(mal_ids) > limit:
-                return mal_ids[:limit]
+        num_of_pages = math.ceil(int(limit) / 100)
+        current_page = 1
+        chances = 0
+        while current_page <= num_of_pages:
+            if chances > 6:
+                logger.debug(data)
+                raise Failed("AniList Error: Connection Failed")
+            start_num = (current_page - 1) * 100 + 1
+            util.print_return(f"Parsing Page {current_page}/{num_of_pages} {start_num}-{limit if current_page == num_of_pages else current_page * 100}")
+            if current_page > 1:
+                data = self._jiken_request(f"/genre/anime/{genre_id}/{current_page}")
+            if "anime" in data:
+                chances = 0
+                mal_ids.extend([anime["mal_id"] for anime in data["anime"]])
+                if len(mal_ids) > limit:
+                    return mal_ids[:limit]
+                current_page += 1
+            else:
+                chances += 1
+        util.print_end()
         return mal_ids
 
     def _producer(self, producer_id, limit):

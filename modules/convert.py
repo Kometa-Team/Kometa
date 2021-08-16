@@ -85,7 +85,7 @@ class Convert:
                 if tvdb_id:
                     ids.append((tvdb_id, "tvdb"))
                 if tmdb_ids:
-                    ids.extend((tmdb_ids, "tmdb"))
+                    ids.extend([(t, "tmdb") for t in tmdb_ids])
             except Failed as e:
                 logger.error(e)
         return ids
