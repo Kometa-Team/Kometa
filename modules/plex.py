@@ -1,4 +1,4 @@
-import glob, logging, os, plexapi, requests, shutil, time
+import logging, os, plexapi, requests, shutil, time
 from modules import builder, util
 from modules.meta import Metadata
 from modules.util import Failed, ImageData
@@ -33,17 +33,15 @@ search_translation = {
     "episode_user_rating": "episode.userRating",
     "episode_plays": "episode.viewCount"
 }
+show_translation = {
+    "hdr": "episode.hdr",
+    "audioLanguage": "episode.audioLanguage",
+    "subtitleLanguage": "episode.subtitleLanguage",
+    "resolution": "episode.resolution"
+}
 modifier_translation = {
-    "": "",
-    ".not": "!",
-    ".gt": "%3E%3E",
-    ".gte": "%3E",
-    ".lt": "%3C%3C",
-    ".lte": "%3C",
-    ".before": "%3C%3C",
-    ".after": "%3E%3E",
-    ".begins": "%3C",
-    ".ends": "%3E"
+    "": "", ".not": "!", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
+    ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E"
 }
 episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
@@ -57,6 +55,12 @@ plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
+collection_mode_options = {
+    "default": "default", "hide": "hide",
+    "hide_items": "hideItems", "hideitems": "hideItems",
+    "show_items": "showItems", "showitems": "showItems"
+}
+collection_order_options = ["release", "alpha", "custom"]
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 item_advance_keys = {
@@ -114,13 +118,9 @@ or_searches = [
     "writer", "decade", "resolution", "year", "episode_title", "episode_year"
 ]
 movie_only_searches = [
-    "country", "country.not",
-    "director", "director.not",
-    "producer", "producer.not",
-    "writer", "writer.not",
+    "country", "country.not", "director", "director.not", "producer", "producer.not", "writer", "writer.not",
     "decade", "duplicate", "unplayed", "progress", "trash",
-    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
-    "duration.gt", "duration.gte", "duration.lt", "duration.lte"
+    "plays.gt", "plays.gte", "plays.lt", "plays.lte", "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
     "network", "network.not",
@@ -132,21 +132,15 @@ show_only_searches = [
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
 ]
-number_attributes = ["plays", "episode_plays", "added", "episode_added", "release", "episode_air_date", "duration", "tmdb_vote_count"]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
 boolean_attributes = [
     "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
 ]
 tmdb_attributes = ["actor", "director", "producer", "writer"]
-date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played"]
-search_display = {
-    "added": "Date Added",
-    "release": "Release Date",
-    "hdr": "HDR",
-    "progress": "In Progress",
-    "episode_progress": "Episode In Progress"
-}
+date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played", "first_episode_aired", "last_episode_aired"]
+number_attributes = ["plays", "episode_plays", "duration", "tmdb_vote_count"] + date_attributes
+search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 sorts = {
     None: None,
     "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
@@ -157,44 +151,10 @@ sorts = {
     "duration.asc": "duration:asc", "duration.desc": "duration:desc",
     "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
 }
-modifiers = {
-    ".not": "!",
-    ".begins": "<",
-    ".ends": ">",
-    ".before": "<<",
-    ".after": ">>",
-    ".gt": ">>",
-    ".gte": "__gte",
-    ".lt": "<<",
-    ".lte": "__lte"
-}
-mod_displays = {
-    "": "is",
-    ".not": "is not",
-    ".begins": "begins with",
-    ".ends": "ends with",
-    ".before": "is before",
-    ".after": "is after",
-    ".gt": "is greater than",
-    ".gte": "is greater than or equal",
-    ".lt": "is less than",
-    ".lte": "is less than or equal"
-}
+modifiers = {".not": "!", ".begins": "<", ".ends": ">", ".before": "<<", ".after": ">>", ".gt": ">>", ".gte": "__gte", ".lt": "<<", ".lte": "__lte"}
 tags = [
-    "actor",
-    "audio_language",
-    "collection",
-    "content_rating",
-    "country",
-    "director",
-    "genre",
-    "label",
-    "network",
-    "producer",
-    "resolution",
-    "studio",
-    "subtitle_language",
-    "writer"
+    "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label",
+    "network", "producer", "resolution", "studio", "subtitle_language", "writer"
 ]
 movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
@@ -245,18 +205,17 @@ episode_sorts = {
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "random": "random"
 }
-sort_types = {
-    "movies": (1, movie_sorts),
-    "shows": (2, show_sorts),
-    "seasons": (3, season_sorts),
-    "episodes": (4, episode_sorts),
-}
+sort_types = {"movies": (1, movie_sorts), "shows": (2, show_sorts), "seasons": (3, season_sorts), "episodes": (4, episode_sorts)}
 
 class Plex:
     def __init__(self, config, params):
         self.config = config
+        self.plex = params["plex"]
+        self.url = params["plex"]["url"]
+        self.token = params["plex"]["token"]
+        self.timeout = params["plex"]["timeout"]
         try:
-            self.PlexServer = PlexServer(params["plex"]["url"], params["plex"]["token"], timeout=params["plex"]["timeout"])
+            self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
         except Unauthorized:
             raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:
@@ -277,7 +236,20 @@ class Plex:
         self.metadatas = []
 
         self.metadata_files = []
+        metadata = []
         for file_type, metadata_file in params["metadata_path"]:
+            if file_type == "Folder":
+                if os.path.isdir(metadata_file):
+                    yml_files = util.glob_filter(os.path.join(metadata_file, "*.yml"))
+                    if yml_files:
+                        metadata.extend([("File", yml) for yml in yml_files])
+                    else:
+                        logger.error(f"Config Error: No YAML (.yml) files found in {metadata_file}")
+                else:
+                    logger.error(f"Config Error: Folder not found: {metadata_file}")
+            else:
+                metadata.append((file_type, metadata_file))
+        for file_type, metadata_file in metadata:
             try:
                 meta_obj = Metadata(config, self, file_type, metadata_file)
                 if meta_obj.collections:
@@ -305,6 +277,7 @@ class Plex:
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         if output:
             logger.info(output)
+        self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
         self.missing_path = os.path.join(params["default_dir"], f"{self.name}_missing.yml")
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
@@ -315,26 +288,28 @@ class Plex:
         self.show_filtered = params["show_filtered"]
         self.show_missing = params["show_missing"]
         self.save_missing = params["save_missing"]
+        self.missing_only_released = params["missing_only_released"]
+        self.create_asset_folders = params["create_asset_folders"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
+        self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
         self.split_duplicates = params["split_duplicates"]
         self.radarr_add_all = params["radarr_add_all"]
         self.sonarr_add_all = params["sonarr_add_all"]
-        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update or self.split_duplicates or self.radarr_add_all or self.sonarr_add_all
-        self.plex = params["plex"]
-        self.url = params["plex"]["url"]
-        self.token = params["plex"]["token"]
-        self.timeout = params["plex"]["timeout"]
+        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update \
+                           or self.mass_trakt_rating_update or self.split_duplicates or self.radarr_add_all or self.sonarr_add_all
         self.clean_bundles = params["plex"]["clean_bundles"]
         self.empty_trash = params["plex"]["empty_trash"]
         self.optimize = params["plex"]["optimize"]
         self.missing = {}
         self.movie_map = {}
         self.show_map = {}
+        self.imdb_map = {}
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
         self.run_again = []
+        self.run_sort = []
         self.overlays = []
 
     def get_all_collections(self):
@@ -400,11 +375,15 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item):
-        item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                    includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
-                    includeRelatedCount=0, includeReviews=False, includeStations=False)
+        try:
+            item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                        includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
+                        includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                        includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
+                        includeRelatedCount=0, includeReviews=False, includeStations=False)
+        except (BadRequest, NotFound) as e:
+            util.print_stacktrace()
+            raise Failed(f"Item Failed to Load: {e}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def edit_query(self, item, edits, advanced=False):
@@ -416,6 +395,10 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _upload_image(self, item, image):
+        logger.debug(item)
+        logger.debug(image.is_poster)
+        logger.debug(image.is_url)
+        logger.debug(image.location)
         if image.is_poster and image.is_url:
             item.uploadPoster(url=image.location)
         elif image.is_poster:
@@ -427,19 +410,23 @@ class Plex:
         self.reload(item)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def _upload_file_poster(self, item, image):
+    def upload_file_poster(self, item, image):
+        logger.debug(item)
+        logger.debug(image)
         item.uploadPoster(filepath=image)
         self.reload(item)
 
     def upload_images(self, item, poster=None, background=None, overlay=None):
+        image = None
+        image_compare = None
         poster_uploaded = False
+        if self.config.Cache:
+            image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+
         if poster is not None:
             try:
-                image = None
-                if self.config.Cache:
-                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
-                    if str(poster.compare) != str(image_compare):
-                        image = None
+                if image_compare and str(poster.compare) != str(image_compare):
+                    image = None
                 if image is None or image != item.thumb:
                     self._upload_image(item, poster)
                     poster_uploaded = True
@@ -450,13 +437,15 @@ class Plex:
                 util.print_stacktrace()
                 logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
 
-        overlay_name = ""
         if overlay is not None:
             overlay_name, overlay_folder, overlay_image, temp_image = overlay
-            image_overlay = None
-            if self.config.Cache:
-                image, _, image_overlay = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "poster")
-            if poster_uploaded or not image_overlay or image_overlay != overlay_name:
+            item_labels = {item_tag.tag.lower(): item_tag.tag for item_tag in item.labels}
+            for item_label in item_labels:
+                if item_label.endswith(" overlay") and item_label != f"{overlay_name.lower()} overlay":
+                    raise Failed(f"Overlay Error: Poster already has an existing Overlay: {item_labels[item_label]}")
+            if poster_uploaded or image is None or image != item.thumb or f"{overlay_name.lower()} overlay" not in item_labels:
+                if not item.posterUrl:
+                    raise Failed(f"Overlay Error: No existing poster to Overlay for {item.title}")
                 response = requests.get(item.posterUrl)
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
@@ -466,11 +455,12 @@ class Plex:
                 shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
                 while util.is_locked(temp_image):
                     time.sleep(1)
-                new_poster = Image.open(temp_image)
+                new_poster = Image.open(temp_image).convert("RGBA")
                 new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
                 new_poster.paste(overlay_image, (0, 0), overlay_image)
                 new_poster.save(temp_image)
-                self._upload_file_poster(item, temp_image)
+                self.upload_file_poster(item, temp_image)
+                self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
                 poster_uploaded = True
                 logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
 
@@ -479,7 +469,7 @@ class Plex:
             try:
                 image = None
                 if self.config.Cache:
-                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.original_mapping_name, "background")
+                    image, image_compare = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds")
                     if str(background.compare) != str(image_compare):
                         image = None
                 if image is None or image != item.art:
@@ -494,15 +484,14 @@ class Plex:
 
         if self.config.Cache:
             if poster_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "poster", item.thumb, poster.compare if poster else "", overlay_name)
+                self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, item.thumb, poster.compare if poster else "")
             if background_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, self.original_mapping_name, "background", item.art, background.compare, "")
+                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
-        if final_search == "resolution" and self.is_show:
-            final_search = "episode.resolution"
+        final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         try:
             choices = {}
             for choice in self.Plex.listFilterChoices(final_search):
@@ -510,7 +499,8 @@ class Plex:
                 choices[choice.key.lower()] = choice.title if title else choice.key
             return choices
         except NotFound:
-            raise Failed(f"Collection Error: plex search attribute: {search_name} only supported with Plex's New TV Agent")
+            logger.debug(f"Search Attribute: {final_search}")
+            raise Failed(f"Collection Error: plex search attribute: {search_name} not supported")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_labels(self):
@@ -522,6 +512,12 @@ class Plex:
         elif put:               method = self.Plex._server._session.put
         else:                   method = None
         return self.Plex._server.query(key, method=method)
+
+    def move_item(self, collection, item, after=None):
+        key = f"{collection.key}/items/{item}/move"
+        if after:
+            key += f"?after={after}"
+        self._query(key, put=True)
 
     def smart_label_url(self, title, sort):
         labels = self.get_labels()
@@ -586,13 +582,13 @@ class Plex:
 
     def get_collection(self, data):
         if isinstance(data, int):
-            collection = self.fetchItem(data)
+            return self.fetchItem(data)
         elif isinstance(data, Collection):
-            collection = data
+            return data
         else:
-            collection = util.choose_from_list(self.search(title=str(data), libtype="collection"), "collection", str(data), exact=True)
-        if collection:
-            return collection
+            for d in self.search(title=str(data), libtype="collection"):
+                if d.title == data:
+                    return d
         raise Failed(f"Plex Error: Collection {data} not found")
 
     def validate_collections(self, collections):
@@ -604,18 +600,18 @@ class Plex:
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
 
-    def get_items(self, method, data):
-        pretty = util.pretty_names[method] if method in util.pretty_names else method
+    def get_rating_keys(self, method, data):
         media_type = "Movie" if self.is_movie else "Show"
         items = []
         if method == "plex_all":
-            logger.info(f"Processing {pretty} {media_type}s")
+            logger.info(f"Processing Plex All {media_type}s")
             items = self.get_all()
         elif method == "plex_search":
             util.print_multiline(data[1], info=True)
             items = self.get_filter_items(data[2])
         elif method == "plex_collectionless":
             good_collections = []
+            logger.info(f"Processing Plex Collectionless")
             logger.info("Collections Excluded")
             for col in self.get_all_collections():
                 keep_collection = True
@@ -653,7 +649,10 @@ class Plex:
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
-            return [item.ratingKey for item in items]
+            ids = [item.ratingKey for item in items]
+            logger.debug("")
+            logger.debug(f"{len(ids)} Keys Found: {ids}")
+            return ids
         else:
             raise Failed("Plex Error: No Items found in Plex")
 
@@ -698,26 +697,19 @@ class Plex:
         for i, item in enumerate(items, 1):
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
             if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:
-                id_type, main_id = self.config.Convert.get_id(item, self)
+                id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
                 if main_id:
-                    if not isinstance(main_id, list):
-                        main_id = [main_id]
                     if id_type == "movie":
                         self.movie_rating_key_map[item.ratingKey] = main_id[0]
-                        for m in main_id:
-                            if m in self.movie_map:
-                                self.movie_map[m].append(item.ratingKey)
-                            else:
-                                self.movie_map[m] = [item.ratingKey]
+                        util.add_dict_list(main_id, item.ratingKey, self.movie_map)
                     elif id_type == "show":
                         self.show_rating_key_map[item.ratingKey] = main_id[0]
-                        for m in main_id:
-                            if m in self.show_map:
-                                self.show_map[m].append(item.ratingKey)
-                            else:
-                                self.show_map[m] = [item.ratingKey]
+                        util.add_dict_list(main_id, item.ratingKey, self.show_map)
+                if imdb_id:
+                    util.add_dict_list(imdb_id, item.ratingKey, self.imdb_map)
         logger.info("")
         logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if self.is_movie else 'Shows'}"))
+        return items
 
     def get_tmdb_from_map(self, item):
         return self.movie_rating_key_map[item.ratingKey] if item.ratingKey in self.movie_rating_key_map else None
@@ -729,7 +721,10 @@ class Plex:
         kwargs = {}
         if year is not None:
             kwargs["year"] = year
-        return util.choose_from_list(self.search(title=str(data), **kwargs), "movie" if self.is_movie else "show", str(data), exact=True)
+        for d in self.search(title=str(data), **kwargs):
+            if d.title == data:
+                return d
+        return None
 
     def edit_item(self, item, name, item_type, edits, advanced=False):
         if len(edits) > 0:
@@ -750,8 +745,8 @@ class Plex:
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
             _add_tags = add_tags if add_tags else []
-            _remove_tags = remove_tags if remove_tags else []
-            _sync_tags = sync_tags if sync_tags else []
+            _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
+            _sync_tags = [t.lower() for t in sync_tags] if sync_tags else []
             try:
                 _item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
             except BadRequest:
@@ -761,39 +756,40 @@ class Plex:
             if _add:
                 updated = True
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
-                logger.info(f"Detail: {attr.capitalize()} {_add} added")
+                logger.info(f"Detail: {attr.capitalize()} {','.join(_add)} added to {obj.title}")
             if _remove:
                 updated = True
                 self.query_data(getattr(obj, f"remove{attr.capitalize()}"), _remove)
-                logger.info(f"Detail: {attr.capitalize()} {_remove} removed")
+                logger.info(f"Detail: {attr.capitalize()} {','.join(_remove)} removed to {obj.title}")
         return updated
 
-    def update_item_from_assets(self, item, overlay=None):
-        name = os.path.basename(os.path.dirname(item.locations[0]) if self.is_movie else item.locations[0])
-        found_one = False
+    def update_item_from_assets(self, item, overlay=None, create=False):
+        name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
+        logger.debug(name)
+        found_folder = False
+        poster = None
+        background = None
         for ad in self.asset_directory:
-            poster = None
-            background = None
             item_dir = None
             if self.asset_folders:
                 if os.path.isdir(os.path.join(ad, name)):
                     item_dir = os.path.join(ad, name)
                 else:
-                    matches = glob.glob(os.path.join(ad, "*", name))
+                    matches = util.glob_filter(os.path.join(ad, "*", name))
                     if len(matches) > 0:
                         item_dir = os.path.abspath(matches[0])
                 if item_dir is None:
                     continue
-                found_one = True
+                found_folder = True
                 poster_filter = os.path.join(item_dir, "poster.*")
                 background_filter = os.path.join(item_dir, "background.*")
             else:
                 poster_filter = os.path.join(ad, f"{name}.*")
                 background_filter = os.path.join(ad, f"{name}_background.*")
-            matches = glob.glob(poster_filter)
+            matches = util.glob_filter(poster_filter)
             if len(matches) > 0:
                 poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
-            matches = glob.glob(background_filter)
+            matches = util.glob_filter(background_filter)
             if len(matches) > 0:
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
@@ -804,7 +800,7 @@ class Plex:
                         season_filter = os.path.join(item_dir, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
                     else:
                         season_filter = os.path.join(ad, f"{name}_Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
-                    matches = glob.glob(season_filter)
+                    matches = util.glob_filter(season_filter)
                     if len(matches) > 0:
                         season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
                         self.upload_images(season, poster=season_poster)
@@ -813,16 +809,21 @@ class Plex:
                             episode_filter = os.path.join(item_dir, f"{episode.seasonEpisode.upper()}.*")
                         else:
                             episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
-                        matches = glob.glob(episode_filter)
+                        matches = util.glob_filter(episode_filter)
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
-        if not found_one and overlay:
+        if not poster and overlay:
             self.upload_images(item, overlay=overlay)
-        elif not found_one:
+        if create and self.asset_folders and not found_folder:
+            os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
+            logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
+        elif not overlay and self.asset_folders and not found_folder:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
+        elif not poster and not background:
+            logger.error(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
 
-    def find_collection_assets(self, item, name=None):
+    def find_collection_assets(self, item, name=None, create=False):
         if name is None:
             name = item.title
         for ad in self.asset_directory:
@@ -836,12 +837,15 @@ class Plex:
             else:
                 poster_filter = os.path.join(ad, f"{name}.*")
                 background_filter = os.path.join(ad, f"{name}_background.*")
-            matches = glob.glob(poster_filter)
+            matches = util.glob_filter(poster_filter)
             if len(matches) > 0:
                 poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
-            matches = glob.glob(background_filter)
+            matches = util.glob_filter(background_filter)
             if len(matches) > 0:
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
                 return poster, background
+        if create and self.asset_folders and not os.path.isdir(os.path.join(self.asset_directory[0], name)):
+            os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
+            logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
         return None, None

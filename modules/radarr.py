@@ -6,27 +6,21 @@ from arrapi.exceptions import ArrException, Invalid
 
 logger = logging.getLogger("Plex Meta Manager")
 
-availability_translation = {
-    "announced": "announced",
-    "cinemas": "inCinemas",
-    "released": "released",
-    "db": "preDB"
-}
-apply_tags_translation = {
-    "": "add",
-    "sync": "replace",
-    "remove": "remove"
-}
+availability_translation = {"announced": "announced", "cinemas": "inCinemas", "released": "released", "db": "preDB"}
+apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
+availability_descriptions = {"announced": "For Announced", "cinemas": "For In Cinemas", "released": "For Released", "db": "For PreDB"}
 
 class Radarr:
-    def __init__(self, params):
+    def __init__(self, config, params):
+        self.config = config
         self.url = params["url"]
         self.token = params["token"]
         try:
-            self.api = RadarrAPI(self.url, self.token)
+            self.api = RadarrAPI(self.url, self.token, session=self.config.session)
         except ArrException as e:
             raise Failed(e)
         self.add = params["add"]
+        self.add_existing = params["add_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
         self.availability = params["availability"]
@@ -83,4 +77,3 @@ class Radarr:
             logger.info("")
             for tmdb_id in not_exists:
                 logger.info(f"TMDb ID Not in Radarr | {tmdb_id}")
-

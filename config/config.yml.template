@@ -89,3 +89,6 @@ mal:
     token_type:
     expires_in:
     refresh_token:
+anidb:          # Optional
+  username: ######
+  password: ######
