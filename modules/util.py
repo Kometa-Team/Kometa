@@ -1,5 +1,6 @@
-import logging, os, re, signal, sys, time, traceback
-from datetime import datetime
+import glob, logging, os, re, signal, sys, time, traceback
+from datetime import datetime, timedelta
+from logging.handlers import RotatingFileHandler
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
@@ -47,184 +48,30 @@ days_alias = {
     "saturday": 5, "sat": 5, "s": 5,
     "sunday": 6, "sun": 6, "su": 6, "u": 6
 }
-pretty_days = {
-    0: "Monday",
-    1: "Tuesday",
-    2: "Wednesday",
-    3: "Thursday",
-    4: "Friday",
-    5: "Saturday",
-    6: "Sunday"
+mod_displays = {
+    "": "is", ".not": "is not", ".begins": "begins with", ".ends": "ends with", ".before": "is before", ".after": "is after",
+    ".gt": "is greater than", ".gte": "is greater than or equal", ".lt": "is less than", ".lte": "is less than or equal"
 }
+pretty_days = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 pretty_months = {
-    1: "January",
-    2: "February",
-    3: "March",
-    4: "April",
-    5: "May",
-    6: "June",
-    7: "July",
-    8: "August",
-    9: "September",
-    10: "October",
-    11: "November",
-    12: "December"
+    1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
+    7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
 }
-pretty_seasons = {
-    "winter": "Winter",
-    "spring": "Spring",
-    "summer": "Summer",
-    "fall": "Fall"
-}
-pretty_names = {
-    "anidb_id": "AniDB ID",
-    "anidb_relation": "AniDB Relation",
-    "anidb_popular": "AniDB Popular",
-    "anilist_genre": "AniList Genre",
-    "anilist_id": "AniList ID",
-    "anilist_popular": "AniList Popular",
-    "anilist_relations": "AniList Relations",
-    "anilist_season": "AniList Season",
-    "anilist_studio": "AniList Studio",
-    "anilist_tag": "AniList Tag",
-    "anilist_top_rated": "AniList Top Rated",
-    "icheckmovies_list": "I Check Movies List",
-    "imdb_list": "IMDb List",
-    "imdb_id": "IMDb ID",
-    "letterboxd_list": "Letterboxd List",
-    "letterboxd_list_details": "Letterboxd List",
-    "mal_id": "MyAnimeList ID",
-    "mal_all": "MyAnimeList All",
-    "mal_airing": "MyAnimeList Airing",
-    "mal_upcoming": "MyAnimeList Upcoming",
-    "mal_tv": "MyAnimeList TV",
-    "mal_ova": "MyAnimeList OVA",
-    "mal_movie": "MyAnimeList Movie",
-    "mal_special": "MyAnimeList Special",
-    "mal_popular": "MyAnimeList Popular",
-    "mal_favorite": "MyAnimeList Favorite",
-    "mal_season": "MyAnimeList Season",
-    "mal_suggested": "MyAnimeList Suggested",
-    "mal_userlist": "MyAnimeList Userlist",
-    "plex_all": "Plex All",
-    "plex_collection": "Plex Collection",
-    "plex_search": "Plex Search",
-    "tautulli_popular": "Tautulli Popular",
-    "tautulli_watched": "Tautulli Watched",
-    "tmdb_actor": "TMDb Actor",
-    "tmdb_actor_details": "TMDb Actor",
-    "tmdb_collection": "TMDb Collection",
-    "tmdb_collection_details": "TMDb Collection",
-    "tmdb_company": "TMDb Company",
-    "tmdb_crew": "TMDb Crew",
-    "tmdb_crew_details": "TMDb Crew",
-    "tmdb_director": "TMDb Director",
-    "tmdb_director_details": "TMDb Director",
-    "tmdb_discover": "TMDb Discover",
-    "tmdb_keyword": "TMDb Keyword",
-    "tmdb_list": "TMDb List",
-    "tmdb_list_details": "TMDb List",
-    "tmdb_movie": "TMDb Movie",
-    "tmdb_movie_details": "TMDb Movie",
-    "tmdb_network": "TMDb Network",
-    "tmdb_now_playing": "TMDb Now Playing",
-    "tmdb_person": "TMDb Person",
-    "tmdb_popular": "TMDb Popular",
-    "tmdb_producer": "TMDb Producer",
-    "tmdb_producer_details": "TMDb Producer",
-    "tmdb_show": "TMDb Show",
-    "tmdb_show_details": "TMDb Show",
-    "tmdb_top_rated": "TMDb Top Rated",
-    "tmdb_trending_daily": "TMDb Trending Daily",
-    "tmdb_trending_weekly": "TMDb Trending Weekly",
-    "tmdb_writer": "TMDb Writer",
-    "tmdb_writer_details": "TMDb Writer",
-    "trakt_collected": "Trakt Collected",
-    "trakt_collection": "Trakt Collection",
-    "trakt_list": "Trakt List",
-    "trakt_list_details": "Trakt List",
-    "trakt_popular": "Trakt Popular",
-    "trakt_recommended": "Trakt Recommended",
-    "trakt_trending": "Trakt Trending",
-    "trakt_watched": "Trakt Watched",
-    "trakt_watchlist": "Trakt Watchlist",
-    "tvdb_list": "TVDb List",
-    "tvdb_list_details": "TVDb List",
-    "tvdb_movie": "TVDb Movie",
-    "tvdb_movie_details": "TVDb Movie",
-    "tvdb_show": "TVDb Show",
-    "tvdb_show_details": "TVDb Show"
-}
-pretty_ids = {
-    "anidbid": "AniDB",
-    "imdbid": "IMDb",
-    "mal_id": "MyAnimeList",
-    "themoviedb_id": "TMDb",
-    "thetvdb_id": "TVDb",
-    "tvdbid": "TVDb"
-}
+seasons = ["winter", "spring", "summer", "fall"]
+pretty_ids = {"anidbid": "AniDB", "imdbid": "IMDb", "mal_id": "MyAnimeList", "themoviedb_id": "TMDb", "thetvdb_id": "TVDb", "tvdbid": "TVDb"}
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
 
 def make_ordinal(n):
-    n = int(n)
-    suffix = ["th", "st", "nd", "rd", "th"][min(n % 10, 4)]
-    if 11 <= (n % 100) <= 13:
-        suffix = "th"
-    return str(n) + suffix
+    return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
 
-def choose_from_list(datalist, description, data=None, list_type="title", exact=False):
-    if len(datalist) > 0:
-        if len(datalist) == 1 and (description != "collection" or datalist[0].title == data):
-            return datalist[0]
-        zero_option = f"Create New Collection: {data}" if description == "collection" else "Do Nothing"
-        message = f"Multiple {description}s Found\n0) {zero_option}"
-        for i, d in enumerate(datalist, 1):
-            if list_type == "title":
-                if d.title == data:
-                    return d
-                message += f"\n{i}) {d.title}"
-            else:
-                message += f"\n{i}) [{d[0]}] {d[1]}"
-        if exact:
-            return None
-        print_multiline(message, info=True)
-        while True:
-            try:
-                selection = int(logger_input(f"Choose {description} number")) - 1
-                if selection >= 0:                                          return datalist[selection]
-                elif selection == -1:                                       return None
-                else:                                                       logger.info(f"Invalid {description} number")
-            except IndexError:                                          logger.info(f"Invalid {description} number")
-            except TimeoutExpired:
-                if list_type == "title":
-                    logger.warning(f"Input Timeout: using {data}")
-                    return None
-                else:
-                    logger.warning(f"Input Timeout: using {datalist[0][1]}")
-                    return datalist[0]
-    else:
-        return None
-
-def get_bool(method_name, method_data):
-    if isinstance(method_data, bool):
-        return method_data
-    elif str(method_data).lower() in ["t", "true"]:
-        return True
-    elif str(method_data).lower() in ["f", "false"]:
-        return False
-    else:
-        raise Failed(f"Collection Error: {method_name} attribute: {method_data} invalid must be either true or false")
-
-def compile_list(data):
-    if isinstance(data, list):
-        text = ""
-        for item in data:
-            text += f"{',' if len(text) > 0 else ''}{item}"
-        return text
-    else:
-        return data
+def add_dict_list(keys, value, dict_map):
+    for key in keys:
+        if key in dict_map:
+            dict_map[key].append(value)
+        else:
+            dict_map[key] = [value]
 
 def get_list(data, lower=False, split=True, int_list=False):
     if data is None:                return None
@@ -236,49 +83,24 @@ def get_list(data, lower=False, split=True, int_list=False):
     else:                           return [d.strip() for d in str(data).split(",")]
 
 def get_int_list(data, id_type):
-    values = get_list(data)
     int_values = []
-    for value in values:
+    for value in get_list(data):
         try:                        int_values.append(regex_first_int(value, id_type))
         except Failed as e:         logger.error(e)
     return int_values
 
-def get_year_list(data, current_year, method):
-    final_years = []
-    values = get_list(data)
-    for value in values:
-        final_years.append(check_year(value, current_year, method))
-    return final_years
-
-def check_year(year, current_year, method):
-    return check_number(year, method, minimum=1800, maximum=current_year)
-
-def check_number(value, method, number_type="int", minimum=None, maximum=None):
-    if number_type == "int":
-        try:                                                    num_value = int(str(value))
-        except ValueError:                                      raise Failed(f"Collection Error: {method}: {value} must be an integer")
-    elif number_type == "float":
-        try:                                                    num_value = float(str(value))
-        except ValueError:                                      raise Failed(f"Collection Error: {method}: {value} must be a number")
-    else:                                                   raise Failed(f"Number Type: {number_type} invalid")
-    if minimum is not None and maximum is not None and (num_value < minimum or num_value > maximum):
-        raise Failed(f"Collection Error: {method}: {num_value} must be between {minimum} and {maximum}")
-    elif minimum is not None and num_value < minimum:
-        raise Failed(f"Collection Error: {method}: {num_value} is less then  {minimum}")
-    elif maximum is not None and num_value > maximum:
-        raise Failed(f"Collection Error: {method}: {num_value} is greater then  {maximum}")
-    else:
-        return num_value
-
-def check_date(date_text, method, return_string=False, plex_date=False):
-    try:                                    date_obg = datetime.strptime(str(date_text), "%Y-%m-%d" if plex_date else "%m/%d/%Y")
-    except ValueError:                      raise Failed(f"Collection Error: {method}: {date_text} must match pattern {'YYYY-MM-DD e.g. 2020-12-25' if plex_date else 'MM/DD/YYYY e.g. 12/25/2020'}")
-    return str(date_text) if return_string else date_obg
+def validate_date(date_text, method, return_as=None):
+    try:                                    date_obg = datetime.strptime(str(date_text), "%Y-%m-%d" if "-" in str(date_text) else "%m/%d/%Y")
+    except ValueError:                      raise Failed(f"Collection Error: {method}: {date_text} must match pattern YYYY-MM-DD (e.g. 2020-12-25) or MM/DD/YYYY (e.g. 12/25/2020)")
+    return datetime.strftime(date_obg, return_as) if return_as else date_obg
 
 def logger_input(prompt, timeout=60):
     if windows:                             return windows_input(prompt, timeout)
     elif hasattr(signal, "SIGALRM"):        return unix_input(prompt, timeout)
     else:                                   raise SystemError("Input Timeout not supported on this system")
+
+def header(language="en-US,en;q=0.5"):
+    return {"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}
 
 def alarm_handler(signum, frame):
     raise TimeoutExpired
@@ -290,22 +112,6 @@ def unix_input(prompt, timeout=60):
     try:                return input(prompt)
     except EOFError:    raise Failed("Input Failed")
     finally:            signal.alarm(0)
-
-def old_windows_input(prompt, timeout=60, timer=time.monotonic):
-    prompt = f"| {prompt}: "
-    sys.stdout.write(prompt)
-    sys.stdout.flush()
-    endtime = timer() + timeout
-    result = []
-    while timer() < endtime:
-        if msvcrt.kbhit():
-            result.append(msvcrt.getwche())
-            if result[-1] == "\n":
-                out = "".join(result[:-1])
-                logger.debug(f"{prompt[2:]}{out}")
-                return out
-        time.sleep(0.04)
-    raise TimeoutExpired
 
 def windows_input(prompt, timeout=5):
     sys.stdout.write(f"| {prompt}: ")
@@ -393,7 +199,7 @@ def separator(text=None, space=True, border=True, debug=False):
 
 def apply_formatter(handler, border=True):
     text = f"| %(message)-{screen_width - 2}s |" if border else f"%(message)-{screen_width - 2}s"
-    if isinstance(handler, logging.handlers.RotatingFileHandler):
+    if isinstance(handler, RotatingFileHandler):
         text = f"[%(asctime)s] %(filename)-27s %(levelname)-10s {text}"
     handler.setFormatter(logging.Formatter(text))
 
@@ -429,9 +235,117 @@ def is_locked(filepath):
             file_object = open(filepath, 'a', 8)
             if file_object:
                 locked = False
-        except IOError as message:
+        except IOError:
             locked = True
         finally:
             if file_object:
                 file_object.close()
     return locked
+
+def glob_filter(filter_in):
+    filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
+    return glob.glob(filter_in)
+
+def is_date_filter(value, modifier, data, final, current_time):
+    if value is None:
+        return True
+    if modifier in ["", ".not"]:
+        threshold_date = current_time - timedelta(days=data)
+        if (modifier == "" and (value is None or value < threshold_date)) \
+                or (modifier == ".not" and value and value >= threshold_date):
+            return True
+    elif modifier in [".before", ".after"]:
+        filter_date = validate_date(data, final)
+        if (modifier == ".before" and value >= filter_date) or (modifier == ".after" and value <= filter_date):
+            return True
+    elif modifier == ".regex":
+        jailbreak = True
+        for check_data in data:
+            if re.compile(check_data).match(value.strftime("%m/%d/%Y")):
+                jailbreak = True
+                break
+        if not jailbreak:
+            return True
+    return False
+
+def is_number_filter(value, modifier, data):
+    return value is None or (modifier == ".gt" and value <= data) \
+            or (modifier == ".gte" and value < data) \
+            or (modifier == ".lt" and value >= data) \
+            or (modifier == ".lte" and value > data)
+
+def is_string_filter(values, modifier, data):
+    jailbreak = False
+    for value in values:
+        for check_value in data:
+            if (modifier in ["", ".not"] and check_value.lower() in value.lower()) \
+                    or (modifier == ".begins" and value.lower().startswith(check_value.lower())) \
+                    or (modifier == ".ends" and value.lower().endswith(check_value.lower())) \
+                    or (modifier == ".regex" and re.compile(check_value).match(value)):
+                jailbreak = True
+                break
+        if jailbreak: break
+    return (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"])
+
+def parse(attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None):
+    display = f"{parent + ' ' if parent else ''}{attribute} attribute"
+    if options is None and translation is not None:
+        options = [o for o in translation]
+    value = data[methods[attribute]] if methods and attribute in methods else data
+
+    if datatype == "list":
+        if methods and attribute in methods and data[methods[attribute]]:
+            return [v for v in value if v] if isinstance(value, list) else [str(value)]
+        return []
+    elif datatype == "dictlist":
+        final_list = []
+        for dict_data in get_list(value):
+            if isinstance(dict_data, dict):
+                final_list.append((dict_data, {dm.lower(): dm for dm in dict_data}))
+            else:
+                raise Failed(f"Collection Error: {display} {dict_data} is not a dictionary")
+        return final_list
+    elif methods and attribute not in methods:
+        message = f"{display} not found"
+    elif value is None:
+        message = f"{display} is blank"
+    elif regex is not None:
+        regex_str, example = regex
+        if re.compile(regex_str).match(str(value)):
+            return str(value)
+        else:
+            message = f"{display}: {value} must match pattern {regex_str} e.g. {example}"
+    elif datatype == "bool":
+        if isinstance(value, bool):
+            return value
+        elif isinstance(value, int):
+            return value > 0
+        elif str(value).lower() in ["t", "true"]:
+            return True
+        elif str(value).lower() in ["f", "false"]:
+            return False
+        else:
+            message = f"{display} must be either true or false"
+    elif datatype in ["int", "float"]:
+        try:
+            value = int(str(value)) if datatype == "int" else float(str(value))
+            if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
+                return value
+        except ValueError:
+            pass
+        pre = f"{display} {value} must {'an integer' if datatype == 'int' else 'a number'}"
+        if maximum is None:
+            message = f"{pre} {minimum} or greater"
+        else:
+            message = f"{pre} between {minimum} and {maximum}"
+    elif (translation is not None and str(value).lower() not in translation) or \
+            (options is not None and translation is None and str(value).lower() not in options):
+        message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
+    else:
+        return translation[value] if translation is not None else value
+
+    if default is None:
+        raise Failed(f"Collection Error: {message}")
+    else:
+        logger.warning(f"Collection Warning: {message} using {default} as default")
+        return translation[default] if translation is not None else default
