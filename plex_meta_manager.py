@@ -125,7 +125,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
         update_libraries(config)
     except Exception as e:
         util.print_stacktrace()
-        logger.critical(e)
+        util.print_multiline(e, critical=True)
     logger.info("")
     util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
     logger.removeHandler(file_handler)
