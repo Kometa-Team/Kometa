@@ -7,7 +7,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 builders = [
     "mal_id", "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special",
-    "mal_popular", "mal_favorite", "mal_season", "mal_suggested", "mal_userlist", "mal_genre", "mal_producer"
+    "mal_popular", "mal_favorite", "mal_season", "mal_suggested", "mal_userlist", "mal_genre", "mal_studio"
 ]
 mal_ranked_name = {
     "mal_all": "all", "mal_airing": "airing", "mal_upcoming": "upcoming", "mal_tv": "tv", "mal_ova": "ova",
@@ -17,7 +17,7 @@ mal_ranked_pretty = {
     "mal_all": "MyAnimeList All", "mal_airing": "MyAnimeList Airing",
     "mal_upcoming": "MyAnimeList Upcoming", "mal_tv": "MyAnimeList TV", "mal_ova": "MyAnimeList OVA",
     "mal_movie": "MyAnimeList Movie", "mal_special": "MyAnimeList Special", "mal_popular": "MyAnimeList Popular",
-    "mal_favorite": "MyAnimeList Favorite", "mal_genre": "MyAnimeList Genre", "mal_producer": "MyAnimeList Producer"
+    "mal_favorite": "MyAnimeList Favorite", "mal_genre": "MyAnimeList Genre", "mal_studio": "MyAnimeList Studio"
 }
 season_sort_translation = {"score": "anime_score", "anime_score": "anime_score", "members": "anime_num_list_users", "anime_num_list_users": "anime_num_list_users"}
 season_sort_options = ["score", "members"]
@@ -191,15 +191,15 @@ class MyAnimeList:
         util.print_end()
         return mal_ids
 
-    def _producer(self, producer_id, limit):
-        data = self._jiken_request(f"/producer/{producer_id}")
+    def _studio(self, studio_id, limit):
+        data = self._jiken_request(f"/producer/{studio_id}")
         if "anime" not in data:
-            raise Failed(f"MyAnimeList Error: No MyAnimeList IDs for Producer ID: {producer_id}")
+            raise Failed(f"MyAnimeList Error: No MyAnimeList IDs for Studio ID: {studio_id}")
         mal_ids = []
         count = 1
         while True:
             if count > 1:
-                data = self._jiken_request(f"/producer/{producer_id}/{count}")
+                data = self._jiken_request(f"/producer/{studio_id}/{count}")
             if "anime" not in data:
                 break
             mal_ids.extend([anime["mal_id"] for anime in data["anime"]])
@@ -218,9 +218,9 @@ class MyAnimeList:
         elif method == "mal_genre":
             logger.info(f"Processing {mal_ranked_pretty[method]} ID: {data['genre_id']}")
             mal_ids = self._genre(data["genre_id"], data["limit"])
-        elif method == "mal_producer":
-            logger.info(f"Processing {mal_ranked_pretty[method]} ID: {data['producer_id']}")
-            mal_ids = self._producer(data["producer_id"], data["limit"])
+        elif method == "mal_studio":
+            logger.info(f"Processing {mal_ranked_pretty[method]} ID: {data['studio_id']}")
+            mal_ids = self._studio(data["studio_id"], data["limit"])
         elif method == "mal_season":
             logger.info(f"Processing MyAnimeList Season: {data['limit']} Anime from {data['season'].title()} {data['year']} sorted by {pretty_names[data['sort_by']]}")
             mal_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])

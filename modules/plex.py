@@ -258,7 +258,7 @@ class Plex:
                     self.metadatas.extend([c for c in meta_obj.metadata])
                 self.metadata_files.append(meta_obj)
             except Failed as e:
-                logger.error(e)
+                util.print_multiline(e, error=True)
 
         if len(self.metadata_files) == 0:
             logger.info("")
@@ -455,14 +455,18 @@ class Plex:
                 shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
                 while util.is_locked(temp_image):
                     time.sleep(1)
-                new_poster = Image.open(temp_image).convert("RGBA")
-                new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
-                new_poster.paste(overlay_image, (0, 0), overlay_image)
-                new_poster.save(temp_image)
-                self.upload_file_poster(item, temp_image)
-                self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
-                poster_uploaded = True
-                logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
+                try:
+                    new_poster = Image.open(temp_image).convert("RGBA")
+                    new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
+                    new_poster.paste(overlay_image, (0, 0), overlay_image)
+                    new_poster.save(temp_image)
+                    self.upload_file_poster(item, temp_image)
+                    self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
+                    poster_uploaded = True
+                    logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
+                except OSError as e:
+                    util.print_stacktrace()
+                    logger.error(f"Overlay Error: {e}")
 
         background_uploaded = False
         if background is not None:
@@ -669,7 +673,7 @@ class Plex:
         try:
             yaml.round_trip_dump(self.missing, open(self.missing_path, "w"))
         except yaml.scanner.ScannerError as e:
-            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
+            util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
 
     def get_collection_items(self, collection, smart_label_collection):
         if smart_label_collection:

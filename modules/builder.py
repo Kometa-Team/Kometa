@@ -40,7 +40,8 @@ method_alias = {
     "show_title": "title",
     "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
     "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
-    "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search"
+    "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
+    "mal_producer": "mal_studio", "mal_licensor": "mal_studio"
 }
 filter_translation = {
     "actor": "actors",
@@ -139,7 +140,7 @@ custom_sort_builders = [
     "tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
     "anilist_top_rated", "anilist_popular", "anilist_season", "anilist_studio", "anilist_genre", "anilist_tag", "anilist_search",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
-    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_producer"
+    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
 
 class CollectionBuilder:
@@ -763,9 +764,7 @@ class CollectionBuilder:
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
                     search_attr, modifier, search_final = self._split(search_method)
-                    if search_attr not in ["season", "year"] and search_data is None:
-                        raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
-                    elif search_final not in anilist.searches:
+                    if search_final not in anilist.searches:
                         raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
                     elif search_attr == "season":
                         new_dictionary[search_attr] = util.parse(search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
@@ -777,6 +776,8 @@ class CollectionBuilder:
                         if "season" not in dict_methods:
                             logger.warning(f"Collection Warning: {method_name} season attribute not found using this season: {current_season} by default")
                             new_dictionary["season"] = current_season
+                    elif search_data is None:
+                        raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
                     elif search_attr == "adult":
                         new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="bool", parent=method_name)
                     elif search_attr in ["episodes", "duration", "score", "popularity"]:
@@ -829,7 +830,7 @@ class CollectionBuilder:
             for mal_id in util.get_int_list(method_data, "MyAnimeList ID"):
                 self.builders.append((method_name, mal_id))
         elif method_name in ["mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special", "mal_popular", "mal_favorite", "mal_suggested"]:
-            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
+            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10, maximum=100 if method_name == "mal_suggested" else 500)))
         elif method_name in ["mal_season", "mal_userlist"]:
             for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
                 if method_name == "mal_season":
@@ -850,7 +851,7 @@ class CollectionBuilder:
                         "sort_by": util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=mal.userlist_sort_options, translation=mal.userlist_sort_translation),
                         "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=1000)
                     }))
-        elif method_name in ["mal_genre", "mal_producer"]:
+        elif method_name in ["mal_genre", "mal_studio"]:
             id_name = f"{method_name[4:]}_id"
             final_data = []
             for data in util.get_list(method_data):
