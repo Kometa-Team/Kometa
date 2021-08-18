@@ -439,6 +439,7 @@ class Plex:
 
         if overlay is not None:
             overlay_name, overlay_folder, overlay_image, temp_image = overlay
+            self.reload(item)
             item_labels = {item_tag.tag.lower(): item_tag.tag for item_tag in item.labels}
             for item_label in item_labels:
                 if item_label.endswith(" overlay") and item_label != f"{overlay_name.lower()} overlay":
@@ -752,6 +753,7 @@ class Plex:
             _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
             _sync_tags = [t.lower() for t in sync_tags] if sync_tags else []
             try:
+                self.reload(obj)
                 _item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
             except BadRequest:
                 _item_tags = []
