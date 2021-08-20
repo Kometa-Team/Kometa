@@ -366,18 +366,7 @@ def mass_metadata(config, library, items):
                     new_genres = tvdb_item.genres
                 else:
                     raise Failed
-                item_genres = [genre.tag for genre in item.genres]
-                display_str = ""
-                add_genre = [genre for genre in (g for g in new_genres if g not in item_genres)]
-                if len(add_genre) > 0:
-                    display_str += f"+{', +'.join(add_genre)}"
-                    library.query_data(item.addGenre, add_genre)
-                remove_genre = [genre for genre in (g for g in item_genres if g not in new_genres)]
-                if len(remove_genre) > 0:
-                    display_str += f"-{', -'.join(remove_genre)}"
-                    library.query_data(item.removeGenre, remove_genre)
-                if len(display_str) > 0:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | Genres | {display_str}"))
+                library.edit_tags("genre", item, sync_tags=new_genres)
             except Failed:
                 pass
         if library.mass_audience_rating_update:
