@@ -746,7 +746,7 @@ class Plex:
         return False
 
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
-        updated = False
+        display = ""
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
             _add_tags = add_tags if add_tags else []
@@ -760,14 +760,14 @@ class Plex:
             _add = [f"{t[:1].upper()}{t[1:]}" for t in _add_tags + _sync_tags if t.lower() not in _item_tags]
             _remove = [t for t in _item_tags if (_sync_tags and t not in _sync_tags) or t in _remove_tags]
             if _add:
-                updated = True
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
-                logger.info(f"Detail: {attr.capitalize()} {','.join(_add)} added to {obj.title}")
+                display += f"+{', +'.join(_add)}"
             if _remove:
-                updated = True
                 self.query_data(getattr(obj, f"remove{attr.capitalize()}"), _remove)
-                logger.info(f"Detail: {attr.capitalize()} {','.join(_remove)} removed to {obj.title}")
-        return updated
+                display += f"-{', -'.join(_remove)}"
+            if len(display) > 0:
+                logger.info(f"{obj.title[:25]:<25} | {attr.capitalize()} | {display}")
+        return len(display) > 0
 
     def update_item_from_assets(self, item, overlay=None, create=False):
         name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
