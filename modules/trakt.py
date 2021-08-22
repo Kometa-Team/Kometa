@@ -16,6 +16,7 @@ sorts = [
     "rank", "added", "title", "released", "runtime", "popularity",
     "percentage", "votes", "random", "my_rating", "watched", "collected"
 ]
+id_translation = {"movie": "tmdb", "show": "tvdb", "season": "TVDb Season", "episode": "TVDb Episode"}
 
 class Trakt:
     def __init__(self, config, params):
@@ -142,26 +143,31 @@ class Trakt:
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
 
-    def _parse(self, items, top=True, item_type=None):
+    def _parse(self, items, typeless=False, item_type=None):
         ids = []
         for item in items:
-            if top:
-                if item_type:
-                    data = item[item_type]
-                elif item["type"] in ["movie", "show"]:
-                    data = item[item["type"]]
-                else:
-                    continue
-            else:
+            if typeless:
                 data = item
-            if item_type:
-                id_type = "TMDb" if item_type == "movie" else "TVDb"
+                current_type = None
+            elif item_type:
+                data = item[item_type]
+                current_type = item_type
+            elif "type" in item and item["type"] in id_translation:
+                data = item["movie" if item["type"] == "movie" else "show"]
+                current_type = item["type"]
             else:
-                id_type = "TMDb" if item["type"] == "movie" else "TVDb"
-            if data["ids"][id_type.lower()]:
-                ids.append((data["ids"][id_type.lower()], id_type.lower()))
+                continue
+            id_type = "tmdb" if item["type"] == "movie" else "tvdb"
+            if data["ids"][id_type]:
+                final_id = data["ids"][id_type]
+                if current_type == "episode":
+                    final_id = f"{final_id}_{item[current_type]['season']}"
+                if current_type in ["episode", "season"]:
+                    final_id = f"{final_id}_{item[current_type]['number']}"
+                final_type = f"{id_type}_{current_type}" if current_type in ["episode", "season"] else id_type
+                ids.append((final_id, final_type))
             else:
-                logger.error(f"Trakt Error: No {id_type} ID found for {data['title']} ({data['year']})")
+                logger.error(f"Trakt Error: No {id_type.upper().replace('B', 'b')} ID found for {data['title']} ({data['year']})")
         return ids
 
     def _user_list(self, data):
@@ -184,7 +190,7 @@ class Trakt:
 
     def _pagenation(self, pagenation, amount, is_movie):
         items = self._request(f"/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
-        return self._parse(items, top=pagenation != "popular", item_type="movie" if is_movie else "show")
+        return self._parse(items, typeless=pagenation == "popular", item_type="movie" if is_movie else "show")
 
     def validate_trakt(self, trakt_lists, is_movie, trakt_type="list"):
         values = util.get_list(trakt_lists, split=False)

@@ -66,6 +66,9 @@ def tab_new_lines(data):
 def make_ordinal(n):
     return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
 
+def add_zero(number):
+    return str(number) if len(str(number)) > 1 else f"0{number}"
+
 def add_dict_list(keys, value, dict_map):
     for key in keys:
         if key in dict_map:
