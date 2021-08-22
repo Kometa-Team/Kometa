@@ -31,9 +31,15 @@ search_translation = {
     "episode_air_date": "episode.originallyAvailableAt",
     "episode_year": "episode.year",
     "episode_user_rating": "episode.userRating",
-    "episode_plays": "episode.viewCount"
+    "episode_plays": "episode.viewCount",
+    "unplayed_episodes": "show.unwatchedLeaves",
+    "episode_unplayed": "episode.unwatched",
+    "episode_duplicate": "episode.duplicate",
+    "episode_progress": "episode.inProgress",
+    "episode_unmatched": "episode.unmatched",
 }
 show_translation = {
+    "viewCount": "show.viewCount",
     "hdr": "episode.hdr",
     "audioLanguage": "episode.audioLanguage",
     "subtitleLanguage": "episode.subtitleLanguage",
@@ -121,7 +127,7 @@ or_searches = [
 movie_only_searches = [
     "country", "country.not", "director", "director.not", "producer", "producer.not", "writer", "writer.not",
     "decade", "duplicate", "unplayed", "progress", "trash",
-    "plays.gt", "plays.gte", "plays.lt", "plays.lte", "duration.gt", "duration.gte", "duration.lt", "duration.lte"
+    "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
     "network", "network.not",
