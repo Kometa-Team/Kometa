@@ -76,7 +76,7 @@ summary_details = [
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
-boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "item_assets", "missing_only_released"]
+boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "item_assets", "missing_only_released", "revert_overlay"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
@@ -1748,10 +1748,14 @@ class CollectionBuilder:
             temp_image = os.path.join(overlay_folder, f"temp.png")
             overlay = (overlay_name, overlay_folder, overlay_image, temp_image)
 
+        revert = "revert_overlay" in self.details and self.details["revert_overlay"]
+        if revert:
+            overlay = None
+
         tmdb_ids = []
         tvdb_ids = []
         for item in items:
-            if int(item.ratingKey) in rating_keys:
+            if int(item.ratingKey) in rating_keys and not revert:
                 rating_keys.remove(int(item.ratingKey))
             if self.details["item_assets"] or overlay is not None:
                 try:
