@@ -61,6 +61,7 @@ collection_mode_options = {
     "show_items": "showItems", "showitems": "showItems"
 }
 collection_order_options = ["release", "alpha", "custom"]
+collection_level_options = ["episode", "season"]
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 item_advance_keys = {
@@ -395,10 +396,6 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _upload_image(self, item, image):
-        logger.debug(item)
-        logger.debug(image.is_poster)
-        logger.debug(image.is_url)
-        logger.debug(image.location)
         if image.is_poster and image.is_url:
             item.uploadPoster(url=image.location)
         elif image.is_poster:
@@ -411,8 +408,6 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def upload_file_poster(self, item, image):
-        logger.debug(item)
-        logger.debug(image)
         item.uploadPoster(filepath=image)
         self.reload(item)
 
