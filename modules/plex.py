@@ -16,34 +16,54 @@ logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["plex_all", "plex_collectionless", "plex_search"]
 search_translation = {
-    "audio_language": "audioLanguage",
-    "content_rating": "contentRating",
-    "subtitle_language": "subtitleLanguage",
-    "added": "addedAt",
-    "release": "originallyAvailableAt",
-    "audience_rating": "audienceRating",
-    "critic_rating": "rating",
-    "user_rating": "userRating",
-    "plays": "viewCount",
-    "unplayed": "unwatched",
     "episode_title": "episode.title",
+    "network": "show.network",
+    "critic_rating": "rating",
+    "audience_rating": "audienceRating",
+    "user_rating": "userRating",
+    "episode_user_rating": "episode.userRating",
+    "content_rating": "contentRating",
+    "episode_year": "episode.year",
+    "release": "originallyAvailableAt",
+    "episode_unmatched": "episode.unmatched",
+    "episode_duplicate": "episode.duplicate",
+    "added": "addedAt",
     "episode_added": "episode.addedAt",
     "episode_air_date": "episode.originallyAvailableAt",
-    "episode_year": "episode.year",
-    "episode_user_rating": "episode.userRating",
+    "plays": "viewCount",
     "episode_plays": "episode.viewCount",
-    "unplayed_episodes": "show.unwatchedLeaves",
+    "last_played": "lastViewedAt",
+    "episode_last_played": "episode.lastViewedAt",
+    "unplayed": "unwatched",
     "episode_unplayed": "episode.unwatched",
-    "episode_duplicate": "episode.duplicate",
+    "subtitle_language": "subtitleLanguage",
+    "audio_language": "audioLanguage",
+    "progress": "inProgress",
     "episode_progress": "episode.inProgress",
-    "episode_unmatched": "episode.unmatched",
+    "unplayed_episodes": "show.unwatchedLeaves"
 }
 show_translation = {
+    "title": "show.title",
+    "studio": "show.studio",
+    "rating": "show.rating",
+    "audienceRating": "show.audienceRating",
+    "userRating": "show.userRating",
+    "contentRating": "show.contentRating",
+    "year": "show.year",
+    "originallyAvailableAt": "show.originallyAvailableAt",
+    "unmatched": "show.unmatched",
+    "genre": "show.genre",
+    "collection": "show.collection",
+    "actor": "show.actor",
+    "addedAt": "show.addedAt",
     "viewCount": "show.viewCount",
+    "lastViewedAt": "show.lastViewedAt",
+    "resolution": "episode.resolution",
     "hdr": "episode.hdr",
-    "audioLanguage": "episode.audioLanguage",
     "subtitleLanguage": "episode.subtitleLanguage",
-    "resolution": "episode.resolution"
+    "audioLanguage": "episode.audioLanguage",
+    "trash": "episode.trash",
+    "label": "show.label",
 }
 modifier_translation = {
     "": "", ".not": "!", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
@@ -126,7 +146,7 @@ or_searches = [
 ]
 movie_only_searches = [
     "country", "country.not", "director", "director.not", "producer", "producer.not", "writer", "writer.not",
-    "decade", "duplicate", "unplayed", "progress", "trash",
+    "decade", "duplicate", "unplayed", "progress",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
@@ -135,9 +155,11 @@ show_only_searches = [
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not",
     "episode_air_date.before", "episode_air_date.after",
+    "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
     "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
-    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
+    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
+    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
 ]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
 boolean_attributes = [
