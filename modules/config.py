@@ -47,7 +47,7 @@ class Config:
 
         yaml.YAML().allow_duplicate_keys = True
         try:
-            new_config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
+            new_config, _, _ = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
             def replace_attr(all_data, attr, par):
                 if "settings" not in all_data:
                     all_data["settings"] = {}
@@ -90,7 +90,7 @@ class Config:
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
             if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
-            yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=ind, block_seq_indent=bsi)
+            yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
             raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
@@ -111,12 +111,12 @@ class Config:
             if data is None or attribute not in data:
                 message = f"{text} not found"
                 if parent and save is True:
-                    loaded_config, ind_in, bsi_in = yaml.util.load_yaml_guess_indent(open(self.config_path))
+                    loaded_config, _, _ = yaml.util.load_yaml_guess_indent(open(self.config_path))
                     endline = f"\n{parent} sub-attribute {attribute} added to config"
                     if parent not in loaded_config or not loaded_config[parent]:        loaded_config[parent] = {attribute: default}
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
                     else:                                                               endline = ""
-                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=ind_in, block_seq_indent=bsi_in)
+                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
             elif data[attribute] is None:
                 if default_is_none is True:                                         return None
                 else:                                                               message = f"{text} is blank"
