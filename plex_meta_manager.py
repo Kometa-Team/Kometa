@@ -144,12 +144,14 @@ def update_libraries(config):
         os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
         logger.info("")
         util.separator(f"{library.name} Library")
-        logger.info("")
-        util.separator(f"Mapping {library.name} Library", space=False, border=False)
-        logger.info("")
-        items = library.map_guids()
+        items = None
+        if not library.is_other:
+            logger.info("")
+            util.separator(f"Mapping {library.name} Library", space=False, border=False)
+            logger.info("")
+            items = library.map_guids()
         if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
-            mass_metadata(config, library, items)
+            mass_metadata(config, library, items=items)
         for metadata in library.metadata_files:
             logger.info("")
             util.separator(f"Running Metadata File\n{metadata.path}")
@@ -198,7 +200,7 @@ def update_libraries(config):
 
             if library.assets_for_all and not collection_only:
                 logger.info("")
-                util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library", space=False, border=False)
+                util.separator(f"All {library.type}s Assets Check for {library.name} Library", space=False, border=False)
                 logger.info("")
                 for col in unmanaged_collections:
                     poster, background = library.find_collection_assets(col, create=library.create_asset_folders)
@@ -257,10 +259,12 @@ def update_libraries(config):
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
-def mass_metadata(config, library, items):
+def mass_metadata(config, library, items=None):
     logger.info("")
-    util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
+    util.separator(f"Mass Editing {library.type} Library: {library.name}")
     logger.info("")
+    if items is None:
+        items = library.get_all()
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
         for item in items:
