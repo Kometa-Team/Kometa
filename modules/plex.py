@@ -255,12 +255,17 @@ class Plex:
         self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"]), None)
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library {params['name']} not found")
-        if self.Plex.type not in ["movie", "show"]:
+        if self.Plex.type in ["movie", "show"]:
+            self.type = self.Plex.type.capitalize()
+        else:
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
         self.agent = self.Plex.agent
-        self.is_movie = self.Plex.type == "movie"
-        self.is_show = self.Plex.type == "show"
+        self.is_movie = self.type == "Movie"
+        self.is_show = self.type == "Show"
+        self.is_other = self.agent == "com.plexapp.agents.none"
+        if self.is_other:
+            self.type = "Video"
         self.collections = []
         self.metadatas = []
 
@@ -365,7 +370,7 @@ class Plex:
         return self.PlexServer.fetchItem(data)
 
     def get_all(self):
-        logger.info(f"Loading All {'Movie' if self.is_movie else 'Show'}s from Library: {self.name}")
+        logger.info(f"Loading All {self.type}s from Library: {self.name}")
         key = f"/library/sections/{self.Plex.key}/all?type={utils.searchType(self.Plex.TYPE)}"
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
@@ -374,7 +379,7 @@ class Plex:
             results.extend(self.fetchItems(key, container_start, container_size))
             util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
-        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {'Movies' if self.is_movie else 'Shows'}"))
+        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {self.type}s"))
         return results
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -629,10 +634,9 @@ class Plex:
         return valid_collections
 
     def get_rating_keys(self, method, data):
-        media_type = "Movie" if self.is_movie else "Show"
         items = []
         if method == "plex_all":
-            logger.info(f"Processing Plex All {media_type}s")
+            logger.info(f"Processing Plex All {self.type}s")
             items = self.get_all()
         elif method == "plex_search":
             util.print_multiline(data[1], info=True)
@@ -673,7 +677,7 @@ class Plex:
                         break
                 if add_item:
                     items.append(item)
-            logger.info(util.adjust_space(f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}"))
+            logger.info(util.adjust_space(f"Processed {len(all_items)} {self.type}s"))
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
@@ -720,7 +724,7 @@ class Plex:
 
     def map_guids(self):
         items = self.get_all()
-        logger.info(f"Mapping {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
+        logger.info(f"Mapping {self.type} Library: {self.name}")
         logger.info("")
         for i, item in enumerate(items, 1):
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
@@ -736,7 +740,7 @@ class Plex:
                 if imdb_id:
                     util.add_dict_list(imdb_id, item.ratingKey, self.imdb_map)
         logger.info("")
-        logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if self.is_movie else 'Shows'}"))
+        logger.info(util.adjust_space(f"Processed {len(items)} {self.type}s"))
         return items
 
     def get_tmdb_from_map(self, item):
