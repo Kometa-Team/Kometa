@@ -108,7 +108,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.12.0                                                                  "))
+    logger.info(util.centered("    Version: 1.12.1                                                                  "))
     if time_scheduled:              start_type = f"{time_scheduled} "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
@@ -125,7 +125,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
         update_libraries(config)
     except Exception as e:
         util.print_stacktrace()
-        logger.critical(e)
+        util.print_multiline(e, critical=True)
     logger.info("")
     util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
     logger.removeHandler(file_handler)
@@ -144,12 +144,14 @@ def update_libraries(config):
         os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
         logger.info("")
         util.separator(f"{library.name} Library")
-        logger.info("")
-        util.separator(f"Mapping {library.name} Library", space=False, border=False)
-        logger.info("")
-        items = library.map_guids()
+        items = None
+        if not library.is_other:
+            logger.info("")
+            util.separator(f"Mapping {library.name} Library", space=False, border=False)
+            logger.info("")
+            items = library.map_guids()
         if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
-            mass_metadata(config, library, items)
+            mass_metadata(config, library, items=items)
         for metadata in library.metadata_files:
             logger.info("")
             util.separator(f"Running Metadata File\n{metadata.path}")
@@ -198,7 +200,7 @@ def update_libraries(config):
 
             if library.assets_for_all and not collection_only:
                 logger.info("")
-                util.separator(f"All {'Movies' if library.is_movie else 'Shows'} Assets Check for {library.name} Library", space=False, border=False)
+                util.separator(f"All {library.type}s Assets Check for {library.name} Library", space=False, border=False)
                 logger.info("")
                 for col in unmanaged_collections:
                     poster, background = library.find_collection_assets(col, create=library.create_asset_folders)
@@ -257,10 +259,12 @@ def update_libraries(config):
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
-def mass_metadata(config, library, items):
+def mass_metadata(config, library, items=None):
     logger.info("")
-    util.separator(f"Mass Editing {'Movie' if library.is_movie else 'Show'} Library: {library.name}")
+    util.separator(f"Mass Editing {library.type} Library: {library.name}")
     logger.info("")
+    if items is None:
+        items = library.get_all()
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
         for item in items:
@@ -366,18 +370,7 @@ def mass_metadata(config, library, items):
                     new_genres = tvdb_item.genres
                 else:
                     raise Failed
-                item_genres = [genre.tag for genre in item.genres]
-                display_str = ""
-                add_genre = [genre for genre in (g for g in new_genres if g not in item_genres)]
-                if len(add_genre) > 0:
-                    display_str += f"+{', +'.join(add_genre)}"
-                    library.query_data(item.addGenre, add_genre)
-                remove_genre = [genre for genre in (g for g in item_genres if g not in new_genres)]
-                if len(remove_genre) > 0:
-                    display_str += f"-{', -'.join(remove_genre)}"
-                    library.query_data(item.removeGenre, remove_genre)
-                if len(display_str) > 0:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | Genres | {display_str}"))
+                library.edit_tags("genre", item, sync_tags=new_genres)
             except Failed:
                 pass
         if library.mass_audience_rating_update:
