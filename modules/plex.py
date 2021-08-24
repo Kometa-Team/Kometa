@@ -16,28 +16,54 @@ logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["plex_all", "plex_collectionless", "plex_search"]
 search_translation = {
-    "audio_language": "audioLanguage",
-    "content_rating": "contentRating",
-    "subtitle_language": "subtitleLanguage",
-    "added": "addedAt",
-    "release": "originallyAvailableAt",
-    "audience_rating": "audienceRating",
-    "critic_rating": "rating",
-    "user_rating": "userRating",
-    "plays": "viewCount",
-    "unplayed": "unwatched",
     "episode_title": "episode.title",
+    "network": "show.network",
+    "critic_rating": "rating",
+    "audience_rating": "audienceRating",
+    "user_rating": "userRating",
+    "episode_user_rating": "episode.userRating",
+    "content_rating": "contentRating",
+    "episode_year": "episode.year",
+    "release": "originallyAvailableAt",
+    "episode_unmatched": "episode.unmatched",
+    "episode_duplicate": "episode.duplicate",
+    "added": "addedAt",
     "episode_added": "episode.addedAt",
     "episode_air_date": "episode.originallyAvailableAt",
-    "episode_year": "episode.year",
-    "episode_user_rating": "episode.userRating",
-    "episode_plays": "episode.viewCount"
+    "plays": "viewCount",
+    "episode_plays": "episode.viewCount",
+    "last_played": "lastViewedAt",
+    "episode_last_played": "episode.lastViewedAt",
+    "unplayed": "unwatched",
+    "episode_unplayed": "episode.unwatched",
+    "subtitle_language": "subtitleLanguage",
+    "audio_language": "audioLanguage",
+    "progress": "inProgress",
+    "episode_progress": "episode.inProgress",
+    "unplayed_episodes": "show.unwatchedLeaves"
 }
 show_translation = {
+    "title": "show.title",
+    "studio": "show.studio",
+    "rating": "show.rating",
+    "audienceRating": "show.audienceRating",
+    "userRating": "show.userRating",
+    "contentRating": "show.contentRating",
+    "year": "show.year",
+    "originallyAvailableAt": "show.originallyAvailableAt",
+    "unmatched": "show.unmatched",
+    "genre": "show.genre",
+    "collection": "show.collection",
+    "actor": "show.actor",
+    "addedAt": "show.addedAt",
+    "viewCount": "show.viewCount",
+    "lastViewedAt": "show.lastViewedAt",
+    "resolution": "episode.resolution",
     "hdr": "episode.hdr",
-    "audioLanguage": "episode.audioLanguage",
     "subtitleLanguage": "episode.subtitleLanguage",
-    "resolution": "episode.resolution"
+    "audioLanguage": "episode.audioLanguage",
+    "trash": "episode.trash",
+    "label": "show.label",
 }
 modifier_translation = {
     "": "", ".not": "!", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
@@ -61,6 +87,7 @@ collection_mode_options = {
     "show_items": "showItems", "showitems": "showItems"
 }
 collection_order_options = ["release", "alpha", "custom"]
+collection_level_options = ["episode", "season"]
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 item_advance_keys = {
@@ -119,8 +146,8 @@ or_searches = [
 ]
 movie_only_searches = [
     "country", "country.not", "director", "director.not", "producer", "producer.not", "writer", "writer.not",
-    "decade", "duplicate", "unplayed", "progress", "trash",
-    "plays.gt", "plays.gte", "plays.lt", "plays.lte", "duration.gt", "duration.gte", "duration.lt", "duration.lte"
+    "decade", "duplicate", "unplayed", "progress",
+    "duration.gt", "duration.gte", "duration.lt", "duration.lte"
 ]
 show_only_searches = [
     "network", "network.not",
@@ -128,9 +155,11 @@ show_only_searches = [
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not",
     "episode_air_date.before", "episode_air_date.after",
+    "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
     "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
-    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
+    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
+    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
 ]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
 boolean_attributes = [
@@ -226,12 +255,17 @@ class Plex:
         self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"]), None)
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library {params['name']} not found")
-        if self.Plex.type not in ["movie", "show"]:
+        if self.Plex.type in ["movie", "show"]:
+            self.type = self.Plex.type.capitalize()
+        else:
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
         self.agent = self.Plex.agent
-        self.is_movie = self.Plex.type == "movie"
-        self.is_show = self.Plex.type == "show"
+        self.is_movie = self.type == "Movie"
+        self.is_show = self.type == "Show"
+        self.is_other = self.agent == "com.plexapp.agents.none"
+        if self.is_other:
+            self.type = "Video"
         self.collections = []
         self.metadatas = []
 
@@ -258,7 +292,7 @@ class Plex:
                     self.metadatas.extend([c for c in meta_obj.metadata])
                 self.metadata_files.append(meta_obj)
             except Failed as e:
-                logger.error(e)
+                util.print_multiline(e, error=True)
 
         if len(self.metadata_files) == 0:
             logger.info("")
@@ -336,7 +370,7 @@ class Plex:
         return self.PlexServer.fetchItem(data)
 
     def get_all(self):
-        logger.info(f"Loading All {'Movie' if self.is_movie else 'Show'}s from Library: {self.name}")
+        logger.info(f"Loading All {self.type}s from Library: {self.name}")
         key = f"/library/sections/{self.Plex.key}/all?type={utils.searchType(self.Plex.TYPE)}"
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
@@ -345,7 +379,7 @@ class Plex:
             results.extend(self.fetchItems(key, container_start, container_size))
             util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
-        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {'Movies' if self.is_movie else 'Shows'}"))
+        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {self.type}s"))
         return results
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -395,10 +429,6 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _upload_image(self, item, image):
-        logger.debug(item)
-        logger.debug(image.is_poster)
-        logger.debug(image.is_url)
-        logger.debug(image.location)
         if image.is_poster and image.is_url:
             item.uploadPoster(url=image.location)
         elif image.is_poster:
@@ -411,8 +441,6 @@ class Plex:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def upload_file_poster(self, item, image):
-        logger.debug(item)
-        logger.debug(image)
         item.uploadPoster(filepath=image)
         self.reload(item)
 
@@ -439,6 +467,7 @@ class Plex:
 
         if overlay is not None:
             overlay_name, overlay_folder, overlay_image, temp_image = overlay
+            self.reload(item)
             item_labels = {item_tag.tag.lower(): item_tag.tag for item_tag in item.labels}
             for item_label in item_labels:
                 if item_label.endswith(" overlay") and item_label != f"{overlay_name.lower()} overlay":
@@ -455,14 +484,18 @@ class Plex:
                 shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
                 while util.is_locked(temp_image):
                     time.sleep(1)
-                new_poster = Image.open(temp_image).convert("RGBA")
-                new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
-                new_poster.paste(overlay_image, (0, 0), overlay_image)
-                new_poster.save(temp_image)
-                self.upload_file_poster(item, temp_image)
-                self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
-                poster_uploaded = True
-                logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
+                try:
+                    new_poster = Image.open(temp_image).convert("RGBA")
+                    new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
+                    new_poster.paste(overlay_image, (0, 0), overlay_image)
+                    new_poster.save(temp_image)
+                    self.upload_file_poster(item, temp_image)
+                    self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
+                    poster_uploaded = True
+                    logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
+                except OSError as e:
+                    util.print_stacktrace()
+                    logger.error(f"Overlay Error: {e}")
 
         background_uploaded = False
         if background is not None:
@@ -601,10 +634,9 @@ class Plex:
         return valid_collections
 
     def get_rating_keys(self, method, data):
-        media_type = "Movie" if self.is_movie else "Show"
         items = []
         if method == "plex_all":
-            logger.info(f"Processing Plex All {media_type}s")
+            logger.info(f"Processing Plex All {self.type}s")
             items = self.get_all()
         elif method == "plex_search":
             util.print_multiline(data[1], info=True)
@@ -645,7 +677,7 @@ class Plex:
                         break
                 if add_item:
                     items.append(item)
-            logger.info(util.adjust_space(f"Processed {len(all_items)} {'Movies' if self.is_movie else 'Shows'}"))
+            logger.info(util.adjust_space(f"Processed {len(all_items)} {self.type}s"))
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
@@ -669,7 +701,7 @@ class Plex:
         try:
             yaml.round_trip_dump(self.missing, open(self.missing_path, "w"))
         except yaml.scanner.ScannerError as e:
-            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
+            util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
 
     def get_collection_items(self, collection, smart_label_collection):
         if smart_label_collection:
@@ -692,7 +724,7 @@ class Plex:
 
     def map_guids(self):
         items = self.get_all()
-        logger.info(f"Mapping {'Movie' if self.is_movie else 'Show'} Library: {self.name}")
+        logger.info(f"Mapping {self.type} Library: {self.name}")
         logger.info("")
         for i, item in enumerate(items, 1):
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
@@ -708,7 +740,7 @@ class Plex:
                 if imdb_id:
                     util.add_dict_list(imdb_id, item.ratingKey, self.imdb_map)
         logger.info("")
-        logger.info(util.adjust_space(f"Processed {len(items)} {'Movies' if self.is_movie else 'Shows'}"))
+        logger.info(util.adjust_space(f"Processed {len(items)} {self.type}s"))
         return items
 
     def get_tmdb_from_map(self, item):
@@ -741,27 +773,28 @@ class Plex:
         return False
 
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
-        updated = False
+        display = ""
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         if add_tags or remove_tags or sync_tags:
             _add_tags = add_tags if add_tags else []
             _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
             _sync_tags = [t.lower() for t in sync_tags] if sync_tags else []
             try:
+                self.reload(obj)
                 _item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
             except BadRequest:
                 _item_tags = []
             _add = [f"{t[:1].upper()}{t[1:]}" for t in _add_tags + _sync_tags if t.lower() not in _item_tags]
             _remove = [t for t in _item_tags if (_sync_tags and t not in _sync_tags) or t in _remove_tags]
             if _add:
-                updated = True
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
-                logger.info(f"Detail: {attr.capitalize()} {','.join(_add)} added to {obj.title}")
+                display += f"+{', +'.join(_add)}"
             if _remove:
-                updated = True
                 self.query_data(getattr(obj, f"remove{attr.capitalize()}"), _remove)
-                logger.info(f"Detail: {attr.capitalize()} {','.join(_remove)} removed to {obj.title}")
-        return updated
+                display += f"-{', -'.join(_remove)}"
+            if len(display) > 0:
+                logger.info(f"{obj.title[:25]:<25} | {attr.capitalize()} | {display}")
+        return len(display) > 0
 
     def update_item_from_assets(self, item, overlay=None, create=False):
         name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))

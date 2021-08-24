@@ -14,7 +14,7 @@ mod_searches = [
     "episodes.gt", "episodes.gte", "episodes.lt", "episodes.lte", "duration.gt", "duration.gte", "duration.lt", "duration.lte",
     "score.gt", "score.gte", "score.lt", "score.lte", "popularity.gt", "popularity.gte", "popularity.lt", "popularity.lte"
 ]
-no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent"]
+no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent", "limit", "sort_by"]
 searches = mod_searches + no_mod_searches
 search_types = {
     "search": "String", "season": "MediaSeason", "seasonYear": "Int", "isAdult": "Boolean", "minimumTagRank": "Int",
@@ -101,6 +101,8 @@ class AniList:
                 final = ani_attr if attr in no_mod_searches else f"{ani_attr}_{mod_translation[mod]}"
                 if attr in ["start", "end"]:
                     value = int(util.validate_date(value, f"anilist_search {key}", return_as="%Y%m%d"))
+                elif attr in ["season", "format", "status", "genre", "tag", "tag_category"]:
+                    value = self.options[attr.replace("_", " ").title()][value.lower().replace(" / ", "-").replace(" ", "-")]
                 if mod == "gte":
                     value -= 1
                 elif mod == "lte":
@@ -178,7 +180,7 @@ class AniList:
         for d in util.get_list(data):
             data_check = d.lower().replace(" / ", "-").replace(" ", "-")
             if data_check in self.options[name]:
-                valid.append(self.options[name][data_check])
+                valid.append(d)
         if len(valid) > 0:
             return valid
         raise Failed(f"AniList Error: {name}: {data} does not exist\nOptions: {', '.join([v for k, v in self.options[name].items()])}")
