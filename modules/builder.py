@@ -1122,12 +1122,12 @@ class CollectionBuilder:
                             else:
                                 if self.do_missing:
                                     try:
-                                        tmdb_id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id)
+                                        tmdb_id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
                                         if tmdb_type == "movie":
                                             if tmdb_id not in self.missing_movies:
                                                 self.missing_movies.append(tmdb_id)
                                         else:
-                                            tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id)
+                                            tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
                                             if tvdb_id not in self.missing_shows:
                                                 self.missing_shows.append(tvdb_id)
                                     except Failed as e:
@@ -1135,26 +1135,28 @@ class CollectionBuilder:
                                         continue
                         elif id_type == "tvdb_season" and self.collection_level == "season":
                             show_id, season_num = input_id.split("_")
-                            if int(show_id) in self.library.show_map:
-                                show_item = self.library.fetchItem(self.library.show_map[int(show_id)][0])
+                            show_id = int(show_id)
+                            if show_id in self.library.show_map:
+                                show_item = self.library.fetchItem(self.library.show_map[show_id][0])
                                 try:
                                     episode_item = show_item.season(season=int(season_num))
                                     rating_keys.append(episode_item.ratingKey)
                                 except NotFound:
                                     self.missing_parts.append(f"{show_item.title} Season: {season_num} Missing")
-                            elif int(show_id) not in self.missing_shows:
-                                self.missing_shows.append(int(show_id))
+                            elif show_id not in self.missing_shows:
+                                self.missing_shows.append(show_id)
                         elif id_type == "tvdb_episode" and self.collection_level == "episode":
                             show_id, season_num, episode_num = input_id.split("_")
-                            if int(show_id) in self.library.show_map:
-                                show_item = self.library.fetchItem(self.library.show_map[int(show_id)][0])
+                            show_id = int(show_id)
+                            if show_id in self.library.show_map:
+                                show_item = self.library.fetchItem(self.library.show_map[show_id][0])
                                 try:
                                     episode_item = show_item.episode(season=int(season_num), episode=int(episode_num))
                                     rating_keys.append(episode_item.ratingKey)
                                 except NotFound:
                                     self.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
-                            elif int(show_id) not in self.missing_shows:
-                                self.missing_shows.append(int(show_id))
+                            elif show_id not in self.missing_shows:
+                                self.missing_shows.append(show_id)
                     util.print_end()
 
             if len(rating_keys) > 0:
