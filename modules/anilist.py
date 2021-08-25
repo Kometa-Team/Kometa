@@ -102,7 +102,7 @@ class AniList:
                 if attr in ["start", "end"]:
                     value = int(util.validate_date(value, f"anilist_search {key}", return_as="%Y%m%d"))
                 elif attr in ["season", "format", "status", "genre", "tag", "tag_category"]:
-                    value = self.options[attr.replace("_", " ").title()][value.lower().replace(" / ", "-").replace(" ", "-")]
+                    value = [self.options[attr.replace("_", " ").title()][v.lower().replace(" / ", "-").replace(" ", "-")] for v in value]
                 if mod == "gte":
                     value -= 1
                 elif mod == "lte":
@@ -178,8 +178,7 @@ class AniList:
     def validate(self, name, data):
         valid = []
         for d in util.get_list(data):
-            data_check = d.lower().replace(" / ", "-").replace(" ", "-")
-            if data_check in self.options[name]:
+            if d.lower().replace(" / ", "-").replace(" ", "-") in self.options[name]:
                 valid.append(d)
         if len(valid) > 0:
             return valid
