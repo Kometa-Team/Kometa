@@ -782,7 +782,7 @@ class CollectionBuilder:
         if method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
             for anilist_id in self.config.AniList.validate_anilist_ids(method_data, studio=method_name == "anilist_studio"):
                 self.builders.append((method_name, anilist_id))
-        elif method_name in ["anilist_popular", "anilist_top_rated"]:
+        elif method_name in ["anilist_popular", "anilist_trending", "anilist_top_rated"]:
             self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
         elif method_name == "anilist_search":
             if self.current_time.month in [12, 1, 2]:           current_season = "winter"
@@ -802,13 +802,14 @@ class CollectionBuilder:
                             new_dictionary["year"] = self.current_year
                     elif search_attr == "year":
                         new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=self.current_year, minimum=1917, maximum=self.current_year + 1)
-                        if "season" not in dict_methods:
-                            logger.warning(f"Collection Warning: {method_name} season attribute not found using this season: {current_season} by default")
-                            new_dictionary["season"] = current_season
                     elif search_data is None:
                         raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
                     elif search_attr == "adult":
                         new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="bool", parent=method_name)
+                    elif search_attr == "country":
+                        new_dictionary[search_attr] = util.parse(search_attr, search_data, options=anilist.country_codes, parent=method_name)
+                    elif search_attr == "source":
+                        new_dictionary[search_attr] = util.parse(search_attr, search_data, options=anilist.media_source, parent=method_name)
                     elif search_attr in ["episodes", "duration", "score", "popularity"]:
                         new_dictionary[search_final] = util.parse(search_final, search_data, datatype="int", parent=method_name)
                     elif search_attr in ["format", "status", "genre", "tag", "tag_category"]:
@@ -823,7 +824,7 @@ class CollectionBuilder:
                         raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
                 if len(new_dictionary) == 0:
                     raise Failed(f"Collection Error: {method_name} must have at least one valid search option")
-                new_dictionary["sort_by"] = util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=["score", "popular"])
+                new_dictionary["sort_by"] = util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.sort_options)
                 new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
                 self.builders.append((method_name, new_dictionary))
 
