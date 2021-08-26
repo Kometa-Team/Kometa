@@ -66,7 +66,7 @@ class Sonarr:
         search = options["search"] if "search" in options else self.search
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
         try:
-            added, exists, invalid = self.api.add_multiple_series(tvdb_ids, folder, quality_profile, language_profile, monitor, season, search, cutoff_search, series, tags)
+            added, exists, invalid = self.api.add_multiple_series(tvdb_ids, folder, quality_profile, language_profile, monitor, season, search, cutoff_search, series, tags, per_request=100)
         except Invalid as e:
             raise Failed(f"Sonarr Error: {e}")
 
@@ -91,7 +91,7 @@ class Sonarr:
         logger.info("")
         logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Sonarr Tags: {tags}")
 
-        edited, not_exists = self.api.edit_multiple_series(tvdb_ids, tags=tags, apply_tags=apply_tags_translation[apply_tags])
+        edited, not_exists = self.api.edit_multiple_series(tvdb_ids, tags=tags, apply_tags=apply_tags_translation[apply_tags], per_request=100)
 
         if len(edited) > 0:
             logger.info("")
