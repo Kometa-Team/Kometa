@@ -774,7 +774,7 @@ class CollectionBuilder:
                 elif not dict_data[dict_methods["tag"]]:
                     raise Failed("Collection Error: anidb_tag tag attribute is blank")
                 else:
-                    new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["username"]], "AniDB Tag ID")
+                    new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["tag"]], "AniDB Tag ID")
                 new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name, minimum=0)
                 self.builders.append((method_name, new_dictionary))
 

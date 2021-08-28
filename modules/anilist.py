@@ -20,12 +20,6 @@ mod_searches = [
 no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent", "limit", "sort_by", "source", "country"]
 searches = mod_searches + no_mod_searches
 sort_options = {"score": "SCORE_DESC", "popular": "POPULARITY_DESC", "trending": "TRENDING_DESC"}
-search_types = {
-    "search": "String", "season": "MediaSeason", "seasonYear": "Int", "isAdult": "Boolean", "minimumTagRank": "Int",
-    "startDate": "FuzzyDateInt", "endDate": "FuzzyDateInt", "format": "[MediaFormat]", "status": "[MediaStatus]",
-    "genre": "[String]", "tag": "[String]", "tagCategory": "[String]", "source": "MediaSource",
-    "countryOfOrigin": "CountryCode", "episodes": "Int", "duration": "Int", "averageScore": "Int", "popularity": "Int"
-}
 media_season = {"winter": "WINTER", "spring": "SPRING", "summer": "SUMMER", "fall": "FALL"}
 media_format = {"tv": "TV", "short": "TV_SHORT", "movie": "MOVIE", "special": "SPECIAL", "ova": "OVA", "ona": "ONA", "music": "MUSIC"}
 media_status = {"finished": "FINISHED", "airing": "RELEASING", "not_yet_aired": "NOT_YET_RELEASED", "cancelled": "CANCELLED", "hiatus": "HIATUS"}
@@ -112,8 +106,7 @@ class AniList:
         return anilist_ids
 
     def _search(self, **kwargs):
-        query_vars = "$page: Int, $sort: [MediaSort]"
-        media_vars = "sort: $sort, type: ANIME"
+        media_vars = f"sort: {sort_options[kwargs['sort_by']]}, type: ANIME"
         variables = {"sort": sort_options[kwargs['sort_by']]}
         for key, value in kwargs.items():
             if key not in ["sort_by", "limit"]:
@@ -127,17 +120,15 @@ class AniList:
                 if attr in ["start", "end"]:
                     value = int(util.validate_date(value, f"anilist_search {key}", return_as="%Y%m%d"))
                 elif attr in ["format", "status", "genre", "tag", "tag_category"]:
-                    value = [self.options[attr.replace("_", " ").title()][v.lower().replace(" / ", "-").replace(" ", "-")] for v in value]
+                    value = f"[{', '.join([self.options[attr.replace('_', ' ').title()][v.lower().replace(' / ', '-').replace(' ', '-')] for v in value])}]"
                 elif attr in ["season", "source", "country"]:
                     value = self.options[attr.replace("_", " ").title()][value]
                 if mod == "gte":
                     value -= 1
                 elif mod == "lte":
                     value += 1
-                query_vars += f", ${final}: {search_types[ani_attr]}"
-                media_vars += f", {final}: ${final}"
-                variables[key] = value
-        query = f"query ({query_vars}) {{Page(page: $page){{pageInfo {{hasNextPage}}media({media_vars}){{id}}}}}}"
+                media_vars += f", {final}: {value}"
+        query = f"query ($page: Int) {{Page(page: $page){{pageInfo {{hasNextPage}}media({media_vars}){{id}}}}}}"
         logger.debug(query)
         return self._pagenation(query, limit=kwargs["limit"], variables=variables)
 
