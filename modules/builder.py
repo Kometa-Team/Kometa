@@ -1069,13 +1069,13 @@ class CollectionBuilder:
                 rating_keys = self.library.Tautulli.get_rating_keys(self.library, value)
             elif "anidb" in method:
                 anidb_ids = self.config.AniDB.get_anidb_ids(method, value, self.language)
-                ids = self.config.Convert.anidb_to_ids(anidb_ids)
+                ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
             elif "anilist" in method:
                 anilist_ids = self.config.AniList.get_anilist_ids(method, value)
-                ids = self.config.Convert.anilist_to_ids(anilist_ids)
+                ids = self.config.Convert.anilist_to_ids(anilist_ids, self.library)
             elif "mal" in method:
                 mal_ids = self.config.MyAnimeList.get_mal_ids(method, value)
-                ids = self.config.Convert.myanimelist_to_ids(mal_ids)
+                ids = self.config.Convert.myanimelist_to_ids(mal_ids, self.library)
             elif "tvdb" in method:
                 ids = self.config.TVDb.get_tvdb_ids(method, value, self.language)
             elif "imdb" in method:
@@ -1101,7 +1101,9 @@ class CollectionBuilder:
                     for i, input_data in enumerate(ids, 1):
                         input_id, id_type = input_data
                         util.print_return(f"Parsing ID {i}/{total_ids}")
-                        if id_type == "tmdb" and not self.parts_collection:
+                        if id_type == "ratingKey":
+                            rating_keys.append(input_id)
+                        elif id_type == "tmdb" and not self.parts_collection:
                             if input_id in self.library.movie_map:
                                 rating_keys.append(self.library.movie_map[input_id][0])
                             elif input_id not in self.missing_movies:
