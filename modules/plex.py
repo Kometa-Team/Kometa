@@ -340,6 +340,8 @@ class Plex:
         self.movie_map = {}
         self.show_map = {}
         self.imdb_map = {}
+        self.anidb_map = {}
+        self.mal_map = {}
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
         self.run_again = []
