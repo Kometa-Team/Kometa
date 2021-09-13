@@ -40,7 +40,7 @@ class Radarr:
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
         try:
-            added, exists, invalid = self.api.add_multiple_movies(tmdb_ids, folder, quality_profile, monitor, search, availability, tags)
+            added, exists, invalid = self.api.add_multiple_movies(tmdb_ids, folder, quality_profile, monitor, search, availability, tags, per_request=100)
         except Invalid as e:
             raise Failed(f"Radarr Error: {e}")
 
@@ -65,7 +65,7 @@ class Radarr:
         logger.info("")
         logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Radarr Tags: {tags}")
 
-        edited, not_exists = self.api.edit_multiple_movies(tmdb_ids, tags=tags, apply_tags=apply_tags_translation[apply_tags])
+        edited, not_exists = self.api.edit_multiple_movies(tmdb_ids, tags=tags, apply_tags=apply_tags_translation[apply_tags], per_request=100)
 
         if len(edited) > 0:
             logger.info("")

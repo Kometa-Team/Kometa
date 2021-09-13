@@ -1,4 +1,4 @@
-import argparse, logging, os, re, sys, time
+import argparse, logging, os, sys, time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 try:
@@ -18,7 +18,7 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 6:
 parser = argparse.ArgumentParser()
 parser.add_argument("-db", "--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
-parser.add_argument("-t", "--time", dest="time", help="Times to update each day use format HH:MM (Default: 03:00) (comma-separated list)", default="03:00", type=str)
+parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 03:00) (comma-separated list)", default="03:00", type=str)
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
@@ -32,47 +32,54 @@ parser.add_argument("-d", "--divider", dest="divider", help="Character that divi
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
 
-def check_bool(env_str, default):
+def get_arg(env_str, default, arg_bool=False, arg_int=False):
     env_var = os.environ.get(env_str)
-    if env_var is not None:
-        if env_var is True or env_var is False:
-            return env_var
-        elif env_var.lower() in ["t", "true"]:
-            return True
+    if env_var:
+        if arg_bool:
+            if env_var is True or env_var is False:
+                return env_var
+            elif env_var.lower() in ["t", "true"]:
+                return True
+            else:
+                return False
+        elif arg_int:
+            return int(env_var)
         else:
-            return False
+            return str(env_var)
     else:
         return default
 
-test = check_bool("PMM_TEST", args.test)
-debug = check_bool("PMM_DEBUG", args.debug)
-run = check_bool("PMM_RUN", args.run)
-no_countdown = check_bool("PMM_NO_COUNTDOWN", args.no_countdown)
-no_missing = check_bool("PMM_NO_MISSING", args.no_missing)
-library_only = check_bool("PMM_LIBRARIES_ONLY", args.library_only)
-collection_only = check_bool("PMM_COLLECTIONS_ONLY", args.collection_only)
-collections = os.environ.get("PMM_COLLECTIONS") if os.environ.get("PMM_COLLECTIONS") else args.collections
-libraries = os.environ.get("PMM_LIBRARIES") if os.environ.get("PMM_LIBRARIES") else args.libraries
-resume = os.environ.get("PMM_RESUME") if os.environ.get("PMM_RESUME") else args.resume
+test = get_arg("PMM_TEST", args.test, arg_bool=True)
+debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
+run = get_arg("PMM_RUN", args.run, arg_bool=True)
+no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
+no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
+library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
+collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
+collections = get_arg("PMM_COLLECTIONS", args.collections)
+libraries = get_arg("PMM_LIBRARIES", args.libraries)
+resume = get_arg("PMM_RESUME", args.resume)
+times = get_arg("PMM_TIME", args.times)
+divider = get_arg("PMM_DIVIDER", args.divider)
+screen_width = get_arg("PMM_WIDTH", args.width)
+config_file = get_arg("PMM_CONFIG", args.config)
 
-times_to_run = util.get_list(os.environ.get("PMM_TIME") if os.environ.get("PMM_TIME") else args.time)
-for time_to_run in times_to_run:
-    if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", time_to_run):
-        raise util.Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format")
+util.separating_character = divider[0]
 
-util.separating_character = os.environ.get("PMM_DIVIDER")[0] if os.environ.get("PMM_DIVIDER") else args.divider[0]
+if screen_width < 90 or screen_width > 300:
+    print(f"Argument Error: width argument invalid: {screen_width} must be an integer between 90 and 300 using the default 100")
+    screen_width = 100
+util.screen_width = screen_width
 
-screen_width = int(os.environ.get("PMM_WIDTH")) if os.environ.get("PMM_WIDTH") else args.width
-if 90 <= screen_width <= 300:
-    util.screen_width = screen_width
-else:
-    raise util.Failed(f"Argument Error: width argument invalid: {screen_width} must be an integer between 90 and 300")
-
-config_file = os.environ.get("PMM_CONFIG") if os.environ.get("PMM_CONFIG") else args.config
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
-if config_file and os.path.exists(config_file):                     default_dir = os.path.join(os.path.dirname(os.path.abspath(config_file)))
-elif config_file and not os.path.exists(config_file):               raise util.Failed(f"Config Error: config not found at {os.path.abspath(config_file)}")
-elif not os.path.exists(os.path.join(default_dir, "config.yml")):   raise util.Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
+if config_file and os.path.exists(config_file):
+    default_dir = os.path.join(os.path.dirname(os.path.abspath(config_file)))
+elif config_file and not os.path.exists(config_file):
+    print(f"Config Error: config not found at {os.path.abspath(config_file)}")
+    sys.exit(0)
+elif not os.path.exists(os.path.join(default_dir, "config.yml")):
+    print(f"Config Error: config not found at {os.path.abspath(default_dir)}")
+    sys.exit(0)
 
 os.makedirs(os.path.join(default_dir, "logs"), exist_ok=True)
 
@@ -108,7 +115,7 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.12.1                                                                  "))
+    logger.info(util.centered("    Version: 1.12.2                                                                  "))
     if time_scheduled:              start_type = f"{time_scheduled} "
     elif is_test:                   start_type = "Test "
     elif requested_collections:     start_type = "Collections "
@@ -490,11 +497,18 @@ def run_collection(config, library, metadata, requested_collections):
 
                 builder.find_rating_keys()
 
-                if len(builder.rating_keys) > 0 and builder.build_collection:
+                if len(builder.rating_keys) >= builder.minimum and builder.build_collection:
                     logger.info("")
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
                     builder.add_to_collection()
+                elif len(builder.rating_keys) < builder.minimum and builder.build_collection:
+                    logger.info("")
+                    logger.info(f"Collection minimum: {builder.minimum} not met for {mapping_name} Collection")
+                    logger.info("")
+                    if library.delete_below_minimum and builder.obj:
+                        builder.delete_collection()
+                        logger.info(f"Collection {builder.obj.title} deleted")
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     if builder.details["show_missing"] is True:
                         logger.info("")
@@ -536,7 +550,17 @@ try:
     if run or test or collections or libraries or resume:
         start(config_file, is_test=test, requested_collections=collections, requested_libraries=libraries, resume_from=resume)
     else:
+        times_to_run = util.get_list(times)
+        valid_times = []
         for time_to_run in times_to_run:
+            try:
+                valid_times.append(datetime.strftime(datetime.strptime(time_to_run, "%H:%M"), "%H:%M"))
+            except ValueError:
+                if time_to_run:
+                    raise Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format")
+                else:
+                    raise Failed(f"Argument Error: blank time argument")
+        for time_to_run in valid_times:
             schedule.every().day.at(time_to_run).do(start, config_file, time_scheduled=time_to_run)
         while True:
             schedule.run_pending()
@@ -544,7 +568,7 @@ try:
                 current = datetime.now().strftime("%H:%M")
                 seconds = None
                 og_time_str = ""
-                for time_to_run in times_to_run:
+                for time_to_run in valid_times:
                     new_seconds = (datetime.strptime(time_to_run, "%H:%M") - datetime.strptime(current, "%H:%M")).total_seconds()
                     if new_seconds < 0:
                         new_seconds += 86400

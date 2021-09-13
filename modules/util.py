@@ -49,7 +49,7 @@ days_alias = {
     "sunday": 6, "sun": 6, "su": 6, "u": 6
 }
 mod_displays = {
-    "": "is", ".not": "is not", ".begins": "begins with", ".ends": "ends with", ".before": "is before", ".after": "is after",
+    "": "is", ".not": "is not", ".is": "is", ".isnot": "is not", ".begins": "begins with", ".ends": "ends with", ".before": "is before", ".after": "is after",
     ".gt": "is greater than", ".gte": "is greater than or equal", ".lt": "is less than", ".lte": "is less than or equal"
 }
 pretty_days = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
@@ -282,13 +282,14 @@ def is_string_filter(values, modifier, data):
     for value in values:
         for check_value in data:
             if (modifier in ["", ".not"] and check_value.lower() in value.lower()) \
+                    or (modifier in [".is", ".isnot"] and value.lower() == check_value.lower()) \
                     or (modifier == ".begins" and value.lower().startswith(check_value.lower())) \
                     or (modifier == ".ends" and value.lower().endswith(check_value.lower())) \
                     or (modifier == ".regex" and re.compile(check_value).match(value)):
                 jailbreak = True
                 break
         if jailbreak: break
-    return (jailbreak and modifier == ".not") or (not jailbreak and modifier in ["", ".begins", ".ends", ".regex"])
+    return (jailbreak and modifier in [".not", ".isnot"]) or (not jailbreak and modifier in ["", ".is", ".begins", ".ends", ".regex"])
 
 def parse(attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"
