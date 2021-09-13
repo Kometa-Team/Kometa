@@ -756,7 +756,7 @@ class Plex:
             logger.debug(f"Details Update: {edits}")
             try:
                 self.edit_query(item, edits, advanced=advanced)
-                if advanced and "languageOverride" in edits:
+                if advanced and ("languageOverride" in edits or "useOriginalTitle" in edits):
                     self.query(item.refresh)
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
                 return True
