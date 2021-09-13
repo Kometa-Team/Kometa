@@ -497,11 +497,18 @@ def run_collection(config, library, metadata, requested_collections):
 
                 builder.find_rating_keys()
 
-                if len(builder.rating_keys) > 0 and builder.build_collection:
+                if len(builder.rating_keys) >= builder.minimum and builder.build_collection:
                     logger.info("")
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
                     builder.add_to_collection()
+                elif len(builder.rating_keys) < builder.minimum and builder.build_collection:
+                    logger.info("")
+                    logger.info(f"Collection minimum: {builder.minimum} not met for {mapping_name} Collection")
+                    logger.info("")
+                    if library.delete_below_minimum and builder.obj:
+                        builder.delete_collection()
+                        logger.info(f"Collection {builder.obj.title} deleted")
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     if builder.details["show_missing"] is True:
                         logger.info("")
