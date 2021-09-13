@@ -66,7 +66,7 @@ show_translation = {
     "label": "show.label",
 }
 modifier_translation = {
-    "": "", ".not": "!", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
+    "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E"
 }
 episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
@@ -101,8 +101,8 @@ item_advance_keys = {
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
 searches = [
-    "title", "title.not", "title.begins", "title.ends",
-    "studio", "studio.not", "studio.begins", "studio.ends",
+    "title", "title.not", "title.is", "title.isnot", "title.begins", "title.ends",
+    "studio", "studio.not", "studio.is", "studio.isnot", "studio.begins", "studio.ends",
     "actor", "actor.not",
     "audio_language", "audio_language.not",
     "collection", "collection.not",
@@ -126,7 +126,7 @@ searches = [
     "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
     "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
-    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_title", "episode_title.not", "episode_title.is", "episode_title.isnot", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not", "episode_air_date.before", "episode_air_date.after",
     "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
@@ -151,7 +151,7 @@ movie_only_searches = [
 ]
 show_only_searches = [
     "network", "network.not",
-    "episode_title", "episode_title.not", "episode_title.begins", "episode_title.ends",
+    "episode_title", "episode_title.not", "episode_title.is", "episode_title.isnot", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not",
     "episode_air_date.before", "episode_air_date.after",
@@ -170,17 +170,6 @@ tmdb_attributes = ["actor", "director", "producer", "writer"]
 date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played", "first_episode_aired", "last_episode_aired"]
 number_attributes = ["plays", "episode_plays", "duration", "tmdb_vote_count"] + date_attributes
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
-sorts = {
-    None: None,
-    "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
-    "originally_available.asc": "originallyAvailableAt:asc", "originally_available.desc": "originallyAvailableAt:desc",
-    "release.asc": "originallyAvailableAt:asc", "release.desc": "originallyAvailableAt:desc",
-    "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
-    "audience_rating.asc": "audienceRating:asc", "audience_rating.desc": "audienceRating:desc",
-    "duration.asc": "duration:asc", "duration.desc": "duration:desc",
-    "added.asc": "addedAt:asc", "added.desc": "addedAt:desc"
-}
-modifiers = {".not": "!", ".begins": "<", ".ends": ">", ".before": "<<", ".after": ">>", ".gt": ">>", ".gte": "__gte", ".lt": "<<", ".lte": "__lte"}
 tags = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label",
     "network", "producer", "resolution", "studio", "subtitle_language", "writer"
