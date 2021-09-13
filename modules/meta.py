@@ -18,19 +18,18 @@ class Metadata:
         logger.info("")
         logger.info(f"Loading Metadata {file_type}: {path}")
         def get_dict(attribute, attr_data, check_list=None):
+            if check_list is None:
+                check_list = []
             if attr_data and attribute in attr_data:
                 if attr_data[attribute]:
                     if isinstance(attr_data[attribute], dict):
-                        if check_list:
-                            new_dict = {}
-                            for a_name, a_data in attr_data[attribute].items():
-                                if a_name in check_list:
-                                    logger.error(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {a_name}")
-                                else:
-                                    new_dict[a_name] = a_data
-                            return new_dict
-                        else:
-                            return attr_data[attribute]
+                        new_dict = {}
+                        for a_name, a_data in attr_data[attribute].items():
+                            if a_name in check_list:
+                                logger.error(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {a_name}")
+                            else:
+                                new_dict[str(a_name)] = a_data
+                        return new_dict
                     else:
                         logger.warning(f"Config Warning: {attribute} must be a dictionary")
                 else:
