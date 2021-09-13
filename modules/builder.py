@@ -94,12 +94,12 @@ sonarr_details = [
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
-    "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
+    "audio_track_title", "audio_track_title.not", "audio_track_title.is", "audio_track_title.isnot", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
     "collection", "collection.not",
     "content_rating", "content_rating.not",
     "country", "country.not",
     "director", "director.not",
-    "filepath", "filepath.not", "filepath.begins", "filepath.ends", "filepath.regex",
+    "filepath", "filepath.not", "filepath.is", "filepath.isnot", "filepath.begins", "filepath.ends", "filepath.regex",
     "genre", "genre.not",
     "label", "label.not",
     "producer", "producer.not",
@@ -108,7 +108,7 @@ all_filters = [
     "last_played", "last_played.not", "last_played.before", "last_played.after", "last_played.regex",
     "first_episode_aired", "first_episode_aired.not", "first_episode_aired.before", "first_episode_aired.after", "first_episode_aired.regex",
     "last_episode_aired", "last_episode_aired.not", "last_episode_aired.before", "last_episode_aired.after", "last_episode_aired.regex",
-    "title", "title.not", "title.begins", "title.ends", "title.regex",
+    "title", "title.not", "title.is", "title.isnot", "title.begins", "title.ends", "title.regex",
     "plays.gt", "plays.gte", "plays.lt", "plays.lte",
     "tmdb_vote_count.gt", "tmdb_vote_count.gte", "tmdb_vote_count.lt", "tmdb_vote_count.lte",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte",
@@ -116,7 +116,7 @@ all_filters = [
     "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
     "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
     "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
-    "studio", "studio.not", "studio.begins", "studio.ends", "studio.regex",
+    "studio", "studio.not", "studio.is", "studio.isnot", "studio.begins", "studio.ends", "studio.regex",
     "subtitle_language", "subtitle_language.not",
     "resolution", "resolution.not",
     "writer", "writer.not",
@@ -126,7 +126,7 @@ all_filters = [
 tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "first_episode_aired", "last_episode_aired"]
 movie_only_filters = [
     "audio_language", "audio_language.not",
-    "audio_track_title", "audio_track_title.not", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
+    "audio_track_title", "audio_track_title.not", "audio_track_title.is", "audio_track_title.isnot", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
     "country", "country.not",
     "director", "director.not",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte",
@@ -1383,7 +1383,7 @@ class CollectionBuilder:
                     else:
                         logger.error(err)
             return valid_regex
-        elif attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".not", ".begins", ".ends"]:
+        elif attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "original_language":
             return util.get_list(data, lower=True)
