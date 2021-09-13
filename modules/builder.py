@@ -80,7 +80,7 @@ boolean_details = ["visible_library", "visible_home", "visible_shared", "show_fi
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
-    "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders"
+    "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name"
 ]
 details = ["collection_mode", "collection_order", "collection_level", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
@@ -158,7 +158,7 @@ class CollectionBuilder:
         self.config = config
         self.library = library
         self.metadata = metadata
-        self.name = name
+        self.mapping_name = name
         self.no_missing = no_missing
         self.data = data
         self.language = self.library.Plex.language
@@ -191,6 +191,16 @@ class CollectionBuilder:
         self.current_year = self.current_time.year
 
         methods = {m.lower(): m for m in self.data}
+
+        if "collection_name" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: collection_name")
+            if not self.data[methods["collection_name"]]:
+                raise Failed("Collection Error: collection_name attribute is blank")
+            logger.debug(f"Value: {self.data[methods['collection_name']]}")
+            self.name = self.data[methods["collection_name"]]
+        else:
+            self.name = self.mapping_name
 
         if "template" in methods:
             logger.debug("")
