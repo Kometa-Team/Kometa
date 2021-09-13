@@ -313,6 +313,8 @@ class Plex:
             logger.info(output)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
         self.missing_path = os.path.join(params["default_dir"], f"{self.name}_missing.yml")
+        self.collection_minimum = params["collection_minimum"]
+        self.delete_below_minimum = params["delete_below_minimum"]
         self.metadata_path = params["metadata_path"]
         self.asset_directory = params["asset_directory"]
         self.asset_folders = params["asset_folders"]
