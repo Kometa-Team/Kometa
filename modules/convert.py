@@ -193,16 +193,20 @@ class Convert:
         tvdb_id = []
         imdb_id = []
         anidb_id = None
+        guid = requests.utils.urlparse(item.guid)
+        item_type = guid.scheme.split(".")[-1]
+        check_id = guid.netloc
         if self.config.Cache:
             cache_id, imdb_check, media_type, expired = self.config.Cache.query_guid_map(item.guid)
             if cache_id and not expired:
                 media_id_type = "movie" if "movie" in media_type else "show"
+                if item_type == "hama" and check_id.startswith("anidb"):
+                    anidb_id = int(re.search("-(.*)", check_id).group(1))
+                    library.anidb_map[anidb_id] = item.ratingKey
+                elif item_type == "myanimelist":
+                    library.mal_map[int(check_id)] = item.ratingKey
                 return media_id_type, cache_id, imdb_check
         try:
-            guid = requests.utils.urlparse(item.guid)
-            item_type = guid.scheme.split(".")[-1]
-            check_id = guid.netloc
-
             if item_type == "plex":
                 try:
                     for guid_tag in library.get_guids(item):
