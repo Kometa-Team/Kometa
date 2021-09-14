@@ -62,10 +62,10 @@ class Convert:
     def myanimelist_to_ids(self, mal_ids, library):
         ids = []
         for mal_id in mal_ids:
-            if mal_id in library.mal_map:
-                ids.append((library.mal_map[mal_id], "ratingKey"))
-            elif mal_id in self.mal_to_anidb:
-                ids.extend(self.anidb_to_ids(self.mal_to_anidb[mal_id], library))
+            if int(mal_id) in library.mal_map:
+                ids.append((library.mal_map[int(mal_id)], "ratingKey"))
+            elif int(mal_id) in self.mal_to_anidb:
+                ids.extend(self.anidb_to_ids(self.mal_to_anidb[int(mal_id)], library))
             else:
                 logger.error(f"Convert Error: AniDB ID not found for MyAnimeList ID: {mal_id}")
         return ids
