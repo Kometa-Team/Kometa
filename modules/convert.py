@@ -230,8 +230,8 @@ class Convert:
                     raise Failed(f"Hama Agent ID: {check_id} not supported")
             elif item_type == "myanimelist":
                 library.mal_map[int(check_id)] = item.ratingKey
-                if check_id in self.mal_to_anidb:
-                    anidb_id = self.mal_to_anidb[check_id]
+                if int(check_id) in self.mal_to_anidb:
+                    anidb_id = self.mal_to_anidb[int(check_id)]
                 else:
                     raise Failed(f"Convert Error: AniDB ID not found for MyAnimeList ID: {check_id}")
             elif item_type == "local":                      raise Failed("No match in Plex")
