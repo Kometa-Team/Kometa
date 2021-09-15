@@ -76,7 +76,7 @@ summary_details = [
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
-boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "item_assets", "missing_only_released", "revert_overlay", "delete_below_minimum"]
+boolean_details = ["visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing", "missing_only_released", "delete_below_minimum"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
@@ -85,7 +85,7 @@ ignored_details = [
 details = ["collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
-item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + list(plex.item_advance_keys.keys())
+item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_assets", "revert_overlay"] + list(plex.item_advance_keys.keys())
 radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
@@ -168,7 +168,7 @@ class CollectionBuilder:
             "save_missing": self.library.save_missing,
             "missing_only_released": self.library.missing_only_released,
             "create_asset_folders": self.library.create_asset_folders,
-            "item_assets": False
+            "delete_below_minimum": self.library.delete_below_minimum
         }
         self.item_details = {}
         self.radarr_details = {}
@@ -183,12 +183,12 @@ class CollectionBuilder:
         self.filtered_keys = {}
         self.run_again_movies = []
         self.run_again_shows = []
+        self.items = []
         self.posters = {}
         self.backgrounds = {}
         self.summaries = {}
         self.schedule = ""
         self.minimum = self.library.collection_minimum
-        self.delete_below_minimum = self.library.delete_below_minimum
         self.current_time = datetime.now()
         self.current_year = self.current_time.year
 
@@ -722,6 +722,9 @@ class CollectionBuilder:
                 raise Failed("Each Overlay can only be used once per Library")
             self.library.overlays.append(method_data)
             self.item_details[method_name] = method_data
+        elif method_name in ["item_assets", "revert_overlay"]:
+            if util.parse(method_name, method_data, datatype="bool", default=False):
+                self.item_details[method_name] = True
         elif method_name in plex.item_advance_keys:
             key, options = plex.item_advance_keys[method_name]
             if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
@@ -1721,15 +1724,10 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"{count_removed} {self.collection_level.capitalize()}{'s' if count_removed == 1 else ''} Removed")
 
-    def update_item_details(self):
-        add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
-        remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
-        sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
-
-        if self.build_collection:
-            items = self.library.get_collection_items(self.obj, self.smart_label_collection)
-        else:
-            items = []
+    def load_collection_items(self):
+        if self.build_collection and self.obj:
+            self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
+        elif not self.build_collection:
             logger.info("")
             util.separator(f"Items Found for {self.name} Collection", space=False, border=False)
             logger.info("")
@@ -1737,10 +1735,13 @@ class CollectionBuilder:
                 try:
                     item = self.fetch_item(rk)
                     logger.info(f"{item.title} (Rating Key: {rk})")
-                    items.append(item)
+                    self.items.append(item)
                 except Failed as e:
                     logger.error(e)
+        if not self.items:
+            raise Failed(f"Plex Error: No Collection items found")
 
+    def update_item_details(self):
         logger.info("")
         util.separator(f"Updating Details of the Items in {self.name} Collection", space=False, border=False)
         logger.info("")
@@ -1767,16 +1768,20 @@ class CollectionBuilder:
             temp_image = os.path.join(overlay_folder, f"temp.png")
             overlay = (overlay_name, overlay_folder, overlay_image, temp_image)
 
-        revert = "revert_overlay" in self.details and self.details["revert_overlay"]
+        revert = "revert_overlay" in self.item_details
         if revert:
             overlay = None
 
+        add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
+        remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
+        sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
+
         tmdb_ids = []
         tvdb_ids = []
-        for item in items:
+        for item in self.items:
             if int(item.ratingKey) in rating_keys and not revert:
                 rating_keys.remove(int(item.ratingKey))
-            if self.details["item_assets"] or overlay is not None:
+            if "item_assets" in self.item_details or overlay is not None:
                 try:
                     self.library.update_item_from_assets(item, overlay=overlay)
                 except Failed as e:
@@ -1823,7 +1828,7 @@ class CollectionBuilder:
         if self.obj:
             self.library.query(self.obj.delete)
 
-    def update_details(self):
+    def load_collection(self):
         if not self.obj and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
         elif self.smart_label_collection:
@@ -1835,6 +1840,10 @@ class CollectionBuilder:
                 raise Failed(f"Collection Error: Label: {self.name} was not added to any items in the Library")
         self.obj = self.library.get_collection(self.name)
 
+    def update_details(self):
+        logger.info("")
+        util.separator(f"Updating Details of {self.name} Collection", space=False, border=False)
+        logger.info("")
         if self.smart_url and self.smart_url != self.library.smart_filter(self.obj):
             self.library.update_smart_collection(self.obj, self.smart_url)
             logger.info(f"Detail: Smart Filter updated to {self.smart_url}")
@@ -1983,6 +1992,9 @@ class CollectionBuilder:
             self.library.upload_images(self.obj, poster=poster, background=background)
 
     def sort_collection(self):
+        logger.info("")
+        util.separator(f"Sorting {self.name} Collection", space=False, border=False)
+        logger.info("")
         items = self.library.get_collection_items(self.obj, self.smart_label_collection)
         keys = {item.ratingKey: item for item in items}
         previous = None

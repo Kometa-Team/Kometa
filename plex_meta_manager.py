@@ -504,10 +504,10 @@ def run_collection(config, library, metadata, requested_collections):
                     builder.add_to_collection()
                 elif len(builder.rating_keys) < builder.minimum and builder.build_collection:
                     logger.info("")
-                    logger.info(f"Collection minimum: {builder.minimum} not met for {mapping_name} Collection")
-                    logger.info("")
-                    if library.delete_below_minimum and builder.obj:
+                    logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
+                    if builder.details["delete_below_minimum"] and builder.obj:
                         builder.delete_collection()
+                        logger.info("")
                         logger.info(f"Collection {builder.obj.title} deleted")
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     if builder.details["show_missing"] is True:
@@ -518,20 +518,28 @@ def run_collection(config, library, metadata, requested_collections):
                 if builder.sync and len(builder.rating_keys) > 0 and builder.build_collection:
                     builder.sync_collection()
 
+            run_item_details = True
             if builder.build_collection:
-                logger.info("")
-                util.separator(f"Updating Details of {mapping_name} Collection", space=False, border=False)
-                logger.info("")
-                builder.update_details()
+                try:
+                    builder.load_collection()
+                except Failed:
+                    run_item_details = False
+                    logger.info("")
+                    util.separator("No Collection to Update", space=False, border=False)
+                else:
+                    builder.update_details()
+                    if builder.custom_sort:
+                        library.run_sort.append(builder)
+                        #builder.sort_collection()
 
-            if builder.custom_sort:
-                library.run_sort.append(builder)
-                # logger.info("")
-                # util.separator(f"Sorting {mapping_name} Collection", space=False, border=False)
-                # logger.info("")
-                # builder.sort_collection()
-
-            builder.update_item_details()
+            if builder.item_details and run_item_details:
+                try:
+                    builder.load_collection_items()
+                except Failed:
+                    logger.info("")
+                    util.separator("No Items Found", space=False, border=False)
+                else:
+                    builder.update_item_details()
 
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
