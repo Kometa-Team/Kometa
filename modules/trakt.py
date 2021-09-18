@@ -158,7 +158,7 @@ class Trakt:
             else:
                 continue
             id_type = "tmdb" if current_type == "movie" else "tvdb"
-            if data["ids"][id_type]:
+            if id_type in data["ids"] and data["ids"][id_type]:
                 final_id = data["ids"][id_type]
                 if current_type == "episode":
                     final_id = f"{final_id}_{item[current_type]['season']}"
