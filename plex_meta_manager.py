@@ -530,7 +530,7 @@ def run_collection(config, library, metadata, requested_collections):
                     builder.update_details()
                     if builder.custom_sort:
                         library.run_sort.append(builder)
-                        #builder.sort_collection()
+                        # builder.sort_collection()
 
             if builder.item_details and run_item_details:
                 try:

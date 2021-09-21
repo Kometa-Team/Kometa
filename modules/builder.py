@@ -1760,7 +1760,8 @@ class CollectionBuilder:
                         except Failed as e:
                             logger.error(e)
                             continue
-                        self.library.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
+                        if isinstance(item, (Movie, Show)):
+                            self.library.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
                     self.config.Cache.update_remove_overlay(self.library.image_table_name, overlay_name)
             rating_keys = [int(item.ratingKey) for item in self.library.get_labeled_items(f"{overlay_name} Overlay")]
             overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
