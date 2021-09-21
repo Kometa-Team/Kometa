@@ -1,4 +1,7 @@
 import logging
+
+from plexapi.video import Movie, Show
+
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound
@@ -40,7 +43,9 @@ class Tautulli:
         for item in items:
             if item["section_id"] == section_id and count < int(params['list_size']):
                 try:
-                    library.fetchItem(int(item["rating_key"]))
+                    item = library.fetchItem(int(item["rating_key"]))
+                    if not isinstance(item, (Movie, Show)):
+                        raise BadRequest
                     rating_keys.append(item["rating_key"])
                 except (BadRequest, NotFound):
                     new_item = library.exact_search(item["title"], year=item["year"])
@@ -65,5 +70,5 @@ class Tautulli:
         else:                       raise Failed(f"Tautulli Error: No Library named {library_name} in the response")
 
     def _request(self, url):
-        logger.debug(f"Tautulli URL: {url.replace(self.apikey, '###############')}")
+        logger.debug(f"Tautulli URL: {url.replace(self.apikey, 'APIKEY').replace(self.url, 'URL')}")
         return self.config.get_json(url)
