@@ -583,11 +583,14 @@ try:
                     if (seconds is None or new_seconds < seconds) and new_seconds > 0:
                         seconds = new_seconds
                         og_time_str = time_to_run
-                hours = int(seconds // 3600)
-                minutes = int((seconds % 3600) // 60)
-                time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
-                time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
+                if seconds is not None:
+                    hours = int(seconds // 3600)
+                    minutes = int((seconds % 3600) // 60)
+                    time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
+                    time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
+                    util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
+                else:
+                    logger.error(f"Time Error: {valid_times}")
             time.sleep(60)
 except KeyboardInterrupt:
     util.separator("Exiting Plex Meta Manager")
