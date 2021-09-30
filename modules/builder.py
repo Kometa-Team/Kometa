@@ -1484,10 +1484,8 @@ class CollectionBuilder:
             logger.info(util.adjust_space(f"{name} Collection | {current_operation} | {self.item_title(current)}"))
             if current in collection_items:
                 self.plex_map[current.ratingKey] = None
-            elif self.smart_label_collection:
-                self.library.query_data(current.addLabel, name)
             else:
-                self.library.query_data(current.addCollection, name)
+                self.library.add_to_collection(current, name, smart_label_collection=self.smart_label_collection)
         util.print_end()
         logger.info("")
         logger.info(f"{total} {self.collection_level.capitalize()}{'s' if total > 1 else ''} Processed")
@@ -2028,7 +2026,7 @@ class CollectionBuilder:
                 if current in collection_items:
                     logger.info(f"{name} Collection | = | {self.item_title(current)}")
                 else:
-                    self.library.query_data(current.addLabel if self.smart_label_collection else current.addCollection, name)
+                    self.library.add_to_collection(current, name, smart_label_collection=self.smart_label_collection)
                     logger.info(f"{name} Collection | + | {self.item_title(current)}")
             logger.info(f"{len(rating_keys)} {self.collection_level.capitalize()}{'s' if len(rating_keys) > 1 else ''} Processed")
 
