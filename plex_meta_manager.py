@@ -523,6 +523,7 @@ def run_collection(config, library, metadata, requested_collections):
                 try:
                     builder.load_collection()
                 except Failed:
+                    util.print_stacktrace()
                     run_item_details = False
                     logger.info("")
                     util.separator("No Collection to Update", space=False, border=False)
