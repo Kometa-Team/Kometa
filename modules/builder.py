@@ -1485,7 +1485,7 @@ class CollectionBuilder:
             if current in collection_items:
                 self.plex_map[current.ratingKey] = None
             else:
-                self.library.add_to_collection(current, name, smart_label_collection=self.smart_label_collection)
+                self.library.alter_collection(current, name, smart_label_collection=self.smart_label_collection)
         util.print_end()
         logger.info("")
         logger.info(f"{total} {self.collection_level.capitalize()}{'s' if total > 1 else ''} Processed")
@@ -1713,10 +1713,7 @@ class CollectionBuilder:
                     logger.info("")
                 self.library.reload(item)
                 logger.info(f"{self.name} Collection | - | {self.item_title(item)}")
-                if self.smart_label_collection:
-                    self.library.query_data(item.removeLabel, self.name)
-                else:
-                    self.library.query_data(item.removeCollection, self.name)
+                self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
                 count_removed += 1
         if count_removed > 0:
             logger.info("")
@@ -2026,7 +2023,7 @@ class CollectionBuilder:
                 if current in collection_items:
                     logger.info(f"{name} Collection | = | {self.item_title(current)}")
                 else:
-                    self.library.add_to_collection(current, name, smart_label_collection=self.smart_label_collection)
+                    self.library.alter_collection(current, name, smart_label_collection=self.smart_label_collection)
                     logger.info(f"{name} Collection | + | {self.item_title(current)}")
             logger.info(f"{len(rating_keys)} {self.collection_level.capitalize()}{'s' if len(rating_keys) > 1 else ''} Processed")
 
