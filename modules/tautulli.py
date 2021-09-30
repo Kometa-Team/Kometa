@@ -43,8 +43,8 @@ class Tautulli:
         for item in items:
             if item["section_id"] == section_id and count < int(params['list_size']):
                 try:
-                    item = library.fetchItem(int(item["rating_key"]))
-                    if not isinstance(item, (Movie, Show)):
+                    plex_item = library.fetchItem(int(item["rating_key"]))
+                    if not isinstance(plex_item, (Movie, Show)):
                         raise BadRequest
                     rating_keys.append(item["rating_key"])
                 except (BadRequest, NotFound):
