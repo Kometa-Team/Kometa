@@ -302,6 +302,10 @@ class Plex(Library):
     def query_data(self, method, data):
         return method(data)
 
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    def query_collection(self, item, collection, locked=True):
+        item.addCollection(collection, locked=locked)
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_mode_query(self, collection, data):
         collection.modeUpdate(mode=data)
@@ -379,6 +383,16 @@ class Plex(Library):
         elif put:               method = self.Plex._server._session.put
         else:                   method = None
         return self.Plex._server.query(key, method=method)
+
+    def add_to_collection(self, item, collection, smart_label_collection=False):
+        if smart_label_collection:
+            self.query_data(item.addLabel, collection)
+        else:
+            locked = True
+            if self.agent in ["tv.plex.agents.movie", "tv.plex.agents.series"]:
+                field = next((f for f in item.fields if f.name == "collection"), None)
+                locked = field is not None
+            self.query_collection(item, collection, locked=locked)
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
