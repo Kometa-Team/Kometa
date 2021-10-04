@@ -98,7 +98,7 @@ logger.addHandler(cmd_handler)
 
 sys.excepthook = util.my_except_hook
 
-def start(config_path, is_test=False, time_scheduled=None, requested_collections=None, requested_libraries=None, resume_from=None):
+def start(attrs):
     file_logger = os.path.join(default_dir, "logs", "meta.log")
     should_roll_over = os.path.isfile(file_logger)
     file_handler = RotatingFileHandler(file_logger, delay=True, mode="w", backupCount=10, encoding="utf-8")
@@ -115,107 +115,117 @@ def start(config_path, is_test=False, time_scheduled=None, requested_collections
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.12.2-develop0930                                                      "))
-    if time_scheduled:              start_type = f"{time_scheduled} "
-    elif is_test:                   start_type = "Test "
-    elif requested_collections:     start_type = "Collections "
-    elif requested_libraries:       start_type = "Libraries "
+    logger.info(util.centered("    Version: 1.12.2-develop1004                                                      "))
+    if "time" in attrs:             start_type = f"{attrs['time']} "
+    elif "test" in attrs:           start_type = "Test "
+    elif "collections" in attrs:    start_type = "Collections "
+    elif "libraries" in attrs:      start_type = "Libraries "
     else:                           start_type = ""
     start_time = datetime.now()
-    if time_scheduled is None:
-        time_scheduled = start_time.strftime("%H:%M")
+    if "time" not in attrs:
+        attrs["time"] = start_time.strftime("%H:%M")
     util.separator(f"Starting {start_type}Run")
     try:
-        config = Config(default_dir, config_path=config_path, is_test=is_test,
-                        time_scheduled=time_scheduled, requested_collections=requested_collections,
-                        requested_libraries=requested_libraries, resume_from=resume_from)
-        update_libraries(config)
+        config = Config(default_dir, attrs)
     except Exception as e:
         util.print_stacktrace()
         util.print_multiline(e, critical=True)
+    else:
+        try:
+            update_libraries(config)
+        except Exception as e:
+            config.notify(e)
+            util.print_stacktrace()
+            util.print_multiline(e, critical=True)
     logger.info("")
     util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
     logger.removeHandler(file_handler)
 
 def update_libraries(config):
     for library in config.libraries:
-        os.makedirs(os.path.join(default_dir, "logs", library.mapping_name, "collections"), exist_ok=True)
-        col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, "library.log")
-        should_roll_over = os.path.isfile(col_file_logger)
-        library_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
-        util.apply_formatter(library_handler)
-        if should_roll_over:
-            library_handler.doRollover()
-        logger.addHandler(library_handler)
+        try:
+            os.makedirs(os.path.join(default_dir, "logs", library.mapping_name, "collections"), exist_ok=True)
+            col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, "library.log")
+            should_roll_over = os.path.isfile(col_file_logger)
+            library_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
+            util.apply_formatter(library_handler)
+            if should_roll_over:
+                library_handler.doRollover()
+            logger.addHandler(library_handler)
 
-        os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
-        logger.info("")
-        util.separator(f"{library.name} Library")
-        items = None
-        if not library.is_other:
+            os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
-            util.separator(f"Mapping {library.name} Library", space=False, border=False)
-            logger.info("")
-            items = library.map_guids()
-        if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
-            mass_metadata(config, library, items=items)
-        for metadata in library.metadata_files:
-            logger.info("")
-            util.separator(f"Running Metadata File\n{metadata.path}")
-            if not config.test_mode and not config.resume_from and not collection_only:
-                try:
-                    metadata.update_metadata()
-                except Failed as e:
-                    logger.error(e)
-            collections_to_run = metadata.get_collections(config.requested_collections)
-            if config.resume_from and config.resume_from not in collections_to_run:
+            util.separator(f"{library.name} Library")
+            items = None
+            if not library.is_other:
                 logger.info("")
-                logger.warning(f"Collection: {config.resume_from} not in Metadata File: {metadata.path}")
-                continue
-            if collections_to_run and not library_only:
+                util.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
-                util.separator(f"{'Test ' if config.test_mode else ''}Collections")
-                logger.removeHandler(library_handler)
-                run_collection(config, library, metadata, collections_to_run)
-                logger.addHandler(library_handler)
-        if library.run_sort:
-            logger.info("")
-            util.separator(f"Sorting {library.name} Library's Collections", space=False, border=False)
-            logger.info("")
-            for builder in library.run_sort:
+                items = library.map_guids()
+            if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
+                mass_metadata(config, library, items=items)
+            for metadata in library.metadata_files:
                 logger.info("")
-                util.separator(f"Sorting {builder.name} Collection", space=False, border=False)
+                util.separator(f"Running Metadata File\n{metadata.path}")
+                if not config.test_mode and not config.resume_from and not collection_only:
+                    try:
+                        metadata.update_metadata()
+                    except Failed as e:
+                        library.notify(e)
+                        logger.error(e)
+                collections_to_run = metadata.get_collections(config.requested_collections)
+                if config.resume_from and config.resume_from not in collections_to_run:
+                    logger.info("")
+                    logger.warning(f"Collection: {config.resume_from} not in Metadata File: {metadata.path}")
+                    continue
+                if collections_to_run and not library_only:
+                    logger.info("")
+                    util.separator(f"{'Test ' if config.test_mode else ''}Collections")
+                    logger.removeHandler(library_handler)
+                    run_collection(config, library, metadata, collections_to_run)
+                    logger.addHandler(library_handler)
+            if library.run_sort:
                 logger.info("")
-                builder.sort_collection()
+                util.separator(f"Sorting {library.name} Library's Collections", space=False, border=False)
+                logger.info("")
+                for builder in library.run_sort:
+                    logger.info("")
+                    util.separator(f"Sorting {builder.name} Collection", space=False, border=False)
+                    logger.info("")
+                    builder.sort_collection()
 
-        if not config.test_mode and not config.requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
-            logger.info("")
-            util.separator(f"Other {library.name} Library Operations")
-            unmanaged_collections = []
-            for col in library.get_all_collections():
-                if col.title not in library.collections:
-                    unmanaged_collections.append(col)
+            if not config.test_mode and not config.requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
+                logger.info("")
+                util.separator(f"Other {library.name} Library Operations")
+                unmanaged_collections = []
+                for col in library.get_all_collections():
+                    if col.title not in library.collections:
+                        unmanaged_collections.append(col)
 
-            if library.show_unmanaged and not library_only:
-                logger.info("")
-                util.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
-                logger.info("")
-                for col in unmanaged_collections:
-                    logger.info(col.title)
-                logger.info("")
-                logger.info(f"{len(unmanaged_collections)} Unmanaged Collections")
+                if library.show_unmanaged and not library_only:
+                    logger.info("")
+                    util.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
+                    logger.info("")
+                    for col in unmanaged_collections:
+                        logger.info(col.title)
+                    logger.info("")
+                    logger.info(f"{len(unmanaged_collections)} Unmanaged Collections")
 
-            if library.assets_for_all and not collection_only:
-                logger.info("")
-                util.separator(f"All {library.type}s Assets Check for {library.name} Library", space=False, border=False)
-                logger.info("")
-                for col in unmanaged_collections:
-                    poster, background = library.find_collection_assets(col, create=library.create_asset_folders)
-                    library.upload_images(col, poster=poster, background=background)
-                for item in library.get_all():
-                    library.update_item_from_assets(item, create=library.create_asset_folders)
+                if library.assets_for_all and not collection_only:
+                    logger.info("")
+                    util.separator(f"All {library.type}s Assets Check for {library.name} Library", space=False, border=False)
+                    logger.info("")
+                    for col in unmanaged_collections:
+                        poster, background = library.find_collection_assets(col, create=library.create_asset_folders)
+                        library.upload_images(col, poster=poster, background=background)
+                    for item in library.get_all():
+                        library.update_item_from_assets(item, create=library.create_asset_folders)
 
-        logger.removeHandler(library_handler)
+            logger.removeHandler(library_handler)
+        except Exception as e:
+            library.notify(e)
+            util.print_stacktrace()
+            util.print_multiline(e, critical=True)
 
     has_run_again = False
     for library in config.libraries:
@@ -234,26 +244,32 @@ def update_libraries(config):
         util.print_end()
         for library in config.libraries:
             if library.run_again:
-                col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, f"library.log")
-                library_handler = RotatingFileHandler(col_file_logger, mode="w", backupCount=3, encoding="utf-8")
-                util.apply_formatter(library_handler)
-                logger.addHandler(library_handler)
-                library_handler.addFilter(fmt_filter)
-                os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
-                logger.info("")
-                util.separator(f"{library.name} Library Run Again")
-                logger.info("")
-                library.map_guids()
-                for builder in library.run_again:
+                try:
+                    col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, f"library.log")
+                    library_handler = RotatingFileHandler(col_file_logger, mode="w", backupCount=3, encoding="utf-8")
+                    util.apply_formatter(library_handler)
+                    logger.addHandler(library_handler)
+                    library_handler.addFilter(fmt_filter)
+                    os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
                     logger.info("")
-                    util.separator(f"{builder.name} Collection")
+                    util.separator(f"{library.name} Library Run Again")
                     logger.info("")
-                    try:
-                        builder.run_collections_again()
-                    except Failed as e:
-                        util.print_stacktrace()
-                        util.print_multiline(e, error=True)
-                logger.removeHandler(library_handler)
+                    library.map_guids()
+                    for builder in library.run_again:
+                        logger.info("")
+                        util.separator(f"{builder.name} Collection")
+                        logger.info("")
+                        try:
+                            builder.run_collections_again()
+                        except Failed as e:
+                            library.notify(e, collection=builder.name, critical=False)
+                            util.print_stacktrace()
+                            util.print_multiline(e, error=True)
+                    logger.removeHandler(library_handler)
+                except Exception as e:
+                    library.notify(e)
+                    util.print_stacktrace()
+                    util.print_multiline(e, critical=True)
 
     used_url = []
     for library in config.libraries:
@@ -457,7 +473,7 @@ def run_collection(config, library, metadata, requested_collections):
             collection_log_name, output_str = util.validate_filename(mapping_name)
         collection_log_folder = os.path.join(default_dir, "logs", library.mapping_name, "collections", collection_log_name)
         os.makedirs(collection_log_folder, exist_ok=True)
-        col_file_logger = os.path.join(collection_log_folder, f"collection.log")
+        col_file_logger = os.path.join(collection_log_folder, "collection.log")
         should_roll_over = os.path.isfile(col_file_logger)
         collection_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
         util.apply_formatter(collection_handler)
@@ -533,6 +549,8 @@ def run_collection(config, library, metadata, requested_collections):
                         library.run_sort.append(builder)
                         # builder.sort_collection()
 
+            builder.send_notifications()
+
             if builder.item_details and run_item_details:
                 try:
                     builder.load_collection_items()
@@ -546,9 +564,11 @@ def run_collection(config, library, metadata, requested_collections):
                 library.run_again.append(builder)
 
         except Failed as e:
+            library.notify(e, collection=mapping_name)
             util.print_stacktrace()
             util.print_multiline(e, error=True)
         except Exception as e:
+            library.notify(f"Unknown Error: {e}", collection=mapping_name)
             util.print_stacktrace()
             logger.error(f"Unknown Error: {e}")
         logger.info("")
@@ -557,7 +577,13 @@ def run_collection(config, library, metadata, requested_collections):
 
 try:
     if run or test or collections or libraries or resume:
-        start(config_file, is_test=test, requested_collections=collections, requested_libraries=libraries, resume_from=resume)
+        start({
+            "config_file": config_file,
+            "test": test,
+            "collections": collections,
+            "libraries": libraries,
+            "resume": resume
+        })
     else:
         times_to_run = util.get_list(times)
         valid_times = []
@@ -570,7 +596,7 @@ try:
                 else:
                     raise Failed(f"Argument Error: blank time argument")
         for time_to_run in valid_times:
-            schedule.every().day.at(time_to_run).do(start, config_file, time_scheduled=time_to_run)
+            schedule.every().day.at(time_to_run).do(start, {"config_file": config_file, "time": time_to_run})
         while True:
             schedule.run_pending()
             if not no_countdown:
