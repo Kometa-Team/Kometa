@@ -57,7 +57,7 @@ class IMDb:
                     pass
         if total > 0:
             return total, item_counts[page_type]
-        raise ValueError(f"IMDb Error: Failed to parse URL: {imdb_url}")
+        raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
 
     def _ids_from_url(self, imdb_url, language, limit):
         total, item_count = self._total(imdb_url, language)
@@ -93,7 +93,7 @@ class IMDb:
         if len(imdb_ids) > 0:
             logger.debug(f"{len(imdb_ids)} IMDb IDs Found: {imdb_ids}")
             return imdb_ids
-        raise ValueError(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
+        raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
     def get_imdb_ids(self, method, data, language):
         if method == "imdb_id":

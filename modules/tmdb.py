@@ -56,9 +56,12 @@ class TMDb:
         self.TMDb = tmdbv3api.TMDb(session=self.config.session)
         self.TMDb.api_key = params["apikey"]
         self.TMDb.language = params["language"]
-        response = tmdbv3api.Configuration().info()
-        if hasattr(response, "status_message"):
-            raise Failed(f"TMDb Error: {response.status_message}")
+        try:
+            response = tmdbv3api.Configuration().info()
+            if hasattr(response, "status_message"):
+                raise Failed(f"TMDb Error: {response.status_message}")
+        except TMDbException as e:
+            raise Failed(f"TMDb Error: {e}")
         self.apikey = params["apikey"]
         self.language = params["language"]
         self.Movie = tmdbv3api.Movie()

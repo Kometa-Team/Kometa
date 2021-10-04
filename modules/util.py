@@ -29,6 +29,9 @@ class ImageData:
         self.compare = location if is_url else os.stat(location).st_size
         self.message = f"{prefix}{'poster' if is_poster else 'background'} to [{'URL' if is_url else 'File'}] {location}"
 
+    def __str__(self):
+        return str(self.__dict__)
+
 def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)
 

@@ -13,6 +13,7 @@ class Library(ABC):
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
+        self.Notifiarr = None
         self.collections = []
         self.metadatas = []
         self.metadata_files = []
@@ -54,6 +55,9 @@ class Library(ABC):
         self.sonarr_add_all = params["sonarr_add_all"]
         self.collection_minimum = params["collection_minimum"]
         self.delete_below_minimum = params["delete_below_minimum"]
+        self.notifiarr_collection_creation = params["notifiarr_collection_creation"]
+        self.notifiarr_collection_addition = params["notifiarr_collection_addition"]
+        self.notifiarr_collection_removing = params["notifiarr_collection_removing"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
@@ -174,6 +178,9 @@ class Library(ABC):
                 self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, item.thumb, poster.compare if poster else "")
             if background_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
+
+    def notify(self, text, collection=None, critical=True):
+        self.config.notify(text, library=self, collection=collection, critical=critical)
 
     @abstractmethod
     def _upload_image(self, item, image):
