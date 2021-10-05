@@ -279,7 +279,7 @@ class Plex(Library):
 
     def get_all(self):
         logger.info(f"Loading All {self.type}s from Library: {self.name}")
-        key = f"/library/sections/{self.Plex.key}/all?type={utils.searchType(self.Plex.TYPE)}"
+        key = f"/library/sections/{self.Plex.key}/all?includeGuids=1&type={utils.searchType(self.Plex.TYPE)}"
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
         results = []
@@ -316,11 +316,6 @@ class Plex(Library):
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_order_query(self, collection, data):
         collection.sortUpdate(sort=data)
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def get_guids(self, item):
-        self.reload(item)
-        return item.guids
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item):
