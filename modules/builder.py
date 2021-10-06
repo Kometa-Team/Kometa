@@ -2038,7 +2038,7 @@ class CollectionBuilder:
                 (self.details["notifiarr_collection_creation"] and self.created) or
                 (self.details["notifiarr_collection_addition"] and len(self.notifiarr_additions) > 0) or
                 (self.details["notifiarr_collection_removing"] and len(self.notifiarr_removals) > 0)
-            ):
+        ):
             self.obj.reload()
             self.library.Notifiarr.plex_collection(
                 self.obj,
