@@ -116,11 +116,11 @@ def start(attrs):
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
     logger.info(util.centered("    Version: 1.12.2-develop1004                                                      "))
-    if "time" in attrs:             start_type = f"{attrs['time']} "
-    elif "test" in attrs:           start_type = "Test "
-    elif "collections" in attrs:    start_type = "Collections "
-    elif "libraries" in attrs:      start_type = "Libraries "
-    else:                           start_type = ""
+    if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
+    elif "test" in attrs and attrs["test"]:                 start_type = "Test "
+    elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
+    elif "libraries" in attrs and attrs["libraries"]:       start_type = "Libraries "
+    else:                                                   start_type = ""
     start_time = datetime.now()
     if "time" not in attrs:
         attrs["time"] = start_time.strftime("%H:%M")
