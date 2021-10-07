@@ -40,12 +40,12 @@ class Config:
         logger.info(f"Using {self.config_path} as config")
 
         self.default_dir = default_dir
-        self.test_mode = attrs["test"]
+        self.test_mode = attrs["test"] if "test" in attrs else False
         self.run_start_time = attrs["time"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
-        self.requested_collections = util.get_list(attrs["collections"])
-        self.requested_libraries = util.get_list(attrs["libraries"])
-        self.resume_from = attrs["resume"]
+        self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
+        self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
+        self.resume_from = attrs["resume"] if "resume" in attrs else None
 
         yaml.YAML().allow_duplicate_keys = True
         try:
