@@ -761,7 +761,6 @@ class CollectionBuilder:
             else:
                 raise Failed(f"Collection Error: {method_name} attribute must be either announced, cinemas, released or db")
         elif method_name == "radarr_quality":
-            self.library.Radarr.get_profile_id(method_data)
             self.radarr_details["quality"] = method_data
         elif method_name == "radarr_tag":
             self.radarr_details["tag"] = util.get_list(method_data)
@@ -769,19 +768,13 @@ class CollectionBuilder:
     def _sonarr(self, method_name, method_data):
         if method_name in ["sonarr_add", "sonarr_add_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
             self.sonarr_details[method_name[7:]] = util.parse(method_name, method_data, datatype="bool")
-        elif method_name == "sonarr_folder":
-            self.sonarr_details["folder"] = method_data
+        elif method_name in ["sonarr_folder", "sonarr_quality", "sonarr_language"]:
+            self.sonarr_details[method_name[7:]] = method_data
         elif method_name == "sonarr_monitor":
             if str(method_data).lower() in sonarr.monitor_translation:
                 self.sonarr_details["monitor"] = str(method_data).lower()
             else:
                 raise Failed(f"Collection Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
-        elif method_name == "sonarr_quality":
-            self.library.Sonarr.get_profile_id(method_data, "quality_profile")
-            self.sonarr_details["quality"] = method_data
-        elif method_name == "sonarr_language":
-            self.library.Sonarr.get_profile_id(method_data, "language_profile")
-            self.sonarr_details["language"] = method_data
         elif method_name == "sonarr_series":
             if str(method_data).lower() in sonarr.series_type:
                 self.sonarr_details["series"] = str(method_data).lower()

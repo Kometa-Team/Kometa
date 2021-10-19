@@ -98,6 +98,14 @@ logger.addHandler(cmd_handler)
 
 sys.excepthook = util.my_except_hook
 
+version = "Unknown"
+with open("VERSION") as handle:
+    for line in handle.readlines():
+        line = line.strip()
+        if len(line) > 0:
+            version = line
+            break
+
 def start(attrs):
     file_logger = os.path.join(default_dir, "logs", "meta.log")
     should_roll_over = os.path.isfile(file_logger)
@@ -108,14 +116,14 @@ def start(attrs):
         file_handler.doRollover()
     logger.addHandler(file_handler)
     util.separator()
-    logger.info(util.centered("                                                                                     "))
+    logger.info("")
     logger.info(util.centered(" ____  _             __  __      _          __  __                                   "))
     logger.info(util.centered("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ "))
     logger.info(util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|"))
     logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
     logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
     logger.info(util.centered("                                                                     |___/           "))
-    logger.info(util.centered("    Version: 1.12.2-develop1004                                                      "))
+    logger.info(f"    Version: {version}")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
     elif "test" in attrs and attrs["test"]:                 start_type = "Test "
     elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
