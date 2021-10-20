@@ -88,7 +88,7 @@ ignored_details = [
 details = ["collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
-item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_assets", "revert_overlay"] + list(plex.item_advance_keys.keys())
+item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_assets", "revert_overlay", "item_refresh"] + list(plex.item_advance_keys.keys())
 radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
@@ -735,7 +735,7 @@ class CollectionBuilder:
                 raise Failed("Each Overlay can only be used once per Library")
             self.library.overlays.append(method_data)
             self.item_details[method_name] = method_data
-        elif method_name in ["item_assets", "revert_overlay"]:
+        elif method_name in ["item_assets", "revert_overlay", "item_refresh"]:
             if util.parse(method_name, method_data, datatype="bool", default=False):
                 self.item_details[method_name] = True
         elif method_name in plex.item_advance_keys:
@@ -1817,6 +1817,8 @@ class CollectionBuilder:
                     if getattr(item, key) != options[method_data]:
                         advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
+            if "item_refresh" in self.item_details:
+                item.refresh()
 
         if len(tmdb_ids) > 0:
             if "item_radarr_tag" in self.item_details:
