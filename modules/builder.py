@@ -1327,11 +1327,12 @@ class CollectionBuilder:
                         bool_mod = "" if validation else "!"
                         bool_arg = "true" if validation else "false"
                         results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
-                    elif (attr in ["title", "episode_title", "studio", "decade", "year", "episode_year"] or attr in plex.tags) and modifier in ["", ".not", ".begins", ".ends"]:
+                    elif (attr in ["title", "episode_title", "studio", "decade", "year", "episode_year"] or attr in plex.tags) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends"]:
                         results = ""
                         display_add = ""
                         for og_value, result in validation:
-                            built_arg = build_url_arg(quote(result) if attr in string_filters else result, arg_s=og_value)
+                            print(og_value, result)
+                            built_arg = build_url_arg(quote(str(result)) if attr in string_filters else result, arg_s=og_value)
                             display_add += built_arg[1]
                             results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
                     else:
@@ -1503,6 +1504,30 @@ class CollectionBuilder:
         util.print_end()
         logger.info("")
         logger.info(f"{total} {self.collection_level.capitalize()}{'s' if total > 1 else ''} Processed")
+
+    def sync_collection(self):
+        count_removed = 0
+        for ratingKey, item in self.plex_map.items():
+            if item is not None:
+                if count_removed == 0:
+                    logger.info("")
+                    util.separator(f"Removed from {self.name} Collection", space=False, border=False)
+                    logger.info("")
+                self.library.reload(item)
+                logger.info(f"{self.name} Collection | - | {self.item_title(item)}")
+                self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
+                if self.details["notifiarr_collection_removing"]:
+                    if self.library.is_movie and item.ratingKey in self.library.movie_rating_key_map:
+                        remove_id = self.library.movie_rating_key_map[item.ratingKey]
+                    elif self.library.is_show and item.ratingKey in self.library.show_rating_key_map:
+                        remove_id = self.library.show_rating_key_map[item.ratingKey]
+                    else:
+                        remove_id = None
+                    self.notifiarr_removals.append({"title": item.title, "id": remove_id})
+                count_removed += 1
+        if count_removed > 0:
+            logger.info("")
+            logger.info(f"{count_removed} {self.collection_level.capitalize()}{'s' if count_removed == 1 else ''} Removed")
 
     def check_tmdb_filter(self, item_id, is_movie, item=None, check_released=False):
         if self.tmdb_filters or check_released:
@@ -1716,30 +1741,6 @@ class CollectionBuilder:
             return f"{item.title} ({item.year})"
         else:
             return item.title
-
-    def sync_collection(self):
-        count_removed = 0
-        for ratingKey, item in self.plex_map.items():
-            if item is not None:
-                if count_removed == 0:
-                    logger.info("")
-                    util.separator(f"Removed from {self.name} Collection", space=False, border=False)
-                    logger.info("")
-                self.library.reload(item)
-                logger.info(f"{self.name} Collection | - | {self.item_title(item)}")
-                self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
-                if self.details["notifiarr_collection_removing"]:
-                    if self.library.is_movie and item.ratingKey in self.library.movie_rating_key_map:
-                        remove_id = self.library.movie_rating_key_map[item.ratingKey]
-                    elif self.library.is_show and item.ratingKey in self.library.show_rating_key_map:
-                        remove_id = self.library.show_rating_key_map[item.ratingKey]
-                    else:
-                        remove_id = None
-                    self.notifiarr_removals.append({"title": item.title, "id": remove_id})
-                count_removed += 1
-        if count_removed > 0:
-            logger.info("")
-            logger.info(f"{count_removed} {self.collection_level.capitalize()}{'s' if count_removed == 1 else ''} Removed")
 
     def load_collection_items(self):
         if self.build_collection and self.obj:
