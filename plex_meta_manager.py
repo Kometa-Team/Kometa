@@ -526,6 +526,8 @@ def run_collection(config, library, metadata, requested_collections):
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
                     builder.add_to_collection()
+                    if builder.sync:
+                        builder.sync_collection()
                 elif len(builder.rating_keys) < builder.minimum and builder.build_collection:
                     logger.info("")
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
@@ -533,14 +535,13 @@ def run_collection(config, library, metadata, requested_collections):
                         builder.delete_collection()
                         logger.info("")
                         logger.info(f"Collection {builder.obj.title} deleted")
+
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     if builder.details["show_missing"] is True:
                         logger.info("")
                         util.separator(f"Missing from Library", space=False, border=False)
                         logger.info("")
                     builder.run_missing()
-                if builder.sync and len(builder.rating_keys) > 0 and builder.build_collection:
-                    builder.sync_collection()
 
             run_item_details = True
             if builder.build_collection:
