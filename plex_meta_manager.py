@@ -6,7 +6,7 @@ try:
     from modules import util
     from modules.builder import CollectionBuilder
     from modules.config import Config
-    from modules.util import Failed
+    from modules.util import Failed, NotScheduled
 except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
     sys.exit(0)
@@ -572,6 +572,9 @@ def run_collection(config, library, metadata, requested_collections):
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
 
+
+        except NotScheduled as e:
+            util.print_multiline(e, info=True)
         except Failed as e:
             library.notify(e, collection=mapping_name)
             util.print_stacktrace()
