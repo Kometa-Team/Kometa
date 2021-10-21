@@ -1,7 +1,7 @@
 import logging, os, re
 from datetime import datetime, timedelta
 from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
-from modules.util import Failed, ImageData
+from modules.util import Failed, ImageData, NotScheduled
 from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
@@ -391,7 +391,7 @@ class CollectionBuilder:
                 if len(self.schedule) == 0:
                     skip_collection = False
                 if skip_collection:
-                    raise Failed(f"{self.schedule}\n\nCollection {self.name} not scheduled to run")
+                    raise NotScheduled(f"{self.schedule}\n\nCollection {self.name} not scheduled to run")
 
         self.collectionless = "plex_collectionless" in methods
 
