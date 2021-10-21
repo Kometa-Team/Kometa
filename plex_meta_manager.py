@@ -99,7 +99,7 @@ logger.addHandler(cmd_handler)
 sys.excepthook = util.my_except_hook
 
 version = "Unknown"
-with open("VERSION") as handle:
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) as handle:
     for line in handle.readlines():
         line = line.strip()
         if len(line) > 0:
