@@ -9,8 +9,10 @@ redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
 redirect_uri_encoded = redirect_uri.replace(":", "%3A")
 base_url = "https://api.trakt.tv"
 builders = [
-    "trakt_collected", "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular",
-    "trakt_recommended", "trakt_trending", "trakt_watched", "trakt_watchlist"
+    "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
+    "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
+    "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
+    "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular", "trakt_trending", "trakt_watchlist"
 ]
 sorts = [
     "rank", "added", "title", "released", "runtime", "popularity",
@@ -216,9 +218,10 @@ class Trakt:
     def get_trakt_ids(self, method, data, is_movie):
         pretty = method.replace("_", " ").title()
         media_type = "Movie" if is_movie else "Show"
-        if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
+        if method.startswith(("trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected")):
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
-            return self._pagenation(method[6:], data, is_movie)
+            terms = method.split("_")
+            return self._pagenation(f"{terms[1]}{f'/{terms[2]}' if len(terms) > 2 else ''}", data, is_movie)
         elif method in ["trakt_collection", "trakt_watchlist"]:
             logger.info(f"Processing {pretty} {media_type}s for {data}")
             return self._user_items(method[6:], data, is_movie)
