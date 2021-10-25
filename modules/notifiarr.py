@@ -42,7 +42,7 @@ class NotifiarrBase:
 class NotifiarrFactory(NotifiarrBase):
     def __init__(self, config, params):
         super().__init__(config, params["apikey"], params["develop"], params["test"], params["error_notification"])
-        if not params["test"] and not self._request("user/validate/")["message"]["response"]:
+        if not params["test"] and not self._request("user/validate/")["details"]["response"]:
             raise Failed("Notifiarr Error: Invalid apikey")
 
     def getNotifiarr(self, library):
