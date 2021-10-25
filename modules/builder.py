@@ -41,7 +41,8 @@ method_alias = {
     "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
     "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
-    "mal_producer": "mal_studio", "mal_licensor": "mal_studio"
+    "mal_producer": "mal_studio", "mal_licensor": "mal_studio",
+    "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly"
 }
 filter_translation = {
     "actor": "actors",
@@ -1027,7 +1028,7 @@ class CollectionBuilder:
                 self.builders.append(("trakt_list", trakt_list))
             if method_name.endswith("_details"):
                 self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
-        elif method_name in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
+        elif method_name.startswith(("trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected")):
             self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
         elif method_name in ["trakt_watchlist", "trakt_collection"]:
             for trakt_list in self.config.Trakt.validate_trakt(method_data, self.library.is_movie, trakt_type=method_name[6:]):
