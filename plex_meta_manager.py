@@ -2,7 +2,7 @@ import argparse, logging, os, sys, time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 try:
-    import schedule
+    import plexapi, schedule
     from modules import util
     from modules.builder import CollectionBuilder
     from modules.config import Config
@@ -161,7 +161,7 @@ def update_libraries(config):
                 library_handler.doRollover()
             logger.addHandler(library_handler)
 
-            os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
+            plexapi.TIMEOUT = library.timeout
             logger.info("")
             util.separator(f"{library.name} Library")
             items = None
