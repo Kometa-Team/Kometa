@@ -25,7 +25,7 @@ class NotifiarrBase:
             logger.debug(json)
             logger.debug("")
             logger.debug(response_json)
-        if response.status_code >= 400 or ("response" in response_json and response_json["response"] == "error"):
+        if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
             raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
         return response_json
 
