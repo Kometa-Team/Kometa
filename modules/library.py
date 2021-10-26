@@ -203,17 +203,16 @@ class Library(ABC):
         pass
 
     def add_missing(self, collection, items, is_movie):
-        col_name = collection.encode("ascii", "replace").decode()
-        if col_name not in self.missing:
-            self.missing[col_name] = {}
+        if collection not in self.missing:
+            self.missing[collection] = {}
         section = "Movies Missing (TMDb IDs)" if is_movie else "Shows Missing (TVDb IDs)"
-        if section not in self.missing[col_name]:
-            self.missing[col_name][section] = {}
+        if section not in self.missing[collection]:
+            self.missing[collection][section] = {}
         for title, item_id in items:
-            self.missing[col_name][section][int(item_id)] = str(title).encode("ascii", "replace").decode()
+            self.missing[collection][section][int(item_id)] = title
         with open(self.missing_path, "w"): pass
         try:
-            yaml.round_trip_dump(self.missing, open(self.missing_path, "w"))
+            yaml.round_trip_dump(self.missing, open(self.missing_path, "w", encoding="utf-8"))
         except yaml.scanner.ScannerError as e:
             util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
 
