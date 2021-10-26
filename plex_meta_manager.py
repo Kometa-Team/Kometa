@@ -161,7 +161,7 @@ def update_libraries(config):
                 library_handler.doRollover()
             logger.addHandler(library_handler)
 
-            plexapi.TIMEOUT = library.timeout
+            plexapi.server.TIMEOUT = library.timeout
             logger.info("")
             util.separator(f"{library.name} Library")
             items = None
