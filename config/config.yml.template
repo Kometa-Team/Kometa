@@ -29,6 +29,15 @@ settings:                                       # Can be individually specified 
   show_missing: true
   save_missing: true
   run_again_delay: 2
+  released_missing_only: false
+  create_asset_folders: false
+  missing_only_released: false
+  collection_minimum: 1
+  delete_below_minimum: true
+  notifiarr_collection_creation: false
+  notifiarr_collection_addition: false
+  notifiarr_collection_removing: false
+  tvdb_language: eng
 plex:                                           # Can be individually specified per library as well
   url: http://192.168.1.12:32400
   token: ####################
@@ -67,6 +76,9 @@ sonarr:                                         # Can be individually specified 
   cutoff_search: false
 omdb:
   apikey: ########
+notifiarr:
+  apikey: ####################################
+  error_notification: true
 trakt:
   client_id: ################################################################
   client_secret: ################################################################
