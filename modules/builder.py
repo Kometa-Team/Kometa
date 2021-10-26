@@ -1697,14 +1697,13 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
                     continue
-                current_title = str(show.title.encode("ascii", "replace").decode())
                 if self.check_tmdb_filter(missing_id, False, check_released=self.details["missing_only_released"]):
-                    missing_shows_with_names.append((current_title, missing_id))
+                    missing_shows_with_names.append((show.title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} Collection | ? | {current_title} (TVDB: {missing_id})")
+                        logger.info(f"{self.name} Collection | ? | {show.title} (TVDB: {missing_id})")
                 else:
                     if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} Collection | X | {current_title} (TVDb: {missing_id})")
+                        logger.info(f"{self.name} Collection | X | {show.title} (TVDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
             if len(missing_shows_with_names) > 0:
@@ -2102,7 +2101,7 @@ class CollectionBuilder:
             for missing_id in self.run_again_shows:
                 if missing_id not in self.library.show_map:
                     try:
-                        title = str(self.config.TVDb.get_series(self.language, missing_id).title.encode("ascii", "replace").decode())
+                        title = self.config.TVDb.get_series(self.language, missing_id).title
                     except Failed as e:
                         logger.error(e)
                         continue
