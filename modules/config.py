@@ -192,7 +192,8 @@ class Config:
             "delete_below_minimum": check_for_attribute(self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False),
             "notifiarr_collection_creation": check_for_attribute(self.data, "notifiarr_collection_creation", parent="settings", var_type="bool", default=False),
             "notifiarr_collection_addition": check_for_attribute(self.data, "notifiarr_collection_addition", parent="settings", var_type="bool", default=False),
-            "notifiarr_collection_removing": check_for_attribute(self.data, "notifiarr_collection_removing", parent="settings", var_type="bool", default=False)
+            "notifiarr_collection_removing": check_for_attribute(self.data, "notifiarr_collection_removing", parent="settings", var_type="bool", default=False),
+            "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default")
         }
         if self.general["cache"]:
             util.separator()
@@ -304,7 +305,7 @@ class Config:
             if self.AniDB is None:
                 self.AniDB = AniDB(self, None)
 
-            self.TVDb = TVDb(self)
+            self.TVDb = TVDb(self, self.general["tvdb_language"])
             self.IMDb = IMDb(self)
             self.Convert = Convert(self)
             self.AniList = AniList(self)

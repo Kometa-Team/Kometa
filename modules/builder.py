@@ -651,9 +651,9 @@ class CollectionBuilder:
         elif method_name == "tmdb_biography":
             self.summaries[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, "TMDb Person ID")).biography
         elif method_name == "tvdb_summary":
-            self.summaries[method_name] = self.config.TVDb.get_movie_or_show(method_data, self.language, self.library.is_movie).summary
+            self.summaries[method_name] = self.config.TVDb.get_item(method_data, self.library.is_movie).summary
         elif method_name == "tvdb_description":
-            self.summaries[method_name] = self.config.TVDb.get_list_description(method_data, self.language)
+            self.summaries[method_name] = self.config.TVDb.get_list_description(method_data)
         elif method_name == "trakt_description":
             self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_trakt(method_data, self.library.is_movie)[0])
         elif method_name == "letterboxd_description":
@@ -671,7 +671,7 @@ class CollectionBuilder:
             url_slug = self.config.TMDb.get_person(util.regex_first_int(method_data, 'TMDb Person ID')).profile_path
             self.posters[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
         elif method_name == "tvdb_poster":
-            self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.language, self.library.is_movie).poster_path}"
+            self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).poster_path}"
         elif method_name == "file_poster":
             if os.path.exists(method_data):
                 self.posters[method_name] = os.path.abspath(method_data)
@@ -685,7 +685,7 @@ class CollectionBuilder:
             url_slug = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path
             self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
         elif method_name == "tvdb_background":
-            self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.language, self.library.is_movie).background_path}"
+            self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).background_path}"
         elif method_name == "file_background":
             if os.path.exists(method_data):
                 self.backgrounds[method_name] = os.path.abspath(method_data)
@@ -1041,7 +1041,7 @@ class CollectionBuilder:
         values = util.get_list(method_data)
         if method_name.endswith("_details"):
             if method_name.startswith(("tvdb_movie", "tvdb_show")):
-                item = self.config.TVDb.get_item(self.language, values[0], method_name.startswith("tvdb_movie"))
+                item = self.config.TVDb.get_item(values[0], method_name.startswith("tvdb_movie"))
                 if hasattr(item, "description") and item.description:
                     self.summaries[method_name] = item.description
                 if hasattr(item, "background_path") and item.background_path:
@@ -1049,7 +1049,7 @@ class CollectionBuilder:
                 if hasattr(item, "poster_path") and item.poster_path:
                     self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
             elif method_name.startswith("tvdb_list"):
-                self.summaries[method_name] = self.config.TVDb.get_list_description(values[0], self.language)
+                self.summaries[method_name] = self.config.TVDb.get_list_description(values[0])
         for value in values:
             self.builders.append((method_name[:-8] if method_name.endswith("_details") else method_name, value))
 
@@ -1104,7 +1104,7 @@ class CollectionBuilder:
                 mal_ids = self.config.MyAnimeList.get_mal_ids(method, value)
                 ids = self.config.Convert.myanimelist_to_ids(mal_ids, self.library)
             elif "tvdb" in method:
-                ids = self.config.TVDb.get_tvdb_ids(method, value, self.language)
+                ids = self.config.TVDb.get_tvdb_ids(method, value)
             elif "imdb" in method:
                 ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
             elif "icheckmovies" in method:
@@ -1693,7 +1693,7 @@ class CollectionBuilder:
             missing_shows_with_names = []
             for missing_id in self.missing_shows:
                 try:
-                    show = self.config.TVDb.get_series(self.language, missing_id)
+                    show = self.config.TVDb.get_series(missing_id)
                 except Failed as e:
                     logger.error(e)
                     continue
@@ -2101,7 +2101,7 @@ class CollectionBuilder:
             for missing_id in self.run_again_shows:
                 if missing_id not in self.library.show_map:
                     try:
-                        title = self.config.TVDb.get_series(self.language, missing_id).title
+                        title = self.config.TVDb.get_series(missing_id).title
                     except Failed as e:
                         logger.error(e)
                         continue
