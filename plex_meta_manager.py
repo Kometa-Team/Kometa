@@ -203,10 +203,16 @@ def update_libraries(config):
                     builder.sort_collection()
 
             if not config.test_mode and not config.requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
-                logger.info("")
-                util.separator(f"Other {library.name} Library Operations")
+                if library.delete_collections_with_less is not None:
+                    logger.info("")
+                    text = f" with less then {library.delete_collections_with_less} item{'s' if library.delete_collections_with_less > 1 else ''}"
+                    util.separator(f"Deleting All Collections{text if library.delete_collections_with_less > 0 else ''}", space=False, border=False)
+                    logger.info("")
                 unmanaged_collections = []
                 for col in library.get_all_collections():
+                    if library.delete_collections_with_less is not None and (library.delete_collections_with_less == 0 or col.childCount < library.delete_collections_with_less):
+                        library.query(col.delete)
+                        logger.info(f"{col.title} Deleted")
                     if col.title not in library.collections:
                         unmanaged_collections.append(col)
 
@@ -215,7 +221,11 @@ def update_libraries(config):
                     util.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
                     logger.info("")
                     for col in unmanaged_collections:
-                        logger.info(col.title)
+                        if library.delete_unmanaged_collections:
+                            library.query(col.delete)
+                            logger.info(f"{col.title} Deleted")
+                        else:
+                            logger.info(col.title)
                     logger.info("")
                     logger.info(f"{len(unmanaged_collections)} Unmanaged Collections")
 
