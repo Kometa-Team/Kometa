@@ -179,7 +179,7 @@ class Config:
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60),
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")]),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
-            "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False),
+            "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False),
             "sync_mode": check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes),
             "run_again_delay": check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0),
             "show_unmanaged": check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True),
@@ -379,7 +379,7 @@ class Config:
                     logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
                 params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
-                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
+                assets_for_all = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
                 params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
                 params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
@@ -392,6 +392,10 @@ class Config:
                 params["notifiarr_collection_creation"] = check_for_attribute(lib, "notifiarr_collection_creation", parent="settings", var_type="bool", default=self.general["notifiarr_collection_creation"], do_print=False, save=False)
                 params["notifiarr_collection_addition"] = check_for_attribute(lib, "notifiarr_collection_addition", parent="settings", var_type="bool", default=self.general["notifiarr_collection_addition"], do_print=False, save=False)
                 params["notifiarr_collection_removing"] = check_for_attribute(lib, "notifiarr_collection_removing", parent="settings", var_type="bool", default=self.general["notifiarr_collection_removing"], do_print=False, save=False)
+
+                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", var_type="bool", default=assets_for_all, save=False, do_print=lib and "assets_for_all" in lib)
+                params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", var_type="bool", default=False, save=False, do_print=lib and "delete_unmanaged_collections" in lib)
+                params["delete_collections_with_less"] = check_for_attribute(lib, "delete_collections_with_less", var_type="int", default_is_none=True, save=False, do_print=lib and "delete_collections_with_less" in lib)
 
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=lib and "mass_genre_update" in lib)
                 if self.OMDb is None and params["mass_genre_update"] == "omdb":

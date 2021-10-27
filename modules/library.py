@@ -39,7 +39,6 @@ class Library(ABC):
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
         self.missing_path = os.path.join(self.default_dir, f"{self.original_mapping_name}_missing.yml")
         self.asset_folders = params["asset_folders"]
-        self.assets_for_all = params["assets_for_all"]
         self.sync_mode = params["sync_mode"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_filtered = params["show_filtered"]
@@ -47,6 +46,9 @@ class Library(ABC):
         self.save_missing = params["save_missing"]
         self.missing_only_released = params["missing_only_released"]
         self.create_asset_folders = params["create_asset_folders"]
+        self.assets_for_all = params["assets_for_all"]
+        self.delete_unmanaged_collections = params["delete_unmanaged_collections"]
+        self.delete_collections_with_less = params["delete_collections_with_less"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
