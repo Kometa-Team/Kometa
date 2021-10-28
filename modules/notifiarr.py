@@ -18,7 +18,7 @@ class NotifiarrBase:
     def _request(self, path, json=None, params=None):
         url = f"{dev_url if self.develop else base_url}" + \
               ("notification/test" if self.test else f"{path}{self.apikey}")
-        logger.debug(url)
+        logger.debug(url.replace(self.apikey, "APIKEY"))
         response = self.config.get(url, json=json, params={"event": "pmm"} if self.test else params)
         response_json = response.json()
         if self.develop or self.test:
