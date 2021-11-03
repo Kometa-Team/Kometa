@@ -66,9 +66,12 @@ class IMDb:
         parsed_url = urlparse(imdb_url)
         params = parse_qs(parsed_url.query)
         imdb_base = parsed_url._replace(query=None).geturl()
-        params.pop("start", None)
-        params.pop("count", None)
-        params.pop("page", None)
+        params.pop("start", None) # noqa
+        params.pop("count", None) # noqa
+        params.pop("page", None) # noqa
+        if self.config.trace_mode:
+            logger.debug(f"URL: {imdb_base}")
+            logger.debug(f"Params: {params}")
 
         if limit < 1 or total < limit:
             limit = total
@@ -80,10 +83,10 @@ class IMDb:
             start_num = (i - 1) * item_count + 1
             util.print_return(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
             if imdb_base.startswith((urls["list"], urls["keyword"])):
-                params["page"] = i
+                params["page"] = i # noqa
             else:
-                params["count"] = remainder if i == num_of_pages else item_count
-                params["start"] = start_num
+                params["count"] = remainder if i == num_of_pages else item_count # noqa
+                params["start"] = start_num # noqa
             ids_found = self.config.get_html(imdb_base, headers=headers, params=params).xpath(xpath["imdb_id"])
             if imdb_base.startswith((urls["list"], urls["keyword"])) and i == num_of_pages:
                 ids_found = ids_found[:remainder]

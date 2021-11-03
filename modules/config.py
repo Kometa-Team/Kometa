@@ -42,6 +42,7 @@ class Config:
 
         self.default_dir = default_dir
         self.test_mode = attrs["test"] if "test" in attrs else False
+        self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.run_start_time = attrs["time"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None

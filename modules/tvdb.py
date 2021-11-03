@@ -27,6 +27,8 @@ class TVDbObj:
         else:
             raise Failed(f"TVDb Error: {self.tvdb_url} must begin with {urls['movies'] if self.is_movie else urls['series']}")
 
+        if self.config.trace_mode:
+            logger.debug(f"URL: {tvdb_url}")
         response = self.config.get_html(self.tvdb_url, headers=util.header(self.language))
         results = response.xpath(f"//*[text()='TheTVDB.com {self.media_type} ID']/parent::node()/span/text()")
         if len(results) > 0:
@@ -111,6 +113,8 @@ class TVDb:
     def _ids_from_url(self, tvdb_url):
         ids = []
         tvdb_url = tvdb_url.strip()
+        if self.config.trace_mode:
+            logger.debug(f"URL: {tvdb_url}")
         if tvdb_url.startswith((urls["list"], urls["alt_list"])):
             try:
                 response = self.config.get_html(tvdb_url, headers=util.header(self.tvdb_language))
