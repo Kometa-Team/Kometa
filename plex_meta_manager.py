@@ -63,6 +63,7 @@ times = get_arg("PMM_TIME", args.times)
 divider = get_arg("PMM_DIVIDER", args.divider)
 screen_width = get_arg("PMM_WIDTH", args.width)
 config_file = get_arg("PMM_CONFIG", args.config)
+stats = {}
 
 util.separating_character = divider[0]
 
@@ -133,6 +134,9 @@ def start(attrs):
     if "time" not in attrs:
         attrs["time"] = start_time.strftime("%H:%M")
     util.separator(f"Starting {start_type}Run")
+    config = None
+    global stats
+    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "removed": 0, "radarr": 0, "sonarr": 0}
     try:
         config = Config(default_dir, attrs)
     except Exception as e:
@@ -146,10 +150,14 @@ def start(attrs):
             util.print_stacktrace()
             util.print_multiline(e, critical=True)
     logger.info("")
-    util.separator(f"Finished {start_type}Run\nRun Time: {str(datetime.now() - start_time).split('.')[0]}")
+    run_time = str(datetime.now() - start_time).split('.')[0]
+    if config:
+        config.Webhooks.end_time_hooks(start_time, run_time, stats)
+    util.separator(f"Finished {start_type}Run\nRun Time: {run_time}")
     logger.removeHandler(file_handler)
 
 def update_libraries(config):
+    global stats
     for library in config.libraries:
         try:
             os.makedirs(os.path.join(default_dir, "logs", library.mapping_name, "collections"), exist_ok=True)
@@ -460,6 +468,7 @@ def mass_metadata(config, library, items=None):
             logger.error(e)
 
 def run_collection(config, library, metadata, requested_collections):
+    global stats
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
@@ -520,6 +529,8 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 util.print_multiline(builder.smart_filter_details, info=True)
 
+            items_added = 0
+            items_removed = 0
             if not builder.smart_url:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
@@ -535,14 +546,18 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.info("")
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
-                    builder.add_to_collection()
+                    items_added = builder.add_to_collection()
+                    stats["added"] += items_added
+                    items_removed = 0
                     if builder.sync:
-                        builder.sync_collection()
+                        items_removed = builder.sync_collection()
+                        stats["removed"] += items_removed
                 elif len(builder.rating_keys) < builder.minimum and builder.build_collection:
                     logger.info("")
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
                     if builder.details["delete_below_minimum"] and builder.obj:
                         builder.delete_collection()
+                        stats["deleted"] += 1
                         logger.info("")
                         logger.info(f"Collection {builder.obj.title} deleted")
 
@@ -551,12 +566,18 @@ def run_collection(config, library, metadata, requested_collections):
                         logger.info("")
                         util.separator(f"Missing from Library", space=False, border=False)
                         logger.info("")
-                    builder.run_missing()
+                    radarr_add, sonarr_add = builder.run_missing()
+                    stats["radarr"] += radarr_add
+                    stats["sonarr"] += sonarr_add
 
             run_item_details = True
             if builder.build_collection:
                 try:
                     builder.load_collection()
+                    if builder.created:
+                        stats["created"] += 1
+                    elif items_added > 0 or items_removed > 0:
+                        stats["modified"] += 1
                 except Failed:
                     util.print_stacktrace()
                     run_item_details = False

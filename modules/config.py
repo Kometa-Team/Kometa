@@ -10,7 +10,7 @@ from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
-from modules.notifiarr import NotifiarrFactory
+from modules.notifiarr import Notifiarr
 from modules.omdb import OMDb
 from modules.plex import Plex
 from modules.radarr import Radarr
@@ -21,6 +21,7 @@ from modules.tmdb import TMDb
 from modules.trakt import Trakt
 from modules.tvdb import TVDb
 from modules.util import Failed
+from modules.webhooks import Webhooks
 from retrying import retry
 from ruamel import yaml
 
@@ -135,9 +136,9 @@ class Config:
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
-            elif var_type == "list":                                            return util.get_list(data[attribute])
+            elif var_type == "list":                                            return util.get_list(data[attribute], split=False)
             elif var_type == "list_path":
-                temp_list = [p for p in util.get_list(data[attribute], split=True) if os.path.exists(os.path.abspath(p))]
+                temp_list = [p for p in util.get_list(data[attribute], split=False) if os.path.exists(os.path.abspath(p))]
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
             elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
@@ -190,9 +191,12 @@ class Config:
             "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False),
             "collection_minimum": check_for_attribute(self.data, "collection_minimum", parent="settings", var_type="int", default=1),
             "delete_below_minimum": check_for_attribute(self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False),
-            "notifiarr_collection_creation": check_for_attribute(self.data, "notifiarr_collection_creation", parent="settings", var_type="bool", default=False),
-            "notifiarr_collection_addition": check_for_attribute(self.data, "notifiarr_collection_addition", parent="settings", var_type="bool", default=False),
-            "notifiarr_collection_removing": check_for_attribute(self.data, "notifiarr_collection_removing", parent="settings", var_type="bool", default=False),
+            "error_webhooks": check_for_attribute(self.data, "error_webhooks", parent="settings", var_type="list", default_is_none=True),
+            "run_start_webhooks": check_for_attribute(self.data, "run_start_webhooks", parent="settings", var_type="list", default_is_none=True),
+            "run_end_webhooks": check_for_attribute(self.data, "run_end_webhooks", parent="settings", var_type="list", default_is_none=True),
+            "collection_creation_webhooks": check_for_attribute(self.data, "collection_creation_webhooks", parent="settings", var_type="list", default_is_none=True),
+            "collection_addition_webhooks": check_for_attribute(self.data, "collection_addition_webhooks", parent="settings", var_type="list", default_is_none=True),
+            "collection_removing_webhooks": check_for_attribute(self.data, "collection_removing_webhooks", parent="settings", var_type="list", default_is_none=True),
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default")
         }
         if self.general["cache"]:
@@ -207,9 +211,8 @@ class Config:
         if "notifiarr" in self.data:
             logger.info("Connecting to Notifiarr...")
             try:
-                self.NotifiarrFactory = NotifiarrFactory(self, {
+                self.NotifiarrFactory = Notifiarr(self, {
                     "apikey": check_for_attribute(self.data, "apikey", parent="notifiarr", throw=True),
-                    "error_notification": check_for_attribute(self.data, "error_notification", parent="notifiarr", var_type="bool", default=True),
                     "develop": check_for_attribute(self.data, "develop", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False),
                     "test": check_for_attribute(self.data, "test", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False)
                 })
@@ -218,6 +221,9 @@ class Config:
             logger.info(f"Notifiarr Connection {'Failed' if self.NotifiarrFactory is None else 'Successful'}")
         else:
             logger.warning("notifiarr attribute not found")
+
+        self.Webhooks = Webhooks(self, self.general, notifiarr=self.NotifiarrFactory)
+        self.Webhooks.start_time_hooks(self.run_start_time)
 
         self.errors = []
 
@@ -389,9 +395,10 @@ class Config:
                 params["create_asset_folders"] = check_for_attribute(lib, "create_asset_folders", parent="settings", var_type="bool", default=self.general["create_asset_folders"], do_print=False, save=False)
                 params["collection_minimum"] = check_for_attribute(lib, "collection_minimum", parent="settings", var_type="int", default=self.general["collection_minimum"], do_print=False, save=False)
                 params["delete_below_minimum"] = check_for_attribute(lib, "delete_below_minimum", parent="settings", var_type="bool", default=self.general["delete_below_minimum"], do_print=False, save=False)
-                params["notifiarr_collection_creation"] = check_for_attribute(lib, "notifiarr_collection_creation", parent="settings", var_type="bool", default=self.general["notifiarr_collection_creation"], do_print=False, save=False)
-                params["notifiarr_collection_addition"] = check_for_attribute(lib, "notifiarr_collection_addition", parent="settings", var_type="bool", default=self.general["notifiarr_collection_addition"], do_print=False, save=False)
-                params["notifiarr_collection_removing"] = check_for_attribute(lib, "notifiarr_collection_removing", parent="settings", var_type="bool", default=self.general["notifiarr_collection_removing"], do_print=False, save=False)
+                params["error_webhooks"] = check_for_attribute(lib, "error_webhooks", parent="settings", var_type="list", default=self.general["error_webhooks"], do_print=False, save=False)
+                params["collection_creation_webhooks"] = check_for_attribute(lib, "collection_creation_webhooks", parent="settings", var_type="list", default=self.general["collection_creation_webhooks"], do_print=False, save=False)
+                params["collection_addition_webhooks"] = check_for_attribute(lib, "collection_addition_webhooks", parent="settings", var_type="list", default=self.general["collection_addition_webhooks"], do_print=False, save=False)
+                params["collection_removing_webhooks"] = check_for_attribute(lib, "collection_removing_webhooks", parent="settings", var_type="list", default=self.general["collection_removing_webhooks"], do_print=False, save=False)
 
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", var_type="bool", default=assets_for_all, save=False, do_print=lib and "assets_for_all" in lib)
                 params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", var_type="bool", default=False, save=False, do_print=lib and "delete_unmanaged_collections" in lib)
@@ -545,7 +552,7 @@ class Config:
                         logger.info("")
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
-                library.Notifiarr = self.NotifiarrFactory.getNotifiarr(library) if self.NotifiarrFactory else None
+                library.Webhooks = Webhooks(self, {"error_webhooks": library.error_webhooks}, library=library, notifiarr=self.NotifiarrFactory)
 
                 logger.info("")
                 self.libraries.append(library)
@@ -566,11 +573,8 @@ class Config:
             raise
 
     def notify(self, text, library=None, collection=None, critical=True):
-        if self.NotifiarrFactory:
-            if not isinstance(text, list):
-                text = [text]
-            for t in text:
-                self.NotifiarrFactory.error(t, library=library, collection=collection, critical=critical)
+        for error in util.get_list(text, split=False):
+            self.Webhooks.error_hooks(error, library=library, collection=collection, critical=critical)
 
     def get_html(self, url, headers=None, params=None):
         return html.fromstring(self.get(url, headers=headers, params=params).content)

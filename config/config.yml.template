@@ -34,9 +34,12 @@ settings:                                       # Can be individually specified 
   missing_only_released: false
   collection_minimum: 1
   delete_below_minimum: true
-  notifiarr_collection_creation: false
-  notifiarr_collection_addition: false
-  notifiarr_collection_removing: false
+  error_webhooks:
+  run_start_webhooks:
+  run_end_webhooks:
+  collection_creation_webhooks: 
+  collection_addition_webhooks:
+  collection_removing_webhooks:
   tvdb_language: eng
 plex:                                           # Can be individually specified per library as well
   url: http://192.168.1.12:32400
@@ -78,7 +81,6 @@ omdb:
   apikey: ########
 notifiarr:
   apikey: ####################################
-  error_notification: true
 trakt:
   client_id: ################################################################
   client_secret: ################################################################
