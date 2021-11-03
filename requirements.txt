@@ -1,7 +1,7 @@
 PlexAPI==4.7.2
 tmdbv3api==1.7.6
 arrapi==1.1.7
-lxml==4.6.3
+lxml==4.6.4
 requests==2.26.0
 ruamel.yaml==0.17.16
 schedule==1.1.0
