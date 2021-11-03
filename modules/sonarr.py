@@ -87,6 +87,8 @@ class Sonarr:
                 logger.info("")
                 logger.info(f"Invalid TVDb ID | {tvdb_id}")
 
+        return len(added)
+
     def edit_tags(self, tvdb_ids, tags, apply_tags):
         logger.info("")
         logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Sonarr Tags: {tags}")

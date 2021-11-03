@@ -304,7 +304,7 @@ def parse(attribute, data, datatype=None, methods=None, parent=None, default=Non
     value = data[methods[attribute]] if methods and attribute in methods else data
 
     if datatype == "list":
-        if methods and attribute in methods and data[methods[attribute]]:
+        if value:
             return [v for v in value if v] if isinstance(value, list) else [str(value)]
         return []
     elif datatype == "dictlist":

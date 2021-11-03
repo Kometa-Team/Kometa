@@ -61,6 +61,8 @@ class Radarr:
             for tmdb_id in invalid:
                 logger.info(f"Invalid TMDb ID | {tmdb_id}")
 
+        return len(added)
+
     def edit_tags(self, tmdb_ids, tags, apply_tags):
         logger.info("")
         logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Radarr Tags: {tags}")

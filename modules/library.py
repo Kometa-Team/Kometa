@@ -13,6 +13,7 @@ class Library(ABC):
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
+        self.Webhooks = None
         self.Notifiarr = None
         self.collections = []
         self.metadatas = []
@@ -57,9 +58,10 @@ class Library(ABC):
         self.sonarr_add_all = params["sonarr_add_all"]
         self.collection_minimum = params["collection_minimum"]
         self.delete_below_minimum = params["delete_below_minimum"]
-        self.notifiarr_collection_creation = params["notifiarr_collection_creation"]
-        self.notifiarr_collection_addition = params["notifiarr_collection_addition"]
-        self.notifiarr_collection_removing = params["notifiarr_collection_removing"]
+        self.error_webhooks = params["error_webhooks"]
+        self.collection_creation_webhooks = params["collection_creation_webhooks"]
+        self.collection_addition_webhooks = params["collection_addition_webhooks"]
+        self.collection_removing_webhooks = params["collection_removing_webhooks"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
@@ -182,6 +184,9 @@ class Library(ABC):
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
 
     def notify(self, text, collection=None, critical=True):
+        for error in util.get_list(text, split=False):
+            self.Webhooks.error_hooks(error, library=self, collection=collection, critical=critical)
+
         self.config.notify(text, library=self, collection=collection, critical=critical)
 
     @abstractmethod
