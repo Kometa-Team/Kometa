@@ -17,6 +17,7 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 6:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-db", "--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
+parser.add_argument("-tr", "--trace", dest="trace", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 03:00) (comma-separated list)", default="03:00", type=str)
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
@@ -51,6 +52,7 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
 
 test = get_arg("PMM_TEST", args.test, arg_bool=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
+trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 run = get_arg("PMM_RUN", args.run, arg_bool=True)
 no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
 no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
@@ -93,7 +95,7 @@ def fmt_filter(record):
     return True
 
 cmd_handler = logging.StreamHandler()
-cmd_handler.setLevel(logging.DEBUG if test or debug else logging.INFO)
+cmd_handler.setLevel(logging.DEBUG if test or debug or trace else logging.INFO)
 
 logger.addHandler(cmd_handler)
 
@@ -625,7 +627,8 @@ try:
             "test": test,
             "collections": collections,
             "libraries": libraries,
-            "resume": resume
+            "resume": resume,
+            "trace": trace
         })
     else:
         times_to_run = util.get_list(times)
@@ -639,7 +642,7 @@ try:
                 else:
                     raise Failed(f"Argument Error: blank time argument")
         for time_to_run in valid_times:
-            schedule.every().day.at(time_to_run).do(start, {"config_file": config_file, "time": time_to_run})
+            schedule.every().day.at(time_to_run).do(start, {"config_file": config_file, "time": time_to_run, "trace": trace})
         while True:
             schedule.run_pending()
             if not no_countdown:

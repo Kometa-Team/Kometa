@@ -107,6 +107,8 @@ class Trakt:
         output_json = []
         pages = 1
         current = 1
+        if self.config.trace_mode:
+            logger.debug(f"URL: {base_url}{url}")
         while current <= pages:
             if pages == 1:
                 response = self.config.get(f"{base_url}{url}", headers=headers)
@@ -116,6 +118,8 @@ class Trakt:
                 response = self.config.get(f"{base_url}{url}?page={current}", headers=headers)
             if response.status_code == 200:
                 json_data = response.json()
+                if self.config.trace_mode:
+                    logger.debug(f"Response: {json_data}")
                 if isinstance(json_data, dict):
                     return json_data
                 else:

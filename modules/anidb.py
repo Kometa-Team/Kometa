@@ -22,15 +22,21 @@ class AniDB:
         if params and not self._login(self.username, self.password).xpath("//li[@class='sub-menu my']/@title"):
             raise Failed("AniDB Error: Login failed")
 
-    def _request(self, url, language=None, post=None):
-        if post:
-            return self.config.post_html(url, post, headers=util.header(language))
+    def _request(self, url, language=None, data=None):
+        if self.config.trace_mode:
+            logger.debug(f"URL: {url}")
+        if data:
+            return self.config.post_html(url, data=data, headers=util.header(language))
         else:
             return self.config.get_html(url, headers=util.header(language))
 
     def _login(self, username, password):
-        data = {"show": "main", "xuser": username, "xpass": password, "xdoautologin": "on"}
-        return self._request(urls["login"], post=data)
+        return self._request(urls["login"], data={
+            "show": "main",
+            "xuser": username,
+            "xpass": password,
+            "xdoautologin": "on"
+        })
 
     def _popular(self, language):
         response = self._request(urls["popular"], language=language)
