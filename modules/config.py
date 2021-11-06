@@ -385,8 +385,6 @@ class Config:
                 if params["asset_directory"] is None:
                     logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
-                params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
-                assets_for_all = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
                 params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
                 params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
@@ -400,42 +398,54 @@ class Config:
                 params["collection_creation_webhooks"] = check_for_attribute(lib, "collection_creation_webhooks", parent="settings", var_type="list", default=self.general["collection_creation_webhooks"], do_print=False, save=False)
                 params["collection_addition_webhooks"] = check_for_attribute(lib, "collection_addition_webhooks", parent="settings", var_type="list", default=self.general["collection_addition_webhooks"], do_print=False, save=False)
                 params["collection_removing_webhooks"] = check_for_attribute(lib, "collection_removing_webhooks", parent="settings", var_type="list", default=self.general["collection_removing_webhooks"], do_print=False, save=False)
+                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
+                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
+                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
+                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
+                params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
+                params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
+                params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False, do_print=False)
+                params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=False)
 
-                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", var_type="bool", default=assets_for_all, save=False, do_print=lib and "assets_for_all" in lib)
-                params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", var_type="bool", default=False, save=False, do_print=lib and "delete_unmanaged_collections" in lib)
-                params["delete_collections_with_less"] = check_for_attribute(lib, "delete_collections_with_less", var_type="int", default_is_none=True, save=False, do_print=lib and "delete_collections_with_less" in lib)
+                if lib and "operations" in lib and lib["operations"]:
+                    if isinstance(lib["operations"], dict):
+                        if "assets_for_all" in lib["operations"]:
+                            params["assets_for_all"] = check_for_attribute(lib["operations"], "assets_for_all", var_type="bool", default=False, save=False)
+                        if "delete_unmanaged_collections" in lib["operations"]:
+                            params["delete_unmanaged_collections"] = check_for_attribute(lib["operations"], "delete_unmanaged_collections", var_type="bool", default=False, save=False)
+                        if "delete_collections_with_less" in lib["operations"]:
+                            params["delete_collections_with_less"] = check_for_attribute(lib["operations"], "delete_collections_with_less", var_type="int", default_is_none=True, save=False)
+                        if "mass_genre_update" in lib["operations"]:
+                            params["mass_genre_update"] = check_for_attribute(lib["operations"], "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
+                        if "mass_audience_rating_update" in lib["operations"]:
+                            params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                        if "mass_critic_rating_update" in lib["operations"]:
+                            params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                        if "mass_trakt_rating_update" in lib["operations"]:
+                            params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False)
+                        if "split_duplicates" in lib["operations"]:
+                            params["split_duplicates"] = check_for_attribute(lib["operations"], "split_duplicates", var_type="bool", default=False, save=False)
+                        if "radarr_add_all" in lib["operations"]:
+                            params["radarr_add_all"] = check_for_attribute(lib["operations"], "radarr_add_all", var_type="bool", default=False, save=False)
+                        if "sonarr_add_all" in lib["operations"]:
+                            params["sonarr_add_all"] = check_for_attribute(lib["operations"], "sonarr_add_all", var_type="bool", default=False, save=False)
+                    else:
+                        logger.error("Config Error: operations must be a dictionary")
 
-                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=lib and "mass_genre_update" in lib)
+                def error_check(attr, service):
+                    params[attr] = None
+                    err = f"Config Error: {attr} cannot be omdb without a successful {service} Connection"
+                    self.errors.append(err)
+                    logger.error(err)
+
                 if self.OMDb is None and params["mass_genre_update"] == "omdb":
-                    params["mass_genre_update"] = None
-                    e = "Config Error: mass_genre_update cannot be omdb without a successful OMDb Connection"
-                    self.errors.append(e)
-                    logger.error(e)
-
-                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=lib and "mass_audience_rating_update" in lib)
+                    error_check("mass_genre_update", "OMDb")
                 if self.OMDb is None and params["mass_audience_rating_update"] == "omdb":
-                    params["mass_audience_rating_update"] = None
-                    e = "Config Error: mass_audience_rating_update cannot be omdb without a successful OMDb Connection"
-                    self.errors.append(e)
-                    logger.error(e)
-
-                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=lib and "mass_audience_rating_update" in lib)
+                    error_check("mass_audience_rating_update", "OMDb")
                 if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
-                    params["mass_critic_rating_update"] = None
-                    e = "Config Error: mass_critic_rating_update cannot be omdb without a successful OMDb Connection"
-                    self.errors.append(e)
-                    logger.error(e)
-
-                params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=lib and "mass_trakt_rating_update" in lib)
+                    error_check("mass_critic_rating_update", "OMDb")
                 if self.Trakt is None and params["mass_trakt_rating_update"]:
-                    params["mass_trakt_rating_update"] = None
-                    e = "Config Error: mass_trakt_rating_update cannot run without a successful Trakt Connection"
-                    self.errors.append(e)
-                    logger.error(e)
-
-                params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=lib and "split_duplicates" in lib)
-                params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False, do_print=lib and "radarr_add_all" in lib)
-                params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=lib and "sonarr_add_all" in lib)
+                    error_check("mass_trakt_rating_update", "Trakt")
 
                 try:
                     if lib and "metadata_path" in lib:
@@ -448,9 +458,9 @@ class Config:
                                 def check_dict(attr, name):
                                     if attr in path:
                                         if path[attr] is None:
-                                            e = f"Config Error: metadata_path {attr} is blank"
-                                            self.errors.append(e)
-                                            logger.error(e)
+                                            err = f"Config Error: metadata_path {attr} is blank"
+                                            self.errors.append(err)
+                                            logger.error(err)
                                         else:
                                             params["metadata_path"].append((name, path[attr]))
                                 check_dict("url", "URL")
