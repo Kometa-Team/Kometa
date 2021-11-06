@@ -18,7 +18,6 @@ settings:                                       # Can be individually specified 
   cache_expiration: 60
   asset_directory: config/assets
   asset_folders: true
-  assets_for_all: false
   sync_mode: append
   show_unmanaged: true
   show_filtered: false
@@ -30,13 +29,14 @@ settings:                                       # Can be individually specified 
   missing_only_released: false
   collection_minimum: 1
   delete_below_minimum: true
-  error_webhooks:
-  run_start_webhooks:
-  run_end_webhooks:
-  collection_creation_webhooks: 
-  collection_addition_webhooks:
-  collection_removing_webhooks:
   tvdb_language: eng
+webhooks:                                       # Can be individually specified per library as well
+  error:
+  run_start:
+  run_end:
+  collection_creation:
+  collection_addition:
+  collection_removing:
 plex:                                           # Can be individually specified per library as well
   url: http://192.168.1.12:32400
   token: ####################
