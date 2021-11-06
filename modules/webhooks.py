@@ -7,9 +7,9 @@ logger = logging.getLogger("Plex Meta Manager")
 class Webhooks:
     def __init__(self, config, system_webhooks, library=None, notifiarr=None):
         self.config = config
-        self.error_webhooks = system_webhooks["error_webhooks"] if "error_webhooks" in system_webhooks else []
-        self.run_start_webhooks = system_webhooks["run_start_webhooks"] if "run_start_webhooks" in system_webhooks else []
-        self.run_end_webhooks = system_webhooks["run_end_webhooks"] if "run_end_webhooks" in system_webhooks else []
+        self.error_webhooks = system_webhooks["error"] if "error" in system_webhooks else []
+        self.run_start_webhooks = system_webhooks["run_start"] if "run_start" in system_webhooks else []
+        self.run_end_webhooks = system_webhooks["run_end"] if "run_end" in system_webhooks else []
         self.library = library
         self.notifiarr = notifiarr
 

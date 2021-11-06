@@ -192,13 +192,15 @@ class Config:
             "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False),
             "collection_minimum": check_for_attribute(self.data, "collection_minimum", parent="settings", var_type="int", default=1),
             "delete_below_minimum": check_for_attribute(self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False),
-            "error_webhooks": check_for_attribute(self.data, "error_webhooks", parent="settings", var_type="list", default_is_none=True),
-            "run_start_webhooks": check_for_attribute(self.data, "run_start_webhooks", parent="settings", var_type="list", default_is_none=True),
-            "run_end_webhooks": check_for_attribute(self.data, "run_end_webhooks", parent="settings", var_type="list", default_is_none=True),
-            "collection_creation_webhooks": check_for_attribute(self.data, "collection_creation_webhooks", parent="settings", var_type="list", default_is_none=True),
-            "collection_addition_webhooks": check_for_attribute(self.data, "collection_addition_webhooks", parent="settings", var_type="list", default_is_none=True),
-            "collection_removing_webhooks": check_for_attribute(self.data, "collection_removing_webhooks", parent="settings", var_type="list", default_is_none=True),
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default")
+        }
+        self.webhooks = {
+            "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
+            "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
+            "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
+            "collection_creation": check_for_attribute(self.data, "collection_creation", parent="webhooks", var_type="list", default_is_none=True),
+            "collection_addition": check_for_attribute(self.data, "collection_addition", parent="webhooks", var_type="list", default_is_none=True),
+            "collection_removing": check_for_attribute(self.data, "collection_removing", parent="webhooks", var_type="list", default_is_none=True),
         }
         if self.general["cache"]:
             util.separator()
@@ -223,7 +225,7 @@ class Config:
         else:
             logger.warning("notifiarr attribute not found")
 
-        self.Webhooks = Webhooks(self, self.general, notifiarr=self.NotifiarrFactory)
+        self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
         self.Webhooks.start_time_hooks(self.run_start_time)
 
         self.errors = []
@@ -394,10 +396,10 @@ class Config:
                 params["create_asset_folders"] = check_for_attribute(lib, "create_asset_folders", parent="settings", var_type="bool", default=self.general["create_asset_folders"], do_print=False, save=False)
                 params["collection_minimum"] = check_for_attribute(lib, "collection_minimum", parent="settings", var_type="int", default=self.general["collection_minimum"], do_print=False, save=False)
                 params["delete_below_minimum"] = check_for_attribute(lib, "delete_below_minimum", parent="settings", var_type="bool", default=self.general["delete_below_minimum"], do_print=False, save=False)
-                params["error_webhooks"] = check_for_attribute(lib, "error_webhooks", parent="settings", var_type="list", default=self.general["error_webhooks"], do_print=False, save=False)
-                params["collection_creation_webhooks"] = check_for_attribute(lib, "collection_creation_webhooks", parent="settings", var_type="list", default=self.general["collection_creation_webhooks"], do_print=False, save=False)
-                params["collection_addition_webhooks"] = check_for_attribute(lib, "collection_addition_webhooks", parent="settings", var_type="list", default=self.general["collection_addition_webhooks"], do_print=False, save=False)
-                params["collection_removing_webhooks"] = check_for_attribute(lib, "collection_removing_webhooks", parent="settings", var_type="list", default=self.general["collection_removing_webhooks"], do_print=False, save=False)
+                params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False)
+                params["collection_creation_webhooks"] = check_for_attribute(lib, "collection_creation", parent="webhooks", var_type="list", default=self.webhooks["collection_creation"], do_print=False, save=False)
+                params["collection_addition_webhooks"] = check_for_attribute(lib, "collection_addition", parent="webhooks", var_type="list", default=self.webhooks["collection_addition"], do_print=False, save=False)
+                params["collection_removing_webhooks"] = check_for_attribute(lib, "collection_removing", parent="webhooks", var_type="list", default=self.webhooks["collection_removing"], do_print=False, save=False)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
                 params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
