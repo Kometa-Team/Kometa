@@ -38,7 +38,7 @@ class Webhooks:
     def end_time_hooks(self, start_time, run_time, stats):
         if self.run_end_webhooks:
             self._request(self.run_end_webhooks, {
-                "start_time": start_time,
+                "start_time": start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "run_time": run_time,
                 "collections_created": stats["created"],
                 "collections_modified": stats["modified"],

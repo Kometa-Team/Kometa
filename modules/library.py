@@ -67,9 +67,6 @@ class Library(ABC):
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
         self.optimize = params["plex"]["optimize"] # TODO: Here or just in Plex?
 
-        self.mass_update = self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update \
-                           or self.mass_trakt_rating_update or self.split_duplicates or self.radarr_add_all or self.sonarr_add_all
-
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":

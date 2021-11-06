@@ -3,19 +3,15 @@
 libraries:                                      # Library mappings must have a colon (:) placed after them
   Movies:
     metadata_path:
-      - file: config/Movies.yml                 # You have to create this file the other are online
+      - file: config/Movies.yml                 # You have to create this file the other is online
       - git: meisnate12/MovieCharts
-      - git: meisnate12/Studios
-      - git: meisnate12/IMDBGenres
-      - git: meisnate12/People
   TV Shows:
     metadata_path:
-      - file: config/TV Shows.yml               # You have to create this file the other are online
+      - file: config/TV Shows.yml               # You have to create this file the other is online
       - git: meisnate12/ShowCharts
-      - git: meisnate12/Networks
   Anime:
     metadata_path:
-      - file: config/Anime.yml                  # You have to create this file the other are online
+      - file: config/Anime.yml                  # You have to create this file the other is online
       - git: meisnate12/AnimeCharts
 settings:                                       # Can be individually specified per library as well
   cache: true

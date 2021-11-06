@@ -13,6 +13,28 @@ urls = {
     "movies": f"{base_url}/movies/", "alt_movies": f"{alt_url}/movies/",
     "series_id": f"{base_url}/dereferrer/series/", "movie_id": f"{base_url}/dereferrer/movie/"
 }
+language_translation = {
+    "ab": "abk", "aa": "aar", "af": "afr", "ak": "aka", "sq": "sqi", "am": "amh", "ar": "ara", "an": "arg", "hy": "hye",
+    "as": "asm", "av": "ava", "ae": "ave", "ay": "aym", "az": "aze", "bm": "bam", "ba": "bak", "eu": "eus", "be": "bel",
+    "bn": "ben", "bi": "bis", "bs": "bos", "br": "bre", "bg": "bul", "my": "mya", "ca": "cat", "ch": "cha", "ce": "che",
+    "ny": "nya", "zh": "zho", "cv": "chv", "kw": "cor", "co": "cos", "cr": "cre", "hr": "hrv", "cs": "ces", "da": "dan",
+    "dv": "div", "nl": "nld", "dz": "dzo", "en": "eng", "eo": "epo", "et": "est", "ee": "ewe", "fo": "fao", "fj": "fij",
+    "fi": "fin", "fr": "fra", "ff": "ful", "gl": "glg", "ka": "kat", "de": "deu", "el": "ell", "gn": "grn", "gu": "guj",
+    "ht": "hat", "ha": "hau", "he": "heb", "hz": "her", "hi": "hin", "ho": "hmo", "hu": "hun", "ia": "ina", "id": "ind",
+    "ie": "ile", "ga": "gle", "ig": "ibo", "ik": "ipk", "io": "ido", "is": "isl", "it": "ita", "iu": "iku", "ja": "jpn",
+    "jv": "jav", "kl": "kal", "kn": "kan", "kr": "kau", "ks": "kas", "kk": "kaz", "km": "khm", "ki": "kik", "rw": "kin",
+    "ky": "kir", "kv": "kom", "kg": "kon", "ko": "kor", "ku": "kur", "kj": "kua", "la": "lat", "lb": "ltz", "lg": "lug",
+    "li": "lim", "ln": "lin", "lo": "lao", "lt": "lit", "lu": "lub", "lv": "lav", "gv": "glv", "mk": "mkd", "mg": "mlg",
+    "ms": "msa", "ml": "mal", "mt": "mlt", "mi": "mri", "mr": "mar", "mh": "mah", "mn": "mon", "na": "nau", "nv": "nav",
+    "nd": "nde", "ne": "nep", "ng": "ndo", "nb": "nob", "nn": "nno", "no": "nor", "ii": "iii", "nr": "nbl", "oc": "oci",
+    "oj": "oji", "cu": "chu", "om": "orm", "or": "ori", "os": "oss", "pa": "pan", "pi": "pli", "fa": "fas", "pl": "pol",
+    "ps": "pus", "pt": "por", "qu": "que", "rm": "roh", "rn": "run", "ro": "ron", "ru": "rus", "sa": "san", "sc": "srd",
+    "sd": "snd", "se": "sme", "sm": "smo", "sg": "sag", "sr": "srp", "gd": "gla", "sn": "sna", "si": "sin", "sk": "slk",
+    "sl": "slv", "so": "som", "st": "sot", "es": "spa", "su": "sun", "sw": "swa", "ss": "ssw", "sv": "swe", "ta": "tam",
+    "te": "tel", "tg": "tgk", "th": "tha", "ti": "tir", "bo": "bod", "tk": "tuk", "tl": "tgl", "tn": "tsn", "to": "ton",
+    "tr": "tur", "ts": "tso", "tt": "tat", "tw": "twi", "ty": "tah", "ug": "uig", "uk": "ukr", "ur": "urd", "uz": "uzb",
+    "ve": "ven", "vi": "vie", "vo": "vol", "wa": "wln", "cy": "cym", "wo": "wol", "fy": "fry", "xh": "xho", "yi": "yid",
+    "yo": "yor", "za": "zha", "zu": "zul"}
 
 class TVDbObj:
     def __init__(self, tvdb_url, language, is_movie, config):
@@ -46,15 +68,21 @@ class TVDbObj:
                 parse_results = [r.strip() for r in parse_results if len(r) > 0]
             return parse_results[0] if len(parse_results) > 0 else None
 
-        self.title = parse_page(f"//div[@class='change_translation_text' and @data-language='{self.language}']/@data-title")
+        def parse_title_summary(lang=None):
+            place = "//div[@class='change_translation_text' and "
+            place += f"@data-language='{lang}'" if lang else "not(@style='display:none')"
+            return parse_page(f"{place}/@data-title"), parse_page(f"{place}]/p/text()[normalize-space()]")
+
+        self.title, self.summary = parse_title_summary(lang=self.language)
+        if not self.title and self.language in language_translation:
+            self.title, self.summary = parse_title_summary(lang=language_translation[self.language])
         if not self.title:
-            self.title = parse_page("//div[@class='change_translation_text' and not(@style='display:none')]/@data-title")
+            self.title, self.summary = parse_title_summary()
         if not self.title:
             raise Failed(f"TVDb Error: Name not found from TVDb URL: {self.tvdb_url}")
 
         self.poster_path = parse_page("//div[@class='row hidden-xs hidden-sm']/div/img/@src")
         self.background_path = parse_page("(//h2[@class='mt-4' and text()='Backgrounds']/following::div/a/@href)[1]")
-        self.summary = parse_page("//div[@class='change_translation_text' and not(@style='display:none')]/p/text()[normalize-space()]")
         if self.is_movie:
             self.directors = parse_page("//strong[text()='Directors']/parent::li/span/a/text()[normalize-space()]")
             self.writers = parse_page("//strong[text()='Writers']/parent::li/span/a/text()[normalize-space()]")

@@ -180,8 +180,6 @@ def update_libraries(config):
                 util.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
                 items = library.map_guids()
-            if not config.test_mode and not config.resume_from and not collection_only and library.mass_update:
-                mass_metadata(config, library, items=items)
             for metadata in library.metadata_files:
                 logger.info("")
                 util.separator(f"Running Metadata File\n{metadata.path}")
@@ -212,42 +210,8 @@ def update_libraries(config):
                     logger.info("")
                     builder.sort_collection()
 
-            if not config.test_mode and not config.requested_collections and ((library.show_unmanaged and not library_only) or (library.assets_for_all and not collection_only)):
-                if library.delete_collections_with_less is not None:
-                    logger.info("")
-                    text = f" with less then {library.delete_collections_with_less} item{'s' if library.delete_collections_with_less > 1 else ''}"
-                    util.separator(f"Deleting All Collections{text if library.delete_collections_with_less > 0 else ''}", space=False, border=False)
-                    logger.info("")
-                unmanaged_collections = []
-                for col in library.get_all_collections():
-                    if library.delete_collections_with_less is not None and (library.delete_collections_with_less == 0 or col.childCount < library.delete_collections_with_less):
-                        library.query(col.delete)
-                        logger.info(f"{col.title} Deleted")
-                    if col.title not in library.collections:
-                        unmanaged_collections.append(col)
-
-                if library.show_unmanaged and not library_only:
-                    logger.info("")
-                    util.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
-                    logger.info("")
-                    for col in unmanaged_collections:
-                        if library.delete_unmanaged_collections:
-                            library.query(col.delete)
-                            logger.info(f"{col.title} Deleted")
-                        else:
-                            logger.info(col.title)
-                    logger.info("")
-                    logger.info(f"{len(unmanaged_collections)} Unmanaged Collections")
-
-                if library.assets_for_all and not collection_only:
-                    logger.info("")
-                    util.separator(f"All {library.type}s Assets Check for {library.name} Library", space=False, border=False)
-                    logger.info("")
-                    for col in unmanaged_collections:
-                        poster, background = library.find_collection_assets(col, create=library.create_asset_folders)
-                        library.upload_images(col, poster=poster, background=background)
-                    for item in library.get_all():
-                        library.update_item_from_assets(item, create=library.create_asset_folders)
+            if not config.test_mode and not collection_only:
+                library_operations(config, library, items=items)
 
             logger.removeHandler(library_handler)
         except Exception as e:
@@ -310,164 +274,215 @@ def update_libraries(config):
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
-def mass_metadata(config, library, items=None):
+def library_operations(config, library, items=None):
     logger.info("")
-    util.separator(f"Mass Editing {library.type} Library: {library.name}")
+    util.separator(f"{library.name} Library Operations")
     logger.info("")
-    if items is None:
-        items = library.get_all()
+
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
         for item in items:
             item.split()
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
-    radarr_adds = []
-    sonarr_adds = []
-    trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
-    for i, item in enumerate(items, 1):
-        try:
-            library.reload(item)
-        except Failed as e:
-            logger.error(e)
-            continue
-        util.print_return(f"Processing: {i}/{len(items)} {item.title}")
-        tmdb_id = None
-        tvdb_id = None
-        imdb_id = None
-        if config.Cache:
-            t_id, i_id, guid_media_type, _ = config.Cache.query_guid_map(item.guid)
-            if t_id:
-                if "movie" in guid_media_type:
-                    tmdb_id = t_id[0]
-                else:
-                    tvdb_id = t_id[0]
-            if i_id:
-                imdb_id = i_id[0]
-        if not tmdb_id and not tvdb_id:
-            tmdb_id = library.get_tmdb_from_map(item)
-        if not tmdb_id and not tvdb_id and library.is_show:
-            tvdb_id = library.get_tvdb_from_map(item)
+    if library.assets_for_all or library.mass_genre_update or library.mass_audience_rating_update or \
+        library.mass_critic_rating_update or library.mass_trakt_rating_update or library.radarr_add_all or library.sonarr_add_all:
+        if items is None:
+            items = library.get_all()
+        radarr_adds = []
+        sonarr_adds = []
+        trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
-        if library.mass_trakt_rating_update:
+        for i, item in enumerate(items, 1):
             try:
-                if library.is_movie and tmdb_id in trakt_ratings:
-                    new_rating = trakt_ratings[tmdb_id]
-                elif library.is_show and tvdb_id in trakt_ratings:
-                    new_rating = trakt_ratings[tvdb_id]
-                else:
-                    raise Failed
-                if str(item.userRating) != str(new_rating):
-                    library.edit_query(item, {"userRating.value": new_rating, "userRating.locked": 1})
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | User Rating | {new_rating}"))
-            except Failed:
-                pass
+                library.reload(item)
+            except Failed as e:
+                logger.error(e)
+                continue
+            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            tmdb_id = None
+            tvdb_id = None
+            imdb_id = None
+            if config.Cache:
+                t_id, i_id, guid_media_type, _ = config.Cache.query_guid_map(item.guid)
+                if t_id:
+                    if "movie" in guid_media_type:
+                        tmdb_id = t_id[0]
+                    else:
+                        tvdb_id = t_id[0]
+                if i_id:
+                    imdb_id = i_id[0]
+            if not tmdb_id and not tvdb_id:
+                tmdb_id = library.get_tmdb_from_map(item)
+            if not tmdb_id and not tvdb_id and library.is_show:
+                tvdb_id = library.get_tvdb_from_map(item)
 
-        if library.Radarr and library.radarr_add_all and tmdb_id:
-            radarr_adds.append(tmdb_id)
-        if library.Sonarr and library.sonarr_add_all and tvdb_id:
-            sonarr_adds.append(tvdb_id)
-
-        tmdb_item = None
-        if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
-            if tvdb_id and not tmdb_id:
-                tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
-            if tmdb_id:
+            if library.mass_trakt_rating_update:
                 try:
-                    tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
-                except Failed as e:
-                    logger.error(util.adjust_space(str(e)))
-            else:
-                logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
+                    if library.is_movie and tmdb_id in trakt_ratings:
+                        new_rating = trakt_ratings[tmdb_id]
+                    elif library.is_show and tvdb_id in trakt_ratings:
+                        new_rating = trakt_ratings[tvdb_id]
+                    else:
+                        raise Failed
+                    if str(item.userRating) != str(new_rating):
+                        library.edit_query(item, {"userRating.value": new_rating, "userRating.locked": 1})
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | User Rating | {new_rating}"))
+                except Failed:
+                    pass
 
-        omdb_item = None
-        if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
-            if config.OMDb.limit is False:
-                if tmdb_id and not imdb_id:
-                    imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
-                elif tvdb_id and not imdb_id:
-                    imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
-                if imdb_id:
+            if library.Radarr and library.radarr_add_all and tmdb_id:
+                radarr_adds.append(tmdb_id)
+            if library.Sonarr and library.sonarr_add_all and tvdb_id:
+                sonarr_adds.append(tvdb_id)
+
+            tmdb_item = None
+            if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
+                if tvdb_id and not tmdb_id:
+                    tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
+                if tmdb_id:
                     try:
-                        omdb_item = config.OMDb.get_omdb(imdb_id)
+                        tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
                     except Failed as e:
                         logger.error(util.adjust_space(str(e)))
-                    except Exception:
-                        logger.error(f"IMDb ID: {imdb_id}")
-                        raise
                 else:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
 
-        tvdb_item = None
-        if library.mass_genre_update == "tvdb":
-            if tvdb_id:
+            omdb_item = None
+            if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
+                if config.OMDb.limit is False:
+                    if tmdb_id and not imdb_id:
+                        imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
+                    elif tvdb_id and not imdb_id:
+                        imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
+                    if imdb_id:
+                        try:
+                            omdb_item = config.OMDb.get_omdb(imdb_id)
+                        except Failed as e:
+                            logger.error(util.adjust_space(str(e)))
+                        except Exception:
+                            logger.error(f"IMDb ID: {imdb_id}")
+                            raise
+                    else:
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
+
+            tvdb_item = None
+            if library.mass_genre_update == "tvdb":
+                if tvdb_id:
+                    try:
+                        tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
+                    except Failed as e:
+                        logger.error(util.adjust_space(str(e)))
+                else:
+                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
+
+            if not tmdb_item and not omdb_item and not tvdb_item:
+                continue
+
+            if library.mass_genre_update:
                 try:
-                    tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
-                except Failed as e:
-                    logger.error(util.adjust_space(str(e)))
-            else:
-                logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
+                    if tmdb_item and library.mass_genre_update == "tmdb":
+                        new_genres = [genre.name for genre in tmdb_item.genres]
+                    elif omdb_item and library.mass_genre_update in ["omdb", "imdb"]:
+                        new_genres = omdb_item.genres
+                    elif tvdb_item and library.mass_genre_update == "tvdb":
+                        new_genres = tvdb_item.genres
+                    else:
+                        raise Failed
+                    library.edit_tags("genre", item, sync_tags=new_genres)
+                except Failed:
+                    pass
+            if library.mass_audience_rating_update:
+                try:
+                    if tmdb_item and library.mass_audience_rating_update == "tmdb":
+                        new_rating = tmdb_item.vote_average
+                    elif omdb_item and library.mass_audience_rating_update in ["omdb", "imdb"]:
+                        new_rating = omdb_item.imdb_rating
+                    else:
+                        raise Failed
+                    if new_rating is None:
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
+                    else:
+                        if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
+                            library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
+                            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
+                except Failed:
+                    pass
+            if library.mass_critic_rating_update:
+                try:
+                    if tmdb_item and library.mass_critic_rating_update == "tmdb":
+                        new_rating = tmdb_item.vote_average
+                    elif omdb_item and library.mass_critic_rating_update in ["omdb", "imdb"]:
+                        new_rating = omdb_item.imdb_rating
+                    else:
+                        raise Failed
+                    if new_rating is None:
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
+                    else:
+                        if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
+                            library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
+                            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
+                except Failed:
+                    pass
 
-        if not tmdb_item and not omdb_item and not tvdb_item:
-            continue
+            if library.assets_for_all:
+                library.update_item_from_assets(item, create=library.create_asset_folders)
 
-        if library.mass_genre_update:
+        if library.Radarr and library.radarr_add_all:
             try:
-                if tmdb_item and library.mass_genre_update == "tmdb":
-                    new_genres = [genre.name for genre in tmdb_item.genres]
-                elif omdb_item and library.mass_genre_update in ["omdb", "imdb"]:
-                    new_genres = omdb_item.genres
-                elif tvdb_item and library.mass_genre_update == "tvdb":
-                    new_genres = tvdb_item.genres
-                else:
-                    raise Failed
-                library.edit_tags("genre", item, sync_tags=new_genres)
-            except Failed:
-                pass
-        if library.mass_audience_rating_update:
-            try:
-                if tmdb_item and library.mass_audience_rating_update == "tmdb":
-                    new_rating = tmdb_item.vote_average
-                elif omdb_item and library.mass_audience_rating_update in ["omdb", "imdb"]:
-                    new_rating = omdb_item.imdb_rating
-                else:
-                    raise Failed
-                if new_rating is None:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
-                else:
-                    if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
-                        library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
-            except Failed:
-                pass
-        if library.mass_critic_rating_update:
-            try:
-                if tmdb_item and library.mass_critic_rating_update == "tmdb":
-                    new_rating = tmdb_item.vote_average
-                elif omdb_item and library.mass_critic_rating_update in ["omdb", "imdb"]:
-                    new_rating = omdb_item.imdb_rating
-                else:
-                    raise Failed
-                if new_rating is None:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
-                else:
-                    if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
-                        library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
-            except Failed:
-                pass
+                library.Radarr.add_tmdb(radarr_adds)
+            except Failed as e:
+                logger.error(e)
 
-    if library.Radarr and library.radarr_add_all:
-        try:
-            library.Radarr.add_tmdb(radarr_adds)
-        except Failed as e:
-            logger.error(e)
+        if library.Sonarr and library.sonarr_add_all:
+            try:
+                library.Sonarr.add_tvdb(sonarr_adds)
+            except Failed as e:
+                logger.error(e)
 
-    if library.Sonarr and library.sonarr_add_all:
-        try:
-            library.Sonarr.add_tvdb(sonarr_adds)
-        except Failed as e:
-            logger.error(e)
+    if library.delete_collections_with_less is not None or library.delete_unmanaged_collections:
+        logger.info("")
+        suffix = ""
+        unmanaged = ""
+        if library.delete_collections_with_less is not None and library.delete_collections_with_less > 0:
+            suffix = f" with less then {library.delete_collections_with_less} item{'s' if library.delete_collections_with_less > 1 else ''}"
+        if library.delete_unmanaged_collections:
+            if library.delete_collections_with_less is None:
+                unmanaged = "Unmanaged Collections "
+            elif library.delete_collections_with_less > 0:
+                unmanaged = "Unmanaged Collections and "
+        util.separator(f"Deleting All {unmanaged}Collections{suffix}", space=False, border=False)
+        logger.info("")
+    unmanaged_collections = []
+    for col in library.get_all_collections():
+        if (library.delete_collections_with_less is not None
+            and (library.delete_collections_with_less == 0 or col.childCount < library.delete_collections_with_less)) \
+            or (col.title not in library.collections and library.delete_unmanaged_collections):
+            library.query(col.delete)
+            logger.info(f"{col.title} Deleted")
+        elif col.title not in library.collections:
+            unmanaged_collections.append(col)
+
+    if library.show_unmanaged and len(unmanaged_collections) > 0:
+        logger.info("")
+        util.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
+        logger.info("")
+        for col in unmanaged_collections:
+            logger.info(col.title)
+        logger.info("")
+        logger.info(f"{len(unmanaged_collections)} Unmanaged Collection{'s' if len(unmanaged_collections) > 1 else ''}")
+    elif library.show_unmanaged:
+        logger.info("")
+        util.separator(f"No Unmanaged Collections in {library.name} Library", space=False, border=False)
+        logger.info("")
+
+    if library.assets_for_all and len(unmanaged_collections) > 0:
+        logger.info("")
+        util.separator(f"Unmanaged Collection Assets Check for {library.name} Library", space=False, border=False)
+        logger.info("")
+        for col in unmanaged_collections:
+            poster, background = library.find_collection_assets(col, create=library.create_asset_folders)
+            library.upload_images(col, poster=poster, background=background)
 
 def run_collection(config, library, metadata, requested_collections):
     global stats
