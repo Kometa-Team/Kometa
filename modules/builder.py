@@ -86,7 +86,7 @@ ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
     "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name"
 ]
-notification_details = ["collection_creation_webhooks", "collection_addition_webhooks", "collection_removing_webhooks"]
+notification_details = ["collection_creation_webhooks", "collection_addition_webhooks", "collection_removal_webhooks"]
 details = ["collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details + notification_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
@@ -179,7 +179,7 @@ class CollectionBuilder:
             "delete_below_minimum": self.library.delete_below_minimum,
             "collection_creation_webhooks": self.library.collection_creation_webhooks,
             "collection_addition_webhooks": self.library.collection_addition_webhooks,
-            "collection_removing_webhooks": self.library.collection_removing_webhooks,
+            "collection_removal_webhooks": self.library.collection_removal_webhooks,
         }
         self.item_details = {}
         self.radarr_details = {}
@@ -1525,7 +1525,7 @@ class CollectionBuilder:
                 self.library.reload(item)
                 logger.info(f"{self.name} Collection | - | {self.item_title(item)}")
                 self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
-                if self.details["collection_removing_webhooks"]:
+                if self.details["collection_removal_webhooks"]:
                     if self.library.is_movie and item.ratingKey in self.library.movie_rating_key_map:
                         remove_id = self.library.movie_rating_key_map[item.ratingKey]
                     elif self.library.is_show and item.ratingKey in self.library.show_rating_key_map:
@@ -2045,11 +2045,11 @@ class CollectionBuilder:
         if self.obj and (
                 (self.details["collection_creation_webhooks"] and self.created) or
                 (self.details["collection_addition_webhooks"] and len(self.notification_additions) > 0) or
-                (self.details["collection_removing_webhooks"] and len(self.notification_removals) > 0)
+                (self.details["collection_removal_webhooks"] and len(self.notification_removals) > 0)
         ):
             self.obj.reload()
             self.library.Webhooks.collection_hooks(
-                self.details["collection_creation_webhooks"] + self.details["collection_addition_webhooks"] + self.details["collection_removing_webhooks"],
+                self.details["collection_creation_webhooks"] + self.details["collection_addition_webhooks"] + self.details["collection_removal_webhooks"],
                 self.obj,
                 created=self.created,
                 additions=self.notification_additions,

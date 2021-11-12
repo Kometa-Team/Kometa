@@ -36,7 +36,7 @@ webhooks:                                       # Can be individually specified 
   run_end:
   collection_creation:
   collection_addition:
-  collection_removing:
+  collection_removal:
 plex:                                           # Can be individually specified per library as well
   url: http://192.168.1.12:32400
   token: ####################
@@ -50,6 +50,13 @@ tmdb:
 tautulli:                                       # Can be individually specified per library as well
   url: http://192.168.1.12:8181
   apikey: ################################
+omdb:
+  apikey: ########
+notifiarr:
+  apikey: ####################################
+anidb:                                          # Not required for AniDB builders unless you want mature content
+  username: ######
+  password: ######
 radarr:                                         # Can be individually specified per library as well
   url: http://192.168.1.12:7878
   token: ################################
@@ -73,10 +80,6 @@ sonarr:                                         # Can be individually specified 
   tag:
   search: false
   cutoff_search: false
-omdb:
-  apikey: ########
-notifiarr:
-  apikey: ####################################
 trakt:
   client_id: ################################################################
   client_secret: ################################################################
@@ -97,6 +100,3 @@ mal:
     token_type:
     expires_in:
     refresh_token:
-anidb:          # Optional
-  username: ######
-  password: ######
