@@ -639,14 +639,23 @@ class Plex(Library):
                 self.upload_images(item, poster=poster, background=background, overlay=overlay)
             if self.is_show:
                 for season in self.query(item.seasons):
+                    season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
                     if item_dir:
-                        season_filter = os.path.join(item_dir, f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
+                        season_poster_filter = os.path.join(item_dir, f"{season_name}.*")
+                        season_background_filter = os.path.join(item_dir, f"{season_name}_background.*")
                     else:
-                        season_filter = os.path.join(ad, f"{name}_Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}.*")
-                    matches = util.glob_filter(season_filter)
+                        season_poster_filter = os.path.join(ad, f"{name}_{season_name}.*")
+                        season_background_filter = os.path.join(ad, f"{name}_{season_name}_background.*")
+                    matches = util.glob_filter(season_poster_filter)
+                    season_poster = None
+                    season_background = None
                     if len(matches) > 0:
                         season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
-                        self.upload_images(season, poster=season_poster)
+                    matches = util.glob_filter(season_background_filter)
+                    if len(matches) > 0:
+                        season_background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_poster=False, is_url=False)
+                    if season_poster or season_background:
+                        self.upload_images(season, poster=season_poster, background=season_background)
                     for episode in self.query(season.episodes):
                         if item_dir:
                             episode_filter = os.path.join(item_dir, f"{episode.seasonEpisode.upper()}.*")
