@@ -85,16 +85,17 @@ class Config:
                         replace_attr(new_config["libraries"][library], "save_missing", "plex")
             if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
             if "settings" in new_config:                    new_config["settings"] = new_config.pop("settings")
+            if "webhooks" in new_config:                    new_config["webhooks"] = new_config.pop("settings")
             if "plex" in new_config:                        new_config["plex"] = new_config.pop("plex")
             if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
             if "tautulli" in new_config:                    new_config["tautulli"] = new_config.pop("tautulli")
-            if "radarr" in new_config:                      new_config["radarr"] = new_config.pop("radarr")
-            if "sonarr" in new_config:                      new_config["sonarr"] = new_config.pop("sonarr")
             if "omdb" in new_config:                        new_config["omdb"] = new_config.pop("omdb")
             if "notifiarr" in new_config:                   new_config["notifiarr"] = new_config.pop("notifiarr")
+            if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
+            if "radarr" in new_config:                      new_config["radarr"] = new_config.pop("radarr")
+            if "sonarr" in new_config:                      new_config["sonarr"] = new_config.pop("sonarr")
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
             yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
@@ -200,7 +201,7 @@ class Config:
             "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
             "collection_creation": check_for_attribute(self.data, "collection_creation", parent="webhooks", var_type="list", default_is_none=True),
             "collection_addition": check_for_attribute(self.data, "collection_addition", parent="webhooks", var_type="list", default_is_none=True),
-            "collection_removing": check_for_attribute(self.data, "collection_removing", parent="webhooks", var_type="list", default_is_none=True),
+            "collection_removal": check_for_attribute(self.data, "collection_removal", parent="webhooks", var_type="list", default_is_none=True),
         }
         if self.general["cache"]:
             util.separator()
@@ -399,7 +400,7 @@ class Config:
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False)
                 params["collection_creation_webhooks"] = check_for_attribute(lib, "collection_creation", parent="webhooks", var_type="list", default=self.webhooks["collection_creation"], do_print=False, save=False)
                 params["collection_addition_webhooks"] = check_for_attribute(lib, "collection_addition", parent="webhooks", var_type="list", default=self.webhooks["collection_addition"], do_print=False, save=False)
-                params["collection_removing_webhooks"] = check_for_attribute(lib, "collection_removing", parent="webhooks", var_type="list", default=self.webhooks["collection_removing"], do_print=False, save=False)
+                params["collection_removal_webhooks"] = check_for_attribute(lib, "collection_removal", parent="webhooks", var_type="list", default=self.webhooks["collection_removal"], do_print=False, save=False)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
                 params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
