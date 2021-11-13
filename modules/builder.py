@@ -69,7 +69,7 @@ show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_sh
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
-    "tvdb_movie", "tvdb_movie_details"
+    "tvdb_movie", "tvdb_movie_details", "trakt_boxoffice"
 ]
 summary_details = [
     "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary",
@@ -147,7 +147,7 @@ custom_sort_builders = [
     "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
     "tvdb_list", "imdb_list", "stevenlu_popular", "anidb_popular",
-    "trakt_list", "trakt_trending", "trakt_popular",
+    "trakt_list", "trakt_trending", "trakt_popular", "trakt_boxoffice",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
     "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
@@ -1033,11 +1033,16 @@ class CollectionBuilder:
                 self.builders.append(("trakt_list", trakt_list))
             if method_name.endswith("_details"):
                 self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
-        elif method_name.startswith(("trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected")):
-            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
         elif method_name in ["trakt_watchlist", "trakt_collection"]:
             for trakt_list in self.config.Trakt.validate_trakt(method_data, self.library.is_movie, trakt_type=method_name[6:]):
                 self.builders.append((method_name, trakt_list))
+        elif method_name == "trakt_boxoffice":
+            if util.parse(method_name, method_data, datatype="bool", default=False):
+                self.builders.append((method_name, 10))
+            else:
+                raise Failed(f"Collection Error: {method_name} must be set to true")
+        elif method_name in trakt.builders:
+            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
 
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data)
