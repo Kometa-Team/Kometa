@@ -25,7 +25,7 @@ class IMDb:
                 imdb_dict = {"url": imdb_dict}
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
             imdb_url = util.parse("url", imdb_dict, methods=dict_methods, parent="imdb_list").strip()
-            if not imdb_url.startswith((v for k, v in urls.items())):
+            if not imdb_url.startswith(tuple([v for k, v in urls.items()])):
                 fails = "\n".join([f"{v} (For {k.replace('_', ' ').title()})" for k, v in urls.items()])
                 raise Failed(f"IMDb Error: {imdb_url} must begin with either:{fails}")
             self._total(imdb_url, language)
