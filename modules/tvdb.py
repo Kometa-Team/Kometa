@@ -70,8 +70,8 @@ class TVDbObj:
 
         def parse_title_summary(lang=None):
             place = "//div[@class='change_translation_text' and "
-            place += f"@data-language='{lang}'" if lang else "not(@style='display:none')"
-            return parse_page(f"{place}/@data-title"), parse_page(f"{place}]/p/text()[normalize-space()]")
+            place += f"@data-language='{lang}']" if lang else "not(@style='display:none')]"
+            return parse_page(f"{place}/@data-title"), parse_page(f"{place}/p/text()[normalize-space()]")
 
         self.title, self.summary = parse_title_summary(lang=self.language)
         if not self.title and self.language in language_translation:
