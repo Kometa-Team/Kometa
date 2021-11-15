@@ -154,7 +154,7 @@ class Trakt:
         for item in items:
             if typeless:
                 data = item
-                current_type = None
+                current_type = item_type
             elif item_type:
                 data = item[item_type]
                 current_type = item_type
