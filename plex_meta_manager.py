@@ -300,6 +300,8 @@ def library_operations(config, library, items=None):
                 logger.error(e)
                 continue
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            if library.assets_for_all:
+                library.update_item_from_assets(item, create=library.create_asset_folders)
             tmdb_id = None
             tvdb_id = None
             imdb_id = None
@@ -425,8 +427,6 @@ def library_operations(config, library, items=None):
                 except Failed:
                     pass
 
-            if library.assets_for_all:
-                library.update_item_from_assets(item, create=library.create_asset_folders)
 
         if library.Radarr and library.radarr_add_all:
             try:
