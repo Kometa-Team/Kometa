@@ -17,7 +17,7 @@ class Webhooks:
         if self.config.trace_mode:
             logger.debug("")
             logger.debug(f"JSON: {json}")
-        for webhook in webhooks:
+        for webhook in list(set(webhooks)):
             if self.config.trace_mode:
                 logger.debug(f"Webhook: {webhook}")
             if webhook == "notifiarr":
