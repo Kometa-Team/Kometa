@@ -608,7 +608,6 @@ class Plex(Library):
 
     def update_item_from_assets(self, item, overlay=None, create=False):
         name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
-        logger.debug(name)
         found_folder = False
         poster = None
         background = None
@@ -672,5 +671,5 @@ class Plex(Library):
             logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
         elif not overlay and self.asset_folders and not found_folder:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
-        elif not poster and not background:
+        elif not poster and not background and self.show_missing_assets:
             logger.error(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
