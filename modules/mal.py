@@ -128,7 +128,11 @@ class MyAnimeList:
 
     def _request(self, url, authorization=None):
         new_authorization = authorization if authorization else self.authorization
+        if self.config.trace_mode:
+            logger.debug(f"URL: {url}")
         response = self.config.get_json(url, headers={"Authorization": f"Bearer {new_authorization['access_token']}"})
+        if self.config.trace_mode:
+            logger.debug(f"Response: {response}")
         if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
         else:                           return response
 

@@ -17,6 +17,7 @@ class Radarr:
         self.token = params["token"]
         try:
             self.api = RadarrAPI(self.url, self.token, session=self.config.session)
+            self.api.respect_list_exclusions_when_adding()
         except ArrException as e:
             raise Failed(e)
         self.add = params["add"]
@@ -60,6 +61,8 @@ class Radarr:
             logger.info("")
             for tmdb_id in invalid:
                 logger.info(f"Invalid TMDb ID | {tmdb_id}")
+
+        return len(added)
 
     def edit_tags(self, tmdb_ids, tags, apply_tags):
         logger.info("")

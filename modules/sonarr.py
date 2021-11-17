@@ -35,6 +35,7 @@ class Sonarr:
         self.token = params["token"]
         try:
             self.api = SonarrAPI(self.url, self.token, session=self.config.session)
+            self.api.respect_list_exclusions_when_adding()
         except ArrException as e:
             raise Failed(e)
         self.add = params["add"]
@@ -59,7 +60,7 @@ class Sonarr:
         monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
         language_profile = options["language"] if "language" in options else self.language_profile
-        language_profile = language_profile if self.api.v3 else 1
+        language_profile = language_profile if self.api._raw.v3 else 1
         series = options["series"] if "series" in options else self.series_type
         season = options["season"] if "season" in options else self.season_folder
         tags = options["tag"] if "tag" in options else self.tag
@@ -86,6 +87,8 @@ class Sonarr:
             for tvdb_id in invalid:
                 logger.info("")
                 logger.info(f"Invalid TVDb ID | {tvdb_id}")
+
+        return len(added)
 
     def edit_tags(self, tvdb_ids, tags, apply_tags):
         logger.info("")

@@ -249,6 +249,7 @@ class Metadata:
             add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
             add_edit("critic_rating", item, meta, methods, value=rating, key="rating", var_type="float")
             add_edit("audience_rating", item, meta, methods, key="audienceRating", var_type="float")
+            add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
             add_edit("content_rating", item, meta, methods, key="contentRating")
             add_edit("original_title", item, meta, methods, key="originalTitle", value=original_title)
             add_edit("studio", item, meta, methods, value=studio)

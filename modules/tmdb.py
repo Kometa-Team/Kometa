@@ -56,9 +56,12 @@ class TMDb:
         self.TMDb = tmdbv3api.TMDb(session=self.config.session)
         self.TMDb.api_key = params["apikey"]
         self.TMDb.language = params["language"]
-        response = tmdbv3api.Configuration().info()
-        if hasattr(response, "status_message"):
-            raise Failed(f"TMDb Error: {response.status_message}")
+        try:
+            response = tmdbv3api.Configuration().info()
+            if hasattr(response, "status_message"):
+                raise Failed(f"TMDb Error: {response.status_message}")
+        except TMDbException as e:
+            raise Failed(f"TMDb Error: {e}")
         self.apikey = params["apikey"]
         self.language = params["language"]
         self.Movie = tmdbv3api.Movie()
@@ -199,6 +202,8 @@ class TMDb:
         for date_attr in discover_dates:
             if date_attr in attrs:
                 attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
+        if self.config.trace_mode:
+            logger.debug(f"Params: {attrs}")
         self.Discover.discover_movies(attrs) if is_movie else self.Discover.discover_tv_shows(attrs)
         total_pages = int(self.TMDb.total_pages)
         total_results = int(self.TMDb.total_results)
