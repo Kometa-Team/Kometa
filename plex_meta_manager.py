@@ -61,7 +61,7 @@ libraries = get_arg("PMM_LIBRARIES", args.libraries)
 resume = get_arg("PMM_RESUME", args.resume)
 times = get_arg("PMM_TIME", args.times)
 divider = get_arg("PMM_DIVIDER", args.divider)
-screen_width = get_arg("PMM_WIDTH", args.width)
+screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
 config_file = get_arg("PMM_CONFIG", args.config)
 
 util.separating_character = divider[0]
