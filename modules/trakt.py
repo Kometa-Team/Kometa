@@ -9,8 +9,10 @@ redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
 redirect_uri_encoded = redirect_uri.replace(":", "%3A")
 base_url = "https://api.trakt.tv"
 builders = [
-    "trakt_collected", "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular",
-    "trakt_recommended", "trakt_trending", "trakt_watched", "trakt_watchlist"
+    "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
+    "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
+    "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
+    "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular", "trakt_trending", "trakt_watchlist", "trakt_boxoffice"
 ]
 sorts = [
     "rank", "added", "title", "released", "runtime", "popularity",
@@ -105,6 +107,8 @@ class Trakt:
         output_json = []
         pages = 1
         current = 1
+        if self.config.trace_mode:
+            logger.debug(f"URL: {base_url}{url}")
         while current <= pages:
             if pages == 1:
                 response = self.config.get(f"{base_url}{url}", headers=headers)
@@ -114,6 +118,8 @@ class Trakt:
                 response = self.config.get(f"{base_url}{url}?page={current}", headers=headers)
             if response.status_code == 200:
                 json_data = response.json()
+                if self.config.trace_mode:
+                    logger.debug(f"Response: {json_data}")
                 if isinstance(json_data, dict):
                     return json_data
                 else:
@@ -148,7 +154,7 @@ class Trakt:
         for item in items:
             if typeless:
                 data = item
-                current_type = None
+                current_type = item_type
             elif item_type:
                 data = item[item_type]
                 current_type = item_type
@@ -158,7 +164,7 @@ class Trakt:
             else:
                 continue
             id_type = "tmdb" if current_type == "movie" else "tvdb"
-            if data["ids"][id_type]:
+            if id_type in data["ids"] and data["ids"][id_type]:
                 final_id = data["ids"][id_type]
                 if current_type == "episode":
                     final_id = f"{final_id}_{item[current_type]['season']}"
@@ -216,14 +222,15 @@ class Trakt:
     def get_trakt_ids(self, method, data, is_movie):
         pretty = method.replace("_", " ").title()
         media_type = "Movie" if is_movie else "Show"
-        if method in ["trakt_trending", "trakt_popular", "trakt_recommended", "trakt_watched", "trakt_collected"]:
-            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
-            return self._pagenation(method[6:], data, is_movie)
-        elif method in ["trakt_collection", "trakt_watchlist"]:
+        if method in ["trakt_collection", "trakt_watchlist"]:
             logger.info(f"Processing {pretty} {media_type}s for {data}")
             return self._user_items(method[6:], data, is_movie)
         elif method == "trakt_list":
             logger.info(f"Processing {pretty}: {data}")
             return self._user_list(data)
+        elif method in builders:
+            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+            terms = method.split("_")
+            return self._pagenation(f"{terms[1]}{f'/{terms[2]}' if len(terms) > 2 else ''}", data, is_movie)
         else:
             raise Failed(f"Trakt Error: Method {method} not supported")

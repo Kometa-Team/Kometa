@@ -1,0 +1,18 @@
+name: Tag
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  tag-new-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+          fetch-depth: 2
+      - uses: salsify/action-detect-and-tag-new-version@v1.0.3
+        with:
+          version-command: |
+            cat VERSION

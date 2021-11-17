@@ -62,10 +62,10 @@ class Convert:
     def myanimelist_to_ids(self, mal_ids, library):
         ids = []
         for mal_id in mal_ids:
-            if mal_id in library.mal_map:
-                ids.append((library.mal_map[mal_id], "ratingKey"))
-            elif mal_id in self.mal_to_anidb:
-                ids.extend(self.anidb_to_ids(self.mal_to_anidb[mal_id], library))
+            if int(mal_id) in library.mal_map:
+                ids.append((library.mal_map[int(mal_id)], "ratingKey"))
+            elif int(mal_id) in self.mal_to_anidb:
+                ids.extend(self.anidb_to_ids(self.mal_to_anidb[int(mal_id)], library))
             else:
                 logger.error(f"Convert Error: AniDB ID not found for MyAnimeList ID: {mal_id}")
         return ids
@@ -193,19 +193,23 @@ class Convert:
         tvdb_id = []
         imdb_id = []
         anidb_id = None
+        guid = requests.utils.urlparse(item.guid)
+        item_type = guid.scheme.split(".")[-1]
+        check_id = guid.netloc
         if self.config.Cache:
             cache_id, imdb_check, media_type, expired = self.config.Cache.query_guid_map(item.guid)
             if cache_id and not expired:
                 media_id_type = "movie" if "movie" in media_type else "show"
+                if item_type == "hama" and check_id.startswith("anidb"):
+                    anidb_id = int(re.search("-(.*)", check_id).group(1))
+                    library.anidb_map[anidb_id] = item.ratingKey
+                elif item_type == "myanimelist":
+                    library.mal_map[int(check_id)] = item.ratingKey
                 return media_id_type, cache_id, imdb_check
         try:
-            guid = requests.utils.urlparse(item.guid)
-            item_type = guid.scheme.split(".")[-1]
-            check_id = guid.netloc
-
             if item_type == "plex":
                 try:
-                    for guid_tag in library.get_guids(item):
+                    for guid_tag in item.guids:
                         url_parsed = requests.utils.urlparse(guid_tag.id)
                         if url_parsed.scheme == "tvdb":                 tvdb_id.append(int(url_parsed.netloc))
                         elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
@@ -230,8 +234,8 @@ class Convert:
                     raise Failed(f"Hama Agent ID: {check_id} not supported")
             elif item_type == "myanimelist":
                 library.mal_map[int(check_id)] = item.ratingKey
-                if check_id in self.mal_to_anidb:
-                    anidb_id = self.mal_to_anidb[check_id]
+                if int(check_id) in self.mal_to_anidb:
+                    anidb_id = self.mal_to_anidb[int(check_id)]
                 else:
                     raise Failed(f"Convert Error: AniDB ID not found for MyAnimeList ID: {check_id}")
             elif item_type == "local":                      raise Failed("No match in Plex")

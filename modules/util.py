@@ -19,6 +19,9 @@ class TimeoutExpired(Exception):
 class Failed(Exception):
     pass
 
+class NotScheduled(Exception):
+    pass
+
 class ImageData:
     def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True):
         self.attribute = attribute
@@ -28,6 +31,9 @@ class ImageData:
         self.is_url = is_url
         self.compare = location if is_url else os.stat(location).st_size
         self.message = f"{prefix}{'poster' if is_poster else 'background'} to [{'URL' if is_url else 'File'}] {location}"
+
+    def __str__(self):
+        return str(self.__dict__)
 
 def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)
@@ -103,7 +109,7 @@ def logger_input(prompt, timeout=60):
     else:                                   raise SystemError("Input Timeout not supported on this system")
 
 def header(language="en-US,en;q=0.5"):
-    return {"Accept-Language": language, "User-Agent": "Mozilla/5.0 x64"}
+    return {"Accept-Language": "eng" if language == "default" else language, "User-Agent": "Mozilla/5.0 x64"}
 
 def alarm_handler(signum, frame):
     raise TimeoutExpired
@@ -298,7 +304,7 @@ def parse(attribute, data, datatype=None, methods=None, parent=None, default=Non
     value = data[methods[attribute]] if methods and attribute in methods else data
 
     if datatype == "list":
-        if methods and attribute in methods and data[methods[attribute]]:
+        if value:
             return [v for v in value if v] if isinstance(value, list) else [str(value)]
         return []
     elif datatype == "dictlist":

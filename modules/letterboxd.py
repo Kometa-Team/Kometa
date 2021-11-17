@@ -12,6 +12,8 @@ class Letterboxd:
         self.config = config
 
     def _parse_list(self, list_url, language):
+        if self.config.trace_mode:
+            logger.debug(f"URL: {list_url}")
         response = self.config.get_html(list_url, headers=util.header(language))
         letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container')]/div/@data-film-id")
         items = []
@@ -25,6 +27,8 @@ class Letterboxd:
         return items
 
     def _tmdb(self, letterboxd_url, language):
+        if self.config.trace_mode:
+            logger.debug(f"URL: {letterboxd_url}")
         response = self.config.get_html(letterboxd_url, headers=util.header(language))
         ids = response.xpath("//a[@data-track-action='TMDb']/@href")
         if len(ids) > 0 and ids[0]:
@@ -34,6 +38,8 @@ class Letterboxd:
         raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {letterboxd_url}")
 
     def get_list_description(self, list_url, language):
+        if self.config.trace_mode:
+            logger.debug(f"URL: {list_url}")
         response = self.config.get_html(list_url, headers=util.header(language))
         descriptions = response.xpath("//meta[@property='og:description']/@content")
         return descriptions[0] if len(descriptions) > 0 and len(descriptions[0]) > 0 else None
