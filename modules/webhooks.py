@@ -1,4 +1,5 @@
 import logging
+from json import JSONDecodeError
 
 from modules.util import Failed
 
@@ -25,11 +26,15 @@ class Webhooks:
                 response = self.config.get(url, json=json, params=params)
             else:
                 response = self.config.post(webhook, json=json)
-            response_json = response.json()
-            if self.config.trace_mode:
-                logger.debug(f"Response: {response_json}")
-            if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
-                raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
+            try:
+                response_json = response.json()
+                if self.config.trace_mode:
+                    logger.debug(f"Response: {response_json}")
+                if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
+                    raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
+            except JSONDecodeError:
+                if response.status_code >= 400:
+                    raise Failed(f"({response.status_code} [{response.reason}])")
 
     def start_time_hooks(self, start_time):
         if self.run_start_webhooks:
