@@ -951,7 +951,8 @@ class CollectionBuilder:
                 "list_type": "popular" if method_name == "tautulli_popular" else "watched",
                 "list_days": util.parse("list_days", dict_data, datatype="int", methods=dict_methods, default=30, parent=method_name),
                 "list_size": util.parse("list_size", dict_data, datatype="int", methods=dict_methods, default=10, parent=method_name),
-                "list_buffer": util.parse("list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name)
+                "list_buffer": util.parse("list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name),
+                "list_minimum": util.parse("list_minimum", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
             }))
 
     def _tmdb(self, method_name, method_data):
