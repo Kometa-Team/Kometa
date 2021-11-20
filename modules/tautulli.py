@@ -28,6 +28,7 @@ class Tautulli:
         logger.info(f"Processing Tautulli Most {params['list_type'].capitalize()}: {params['list_size']} {'Movies' if library.is_movie else 'Shows'}")
         response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_home_stats&time_range={params['list_days']}&stats_count={query_size}")
         stat_id = f"{'popular' if params['list_type'] == 'popular' else 'top'}_{'movies' if library.is_movie else 'tv'}"
+        stat_type = "total_plays" if params['list_type'] == 'popular' else "users_watched"
 
         items = None
         for entry in response["response"]["data"]:
@@ -39,9 +40,10 @@ class Tautulli:
 
         section_id = self._section_id(library.name)
         rating_keys = []
-        count = 0
         for item in items:
-            if item["section_id"] == section_id and count < int(params['list_size']):
+            if item["section_id"] == section_id and len(rating_keys) < int(params['list_size']):
+                if item[stat_type] < params['list_minimum']:
+                    continue
                 try:
                     plex_item = library.fetchItem(int(item["rating_key"]))
                     if not isinstance(plex_item, (Movie, Show)):
@@ -53,8 +55,6 @@ class Tautulli:
                         rating_keys.append(new_item[0].ratingKey)
                     else:
                         logger.error(f"Plex Error: Item {item} not found")
-                        continue
-                count += 1
         logger.debug("")
         logger.debug(f"{len(rating_keys)} Keys Found: {rating_keys}")
         return rating_keys
