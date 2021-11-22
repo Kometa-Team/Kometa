@@ -28,4 +28,3 @@ class Notifiarr:
         logger.debug(url.replace(self.apikey, "APIKEY"))
         params = {"event": "pmm" if self.test else "collections"}
         return url, params
-
