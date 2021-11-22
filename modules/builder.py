@@ -609,6 +609,9 @@ class CollectionBuilder:
             self.sonarr_details["add"] = False
             self.sonarr_details["add_existing"] = False
 
+        if self.radarr_details["add_existing"] or self.sonarr_details["add_existing"]:
+            self.item_details["add_existing"] = True
+
         if self.collectionless:
             self.details["collection_mode"] = "hide"
             self.sync = True

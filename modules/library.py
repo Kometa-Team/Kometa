@@ -102,6 +102,7 @@ class Library(ABC):
                 logger.info(f"Using Asset Directory: {ad}")
 
         if output:
+            logger.info("")
             logger.info(output)
 
     def upload_images(self, item, poster=None, background=None, overlay=None):
