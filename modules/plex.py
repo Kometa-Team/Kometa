@@ -230,6 +230,7 @@ class Plex(Library):
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
         self.timeout = params["plex"]["timeout"]
+        logger.info("")
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
         except Unauthorized:
@@ -239,9 +240,15 @@ class Plex(Library):
         except (requests.exceptions.ConnectionError, ParseError):
             util.print_stacktrace()
             raise Failed("Plex Error: Plex url is invalid")
-        self.Plex = next((s for s in self.PlexServer.library.sections() if s.title == params["name"]), None)
+        self.Plex = None
+        library_names = []
+        for s in self.PlexServer.library.sections():
+            library_names.append(s.title)
+            if s.title == params["name"]:
+                self.Plex = s
+                break
         if not self.Plex:
-            raise Failed(f"Plex Error: Plex Library {params['name']} not found")
+            raise Failed(f"Plex Error: Plex Library {params['name']} not found. Options: {library_names}")
         if self.Plex.type in ["movie", "show"]:
             self.type = self.Plex.type.capitalize()
         else:

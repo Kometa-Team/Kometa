@@ -495,6 +495,7 @@ class Config:
                     self.errors.append(e)
                     util.print_stacktrace()
                     util.print_multiline(e, error=True)
+                    logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
                     continue
 
