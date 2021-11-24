@@ -333,10 +333,11 @@ def library_operations(config, library, items=None):
                 except Failed:
                     pass
 
+            path = os.path.dirname(str(item.locations[0])) if library.is_movie else str(item.locations[0])
             if library.Radarr and library.radarr_add_all and tmdb_id:
-                radarr_adds.append(tmdb_id)
+                radarr_adds.append((tmdb_id, f"{path.replace(library.Radarr.plex_path, library.Radarr.radarr_path)}/"))
             if library.Sonarr and library.sonarr_add_all and tvdb_id:
-                sonarr_adds.append(tvdb_id)
+                sonarr_adds.append((tvdb_id, f"{path.replace(library.Sonarr.plex_path, library.Sonarr.sonarr_path)}/"))
 
             tmdb_item = None
             if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
@@ -426,7 +427,6 @@ def library_operations(config, library, items=None):
                             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
                 except Failed:
                     pass
-
 
         if library.Radarr and library.radarr_add_all:
             try:
@@ -552,9 +552,11 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
-                if len(builder.filters) > 0:
+                if builder.filters or builder.tmdb_filters:
                     logger.info("")
                     for filter_key, filter_value in builder.filters:
+                        logger.info(f"Collection Filter {filter_key}: {filter_value}")
+                    for filter_key, filter_value in builder.tmdb_filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
                 builder.find_rating_keys()

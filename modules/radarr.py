@@ -28,12 +28,15 @@ class Radarr:
         self.quality_profile = params["quality_profile"]
         self.tag = params["tag"]
         self.search = params["search"]
+        self.radarr_path = "" if params["radarr_path"] and params["plex_path"] else params["radarr_path"]
+        self.plex_path = "" if params["radarr_path"] and params["plex_path"] else params["plex_path"]
 
     def add_tmdb(self, tmdb_ids, **options):
         logger.info("")
         util.separator("Adding to Radarr", space=False, border=False)
         logger.debug("")
-        logger.debug(f"TMDb IDs: {tmdb_ids}")
+        for tmdb_id in tmdb_ids:
+            logger.debug(tmdb_id)
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
         availability = availability_translation[options["availability"] if "availability" in options else self.availability]

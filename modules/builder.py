@@ -90,11 +90,8 @@ notification_details = ["collection_creation_webhooks", "collection_addition_web
 details = ["collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details + notification_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
-item_details = [
-    "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_assets", "revert_overlay",
-    "item_lock_background", "item_lock_poster", "item_lock_title",
-    "item_refresh",
-] + list(plex.item_advance_keys.keys())
+item_bool_details = ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
+item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
 radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
@@ -748,7 +745,7 @@ class CollectionBuilder:
                 raise Failed("Each Overlay can only be used once per Library")
             self.library.overlays.append(method_data)
             self.item_details[method_name] = method_data
-        elif method_name in ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]:
+        elif method_name in item_bool_details:
             if util.parse(method_name, method_data, datatype="bool", default=False):
                 self.item_details[method_name] = True
         elif method_name in plex.item_advance_keys:
@@ -1210,7 +1207,7 @@ class CollectionBuilder:
                     rating_keys = [rating_keys]
                 total = len(rating_keys)
                 max_length = len(str(total))
-                if self.filters and self.details["show_filtered"] is True:
+                if (self.filters or self.tmdb_filters) and self.details["show_filtered"] is True:
                     logger.info("")
                     logger.info("Filtering Builder:")
                 for i, key in enumerate(rating_keys, 1):
@@ -1821,7 +1818,9 @@ class CollectionBuilder:
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
 
         tmdb_ids = []
+        tmdb_paths = []
         tvdb_ids = []
+        tvdb_paths = []
         for item in self.items:
             if int(item.ratingKey) in rating_keys and not revert:
                 rating_keys.remove(int(item.ratingKey))
@@ -1831,10 +1830,13 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+            path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
             if item.ratingKey in self.library.movie_rating_key_map:
                 tmdb_ids.append(self.library.movie_rating_key_map[item.ratingKey])
+                tmdb_paths.append((self.library.movie_rating_key_map[item.ratingKey], f"{path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)}/"))
             if item.ratingKey in self.library.show_rating_key_map:
                 tvdb_ids.append(self.library.show_rating_key_map[item.ratingKey])
+                tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], f"{path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)}/"))
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
                 if method_name in plex.item_advance_keys:

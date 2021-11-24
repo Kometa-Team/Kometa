@@ -50,12 +50,15 @@ class Sonarr:
         self.tag = params["tag"]
         self.search = params["search"]
         self.cutoff_search = params["cutoff_search"]
+        self.sonarr_path = "" if params["sonarr_path"] and params["plex_path"] else params["sonarr_path"]
+        self.plex_path = "" if params["sonarr_path"] and params["plex_path"] else params["plex_path"]
 
     def add_tvdb(self, tvdb_ids, **options):
         logger.info("")
         util.separator("Adding to Sonarr", space=False, border=False)
         logger.debug("")
-        logger.debug(f"TVDb IDs: {tvdb_ids}")
+        for tvdb_id in tvdb_ids:
+            logger.debug(tvdb_id)
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
