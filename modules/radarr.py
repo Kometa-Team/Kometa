@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import RadarrAPI
-from arrapi.exceptions import ArrException, Invalid
+from arrapi.exceptions import ArrException, Invalid, NotFound
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -28,8 +28,12 @@ class Radarr:
         self.quality_profile = params["quality_profile"]
         self.tag = params["tag"]
         self.search = params["search"]
-        self.radarr_path = "" if params["radarr_path"] and params["plex_path"] else params["radarr_path"]
-        self.plex_path = "" if params["radarr_path"] and params["plex_path"] else params["plex_path"]
+        self.radarr_path = params["radarr_path"] if params["radarr_path"] and params["plex_path"] else ""
+        self.plex_path = params["plex_path"] if params["radarr_path"] and params["plex_path"] else ""
+        logger.debug(params["radarr_path"])
+        logger.debug(self.radarr_path)
+        logger.debug(params["plex_path"])
+        logger.debug(self.plex_path)
 
     def add_tmdb(self, tmdb_ids, **options):
         logger.info("")
@@ -43,10 +47,30 @@ class Radarr:
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
-        try:
-            added, exists, invalid = self.api.add_multiple_movies(tmdb_ids, folder, quality_profile, monitor, search, availability, tags, per_request=100)
-        except Invalid as e:
-            raise Failed(f"Radarr Error: {e}")
+
+        added = []
+        exists = []
+        invalid = []
+        movies = []
+        for i, item in enumerate(tmdb_ids, 1):
+            path = item[1] if isinstance(item, tuple) else None
+            tmdb_id = item[0] if isinstance(item, tuple) else item
+            util.print_return(f"Loading TMDb ID: {tmdb_id} {i}/{len(tmdb_ids)}")
+            try:
+                movie = self.api.get_movie(tmdb_id=tmdb_id)
+                movies.append((movie, path) if path else movie)
+            except NotFound:
+                invalid.append(item)
+            if len(movies) == 100 or len(tmdb_ids) == i:
+                try:
+                    _a, _e, _i = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search,
+                                                              availability, tags, per_request=100)
+                    added.extend(_a)
+                    exists.extend(_e)
+                    invalid.extend(_i)
+                    movies = []
+                except Invalid as e:
+                    raise Failed(f"Radarr Error: {e}")
 
         if len(added) > 0:
             logger.info("")
