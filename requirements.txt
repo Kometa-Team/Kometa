@@ -1,6 +1,6 @@
 PlexAPI==4.8.0
 tmdbv3api==1.7.6
-arrapi==1.2.6
+arrapi==1.2.7
 lxml==4.6.4
 requests==2.26.0
 ruamel.yaml==0.17.17
