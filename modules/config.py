@@ -346,7 +346,9 @@ class Config:
                 "availability": check_for_attribute(self.data, "availability", parent="radarr", test_list=radarr.availability_descriptions, default="announced"),
                 "quality_profile": check_for_attribute(self.data, "quality_profile", parent="radarr", default_is_none=True),
                 "tag": check_for_attribute(self.data, "tag", parent="radarr", var_type="lower_list", default_is_none=True),
-                "search": check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
+                "search": check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False),
+                "radarr_path": check_for_attribute(self.data, "radarr_path", parent="radarr", default_is_none=True),
+                "plex_path": check_for_attribute(self.data, "plex_path", parent="radarr", default_is_none=True)
             }
             self.general["sonarr"] = {
                 "url": check_for_attribute(self.data, "url", parent="sonarr", var_type="url", default_is_none=True),
@@ -361,7 +363,9 @@ class Config:
                 "season_folder": check_for_attribute(self.data, "season_folder", parent="sonarr", var_type="bool", default=True),
                 "tag": check_for_attribute(self.data, "tag", parent="sonarr", var_type="lower_list", default_is_none=True),
                 "search": check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False),
-                "cutoff_search": check_for_attribute(self.data, "cutoff_search", parent="sonarr", var_type="bool", default=False)
+                "cutoff_search": check_for_attribute(self.data, "cutoff_search", parent="sonarr", var_type="bool", default=False),
+                "sonarr_path": check_for_attribute(self.data, "sonarr_path", parent="sonarr", default_is_none=True),
+                "plex_path": check_for_attribute(self.data, "plex_path", parent="sonarr", default_is_none=True)
             }
             self.general["tautulli"] = {
                 "url": check_for_attribute(self.data, "url", parent="tautulli", var_type="url", default_is_none=True),
@@ -514,9 +518,11 @@ class Config:
                             "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False),
                             "monitor": check_for_attribute(lib, "monitor", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor"], save=False),
                             "availability": check_for_attribute(lib, "availability", parent="radarr", test_list=radarr.availability_descriptions, default=self.general["radarr"]["availability"], save=False),
-                            "quality_profile": check_for_attribute(lib, "quality_profile", parent="radarr",default=self.general["radarr"]["quality_profile"], req_default=True, save=False),
+                            "quality_profile": check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False),
                             "tag": check_for_attribute(lib, "tag", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False),
-                            "search": check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
+                            "search": check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False),
+                            "radarr_path": check_for_attribute(lib, "radarr_path", parent="radarr", default=self.general["radarr"]["radarr_path"], default_is_none=True, save=False),
+                            "plex_path": check_for_attribute(lib, "plex_path", parent="radarr", default=self.general["radarr"]["plex_path"], default_is_none=True, save=False)
                         })
                     except Failed as e:
                         self.errors.append(e)
@@ -545,7 +551,9 @@ class Config:
                             "season_folder": check_for_attribute(lib, "season_folder", parent="sonarr", var_type="bool", default=self.general["sonarr"]["season_folder"], save=False),
                             "tag": check_for_attribute(lib, "tag", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False),
                             "search": check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False),
-                            "cutoff_search": check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False)
+                            "cutoff_search": check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False),
+                            "sonarr_path": check_for_attribute(lib, "sonarr_path", parent="sonarr", default=self.general["sonarr"]["sonarr_path"], default_is_none=True, save=False),
+                            "plex_path": check_for_attribute(lib, "plex_path", parent="sonarr", default=self.general["sonarr"]["plex_path"], default_is_none=True, save=False)
                         })
                     except Failed as e:
                         self.errors.append(e)
