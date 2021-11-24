@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import SonarrAPI
-from arrapi.exceptions import ArrException, Invalid
+from arrapi.exceptions import ArrException, Invalid, NotFound
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -50,8 +50,8 @@ class Sonarr:
         self.tag = params["tag"]
         self.search = params["search"]
         self.cutoff_search = params["cutoff_search"]
-        self.sonarr_path = "" if params["sonarr_path"] and params["plex_path"] else params["sonarr_path"]
-        self.plex_path = "" if params["sonarr_path"] and params["plex_path"] else params["plex_path"]
+        self.sonarr_path = params["sonarr_path"] if params["sonarr_path"] and params["plex_path"] else ""
+        self.plex_path = params["plex_path"] if params["sonarr_path"] and params["plex_path"] else ""
 
     def add_tvdb(self, tvdb_ids, **options):
         logger.info("")
@@ -69,10 +69,30 @@ class Sonarr:
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
-        try:
-            added, exists, invalid = self.api.add_multiple_series(tvdb_ids, folder, quality_profile, language_profile, monitor, season, search, cutoff_search, series, tags, per_request=100)
-        except Invalid as e:
-            raise Failed(f"Sonarr Error: {e}")
+
+        added = []
+        exists = []
+        invalid = []
+        shows = []
+        for i, item in enumerate(tvdb_ids, 1):
+            path = item[1] if isinstance(item, tuple) else None
+            tvdb_id = item[0] if isinstance(item, tuple) else item
+            util.print_return(f"Loading TVDb ID: {tvdb_id} {i}/{len(tvdb_ids)}")
+            try:
+                show = self.api.get_series(tvdb_id=tvdb_id)
+                shows.append((show, path) if path else show)
+            except NotFound:
+                invalid.append(item)
+            if len(shows) == 100 or len(tvdb_ids) == i:
+                try:
+                    _a, _e, _i = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor,
+                                                              season, search, cutoff_search, series, tags, per_request=100)
+                    added.extend(_a)
+                    exists.extend(_e)
+                    invalid.extend(_i)
+                    shows = []
+                except Invalid as e:
+                    raise Failed(f"Sonarr Error: {e}")
 
         if len(added) > 0:
             logger.info("")
