@@ -30,10 +30,6 @@ class Radarr:
         self.search = params["search"]
         self.radarr_path = params["radarr_path"] if params["radarr_path"] and params["plex_path"] else ""
         self.plex_path = params["plex_path"] if params["radarr_path"] and params["plex_path"] else ""
-        logger.debug(params["radarr_path"])
-        logger.debug(self.radarr_path)
-        logger.debug(params["plex_path"])
-        logger.debug(self.plex_path)
 
     def add_tmdb(self, tmdb_ids, **options):
         logger.info("")
