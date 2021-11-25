@@ -29,7 +29,8 @@ discover_all = [
     "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte",
     "with_companies", "with_genres", "without_genres", "with_keywords", "without_keywords", "include_adult",
     "timezone", "screened_theatrically", "include_null_first_air_dates", "limit",
-    "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks"
+    "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks",
+    "watch_region", "with_watch_providers", "without_watch_providers", "with_watch_monetization_types"
 ]
 discover_movie_only = [
     "region", "with_cast", "with_crew", "with_people", "certification_country", "certification",

@@ -992,7 +992,8 @@ class CollectionBuilder:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
                     elif discover_attr in ["vote_count", "vote_average", "with_runtime"]:
                         new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="int", parent=method_name)
-                    elif discover_final in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
+                                                                    parent=method_name)
+                    elif discover_final in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone", "watch_region", "with_watch_providers", "without_watch_providers", "with_watch_monetization_types"]:
                         new_dictionary[discover_final] = discover_data
                     elif discover_attr != "limit":
                         raise Failed(f"Collection Error: {method_name} {discover_final} attribute not supported")
