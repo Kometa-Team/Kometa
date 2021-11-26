@@ -27,8 +27,9 @@ discover_all = [
     "year", "primary_release_year", "primary_release_date.gte", "primary_release_date.lte",
     "release_date.gte", "release_date.lte", "vote_count.gte", "vote_count.lte",
     "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte",
-    "with_companies", "with_genres", "without_genres", "with_keywords", "without_keywords", "include_adult",
-    "timezone", "screened_theatrically", "include_null_first_air_dates", "limit",
+    "with_companies", "without_companies ", "with_genres", "without_genres", "with_keywords", "without_keywords",
+    "with_watch_providers", "without_watch_providers", "watch_region", "with_watch_monetization_types", "with_status",
+    "include_adult", "timezone", "screened_theatrically", "include_null_first_air_dates", "limit", "with_type",
     "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks"
 ]
 discover_movie_only = [
@@ -36,8 +37,8 @@ discover_movie_only = [
     "year", "primary_release_year", "primary_release_date", "release_date", "include_adult"
 ]
 discover_tv_only = [
-    "timezone", "screened_theatrically", "include_null_first_air_dates",
-    "air_date", "first_air_date", "first_air_date_year", "with_networks",
+    "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date",
+    "first_air_date", "first_air_date_year", "with_networks", "with_status", "with_type",
 ]
 discover_dates = [
     "primary_release_date.gte", "primary_release_date.lte", "release_date.gte", "release_date.lte",
@@ -49,6 +50,7 @@ discover_movie_sort = [
     "vote_average.asc", "vote_average.desc", "vote_count.asc", "vote_count.desc"
 ]
 discover_tv_sort = ["vote_average.desc", "vote_average.asc", "first_air_date.desc", "first_air_date.asc", "popularity.desc", "popularity.asc"]
+discover_monetization_types = ["flatrate", "free", "ads", "rent", "buy"]
 
 class TMDb:
     def __init__(self, config, params):

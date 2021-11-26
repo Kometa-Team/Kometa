@@ -291,13 +291,13 @@ class Convert:
                     logger.info(util.adjust_space(f" Cache  |  {'^' if expired else '+'}  | {ids} | {item.title}"))
                     self.config.Cache.update_guid_map(item.guid, cache_ids, imdb_in, expired, guid_type)
 
-            if tmdb_id and library.is_movie:
+            if (tmdb_id or imdb_id) and library.is_movie:
                 update_cache(tmdb_id, "TMDb", imdb_id, "movie")
                 return "movie", tmdb_id, imdb_id
-            elif tvdb_id and library.is_show:
+            elif (tvdb_id or imdb_id) and library.is_show:
                 update_cache(tvdb_id, "TVDb", imdb_id, "show")
                 return "show", tvdb_id, imdb_id
-            elif anidb_id and tmdb_id and library.is_show:
+            elif anidb_id and (tmdb_id or imdb_id) and library.is_show:
                 update_cache(tmdb_id, "TMDb", imdb_id, "show_movie")
                 return "movie", tmdb_id, imdb_id
             else:

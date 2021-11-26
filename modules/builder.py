@@ -978,10 +978,10 @@ class CollectionBuilder:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, parent=method_name, regex=regex)
                     elif discover_attr == "sort_by" and self.library.is_movie:
                         options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
-                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, parent=method_name, options=options)
+                        new_dictionary[discover_final] = util.parse(discover_attr, discover_data, parent=method_name, options=options)
                     elif discover_attr == "certification_country":
                         if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
-                            new_dictionary[discover_attr] = discover_data
+                            new_dictionary[discover_final] = discover_data
                         else:
                             raise Failed(f"Collection Error: {method_name} {discover_attr} attribute: must be used with either certification, certification.lte, or certification.gte")
                     elif discover_attr == "certification":
@@ -989,10 +989,24 @@ class CollectionBuilder:
                             new_dictionary[discover_final] = discover_data
                         else:
                             raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with certification_country")
+                    elif discover_attr == "watch_region":
+                        if "with_watch_providers" in dict_data:
+                            new_dictionary[discover_final] = discover_data
+                        else:
+                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with with_watch_providers")
+                    elif discover_attr == "with_watch_monetization_types":
+                        if "watch_region" in dict_data:
+                            new_dictionary[discover_final] = util.parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
+                        else:
+                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with watch_region")
                     elif discover_attr in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="bool", parent=method_name)
                     elif discover_final in tmdb.discover_dates:
                         new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} {discover_final} attribute", return_as="%m/%d/%Y")
+                    elif discover_attr == "with_status":
+                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
+                    elif discover_attr == "with_type":
+                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
                     elif discover_attr in ["primary_release_year", "year", "first_air_date_year"]:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
                     elif discover_attr in ["vote_count", "vote_average", "with_runtime"]:

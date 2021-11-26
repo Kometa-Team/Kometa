@@ -51,7 +51,7 @@ class Radarr:
         for i, item in enumerate(tmdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tmdb_id = item[0] if isinstance(item, tuple) else item
-            util.print_return(f"Loading TMDb ID: {tmdb_id} {i}/{len(tmdb_ids)}")
+            util.print_return(f"Loading TMDb ID {i}/{len(tmdb_ids)} ({tmdb_id})")
             try:
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
                 movies.append((movie, path) if path else movie)
