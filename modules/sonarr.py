@@ -77,7 +77,7 @@ class Sonarr:
         for i, item in enumerate(tvdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tvdb_id = item[0] if isinstance(item, tuple) else item
-            util.print_return(f"Loading TVDb ID: {tvdb_id} {i}/{len(tvdb_ids)}")
+            util.print_return(f"Loading TVDb ID {i}/{len(tvdb_ids)} ({tvdb_id})")
             try:
                 show = self.api.get_series(tvdb_id=tvdb_id)
                 shows.append((show, path) if path else show)
