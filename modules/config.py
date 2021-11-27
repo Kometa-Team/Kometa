@@ -6,6 +6,7 @@ from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
+from modules.flixpatrol import FlixPatrol
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.letterboxd import Letterboxd
@@ -320,8 +321,9 @@ class Config:
             self.IMDb = IMDb(self)
             self.Convert = Convert(self)
             self.AniList = AniList(self)
-            self.Letterboxd = Letterboxd(self)
+            self.FlixPatrol = FlixPatrol(self)
             self.ICheckMovies = ICheckMovies(self)
+            self.Letterboxd = Letterboxd(self)
             self.StevenLu = StevenLu(self)
 
             util.separator()
