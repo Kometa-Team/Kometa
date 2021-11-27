@@ -1,6 +1,6 @@
 import logging, os, re
 from datetime import datetime, timedelta
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
+from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
 from modules.util import Failed, ImageData, NotScheduled
 from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
@@ -63,8 +63,9 @@ filter_translation = {
     "writer": "writers"
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
-all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + \
-               mal.builders + plex.builders + stevenlu.builders + tautulli.builders + tmdb.builders + trakt.builders + tvdb.builders
+all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
+               letterboxd.builders + mal.builders + plex.builders + stevenlu.builders + tautulli.builders + \
+               tmdb.builders + trakt.builders + tvdb.builders
 show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level"]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
@@ -570,6 +571,7 @@ class CollectionBuilder:
                 elif method_name in sonarr_details:                                         self._sonarr(method_name, method_data)
                 elif method_name in anidb.builders:                                         self._anidb(method_name, method_data)
                 elif method_name in anilist.builders:                                       self._anilist(method_name, method_data)
+                elif method_name in flixpatrol.builders:                                    self._flixpatrol(method_name, method_data)
                 elif method_name in icheckmovies.builders:                                  self._icheckmovies(method_name, method_data)
                 elif method_name in letterboxd.builders:                                    self._letterboxd(method_name, method_data)
                 elif method_name in imdb.builders:                                          self._imdb(method_name, method_data)
@@ -861,6 +863,38 @@ class CollectionBuilder:
                 new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
                 self.builders.append((method_name, new_dictionary))
 
+    def _flixpatrol(self, method_name, method_data):
+        if method_name.startswith("flixpatrol_url"):
+            flixpatrol_lists = self.config.FlixPatrol.validate_flixpatrol_lists(method_data, self.language, self.library.is_movie)
+            for flixpatrol_list in flixpatrol_lists:
+                self.builders.append(("flixpatrol_url", flixpatrol_list))
+        elif method_name in flixpatrol.builders:
+            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+                if method_name == "flixpatrol_demographics":
+                    data = {
+                        "generation": util.parse("generation", dict_data, methods=dict_methods, parent=method_name, default="all", options=flixpatrol.generations),
+                        "gender": util.parse("gender", dict_data, methods=dict_methods, parent=method_name, default="all", options=flixpatrol.gender),
+                        "location": util.parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.demo_locations),
+                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                    }
+                elif method_name == "flixpatrol_popular":
+                    data = {
+                        "source": util.parse("source", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.popular),
+                        "time_window": util.parse("time_window", dict_data, methods=dict_methods, parent=method_name, default="today"),
+                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                    }
+                elif method_name == "flixpatrol_top":
+                    data = {
+                        "platform": util.parse("platform", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.platforms),
+                        "location": util.parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.locations),
+                        "time_window": util.parse("time_window", dict_data, methods=dict_methods, parent=method_name, default="today"),
+                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                    }
+                else:
+                    continue
+                if self.config.FlixPatrol.validate_flixpatrol_dict(method_name, data, self.language, self.library.is_movie):
+                    self.builders.append((method_name, data))
+
     def _icheckmovies(self, method_name, method_data):
         if method_name.startswith("icheckmovies_list"):
             icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language)
@@ -1133,6 +1167,8 @@ class CollectionBuilder:
                 ids = self.config.TVDb.get_tvdb_ids(method, value)
             elif "imdb" in method:
                 ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
+            elif "flixpatrol" in method:
+                ids = self.config.FlixPatrol.get_flixpatrol_ids(method, value, self.language, self.library.is_movie)
             elif "icheckmovies" in method:
                 ids = self.config.ICheckMovies.get_icheckmovies_ids(method, value, self.language)
             elif "letterboxd" in method:

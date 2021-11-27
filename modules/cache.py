@@ -61,6 +61,14 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS flixpatrol_map (
+                    key INTEGER PRIMARY KEY,
+                    flixpatrol_id TEXT UNIQUE,
+                    tmdb_id TEXT,
+                    media_type TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS omdb_data (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
@@ -160,6 +168,12 @@ class Cache:
 
     def update_letterboxd_map(self, expired, letterboxd_id, tmdb_id):
         self._update_map("letterboxd_map", "letterboxd_id", letterboxd_id, "tmdb_id", tmdb_id, expired)
+
+    def query_flixpatrol_map(self, flixpatrol_id, media_type):
+        return self._query_map("flixpatrol_map", flixpatrol_id, "flixpatrol_id", "tmdb_id", media_type=media_type)
+
+    def update_flixpatrol_map(self, expired, flixpatrol_id, tmdb_id, media_type):
+        self._update_map("flixpatrol_map", "flixpatrol_id", flixpatrol_id, "tmdb_id", tmdb_id, expired, media_type=media_type)
 
     def _query_map(self, map_name, _id, from_id, to_id, media_type=None, return_type=False):
         id_to_return = None
