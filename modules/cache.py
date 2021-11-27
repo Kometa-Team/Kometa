@@ -112,7 +112,8 @@ class Cache:
                 row = cursor.fetchone()
                 if row:
                     time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
-                    id_to_return = util.get_list(row["t_id"], int_list=True)
+                    if row["t_id"]:
+                        id_to_return = util.get_list(row["t_id"], int_list=True)
                     imdb_id = util.get_list(row["imdb_id"])
                     media_type = row["media_type"]
                     expired = time_between_insertion.days > self.expiration
