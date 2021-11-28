@@ -2123,13 +2123,19 @@ class CollectionBuilder:
                 (self.details["collection_removal_webhooks"] and len(self.notification_removals) > 0)
         ):
             self.obj.reload()
-            self.library.Webhooks.collection_hooks(
-                self.details["collection_creation_webhooks"] + self.details["collection_addition_webhooks"] + self.details["collection_removal_webhooks"],
-                self.obj,
-                created=self.created,
-                additions=self.notification_additions,
-                removals=self.notification_removals
-            )
+            try:
+                self.library.Webhooks.collection_hooks(
+                    self.details["collection_creation_webhooks"] +
+                    self.details["collection_addition_webhooks"] +
+                    self.details["collection_removal_webhooks"],
+                    self.obj,
+                    created=self.created,
+                    additions=self.notification_additions,
+                    removals=self.notification_removals
+                )
+            except Failed as e:
+                util.print_stacktrace()
+                logger.error(f"Webhooks Error: {e}")
 
     def run_collections_again(self):
         self.obj = self.library.get_collection(self.name)

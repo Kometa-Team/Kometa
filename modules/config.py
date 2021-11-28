@@ -125,7 +125,8 @@ class Config:
                     else:                                                               endline = ""
                     yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
             elif data[attribute] is None:
-                if default_is_none is True:                                         return None
+                if default_is_none and var_type == "list":                          return []
+                elif default_is_none:                                               return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "url":
                 if data[attribute].endswith(("\\", "/")):                           return data[attribute][:-1]
@@ -229,7 +230,11 @@ class Config:
             logger.warning("notifiarr attribute not found")
 
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
-        self.Webhooks.start_time_hooks(self.run_start_time)
+        try:
+            self.Webhooks.start_time_hooks(self.run_start_time)
+        except Failed as e:
+            util.print_stacktrace()
+            logger.error(f"Webhooks Error: {e}")
 
         self.errors = []
 
@@ -604,7 +609,11 @@ class Config:
 
     def notify(self, text, library=None, collection=None, critical=True):
         for error in util.get_list(text, split=False):
-            self.Webhooks.error_hooks(error, library=library, collection=collection, critical=critical)
+            try:
+                self.Webhooks.error_hooks(error, library=library, collection=collection, critical=critical)
+            except Failed as e:
+                util.print_stacktrace()
+                logger.error(f"Webhooks Error: {e}")
 
     def get_html(self, url, headers=None, params=None):
         return html.fromstring(self.get(url, headers=headers, params=params).content)

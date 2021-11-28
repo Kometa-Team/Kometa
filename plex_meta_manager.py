@@ -154,7 +154,11 @@ def start(attrs):
     logger.info("")
     run_time = str(datetime.now() - start_time).split('.')[0]
     if config:
-        config.Webhooks.end_time_hooks(start_time, run_time, stats)
+        try:
+            config.Webhooks.end_time_hooks(start_time, run_time, stats)
+        except Failed as e:
+            util.print_stacktrace()
+            logger.error(f"Webhooks Error: {e}")
     util.separator(f"Finished {start_type}Run\nRun Time: {run_time}")
     logger.removeHandler(file_handler)
 
