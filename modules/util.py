@@ -88,7 +88,9 @@ def get_list(data, lower=False, split=True, int_list=False):
     elif isinstance(data, dict):    return [data]
     elif split is False:            return [str(data)]
     elif lower is True:             return [d.strip().lower() for d in str(data).split(",")]
-    elif int_list is True:          return [int(d.strip()) for d in str(data).split(",")]
+    elif int_list is True:
+        try:                            return [int(d.strip()) for d in str(data).split(",")]
+        except ValueError:              return []
     else:                           return [d.strip() for d in str(data).split(",")]
 
 def get_int_list(data, id_type):
