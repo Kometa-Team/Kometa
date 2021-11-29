@@ -1033,7 +1033,7 @@ class CollectionBuilder:
                             new_dictionary[discover_final] = util.parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
                         else:
                             raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with watch_region")
-                    elif discover_attr in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
+                    elif discover_attr in tmdb.discover_booleans:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="bool", parent=method_name)
                     elif discover_attr == "vote_average":
                         new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="float", parent=method_name)
