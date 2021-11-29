@@ -29,8 +29,9 @@ monitor_descriptions = {
 apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
 
 class Sonarr:
-    def __init__(self, config, params):
+    def __init__(self, config, library, params):
         self.config = config
+        self.library = library
         self.url = params["url"]
         self.token = params["token"]
         try:
@@ -78,10 +79,15 @@ class Sonarr:
             path = item[1] if isinstance(item, tuple) else None
             tvdb_id = item[0] if isinstance(item, tuple) else item
             util.print_return(f"Loading TVDb ID {i}/{len(tvdb_ids)} ({tvdb_id})")
+            if self.config.Cache:
+                _id = self.config.Cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
+                if _id:
+                    exists.append(item)
+                    continue
             try:
                 show = self.api.get_series(tvdb_id=tvdb_id)
                 shows.append((show, path) if path else show)
-            except NotFound:
+            except ArrException:
                 invalid.append(item)
             if len(shows) == 100 or len(tvdb_ids) == i:
                 try:
@@ -98,12 +104,16 @@ class Sonarr:
             logger.info("")
             for series in added:
                 logger.info(f"Added to Sonarr | {series.tvdbId:<6} | {series.title}")
+                if self.config.Cache:
+                    self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Series added to Sonarr")
 
         if len(exists) > 0:
             logger.info("")
             for series in exists:
                 logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
+                if self.config.Cache:
+                    self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(exists)} Series already existing in Sonarr")
 
         if len(invalid) > 0:

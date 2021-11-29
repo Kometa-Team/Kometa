@@ -11,8 +11,9 @@ apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
 availability_descriptions = {"announced": "For Announced", "cinemas": "For In Cinemas", "released": "For Released", "db": "For PreDB"}
 
 class Radarr:
-    def __init__(self, config, params):
+    def __init__(self, config, library, params):
         self.config = config
+        self.library = library
         self.url = params["url"]
         self.token = params["token"]
         try:
@@ -52,6 +53,11 @@ class Radarr:
             path = item[1] if isinstance(item, tuple) else None
             tmdb_id = item[0] if isinstance(item, tuple) else item
             util.print_return(f"Loading TMDb ID {i}/{len(tmdb_ids)} ({tmdb_id})")
+            if self.config.Cache:
+                _id = self.config.Cache.query_radarr_adds(tmdb_id, self.library.original_mapping_name)
+                if _id:
+                    exists.append(item)
+                    continue
             try:
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
                 movies.append((movie, path) if path else movie)
@@ -72,12 +78,16 @@ class Radarr:
             logger.info("")
             for movie in added:
                 logger.info(f"Added to Radarr | {movie.tmdbId:<6} | {movie.title}")
+                if self.config.Cache:
+                    self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Movie{'s' if len(added) > 1 else ''} added to Radarr")
 
         if len(exists) > 0:
             logger.info("")
             for movie in exists:
                 logger.info(f"Already in Radarr | {movie.tmdbId:<6} | {movie.title}")
+                if self.config.Cache:
+                    self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
             logger.info(f"{len(exists)} Movie{'s' if len(exists) > 1 else ''} already existing in Radarr")
 
         if len(invalid) > 0:
