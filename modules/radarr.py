@@ -36,7 +36,15 @@ class Radarr:
         logger.info("")
         util.separator("Adding to Radarr", space=False, border=False)
         logger.debug("")
+        _ids = []
+        _paths = []
         for tmdb_id in tmdb_ids:
+            if isinstance(tmdb_id, tuple):
+                _paths.append(tmdb_id)
+            else:
+                _ids.append(tmdb_id)
+        logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
+        for tmdb_id in _paths:
             logger.debug(tmdb_id)
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
