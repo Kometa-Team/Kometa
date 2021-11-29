@@ -1024,10 +1024,10 @@ class CollectionBuilder:
                         else:
                             raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with certification_country")
                     elif discover_attr == "watch_region":
-                        if "with_watch_providers" in dict_data:
+                        if "with_watch_providers" in dict_data or "without_watch_providers" in dict_data or "with_watch_monetization_types" in dict_data:
                             new_dictionary[discover_final] = discover_data
                         else:
-                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with with_watch_providers")
+                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
                     elif discover_attr == "with_watch_monetization_types":
                         if "watch_region" in dict_data:
                             new_dictionary[discover_final] = util.parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
@@ -1035,17 +1035,19 @@ class CollectionBuilder:
                             raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with watch_region")
                     elif discover_attr in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="bool", parent=method_name)
-                    elif discover_final in tmdb.discover_dates:
-                        new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} {discover_final} attribute", return_as="%m/%d/%Y")
+                    elif discover_attr == "vote_average":
+                        new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="float", parent=method_name)
                     elif discover_attr == "with_status":
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
                     elif discover_attr == "with_type":
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
-                    elif discover_attr in ["primary_release_year", "year", "first_air_date_year"]:
+                    elif discover_final in tmdb.discover_dates:
+                        new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} {discover_final} attribute", return_as="%m/%d/%Y")
+                    elif discover_attr in tmdb.discover_years:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
-                    elif discover_attr in ["vote_count", "vote_average", "with_runtime"]:
+                    elif discover_attr in tmdb.discover_ints:
                         new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="int", parent=method_name)
-                    elif discover_final in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
+                    elif discover_final in tmdb.discover_strings:
                         new_dictionary[discover_final] = discover_data
                     elif discover_attr != "limit":
                         raise Failed(f"Collection Error: {method_name} {discover_final} attribute not supported")
