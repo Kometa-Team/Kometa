@@ -40,6 +40,12 @@ discover_tv_only = [
     "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date",
     "first_air_date", "first_air_date_year", "with_networks", "with_status", "with_type",
 ]
+discover_strings = [
+    "with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres",
+    "with_keywords", "without_keywords", "with_original_language", "timezone", "with_watch_providers", "without_watch_providers"
+]
+discover_ints = ["vote_count", "with_runtime"]
+discover_years = ["primary_release_year", "year", "first_air_date_year"]
 discover_dates = [
     "primary_release_date.gte", "primary_release_date.lte", "release_date.gte", "release_date.lte",
     "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte"

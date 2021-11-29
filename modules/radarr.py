@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import RadarrAPI
-from arrapi.exceptions import ArrException, Invalid, NotFound
+from arrapi.exceptions import ArrException, Invalid
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -55,7 +55,7 @@ class Radarr:
             try:
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
                 movies.append((movie, path) if path else movie)
-            except NotFound:
+            except ArrException:
                 invalid.append(item)
             if len(movies) == 100 or len(tmdb_ids) == i:
                 try:
