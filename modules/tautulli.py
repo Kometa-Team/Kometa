@@ -43,7 +43,7 @@ class Tautulli:
         rating_keys = []
         for item in items:
             if item["section_id"] == section_id and len(rating_keys) < int(params['list_size']):
-                if item[stat_type] < params['list_minimum']:
+                if int(item[stat_type]) < params['list_minimum']:
                     continue
                 try:
                     plex_item = library.fetchItem(int(item["rating_key"]))

@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import SonarrAPI
-from arrapi.exceptions import ArrException, Invalid, NotFound
+from arrapi.exceptions import ArrException, Invalid
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -58,7 +58,15 @@ class Sonarr:
         logger.info("")
         util.separator("Adding to Sonarr", space=False, border=False)
         logger.debug("")
+        _ids = []
+        _paths = []
         for tvdb_id in tvdb_ids:
+            if isinstance(tvdb_id, tuple):
+                _paths.append(tvdb_id)
+            else:
+                _ids.append(tvdb_id)
+        logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
+        for tvdb_id in _paths:
             logger.debug(tvdb_id)
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
