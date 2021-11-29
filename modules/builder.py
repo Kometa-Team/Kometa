@@ -1869,9 +1869,7 @@ class CollectionBuilder:
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
 
-        tmdb_ids = []
         tmdb_paths = []
-        tvdb_ids = []
         tvdb_paths = []
         for item in self.items:
             if int(item.ratingKey) in rating_keys and not revert:
@@ -1883,11 +1881,9 @@ class CollectionBuilder:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
-            if item.ratingKey in self.library.movie_rating_key_map:
-                tmdb_ids.append(self.library.movie_rating_key_map[item.ratingKey])
+            if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
                 tmdb_paths.append((self.library.movie_rating_key_map[item.ratingKey], f"{path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)}/"))
-            if item.ratingKey in self.library.show_rating_key_map:
-                tvdb_ids.append(self.library.show_rating_key_map[item.ratingKey])
+            if self.library.Sonarr and item.ratingKey in self.library.show_rating_key_map:
                 tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], f"{path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)}/"))
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
@@ -1905,21 +1901,20 @@ class CollectionBuilder:
                 item.lockPoster()
             if "item_lock_title" in self.item_details:
                 item.edit(**{"title.locked": 1})
-
             if "item_refresh" in self.item_details:
                 item.refresh()
 
-        if len(tmdb_ids) > 0:
+        if self.library.Radarr and tmdb_paths:
             if "item_radarr_tag" in self.item_details:
-                self.library.Radarr.edit_tags(tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
+                self.library.Radarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tmdb_paths], self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
             if self.radarr_details["add_existing"]:
-                self.library.Radarr.add_tmdb(tmdb_ids, **self.radarr_details)
+                self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
 
-        if len(tvdb_ids) > 0:
+        if self.library.Sonarr and tvdb_paths:
             if "item_sonarr_tag" in self.item_details:
-                self.library.Sonarr.edit_tags(tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
+                self.library.Sonarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tvdb_paths], self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
             if self.sonarr_details["add_existing"]:
-                self.library.Sonarr.add_tvdb(tvdb_ids, **self.sonarr_details)
+                self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
 
         for rating_key in rating_keys:
             try:
