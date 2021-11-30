@@ -29,7 +29,7 @@ class Tautulli:
         logger.info(f"Processing Tautulli Most {params['list_type'].capitalize()}: {params['list_size']} {'Movies' if library.is_movie else 'Shows'}")
         response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_home_stats&time_range={params['list_days']}&stats_count={query_size}")
         stat_id = f"{'popular' if params['list_type'] == 'popular' else 'top'}_{'movies' if library.is_movie else 'tv'}"
-        stat_type = "total_plays" if params['list_type'] == 'popular' else "users_watched"
+        stat_type = "users_watched" if params['list_type'] == 'popular' else "total_plays"
 
         items = None
         for entry in response["response"]["data"]:
