@@ -23,7 +23,10 @@ class Webhooks:
                 logger.debug(f"Webhook: {webhook}")
             if webhook == "notifiarr":
                 url, params = self.notifiarr.get_url("notification/plex/")
-                response = self.config.get(url, json=json, params=params)
+                for x in range(6):
+                    response = self.config.get(url, json=json, params=params)
+                    if response.status_code < 500:
+                        break
             else:
                 response = self.config.post(webhook, json=json)
             try:
