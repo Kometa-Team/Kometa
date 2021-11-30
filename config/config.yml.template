@@ -37,14 +37,14 @@ webhooks:                                       # Can be individually specified 
   collection_creation:
   collection_addition:
   collection_removal:
-plex:                                           # Can be individually specified per library as well
+plex:                                           # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: ####################
   timeout: 60
   clean_bundles: false
   empty_trash: false
   optimize: false
-tmdb:
+tmdb:                                           # REQUIRED for the script to run
   apikey: ################################
   language: en
 tautulli:                                       # Can be individually specified per library as well
