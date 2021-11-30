@@ -1,4 +1,5 @@
 import logging
+from json import JSONDecodeError
 
 from modules.util import Failed
 
@@ -22,14 +23,23 @@ class Webhooks:
                 logger.debug(f"Webhook: {webhook}")
             if webhook == "notifiarr":
                 url, params = self.notifiarr.get_url("notification/plex/")
-                response = self.config.get(url, json=json, params=params)
+                for x in range(6):
+                    response = self.config.get(url, json=json, params=params)
+                    if response.status_code < 500:
+                        break
             else:
                 response = self.config.post(webhook, json=json)
-            response_json = response.json()
-            if self.config.trace_mode:
-                logger.debug(f"Response: {response_json}")
-            if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
-                raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
+            try:
+                response_json = response.json()
+                if self.config.trace_mode:
+                    logger.debug(f"Response: {response_json}")
+                if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
+                    raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
+                if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
+                    raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
+            except JSONDecodeError:
+                if response.status_code >= 400:
+                    raise Failed(f"({response.status_code} [{response.reason}])")
 
     def start_time_hooks(self, start_time):
         if self.run_start_webhooks:

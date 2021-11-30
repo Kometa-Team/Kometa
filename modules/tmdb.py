@@ -27,18 +27,26 @@ discover_all = [
     "year", "primary_release_year", "primary_release_date.gte", "primary_release_date.lte",
     "release_date.gte", "release_date.lte", "vote_count.gte", "vote_count.lte",
     "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte",
-    "with_companies", "with_genres", "without_genres", "with_keywords", "without_keywords", "include_adult",
-    "timezone", "screened_theatrically", "include_null_first_air_dates", "limit",
-    "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks"
+    "with_companies", "without_companies ", "with_genres", "without_genres", "with_keywords", "without_keywords",
+    "with_watch_providers", "without_watch_providers", "watch_region", "with_watch_monetization_types", "with_status",
+    "include_adult", "include_video", "timezone", "screened_theatrically", "include_null_first_air_dates", "limit", "with_type",
+    "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks", "with_release_type"
 ]
 discover_movie_only = [
-    "region", "with_cast", "with_crew", "with_people", "certification_country", "certification",
-    "year", "primary_release_year", "primary_release_date", "release_date", "include_adult"
+    "region", "with_cast", "with_crew", "with_people", "certification_country", "certification", "include_video",
+    "year", "primary_release_year", "primary_release_date", "release_date", "include_adult", "with_release_type"
 ]
 discover_tv_only = [
-    "timezone", "screened_theatrically", "include_null_first_air_dates",
-    "air_date", "first_air_date", "first_air_date_year", "with_networks",
+    "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date",
+    "first_air_date", "first_air_date_year", "with_networks", "with_status", "with_type",
 ]
+discover_strings = [
+    "with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_release_type",
+    "with_keywords", "without_keywords", "with_original_language", "timezone", "with_watch_providers", "without_watch_providers"
+]
+discover_ints = ["vote_count", "with_runtime"]
+discover_years = ["primary_release_year", "year", "first_air_date_year"]
+discover_booleans = ["include_adult", "include_video", "include_null_first_air_dates", "screened_theatrically"]
 discover_dates = [
     "primary_release_date.gte", "primary_release_date.lte", "release_date.gte", "release_date.lte",
     "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte"
@@ -49,6 +57,7 @@ discover_movie_sort = [
     "vote_average.asc", "vote_average.desc", "vote_count.asc", "vote_count.desc"
 ]
 discover_tv_sort = ["vote_average.desc", "vote_average.asc", "first_air_date.desc", "first_air_date.asc", "popularity.desc", "popularity.asc"]
+discover_monetization_types = ["flatrate", "free", "ads", "rent", "buy"]
 
 class TMDb:
     def __init__(self, config, params):

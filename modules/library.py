@@ -102,6 +102,7 @@ class Library(ABC):
                 logger.info(f"Using Asset Directory: {ad}")
 
         if output:
+            logger.info("")
             logger.info(output)
 
     def upload_images(self, item, poster=None, background=None, overlay=None):
@@ -182,9 +183,6 @@ class Library(ABC):
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
 
     def notify(self, text, collection=None, critical=True):
-        for error in util.get_list(text, split=False):
-            self.Webhooks.error_hooks(error, library=self, collection=collection, critical=critical)
-
         self.config.notify(text, library=self, collection=collection, critical=critical)
 
     @abstractmethod
