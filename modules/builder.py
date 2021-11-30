@@ -872,7 +872,7 @@ class CollectionBuilder:
             for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
                 if method_name == "flixpatrol_demographics":
                     data = {
-                        "generation": util.parse("generation", dict_data, methods=dict_methods, parent=method_name, default="all", options=flixpatrol.generations),
+                        "generation": util.parse("generation", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.generations),
                         "gender": util.parse("gender", dict_data, methods=dict_methods, parent=method_name, default="all", options=flixpatrol.gender),
                         "location": util.parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.demo_locations),
                         "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
