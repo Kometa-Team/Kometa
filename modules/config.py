@@ -6,6 +6,7 @@ from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
+from modules.flixpatrol import FlixPatrol
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.letterboxd import Letterboxd
@@ -124,7 +125,8 @@ class Config:
                     else:                                                               endline = ""
                     yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
             elif data[attribute] is None:
-                if default_is_none is True:                                         return None
+                if default_is_none and var_type == "list":                          return []
+                elif default_is_none:                                               return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "url":
                 if data[attribute].endswith(("\\", "/")):                           return data[attribute][:-1]
@@ -180,7 +182,7 @@ class Config:
         self.general = {
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60),
-            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")]),
+            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")], default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False),
             "sync_mode": check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes),
@@ -228,7 +230,11 @@ class Config:
             logger.warning("notifiarr attribute not found")
 
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
-        self.Webhooks.start_time_hooks(self.run_start_time)
+        try:
+            self.Webhooks.start_time_hooks(self.run_start_time)
+        except Failed as e:
+            util.print_stacktrace()
+            logger.error(f"Webhooks Error: {e}")
 
         self.errors = []
 
@@ -320,8 +326,9 @@ class Config:
             self.IMDb = IMDb(self)
             self.Convert = Convert(self)
             self.AniList = AniList(self)
-            self.Letterboxd = Letterboxd(self)
+            self.FlixPatrol = FlixPatrol(self)
             self.ICheckMovies = ICheckMovies(self)
+            self.Letterboxd = Letterboxd(self)
             self.StevenLu = StevenLu(self)
 
             util.separator()
@@ -346,7 +353,9 @@ class Config:
                 "availability": check_for_attribute(self.data, "availability", parent="radarr", test_list=radarr.availability_descriptions, default="announced"),
                 "quality_profile": check_for_attribute(self.data, "quality_profile", parent="radarr", default_is_none=True),
                 "tag": check_for_attribute(self.data, "tag", parent="radarr", var_type="lower_list", default_is_none=True),
-                "search": check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False)
+                "search": check_for_attribute(self.data, "search", parent="radarr", var_type="bool", default=False),
+                "radarr_path": check_for_attribute(self.data, "radarr_path", parent="radarr", default_is_none=True),
+                "plex_path": check_for_attribute(self.data, "plex_path", parent="radarr", default_is_none=True)
             }
             self.general["sonarr"] = {
                 "url": check_for_attribute(self.data, "url", parent="sonarr", var_type="url", default_is_none=True),
@@ -361,7 +370,9 @@ class Config:
                 "season_folder": check_for_attribute(self.data, "season_folder", parent="sonarr", var_type="bool", default=True),
                 "tag": check_for_attribute(self.data, "tag", parent="sonarr", var_type="lower_list", default_is_none=True),
                 "search": check_for_attribute(self.data, "search", parent="sonarr", var_type="bool", default=False),
-                "cutoff_search": check_for_attribute(self.data, "cutoff_search", parent="sonarr", var_type="bool", default=False)
+                "cutoff_search": check_for_attribute(self.data, "cutoff_search", parent="sonarr", var_type="bool", default=False),
+                "sonarr_path": check_for_attribute(self.data, "sonarr_path", parent="sonarr", default_is_none=True),
+                "plex_path": check_for_attribute(self.data, "plex_path", parent="sonarr", default_is_none=True)
             }
             self.general["tautulli"] = {
                 "url": check_for_attribute(self.data, "url", parent="tautulli", var_type="url", default_is_none=True),
@@ -495,6 +506,7 @@ class Config:
                     self.errors.append(e)
                     util.print_stacktrace()
                     util.print_multiline(e, error=True)
+                    logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
                     continue
 
@@ -505,7 +517,7 @@ class Config:
                     logger.info(f"Connecting to {display_name} library's Radarr...")
                     logger.info("")
                     try:
-                        library.Radarr = Radarr(self, {
+                        library.Radarr = Radarr(self, library, {
                             "url": check_for_attribute(lib, "url", parent="radarr", var_type="url", default=self.general["radarr"]["url"], req_default=True, save=False),
                             "token": check_for_attribute(lib, "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False),
                             "add": check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False),
@@ -513,9 +525,11 @@ class Config:
                             "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False),
                             "monitor": check_for_attribute(lib, "monitor", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor"], save=False),
                             "availability": check_for_attribute(lib, "availability", parent="radarr", test_list=radarr.availability_descriptions, default=self.general["radarr"]["availability"], save=False),
-                            "quality_profile": check_for_attribute(lib, "quality_profile", parent="radarr",default=self.general["radarr"]["quality_profile"], req_default=True, save=False),
+                            "quality_profile": check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False),
                             "tag": check_for_attribute(lib, "tag", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False),
-                            "search": check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False)
+                            "search": check_for_attribute(lib, "search", parent="radarr", var_type="bool", default=self.general["radarr"]["search"], save=False),
+                            "radarr_path": check_for_attribute(lib, "radarr_path", parent="radarr", default=self.general["radarr"]["radarr_path"], default_is_none=True, save=False),
+                            "plex_path": check_for_attribute(lib, "plex_path", parent="radarr", default=self.general["radarr"]["plex_path"], default_is_none=True, save=False)
                         })
                     except Failed as e:
                         self.errors.append(e)
@@ -531,7 +545,7 @@ class Config:
                     logger.info(f"Connecting to {display_name} library's Sonarr...")
                     logger.info("")
                     try:
-                        library.Sonarr = Sonarr(self, {
+                        library.Sonarr = Sonarr(self, library, {
                             "url": check_for_attribute(lib, "url", parent="sonarr", var_type="url", default=self.general["sonarr"]["url"], req_default=True, save=False),
                             "token": check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False),
                             "add": check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False),
@@ -544,7 +558,9 @@ class Config:
                             "season_folder": check_for_attribute(lib, "season_folder", parent="sonarr", var_type="bool", default=self.general["sonarr"]["season_folder"], save=False),
                             "tag": check_for_attribute(lib, "tag", parent="sonarr", var_type="lower_list", default=self.general["sonarr"]["tag"], default_is_none=True, save=False),
                             "search": check_for_attribute(lib, "search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["search"], save=False),
-                            "cutoff_search": check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False)
+                            "cutoff_search": check_for_attribute(lib, "cutoff_search", parent="sonarr", var_type="bool", default=self.general["sonarr"]["cutoff_search"], save=False),
+                            "sonarr_path": check_for_attribute(lib, "sonarr_path", parent="sonarr", default=self.general["sonarr"]["sonarr_path"], default_is_none=True, save=False),
+                            "plex_path": check_for_attribute(lib, "plex_path", parent="sonarr", default=self.general["sonarr"]["plex_path"], default_is_none=True, save=False)
                         })
                     except Failed as e:
                         self.errors.append(e)
@@ -560,7 +576,7 @@ class Config:
                     logger.info(f"Connecting to {display_name} library's Tautulli...")
                     logger.info("")
                     try:
-                        library.Tautulli = Tautulli(self, {
+                        library.Tautulli = Tautulli(self, library, {
                             "url": check_for_attribute(lib, "url", parent="tautulli", var_type="url", default=self.general["tautulli"]["url"], req_default=True, save=False),
                             "apikey": check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
                         })
@@ -593,7 +609,11 @@ class Config:
 
     def notify(self, text, library=None, collection=None, critical=True):
         for error in util.get_list(text, split=False):
-            self.Webhooks.error_hooks(error, library=library, collection=collection, critical=critical)
+            try:
+                self.Webhooks.error_hooks(error, library=library, collection=collection, critical=critical)
+            except Failed as e:
+                util.print_stacktrace()
+                logger.error(f"Webhooks Error: {e}")
 
     def get_html(self, url, headers=None, params=None):
         return html.fromstring(self.get(url, headers=headers, params=params).content)

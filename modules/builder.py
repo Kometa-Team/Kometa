@@ -1,6 +1,6 @@
 import logging, os, re
 from datetime import datetime, timedelta
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
+from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
 from modules.util import Failed, ImageData, NotScheduled
 from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
@@ -63,8 +63,9 @@ filter_translation = {
     "writer": "writers"
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
-all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + letterboxd.builders + \
-               mal.builders + plex.builders + stevenlu.builders + tautulli.builders + tmdb.builders + trakt.builders + tvdb.builders
+all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
+               letterboxd.builders + mal.builders + plex.builders + stevenlu.builders + tautulli.builders + \
+               tmdb.builders + trakt.builders + tvdb.builders
 show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level"]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
@@ -90,7 +91,8 @@ notification_details = ["collection_creation_webhooks", "collection_addition_web
 details = ["collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details + notification_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
-item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_assets", "revert_overlay", "item_refresh"] + list(plex.item_advance_keys.keys())
+item_bool_details = ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
+item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
 radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
@@ -569,6 +571,7 @@ class CollectionBuilder:
                 elif method_name in sonarr_details:                                         self._sonarr(method_name, method_data)
                 elif method_name in anidb.builders:                                         self._anidb(method_name, method_data)
                 elif method_name in anilist.builders:                                       self._anilist(method_name, method_data)
+                elif method_name in flixpatrol.builders:                                    self._flixpatrol(method_name, method_data)
                 elif method_name in icheckmovies.builders:                                  self._icheckmovies(method_name, method_data)
                 elif method_name in letterboxd.builders:                                    self._letterboxd(method_name, method_data)
                 elif method_name in imdb.builders:                                          self._imdb(method_name, method_data)
@@ -608,6 +611,9 @@ class CollectionBuilder:
             self.radarr_details["add_existing"] = False
             self.sonarr_details["add"] = False
             self.sonarr_details["add_existing"] = False
+
+        if self.radarr_details["add_existing"] or self.sonarr_details["add_existing"]:
+            self.item_details["add_existing"] = True
 
         if self.collectionless:
             self.details["collection_mode"] = "hide"
@@ -741,7 +747,7 @@ class CollectionBuilder:
                 raise Failed("Each Overlay can only be used once per Library")
             self.library.overlays.append(method_data)
             self.item_details[method_name] = method_data
-        elif method_name in ["item_assets", "revert_overlay", "item_refresh"]:
+        elif method_name in item_bool_details:
             if util.parse(method_name, method_data, datatype="bool", default=False):
                 self.item_details[method_name] = True
         elif method_name in plex.item_advance_keys:
@@ -857,6 +863,38 @@ class CollectionBuilder:
                 new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
                 self.builders.append((method_name, new_dictionary))
 
+    def _flixpatrol(self, method_name, method_data):
+        if method_name.startswith("flixpatrol_url"):
+            flixpatrol_lists = self.config.FlixPatrol.validate_flixpatrol_lists(method_data, self.language, self.library.is_movie)
+            for flixpatrol_list in flixpatrol_lists:
+                self.builders.append(("flixpatrol_url", flixpatrol_list))
+        elif method_name in flixpatrol.builders:
+            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+                if method_name == "flixpatrol_demographics":
+                    data = {
+                        "generation": util.parse("generation", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.generations),
+                        "gender": util.parse("gender", dict_data, methods=dict_methods, parent=method_name, default="all", options=flixpatrol.gender),
+                        "location": util.parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.demo_locations),
+                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                    }
+                elif method_name == "flixpatrol_popular":
+                    data = {
+                        "source": util.parse("source", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.popular),
+                        "time_window": util.parse("time_window", dict_data, methods=dict_methods, parent=method_name, default="today"),
+                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                    }
+                elif method_name == "flixpatrol_top":
+                    data = {
+                        "platform": util.parse("platform", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.platforms),
+                        "location": util.parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.locations),
+                        "time_window": util.parse("time_window", dict_data, methods=dict_methods, parent=method_name, default="today"),
+                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                    }
+                else:
+                    continue
+                if self.config.FlixPatrol.validate_flixpatrol_dict(method_name, data, self.language, self.library.is_movie):
+                    self.builders.append((method_name, data))
+
     def _icheckmovies(self, method_name, method_data):
         if method_name.startswith("icheckmovies_list"):
             icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language)
@@ -951,7 +989,8 @@ class CollectionBuilder:
                 "list_type": "popular" if method_name == "tautulli_popular" else "watched",
                 "list_days": util.parse("list_days", dict_data, datatype="int", methods=dict_methods, default=30, parent=method_name),
                 "list_size": util.parse("list_size", dict_data, datatype="int", methods=dict_methods, default=10, parent=method_name),
-                "list_buffer": util.parse("list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name)
+                "list_buffer": util.parse("list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name),
+                "list_minimum": util.parse("list_minimum", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
             }))
 
     def _tmdb(self, method_name, method_data):
@@ -973,10 +1012,10 @@ class CollectionBuilder:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, parent=method_name, regex=regex)
                     elif discover_attr == "sort_by" and self.library.is_movie:
                         options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
-                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, parent=method_name, options=options)
+                        new_dictionary[discover_final] = util.parse(discover_attr, discover_data, parent=method_name, options=options)
                     elif discover_attr == "certification_country":
                         if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
-                            new_dictionary[discover_attr] = discover_data
+                            new_dictionary[discover_final] = discover_data
                         else:
                             raise Failed(f"Collection Error: {method_name} {discover_attr} attribute: must be used with either certification, certification.lte, or certification.gte")
                     elif discover_attr == "certification":
@@ -984,15 +1023,31 @@ class CollectionBuilder:
                             new_dictionary[discover_final] = discover_data
                         else:
                             raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with certification_country")
-                    elif discover_attr in ["include_adult", "include_null_first_air_dates", "screened_theatrically"]:
+                    elif discover_attr == "watch_region":
+                        if "with_watch_providers" in dict_data or "without_watch_providers" in dict_data or "with_watch_monetization_types" in dict_data:
+                            new_dictionary[discover_final] = discover_data
+                        else:
+                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
+                    elif discover_attr == "with_watch_monetization_types":
+                        if "watch_region" in dict_data:
+                            new_dictionary[discover_final] = util.parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
+                        else:
+                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with watch_region")
+                    elif discover_attr in tmdb.discover_booleans:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="bool", parent=method_name)
+                    elif discover_attr == "vote_average":
+                        new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="float", parent=method_name)
+                    elif discover_attr == "with_status":
+                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
+                    elif discover_attr == "with_type":
+                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
                     elif discover_final in tmdb.discover_dates:
                         new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} {discover_final} attribute", return_as="%m/%d/%Y")
-                    elif discover_attr in ["primary_release_year", "year", "first_air_date_year"]:
+                    elif discover_attr in tmdb.discover_years:
                         new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
-                    elif discover_attr in ["vote_count", "vote_average", "with_runtime"]:
+                    elif discover_attr in tmdb.discover_ints:
                         new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="int", parent=method_name)
-                    elif discover_final in ["with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_keywords", "without_keywords", "with_original_language", "timezone"]:
+                    elif discover_final in tmdb.discover_strings:
                         new_dictionary[discover_final] = discover_data
                     elif discover_attr != "limit":
                         raise Failed(f"Collection Error: {method_name} {discover_final} attribute not supported")
@@ -1114,6 +1169,8 @@ class CollectionBuilder:
                 ids = self.config.TVDb.get_tvdb_ids(method, value)
             elif "imdb" in method:
                 ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
+            elif "flixpatrol" in method:
+                ids = self.config.FlixPatrol.get_flixpatrol_ids(method, value, self.language, self.library.is_movie)
             elif "icheckmovies" in method:
                 ids = self.config.ICheckMovies.get_icheckmovies_ids(method, value, self.language)
             elif "letterboxd" in method:
@@ -1202,7 +1259,7 @@ class CollectionBuilder:
                     rating_keys = [rating_keys]
                 total = len(rating_keys)
                 max_length = len(str(total))
-                if self.filters and self.details["show_filtered"] is True:
+                if (self.filters or self.tmdb_filters) and self.details["show_filtered"] is True:
                     logger.info("")
                     logger.info("Filtering Builder:")
                 for i, key in enumerate(rating_keys, 1):
@@ -1342,7 +1399,6 @@ class CollectionBuilder:
                         results = ""
                         display_add = ""
                         for og_value, result in validation:
-                            print(og_value, result)
                             built_arg = build_url_arg(quote(str(result)) if attr in string_filters else result, arg_s=og_value)
                             display_add += built_arg[1]
                             results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
@@ -1812,8 +1868,8 @@ class CollectionBuilder:
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
 
-        tmdb_ids = []
-        tvdb_ids = []
+        tmdb_paths = []
+        tvdb_paths = []
         for item in self.items:
             if int(item.ratingKey) in rating_keys and not revert:
                 rating_keys.remove(int(item.ratingKey))
@@ -1823,10 +1879,11 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
-            if item.ratingKey in self.library.movie_rating_key_map:
-                tmdb_ids.append(self.library.movie_rating_key_map[item.ratingKey])
-            if item.ratingKey in self.library.show_rating_key_map:
-                tvdb_ids.append(self.library.show_rating_key_map[item.ratingKey])
+            path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
+            if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
+                tmdb_paths.append((self.library.movie_rating_key_map[item.ratingKey], f"{path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)}/"))
+            if self.library.Sonarr and item.ratingKey in self.library.show_rating_key_map:
+                tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], f"{path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)}/"))
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
                 if method_name in plex.item_advance_keys:
@@ -1834,20 +1891,29 @@ class CollectionBuilder:
                     if getattr(item, key) != options[method_data]:
                         advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
+
+            # Locking should come before refreshing since refreshing can change metadata (i.e. if specified to both lock
+            # background/poster and also refreshing, assume that the current background/poster should be kept)
+            if "item_lock_background" in self.item_details:
+                item.lockArt()
+            if "item_lock_poster" in self.item_details:
+                item.lockPoster()
+            if "item_lock_title" in self.item_details:
+                item.edit(**{"title.locked": 1})
             if "item_refresh" in self.item_details:
                 item.refresh()
 
-        if len(tmdb_ids) > 0:
+        if self.library.Radarr and tmdb_paths:
             if "item_radarr_tag" in self.item_details:
-                self.library.Radarr.edit_tags(tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
+                self.library.Radarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tmdb_paths], self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
             if self.radarr_details["add_existing"]:
-                self.library.Radarr.add_tmdb(tmdb_ids, **self.radarr_details)
+                self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
 
-        if len(tvdb_ids) > 0:
+        if self.library.Sonarr and tvdb_paths:
             if "item_sonarr_tag" in self.item_details:
-                self.library.Sonarr.edit_tags(tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
+                self.library.Sonarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tvdb_paths], self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
             if self.sonarr_details["add_existing"]:
-                self.library.Sonarr.add_tvdb(tvdb_ids, **self.sonarr_details)
+                self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
 
         for rating_key in rating_keys:
             try:
@@ -2053,13 +2119,19 @@ class CollectionBuilder:
                 (self.details["collection_removal_webhooks"] and len(self.notification_removals) > 0)
         ):
             self.obj.reload()
-            self.library.Webhooks.collection_hooks(
-                self.details["collection_creation_webhooks"] + self.details["collection_addition_webhooks"] + self.details["collection_removal_webhooks"],
-                self.obj,
-                created=self.created,
-                additions=self.notification_additions,
-                removals=self.notification_removals
-            )
+            try:
+                self.library.Webhooks.collection_hooks(
+                    self.details["collection_creation_webhooks"] +
+                    self.details["collection_addition_webhooks"] +
+                    self.details["collection_removal_webhooks"],
+                    self.obj,
+                    created=self.created,
+                    additions=self.notification_additions,
+                    removals=self.notification_removals
+                )
+            except Failed as e:
+                util.print_stacktrace()
+                logger.error(f"Webhooks Error: {e}")
 
     def run_collections_again(self):
         self.obj = self.library.get_collection(self.name)

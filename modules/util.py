@@ -88,7 +88,9 @@ def get_list(data, lower=False, split=True, int_list=False):
     elif isinstance(data, dict):    return [data]
     elif split is False:            return [str(data)]
     elif lower is True:             return [d.strip().lower() for d in str(data).split(",")]
-    elif int_list is True:          return [int(d.strip()) for d in str(data).split(",")]
+    elif int_list is True:
+        try:                            return [int(d.strip()) for d in str(data).split(",")]
+        except ValueError:              return []
     else:                           return [d.strip() for d in str(data).split(",")]
 
 def get_int_list(data, id_type):
@@ -250,6 +252,27 @@ def is_locked(filepath):
             if file_object:
                 file_object.close()
     return locked
+
+def time_window(time_window):
+    today = datetime.now()
+    if time_window == "today":
+        return f"{today:%Y-%m-%d}"
+    elif time_window == "yesterday":
+        return f"{today - timedelta(days=1):%Y-%m-%d}"
+    elif time_window == "this_week":
+        return f"{today:%Y-0%V}"
+    elif time_window == "last_week":
+        return f"{today - timedelta(weeks=1):%Y-0%V}"
+    elif time_window == "this_month":
+        return f"{today:%Y-%m}"
+    elif time_window == "last_month":
+        return f"{today.year}-{today.month - 1 or 12}"
+    elif time_window == "this_year":
+        return f"{today.year}"
+    elif time_window == "last_year":
+        return f"{today.year - 1}"
+    else:
+        return time_window
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in

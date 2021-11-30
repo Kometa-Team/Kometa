@@ -29,8 +29,9 @@ monitor_descriptions = {
 apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
 
 class Sonarr:
-    def __init__(self, config, params):
+    def __init__(self, config, library, params):
         self.config = config
+        self.library = library
         self.url = params["url"]
         self.token = params["token"]
         try:
@@ -50,12 +51,23 @@ class Sonarr:
         self.tag = params["tag"]
         self.search = params["search"]
         self.cutoff_search = params["cutoff_search"]
+        self.sonarr_path = params["sonarr_path"] if params["sonarr_path"] and params["plex_path"] else ""
+        self.plex_path = params["plex_path"] if params["sonarr_path"] and params["plex_path"] else ""
 
     def add_tvdb(self, tvdb_ids, **options):
         logger.info("")
         util.separator("Adding to Sonarr", space=False, border=False)
         logger.debug("")
-        logger.debug(f"TVDb IDs: {tvdb_ids}")
+        _ids = []
+        _paths = []
+        for tvdb_id in tvdb_ids:
+            if isinstance(tvdb_id, tuple):
+                _paths.append(tvdb_id)
+            else:
+                _ids.append(tvdb_id)
+        logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
+        for tvdb_id in _paths:
+            logger.debug(tvdb_id)
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
@@ -66,21 +78,50 @@ class Sonarr:
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
-        try:
-            added, exists, invalid = self.api.add_multiple_series(tvdb_ids, folder, quality_profile, language_profile, monitor, season, search, cutoff_search, series, tags, per_request=100)
-        except Invalid as e:
-            raise Failed(f"Sonarr Error: {e}")
+
+        added = []
+        exists = []
+        invalid = []
+        shows = []
+        for i, item in enumerate(tvdb_ids, 1):
+            path = item[1] if isinstance(item, tuple) else None
+            tvdb_id = item[0] if isinstance(item, tuple) else item
+            util.print_return(f"Loading TVDb ID {i}/{len(tvdb_ids)} ({tvdb_id})")
+            if self.config.Cache:
+                _id = self.config.Cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
+                if _id:
+                    exists.append(item)
+                    continue
+            try:
+                show = self.api.get_series(tvdb_id=tvdb_id)
+                shows.append((show, path) if path else show)
+            except ArrException:
+                invalid.append(item)
+            if len(shows) == 100 or len(tvdb_ids) == i:
+                try:
+                    _a, _e, _i = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor,
+                                                              season, search, cutoff_search, series, tags, per_request=100)
+                    added.extend(_a)
+                    exists.extend(_e)
+                    invalid.extend(_i)
+                    shows = []
+                except Invalid as e:
+                    raise Failed(f"Sonarr Error: {e}")
 
         if len(added) > 0:
             logger.info("")
             for series in added:
                 logger.info(f"Added to Sonarr | {series.tvdbId:<6} | {series.title}")
+                if self.config.Cache:
+                    self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Series added to Sonarr")
 
         if len(exists) > 0:
             logger.info("")
             for series in exists:
                 logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
+                if self.config.Cache:
+                    self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(exists)} Series already existing in Sonarr")
 
         if len(invalid) > 0:

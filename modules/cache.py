@@ -61,6 +61,14 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS flixpatrol_map (
+                    key INTEGER PRIMARY KEY,
+                    flixpatrol_id TEXT UNIQUE,
+                    tmdb_id TEXT,
+                    media_type TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS omdb_data (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
@@ -87,6 +95,18 @@ class Cache:
                     """CREATE TABLE IF NOT EXISTS image_maps (
                     key INTEGER PRIMARY KEY,
                     library TEXT UNIQUE)"""
+                )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS radarr_adds (
+                    key INTEGER PRIMARY KEY,
+                    tmdb_id TEXT,
+                    library TEXT)"""
+                )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS sonarr_adds (
+                    key INTEGER PRIMARY KEY,
+                    tvdb_id TEXT,
+                    library TEXT)"""
                 )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
@@ -160,6 +180,12 @@ class Cache:
 
     def update_letterboxd_map(self, expired, letterboxd_id, tmdb_id):
         self._update_map("letterboxd_map", "letterboxd_id", letterboxd_id, "tmdb_id", tmdb_id, expired)
+
+    def query_flixpatrol_map(self, flixpatrol_id, media_type):
+        return self._query_map("flixpatrol_map", flixpatrol_id, "flixpatrol_id", "tmdb_id", media_type=media_type)
+
+    def update_flixpatrol_map(self, expired, flixpatrol_id, tmdb_id, media_type):
+        self._update_map("flixpatrol_map", "flixpatrol_id", flixpatrol_id, "tmdb_id", tmdb_id, expired, media_type=media_type)
 
     def _query_map(self, map_name, _id, from_id, to_id, media_type=None, return_type=False):
         id_to_return = None
@@ -324,3 +350,31 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"INSERT OR IGNORE INTO {table_name}(rating_key) VALUES(?)", (rating_key,))
                 cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ?, overlay = ? WHERE rating_key = ?", (location, compare, overlay, rating_key))
+
+    def query_radarr_adds(self, tmdb_id, library):
+        return self.query_arr_adds(tmdb_id, library, "radarr", "tmdb_id")
+
+    def query_sonarr_adds(self, tvdb_id, library):
+        return self.query_arr_adds(tvdb_id, library, "sonarr", "tvdb_id")
+
+    def query_arr_adds(self, t_id, library, arr, id_type):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM {arr}_adds WHERE {id_type} = ? AND library = ?", (t_id, library))
+                row = cursor.fetchone()
+                if row and row[id_type]:
+                    return int(row[id_type])
+        return None
+
+    def update_radarr_adds(self, tmdb_id, library):
+        return self.update_arr_adds(tmdb_id, library, "radarr", "tmdb_id")
+
+    def update_sonarr_adds(self, tvdb_id, library):
+        return self.update_arr_adds(tvdb_id, library, "sonarr", "tvdb_id")
+
+    def update_arr_adds(self, t_id, library, arr, id_type):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"INSERT OR IGNORE INTO {arr}_adds({id_type}, library) VALUES(?, ?)", (t_id, library))
