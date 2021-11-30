@@ -12,14 +12,14 @@ generations_pretty = {"all": "All generations", "boomers": "Baby Boomers", "x": 
 gender = ["all", "men", "women"]
 demo_locations = ["world", "brazil", "canada", "france", "germany", "india", "mexico",  "united_kingdom", "united_states"]
 locations = [
-    "albania", "argentina", "armenia", "australia", "austria", "azerbaijan", "bahamas", "bahrain", "bangladesh",
-    "belarus", "belgium", "belize", "benin", "bolivia", "bosnia_and_herzegovina", "botswana", "brazil", "bulgaria",
-    "burkina_faso", "cambodia", "canada", "chile", "colombia", "costa_rica", "croatia", "cyprus", "czech_republic",
-    "denmark", "dominican_republic", "ecuador", "egypt", "estonia", "finland", "france", "gabon", "germany", "ghana",
-    "greece", "guatemala", "guinea_bissau", "haiti", "honduras", "hong_kong", "hungary", "iceland", "india",
-    "indonesia", "ireland", "israel", "italy", "ivory_coast", "jamaica", "japan", "jordan", "kazakhstan", "kenya",
-    "kuwait", "kyrgyzstan", "laos", "latvia", "lebanon", "lithuania", "luxembourg", "malaysia", "maldives", "mali",
-    "malta", "mexico", "moldova", "mongolia", "montenegro", "morocco", "mozambique", "namibia", "netherlands",
+    "world", "albania", "argentina", "armenia", "australia", "austria", "azerbaijan", "bahamas", "bahrain",
+    "bangladesh", "belarus", "belgium", "belize", "benin", "bolivia", "bosnia_and_herzegovina", "botswana", "brazil",
+    "bulgaria", "burkina_faso", "cambodia", "canada", "chile", "colombia", "costa_rica", "croatia", "cyprus",
+    "czech_republic", "denmark", "dominican_republic", "ecuador", "egypt", "estonia", "finland", "france", "gabon",
+    "germany", "ghana", "greece", "guatemala", "guinea_bissau", "haiti", "honduras", "hong_kong", "hungary", "iceland",
+    "india", "indonesia", "ireland", "israel", "italy", "ivory_coast", "jamaica", "japan", "jordan", "kazakhstan",
+    "kenya", "kuwait", "kyrgyzstan", "laos", "latvia", "lebanon", "lithuania", "luxembourg", "malaysia", "maldives",
+    "mali", "malta", "mexico", "moldova", "mongolia", "montenegro", "morocco", "mozambique", "namibia", "netherlands",
     "new_zealand", "nicaragua", "niger", "nigeria", "north_macedonia", "norway", "oman", "pakistan", "panama",
     "papua_new_guinea", "paraguay", "peru", "philippines", "poland", "portugal", "qatar", "romania", "russia",
     "rwanda", "salvador", "saudi_arabia", "senegal", "serbia", "singapore", "slovakia", "slovenia", "south_africa",
@@ -78,7 +78,6 @@ class FlixPatrol:
 
     def validate_flixpatrol_lists(self, flixpatrol_lists, language, is_movie):
         valid_lists = []
-        print(flixpatrol_lists)
         for flixpatrol_list in util.get_list(flixpatrol_lists, split=False):
             list_url = flixpatrol_list.strip()
             if not list_url.startswith(tuple([v for k, v in urls.items()])):
@@ -88,7 +87,6 @@ class FlixPatrol:
                 valid_lists.append(list_url)
             else:
                 raise Failed(f"FlixPatrol Error: {list_url} failed to parse")
-        print(valid_lists)
         return valid_lists
 
     def validate_flixpatrol_dict(self, method, data, language, is_movie):

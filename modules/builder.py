@@ -1399,7 +1399,6 @@ class CollectionBuilder:
                         results = ""
                         display_add = ""
                         for og_value, result in validation:
-                            print(og_value, result)
                             built_arg = build_url_arg(quote(str(result)) if attr in string_filters else result, arg_s=og_value)
                             display_add += built_arg[1]
                             results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
