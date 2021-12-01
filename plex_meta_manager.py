@@ -135,6 +135,7 @@ def start(attrs):
     start_time = datetime.now()
     if "time" not in attrs:
         attrs["time"] = start_time.strftime("%H:%M")
+    attrs["time_obj"] = start_time
     util.separator(f"Starting {start_type}Run")
     config = None
     global stats
@@ -152,10 +153,11 @@ def start(attrs):
             util.print_stacktrace()
             util.print_multiline(e, critical=True)
     logger.info("")
-    run_time = str(datetime.now() - start_time).split('.')[0]
+    end_time = datetime.now()
+    run_time = str(end_time - start_time).split('.')[0]
     if config:
         try:
-            config.Webhooks.end_time_hooks(start_time, run_time, stats)
+            config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
         except Failed as e:
             util.print_stacktrace()
             logger.error(f"Webhooks Error: {e}")

@@ -43,12 +43,13 @@ class Webhooks:
 
     def start_time_hooks(self, start_time):
         if self.run_start_webhooks:
-            self._request(self.run_start_webhooks, {"start_time": start_time})
+            self._request(self.run_start_webhooks, {"start_time": start_time.strftime("%Y-%m-%d %H:%M:%S")})
 
-    def end_time_hooks(self, start_time, run_time, stats):
+    def end_time_hooks(self, start_time, end_time, run_time, stats):
         if self.run_end_webhooks:
             self._request(self.run_end_webhooks, {
-                "start_time": start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
                 "run_time": run_time,
                 "collections_created": stats["created"],
                 "collections_modified": stats["modified"],

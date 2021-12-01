@@ -44,7 +44,7 @@ class Config:
         self.default_dir = default_dir
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
-        self.run_start_time = attrs["time"]
+        self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
@@ -231,7 +231,7 @@ class Config:
 
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
         try:
-            self.Webhooks.start_time_hooks(self.run_start_time)
+            self.Webhooks.start_time_hooks(self.start_time)
         except Failed as e:
             util.print_stacktrace()
             logger.error(f"Webhooks Error: {e}")
