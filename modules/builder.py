@@ -825,6 +825,7 @@ class CollectionBuilder:
             elif self.current_time.month in [3, 4, 5]:          current_season = "spring"
             elif self.current_time.month in [6, 7, 8]:          current_season = "summer"
             else:                                               current_season = "fall"
+            default_year = self.current_year + 1 if self.current_time.month == 12 else self.current_year
             for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
@@ -834,10 +835,10 @@ class CollectionBuilder:
                     elif search_attr == "season":
                         new_dictionary[search_attr] = util.parse(search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
                         if "year" not in dict_methods:
-                            logger.warning(f"Collection Warning: {method_name} year attribute not found using this year: {self.current_year} by default")
-                            new_dictionary["year"] = self.current_year
+                            logger.warning(f"Collection Warning: {method_name} year attribute not found using this year: {default_year} by default")
+                            new_dictionary["year"] = default_year
                     elif search_attr == "year":
-                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=self.current_year, minimum=1917, maximum=self.current_year + 1)
+                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=default_year, minimum=1917, maximum=default_year + 1)
                     elif search_data is None:
                         raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
                     elif search_attr == "adult":
