@@ -55,6 +55,7 @@ class Radarr:
 
         added = []
         exists = []
+        skipped = []
         invalid = []
         movies = []
         for i, item in enumerate(tmdb_ids, 1):
@@ -64,7 +65,7 @@ class Radarr:
             if self.config.Cache:
                 _id = self.config.Cache.query_radarr_adds(tmdb_id, self.library.original_mapping_name)
                 if _id:
-                    exists.append(item)
+                    skipped.append(item)
                     continue
             try:
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
@@ -97,6 +98,14 @@ class Radarr:
                 if self.config.Cache:
                     self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
             logger.info(f"{len(exists)} Movie{'s' if len(exists) > 1 else ''} already existing in Radarr")
+
+        if len(skipped) > 0:
+            logger.info("")
+            for movie in skipped:
+                logger.info(f"Skipped: In Cache | {movie}")
+                if self.config.Cache:
+                    self.config.Cache.update_radarr_adds(movie[0] if isinstance(movie, tuple) else movie, self.library.original_mapping_name)
+            logger.info(f"{len(skipped)} Movie{'s' if len(skipped) > 1 else ''} already existing in Radarr")
 
         if len(invalid) > 0:
             logger.info("")

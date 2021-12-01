@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime, timedelta
 from modules import util
 from modules.util import Failed
 
