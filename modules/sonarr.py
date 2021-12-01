@@ -81,6 +81,7 @@ class Sonarr:
 
         added = []
         exists = []
+        skipped = []
         invalid = []
         shows = []
         for i, item in enumerate(tvdb_ids, 1):
@@ -90,7 +91,7 @@ class Sonarr:
             if self.config.Cache:
                 _id = self.config.Cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
                 if _id:
-                    exists.append(item)
+                    skipped.append(item)
                     continue
             try:
                 show = self.api.get_series(tvdb_id=tvdb_id)
@@ -123,6 +124,14 @@ class Sonarr:
                 if self.config.Cache:
                     self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(exists)} Series already existing in Sonarr")
+
+        if len(skipped) > 0:
+            logger.info("")
+            for series in skipped:
+                logger.info(f"Skipped: In Cache | {series}")
+                if self.config.Cache:
+                    self.config.Cache.update_sonarr_adds(series[0] if isinstance(series, tuple) else series, self.library.original_mapping_name)
+            logger.info(f"{len(skipped)} Movie{'s' if len(skipped) > 1 else ''} already existing in Sonarr")
 
         if len(invalid) > 0:
             for tvdb_id in invalid:
