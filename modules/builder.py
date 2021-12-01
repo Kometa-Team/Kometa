@@ -80,7 +80,7 @@ poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "f
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
 boolean_details = [
     "visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing",
-    "missing_only_released", "delete_below_minimum"
+    "missing_only_released", "only_filter_missing", "delete_below_minimum"
 ]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
@@ -178,6 +178,7 @@ class CollectionBuilder:
             "show_missing": self.library.show_missing,
             "save_missing": self.library.save_missing,
             "missing_only_released": self.library.missing_only_released,
+            "only_filter_missing": self.library.only_filter_missing,
             "create_asset_folders": self.library.create_asset_folders,
             "delete_below_minimum": self.library.delete_below_minimum,
             "collection_creation_webhooks": self.library.collection_creation_webhooks,
@@ -1641,7 +1642,7 @@ class CollectionBuilder:
         return True
 
     def check_filters(self, current, display):
-        if self.filters or self.tmdb_filters:
+        if (self.filters or self.tmdb_filters) and not self.details["only_filter_missing"]:
             util.print_return(f"Filtering {display} {current.title}")
             if self.tmdb_filters:
                 if current.ratingKey not in self.library.movie_rating_key_map and current.ratingKey not in self.library.show_rating_key_map:
