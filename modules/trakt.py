@@ -202,6 +202,8 @@ class Trakt:
         values = util.get_list(trakt_lists, split=False)
         trakt_values = []
         for value in values:
+            if isinstance(value, dict):
+                raise Failed("Trakt Error: List cannot be a dictionary")
             try:
                 if trakt_type == "list":
                     self._user_list(value)
