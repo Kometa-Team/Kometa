@@ -24,7 +24,7 @@ The script works with most Metadata agents including the new Plex Movie Agent, N
 
 ## IBRACORP Video Walkthrough
 
-[IBRACORP](https://ibracorp.io/) made a video walkthough for installing Plex Meta Manager on Unraid. While you might not be using Unraid the video goes over many key accepts of Plex Meta Manager and can be a great place to start learning how to use the script.
+[IBRACORP](https://ibracorp.io/) made a video walkthough for installing Plex Meta Manager on Unraid. While you might not be using Unraid the video goes over many key aspects of Plex Meta Manager and can be a great place to start learning how to use the script.
 
 [![Plex Meta Manager](https://img.youtube.com/vi/dF69MNoot3w/0.jpg)](https://www.youtube.com/watch?v=dF69MNoot3w "Plex Meta Manager")
 
@@ -33,6 +33,6 @@ The script works with most Metadata agents including the new Plex Movie Agent, N
 * Before posting on GitHub about an enhancement, error, or configuration question please visit the [Plex Meta Manager Discord Server](https://discord.gg/TsdpsFYqqm).
 * If you're getting an Error or have an Enhancement post in the [Issues](https://github.com/meisnate12/Plex-Meta-Manager/issues).
 * If you have a configuration question post in the [Discussions](https://github.com/meisnate12/Plex-Meta-Manager/discussions).
-* To see user submitted Metadata configuration files, and you to even add your own, go to the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
-* Pull Request are welcome but please submit them to the develop branch.
+* To see user submitted Metadata configuration files, and even add your own, go to the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
+* Pull Requests are welcome but please submit them to the develop branch.
 * If you wish to contribute to the Wiki please fork and send a pull request on the [Plex Meta Manager Wiki Repository](https://github.com/meisnate12/Plex-Meta-Manager-Wiki).
