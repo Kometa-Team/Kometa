@@ -142,7 +142,17 @@ class Config:
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
             elif var_type == "list":                                            return util.get_list(data[attribute], split=False)
             elif var_type == "list_path":
-                temp_list = [p for p in util.get_list(data[attribute], split=False) if os.path.exists(os.path.abspath(p))]
+                temp_list = []
+                warning_message = ""
+                for p in util.get_list(data[attribute], split=False):
+                    if os.path.exists(os.path.abspath(p)):
+                        temp_list.append(p)
+                    else:
+                        if len(warning_message) > 0:
+                            warning_message += "\n"
+                        warning_message += f"Config Warning: Path does not exist: {os.path.abspath(p)}"
+                if do_print:
+                    util.print_multiline(f"Config Warning: {warning_message}")
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
             elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
