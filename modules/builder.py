@@ -93,6 +93,7 @@ collectionless_details = ["collection_order", "plex_collectionless", "label", "l
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
 item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
+none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
@@ -146,7 +147,7 @@ show_only_filters = ["first_episode_aired", "last_episode_aired", "network"]
 smart_invalid = ["collection_order", "collection_level"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
-    "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
+    "plex_search", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
     "tvdb_list", "imdb_list", "stevenlu_popular", "anidb_popular",
     "trakt_list", "trakt_trending", "trakt_popular", "trakt_boxoffice",
@@ -550,7 +551,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {method_data}")
             try:
                 if method_data is None and method_name in all_builders + plex.searches:     raise Failed(f"Collection Error: {method_final} attribute is blank")
-                elif method_data is None:                                                   logger.warning(f"Collection Warning: {method_final} attribute is blank")
+                elif method_data is None and method_name not in none_details:               logger.warning(f"Collection Warning: {method_final} attribute is blank")
                 elif not self.config.Trakt and "trakt" in method_name:                      raise Failed(f"Collection Error: {method_final} requires Trakt to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:                   raise Failed(f"Collection Error: {method_final} requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:                   raise Failed(f"Collection Error: {method_final} requires Sonarr to be configured")
@@ -714,9 +715,9 @@ class CollectionBuilder:
             if "label.remove" in methods and "label.sync" in methods:
                 raise Failed("Collection Error: Cannot use label.remove and label.sync together")
             if method_final == "label" and "label_sync_mode" in methods and self.data[methods["label_sync_mode"]] == "sync":
-                self.details["label.sync"] = util.get_list(method_data)
+                self.details["label.sync"] = util.get_list(method_data) if method_data else []
             else:
-                self.details[method_final] = util.get_list(method_data)
+                self.details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name in notification_details:
             self.details[method_name] = util.parse(method_name, method_data, datatype="list")
         elif method_name in boolean_details:
@@ -731,7 +732,7 @@ class CollectionBuilder:
                 raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
             if "item_label.remove" in methods and "item_label.sync" in methods:
                 raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
-            self.item_details[method_final] = util.get_list(method_data)
+            self.item_details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name in ["item_radarr_tag", "item_sonarr_tag"]:
             if method_name in methods and f"{method_name}.sync" in methods:
                 raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.sync together")
