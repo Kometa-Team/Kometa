@@ -602,7 +602,7 @@ class Plex(Library):
             except BadRequest:
                 _item_tags = []
             _add = [f"{t[:1].upper()}{t[1:]}" for t in _add_tags + _sync_tags if t.lower() not in _item_tags]
-            _remove = [t for t in _item_tags if (_sync_tags and t not in _sync_tags) or t in _remove_tags]
+            _remove = [t for t in _item_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]
             if _add:
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
                 display += f"+{', +'.join(_add)}"
