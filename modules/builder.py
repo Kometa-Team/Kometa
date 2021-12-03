@@ -561,7 +561,7 @@ class CollectionBuilder:
                 elif self.library.is_show and method_name in movie_only_builders:           raise Failed(f"Collection Error: {method_final} attribute only works for movie libraries")
                 elif self.library.is_show and method_name in plex.movie_only_searches:      raise Failed(f"Collection Error: {method_final} plex search only works for movie libraries")
                 elif self.library.is_movie and method_name in plex.show_only_searches:      raise Failed(f"Collection Error: {method_final} plex search only works for show libraries")
-                elif self.parts_collection and method_name not in parts_collection_valid:   raise Failed(f"Collection Error: {method_final} attribute does not work with Collection Level: {self.details['collection_level'].capitalize()}")
+                elif self.parts_collection and method_name not in parts_collection_valid:   raise Failed(f"Collection Error: {method_final} attribute does not work with Collection Level: {self.collection_level.capitalize()}")
                 elif self.smart and method_name in smart_invalid:                           raise Failed(f"Collection Error: {method_final} attribute only works with normal collections")
                 elif self.collectionless and method_name not in collectionless_details:     raise Failed(f"Collection Error: {method_final} attribute does not work for Collectionless collection")
                 elif self.smart_url and method_name in all_builders + smart_url_invalid:    raise Failed(f"Collection Error: {method_final} builder not allowed when using smart_filter")
