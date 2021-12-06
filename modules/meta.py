@@ -15,8 +15,6 @@ class Metadata:
         self.library = library
         self.type = file_type
         self.path = path
-        logger.info("")
-        logger.info(f"Loading Metadata {file_type}: {path}")
         def get_dict(attribute, attr_data, check_list=None):
             if check_list is None:
                 check_list = []
@@ -35,30 +33,37 @@ class Metadata:
                 else:
                     logger.warning(f"Config Warning: {attribute} attribute is blank")
             return None
-        try:
-            if file_type in ["URL", "Git"]:
-                content_path = path if file_type == "URL" else f"{github_base}{path}.yml"
-                response = self.config.get(content_path)
-                if response.status_code >= 400:
-                    raise Failed(f"URL Error: No file found at {content_path}")
-                content = response.content
-            elif os.path.exists(os.path.abspath(path)):
-                content = open(path, encoding="utf-8")
-            else:
-                raise Failed(f"File Error: File does not exist {path}")
-            data, ind, bsi = yaml.util.load_yaml_guess_indent(content)
-            self.metadata = get_dict("metadata", data, library.metadatas)
-            self.templates = get_dict("templates", data)
-            self.collections = get_dict("collections", data, library.collections)
+        if file_type == "Data":
+            self.metadata = None
+            self.collections = get_dict("collections", path, library.collections)
+            self.templates = get_dict("templates", path)
+        else:
+            try:
+                logger.info("")
+                logger.info(f"Loading Metadata {file_type}: {path}")
+                if file_type in ["URL", "Git"]:
+                    content_path = path if file_type == "URL" else f"{github_base}{path}.yml"
+                    response = self.config.get(content_path)
+                    if response.status_code >= 400:
+                        raise Failed(f"URL Error: No file found at {content_path}")
+                    content = response.content
+                elif os.path.exists(os.path.abspath(path)):
+                    content = open(path, encoding="utf-8")
+                else:
+                    raise Failed(f"File Error: File does not exist {path}")
+                data, ind, bsi = yaml.util.load_yaml_guess_indent(content)
+                self.metadata = get_dict("metadata", data, library.metadatas)
+                self.templates = get_dict("templates", data)
+                self.collections = get_dict("collections", data, library.collections)
 
-            if self.metadata is None and self.collections is None:
-                raise Failed("YAML Error: metadata or collections attribute is required")
-            logger.info(f"Metadata File Loaded Successfully")
-        except yaml.scanner.ScannerError as ye:
-            raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
-        except Exception as e:
-            util.print_stacktrace()
-            raise Failed(f"YAML Error: {e}")
+                if self.metadata is None and self.collections is None:
+                    raise Failed("YAML Error: metadata or collections attribute is required")
+                logger.info(f"Metadata File Loaded Successfully")
+            except yaml.scanner.ScannerError as ye:
+                raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
+            except Exception as e:
+                util.print_stacktrace()
+                raise Failed(f"YAML Error: {e}")
 
     def get_collections(self, requested_collections):
         if requested_collections:

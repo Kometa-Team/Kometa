@@ -6,6 +6,7 @@ try:
     from modules import util
     from modules.builder import CollectionBuilder
     from modules.config import Config
+    from modules.meta import Metadata
     from modules.util import Failed, NotScheduled
 except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
@@ -180,6 +181,42 @@ def update_libraries(config):
             plexapi.server.TIMEOUT = library.timeout
             logger.info("")
             util.separator(f"{library.name} Library")
+
+            logger.debug("")
+            logger.debug(f"Mapping Name: {library.original_mapping_name}")
+            logger.debug(f"Folder Name: {library.mapping_name}")
+            logger.debug(f"Missing Path: {library.missing_path}")
+            for ad in library.asset_directory:
+                logger.debug(f"Asset Directory: {ad}")
+            logger.debug(f"Asset Folders: {library.asset_folders}")
+            logger.debug(f"Create Asset Folders: {library.create_asset_folders}")
+            logger.debug(f"Sync Mode: {library.sync_mode}")
+            logger.debug(f"Collection Minimum: {library.collection_minimum}")
+            logger.debug(f"Delete Below Minimum: {library.delete_below_minimum}")
+            logger.debug(f"Missing Only Released: {library.missing_only_released}")
+            logger.debug(f"Only Filter Missing: {library.only_filter_missing}")
+            logger.debug(f"Show Unmanaged: {library.show_unmanaged}")
+            logger.debug(f"Show Filtered: {library.show_filtered}")
+            logger.debug(f"Show Missing: {library.show_missing}")
+            logger.debug(f"Show Missing Assets: {library.show_missing_assets}")
+            logger.debug(f"Save Missing: {library.save_missing}")
+            logger.debug(f"Assets For All: {library.assets_for_all}")
+            logger.debug(f"Delete Collections With Less: {library.delete_collections_with_less}")
+            logger.debug(f"Delete Unmanaged Collections: {library.delete_unmanaged_collections}")
+            logger.debug(f"Mass Genre Update: {library.mass_genre_update}")
+            logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
+            logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
+            logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
+            logger.debug(f"Split Duplicates: {library.split_duplicates}")
+            logger.debug(f"Split Duplicates: {library.split_duplicates}")
+            logger.debug(f"Radarr Add All: {library.radarr_add_all}")
+            logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
+            logger.debug(f"TMDb Collections: {library.tmdb_collections}")
+            logger.debug(f"Clean Bundles: {library.clean_bundles}")
+            logger.debug(f"Empty Trash: {library.empty_trash}")
+            logger.debug(f"Optimize: {library.optimize}")
+            logger.debug(f"Timeout: {library.timeout}")
+
             items = None
             if not library.is_other:
                 logger.info("")
@@ -292,11 +329,13 @@ def library_operations(config, library, items=None):
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
     if library.assets_for_all or library.mass_genre_update or library.mass_audience_rating_update or \
-        library.mass_critic_rating_update or library.mass_trakt_rating_update or library.radarr_add_all or library.sonarr_add_all:
+        library.mass_critic_rating_update or library.mass_trakt_rating_update or library.tmdb_collections or \
+        library.radarr_add_all or library.sonarr_add_all:
         if items is None:
             items = library.get_all()
         radarr_adds = []
         sonarr_adds = []
+        tmdb_collections = {}
         trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
         for i, item in enumerate(items, 1):
@@ -346,7 +385,7 @@ def library_operations(config, library, items=None):
                 sonarr_adds.append((tvdb_id, f"{path.replace(library.Sonarr.plex_path, library.Sonarr.sonarr_path)}/"))
 
             tmdb_item = None
-            if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
+            if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
                 if tvdb_id and not tmdb_id:
                     tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
                 if tmdb_id:
@@ -387,6 +426,9 @@ def library_operations(config, library, items=None):
 
             if not tmdb_item and not omdb_item and not tvdb_item:
                 continue
+
+            if library.tmdb_collections and tmdb_item and tmdb_item.belongs_to_collection:
+                tmdb_collections[tmdb_item.belongs_to_collection.id] = tmdb_item.belongs_to_collection.name
 
             if library.mass_genre_update:
                 try:
@@ -445,6 +487,22 @@ def library_operations(config, library, items=None):
                 library.Sonarr.add_tvdb(sonarr_adds)
             except Failed as e:
                 logger.error(e)
+
+        if tmdb_collections:
+            logger.info("")
+            util.separator(f"Starting TMDb Collections")
+            logger.info("")
+            metadata = Metadata(config, library, "Data", {
+                "collections": {
+                    _n.replace(" Collection", "") if library.tmdb_collections["remove_collection"] else _n:
+                    {"template": {"name": "TMDb Collection", "collection_id": _i}}
+                    for _i, _n in tmdb_collections.items() if int(_i) not in library.tmdb_collections["exclude_ids"]
+                },
+                "templates": {
+                    "TMDb Collection": library.tmdb_collections["template"]
+                }
+            })
+            run_collection(config, library, metadata, metadata.get_collections(None))
 
     if library.delete_collections_with_less is not None or library.delete_unmanaged_collections:
         logger.info("")
