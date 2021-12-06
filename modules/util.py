@@ -200,7 +200,10 @@ def separator(text=None, space=True, border=True, debug=False):
     if text:
         text_list = text.split("\n")
         for t in text_list:
-            logger.info(f"|{sep}{centered(t, sep=sep)}{sep}|")
+            if debug:
+                logger.debug(f"|{sep}{centered(t, sep=sep)}{sep}|")
+            else:
+                logger.info(f"|{sep}{centered(t, sep=sep)}{sep}|")
         if border and debug:
             logger.debug(border_text)
         elif border:

@@ -208,6 +208,7 @@ class Config:
             "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False),
             "collection_minimum": check_for_attribute(self.data, "collection_minimum", parent="settings", var_type="int", default=1),
             "delete_below_minimum": check_for_attribute(self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False),
+            "delete_not_scheduled": check_for_attribute(self.data, "delete_not_scheduled", parent="settings", var_type="bool", default=False),
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default")
         }
         self.webhooks = {
@@ -424,6 +425,7 @@ class Config:
                 params["create_asset_folders"] = check_for_attribute(lib, "create_asset_folders", parent="settings", var_type="bool", default=self.general["create_asset_folders"], do_print=False, save=False)
                 params["collection_minimum"] = check_for_attribute(lib, "collection_minimum", parent="settings", var_type="int", default=self.general["collection_minimum"], do_print=False, save=False)
                 params["delete_below_minimum"] = check_for_attribute(lib, "delete_below_minimum", parent="settings", var_type="bool", default=self.general["delete_below_minimum"], do_print=False, save=False)
+                params["delete_not_scheduled"] = check_for_attribute(lib, "delete_not_scheduled", parent="settings", var_type="bool", default=self.general["delete_not_scheduled"], do_print=False, save=False)
                 params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", parent="settings", var_type="bool", default=False, do_print=False, save=False)
                 params["delete_collections_with_less"] = check_for_attribute(lib, "delete_collections_with_less", parent="settings", var_type="int", default_is_none=True, do_print=False, save=False)
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)

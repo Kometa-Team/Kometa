@@ -182,6 +182,7 @@ class CollectionBuilder:
             "only_filter_missing": self.library.only_filter_missing,
             "create_asset_folders": self.library.create_asset_folders,
             "delete_below_minimum": self.library.delete_below_minimum,
+            "delete_not_scheduled": self.library.delete_not_scheduled,
             "collection_creation_webhooks": self.library.collection_creation_webhooks,
             "collection_addition_webhooks": self.library.collection_addition_webhooks,
             "collection_removal_webhooks": self.library.collection_removal_webhooks,
@@ -337,6 +338,12 @@ class CollectionBuilder:
                                 except Failed:
                                     continue
 
+        if "delete_not_scheduled" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: delete_not_scheduled")
+            logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
+            self.details["delete_not_scheduled"] = util.parse("delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
+
         if "schedule" in methods:
             logger.debug("")
             logger.debug("Validating Method: schedule")
@@ -352,7 +359,7 @@ class CollectionBuilder:
                     run_time = str(schedule).lower()
                     if run_time.startswith(("day", "daily")):
                         skip_collection = False
-                    elif run_time.startswith(("hour", "week", "month", "year")):
+                    elif run_time.startswith(("hour", "week", "month", "year", "range")):
                         match = re.search("\\(([^)]+)\\)", run_time)
                         if not match:
                             logger.error(f"Collection Error: failed to parse schedule: {schedule}")
@@ -396,12 +403,35 @@ class CollectionBuilder:
                             self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
                             if self.current_time.month == month and (self.current_time.day == day or (self.current_time.day == last_day.day and day > last_day.day)):
                                 skip_collection = False
+                        elif run_time.startswith("range"):
+                            match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
+                            if not match:
+                                logger.error(f"Collection Error: range schedule attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
+                                continue
+                            month_start = int(match.group(1))
+                            day_start = int(match.group(2))
+                            month_end = int(match.group(3))
+                            day_end = int(match.group(4))
+                            check = datetime.strptime(f"{self.current_time.month}/{self.current_time.day}", "%m/%d")
+                            start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
+                            end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
+                            self.schedule += f"\nScheduled between {util.pretty_months[month_start]} {util.make_ordinal(day_start)} and {util.pretty_months[month_end]} {util.make_ordinal(day_end)}"
+                            if start <= check <= end if start < end else check <= end or check >= start:
+                                skip_collection = False
                     else:
                         logger.error(f"Collection Error: schedule attribute {schedule} invalid")
                 if len(self.schedule) == 0:
                     skip_collection = False
                 if skip_collection:
-                    raise NotScheduled(f"{self.schedule}\n\nCollection {self.name} not scheduled to run")
+                    suffix = ""
+                    if self.details["delete_not_scheduled"]:
+                        try:
+                            self.obj = self.library.get_collection(self.name)
+                            self.delete_collection()
+                            suffix = f" and was deleted"
+                        except Failed:
+                            suffix = f" and could not be found to delete"
+                    raise NotScheduled(f"{self.schedule}\n\nCollection {self.name} not scheduled to run{suffix}")
 
         self.collectionless = "plex_collectionless" in methods
 

@@ -44,6 +44,7 @@ class Library(ABC):
         self.sync_mode = params["sync_mode"]
         self.collection_minimum = params["collection_minimum"]
         self.delete_below_minimum = params["delete_below_minimum"]
+        self.delete_not_scheduled = params["delete_not_scheduled"]
         self.missing_only_released = params["missing_only_released"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_filtered = params["show_filtered"]
