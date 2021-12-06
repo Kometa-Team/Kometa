@@ -51,21 +51,21 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
     else:
         return default
 
-test = get_arg("PMM_TEST", args.test, arg_bool=True)
-debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
-trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
+config_file = get_arg("PMM_CONFIG", args.config)
+times = get_arg("PMM_TIME", args.times)
 run = get_arg("PMM_RUN", args.run, arg_bool=True)
-no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
-no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
-library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
+test = get_arg("PMM_TEST", args.test, arg_bool=True)
 collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
+library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
 collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
 resume = get_arg("PMM_RESUME", args.resume)
-times = get_arg("PMM_TIME", args.times)
+no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
+no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
 divider = get_arg("PMM_DIVIDER", args.divider)
 screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
-config_file = get_arg("PMM_CONFIG", args.config)
+debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
+trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 stats = {}
 
 util.separating_character = divider[0]
@@ -137,6 +137,23 @@ def start(attrs):
     if "time" not in attrs:
         attrs["time"] = start_time.strftime("%H:%M")
     attrs["time_obj"] = start_time
+    util.separator(debug=True)
+    logger.debug(f"--config (PMM_CONFIG): {config_file}")
+    logger.debug(f"--time (PMM_TIME): {times}")
+    logger.debug(f"--run (PMM_RUN): {run}")
+    logger.debug(f"--run-tests (PMM_TEST): {test}")
+    logger.debug(f"--collections-only (PMM_COLLECTIONS_ONLY): {collection_only}")
+    logger.debug(f"--libraries-only (PMM_LIBRARIES_ONLY): {library_only}")
+    logger.debug(f"--run-collections (PMM_COLLECTIONS): {collections}")
+    logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
+    logger.debug(f"--resume (PMM_RESUME): {resume}")
+    logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
+    logger.debug(f"--no-missing (PMM_NO_MISSING): {no_missing}")
+    logger.debug(f"--divider (PMM_DIVIDER): {divider}")
+    logger.debug(f"--width (PMM_WIDTH): {screen_width}")
+    logger.debug(f"--debug (PMM_DEBUG): {debug}")
+    logger.debug(f"--trace (PMM_TRACE): {trace}")
+    logger.debug("")
     util.separator(f"Starting {start_type}Run")
     config = None
     global stats
@@ -193,6 +210,7 @@ def update_libraries(config):
             logger.debug(f"Sync Mode: {library.sync_mode}")
             logger.debug(f"Collection Minimum: {library.collection_minimum}")
             logger.debug(f"Delete Below Minimum: {library.delete_below_minimum}")
+            logger.debug(f"Delete Not Scheduled: {library.delete_not_scheduled}")
             logger.debug(f"Missing Only Released: {library.missing_only_released}")
             logger.debug(f"Only Filter Missing: {library.only_filter_missing}")
             logger.debug(f"Show Unmanaged: {library.show_unmanaged}")
