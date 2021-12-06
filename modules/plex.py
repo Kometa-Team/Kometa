@@ -592,7 +592,7 @@ class Plex(Library):
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
         display = ""
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
-        if add_tags or remove_tags or sync_tags:
+        if add_tags or remove_tags or sync_tags is not None:
             _add_tags = add_tags if add_tags else []
             _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
             _sync_tags = [t.lower() for t in sync_tags] if sync_tags else []

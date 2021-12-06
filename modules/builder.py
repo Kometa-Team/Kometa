@@ -551,7 +551,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {method_data}")
             try:
                 if method_data is None and method_name in all_builders + plex.searches:     raise Failed(f"Collection Error: {method_final} attribute is blank")
-                elif method_data is None and method_name not in none_details:               logger.warning(f"Collection Warning: {method_final} attribute is blank")
+                elif method_data is None and method_final not in none_details:              logger.warning(f"Collection Warning: {method_final} attribute is blank")
                 elif not self.config.Trakt and "trakt" in method_name:                      raise Failed(f"Collection Error: {method_final} requires Trakt to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:                   raise Failed(f"Collection Error: {method_final} requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:                   raise Failed(f"Collection Error: {method_final} requires Sonarr to be configured")
