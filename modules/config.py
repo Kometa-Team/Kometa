@@ -125,7 +125,7 @@ class Config:
                     else:                                                               endline = ""
                     yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
             elif data[attribute] is None:
-                if default_is_none and var_type == "list":                          return []
+                if default_is_none and var_type in ["list", "int_list"]:            return []
                 elif default_is_none:                                               return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "url":
@@ -141,6 +141,7 @@ class Config:
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
             elif var_type == "list":                                            return util.get_list(data[attribute], split=False)
+            elif var_type == "int_list":                                        return util.get_list(data[attribute], int_list=True)
             elif var_type == "list_path":
                 temp_list = []
                 warning_message = ""
@@ -437,6 +438,7 @@ class Config:
                 params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
                 params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False, do_print=False)
                 params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=False)
+                params["tmdb_collections"] = None
 
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
@@ -460,6 +462,17 @@ class Config:
                             params["radarr_add_all"] = check_for_attribute(lib["operations"], "radarr_add_all", var_type="bool", default=False, save=False)
                         if "sonarr_add_all" in lib["operations"]:
                             params["sonarr_add_all"] = check_for_attribute(lib["operations"], "sonarr_add_all", var_type="bool", default=False, save=False)
+                        if "tmdb_collections" in lib["operations"]:
+                            params["tmdb_collections"] = {"exclude_ids": [], "remove_collection": False, "template": {"tmdb_collection_details": "<<collection_id>>"}}
+                            if lib["operations"]["tmdb_collections"] and isinstance(lib["operations"]["tmdb_collections"], dict):
+                                params["tmdb_collections"]["exclude_ids"] = check_for_attribute(lib["operations"]["tmdb_collections"], "exclude_ids", var_type="int_list", default_is_none=True, save=False)
+                                params["tmdb_collections"]["remove_collection"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_collection", var_type="bool", default=False, save=False)
+                                if "template" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["template"] and isinstance(lib["operations"]["tmdb_collections"]["template"], dict):
+                                    params["tmdb_collections"]["template"] = lib["operations"]["tmdb_collections"]["template"]
+                                else:
+                                    logger.warning("Config Warning: Using default template for tmdb_collections")
+                            else:
+                                logger.error("Config Error: tmdb_collections blank using default settings")
                     else:
                         logger.error("Config Error: operations must be a dictionary")
 
@@ -512,7 +525,6 @@ class Config:
                         "optimize": check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
                     }
                     library = Plex(self, params)
-                    logger.info("")
                     logger.info(f"{display_name} Library Connection Successful")
                 except Failed as e:
                     self.errors.append(e)
