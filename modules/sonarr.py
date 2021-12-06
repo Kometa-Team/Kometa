@@ -79,11 +79,20 @@ class Sonarr:
         search = options["search"] if "search" in options else self.search
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
 
+        arr_paths = {}
+        arr_ids = {}
+        for series in self.api.all_series():
+            if series.path:
+                arr_paths[series.path] = series.tvdbId
+            arr_paths[series.tvdbId] = series
+
         added = []
         exists = []
         skipped = []
         invalid = []
         shows = []
+        path_lookup = {}
+        mismatched = {}
         for i, item in enumerate(tvdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tvdb_id = item[0] if isinstance(item, tuple) else item
@@ -94,8 +103,18 @@ class Sonarr:
                     skipped.append(item)
                     continue
             try:
+                if tvdb_id in arr_ids:
+                    exists.append(arr_ids[tvdb_id])
+                    continue
+                if path in arr_paths:
+                    mismatched[path] = tvdb_id
+                    continue
                 show = self.api.get_series(tvdb_id=tvdb_id)
-                shows.append((show, path) if path else show)
+                if path:
+                    shows.append((show, path))
+                    path_lookup[path] = tvdb_id
+                else:
+                    shows.append(show)
             except ArrException:
                 invalid.append(item)
             if len(shows) == 100 or len(tvdb_ids) == i:
@@ -117,26 +136,30 @@ class Sonarr:
                     self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Series added to Sonarr")
 
-        if len(exists) > 0:
+        if len(exists) > 0 or len(skipped) > 0:
             logger.info("")
-            for series in exists:
-                logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
-                if self.config.Cache:
-                    self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
-            logger.info(f"{len(exists)} Series already existing in Sonarr")
+            if len(exists) > 0:
+                for series in exists:
+                    logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
+                    if self.config.Cache:
+                        self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
+            if len(skipped) > 0:
+                logger.info("")
+                for series in skipped:
+                    logger.info(f"Skipped: In Cache | {series}")
+            logger.info(f"{len(exists) + len(skipped)} Series already exist in Sonarr")
 
-        if len(skipped) > 0:
+        if len(mismatched) > 0:
             logger.info("")
-            for series in skipped:
-                logger.info(f"Skipped: In Cache | {series}")
-                if self.config.Cache:
-                    self.config.Cache.update_sonarr_adds(series[0] if isinstance(series, tuple) else series, self.library.original_mapping_name)
-            logger.info(f"{len(skipped)} Movie{'s' if len(skipped) > 1 else ''} already existing in Sonarr")
+            for path, tmdb_id in mismatched.items():
+                logger.info(f"Plex TVDb ID: {tmdb_id:<7} | Sonarr TVDb ID: {arr_paths[path]:<7} | Path: {path}")
+            logger.info(f"{len(mismatched)} Series with mismatched TVDb IDs")
 
         if len(invalid) > 0:
             for tvdb_id in invalid:
                 logger.info("")
                 logger.info(f"Invalid TVDb ID | {tvdb_id}")
+            logger.info(f"{len(invalid)} Series with Invalid IDs")
 
         return len(added)
 
