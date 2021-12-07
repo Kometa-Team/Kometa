@@ -226,7 +226,6 @@ def update_libraries(config):
             logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
             logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
             logger.debug(f"Split Duplicates: {library.split_duplicates}")
-            logger.debug(f"Split Duplicates: {library.split_duplicates}")
             logger.debug(f"Radarr Add All: {library.radarr_add_all}")
             logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
             logger.debug(f"TMDb Collections: {library.tmdb_collections}")
@@ -340,6 +339,22 @@ def library_operations(config, library, items=None):
     logger.info("")
     util.separator(f"{library.name} Library Operations")
     logger.info("")
+    logger.debug(f"Assets For All: {library.assets_for_all}")
+    logger.debug(f"Delete Collections With Less: {library.delete_collections_with_less}")
+    logger.debug(f"Delete Unmanaged Collections: {library.delete_unmanaged_collections}")
+    logger.debug(f"Mass Genre Update: {library.mass_genre_update}")
+    logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
+    logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
+    logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
+    logger.debug(f"Split Duplicates: {library.split_duplicates}")
+    logger.debug(f"Radarr Add All: {library.radarr_add_all}")
+    logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
+    logger.debug(f"TMDb Collections: {library.tmdb_collections}")
+    logger.debug(f"Genre Mapper: {library.genre_mapper}")
+    tmdb_operation = library.assets_for_all or library.mass_genre_update or library.mass_audience_rating_update \
+                     or library.mass_critic_rating_update or library.mass_trakt_rating_update \
+                     or library.tmdb_collections or library.radarr_add_all or library.sonarr_add_all
+    logger.debug(f"TMDb Operation: {tmdb_operation}")
 
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
@@ -347,9 +362,7 @@ def library_operations(config, library, items=None):
             item.split()
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
-    if library.assets_for_all or library.mass_genre_update or library.mass_audience_rating_update or \
-        library.mass_critic_rating_update or library.mass_trakt_rating_update or library.tmdb_collections or \
-        library.radarr_add_all or library.sonarr_add_all:
+    if tmdb_operation:
         if items is None:
             items = library.get_all()
         radarr_adds = []
