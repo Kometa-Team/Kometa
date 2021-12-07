@@ -84,9 +84,28 @@ class Config:
                         replace_attr(new_config["libraries"][library], "show_filtered", "plex")
                         replace_attr(new_config["libraries"][library], "show_missing", "plex")
                         replace_attr(new_config["libraries"][library], "save_missing", "plex")
+                    if new_config["libraries"][library] and "webhooks" in new_config["libraries"][library] and "collection_changes" not in new_config["libraries"][library]["webhooks"]:
+                        changes = []
+                        def hooks(attr):
+                            if attr in new_config["libraries"][library]["webhooks"]:
+                                changes.extend([w for w in util.get_list(new_config["libraries"][library]["webhooks"].pop(attr), split=False) if w not in changes])
+                        hooks("collection_creation")
+                        hooks("collection_addition")
+                        hooks("collection_removal")
+                        new_config["libraries"][library]["webhooks"]["collection_changes"] = changes if changes else None
             if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
             if "settings" in new_config:                    new_config["settings"] = new_config.pop("settings")
-            if "webhooks" in new_config:                    new_config["webhooks"] = new_config.pop("webhooks")
+            if "webhooks" in new_config:
+                temp = new_config.pop("webhooks")
+                changes = []
+                def hooks(attr):
+                    if attr in temp:
+                        changes.extend([w for w in util.get_list(temp.pop(attr), split=False) if w not in changes])
+                hooks("collection_creation")
+                hooks("collection_addition")
+                hooks("collection_removal")
+                temp["collection_changes"] = changes if changes else None
+                new_config["webhooks"] = temp
             if "plex" in new_config:                        new_config["plex"] = new_config.pop("plex")
             if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
             if "tautulli" in new_config:                    new_config["tautulli"] = new_config.pop("tautulli")
@@ -215,9 +234,7 @@ class Config:
             "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
             "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
             "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
-            "collection_creation": check_for_attribute(self.data, "collection_creation", parent="webhooks", var_type="list", default_is_none=True),
-            "collection_addition": check_for_attribute(self.data, "collection_addition", parent="webhooks", var_type="list", default_is_none=True),
-            "collection_removal": check_for_attribute(self.data, "collection_removal", parent="webhooks", var_type="list", default_is_none=True),
+            "collection_changes": check_for_attribute(self.data, "collection_changes", parent="webhooks", var_type="list", default_is_none=True)
         }
         if self.general["cache"]:
             util.separator()
@@ -429,9 +446,7 @@ class Config:
                 params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", parent="settings", var_type="bool", default=False, do_print=False, save=False)
                 params["delete_collections_with_less"] = check_for_attribute(lib, "delete_collections_with_less", parent="settings", var_type="int", default_is_none=True, do_print=False, save=False)
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
-                params["collection_creation_webhooks"] = check_for_attribute(lib, "collection_creation", parent="webhooks", var_type="list", default=self.webhooks["collection_creation"], do_print=False, save=False, default_is_none=True)
-                params["collection_addition_webhooks"] = check_for_attribute(lib, "collection_addition", parent="webhooks", var_type="list", default=self.webhooks["collection_addition"], do_print=False, save=False, default_is_none=True)
-                params["collection_removal_webhooks"] = check_for_attribute(lib, "collection_removal", parent="webhooks", var_type="list", default=self.webhooks["collection_removal"], do_print=False, save=False, default_is_none=True)
+                params["collection_changes_webhooks"] = check_for_attribute(lib, "collection_creation", parent="webhooks", var_type="list", default=self.webhooks["collection_changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
                 params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
