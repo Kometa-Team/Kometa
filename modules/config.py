@@ -456,6 +456,7 @@ class Config:
                 params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False, do_print=False)
                 params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=False)
                 params["tmdb_collections"] = None
+                params["genre_mapper"] = None
 
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
@@ -490,6 +491,14 @@ class Config:
                                     logger.warning("Config Warning: Using default template for tmdb_collections")
                             else:
                                 logger.error("Config Error: tmdb_collections blank using default settings")
+                        if "genre_mapper" in lib["operations"]:
+                            if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
+                                params["genre_mapper"] = {}
+                                for new_genre, old_genres in lib["operations"]["genre_mapper"].items():
+                                    for old_genre in util.get_list(old_genres, split=False):
+                                        params["genre_mapper"][old_genre] = new_genre
+                            else:
+                                logger.error("Config Error: genre_mapper is blank")
                     else:
                         logger.error("Config Error: operations must be a dictionary")
 
