@@ -63,9 +63,7 @@ class Library(ABC):
         self.radarr_add_all = params["radarr_add_all"]
         self.sonarr_add_all = params["sonarr_add_all"]
         self.error_webhooks = params["error_webhooks"]
-        self.collection_creation_webhooks = params["collection_creation_webhooks"]
-        self.collection_addition_webhooks = params["collection_addition_webhooks"]
-        self.collection_removal_webhooks = params["collection_removal_webhooks"]
+        self.collection_changes_webhooks = params["collection_changes_webhooks"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?

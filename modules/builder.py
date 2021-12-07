@@ -87,8 +87,7 @@ ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
     "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name"
 ]
-notification_details = ["collection_creation_webhooks", "collection_addition_webhooks", "collection_removal_webhooks"]
-details = ["collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details + notification_details
+details = ["collection_changes_webhooks", "collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
@@ -183,9 +182,7 @@ class CollectionBuilder:
             "create_asset_folders": self.library.create_asset_folders,
             "delete_below_minimum": self.library.delete_below_minimum,
             "delete_not_scheduled": self.library.delete_not_scheduled,
-            "collection_creation_webhooks": self.library.collection_creation_webhooks,
-            "collection_addition_webhooks": self.library.collection_addition_webhooks,
-            "collection_removal_webhooks": self.library.collection_removal_webhooks,
+            "collection_changes_webhooks": self.library.collection_changes_webhooks
         }
         self.item_details = {}
         self.radarr_details = {}
@@ -748,7 +745,7 @@ class CollectionBuilder:
                 self.details["label.sync"] = util.get_list(method_data) if method_data else []
             else:
                 self.details[method_final] = util.get_list(method_data) if method_data else []
-        elif method_name in notification_details:
+        elif method_name == "collection_changes_webhooks":
             self.details[method_name] = util.parse(method_name, method_data, datatype="list")
         elif method_name in boolean_details:
             default = self.details[method_name] if method_name in self.details else None
@@ -1596,7 +1593,7 @@ class CollectionBuilder:
             else:
                 self.library.alter_collection(current, name, smart_label_collection=self.smart_label_collection)
                 amount_added += 1
-                if self.details["collection_addition_webhooks"]:
+                if self.details["collection_changes_webhooks"]:
                     if self.library.is_movie and current.ratingKey in self.library.movie_rating_key_map:
                         add_id = self.library.movie_rating_key_map[current.ratingKey]
                     elif self.library.is_show and current.ratingKey in self.library.show_rating_key_map:
@@ -1620,7 +1617,7 @@ class CollectionBuilder:
                 self.library.reload(item)
                 logger.info(f"{self.name} Collection | - | {self.item_title(item)}")
                 self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
-                if self.details["collection_removal_webhooks"]:
+                if self.details["collection_changes_webhooks"]:
                     if self.library.is_movie and item.ratingKey in self.library.movie_rating_key_map:
                         remove_id = self.library.movie_rating_key_map[item.ratingKey]
                     elif self.library.is_show and item.ratingKey in self.library.show_rating_key_map:
@@ -2147,17 +2144,12 @@ class CollectionBuilder:
             previous = key
 
     def send_notifications(self):
-        if self.obj and (
-                (self.details["collection_creation_webhooks"] and self.created) or
-                (self.details["collection_addition_webhooks"] and len(self.notification_additions) > 0) or
-                (self.details["collection_removal_webhooks"] and len(self.notification_removals) > 0)
-        ):
+        if self.obj and self.details["collection_changes_webhooks"] and \
+                (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
             self.obj.reload()
             try:
                 self.library.Webhooks.collection_hooks(
-                    self.details["collection_creation_webhooks"] +
-                    self.details["collection_addition_webhooks"] +
-                    self.details["collection_removal_webhooks"],
+                    self.details["collection_changes_webhooks"],
                     self.obj,
                     created=self.created,
                     additions=self.notification_additions,
