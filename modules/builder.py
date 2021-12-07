@@ -269,16 +269,20 @@ class CollectionBuilder:
                         optional = []
                         if "optional" in template:
                             if template["optional"]:
-                                if isinstance(template["optional"], list):
-                                    for op in template["optional"]:
-                                        if op not in default:
-                                            optional.append(op)
-                                        else:
-                                            logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
-                                else:
-                                    optional.append(str(template["optional"]))
+                                for op in util.get_list(template["optional"]):
+                                    if op not in default:
+                                        optional.append(str(op))
+                                    else:
+                                        logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
                             else:
                                 raise Failed("Collection Error: template sub-attribute optional is blank")
+
+                        if "move_collection_prefix" in template:
+                            if template["move_collection_prefix"]:
+                                for op in util.get_list(template["move_collection_prefix"]):
+                                    variables["collection_name"] = variables["collection_name"].replace(f"{str(op).strip()} ", "") + f", {str(op).strip()}"
+                            else:
+                                raise Failed("Collection Error: template sub-attribute move_collection_prefix is blank")
 
                         def check_data(_data):
                             if isinstance(_data, dict):
@@ -325,7 +329,7 @@ class CollectionBuilder:
                             return final_data
 
                         for method_name, attr_data in template.items():
-                            if method_name not in self.data and method_name not in ["default", "optional"]:
+                            if method_name not in self.data and method_name not in ["default", "optional", "move_collection_prefix"]:
                                 if attr_data is None:
                                     logger.error(f"Template Error: template attribute {method_name} is blank")
                                     continue
