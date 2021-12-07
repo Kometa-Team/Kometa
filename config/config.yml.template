@@ -30,14 +30,13 @@ settings:                                       # Can be individually specified 
   only_filter_missing: false
   collection_minimum: 1
   delete_below_minimum: true
+  delete_not_scheduled: false
   tvdb_language: eng
 webhooks:                                       # Can be individually specified per library as well
   error:
   run_start:
   run_end:
-  collection_creation:
-  collection_addition:
-  collection_removal:
+  collection_changes:
 plex:                                           # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: ####################

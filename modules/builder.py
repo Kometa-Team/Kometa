@@ -84,7 +84,7 @@ boolean_details = [
 ]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
-    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
+    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "delete_not_scheduled",
     "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name"
 ]
 details = ["collection_changes_webhooks", "collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details
@@ -395,15 +395,18 @@ class CollectionBuilder:
                             except ValueError:
                                 logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be an integer between 1 and 31")
                         elif run_time.startswith("year"):
-                            match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
-                            if not match:
+                            try:
+                                if "/" in param:
+                                    opt = param.split("/")
+                                    month = int(opt[0])
+                                    day = int(opt[1])
+                                    self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
+                                    if self.current_time.month == month and (self.current_time.day == day or (self.current_time.day == last_day.day and day > last_day.day)):
+                                        skip_collection = False
+                                else:
+                                    raise ValueError
+                            except ValueError:
                                 logger.error(f"Collection Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
-                                continue
-                            month = int(match.group(1))
-                            day = int(match.group(2))
-                            self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
-                            if self.current_time.month == month and (self.current_time.day == day or (self.current_time.day == last_day.day and day > last_day.day)):
-                                skip_collection = False
                         elif run_time.startswith("range"):
                             match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
                             if not match:
