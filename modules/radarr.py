@@ -19,6 +19,7 @@ class Radarr:
         try:
             self.api = RadarrAPI(self.url, self.token, session=self.config.session)
             self.api.respect_list_exclusions_when_adding()
+            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"])
         except ArrException as e:
             raise Failed(e)
         self.add = params["add"]
@@ -67,6 +68,7 @@ class Radarr:
         movies = []
         path_lookup = {}
         mismatched = {}
+        path_in_use = {}
         for i, item in enumerate(tmdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tmdb_id = item[0] if isinstance(item, tuple) else item
@@ -84,6 +86,9 @@ class Radarr:
                     mismatched[path] = tmdb_id
                     continue
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
+                if f"{folder}/{movie.folder}" in arr_paths:
+                    path_in_use[f"{folder}/{movie.folder}"] = tmdb_id
+                    continue
                 if path:
                     movies.append((movie, path))
                     path_lookup[path] = tmdb_id
@@ -124,9 +129,17 @@ class Radarr:
 
         if len(mismatched) > 0:
             logger.info("")
+            logger.info("Items in Plex that have already been added to Radarr but under a different TMDb ID then in Plex")
             for path, tmdb_id in mismatched.items():
                 logger.info(f"Plex TMDb ID: {tmdb_id:<7} | Radarr TMDb ID: {arr_paths[path]:<7} | Path: {path}")
             logger.info(f"{len(mismatched)} Movie{'s' if len(mismatched) > 1 else ''} with mismatched TMDb IDs")
+
+        if len(path_in_use) > 0:
+            logger.info("")
+            logger.info("TMDb IDs that cannot be added to Radarr because the path they will use is already in use by a different TMDb ID")
+            for path, tmdb_id in path_in_use.items():
+                logger.info(f"TMDb ID: {tmdb_id:<7} | Radarr TMDb ID: {arr_paths[path]:<7} | Path: {path}")
+            logger.info(f"{len(path_in_use)} Movie{'s' if len(path_in_use) > 1 else ''} with paths already in use by other TMDb IDs")
 
         if len(invalid) > 0:
             logger.info("")
