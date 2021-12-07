@@ -230,6 +230,7 @@ def update_libraries(config):
             logger.debug(f"Radarr Add All: {library.radarr_add_all}")
             logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
             logger.debug(f"TMDb Collections: {library.tmdb_collections}")
+            logger.debug(f"Genre Mapper: {library.genre_mapper}")
             logger.debug(f"Clean Bundles: {library.clean_bundles}")
             logger.debug(f"Empty Trash: {library.empty_trash}")
             logger.debug(f"Optimize: {library.optimize}")
@@ -442,9 +443,6 @@ def library_operations(config, library, items=None):
                 else:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
 
-            if not tmdb_item and not omdb_item and not tvdb_item:
-                continue
-
             if library.tmdb_collections and tmdb_item and tmdb_item.belongs_to_collection:
                 tmdb_collections[tmdb_item.belongs_to_collection.id] = tmdb_item.belongs_to_collection.name
 
@@ -491,6 +489,18 @@ def library_operations(config, library, items=None):
                         if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
                             library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
                             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
+                except Failed:
+                    pass
+            if library.genre_mapper:
+                try:
+                    adds = []
+                    deletes = []
+                    library.reload(item)
+                    for genre in item.genres:
+                        if genre.tag in library.genre_mapper:
+                            deletes.append(genre.tag)
+                            adds.append(library.genre_mapper[genre.tag])
+                    library.edit_tags("genre", item, add_tags=adds, remove_tags=deletes)
                 except Failed:
                     pass
 
