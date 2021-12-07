@@ -69,7 +69,10 @@ class Library(ABC):
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
         self.optimize = params["plex"]["optimize"] # TODO: Here or just in Plex?
-
+        self.library_operation = self.assets_for_all or self.delete_unmanaged_collections or self.delete_collections_with_less \
+                                 or self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update \
+                                 or self.mass_trakt_rating_update or self.radarr_add_all or self.sonarr_add_all \
+                                 or self.tmdb_collections or self.genre_mapper
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":
@@ -94,9 +97,9 @@ class Library(ABC):
             except Failed as e:
                 util.print_multiline(e, error=True)
 
-        if len(self.metadata_files) == 0:
+        if len(self.metadata_files) == 0 and not self.library_operation:
             logger.info("")
-            raise Failed("Metadata File Error: No valid metadata files found")
+            raise Failed("Config Error: No valid metadata files or library operations found")
 
         if self.asset_directory:
             logger.info("")

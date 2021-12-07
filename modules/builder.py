@@ -37,7 +37,7 @@ method_alias = {
     "producers": "producer",
     "writers": "writer",
     "years": "year", "show_year": "year", "show_years": "year",
-    "show_title": "title",
+    "show_title": "title", "filter": "filters",
     "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
     "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",

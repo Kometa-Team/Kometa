@@ -481,16 +481,20 @@ class Config:
                         if "sonarr_add_all" in lib["operations"]:
                             params["sonarr_add_all"] = check_for_attribute(lib["operations"], "sonarr_add_all", var_type="bool", default=False, save=False)
                         if "tmdb_collections" in lib["operations"]:
-                            params["tmdb_collections"] = {"exclude_ids": [], "remove_collection": False, "template": {"tmdb_collection_details": "<<collection_id>>"}}
+                            params["tmdb_collections"] = {"exclude_ids": [], "remove_suffix": None, "template": {"tmdb_collection_details": "<<collection_id>>"}}
                             if lib["operations"]["tmdb_collections"] and isinstance(lib["operations"]["tmdb_collections"], dict):
                                 params["tmdb_collections"]["exclude_ids"] = check_for_attribute(lib["operations"]["tmdb_collections"], "exclude_ids", var_type="int_list", default_is_none=True, save=False)
-                                params["tmdb_collections"]["remove_collection"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_collection", var_type="bool", default=False, save=False)
+                                params["tmdb_collections"]["remove_suffix"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_suffix", default_is_none=True, save=False)
                                 if "template" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["template"] and isinstance(lib["operations"]["tmdb_collections"]["template"], dict):
                                     params["tmdb_collections"]["template"] = lib["operations"]["tmdb_collections"]["template"]
                                 else:
                                     logger.warning("Config Warning: Using default template for tmdb_collections")
                             else:
                                 logger.error("Config Error: tmdb_collections blank using default settings")
+                            if params["tmdb_collections"]["exclude_ids"] is None:
+                                params["tmdb_collections"]["exclude_ids"] = []
+                            if params["tmdb_collections"]["remove_suffix"]:
+                                params["tmdb_collections"]["remove_suffix"] = params["tmdb_collections"]["remove_suffix"].strip()
                         if "genre_mapper" in lib["operations"]:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
                                 params["genre_mapper"] = {}
