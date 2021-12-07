@@ -235,12 +235,11 @@ def update_libraries(config):
             logger.debug(f"Optimize: {library.optimize}")
             logger.debug(f"Timeout: {library.timeout}")
 
-            items = None
             if not library.is_other:
                 logger.info("")
                 util.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
-                items = library.map_guids()
+                library.map_guids()
             for metadata in library.metadata_files:
                 logger.info("")
                 util.separator(f"Running Metadata File\n{metadata.path}")
@@ -272,7 +271,7 @@ def update_libraries(config):
                     builder.sort_collection()
 
             if not config.test_mode and not collection_only:
-                library_operations(config, library, items=items)
+                library_operations(config, library)
 
             logger.removeHandler(library_handler)
         except Exception as e:
@@ -335,7 +334,7 @@ def update_libraries(config):
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
-def library_operations(config, library, items=None):
+def library_operations(config, library):
     logger.info("")
     util.separator(f"{library.name} Library Operations")
     logger.info("")
@@ -363,8 +362,7 @@ def library_operations(config, library, items=None):
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
     if tmdb_operation:
-        if items is None:
-            items = library.get_all()
+        items = library.get_all()
         radarr_adds = []
         sonarr_adds = []
         tmdb_collections = {}
@@ -535,7 +533,7 @@ def library_operations(config, library, items=None):
             logger.info("")
             metadata = Metadata(config, library, "Data", {
                 "collections": {
-                    _n.replace(" Collection", "") if library.tmdb_collections["remove_collection"] else _n:
+                    _n.replace(library.tmdb_collections["remove_suffix"], "").strip() if library.tmdb_collections["remove_suffix"] else _n:
                     {"template": {"name": "TMDb Collection", "collection_id": _i}}
                     for _i, _n in tmdb_collections.items() if int(_i) not in library.tmdb_collections["exclude_ids"]
                 },
