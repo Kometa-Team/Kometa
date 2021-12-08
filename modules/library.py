@@ -52,6 +52,8 @@ class Library(ABC):
         self.show_missing_assets = params["show_missing_assets"]
         self.save_missing = params["save_missing"]
         self.only_filter_missing = params["only_filter_missing"]
+        self.ignore_ids = params["ignore_ids"]
+        self.ignore_imdb_ids = params["ignore_imdb_ids"]
         self.assets_for_all = params["assets_for_all"]
         self.delete_unmanaged_collections = params["delete_unmanaged_collections"]
         self.delete_collections_with_less = params["delete_collections_with_less"]

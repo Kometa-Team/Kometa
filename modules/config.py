@@ -143,6 +143,7 @@ class Config:
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
                     else:                                                               endline = ""
                     yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
+                if default_is_none and var_type in ["list", "int_list"]:            return []
             elif data[attribute] is None:
                 if default_is_none and var_type in ["list", "int_list"]:            return []
                 elif default_is_none:                                               return None
@@ -228,6 +229,8 @@ class Config:
             "show_missing_assets": check_for_attribute(self.data, "show_missing_assets", parent="settings", var_type="bool", default=True),
             "save_missing": check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True),
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
+            "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
+            "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.webhooks = {
@@ -445,6 +448,10 @@ class Config:
                 params["delete_not_scheduled"] = check_for_attribute(lib, "delete_not_scheduled", parent="settings", var_type="bool", default=self.general["delete_not_scheduled"], do_print=False, save=False)
                 params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", parent="settings", var_type="bool", default=False, do_print=False, save=False)
                 params["delete_collections_with_less"] = check_for_attribute(lib, "delete_collections_with_less", parent="settings", var_type="int", default_is_none=True, do_print=False, save=False)
+                params["ignore_ids"] = check_for_attribute(lib, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True, do_print=False, save=False)
+                params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
+                params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True, do_print=False, save=False)
+                params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
                 params["collection_changes_webhooks"] = check_for_attribute(lib, "collection_creation", parent="webhooks", var_type="list", default=self.webhooks["collection_changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
@@ -491,8 +498,6 @@ class Config:
                                     logger.warning("Config Warning: Using default template for tmdb_collections")
                             else:
                                 logger.error("Config Error: tmdb_collections blank using default settings")
-                            if params["tmdb_collections"]["exclude_ids"] is None:
-                                params["tmdb_collections"]["exclude_ids"] = []
                             if params["tmdb_collections"]["remove_suffix"]:
                                 params["tmdb_collections"]["remove_suffix"] = params["tmdb_collections"]["remove_suffix"].strip()
                         if "genre_mapper" in lib["operations"]:
