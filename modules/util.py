@@ -333,6 +333,13 @@ def parse(attribute, data, datatype=None, methods=None, parent=None, default=Non
         if value:
             return [v for v in value if v] if isinstance(value, list) else [str(value)]
         return []
+    elif datatype == "intlist":
+        if value:
+            try:
+                return [int(v) for v in value if v] if isinstance(value, list) else [int(value)]
+            except ValueError:
+                pass
+        return []
     elif datatype == "dictlist":
         final_list = []
         for dict_data in get_list(value):
