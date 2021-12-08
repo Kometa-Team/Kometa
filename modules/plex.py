@@ -651,6 +651,8 @@ class Plex(Library):
             if poster or background:
                 self.upload_images(item, poster=poster, background=background, overlay=overlay)
             if self.is_show:
+                missing_assets = ""
+                found_season = False
                 for season in self.query(item.seasons):
                     season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
                     if item_dir:
@@ -659,11 +661,14 @@ class Plex(Library):
                     else:
                         season_poster_filter = os.path.join(ad, f"{name}_{season_name}.*")
                         season_background_filter = os.path.join(ad, f"{name}_{season_name}_background.*")
-                    matches = util.glob_filter(season_poster_filter)
                     season_poster = None
                     season_background = None
+                    matches = util.glob_filter(season_poster_filter)
                     if len(matches) > 0:
                         season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
+                        found_season = True
+                    elif season.seasonNumber > 0:
+                        missing_assets += f"\nMissing Season {season.seasonNumber} Poster"
                     matches = util.glob_filter(season_background_filter)
                     if len(matches) > 0:
                         season_background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_poster=False, is_url=False)
@@ -678,6 +683,8 @@ class Plex(Library):
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
+                if self.show_missing_season_assets and found_season and missing_assets:
+                    util.print_multiline(f"Missing Season Posters for {item.title}{missing_assets}", info=True)
         if not poster and overlay:
             self.upload_images(item, overlay=overlay)
         if create and self.asset_folders and not found_folder:
