@@ -640,7 +640,7 @@ def run_collection(config, library, metadata, requested_collections):
             builder = CollectionBuilder(config, library, metadata, mapping_name, no_missing, collection_attrs)
             logger.info("")
 
-            util.separator(f"Building {mapping_name} Collection", space=False, border=False)
+            util.separator(f"Running {mapping_name} Collection", space=False, border=False)
 
             if len(builder.schedule) > 0:
                 util.print_multiline(builder.schedule, info=True)
@@ -651,7 +651,7 @@ def run_collection(config, library, metadata, requested_collections):
 
             items_added = 0
             items_removed = 0
-            if not builder.smart_url:
+            if not builder.smart_url and builder.builders:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
@@ -693,7 +693,7 @@ def run_collection(config, library, metadata, requested_collections):
                     stats["sonarr"] += sonarr_add
 
             run_item_details = True
-            if builder.build_collection:
+            if builder.build_collection and builder.builders:
                 try:
                     builder.load_collection()
                     if builder.created:
@@ -711,9 +711,14 @@ def run_collection(config, library, metadata, requested_collections):
                         library.run_sort.append(builder)
                         # builder.sort_collection()
 
+            if builder.server_preroll is not None:
+                library.set_server_preroll(builder.server_preroll)
+                logger.info("")
+                logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
+
             builder.send_notifications()
 
-            if builder.item_details and run_item_details:
+            if builder.item_details and run_item_details and builder.builders:
                 try:
                     builder.load_collection_items()
                 except Failed:

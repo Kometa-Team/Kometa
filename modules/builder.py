@@ -87,7 +87,7 @@ ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "delete_not_scheduled",
     "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name"
 ]
-details = ["collection_changes_webhooks", "collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details
+details = ["server_preroll", "collection_changes_webhooks", "collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
@@ -205,6 +205,7 @@ class CollectionBuilder:
         self.summaries = {}
         self.schedule = ""
         self.minimum = self.library.collection_minimum
+        self.server_preroll = None
         self.current_time = datetime.now()
         self.current_year = self.current_time.year
         self.exists = False
@@ -743,6 +744,8 @@ class CollectionBuilder:
                 raise Failed(f"Collection Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
         elif method_name == "collection_minimum":
             self.minimum = util.parse(method_name, method_data, datatype="int", minimum=1)
+        elif method_name == "server_preroll":
+            self.server_preroll = util.parse(method_name, method_data)
         elif method_name == "label":
             if "label" in methods and "label.sync" in methods:
                 raise Failed("Collection Error: Cannot use label and label.sync together")
