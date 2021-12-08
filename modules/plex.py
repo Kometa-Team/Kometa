@@ -264,6 +264,10 @@ class Plex(Library):
             self.tmdb_collections = None
             logger.error("Config Error: tmdb_collections only work with Movie Libraries.")
 
+    def set_server_preroll(self, preroll):
+        self.PlexServer.settings.get('cinemaTrailersPrerollID').set(preroll)
+        self.PlexServer.settings.save()
+
     def get_all_collections(self):
         return self.search(libtype="collection")
 
