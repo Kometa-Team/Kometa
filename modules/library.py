@@ -41,6 +41,7 @@ class Library(ABC):
         self.missing_path = os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
+        self.show_missing_season_assets = params["show_missing_season_assets"]
         self.sync_mode = params["sync_mode"]
         self.collection_minimum = params["collection_minimum"]
         self.delete_below_minimum = params["delete_below_minimum"]
