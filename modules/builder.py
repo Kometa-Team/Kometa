@@ -37,7 +37,7 @@ method_alias = {
     "producers": "producer",
     "writers": "writer",
     "years": "year", "show_year": "year", "show_years": "year",
-    "show_title": "title",
+    "show_title": "title", "filter": "filters",
     "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
     "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
@@ -80,19 +80,20 @@ poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "f
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
 boolean_details = [
     "visible_library", "visible_home", "visible_shared", "show_filtered", "show_missing", "save_missing",
-    "missing_only_released", "delete_below_minimum"
+    "missing_only_released", "only_filter_missing", "delete_below_minimum"
 ]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
-    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
+    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "delete_not_scheduled",
     "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name"
 ]
-notification_details = ["collection_creation_webhooks", "collection_addition_webhooks", "collection_removal_webhooks"]
-details = ["collection_mode", "collection_order", "collection_level", "collection_minimum", "label"] + boolean_details + string_details + notification_details
+details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "collection_changes_webhooks", "collection_mode", "collection_order",
+           "collection_level", "collection_minimum", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
 item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
+none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
@@ -146,11 +147,12 @@ show_only_filters = ["first_episode_aired", "last_episode_aired", "network"]
 smart_invalid = ["collection_order", "collection_level"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
-    "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
+    "plex_search", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
     "tvdb_list", "imdb_list", "stevenlu_popular", "anidb_popular",
     "trakt_list", "trakt_trending", "trakt_popular", "trakt_boxoffice",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
+    "flixpatrol_url", "flixpatrol_demographics", "flixpatrol_popular", "flixpatrol_top",
     "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
     "tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
@@ -177,11 +179,11 @@ class CollectionBuilder:
             "show_missing": self.library.show_missing,
             "save_missing": self.library.save_missing,
             "missing_only_released": self.library.missing_only_released,
+            "only_filter_missing": self.library.only_filter_missing,
             "create_asset_folders": self.library.create_asset_folders,
             "delete_below_minimum": self.library.delete_below_minimum,
-            "collection_creation_webhooks": self.library.collection_creation_webhooks,
-            "collection_addition_webhooks": self.library.collection_addition_webhooks,
-            "collection_removal_webhooks": self.library.collection_removal_webhooks,
+            "delete_not_scheduled": self.library.delete_not_scheduled,
+            "collection_changes_webhooks": self.library.collection_changes_webhooks
         }
         self.item_details = {}
         self.radarr_details = {}
@@ -204,6 +206,9 @@ class CollectionBuilder:
         self.summaries = {}
         self.schedule = ""
         self.minimum = self.library.collection_minimum
+        self.ignore_ids = [i for i in self.library.ignore_ids]
+        self.ignore_imdb_ids = [i for i in self.library.ignore_imdb_ids]
+        self.server_preroll = None
         self.current_time = datetime.now()
         self.current_year = self.current_time.year
         self.exists = False
@@ -268,16 +273,20 @@ class CollectionBuilder:
                         optional = []
                         if "optional" in template:
                             if template["optional"]:
-                                if isinstance(template["optional"], list):
-                                    for op in template["optional"]:
-                                        if op not in default:
-                                            optional.append(op)
-                                        else:
-                                            logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
-                                else:
-                                    optional.append(str(template["optional"]))
+                                for op in util.get_list(template["optional"]):
+                                    if op not in default:
+                                        optional.append(str(op))
+                                    else:
+                                        logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
                             else:
                                 raise Failed("Collection Error: template sub-attribute optional is blank")
+
+                        if "move_collection_prefix" in template:
+                            if template["move_collection_prefix"]:
+                                for op in util.get_list(template["move_collection_prefix"]):
+                                    variables["collection_name"] = variables["collection_name"].replace(f"{str(op).strip()} ", "") + f", {str(op).strip()}"
+                            else:
+                                raise Failed("Collection Error: template sub-attribute move_collection_prefix is blank")
 
                         def check_data(_data):
                             if isinstance(_data, dict):
@@ -324,7 +333,7 @@ class CollectionBuilder:
                             return final_data
 
                         for method_name, attr_data in template.items():
-                            if method_name not in self.data and method_name not in ["default", "optional"]:
+                            if method_name not in self.data and method_name not in ["default", "optional", "move_collection_prefix"]:
                                 if attr_data is None:
                                     logger.error(f"Template Error: template attribute {method_name} is blank")
                                     continue
@@ -333,6 +342,12 @@ class CollectionBuilder:
                                     methods[method_name.lower()] = method_name
                                 except Failed:
                                     continue
+
+        if "delete_not_scheduled" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: delete_not_scheduled")
+            logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
+            self.details["delete_not_scheduled"] = util.parse("delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
 
         if "schedule" in methods:
             logger.debug("")
@@ -349,7 +364,7 @@ class CollectionBuilder:
                     run_time = str(schedule).lower()
                     if run_time.startswith(("day", "daily")):
                         skip_collection = False
-                    elif run_time.startswith(("hour", "week", "month", "year")):
+                    elif run_time.startswith(("hour", "week", "month", "year", "range")):
                         match = re.search("\\(([^)]+)\\)", run_time)
                         if not match:
                             logger.error(f"Collection Error: failed to parse schedule: {schedule}")
@@ -384,21 +399,47 @@ class CollectionBuilder:
                             except ValueError:
                                 logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be an integer between 1 and 31")
                         elif run_time.startswith("year"):
-                            match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
-                            if not match:
+                            try:
+                                if "/" in param:
+                                    opt = param.split("/")
+                                    month = int(opt[0])
+                                    day = int(opt[1])
+                                    self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
+                                    if self.current_time.month == month and (self.current_time.day == day or (self.current_time.day == last_day.day and day > last_day.day)):
+                                        skip_collection = False
+                                else:
+                                    raise ValueError
+                            except ValueError:
                                 logger.error(f"Collection Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+                        elif run_time.startswith("range"):
+                            match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
+                            if not match:
+                                logger.error(f"Collection Error: range schedule attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
                                 continue
-                            month = int(match.group(1))
-                            day = int(match.group(2))
-                            self.schedule += f"\nScheduled yearly on {util.pretty_months[month]} {util.make_ordinal(day)}"
-                            if self.current_time.month == month and (self.current_time.day == day or (self.current_time.day == last_day.day and day > last_day.day)):
+                            month_start = int(match.group(1))
+                            day_start = int(match.group(2))
+                            month_end = int(match.group(3))
+                            day_end = int(match.group(4))
+                            check = datetime.strptime(f"{self.current_time.month}/{self.current_time.day}", "%m/%d")
+                            start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
+                            end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
+                            self.schedule += f"\nScheduled between {util.pretty_months[month_start]} {util.make_ordinal(day_start)} and {util.pretty_months[month_end]} {util.make_ordinal(day_end)}"
+                            if start <= check <= end if start < end else check <= end or check >= start:
                                 skip_collection = False
                     else:
                         logger.error(f"Collection Error: schedule attribute {schedule} invalid")
                 if len(self.schedule) == 0:
                     skip_collection = False
                 if skip_collection:
-                    raise NotScheduled(f"{self.schedule}\n\nCollection {self.name} not scheduled to run")
+                    suffix = ""
+                    if self.details["delete_not_scheduled"]:
+                        try:
+                            self.obj = self.library.get_collection(self.name)
+                            self.delete_collection()
+                            suffix = f" and was deleted"
+                        except Failed:
+                            suffix = f" and could not be found to delete"
+                    raise NotScheduled(f"{self.schedule}\n\nCollection {self.name} not scheduled to run{suffix}")
 
         self.collectionless = "plex_collectionless" in methods
 
@@ -548,7 +589,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {method_data}")
             try:
                 if method_data is None and method_name in all_builders + plex.searches:     raise Failed(f"Collection Error: {method_final} attribute is blank")
-                elif method_data is None:                                                   logger.warning(f"Collection Warning: {method_final} attribute is blank")
+                elif method_data is None and method_final not in none_details:              logger.warning(f"Collection Warning: {method_final} attribute is blank")
                 elif not self.config.Trakt and "trakt" in method_name:                      raise Failed(f"Collection Error: {method_final} requires Trakt to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:                   raise Failed(f"Collection Error: {method_final} requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:                   raise Failed(f"Collection Error: {method_final} requires Sonarr to be configured")
@@ -558,7 +599,7 @@ class CollectionBuilder:
                 elif self.library.is_show and method_name in movie_only_builders:           raise Failed(f"Collection Error: {method_final} attribute only works for movie libraries")
                 elif self.library.is_show and method_name in plex.movie_only_searches:      raise Failed(f"Collection Error: {method_final} plex search only works for movie libraries")
                 elif self.library.is_movie and method_name in plex.show_only_searches:      raise Failed(f"Collection Error: {method_final} plex search only works for show libraries")
-                elif self.parts_collection and method_name not in parts_collection_valid:   raise Failed(f"Collection Error: {method_final} attribute does not work with Collection Level: {self.details['collection_level'].capitalize()}")
+                elif self.parts_collection and method_name not in parts_collection_valid:   raise Failed(f"Collection Error: {method_final} attribute does not work with Collection Level: {self.collection_level.capitalize()}")
                 elif self.smart and method_name in smart_invalid:                           raise Failed(f"Collection Error: {method_final} attribute only works with normal collections")
                 elif self.collectionless and method_name not in collectionless_details:     raise Failed(f"Collection Error: {method_final} attribute does not work for Collectionless collection")
                 elif self.smart_url and method_name in all_builders + smart_url_invalid:    raise Failed(f"Collection Error: {method_final} builder not allowed when using smart_filter")
@@ -706,16 +747,22 @@ class CollectionBuilder:
                 raise Failed(f"Collection Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
         elif method_name == "collection_minimum":
             self.minimum = util.parse(method_name, method_data, datatype="int", minimum=1)
+        elif method_name == "server_preroll":
+            self.server_preroll = util.parse(method_name, method_data)
+        elif method_name == "ignore_ids":
+            self.ignore_ids.extend(util.parse(method_name, method_data, datatype="intlist"))
+        elif method_name == "ignore_imdb_ids":
+            self.ignore_imdb_ids.extend(util.parse(method_name, method_data, datatype="list"))
         elif method_name == "label":
             if "label" in methods and "label.sync" in methods:
                 raise Failed("Collection Error: Cannot use label and label.sync together")
             if "label.remove" in methods and "label.sync" in methods:
                 raise Failed("Collection Error: Cannot use label.remove and label.sync together")
             if method_final == "label" and "label_sync_mode" in methods and self.data[methods["label_sync_mode"]] == "sync":
-                self.details["label.sync"] = util.get_list(method_data)
+                self.details["label.sync"] = util.get_list(method_data) if method_data else []
             else:
-                self.details[method_final] = util.get_list(method_data)
-        elif method_name in notification_details:
+                self.details[method_final] = util.get_list(method_data) if method_data else []
+        elif method_name == "collection_changes_webhooks":
             self.details[method_name] = util.parse(method_name, method_data, datatype="list")
         elif method_name in boolean_details:
             default = self.details[method_name] if method_name in self.details else None
@@ -729,7 +776,7 @@ class CollectionBuilder:
                 raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
             if "item_label.remove" in methods and "item_label.sync" in methods:
                 raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
-            self.item_details[method_final] = util.get_list(method_data)
+            self.item_details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name in ["item_radarr_tag", "item_sonarr_tag"]:
             if method_name in methods and f"{method_name}.sync" in methods:
                 raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.sync together")
@@ -824,6 +871,7 @@ class CollectionBuilder:
             elif self.current_time.month in [3, 4, 5]:          current_season = "spring"
             elif self.current_time.month in [6, 7, 8]:          current_season = "summer"
             else:                                               current_season = "fall"
+            default_year = self.current_year + 1 if self.current_time.month == 12 else self.current_year
             for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
@@ -833,10 +881,10 @@ class CollectionBuilder:
                     elif search_attr == "season":
                         new_dictionary[search_attr] = util.parse(search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
                         if "year" not in dict_methods:
-                            logger.warning(f"Collection Warning: {method_name} year attribute not found using this year: {self.current_year} by default")
-                            new_dictionary["year"] = self.current_year
+                            logger.warning(f"Collection Warning: {method_name} year attribute not found using this year: {default_year} by default")
+                            new_dictionary["year"] = default_year
                     elif search_attr == "year":
-                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=self.current_year, minimum=1917, maximum=self.current_year + 1)
+                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=default_year, minimum=1917, maximum=default_year + 1)
                     elif search_data is None:
                         raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
                     elif search_attr == "adult":
@@ -1195,10 +1243,11 @@ class CollectionBuilder:
                         if id_type == "ratingKey":
                             rating_keys.append(input_id)
                         elif id_type == "tmdb" and not self.parts_collection:
-                            if input_id in self.library.movie_map:
-                                rating_keys.extend(self.library.movie_map[input_id])
-                            elif input_id not in self.missing_movies:
-                                self.missing_movies.append(input_id)
+                            if input_id not in self.ignore_ids:
+                                if input_id in self.library.movie_map:
+                                    rating_keys.extend(self.library.movie_map[input_id])
+                                elif input_id not in self.missing_movies:
+                                    self.missing_movies.append(input_id)
                         elif id_type in ["tvdb", "tmdb_show"] and not self.parts_collection:
                             if id_type == "tmdb_show":
                                 try:
@@ -1206,27 +1255,29 @@ class CollectionBuilder:
                                 except Failed as e:
                                     logger.error(e)
                                     continue
-                            if input_id in self.library.show_map:
-                                rating_keys.extend(self.library.show_map[input_id])
-                            elif input_id not in self.missing_shows:
-                                self.missing_shows.append(input_id)
+                            if input_id not in self.ignore_ids:
+                                if input_id in self.library.show_map:
+                                    rating_keys.extend(self.library.show_map[input_id])
+                                elif input_id not in self.missing_shows:
+                                    self.missing_shows.append(input_id)
                         elif id_type == "imdb" and not self.parts_collection:
-                            if input_id in self.library.imdb_map:
-                                rating_keys.extend(self.library.imdb_map[input_id])
-                            else:
-                                if self.do_missing:
-                                    try:
-                                        tmdb_id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
-                                        if tmdb_type == "movie":
-                                            if tmdb_id not in self.missing_movies:
-                                                self.missing_movies.append(tmdb_id)
-                                        else:
-                                            tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
-                                            if tvdb_id not in self.missing_shows:
-                                                self.missing_shows.append(tvdb_id)
-                                    except Failed as e:
-                                        logger.error(e)
-                                        continue
+                            if input_id not in self.ignore_imdb_ids:
+                                if input_id in self.library.imdb_map:
+                                    rating_keys.extend(self.library.imdb_map[input_id])
+                                else:
+                                    if self.do_missing:
+                                        try:
+                                            tmdb_id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
+                                            if tmdb_type == "movie":
+                                                if tmdb_id not in self.missing_movies:
+                                                    self.missing_movies.append(tmdb_id)
+                                            else:
+                                                tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
+                                                if tvdb_id not in self.missing_shows:
+                                                    self.missing_shows.append(tvdb_id)
+                                        except Failed as e:
+                                            logger.error(e)
+                                            continue
                         elif id_type == "tvdb_season" and self.collection_level == "season":
                             show_id, season_num = input_id.split("_")
                             show_id = int(show_id)
@@ -1562,7 +1613,7 @@ class CollectionBuilder:
             else:
                 self.library.alter_collection(current, name, smart_label_collection=self.smart_label_collection)
                 amount_added += 1
-                if self.details["collection_addition_webhooks"]:
+                if self.details["collection_changes_webhooks"]:
                     if self.library.is_movie and current.ratingKey in self.library.movie_rating_key_map:
                         add_id = self.library.movie_rating_key_map[current.ratingKey]
                     elif self.library.is_show and current.ratingKey in self.library.show_rating_key_map:
@@ -1586,7 +1637,7 @@ class CollectionBuilder:
                 self.library.reload(item)
                 logger.info(f"{self.name} Collection | - | {self.item_title(item)}")
                 self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
-                if self.details["collection_removal_webhooks"]:
+                if self.details["collection_changes_webhooks"]:
                     if self.library.is_movie and item.ratingKey in self.library.movie_rating_key_map:
                         remove_id = self.library.movie_rating_key_map[item.ratingKey]
                     elif self.library.is_show and item.ratingKey in self.library.show_rating_key_map:
@@ -1639,7 +1690,7 @@ class CollectionBuilder:
         return True
 
     def check_filters(self, current, display):
-        if self.filters or self.tmdb_filters:
+        if (self.filters or self.tmdb_filters) and not self.details["only_filter_missing"]:
             util.print_return(f"Filtering {display} {current.title}")
             if self.tmdb_filters:
                 if current.ratingKey not in self.library.movie_rating_key_map and current.ratingKey not in self.library.show_rating_key_map:
@@ -2113,17 +2164,12 @@ class CollectionBuilder:
             previous = key
 
     def send_notifications(self):
-        if self.obj and (
-                (self.details["collection_creation_webhooks"] and self.created) or
-                (self.details["collection_addition_webhooks"] and len(self.notification_additions) > 0) or
-                (self.details["collection_removal_webhooks"] and len(self.notification_removals) > 0)
-        ):
+        if self.obj and self.details["collection_changes_webhooks"] and \
+                (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
             self.obj.reload()
             try:
                 self.library.Webhooks.collection_hooks(
-                    self.details["collection_creation_webhooks"] +
-                    self.details["collection_addition_webhooks"] +
-                    self.details["collection_removal_webhooks"],
+                    self.details["collection_changes_webhooks"],
                     self.obj,
                     created=self.created,
                     additions=self.notification_additions,

@@ -37,6 +37,7 @@ class Sonarr:
         try:
             self.api = SonarrAPI(self.url, self.token, session=self.config.session)
             self.api.respect_list_exclusions_when_adding()
+            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"], params["language_profile"])
         except ArrException as e:
             raise Failed(e)
         self.add = params["add"]
@@ -79,10 +80,21 @@ class Sonarr:
         search = options["search"] if "search" in options else self.search
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
 
+        arr_paths = {}
+        arr_ids = {}
+        for series in self.api.all_series():
+            if series.path:
+                arr_paths[series.path] = series.tvdbId
+            arr_paths[series.tvdbId] = series
+
         added = []
         exists = []
+        skipped = []
         invalid = []
         shows = []
+        path_lookup = {}
+        mismatched = {}
+        path_in_use = {}
         for i, item in enumerate(tvdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tvdb_id = item[0] if isinstance(item, tuple) else item
@@ -90,11 +102,24 @@ class Sonarr:
             if self.config.Cache:
                 _id = self.config.Cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
                 if _id:
-                    exists.append(item)
+                    skipped.append(item)
                     continue
             try:
+                if tvdb_id in arr_ids:
+                    exists.append(arr_ids[tvdb_id])
+                    continue
+                if path in arr_paths:
+                    mismatched[path] = tvdb_id
+                    continue
                 show = self.api.get_series(tvdb_id=tvdb_id)
-                shows.append((show, path) if path else show)
+                if f"{folder}/{show.folder}" in arr_paths:
+                    path_in_use[f"{folder}/{show.folder}"] = tvdb_id
+                    continue
+                if path:
+                    shows.append((show, path))
+                    path_lookup[path] = tvdb_id
+                else:
+                    shows.append(show)
             except ArrException:
                 invalid.append(item)
             if len(shows) == 100 or len(tvdb_ids) == i:
@@ -116,18 +141,37 @@ class Sonarr:
                     self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Series added to Sonarr")
 
-        if len(exists) > 0:
+        if len(exists) > 0 or len(skipped) > 0:
             logger.info("")
-            for series in exists:
-                logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
-                if self.config.Cache:
-                    self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
-            logger.info(f"{len(exists)} Series already existing in Sonarr")
+            if len(exists) > 0:
+                for series in exists:
+                    logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
+                    if self.config.Cache:
+                        self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
+            if len(skipped) > 0:
+                for series in skipped:
+                    logger.info(f"Skipped: In Cache | {series}")
+            logger.info(f"{len(exists) + len(skipped)} Series already exist in Sonarr")
+
+        if len(mismatched) > 0:
+            logger.info("")
+            logger.info("Items in Plex that have already been added to Sonarr but under a different TVDb ID then in Plex")
+            for path, tmdb_id in mismatched.items():
+                logger.info(f"Plex TVDb ID: {tmdb_id:<7} | Sonarr TVDb ID: {arr_paths[path]:<7} | Path: {path}")
+            logger.info(f"{len(mismatched)} Series with mismatched TVDb IDs")
+
+        if len(path_in_use) > 0:
+            logger.info("")
+            logger.info("TVDb IDs that cannot be added to Sonarr because the path they will use is already in use by a different TVDb ID")
+            for path, tvdb_id in path_in_use.items():
+                logger.info(f"TVDb ID: {tvdb_id:<7} | Sonarr TVDb ID: {arr_paths[path]:<7} | Path: {path}")
+            logger.info(f"{len(path_in_use)} Series with paths already in use by other TVDb IDs")
 
         if len(invalid) > 0:
             for tvdb_id in invalid:
                 logger.info("")
                 logger.info(f"Invalid TVDb ID | {tvdb_id}")
+            logger.info(f"{len(invalid)} Series with Invalid IDs")
 
         return len(added)
 

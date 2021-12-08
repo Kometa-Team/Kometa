@@ -6,6 +6,7 @@ try:
     from modules import util
     from modules.builder import CollectionBuilder
     from modules.config import Config
+    from modules.meta import Metadata
     from modules.util import Failed, NotScheduled
 except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
@@ -50,21 +51,21 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
     else:
         return default
 
-test = get_arg("PMM_TEST", args.test, arg_bool=True)
-debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
-trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
+config_file = get_arg("PMM_CONFIG", args.config)
+times = get_arg("PMM_TIME", args.times)
 run = get_arg("PMM_RUN", args.run, arg_bool=True)
-no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
-no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
-library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
+test = get_arg("PMM_TEST", args.test, arg_bool=True)
 collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
+library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
 collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
 resume = get_arg("PMM_RESUME", args.resume)
-times = get_arg("PMM_TIME", args.times)
+no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
+no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
 divider = get_arg("PMM_DIVIDER", args.divider)
 screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
-config_file = get_arg("PMM_CONFIG", args.config)
+debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
+trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 stats = {}
 
 util.separating_character = divider[0]
@@ -135,6 +136,24 @@ def start(attrs):
     start_time = datetime.now()
     if "time" not in attrs:
         attrs["time"] = start_time.strftime("%H:%M")
+    attrs["time_obj"] = start_time
+    util.separator(debug=True)
+    logger.debug(f"--config (PMM_CONFIG): {config_file}")
+    logger.debug(f"--time (PMM_TIME): {times}")
+    logger.debug(f"--run (PMM_RUN): {run}")
+    logger.debug(f"--run-tests (PMM_TEST): {test}")
+    logger.debug(f"--collections-only (PMM_COLLECTIONS_ONLY): {collection_only}")
+    logger.debug(f"--libraries-only (PMM_LIBRARIES_ONLY): {library_only}")
+    logger.debug(f"--run-collections (PMM_COLLECTIONS): {collections}")
+    logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
+    logger.debug(f"--resume (PMM_RESUME): {resume}")
+    logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
+    logger.debug(f"--no-missing (PMM_NO_MISSING): {no_missing}")
+    logger.debug(f"--divider (PMM_DIVIDER): {divider}")
+    logger.debug(f"--width (PMM_WIDTH): {screen_width}")
+    logger.debug(f"--debug (PMM_DEBUG): {debug}")
+    logger.debug(f"--trace (PMM_TRACE): {trace}")
+    logger.debug("")
     util.separator(f"Starting {start_type}Run")
     config = None
     global stats
@@ -152,10 +171,11 @@ def start(attrs):
             util.print_stacktrace()
             util.print_multiline(e, critical=True)
     logger.info("")
-    run_time = str(datetime.now() - start_time).split('.')[0]
+    end_time = datetime.now()
+    run_time = str(end_time - start_time).split('.')[0]
     if config:
         try:
-            config.Webhooks.end_time_hooks(start_time, run_time, stats)
+            config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
         except Failed as e:
             util.print_stacktrace()
             logger.error(f"Webhooks Error: {e}")
@@ -178,12 +198,48 @@ def update_libraries(config):
             plexapi.server.TIMEOUT = library.timeout
             logger.info("")
             util.separator(f"{library.name} Library")
-            items = None
+
+            logger.debug("")
+            logger.debug(f"Mapping Name: {library.original_mapping_name}")
+            logger.debug(f"Folder Name: {library.mapping_name}")
+            logger.debug(f"Missing Path: {library.missing_path}")
+            for ad in library.asset_directory:
+                logger.debug(f"Asset Directory: {ad}")
+            logger.debug(f"Asset Folders: {library.asset_folders}")
+            logger.debug(f"Create Asset Folders: {library.create_asset_folders}")
+            logger.debug(f"Sync Mode: {library.sync_mode}")
+            logger.debug(f"Collection Minimum: {library.collection_minimum}")
+            logger.debug(f"Delete Below Minimum: {library.delete_below_minimum}")
+            logger.debug(f"Delete Not Scheduled: {library.delete_not_scheduled}")
+            logger.debug(f"Missing Only Released: {library.missing_only_released}")
+            logger.debug(f"Only Filter Missing: {library.only_filter_missing}")
+            logger.debug(f"Show Unmanaged: {library.show_unmanaged}")
+            logger.debug(f"Show Filtered: {library.show_filtered}")
+            logger.debug(f"Show Missing: {library.show_missing}")
+            logger.debug(f"Show Missing Assets: {library.show_missing_assets}")
+            logger.debug(f"Save Missing: {library.save_missing}")
+            logger.debug(f"Assets For All: {library.assets_for_all}")
+            logger.debug(f"Delete Collections With Less: {library.delete_collections_with_less}")
+            logger.debug(f"Delete Unmanaged Collections: {library.delete_unmanaged_collections}")
+            logger.debug(f"Mass Genre Update: {library.mass_genre_update}")
+            logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
+            logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
+            logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
+            logger.debug(f"Split Duplicates: {library.split_duplicates}")
+            logger.debug(f"Radarr Add All: {library.radarr_add_all}")
+            logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
+            logger.debug(f"TMDb Collections: {library.tmdb_collections}")
+            logger.debug(f"Genre Mapper: {library.genre_mapper}")
+            logger.debug(f"Clean Bundles: {library.clean_bundles}")
+            logger.debug(f"Empty Trash: {library.empty_trash}")
+            logger.debug(f"Optimize: {library.optimize}")
+            logger.debug(f"Timeout: {library.timeout}")
+
             if not library.is_other:
                 logger.info("")
                 util.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
-                items = library.map_guids()
+                library.map_guids()
             for metadata in library.metadata_files:
                 logger.info("")
                 util.separator(f"Running Metadata File\n{metadata.path}")
@@ -215,7 +271,7 @@ def update_libraries(config):
                     builder.sort_collection()
 
             if not config.test_mode and not collection_only:
-                library_operations(config, library, items=items)
+                library_operations(config, library)
 
             logger.removeHandler(library_handler)
         except Exception as e:
@@ -278,10 +334,26 @@ def update_libraries(config):
             if library.optimize:
                 library.query(library.PlexServer.library.optimize)
 
-def library_operations(config, library, items=None):
+def library_operations(config, library):
     logger.info("")
     util.separator(f"{library.name} Library Operations")
     logger.info("")
+    logger.debug(f"Assets For All: {library.assets_for_all}")
+    logger.debug(f"Delete Collections With Less: {library.delete_collections_with_less}")
+    logger.debug(f"Delete Unmanaged Collections: {library.delete_unmanaged_collections}")
+    logger.debug(f"Mass Genre Update: {library.mass_genre_update}")
+    logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
+    logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
+    logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
+    logger.debug(f"Split Duplicates: {library.split_duplicates}")
+    logger.debug(f"Radarr Add All: {library.radarr_add_all}")
+    logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
+    logger.debug(f"TMDb Collections: {library.tmdb_collections}")
+    logger.debug(f"Genre Mapper: {library.genre_mapper}")
+    tmdb_operation = library.assets_for_all or library.mass_genre_update or library.mass_audience_rating_update \
+                     or library.mass_critic_rating_update or library.mass_trakt_rating_update \
+                     or library.tmdb_collections or library.radarr_add_all or library.sonarr_add_all
+    logger.debug(f"TMDb Operation: {tmdb_operation}")
 
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
@@ -289,12 +361,11 @@ def library_operations(config, library, items=None):
             item.split()
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
-    if library.assets_for_all or library.mass_genre_update or library.mass_audience_rating_update or \
-        library.mass_critic_rating_update or library.mass_trakt_rating_update or library.radarr_add_all or library.sonarr_add_all:
-        if items is None:
-            items = library.get_all()
+    if tmdb_operation:
+        items = library.get_all()
         radarr_adds = []
         sonarr_adds = []
+        tmdb_collections = {}
         trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
         for i, item in enumerate(items, 1):
@@ -344,7 +415,7 @@ def library_operations(config, library, items=None):
                 sonarr_adds.append((tvdb_id, f"{path.replace(library.Sonarr.plex_path, library.Sonarr.sonarr_path)}/"))
 
             tmdb_item = None
-            if library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
+            if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
                 if tvdb_id and not tmdb_id:
                     tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
                 if tmdb_id:
@@ -383,8 +454,8 @@ def library_operations(config, library, items=None):
                 else:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
 
-            if not tmdb_item and not omdb_item and not tvdb_item:
-                continue
+            if library.tmdb_collections and tmdb_item and tmdb_item.belongs_to_collection:
+                tmdb_collections[tmdb_item.belongs_to_collection.id] = tmdb_item.belongs_to_collection.name
 
             if library.mass_genre_update:
                 try:
@@ -431,6 +502,18 @@ def library_operations(config, library, items=None):
                             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
                 except Failed:
                     pass
+            if library.genre_mapper:
+                try:
+                    adds = []
+                    deletes = []
+                    library.reload(item)
+                    for genre in item.genres:
+                        if genre.tag in library.genre_mapper:
+                            deletes.append(genre.tag)
+                            adds.append(library.genre_mapper[genre.tag])
+                    library.edit_tags("genre", item, add_tags=adds, remove_tags=deletes)
+                except Failed:
+                    pass
 
         if library.Radarr and library.radarr_add_all:
             try:
@@ -443,6 +526,22 @@ def library_operations(config, library, items=None):
                 library.Sonarr.add_tvdb(sonarr_adds)
             except Failed as e:
                 logger.error(e)
+
+        if tmdb_collections:
+            logger.info("")
+            util.separator(f"Starting TMDb Collections")
+            logger.info("")
+            metadata = Metadata(config, library, "Data", {
+                "collections": {
+                    _n.replace(library.tmdb_collections["remove_suffix"], "").strip() if library.tmdb_collections["remove_suffix"] else _n:
+                    {"template": {"name": "TMDb Collection", "collection_id": _i}}
+                    for _i, _n in tmdb_collections.items() if int(_i) not in library.tmdb_collections["exclude_ids"]
+                },
+                "templates": {
+                    "TMDb Collection": library.tmdb_collections["template"]
+                }
+            })
+            run_collection(config, library, metadata, metadata.get_collections(None))
 
     if library.delete_collections_with_less is not None or library.delete_unmanaged_collections:
         logger.info("")
@@ -541,7 +640,7 @@ def run_collection(config, library, metadata, requested_collections):
             builder = CollectionBuilder(config, library, metadata, mapping_name, no_missing, collection_attrs)
             logger.info("")
 
-            util.separator(f"Building {mapping_name} Collection", space=False, border=False)
+            util.separator(f"Running {mapping_name} Collection", space=False, border=False)
 
             if len(builder.schedule) > 0:
                 util.print_multiline(builder.schedule, info=True)
@@ -552,7 +651,7 @@ def run_collection(config, library, metadata, requested_collections):
 
             items_added = 0
             items_removed = 0
-            if not builder.smart_url:
+            if not builder.smart_url and builder.builders:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
@@ -594,7 +693,7 @@ def run_collection(config, library, metadata, requested_collections):
                     stats["sonarr"] += sonarr_add
 
             run_item_details = True
-            if builder.build_collection:
+            if builder.build_collection and builder.builders:
                 try:
                     builder.load_collection()
                     if builder.created:
@@ -612,9 +711,14 @@ def run_collection(config, library, metadata, requested_collections):
                         library.run_sort.append(builder)
                         # builder.sort_collection()
 
+            if builder.server_preroll is not None:
+                library.set_server_preroll(builder.server_preroll)
+                logger.info("")
+                logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
+
             builder.send_notifications()
 
-            if builder.item_details and run_item_details:
+            if builder.item_details and run_item_details and builder.builders:
                 try:
                     builder.load_collection_items()
                 except Failed:

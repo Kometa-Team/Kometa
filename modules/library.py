@@ -34,20 +34,27 @@ class Library(ABC):
         self.name = params["name"]
         self.original_mapping_name = params["mapping_name"]
         self.metadata_path = params["metadata_path"]
-        self.asset_directory = params["asset_directory"]
+        self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
-        self.missing_path = os.path.join(self.default_dir, f"{self.original_mapping_name}_missing.yml")
+        self.missing_path = os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
         self.asset_folders = params["asset_folders"]
+        self.create_asset_folders = params["create_asset_folders"]
+        self.show_missing_season_assets = params["show_missing_season_assets"]
         self.sync_mode = params["sync_mode"]
+        self.collection_minimum = params["collection_minimum"]
+        self.delete_below_minimum = params["delete_below_minimum"]
+        self.delete_not_scheduled = params["delete_not_scheduled"]
+        self.missing_only_released = params["missing_only_released"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_filtered = params["show_filtered"]
         self.show_missing = params["show_missing"]
         self.show_missing_assets = params["show_missing_assets"]
         self.save_missing = params["save_missing"]
-        self.missing_only_released = params["missing_only_released"]
-        self.create_asset_folders = params["create_asset_folders"]
+        self.only_filter_missing = params["only_filter_missing"]
+        self.ignore_ids = params["ignore_ids"]
+        self.ignore_imdb_ids = params["ignore_imdb_ids"]
         self.assets_for_all = params["assets_for_all"]
         self.delete_unmanaged_collections = params["delete_unmanaged_collections"]
         self.delete_collections_with_less = params["delete_collections_with_less"]
@@ -57,17 +64,18 @@ class Library(ABC):
         self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
         self.radarr_add_all = params["radarr_add_all"]
         self.sonarr_add_all = params["sonarr_add_all"]
-        self.collection_minimum = params["collection_minimum"]
-        self.delete_below_minimum = params["delete_below_minimum"]
+        self.tmdb_collections = params["tmdb_collections"]
+        self.genre_mapper = params["genre_mapper"]
         self.error_webhooks = params["error_webhooks"]
-        self.collection_creation_webhooks = params["collection_creation_webhooks"]
-        self.collection_addition_webhooks = params["collection_addition_webhooks"]
-        self.collection_removal_webhooks = params["collection_removal_webhooks"]
+        self.collection_changes_webhooks = params["collection_changes_webhooks"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
         self.optimize = params["plex"]["optimize"] # TODO: Here or just in Plex?
-
+        self.library_operation = self.assets_for_all or self.delete_unmanaged_collections or self.delete_collections_with_less \
+                                 or self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update \
+                                 or self.mass_trakt_rating_update or self.radarr_add_all or self.sonarr_add_all \
+                                 or self.tmdb_collections or self.genre_mapper
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":
@@ -92,9 +100,9 @@ class Library(ABC):
             except Failed as e:
                 util.print_multiline(e, error=True)
 
-        if len(self.metadata_files) == 0:
+        if len(self.metadata_files) == 0 and not self.library_operation:
             logger.info("")
-            raise Failed("Metadata File Error: No valid metadata files found")
+            raise Failed("Config Error: No valid metadata files or library operations found")
 
         if self.asset_directory:
             logger.info("")

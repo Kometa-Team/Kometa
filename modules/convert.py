@@ -228,7 +228,8 @@ class Convert:
                 if check_id.startswith("tvdb"):
                     tvdb_id.append(int(re.search("-(.*)", check_id).group(1)))
                 elif check_id.startswith("anidb"):
-                    anidb_id = int(re.search("-(.*)", check_id).group(1))
+                    anidb_str = str(re.search("-(.*)", check_id).group(1))
+                    anidb_id = int(anidb_str[1:] if anidb_str[0] == "a" else anidb_str)
                     library.anidb_map[anidb_id] = item.ratingKey
                 else:
                     raise Failed(f"Hama Agent ID: {check_id} not supported")
@@ -304,8 +305,8 @@ class Convert:
                 logger.debug(f"TMDb: {tmdb_id}, IMDb: {imdb_id}, TVDb: {tvdb_id}")
                 raise Failed(f"No ID to convert")
         except Failed as e:
-            logger.info(util.adjust_space(f"Mapping Error | {item.guid:<46} | {e} for {item.title}"))
+            logger.info(util.adjust_space(f'Mapping Error | {item.guid:<46} | {e} for "{item.title}"'))
         except BadRequest:
             util.print_stacktrace()
-            logger.info(util.adjust_space(f"Mapping Error | {item.guid:<46} | Bad Request for {item.title}"))
+            logger.info(util.adjust_space(f'Mapping Error | {item.guid:<46} | Bad Request for "{item.title}"'))
         return None, None, None
