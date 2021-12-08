@@ -206,6 +206,8 @@ class CollectionBuilder:
         self.summaries = {}
         self.schedule = ""
         self.minimum = self.library.collection_minimum
+        self.ignore_ids = [i for i in self.library.ignore_ids]
+        self.ignore_imdb_ids = [i for i in self.library.ignore_imdb_ids]
         self.server_preroll = None
         self.current_time = datetime.now()
         self.current_year = self.current_time.year
@@ -748,9 +750,9 @@ class CollectionBuilder:
         elif method_name == "server_preroll":
             self.server_preroll = util.parse(method_name, method_data)
         elif method_name == "ignore_ids":
-            self.ignore_ids = util.parse(method_name, method_data, datatype="intlist")
+            self.ignore_ids.extend(util.parse(method_name, method_data, datatype="intlist"))
         elif method_name == "ignore_imdb_ids":
-            self.ignore_imdb_ids = util.parse(method_name, method_data, datatype="intlist")
+            self.ignore_imdb_ids.extend(util.parse(method_name, method_data, datatype="list"))
         elif method_name == "label":
             if "label" in methods and "label.sync" in methods:
                 raise Failed("Collection Error: Cannot use label and label.sync together")
