@@ -260,6 +260,13 @@ class Plex(Library):
         self.is_other = self.agent == "com.plexapp.agents.none"
         if self.is_other:
             self.type = "Video"
+        if self.tmdb_collections and self.is_show:
+            self.tmdb_collections = None
+            logger.error("Config Error: tmdb_collections only work with Movie Libraries.")
+
+    def set_server_preroll(self, preroll):
+        self.PlexServer.settings.get('cinemaTrailersPrerollID').set(preroll)
+        self.PlexServer.settings.save()
 
     def get_all_collections(self):
         return self.search(libtype="collection")
@@ -592,7 +599,7 @@ class Plex(Library):
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
         display = ""
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
-        if add_tags or remove_tags or sync_tags:
+        if add_tags or remove_tags or sync_tags is not None:
             _add_tags = add_tags if add_tags else []
             _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
             _sync_tags = [t.lower() for t in sync_tags] if sync_tags else []
@@ -602,7 +609,7 @@ class Plex(Library):
             except BadRequest:
                 _item_tags = []
             _add = [f"{t[:1].upper()}{t[1:]}" for t in _add_tags + _sync_tags if t.lower() not in _item_tags]
-            _remove = [t for t in _item_tags if (_sync_tags and t not in _sync_tags) or t in _remove_tags]
+            _remove = [t for t in _item_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]
             if _add:
                 self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
                 display += f"+{', +'.join(_add)}"
@@ -644,6 +651,8 @@ class Plex(Library):
             if poster or background:
                 self.upload_images(item, poster=poster, background=background, overlay=overlay)
             if self.is_show:
+                missing_assets = ""
+                found_season = False
                 for season in self.query(item.seasons):
                     season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
                     if item_dir:
@@ -652,11 +661,14 @@ class Plex(Library):
                     else:
                         season_poster_filter = os.path.join(ad, f"{name}_{season_name}.*")
                         season_background_filter = os.path.join(ad, f"{name}_{season_name}_background.*")
-                    matches = util.glob_filter(season_poster_filter)
                     season_poster = None
                     season_background = None
+                    matches = util.glob_filter(season_poster_filter)
                     if len(matches) > 0:
                         season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
+                        found_season = True
+                    elif season.seasonNumber > 0:
+                        missing_assets += f"\nMissing Season {season.seasonNumber} Poster"
                     matches = util.glob_filter(season_background_filter)
                     if len(matches) > 0:
                         season_background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_poster=False, is_url=False)
@@ -671,6 +683,8 @@ class Plex(Library):
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
                             self.upload_images(episode, poster=episode_poster)
+                if self.show_missing_season_assets and found_season and missing_assets:
+                    util.print_multiline(f"Missing Season Posters for {item.title}{missing_assets}", info=True)
         if not poster and overlay:
             self.upload_images(item, overlay=overlay)
         if create and self.asset_folders and not found_folder:
