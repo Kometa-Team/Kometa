@@ -70,7 +70,7 @@ class Webhooks:
                 json["collection"] = str(collection)
             self._request(self.error_webhooks, json)
 
-    def collection_hooks(self, webhooks, collection, created=False, additions=None, removals=None):
+    def collection_hooks(self, webhooks, collection, created=False, deleted=False, additions=None, removals=None):
         if self.library:
             thumb = None
             if collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
@@ -84,6 +84,7 @@ class Webhooks:
                 "type": "movie" if self.library.is_movie else "show",
                 "collection": collection.title,
                 "created": created,
+                "deleted": deleted,
                 "poster": thumb,
                 "background": art
             }

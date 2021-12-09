@@ -213,6 +213,7 @@ class CollectionBuilder:
         self.current_year = self.current_time.year
         self.exists = False
         self.created = False
+        self.deleted = False
 
         methods = {m.lower(): m for m in self.data}
 
@@ -444,6 +445,7 @@ class CollectionBuilder:
                         try:
                             self.obj = self.library.get_collection(self.name)
                             self.delete_collection()
+                            self.deleted = True
                             suffix = f" and was deleted"
                         except Failed:
                             suffix = f" and could not be found to delete"
@@ -2180,6 +2182,7 @@ class CollectionBuilder:
                     self.details["collection_changes_webhooks"],
                     self.obj,
                     created=self.created,
+                    deleted=self.deleted,
                     additions=self.notification_additions,
                     removals=self.notification_removals
                 )
