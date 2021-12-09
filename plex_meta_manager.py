@@ -679,7 +679,7 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
                     if builder.details["delete_below_minimum"] and builder.obj:
                         builder.delete_collection()
-                        stats["deleted"] += 1
+                        builder.deleted = True
                         logger.info("")
                         logger.info(f"Collection {builder.obj.title} deleted")
 
@@ -710,6 +710,9 @@ def run_collection(config, library, metadata, requested_collections):
                     if builder.custom_sort:
                         library.run_sort.append(builder)
                         # builder.sort_collection()
+
+            if builder.deleted:
+                stats["deleted"] += 1
 
             if builder.server_preroll is not None:
                 library.set_server_preroll(builder.server_preroll)
