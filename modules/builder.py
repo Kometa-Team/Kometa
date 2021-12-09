@@ -99,6 +99,11 @@ sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
+parts_collection_valid = [
+     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "collection_changes_webhooks"
+     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"
+] + summary_details + poster_details + background_details + string_details
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
@@ -160,10 +165,6 @@ custom_sort_builders = [
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
-parts_collection_valid = [
-     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library",
-     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released"
- ] + summary_details + poster_details + background_details + string_details
 
 class CollectionBuilder:
     def __init__(self, config, library, metadata, name, no_missing, data):
@@ -506,8 +507,10 @@ class CollectionBuilder:
         if "collection_level" in methods:
             logger.debug("")
             logger.debug("Validating Method: collection_level")
-            if self.data[methods["collection_level"]] is None:
-                raise Failed(f"Collection Warning: collection_level attribute is blank")
+            if self.library.is_movie:
+                raise Failed(f"Collection Error: collection_level attribute only works for show libraries")
+            elif self.data[methods["collection_level"]] is None:
+                raise Failed(f"Collection Error: collection_level attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['collection_level']]}")
                 if self.data[methods["collection_level"]].lower() in plex.collection_level_options:
