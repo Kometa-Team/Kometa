@@ -66,7 +66,7 @@ modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
                letterboxd.builders + mal.builders + plex.builders + stevenlu.builders + tautulli.builders + \
                tmdb.builders + trakt.builders + tvdb.builders
-show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level"]
+show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level", "item_tmdb_season_titles"]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
@@ -91,7 +91,7 @@ details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "collection_change
            "collection_level", "collection_minimum", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
-item_bool_details = ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
+item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
 item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
@@ -1956,16 +1956,26 @@ class CollectionBuilder:
                         advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
 
+            if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
+                try:
+                    tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey])
+                    names = {str(s.season_number): s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
+                    for season in self.library.query(item.seasons):
+                        if str(season.index) in names:
+                            self.library.edit_query(season, {"title.locked": 1, "title.value": names[str(season.index)]})
+                except Failed as e:
+                    logger.error(e)
+
             # Locking should come before refreshing since refreshing can change metadata (i.e. if specified to both lock
             # background/poster and also refreshing, assume that the current background/poster should be kept)
             if "item_lock_background" in self.item_details:
-                item.lockArt()
+                self.library.query(item.lockArt)
             if "item_lock_poster" in self.item_details:
-                item.lockPoster()
+                self.library.query(item.lockPoster)
             if "item_lock_title" in self.item_details:
-                item.edit(**{"title.locked": 1})
+                self.library.edit_query(item, {"title.locked": 1})
             if "item_refresh" in self.item_details:
-                item.refresh()
+                self.library.query(item.refresh)
 
         if self.library.Radarr and tmdb_paths:
             if "item_radarr_tag" in self.item_details:
