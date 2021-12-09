@@ -100,7 +100,9 @@ class Config:
                 changes = []
                 def hooks(attr):
                     if attr in temp:
-                        changes.extend([w for w in util.get_list(temp.pop(attr), split=False) if w not in changes])
+                        items = util.get_list(temp.pop(attr), split=False)
+                        if items:
+                            changes.extend([w for w in items if w not in changes])
                 hooks("collection_creation")
                 hooks("collection_addition")
                 hooks("collection_removal")
