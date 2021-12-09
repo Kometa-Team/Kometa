@@ -1945,9 +1945,13 @@ class CollectionBuilder:
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
             if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
-                tmdb_paths.append((self.library.movie_rating_key_map[item.ratingKey], f"{path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)}/"))
+                path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
+                path = path[:-1] if path.endswith(('/', '\\')) else path
+                tmdb_paths.append((self.library.movie_rating_key_map[item.ratingKey], path))
             if self.library.Sonarr and item.ratingKey in self.library.show_rating_key_map:
-                tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], f"{path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)}/"))
+                path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
+                path = path[:-1] if path.endswith(('/', '\\')) else path
+                tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], path))
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
                 if method_name in plex.item_advance_keys:
