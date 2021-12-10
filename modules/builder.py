@@ -974,6 +974,14 @@ class CollectionBuilder:
         elif method_name == "imdb_list":
             for imdb_dict in self.config.IMDb.validate_imdb_lists(method_data, self.language):
                 self.builders.append((method_name, imdb_dict))
+        elif method_name == "imdb_chart":
+            for value in util.get_list(method_data):
+                if value in imdb.movie_charts and not self.library.is_movie:
+                    raise Failed(f"Collection Error: chart: {value} does not work with show libraries")
+                elif value in imdb.show_charts and self.library.is_movie:
+                    raise Failed(f"Collection Error: chart: {value} does not work with movie libraries")
+                elif value in imdb.charts:
+                    self.builders.append((method_name, value))
 
     def _letterboxd(self, method_name, method_data):
         if method_name.startswith("letterboxd_list"):
