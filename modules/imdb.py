@@ -5,7 +5,20 @@ from urllib.parse import urlparse, parse_qs
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = ["imdb_list", "imdb_id"]
+builders = ["imdb_list", "imdb_id", "imdb_chart"]
+movie_charts = ["box_office", "popular_movies", "top_movies", "top_english", "top_indian", "lowest_rated"]
+show_charts = ["popular_shows", "top_shows"]
+charts = {
+    "box_office": "Box Office",
+    "popular_movies": "Most Popular Movies",
+    "popular_shows": "Most Popular TV Shows",
+    "top_movies": "Top 250 Movies",
+    "top_shows": "Top 250 TV Shows",
+    "top_english": "Top Rated English Movies",
+    "top_indian": "Top Rated Indian Movies",
+    "lowest_rated": "Lowest Rated Movies"
+}
+
 base_url = "https://www.imdb.com"
 urls = {
     "lists": f"{base_url}/list/ls",
@@ -96,6 +109,27 @@ class IMDb:
             return imdb_ids
         raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
+    def _ids_from_chart(self, chart):
+        if chart == "box_office":
+            url = "chart/boxoffice"
+        elif chart == "popular_movies":
+            url = "chart/moviemeter"
+        elif chart == "popular_shows":
+            url = "chart/tvmeter"
+        elif chart == "top_movies":
+            url = "chart/top"
+        elif chart == "top_shows":
+            url = "chart/toptv"
+        elif chart == "top_english":
+            url = "chart/top-english-movies"
+        elif chart == "top_indian":
+            url = "india/top-rated-indian-movies"
+        elif chart == "lowest_rated":
+            url = "chart/bottom"
+        else:
+            raise Failed(f"IMDb Error: chart: {chart} not ")
+        return self.config.get_html(f"https://www.imdb.com/{url}").xpath("//div[@class='wlb_ribbon']/@data-tconst")
+
     def get_imdb_ids(self, method, data, language):
         if method == "imdb_id":
             logger.info(f"Processing IMDb ID: {data}")
@@ -104,5 +138,8 @@ class IMDb:
             status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
             logger.info(f"Processing IMDb List: {status}{data['url']}")
             return [(i, "imdb") for i in self._ids_from_url(data["url"], language, data["limit"])]
+        elif method == "imdb_chart":
+            logger.info(f"Processing IMDb Chart: {charts[data]}")
+            return [(_i, "imdb") for _i in self._ids_from_chart(data)]
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
