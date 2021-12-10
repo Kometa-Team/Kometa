@@ -309,6 +309,9 @@ def is_number_filter(value, modifier, data):
             or (modifier == ".lt" and value >= data) \
             or (modifier == ".lte" and value > data)
 
+def is_boolean_filter(value, data):
+    return (data and not value) or (not data and value)
+
 def is_string_filter(values, modifier, data):
     jailbreak = False
     for value in values:
