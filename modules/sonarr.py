@@ -84,8 +84,10 @@ class Sonarr:
         arr_ids = {}
         for series in self.api.all_series():
             if series.path:
-                arr_paths[series.path] = series.tvdbId
+                arr_paths[series.path[:-1] if series.path.endswith(("/", "\\")) else series.path] = series.tvdbId
             arr_paths[series.tvdbId] = series
+        logger.debug(arr_paths)
+        logger.debug(arr_ids)
 
         added = []
         exists = []
