@@ -154,7 +154,7 @@ smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show
 custom_sort_builders = [
     "plex_search", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
-    "tvdb_list", "imdb_list", "stevenlu_popular", "anidb_popular",
+    "tvdb_list", "imdb_chart", "imdb_list", "stevenlu_popular", "anidb_popular",
     "trakt_list", "trakt_trending", "trakt_popular", "trakt_boxoffice",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
     "flixpatrol_url", "flixpatrol_demographics", "flixpatrol_popular", "flixpatrol_top",
