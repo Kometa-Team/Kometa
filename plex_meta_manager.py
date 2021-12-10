@@ -697,7 +697,7 @@ def run_collection(config, library, metadata, requested_collections):
                     stats["sonarr"] += sonarr_add
 
             run_item_details = True
-            if builder.build_collection and builder.builders:
+            if builder.build_collection and (builder.builders or builder.smart_url):
                 try:
                     builder.load_collection()
                     if builder.created:
