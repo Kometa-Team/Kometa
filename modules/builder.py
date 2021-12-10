@@ -982,6 +982,8 @@ class CollectionBuilder:
                     raise Failed(f"Collection Error: chart: {value} does not work with movie libraries")
                 elif value in imdb.charts:
                     self.builders.append((method_name, value))
+                else:
+                    raise Failed(f"Collection Error: chart: {value} is invalid options are {[i for i in imdb.charts]}")
 
     def _letterboxd(self, method_name, method_data):
         if method_name.startswith("letterboxd_list"):
