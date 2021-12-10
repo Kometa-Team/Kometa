@@ -58,8 +58,10 @@ class Radarr:
         arr_ids = {}
         for movie in self.api.all_movies():
             if movie.path:
-                arr_paths[movie.path] = movie.tmdbId
+                arr_paths[movie.path[:-1] if movie.path.endswith(("/", "\\")) else movie.path] = movie.tmdbId
             arr_ids[movie.tmdbId] = movie
+        logger.debug(arr_paths)
+        logger.debug(arr_ids)
 
         added = []
         exists = []

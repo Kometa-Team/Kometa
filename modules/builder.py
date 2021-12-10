@@ -66,7 +66,7 @@ modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
                letterboxd.builders + mal.builders + plex.builders + stevenlu.builders + tautulli.builders + \
                tmdb.builders + trakt.builders + tvdb.builders
-show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level"]
+show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level", "item_tmdb_season_titles"]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
@@ -91,7 +91,7 @@ details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "collection_change
            "collection_level", "collection_minimum", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
-item_bool_details = ["item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
+item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
 item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
@@ -99,6 +99,11 @@ sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
+parts_collection_valid = [
+     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "collection_changes_webhooks"
+     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"
+] + summary_details + poster_details + background_details + string_details
 all_filters = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
@@ -160,10 +165,6 @@ custom_sort_builders = [
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
-parts_collection_valid = [
-     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library",
-     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released"
- ] + summary_details + poster_details + background_details + string_details
 
 class CollectionBuilder:
     def __init__(self, config, library, metadata, name, no_missing, data):
@@ -213,6 +214,7 @@ class CollectionBuilder:
         self.current_year = self.current_time.year
         self.exists = False
         self.created = False
+        self.deleted = False
 
         methods = {m.lower(): m for m in self.data}
 
@@ -416,11 +418,19 @@ class CollectionBuilder:
                             if not match:
                                 logger.error(f"Collection Error: range schedule attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
                                 continue
-                            month_start = int(match.group(1))
-                            day_start = int(match.group(2))
-                            month_end = int(match.group(3))
-                            day_end = int(match.group(4))
-                            check = datetime.strptime(f"{self.current_time.month}/{self.current_time.day}", "%m/%d")
+                            def check_day(_m, _d):
+                                if _m in [1, 3, 5, 7, 8, 10, 12] and _d > 31:
+                                    return _m, 31
+                                elif _m in [4, 6, 9, 11] and _d > 30:
+                                    return _m, 30
+                                elif _m == 2 and _d > 28:
+                                    return _m, 28
+                                else:
+                                    return _m, _d
+                            month_start, day_start = check_day(int(match.group(1)), int(match.group(2)))
+                            month_end, day_end = check_day(int(match.group(3)), int(match.group(4)))
+                            month_check, day_check = check_day(self.current_time.month, self.current_time.day)
+                            check = datetime.strptime(f"{month_check}/{day_check}", "%m/%d")
                             start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
                             end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
                             self.schedule += f"\nScheduled between {util.pretty_months[month_start]} {util.make_ordinal(day_start)} and {util.pretty_months[month_end]} {util.make_ordinal(day_end)}"
@@ -436,6 +446,7 @@ class CollectionBuilder:
                         try:
                             self.obj = self.library.get_collection(self.name)
                             self.delete_collection()
+                            self.deleted = True
                             suffix = f" and was deleted"
                         except Failed:
                             suffix = f" and could not be found to delete"
@@ -496,8 +507,10 @@ class CollectionBuilder:
         if "collection_level" in methods:
             logger.debug("")
             logger.debug("Validating Method: collection_level")
-            if self.data[methods["collection_level"]] is None:
-                raise Failed(f"Collection Warning: collection_level attribute is blank")
+            if self.library.is_movie:
+                raise Failed(f"Collection Error: collection_level attribute only works for show libraries")
+            elif self.data[methods["collection_level"]] is None:
+                raise Failed(f"Collection Error: collection_level attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['collection_level']]}")
                 if self.data[methods["collection_level"]].lower() in plex.collection_level_options:
@@ -1932,9 +1945,13 @@ class CollectionBuilder:
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
             if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
-                tmdb_paths.append((self.library.movie_rating_key_map[item.ratingKey], f"{path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)}/"))
+                path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
+                path = path[:-1] if path.endswith(('/', '\\')) else path
+                tmdb_paths.append((self.library.movie_rating_key_map[item.ratingKey], path))
             if self.library.Sonarr and item.ratingKey in self.library.show_rating_key_map:
-                tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], f"{path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)}/"))
+                path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
+                path = path[:-1] if path.endswith(('/', '\\')) else path
+                tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], path))
             advance_edits = {}
             for method_name, method_data in self.item_details.items():
                 if method_name in plex.item_advance_keys:
@@ -1943,16 +1960,26 @@ class CollectionBuilder:
                         advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
 
+            if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
+                try:
+                    tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey])
+                    names = {str(s.season_number): s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
+                    for season in self.library.query(item.seasons):
+                        if str(season.index) in names:
+                            self.library.edit_query(season, {"title.locked": 1, "title.value": names[str(season.index)]})
+                except Failed as e:
+                    logger.error(e)
+
             # Locking should come before refreshing since refreshing can change metadata (i.e. if specified to both lock
             # background/poster and also refreshing, assume that the current background/poster should be kept)
             if "item_lock_background" in self.item_details:
-                item.lockArt()
+                self.library.query(item.lockArt)
             if "item_lock_poster" in self.item_details:
-                item.lockPoster()
+                self.library.query(item.lockPoster)
             if "item_lock_title" in self.item_details:
-                item.edit(**{"title.locked": 1})
+                self.library.edit_query(item, {"title.locked": 1})
             if "item_refresh" in self.item_details:
-                item.refresh()
+                self.library.query(item.refresh)
 
         if self.library.Radarr and tmdb_paths:
             if "item_radarr_tag" in self.item_details:
@@ -2172,6 +2199,7 @@ class CollectionBuilder:
                     self.details["collection_changes_webhooks"],
                     self.obj,
                     created=self.created,
+                    deleted=self.deleted,
                     additions=self.notification_additions,
                     removals=self.notification_removals
                 )

@@ -410,9 +410,13 @@ def library_operations(config, library):
 
             path = os.path.dirname(str(item.locations[0])) if library.is_movie else str(item.locations[0])
             if library.Radarr and library.radarr_add_all and tmdb_id:
-                radarr_adds.append((tmdb_id, f"{path.replace(library.Radarr.plex_path, library.Radarr.radarr_path)}/"))
+                path = path.replace(library.Radarr.plex_path, library.Radarr.radarr_path)
+                path = path[:-1] if path.endswith(('/', '\\')) else path
+                radarr_adds.append((tmdb_id, path))
             if library.Sonarr and library.sonarr_add_all and tvdb_id:
-                sonarr_adds.append((tvdb_id, f"{path.replace(library.Sonarr.plex_path, library.Sonarr.sonarr_path)}/"))
+                path = path.replace(library.Sonarr.plex_path, library.Sonarr.sonarr_path)
+                path = path[:-1] if path.endswith(('/', '\\')) else path
+                sonarr_adds.append((tvdb_id, path))
 
             tmdb_item = None
             if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
@@ -679,7 +683,7 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
                     if builder.details["delete_below_minimum"] and builder.obj:
                         builder.delete_collection()
-                        stats["deleted"] += 1
+                        builder.deleted = True
                         logger.info("")
                         logger.info(f"Collection {builder.obj.title} deleted")
 
@@ -710,6 +714,9 @@ def run_collection(config, library, metadata, requested_collections):
                     if builder.custom_sort:
                         library.run_sort.append(builder)
                         # builder.sort_collection()
+
+            if builder.deleted:
+                stats["deleted"] += 1
 
             if builder.server_preroll is not None:
                 library.set_server_preroll(builder.server_preroll)
