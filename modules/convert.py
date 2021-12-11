@@ -224,6 +224,16 @@ class Convert:
             elif item_type == "imdb":                       imdb_id.append(check_id)
             elif item_type == "thetvdb":                    tvdb_id.append(int(check_id))
             elif item_type == "themoviedb":                 tmdb_id.append(int(check_id))
+            elif item_type in ["xbmcnfo", "xbmcnfotv"]:
+                if len(check_id) > 10:
+                    raise Failed(f"XMBC NFO Local ID: {check_id}")
+                try:
+                    if item_type == "xbmcnfo":
+                        tmdb_id.append(int(check_id))
+                    else:
+                        tvdb_id.append(int(check_id))
+                except ValueError:
+                    imdb_id.append(check_id)
             elif item_type == "hama":
                 if check_id.startswith("tvdb"):
                     tvdb_id.append(int(re.search("-(.*)", check_id).group(1)))
