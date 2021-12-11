@@ -251,14 +251,23 @@ class Library(ABC):
     def find_collection_assets(self, item, name=None, create=False):
         if name is None:
             name = item.title
+        found_folder = False
+        poster = None
+        background = None
         for ad in self.asset_directory:
-            poster = None
-            background = None
+            item_dir = None
             if self.asset_folders:
-                if not os.path.isdir(os.path.join(ad, name)):
+                if os.path.isdir(os.path.join(ad, name)):
+                    item_dir = os.path.join(ad, name)
+                else:
+                    matches = util.glob_filter(os.path.join(ad, "*", name))
+                    if len(matches) > 0:
+                        item_dir = os.path.abspath(matches[0])
+                if item_dir is None:
                     continue
-                poster_filter = os.path.join(ad, name, "poster.*")
-                background_filter = os.path.join(ad, name, "background.*")
+                found_folder = True
+                poster_filter = os.path.join(item_dir, "poster.*")
+                background_filter = os.path.join(item_dir, "background.*")
             else:
                 poster_filter = os.path.join(ad, f"{name}.*")
                 background_filter = os.path.join(ad, f"{name}_background.*")
@@ -270,7 +279,7 @@ class Library(ABC):
                 background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
             if poster or background:
                 return poster, background
-        if create and self.asset_folders and not os.path.isdir(os.path.join(self.asset_directory[0], name)):
+        if create and self.asset_folders and not found_folder:
             os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
             logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
         return None, None
