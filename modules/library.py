@@ -260,7 +260,7 @@ class Library(ABC):
                 if os.path.isdir(os.path.join(ad, name)):
                     item_dir = os.path.join(ad, name)
                 else:
-                    matches = util.glob_filter(os.path.join(ad, "*", name))
+                    matches = util.glob_filter(os.path.join(ad, "**", name))
                     if len(matches) > 0:
                         item_dir = os.path.abspath(matches[0])
                 if item_dir is None:

@@ -279,7 +279,7 @@ def time_window(time_window):
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
-    return glob.glob(filter_in)
+    return glob.glob(filter_in, recursive=True)
 
 def is_date_filter(value, modifier, data, final, current_time):
     if value is None:
