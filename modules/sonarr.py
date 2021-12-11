@@ -74,7 +74,7 @@ class Sonarr:
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
         language_profile = options["language"] if "language" in options else self.language_profile
         language_profile = language_profile if self.api._raw.v3 else 1
-        series = options["series"] if "series" in options else self.series_type
+        series_type = options["series"] if "series" in options else self.series_type
         season = options["season"] if "season" in options else self.season_folder
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
@@ -127,7 +127,7 @@ class Sonarr:
             if len(shows) == 100 or len(tvdb_ids) == i:
                 try:
                     _a, _e, _i = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor,
-                                                              season, search, cutoff_search, series, tags, per_request=100)
+                                                              season, search, cutoff_search, series_type, tags, per_request=100)
                     added.extend(_a)
                     exists.extend(_e)
                     invalid.extend(_i)
