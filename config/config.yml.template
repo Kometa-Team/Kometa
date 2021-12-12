@@ -19,19 +19,22 @@ settings:                                       # Can be individually specified 
   asset_directory: config/assets
   asset_folders: true
   create_asset_folders: false
+  show_missing_season_assets: false
   sync_mode: append
+  collection_minimum: 1
+  delete_below_minimum: true
+  delete_not_scheduled: false
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
   show_unmanaged: true
   show_filtered: false
   show_missing: true
   show_missing_assets: true
   save_missing: true
-  run_again_delay: 2
-  missing_only_released: false
-  only_filter_missing: false
-  collection_minimum: 1
-  delete_below_minimum: true
-  delete_not_scheduled: false
   tvdb_language: eng
+  ignore_ids:
+  ignore_imdb_ids:
 webhooks:                                       # Can be individually specified per library as well
   error:
   run_start:

@@ -50,15 +50,22 @@ country_codes = [
 class AniList:
     def __init__(self, config):
         self.config = config
-        self.options = {
+        self._options = None
+
+    @property
+    def options(self):
+        if self._options:
+            return self._options
+        self._options = {
             "Tag": {}, "Tag Category": {},
             "Genre": {g.lower().replace(" ", "-"): g for g in self._request(genre_query, {})["data"]["GenreCollection"]},
             "Country": {c: c.upper() for c in country_codes},
             "Season": media_season, "Format": media_format, "Status": media_status, "Source": media_source,
         }
         for media_tag in self._request(tag_query, {})["data"]["MediaTagCollection"]:
-            self.options["Tag"][media_tag["name"].lower().replace(" ", "-")] = media_tag["name"]
-            self.options["Tag Category"][media_tag["category"].lower().replace(" ", "-")] = media_tag["category"]
+            self._options["Tag"][media_tag["name"].lower().replace(" ", "-")] = media_tag["name"]
+            self._options["Tag Category"][media_tag["category"].lower().replace(" ", "-")] = media_tag["category"]
+        return self._options
 
     def _request(self, query, variables, level=1):
         if self.config.trace_mode:
