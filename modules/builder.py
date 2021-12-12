@@ -351,7 +351,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
             self.details["delete_not_scheduled"] = util.parse("delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
 
-        if "schedule" in methods:
+        if "schedule" in methods and not config.requested_collections:
             logger.debug("")
             logger.debug("Validating Method: schedule")
             if not self.data[methods["schedule"]]:
@@ -366,6 +366,8 @@ class CollectionBuilder:
                     run_time = str(schedule).lower()
                     if run_time.startswith(("day", "daily")):
                         skip_collection = False
+                    elif run_time == "never":
+                        self.schedule += f"\nNever scheduled to run"
                     elif run_time.startswith(("hour", "week", "month", "year", "range")):
                         match = re.search("\\(([^)]+)\\)", run_time)
                         if not match:
