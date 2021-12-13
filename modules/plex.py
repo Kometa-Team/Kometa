@@ -383,7 +383,7 @@ class Plex(Library):
             return choices
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
-            raise Failed(f"Collection Error: plex search attribute: {search_name} not supported")
+            raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_labels(self):

@@ -31,7 +31,7 @@ logger = logging.getLogger("Plex Meta Manager")
 sync_modes = {"append": "Only Add Items to the Collection", "sync": "Add & Remove Items from the Collection"}
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
 
-class Config:
+class ConfigFile:
     def __init__(self, default_dir, attrs):
         logger.info("Locating config...")
         config_file = attrs["config_file"]

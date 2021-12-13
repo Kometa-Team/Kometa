@@ -1,7 +1,7 @@
 import logging, os, requests, shutil, time
 from abc import ABC, abstractmethod
 from modules import util
-from modules.meta import Metadata
+from modules.meta import MetadataFile
 from modules.util import Failed, ImageData
 from PIL import Image
 from ruamel import yaml
@@ -92,7 +92,7 @@ class Library(ABC):
                 metadata.append((file_type, metadata_file))
         for file_type, metadata_file in metadata:
             try:
-                meta_obj = Metadata(config, self, file_type, metadata_file)
+                meta_obj = MetadataFile(config, self, file_type, metadata_file)
                 if meta_obj.collections:
                     self.collections.extend([c for c in meta_obj.collections])
                 if meta_obj.metadata:

@@ -167,13 +167,14 @@ custom_sort_builders = [
 ]
 
 class CollectionBuilder:
-    def __init__(self, config, library, metadata, name, no_missing, data):
+    def __init__(self, config, library, metadata, name, no_missing, data, playlist=False):
         self.config = config
         self.library = library
         self.metadata = metadata
         self.mapping_name = name
         self.no_missing = no_missing
         self.data = data
+        self.playlist = playlist
         self.language = self.library.Plex.language
         self.details = {
             "show_filtered": self.library.show_filtered,
@@ -215,16 +216,18 @@ class CollectionBuilder:
         self.exists = False
         self.created = False
         self.deleted = False
+        self.type = "playlist" if self.playlist else "collection"
+        self.Type = self.type.capitalize()
 
         methods = {m.lower(): m for m in self.data}
 
-        if "collection_name" in methods:
+        if f"{self.type}_name" in methods:
             logger.debug("")
-            logger.debug("Validating Method: collection_name")
-            if not self.data[methods["collection_name"]]:
-                raise Failed("Collection Error: collection_name attribute is blank")
-            logger.debug(f"Value: {self.data[methods['collection_name']]}")
-            self.name = self.data[methods["collection_name"]]
+            logger.debug(f"Validating Method: {self.type}_name")
+            if not self.data[methods[f"{self.type}_name"]]:
+                raise Failed(f"{self.Type} Error: {self.type}_name attribute is blank")
+            logger.debug(f"Value: {self.data[methods['{}_name'.format(self.type)]]}")
+            self.name = self.data[methods[f"{self.type}_name"]]
         else:
             self.name = self.mapping_name
 
@@ -232,26 +235,26 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: template")
             if not self.metadata.templates:
-                raise Failed("Collection Error: No templates found")
+                raise Failed(f"{self.Type} Error: No templates found")
             elif not self.data[methods["template"]]:
-                raise Failed("Collection Error: template attribute is blank")
+                raise Failed(f"{self.Type} Error: template attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['template']]}")
                 for variables in util.get_list(self.data[methods["template"]], split=False):
                     if not isinstance(variables, dict):
-                        raise Failed("Collection Error: template attribute is not a dictionary")
+                        raise Failed(f"{self.Type} Error: template attribute is not a dictionary")
                     elif "name" not in variables:
-                        raise Failed("Collection Error: template sub-attribute name is required")
+                        raise Failed(f"{self.Type} Error: template sub-attribute name is required")
                     elif not variables["name"]:
-                        raise Failed("Collection Error: template sub-attribute name is blank")
+                        raise Failed(f"{self.Type} Error: template sub-attribute name is blank")
                     elif variables["name"] not in self.metadata.templates:
-                        raise Failed(f"Collection Error: template {variables['name']} not found")
+                        raise Failed(f"{self.Type} Error: template {variables['name']} not found")
                     elif not isinstance(self.metadata.templates[variables["name"]], dict):
-                        raise Failed(f"Collection Error: template {variables['name']} is not a dictionary")
+                        raise Failed(f"{self.Type} Error: template {variables['name']} is not a dictionary")
                     else:
                         for tm in variables:
                             if not variables[tm]:
-                                raise Failed(f"Collection Error: template sub-attribute {tm} is blank")
+                                raise Failed(f"{self.Type} Error: template sub-attribute {tm} is blank")
                         if "collection_name" not in variables:
                             variables["collection_name"] = str(self.name)
 
@@ -266,11 +269,11 @@ class CollectionBuilder:
                                         if template["default"][dv]:
                                             default[dv] = template["default"][dv]
                                         else:
-                                            raise Failed(f"Collection Error: template default sub-attribute {dv} is blank")
+                                            raise Failed(f"{self.Type} Error: template default sub-attribute {dv} is blank")
                                 else:
-                                    raise Failed("Collection Error: template sub-attribute default is not a dictionary")
+                                    raise Failed(f"{self.Type} Error: template sub-attribute default is not a dictionary")
                             else:
-                                raise Failed("Collection Error: template sub-attribute default is blank")
+                                raise Failed(f"{self.Type} Error: template sub-attribute default is blank")
 
                         optional = []
                         if "optional" in template:
@@ -281,14 +284,14 @@ class CollectionBuilder:
                                     else:
                                         logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
                             else:
-                                raise Failed("Collection Error: template sub-attribute optional is blank")
+                                raise Failed(f"{self.Type} Error: template sub-attribute optional is blank")
 
                         if "move_collection_prefix" in template:
                             if template["move_collection_prefix"]:
                                 for op in util.get_list(template["move_collection_prefix"]):
                                     variables["collection_name"] = variables["collection_name"].replace(f"{str(op).strip()} ", "") + f", {str(op).strip()}"
                             else:
-                                raise Failed("Collection Error: template sub-attribute move_collection_prefix is blank")
+                                raise Failed(f"{self.Type} Error: template sub-attribute move_collection_prefix is blank")
 
                         def check_data(_data):
                             if isinstance(_data, dict):
@@ -349,13 +352,13 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: delete_not_scheduled")
             logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
-            self.details["delete_not_scheduled"] = util.parse("delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
+            self.details["delete_not_scheduled"] = self._parse("delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
 
         if "schedule" in methods and not config.requested_collections:
             logger.debug("")
             logger.debug("Validating Method: schedule")
             if not self.data[methods["schedule"]]:
-                raise Failed("Collection Error: schedule attribute is blank")
+                raise Failed(f"{self.Type} Error: schedule attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['schedule']]}")
                 skip_collection = True
@@ -371,7 +374,7 @@ class CollectionBuilder:
                     elif run_time.startswith(("hour", "week", "month", "year", "range")):
                         match = re.search("\\(([^)]+)\\)", run_time)
                         if not match:
-                            logger.error(f"Collection Error: failed to parse schedule: {schedule}")
+                            logger.error(f"{self.Type} Error: failed to parse schedule: {schedule}")
                             continue
                         param = match.group(1)
                         if run_time.startswith("hour"):
@@ -383,10 +386,10 @@ class CollectionBuilder:
                                 else:
                                     raise ValueError
                             except ValueError:
-                                logger.error(f"Collection Error: hourly schedule attribute {schedule} invalid must be an integer between 0 and 23")
+                                logger.error(f"{self.Type} Error: hourly schedule attribute {schedule} invalid must be an integer between 0 and 23")
                         elif run_time.startswith("week"):
                             if param.lower() not in util.days_alias:
-                                logger.error(f"Collection Error: weekly schedule attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
+                                logger.error(f"{self.Type} Error: weekly schedule attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
                                 continue
                             weekday = util.days_alias[param.lower()]
                             self.schedule += f"\nScheduled weekly on {util.pretty_days[weekday]}"
@@ -401,7 +404,7 @@ class CollectionBuilder:
                                 else:
                                     raise ValueError
                             except ValueError:
-                                logger.error(f"Collection Error: monthly schedule attribute {schedule} invalid must be an integer between 1 and 31")
+                                logger.error(f"{self.Type} Error: monthly schedule attribute {schedule} invalid must be an integer between 1 and 31")
                         elif run_time.startswith("year"):
                             try:
                                 if "/" in param:
@@ -414,11 +417,11 @@ class CollectionBuilder:
                                 else:
                                     raise ValueError
                             except ValueError:
-                                logger.error(f"Collection Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+                                logger.error(f"{self.Type} Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
                         elif run_time.startswith("range"):
                             match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
                             if not match:
-                                logger.error(f"Collection Error: range schedule attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
+                                logger.error(f"{self.Type} Error: range schedule attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
                                 continue
                             def check_day(_m, _d):
                                 if _m in [1, 3, 5, 7, 8, 10, 12] and _d > 31:
@@ -439,7 +442,7 @@ class CollectionBuilder:
                             if start <= check <= end if start < end else check <= end or check >= start:
                                 skip_collection = False
                     else:
-                        logger.error(f"Collection Error: schedule attribute {schedule} invalid")
+                        logger.error(f"{self.Type} Error: schedule attribute {schedule} invalid")
                 if len(self.schedule) == 0:
                     skip_collection = False
                 if skip_collection:
@@ -461,21 +464,21 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: validate_builders")
             logger.debug(f"Value: {data[methods['validate_builders']]}")
-            self.validate_builders = util.parse("validate_builders", self.data, datatype="bool", methods=methods, default=True)
+            self.validate_builders = self._parse("validate_builders", self.data, datatype="bool", methods=methods, default=True)
 
         self.run_again = False
         if "run_again" in methods:
             logger.debug("")
             logger.debug("Validating Method: run_again")
             logger.debug(f"Value: {data[methods['run_again']]}")
-            self.run_again = util.parse("run_again", self.data, datatype="bool", methods=methods, default=False)
+            self.run_again = self._parse("run_again", self.data, datatype="bool", methods=methods, default=False)
 
         self.build_collection = True
         if "build_collection" in methods:
             logger.debug("")
             logger.debug("Validating Method: build_collection")
             logger.debug(f"Value: {data[methods['build_collection']]}")
-            self.build_collection = util.parse("build_collection", self.data, datatype="bool", methods=methods, default=True)
+            self.build_collection = self._parse("build_collection", self.data, datatype="bool", methods=methods, default=True)
 
         self.sync = self.library.sync_mode == "sync"
         if "sync_mode" in methods:
@@ -503,22 +506,22 @@ class CollectionBuilder:
                     if self.data[methods["collection_order"]].lower() == "custom" and self.build_collection:
                         self.custom_sort = True
                 else:
-                    raise Failed(f"Collection Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)")
+                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)")
 
         self.collection_level = "movie" if self.library.is_movie else "show"
         if "collection_level" in methods:
             logger.debug("")
             logger.debug("Validating Method: collection_level")
             if self.library.is_movie:
-                raise Failed(f"Collection Error: collection_level attribute only works for show libraries")
+                raise Failed(f"{self.Type} Error: collection_level attribute only works for show libraries")
             elif self.data[methods["collection_level"]] is None:
-                raise Failed(f"Collection Error: collection_level attribute is blank")
+                raise Failed(f"{self.Type} Error: collection_level attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['collection_level']]}")
                 if self.data[methods["collection_level"]].lower() in plex.collection_level_options:
                     self.collection_level = self.data[methods["collection_level"]].lower()
                 else:
-                    raise Failed(f"Collection Error: {self.data[methods['collection_level']]} collection_level invalid\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)")
+                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)")
         self.parts_collection = self.collection_level in ["season", "episode"]
         self.media_type = self.collection_level.capitalize()
 
@@ -526,7 +529,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
             if not self.data[methods["tmdb_person"]]:
-                raise Failed("Collection Error: tmdb_person attribute is blank")
+                raise Failed(f"{self.Type} Error: tmdb_person attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['tmdb_person']]}")
                 valid_names = []
@@ -540,7 +543,7 @@ class CollectionBuilder:
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
-                    raise Failed(f"Collection Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
+                    raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
 
         self.smart_sort = "random"
         self.smart_label_collection = False
@@ -549,14 +552,14 @@ class CollectionBuilder:
             logger.debug("Validating Method: smart_label")
             self.smart_label_collection = True
             if not self.data[methods["smart_label"]]:
-                logger.warning("Collection Error: smart_label attribute is blank defaulting to random")
+                logger.warning(f"{self.Type} Error: smart_label attribute is blank defaulting to random")
             else:
                 logger.debug(f"Value: {self.data[methods['smart_label']]}")
                 if (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_sorts) \
                         or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_sorts):
                     self.smart_sort = str(self.data[methods["smart_label"]]).lower()
                 else:
-                    logger.warning(f"Collection Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
+                    logger.warning(f"{self.Type} Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
 
         self.smart_url = None
         self.smart_type_key = None
@@ -565,20 +568,20 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: smart_url")
             if not self.data[methods["smart_url"]]:
-                raise Failed("Collection Error: smart_url attribute is blank")
+                raise Failed(f"{self.Type} Error: smart_url attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['smart_url']]}")
                 try:
                     self.smart_url, self.smart_type_key = self.library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
                 except ValueError:
-                    raise Failed("Collection Error: smart_url is incorrectly formatted")
+                    raise Failed(f"{self.Type} Error: smart_url is incorrectly formatted")
 
         if "smart_filter" in methods:
             self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], smart=True)
 
         def cant_interact(attr1, attr2, fail=False):
             if getattr(self, attr1) and getattr(self, attr2):
-                message = f"Collection Error: {attr1} & {attr2} attributes cannot go together"
+                message = f"{self.Type} Error: {attr1} & {attr2} attributes cannot go together"
                 if fail:
                     raise Failed(message)
                 else:
@@ -603,21 +606,21 @@ class CollectionBuilder:
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
-                if method_data is None and method_name in all_builders + plex.searches:     raise Failed(f"Collection Error: {method_final} attribute is blank")
+                if method_data is None and method_name in all_builders + plex.searches:     raise Failed(f"{self.Type} Error: {method_final} attribute is blank")
                 elif method_data is None and method_final not in none_details:              logger.warning(f"Collection Warning: {method_final} attribute is blank")
-                elif not self.config.Trakt and "trakt" in method_name:                      raise Failed(f"Collection Error: {method_final} requires Trakt to be configured")
-                elif not self.library.Radarr and "radarr" in method_name:                   raise Failed(f"Collection Error: {method_final} requires Radarr to be configured")
-                elif not self.library.Sonarr and "sonarr" in method_name:                   raise Failed(f"Collection Error: {method_final} requires Sonarr to be configured")
-                elif not self.library.Tautulli and "tautulli" in method_name:               raise Failed(f"Collection Error: {method_final} requires Tautulli to be configured")
-                elif not self.config.MyAnimeList and "mal" in method_name:                  raise Failed(f"Collection Error: {method_final} requires MyAnimeList to be configured")
-                elif self.library.is_movie and method_name in show_only_builders:           raise Failed(f"Collection Error: {method_final} attribute only works for show libraries")
-                elif self.library.is_show and method_name in movie_only_builders:           raise Failed(f"Collection Error: {method_final} attribute only works for movie libraries")
-                elif self.library.is_show and method_name in plex.movie_only_searches:      raise Failed(f"Collection Error: {method_final} plex search only works for movie libraries")
-                elif self.library.is_movie and method_name in plex.show_only_searches:      raise Failed(f"Collection Error: {method_final} plex search only works for show libraries")
-                elif self.parts_collection and method_name not in parts_collection_valid:   raise Failed(f"Collection Error: {method_final} attribute does not work with Collection Level: {self.collection_level.capitalize()}")
-                elif self.smart and method_name in smart_invalid:                           raise Failed(f"Collection Error: {method_final} attribute only works with normal collections")
-                elif self.collectionless and method_name not in collectionless_details:     raise Failed(f"Collection Error: {method_final} attribute does not work for Collectionless collection")
-                elif self.smart_url and method_name in all_builders + smart_url_invalid:    raise Failed(f"Collection Error: {method_final} builder not allowed when using smart_filter")
+                elif not self.config.Trakt and "trakt" in method_name:                      raise Failed(f"{self.Type} Error: {method_final} requires Trakt to be configured")
+                elif not self.library.Radarr and "radarr" in method_name:                   raise Failed(f"{self.Type} Error: {method_final} requires Radarr to be configured")
+                elif not self.library.Sonarr and "sonarr" in method_name:                   raise Failed(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
+                elif not self.library.Tautulli and "tautulli" in method_name:               raise Failed(f"{self.Type} Error: {method_final} requires Tautulli to be configured")
+                elif not self.config.MyAnimeList and "mal" in method_name:                  raise Failed(f"{self.Type} Error: {method_final} requires MyAnimeList to be configured")
+                elif self.library.is_movie and method_name in show_only_builders:           raise Failed(f"{self.Type} Error: {method_final} attribute only works for show libraries")
+                elif self.library.is_show and method_name in movie_only_builders:           raise Failed(f"{self.Type} Error: {method_final} attribute only works for movie libraries")
+                elif self.library.is_show and method_name in plex.movie_only_searches:      raise Failed(f"{self.Type} Error: {method_final} plex search only works for movie libraries")
+                elif self.library.is_movie and method_name in plex.show_only_searches:      raise Failed(f"{self.Type} Error: {method_final} plex search only works for show libraries")
+                elif self.parts_collection and method_name not in parts_collection_valid:   raise Failed(f"{self.Type} Error: {method_final} attribute does not work with Collection Level: {self.collection_level.capitalize()}")
+                elif self.smart and method_name in smart_invalid:                           raise Failed(f"{self.Type} Error: {method_final} attribute only works with normal collections")
+                elif self.collectionless and method_name not in collectionless_details:     raise Failed(f"{self.Type} Error: {method_final} attribute does not work for Collectionless collection")
+                elif self.smart_url and method_name in all_builders + smart_url_invalid:    raise Failed(f"{self.Type} Error: {method_final} builder not allowed when using smart_filter")
                 elif method_name in summary_details:                                        self._summary(method_name, method_data)
                 elif method_name in poster_details:                                         self._poster(method_name, method_data)
                 elif method_name in background_details:                                     self._background(method_name, method_data)
@@ -639,7 +642,7 @@ class CollectionBuilder:
                 elif method_name in trakt.builders:                                         self._trakt(method_name, method_data)
                 elif method_name in tvdb.builders:                                          self._tvdb(method_name, method_data)
                 elif method_name == "filters":                                              self._filters(method_name, method_data)
-                else:                                                                       raise Failed(f"Collection Error: {method_final} attribute not supported")
+                else:                                                                       raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
             except Failed as e:
                 if self.validate_builders:
                     raise
@@ -647,10 +650,10 @@ class CollectionBuilder:
                     logger.error(e)
 
         if self.custom_sort and len(self.builders) > 1:
-            raise Failed("Collection Error: collection_order: custom can only be used with a single builder per collection")
+            raise Failed(f"{self.Type} Error: collection_order: custom can only be used with a single builder per collection")
 
         if self.custom_sort and self.builders[0][0] not in custom_sort_builders:
-            raise Failed(f"Collection Error: collection_order: custom cannot be used with {self.builders[0][0]}")
+            raise Failed(f"{self.Type} Error: collection_order: custom cannot be used with {self.builders[0][0]}")
 
         if "add" not in self.radarr_details:
             self.radarr_details["add"] = self.library.Radarr.add if self.library.Radarr else False
@@ -684,7 +687,7 @@ class CollectionBuilder:
                 self.obj = self.library.get_collection(self.name)
                 if (self.smart and not self.obj.smart) or (not self.smart and self.obj.smart):
                     logger.info("")
-                    logger.error(f"Collection Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
+                    logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
                     self.library.query(self.obj.delete)
                     self.obj = None
             except Failed:
@@ -702,6 +705,76 @@ class CollectionBuilder:
             self.run_again = False
         logger.info("")
         logger.info("Validation Successful")
+
+    def _parse(self, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None):
+        display = f"{parent + ' ' if parent else ''}{attribute} attribute"
+        if options is None and translation is not None:
+            options = [o for o in translation]
+        value = data[methods[attribute]] if methods and attribute in methods else data
+
+        if datatype == "list":
+            if value:
+                return [v for v in value if v] if isinstance(value, list) else [str(value)]
+            return []
+        elif datatype == "intlist":
+            if value:
+                try:
+                    return [int(v) for v in value if v] if isinstance(value, list) else [int(value)]
+                except ValueError:
+                    pass
+            return []
+        elif datatype == "dictlist":
+            final_list = []
+            for dict_data in util.get_list(value):
+                if isinstance(dict_data, dict):
+                    final_list.append((dict_data, {dm.lower(): dm for dm in dict_data}))
+                else:
+                    raise Failed(f"{self.Type} Error: {display} {dict_data} is not a dictionary")
+            return final_list
+        elif methods and attribute not in methods:
+            message = f"{display} not found"
+        elif value is None:
+            message = f"{display} is blank"
+        elif regex is not None:
+            regex_str, example = regex
+            if re.compile(regex_str).match(str(value)):
+                return str(value)
+            else:
+                message = f"{display}: {value} must match pattern {regex_str} e.g. {example}"
+        elif datatype == "bool":
+            if isinstance(value, bool):
+                return value
+            elif isinstance(value, int):
+                return value > 0
+            elif str(value).lower() in ["t", "true"]:
+                return True
+            elif str(value).lower() in ["f", "false"]:
+                return False
+            else:
+                message = f"{display} must be either true or false"
+        elif datatype in ["int", "float"]:
+            try:
+                value = int(str(value)) if datatype == "int" else float(str(value))
+                if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
+                    return value
+            except ValueError:
+                pass
+            pre = f"{display} {value} must be {'an integer' if datatype == 'int' else 'a number'}"
+            if maximum is None:
+                message = f"{pre} {minimum} or greater"
+            else:
+                message = f"{pre} between {minimum} and {maximum}"
+        elif (translation is not None and str(value).lower() not in translation) or \
+                (options is not None and translation is None and str(value).lower() not in options):
+            message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
+        else:
+            return translation[value] if translation is not None else value
+
+        if default is None:
+            raise Failed(f"{self.Type} Error: {message}")
+        else:
+            logger.warning(f"{self.Type} Warning: {message} using {default} as default")
+            return translation[default] if translation is not None else default
 
     def _summary(self, method_name, method_data):
         if method_name == "summary":
@@ -738,7 +811,7 @@ class CollectionBuilder:
             if os.path.exists(method_data):
                 self.posters[method_name] = os.path.abspath(method_data)
             else:
-                raise Failed(f"Collection Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
+                raise Failed(f"{self.Type} Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
 
     def _background(self, method_name, method_data):
         if method_name == "url_background":
@@ -752,65 +825,65 @@ class CollectionBuilder:
             if os.path.exists(method_data):
                 self.backgrounds[method_name] = os.path.abspath(method_data)
             else:
-                raise Failed(f"Collection Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
+                raise Failed(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
 
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "collection_mode":
             if str(method_data).lower() in plex.collection_mode_options:
                 self.details[method_name] = plex.collection_mode_options[str(method_data).lower()]
             else:
-                raise Failed(f"Collection Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
+                raise Failed(f"{self.Type} Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
         elif method_name == "collection_minimum":
-            self.minimum = util.parse(method_name, method_data, datatype="int", minimum=1)
+            self.minimum = self._parse(method_name, method_data, datatype="int", minimum=1)
         elif method_name == "server_preroll":
-            self.server_preroll = util.parse(method_name, method_data)
+            self.server_preroll = self._parse(method_name, method_data)
         elif method_name == "ignore_ids":
-            self.ignore_ids.extend(util.parse(method_name, method_data, datatype="intlist"))
+            self.ignore_ids.extend(self._parse(method_name, method_data, datatype="intlist"))
         elif method_name == "ignore_imdb_ids":
-            self.ignore_imdb_ids.extend(util.parse(method_name, method_data, datatype="list"))
+            self.ignore_imdb_ids.extend(self._parse(method_name, method_data, datatype="list"))
         elif method_name == "label":
             if "label" in methods and "label.sync" in methods:
-                raise Failed("Collection Error: Cannot use label and label.sync together")
+                raise Failed(f"{self.Type} Error: Cannot use label and label.sync together")
             if "label.remove" in methods and "label.sync" in methods:
-                raise Failed("Collection Error: Cannot use label.remove and label.sync together")
+                raise Failed(f"{self.Type} Error: Cannot use label.remove and label.sync together")
             if method_final == "label" and "label_sync_mode" in methods and self.data[methods["label_sync_mode"]] == "sync":
                 self.details["label.sync"] = util.get_list(method_data) if method_data else []
             else:
                 self.details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name == "collection_changes_webhooks":
-            self.details[method_name] = util.parse(method_name, method_data, datatype="list")
+            self.details[method_name] = self._parse(method_name, method_data, datatype="list")
         elif method_name in boolean_details:
             default = self.details[method_name] if method_name in self.details else None
-            self.details[method_name] = util.parse(method_name, method_data, datatype="bool", default=default)
+            self.details[method_name] = self._parse(method_name, method_data, datatype="bool", default=default)
         elif method_name in string_details:
             self.details[method_name] = str(method_data)
 
     def _item_details(self, method_name, method_data, method_mod, method_final, methods):
         if method_name == "item_label":
             if "item_label" in methods and "item_label.sync" in methods:
-                raise Failed(f"Collection Error: Cannot use item_label and item_label.sync together")
+                raise Failed(f"{self.Type} Error: Cannot use item_label and item_label.sync together")
             if "item_label.remove" in methods and "item_label.sync" in methods:
-                raise Failed(f"Collection Error: Cannot use item_label.remove and item_label.sync together")
+                raise Failed(f"{self.Type} Error: Cannot use item_label.remove and item_label.sync together")
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name in ["item_radarr_tag", "item_sonarr_tag"]:
             if method_name in methods and f"{method_name}.sync" in methods:
-                raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.sync together")
+                raise Failed(f"{self.Type} Error: Cannot use {method_name} and {method_name}.sync together")
             if f"{method_name}.remove" in methods and f"{method_name}.sync" in methods:
-                raise Failed(f"Collection Error: Cannot use {method_name}.remove and {method_name}.sync together")
+                raise Failed(f"{self.Type} Error: Cannot use {method_name}.remove and {method_name}.sync together")
             if method_name in methods and f"{method_name}.remove" in methods:
-                raise Failed(f"Collection Error: Cannot use {method_name} and {method_name}.remove together")
+                raise Failed(f"{self.Type} Error: Cannot use {method_name} and {method_name}.remove together")
             self.item_details[method_name] = util.get_list(method_data)
             self.item_details["apply_tags"] = method_mod[1:] if method_mod else ""
         elif method_name == "item_overlay":
             overlay = os.path.join(self.config.default_dir, "overlays", method_data, "overlay.png")
             if not os.path.exists(overlay):
-                raise Failed(f"Collection Error: {method_data} overlay image not found at {overlay}")
+                raise Failed(f"{self.Type} Error: {method_data} overlay image not found at {overlay}")
             if method_data in self.library.overlays:
                 raise Failed("Each Overlay can only be used once per Library")
             self.library.overlays.append(method_data)
             self.item_details[method_name] = method_data
         elif method_name in item_bool_details:
-            if util.parse(method_name, method_data, datatype="bool", default=False):
+            if self._parse(method_name, method_data, datatype="bool", default=False):
                 self.item_details[method_name] = True
         elif method_name in plex.item_advance_keys:
             key, options = plex.item_advance_keys[method_name]
@@ -826,14 +899,14 @@ class CollectionBuilder:
 
     def _radarr(self, method_name, method_data):
         if method_name in ["radarr_add", "radarr_add_existing", "radarr_monitor", "radarr_search"]:
-            self.radarr_details[method_name[7:]] = util.parse(method_name, method_data, datatype="bool")
+            self.radarr_details[method_name[7:]] = self._parse(method_name, method_data, datatype="bool")
         elif method_name == "radarr_folder":
             self.radarr_details["folder"] = method_data
         elif method_name == "radarr_availability":
             if str(method_data).lower() in radarr.availability_translation:
                 self.radarr_details["availability"] = str(method_data).lower()
             else:
-                raise Failed(f"Collection Error: {method_name} attribute must be either announced, cinemas, released or db")
+                raise Failed(f"{self.Type} Error: {method_name} attribute must be either announced, cinemas, released or db")
         elif method_name == "radarr_quality":
             self.radarr_details["quality"] = method_data
         elif method_name == "radarr_tag":
@@ -841,38 +914,38 @@ class CollectionBuilder:
 
     def _sonarr(self, method_name, method_data):
         if method_name in ["sonarr_add", "sonarr_add_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
-            self.sonarr_details[method_name[7:]] = util.parse(method_name, method_data, datatype="bool")
+            self.sonarr_details[method_name[7:]] = self._parse(method_name, method_data, datatype="bool")
         elif method_name in ["sonarr_folder", "sonarr_quality", "sonarr_language"]:
             self.sonarr_details[method_name[7:]] = method_data
         elif method_name == "sonarr_monitor":
             if str(method_data).lower() in sonarr.monitor_translation:
                 self.sonarr_details["monitor"] = str(method_data).lower()
             else:
-                raise Failed(f"Collection Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
+                raise Failed(f"{self.Type} Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
         elif method_name == "sonarr_series":
             if str(method_data).lower() in sonarr.series_type:
                 self.sonarr_details["series"] = str(method_data).lower()
             else:
-                raise Failed(f"Collection Error: {method_name} attribute must be either standard, daily, or anime")
+                raise Failed(f"{self.Type} Error: {method_name} attribute must be either standard, daily, or anime")
         elif method_name == "sonarr_tag":
             self.sonarr_details["tag"] = util.get_list(method_data)
 
     def _anidb(self, method_name, method_data):
         if method_name == "anidb_popular":
-            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=30, maximum=30)))
+            self.builders.append((method_name, self._parse(method_name, method_data, datatype="int", default=30, maximum=30)))
         elif method_name in ["anidb_id", "anidb_relation"]:
             for anidb_id in self.config.AniDB.validate_anidb_ids(method_data, self.language):
                 self.builders.append((method_name, anidb_id))
         elif method_name == "anidb_tag":
-            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
                 if "tag" not in dict_methods:
-                    raise Failed("Collection Error: anidb_tag tag attribute is required")
+                    raise Failed(f"{self.Type} Error: anidb_tag tag attribute is required")
                 elif not dict_data[dict_methods["tag"]]:
-                    raise Failed("Collection Error: anidb_tag tag attribute is blank")
+                    raise Failed(f"{self.Type} Error: anidb_tag tag attribute is blank")
                 else:
                     new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["tag"]], "AniDB Tag ID")
-                new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name, minimum=0)
+                new_dictionary["limit"] = self._parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name, minimum=0)
                 self.builders.append((method_name, new_dictionary))
 
     def _anilist(self, method_name, method_data):
@@ -880,50 +953,50 @@ class CollectionBuilder:
             for anilist_id in self.config.AniList.validate_anilist_ids(method_data, studio=method_name == "anilist_studio"):
                 self.builders.append((method_name, anilist_id))
         elif method_name in ["anilist_popular", "anilist_trending", "anilist_top_rated"]:
-            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
+            self.builders.append((method_name, self._parse(method_name, method_data, datatype="int", default=10)))
         elif method_name == "anilist_search":
             if self.current_time.month in [12, 1, 2]:           current_season = "winter"
             elif self.current_time.month in [3, 4, 5]:          current_season = "spring"
             elif self.current_time.month in [6, 7, 8]:          current_season = "summer"
             else:                                               current_season = "fall"
             default_year = self.current_year + 1 if self.current_time.month == 12 else self.current_year
-            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
                     search_attr, modifier, search_final = self._split(search_method)
                     if search_final not in anilist.searches:
-                        raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
+                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute not supported")
                     elif search_attr == "season":
-                        new_dictionary[search_attr] = util.parse(search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
+                        new_dictionary[search_attr] = self._parse(search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
                         if "year" not in dict_methods:
                             logger.warning(f"Collection Warning: {method_name} year attribute not found using this year: {default_year} by default")
                             new_dictionary["year"] = default_year
                     elif search_attr == "year":
-                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, default=default_year, minimum=1917, maximum=default_year + 1)
+                        new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="int", parent=method_name, default=default_year, minimum=1917, maximum=default_year + 1)
                     elif search_data is None:
-                        raise Failed(f"Collection Error: {method_name} {search_final} attribute is blank")
+                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute is blank")
                     elif search_attr == "adult":
-                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="bool", parent=method_name)
+                        new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="bool", parent=method_name)
                     elif search_attr == "country":
-                        new_dictionary[search_attr] = util.parse(search_attr, search_data, options=anilist.country_codes, parent=method_name)
+                        new_dictionary[search_attr] = self._parse(search_attr, search_data, options=anilist.country_codes, parent=method_name)
                     elif search_attr == "source":
-                        new_dictionary[search_attr] = util.parse(search_attr, search_data, options=anilist.media_source, parent=method_name)
+                        new_dictionary[search_attr] = self._parse(search_attr, search_data, options=anilist.media_source, parent=method_name)
                     elif search_attr in ["episodes", "duration", "score", "popularity"]:
-                        new_dictionary[search_final] = util.parse(search_final, search_data, datatype="int", parent=method_name)
+                        new_dictionary[search_final] = self._parse(search_final, search_data, datatype="int", parent=method_name)
                     elif search_attr in ["format", "status", "genre", "tag", "tag_category"]:
-                        new_dictionary[search_final] = self.config.AniList.validate(search_attr.replace("_", " ").title(), util.parse(search_final, search_data))
+                        new_dictionary[search_final] = self.config.AniList.validate(search_attr.replace("_", " ").title(), self._parse(search_final, search_data))
                     elif search_attr in ["start", "end"]:
                         new_dictionary[search_final] = util.validate_date(search_data, f"{method_name} {search_final} attribute", return_as="%m/%d/%Y")
                     elif search_attr == "min_tag_percent":
-                        new_dictionary[search_attr] = util.parse(search_attr, search_data, datatype="int", parent=method_name, minimum=0, maximum=100)
+                        new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="int", parent=method_name, minimum=0, maximum=100)
                     elif search_attr == "search":
                         new_dictionary[search_attr] = str(search_data)
                     elif search_final not in ["sort_by", "limit"]:
-                        raise Failed(f"Collection Error: {method_name} {search_final} attribute not supported")
+                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute not supported")
                 if len(new_dictionary) == 0:
-                    raise Failed(f"Collection Error: {method_name} must have at least one valid search option")
-                new_dictionary["sort_by"] = util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.sort_options)
-                new_dictionary["limit"] = util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
+                    raise Failed(f"{self.Type} Error: {method_name} must have at least one valid search option")
+                new_dictionary["sort_by"] = self._parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.sort_options)
+                new_dictionary["limit"] = self._parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
                 self.builders.append((method_name, new_dictionary))
 
     def _flixpatrol(self, method_name, method_data):
@@ -932,26 +1005,26 @@ class CollectionBuilder:
             for flixpatrol_list in flixpatrol_lists:
                 self.builders.append(("flixpatrol_url", flixpatrol_list))
         elif method_name in flixpatrol.builders:
-            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 if method_name == "flixpatrol_demographics":
                     data = {
-                        "generation": util.parse("generation", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.generations),
-                        "gender": util.parse("gender", dict_data, methods=dict_methods, parent=method_name, default="all", options=flixpatrol.gender),
-                        "location": util.parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.demo_locations),
-                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                        "generation": self._parse("generation", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.generations),
+                        "gender": self._parse("gender", dict_data, methods=dict_methods, parent=method_name, default="all", options=flixpatrol.gender),
+                        "location": self._parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.demo_locations),
+                        "limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
                     }
                 elif method_name == "flixpatrol_popular":
                     data = {
-                        "source": util.parse("source", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.popular),
-                        "time_window": util.parse("time_window", dict_data, methods=dict_methods, parent=method_name, default="today"),
-                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                        "source": self._parse("source", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.popular),
+                        "time_window": self._parse("time_window", dict_data, methods=dict_methods, parent=method_name, default="today"),
+                        "limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
                     }
                 elif method_name == "flixpatrol_top":
                     data = {
-                        "platform": util.parse("platform", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.platforms),
-                        "location": util.parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.locations),
-                        "time_window": util.parse("time_window", dict_data, methods=dict_methods, parent=method_name, default="today"),
-                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
+                        "platform": self._parse("platform", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.platforms),
+                        "location": self._parse("location", dict_data, methods=dict_methods, parent=method_name, default="world", options=flixpatrol.locations),
+                        "time_window": self._parse("time_window", dict_data, methods=dict_methods, parent=method_name, default="today"),
+                        "limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10)
                     }
                 else:
                     continue
@@ -972,20 +1045,20 @@ class CollectionBuilder:
                 if str(value).startswith("tt"):
                     self.builders.append((method_name, value))
                 else:
-                    raise Failed(f"Collection Error: imdb_id {value} must begin with tt")
+                    raise Failed(f"{self.Type} Error: imdb_id {value} must begin with tt")
         elif method_name == "imdb_list":
             for imdb_dict in self.config.IMDb.validate_imdb_lists(method_data, self.language):
                 self.builders.append((method_name, imdb_dict))
         elif method_name == "imdb_chart":
             for value in util.get_list(method_data):
                 if value in imdb.movie_charts and not self.library.is_movie:
-                    raise Failed(f"Collection Error: chart: {value} does not work with show libraries")
+                    raise Failed(f"{self.Type} Error: chart: {value} does not work with show libraries")
                 elif value in imdb.show_charts and self.library.is_movie:
-                    raise Failed(f"Collection Error: chart: {value} does not work with movie libraries")
+                    raise Failed(f"{self.Type} Error: chart: {value} does not work with movie libraries")
                 elif value in imdb.charts:
                     self.builders.append((method_name, value))
                 else:
-                    raise Failed(f"Collection Error: chart: {value} is invalid options are {[i for i in imdb.charts]}")
+                    raise Failed(f"{self.Type} Error: chart: {value} is invalid options are {[i for i in imdb.charts]}")
 
     def _letterboxd(self, method_name, method_data):
         if method_name.startswith("letterboxd_list"):
@@ -1000,52 +1073,52 @@ class CollectionBuilder:
             for mal_id in util.get_int_list(method_data, "MyAnimeList ID"):
                 self.builders.append((method_name, mal_id))
         elif method_name in ["mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special", "mal_popular", "mal_favorite", "mal_suggested"]:
-            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10, maximum=100 if method_name == "mal_suggested" else 500)))
+            self.builders.append((method_name, self._parse(method_name, method_data, datatype="int", default=10, maximum=100 if method_name == "mal_suggested" else 500)))
         elif method_name in ["mal_season", "mal_userlist"]:
-            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 if method_name == "mal_season":
                     if self.current_time.month in [1, 2, 3]:            default_season = "winter"
                     elif self.current_time.month in [4, 5, 6]:          default_season = "spring"
                     elif self.current_time.month in [7, 8, 9]:          default_season = "summer"
                     else:                                               default_season = "fall"
                     self.builders.append((method_name, {
-                        "season": util.parse("season", dict_data, methods=dict_methods, parent=method_name, default=default_season, options=util.seasons),
-                        "sort_by": util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="members", options=mal.season_sort_options, translation=mal.season_sort_translation),
-                        "year": util.parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_year, parent=method_name, minimum=1917, maximum=self.current_year + 1),
-                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=500)
+                        "season": self._parse("season", dict_data, methods=dict_methods, parent=method_name, default=default_season, options=util.seasons),
+                        "sort_by": self._parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="members", options=mal.season_sort_options, translation=mal.season_sort_translation),
+                        "year": self._parse("year", dict_data, datatype="int", methods=dict_methods, default=self.current_year, parent=method_name, minimum=1917, maximum=self.current_year + 1),
+                        "limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=500)
                     }))
                 elif method_name == "mal_userlist":
                     self.builders.append((method_name, {
-                        "username": util.parse("username", dict_data, methods=dict_methods, parent=method_name),
-                        "status": util.parse("status", dict_data, methods=dict_methods, parent=method_name, default="all", options=mal.userlist_status),
-                        "sort_by": util.parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=mal.userlist_sort_options, translation=mal.userlist_sort_translation),
-                        "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=1000)
+                        "username": self._parse("username", dict_data, methods=dict_methods, parent=method_name),
+                        "status": self._parse("status", dict_data, methods=dict_methods, parent=method_name, default="all", options=mal.userlist_status),
+                        "sort_by": self._parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=mal.userlist_sort_options, translation=mal.userlist_sort_translation),
+                        "limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=1000)
                     }))
         elif method_name in ["mal_genre", "mal_studio"]:
             id_name = f"{method_name[4:]}_id"
             final_data = []
             for data in util.get_list(method_data):
                 final_data.append(data if isinstance(data, dict) else {id_name: data, "limit": 0})
-            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 self.builders.append((method_name, {
-                    id_name: util.parse(id_name, dict_data, datatype="int", methods=dict_methods, parent=method_name, maximum=999999),
-                    "limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
+                    id_name: self._parse(id_name, dict_data, datatype="int", methods=dict_methods, parent=method_name, maximum=999999),
+                    "limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
                 }))
 
     def _plex(self, method_name, method_data):
         if method_name == "plex_all":
             self.builders.append((method_name, True))
         elif method_name in ["plex_search", "plex_collectionless"]:
-            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
                 if method_name == "plex_search":
                     type_override = f"{self.collection_level}s" if self.collection_level in plex.collection_level_options else None
                     new_dictionary = self.build_filter("plex_search", dict_data, type_override=type_override)
                 elif method_name == "plex_collectionless":
-                    prefix_list = util.parse("exclude_prefix", dict_data, datatype="list", methods=dict_methods)
-                    exact_list = util.parse("exclude", dict_data, datatype="list", methods=dict_methods)
+                    prefix_list = self._parse("exclude_prefix", dict_data, datatype="list", methods=dict_methods)
+                    exact_list = self._parse("exclude", dict_data, datatype="list", methods=dict_methods)
                     if len(prefix_list) == 0 and len(exact_list) == 0:
-                        raise Failed("Collection Error: you must have at least one exclusion")
+                        raise Failed(f"{self.Type} Error: you must have at least one exclusion")
                     exact_list.append(self.name)
                     new_dictionary["exclude_prefix"] = prefix_list
                     new_dictionary["exclude"] = exact_list
@@ -1054,82 +1127,82 @@ class CollectionBuilder:
             self.builders.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
 
     def _stevenlu(self, method_name, method_data):
-        self.builders.append((method_name, util.parse(method_name, method_data, "bool")))
+        self.builders.append((method_name, self._parse(method_name, method_data, "bool")))
 
     def _tautulli(self, method_name, method_data):
-        for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+        for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
             self.builders.append((method_name, {
                 "list_type": "popular" if method_name == "tautulli_popular" else "watched",
-                "list_days": util.parse("list_days", dict_data, datatype="int", methods=dict_methods, default=30, parent=method_name),
-                "list_size": util.parse("list_size", dict_data, datatype="int", methods=dict_methods, default=10, parent=method_name),
-                "list_buffer": util.parse("list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name),
-                "list_minimum": util.parse("list_minimum", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
+                "list_days": self._parse("list_days", dict_data, datatype="int", methods=dict_methods, default=30, parent=method_name),
+                "list_size": self._parse("list_size", dict_data, datatype="int", methods=dict_methods, default=10, parent=method_name),
+                "list_buffer": self._parse("list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name),
+                "list_minimum": self._parse("list_minimum", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
             }))
 
     def _tmdb(self, method_name, method_data):
         if method_name == "tmdb_discover":
-            for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
-                new_dictionary = {"limit": util.parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name)}
+            for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
+                new_dictionary = {"limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name)}
                 for discover_method, discover_data in dict_data.items():
                     discover_attr, modifier, discover_final = self._split(discover_method)
                     if discover_data is None:
-                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute is blank")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute is blank")
                     elif discover_final not in tmdb.discover_all:
-                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute not supported")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute not supported")
                     elif self.library.is_movie and discover_attr in tmdb.discover_tv_only:
-                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute only works for show libraries")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute only works for show libraries")
                     elif self.library.is_show and discover_attr in tmdb.discover_movie_only:
-                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute only works for movie libraries")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute only works for movie libraries")
                     elif discover_attr in ["language", "region"]:
                         regex = ("([a-z]{2})-([A-Z]{2})", "en-US") if discover_attr == "language" else ("^[A-Z]{2}$", "US")
-                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, parent=method_name, regex=regex)
+                        new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, parent=method_name, regex=regex)
                     elif discover_attr == "sort_by" and self.library.is_movie:
                         options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
-                        new_dictionary[discover_final] = util.parse(discover_attr, discover_data, parent=method_name, options=options)
+                        new_dictionary[discover_final] = self._parse(discover_attr, discover_data, parent=method_name, options=options)
                     elif discover_attr == "certification_country":
                         if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
                             new_dictionary[discover_final] = discover_data
                         else:
-                            raise Failed(f"Collection Error: {method_name} {discover_attr} attribute: must be used with either certification, certification.lte, or certification.gte")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_attr} attribute: must be used with either certification, certification.lte, or certification.gte")
                     elif discover_attr == "certification":
                         if "certification_country" in dict_data:
                             new_dictionary[discover_final] = discover_data
                         else:
-                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with certification_country")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with certification_country")
                     elif discover_attr == "watch_region":
                         if "with_watch_providers" in dict_data or "without_watch_providers" in dict_data or "with_watch_monetization_types" in dict_data:
                             new_dictionary[discover_final] = discover_data
                         else:
-                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
                     elif discover_attr == "with_watch_monetization_types":
                         if "watch_region" in dict_data:
-                            new_dictionary[discover_final] = util.parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
+                            new_dictionary[discover_final] = self._parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
                         else:
-                            raise Failed(f"Collection Error: {method_name} {discover_final} attribute: must be used with watch_region")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with watch_region")
                     elif discover_attr in tmdb.discover_booleans:
-                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="bool", parent=method_name)
+                        new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="bool", parent=method_name)
                     elif discover_attr == "vote_average":
-                        new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="float", parent=method_name)
+                        new_dictionary[discover_final] = self._parse(discover_final, discover_data, datatype="float", parent=method_name)
                     elif discover_attr == "with_status":
-                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
+                        new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
                     elif discover_attr == "with_type":
-                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
+                        new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
                     elif discover_final in tmdb.discover_dates:
                         new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} {discover_final} attribute", return_as="%m/%d/%Y")
                     elif discover_attr in tmdb.discover_years:
-                        new_dictionary[discover_attr] = util.parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
+                        new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
                     elif discover_attr in tmdb.discover_ints:
-                        new_dictionary[discover_final] = util.parse(discover_final, discover_data, datatype="int", parent=method_name)
+                        new_dictionary[discover_final] = self._parse(discover_final, discover_data, datatype="int", parent=method_name)
                     elif discover_final in tmdb.discover_strings:
                         new_dictionary[discover_final] = discover_data
                     elif discover_attr != "limit":
-                        raise Failed(f"Collection Error: {method_name} {discover_final} attribute not supported")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute not supported")
                 if len(new_dictionary) > 1:
                     self.builders.append((method_name, new_dictionary))
                 else:
-                    raise Failed(f"Collection Error: {method_name} had no valid fields")
+                    raise Failed(f"{self.Type} Error: {method_name} had no valid fields")
         elif method_name in ["tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_trending_daily", "tmdb_trending_weekly"]:
-            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
+            self.builders.append((method_name, self._parse(method_name, method_data, datatype="int", default=10)))
         else:
             values = self.config.TMDb.validate_tmdb_ids(method_data, method_name)
             if method_name.endswith("_details"):
@@ -1165,12 +1238,12 @@ class CollectionBuilder:
             for trakt_list in self.config.Trakt.validate_trakt(method_data, self.library.is_movie, trakt_type=method_name[6:]):
                 self.builders.append((method_name, trakt_list))
         elif method_name == "trakt_boxoffice":
-            if util.parse(method_name, method_data, datatype="bool", default=False):
+            if self._parse(method_name, method_data, datatype="bool", default=False):
                 self.builders.append((method_name, 10))
             else:
-                raise Failed(f"Collection Error: {method_name} must be set to true")
+                raise Failed(f"{self.Type} Error: {method_name} must be set to true")
         elif method_name in trakt.builders:
-            self.builders.append((method_name, util.parse(method_name, method_data, datatype="int", default=10)))
+            self.builders.append((method_name, self._parse(method_name, method_data, datatype="int", default=10)))
 
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data)
@@ -1189,25 +1262,25 @@ class CollectionBuilder:
             self.builders.append((method_name[:-8] if method_name.endswith("_details") else method_name, value))
 
     def _filters(self, method_name, method_data):
-        for dict_data, dict_methods in util.parse(method_name, method_data, datatype="dictlist"):
+        for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
             validate = True
             if "validate" in dict_data:
                 if dict_data["validate"] is None:
-                    raise Failed("Collection Error: validate filter attribute is blank")
+                    raise Failed(f"{self.Type} Error: validate filter attribute is blank")
                 if not isinstance(dict_data["validate"], bool):
-                    raise Failed("Collection Error: validate filter attribute must be either true or false")
+                    raise Failed(f"{self.Type} Error: validate filter attribute must be either true or false")
                 validate = dict_data["validate"]
             for filter_method, filter_data in dict_data.items():
                 filter_attr, modifier, filter_final = self._split(filter_method)
                 message = None
                 if filter_final not in all_filters:
-                    message = f"Collection Error: {filter_final} is not a valid filter attribute"
+                    message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
                 elif filter_final in movie_only_filters and self.library.is_show:
-                    message = f"Collection Error: {filter_final} filter attribute only works for movie libraries"
+                    message = f"{self.Type} Error: {filter_final} filter attribute only works for movie libraries"
                 elif filter_final in show_only_filters and self.library.is_movie:
-                    message = f"Collection Error: {filter_final} filter attribute only works for show libraries"
+                    message = f"{self.Type} Error: {filter_final} filter attribute only works for show libraries"
                 elif filter_final is None:
-                    message = f"Collection Error: {filter_final} filter attribute is blank"
+                    message = f"{self.Type} Error: {filter_final} filter attribute is blank"
                 elif filter_attr in tmdb_filters:
                     self.tmdb_filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
                 else:
@@ -1255,7 +1328,7 @@ class CollectionBuilder:
             elif "trakt" in method:
                 ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
             else:
-                logger.error(f"Collection Error: {method} method not supported")
+                logger.error(f"{self.Type} Error: {method} method not supported")
 
             if len(ids) > 0:
                 logger.debug("")
@@ -1362,22 +1435,22 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"Validating Method: {method}")
         if plex_filter is None:
-            raise Failed(f"Collection Error: {method} attribute is blank")
+            raise Failed(f"{self.Type} Error: {method} attribute is blank")
         if not isinstance(plex_filter, dict):
-            raise Failed(f"Collection Error: {method} must be a dictionary: {plex_filter}")
+            raise Failed(f"{self.Type} Error: {method} must be a dictionary: {plex_filter}")
         if smart:
             logger.debug(f"Value: {plex_filter}")
 
         filter_alias = {m.lower(): m for m in plex_filter}
 
         if "any" in filter_alias and "all" in filter_alias:
-            raise Failed(f"Collection Error: Cannot have more then one base")
+            raise Failed(f"{self.Type} Error: Cannot have more then one base")
 
         if type_override:
             sort_type = type_override
         elif smart and "type" in filter_alias and self.library.is_show:
             if plex_filter[filter_alias["type"]] not in ["shows", "seasons", "episodes"]:
-                raise Failed(f"Collection Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either shows, season, or episodes")
+                raise Failed(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either shows, season, or episodes")
             sort_type = plex_filter[filter_alias["type"]]
         elif self.library.is_show:
             sort_type = "shows"
@@ -1390,27 +1463,27 @@ class CollectionBuilder:
         sort = "random" if smart else "title.asc"
         if "sort_by" in filter_alias:
             if plex_filter[filter_alias["sort_by"]] is None:
-                raise Failed(f"Collection Error: sort_by attribute is blank")
+                raise Failed(f"{self.Type} Error: sort_by attribute is blank")
             if plex_filter[filter_alias["sort_by"]] not in sorts:
-                raise Failed(f"Collection Error: sort_by: {plex_filter[filter_alias['sort_by']]} is invalid")
+                raise Failed(f"{self.Type} Error: sort_by: {plex_filter[filter_alias['sort_by']]} is invalid")
             sort = plex_filter[filter_alias["sort_by"]]
         filter_details += f"Sort By: {sort}\n"
 
         limit = None
         if "limit" in filter_alias:
             if plex_filter[filter_alias["limit"]] is None:
-                raise Failed("Collection Error: limit attribute is blank")
+                raise Failed(f"{self.Type} Error: limit attribute is blank")
             if not isinstance(plex_filter[filter_alias["limit"]], int) or plex_filter[filter_alias["limit"]] < 1:
-                raise Failed("Collection Error: limit attribute must be an integer greater then 0")
+                raise Failed(f"{self.Type} Error: limit attribute must be an integer greater then 0")
             limit = plex_filter[filter_alias["limit"]]
             filter_details += f"Limit: {limit}\n"
 
         validate = True
         if "validate" in filter_alias:
             if plex_filter[filter_alias["validate"]] is None:
-                raise Failed("Collection Error: validate attribute is blank")
+                raise Failed(f"{self.Type} Error: validate attribute is blank")
             if not isinstance(plex_filter[filter_alias["validate"]], bool):
-                raise Failed("Collection Error: validate attribute must be either true or false")
+                raise Failed(f"{self.Type} Error: validate attribute must be either true or false")
             validate = plex_filter[filter_alias["validate"]]
             filter_details += f"Validate: {validate}\n"
 
@@ -1439,20 +1512,20 @@ class CollectionBuilder:
                     return f"{arg_key}{mod}={arg}&", display_line
 
                 if final_attr not in plex.searches and not final_attr.startswith(("any", "all")):
-                    raise Failed(f"Collection Error: {final_attr} is not a valid {method} attribute")
+                    raise Failed(f"{self.Type} Error: {final_attr} is not a valid {method} attribute")
                 elif final_attr in plex.movie_only_searches and self.library.is_show:
-                    raise Failed(f"Collection Error: {final_attr} {method} attribute only works for movie libraries")
+                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for movie libraries")
                 elif final_attr in plex.show_only_searches and self.library.is_movie:
-                    raise Failed(f"Collection Error: {final_attr} {method} attribute only works for show libraries")
+                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries")
                 elif _data is None:
-                    raise Failed(f"Collection Error: {final_attr} {method} attribute is blank")
+                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute is blank")
                 elif final_attr.startswith(("any", "all")):
                     dicts = util.get_list(_data)
                     results = ""
                     display_add = ""
                     for dict_data in dicts:
                         if not isinstance(dict_data, dict):
-                            raise Failed(f"Collection Error: {attr} must be either a dictionary or list of dictionaries")
+                            raise Failed(f"{self.Type} Error: {attr} must be either a dictionary or list of dictionaries")
                         inside_filter, inside_display = _filter(dict_data, is_all=attr == "all", level=level)
                         if len(inside_filter) > 0:
                             display_add += inside_display
@@ -1499,14 +1572,14 @@ class CollectionBuilder:
                 base_dict["any"] = any_dicts
             base_all = True
             if len(base_dict) == 0:
-                raise Failed(f"Collection Error: Must have either any or all as a base for {method}")
+                raise Failed(f"{self.Type} Error: Must have either any or all as a base for {method}")
         else:
             base = "all" if "all" in filter_alias else "any"
             base_all = base == "all"
             if plex_filter[filter_alias[base]] is None:
-                raise Failed(f"Collection Error: {base} attribute is blank")
+                raise Failed(f"{self.Type} Error: {base} attribute is blank")
             if not isinstance(plex_filter[filter_alias[base]], dict):
-                raise Failed(f"Collection Error: {base} must be a dictionary: {plex_filter[filter_alias[base]]}")
+                raise Failed(f"{self.Type} Error: {base} must be a dictionary: {plex_filter[filter_alias[base]]}")
             base_dict = plex_filter[filter_alias[base]]
         built_filter, filter_text = _filter(base_dict, is_all=base_all)
         filter_details = f"{filter_details}Filter:{filter_text}"
@@ -1514,7 +1587,7 @@ class CollectionBuilder:
             final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
             filter_url = f"?type={type_key}&{f'limit={limit}&' if limit else ''}sort={sorts[sort]}&{final_filter}"
         else:
-            raise Failed("Collection Error: No Filter Created")
+            raise Failed(f"{self.Type} Error: No Filter Created")
 
         return type_key, filter_details, filter_url
 
@@ -1530,7 +1603,7 @@ class CollectionBuilder:
                     valid_regex.append(reg)
                 except re.error:
                     util.print_stacktrace()
-                    err = f"Collection Error: Regular Expression Invalid: {reg}"
+                    err = f"{self.Type} Error: Regular Expression Invalid: {reg}"
                     if validate:
                         raise Failed(err)
                     else:
@@ -1544,11 +1617,11 @@ class CollectionBuilder:
             return util.get_list(data)
         elif attribute == "history":
             try:
-                return util.parse(final, data, datatype="int", maximum=30)
+                return self._parse(final, data, datatype="int", maximum=30)
             except Failed:
                 if str(data).lower() in ["day", "month"]:
                     return data.lower()
-            raise Failed(f"Collection Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
+            raise Failed(f"{self.Type} Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
         elif attribute in plex.tags and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
@@ -1576,23 +1649,23 @@ class CollectionBuilder:
                         logger.error(error)
             return valid_list
         elif attribute in ["year", "episode_year", "tmdb_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:
-            return util.parse(final, data, datatype="int", minimum=1800, maximum=self.current_year)
+            return self._parse(final, data, datatype="int", minimum=1800, maximum=self.current_year)
         elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
             return util.validate_date(data, final, return_as="%Y-%m-%d")
         elif attribute in plex.number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
-            return util.parse(final, data, datatype="int")
+            return self._parse(final, data, datatype="int")
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
-            return util.parse(final, data, datatype="float", minimum=0, maximum=10)
+            return self._parse(final, data, datatype="float", minimum=0, maximum=10)
         elif attribute in ["decade", "year", "episode_year", "tmdb_year"] and modifier in ["", ".not"]:
             final_years = []
             values = util.get_list(data)
             for value in values:
-                final_years.append(util.parse(final, value, datatype="int", minimum=1800, maximum=self.current_year))
+                final_years.append(self._parse(final, value, datatype="int", minimum=1800, maximum=self.current_year))
             return smart_pair(final_years)
         elif attribute in plex.boolean_attributes + ["has_collection"]:
-            return util.parse(attribute, data, datatype="bool")
+            return self._parse(attribute, data, datatype="bool")
         else:
-            raise Failed(f"Collection Error: {final} attribute not supported")
+            raise Failed(f"{self.Type} Error: {final} attribute not supported")
 
     def _split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
@@ -2034,7 +2107,7 @@ class CollectionBuilder:
                 if not self.obj:
                     self.library.create_smart_collection(self.name, smart_type, self.smart_url)
             except Failed:
-                raise Failed(f"Collection Error: Label: {self.name} was not added to any items in the Library")
+                raise Failed(f"{self.Type} Error: Label: {self.name} was not added to any items in the Library")
         self.obj = self.library.get_collection(self.name)
         if not self.exists:
             self.created = True
@@ -2135,7 +2208,7 @@ class CollectionBuilder:
             name_mapping = self.name
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
-                else:                                               logger.error("Collection Error: name_mapping attribute is blank")
+                else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
             poster_image, background_image = self.library.find_collection_assets(self.obj, name=name_mapping)
             if poster_image:
                 self.posters["asset_directory"] = poster_image

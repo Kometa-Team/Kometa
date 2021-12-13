@@ -9,7 +9,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
-class Metadata:
+class MetadataFile:
     def __init__(self, config, library, file_type, path):
         self.config = config
         self.library = library
@@ -22,11 +22,15 @@ class Metadata:
                 if attr_data[attribute]:
                     if isinstance(attr_data[attribute], dict):
                         new_dict = {}
-                        for a_name, a_data in attr_data[attribute].items():
-                            if a_name in check_list:
-                                logger.error(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {a_name}")
+                        for _name, _data in attr_data[attribute].items():
+                            if _name in check_list:
+                                logger.error(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
+                            elif _data is None:
+                                logger.error(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
+                            elif not isinstance(_data, dict):
+                                logger.error(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
                             else:
-                                new_dict[str(a_name)] = a_data
+                                new_dict[str(_name)] = _data
                         return new_dict
                     else:
                         logger.warning(f"Config Warning: {attribute} must be a dictionary")
@@ -97,7 +101,17 @@ class Metadata:
                                 final_value = util.validate_date(value, name, return_as="%Y-%m-%d")
                                 current = current[:-9]
                             elif var_type == "float":
-                                final_value = util.parse(name, value, datatype="float", minimum=0, maximum=10)
+                                if value is None:
+                                    raise Failed(f"Metadata Error: {name} attribute is blank")
+                                final_value = None
+                                try:
+                                    value = float(str(value))
+                                    if 0 <= value <= 10:
+                                        final_value = value
+                                except ValueError:
+                                    pass
+                                if final_value is None:
+                                    raise Failed(f"Metadata Error: {name} attribute must be a number between 0 and 10")
                             else:
                                 final_value = value
                             if current != str(final_value):
@@ -174,7 +188,17 @@ class Metadata:
             logger.info("")
             year = None
             if "year" in methods:
-                year = util.parse("year", meta, datatype="int", methods=methods, minimum=1800, maximum=datetime.now().year + 1)
+                next_year = datetime.now().year + 1
+                if meta[methods["year"]] is None:
+                    raise Failed("Metadata Error: year attribute is blank")
+                try:
+                    year_value = int(str(meta[methods["year"]]))
+                    if 1800 <= year_value <= next_year:
+                        year = year_value
+                except ValueError:
+                    pass
+                if year is None:
+                    raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
 
             title = mapping_name
             if "title" in methods:
