@@ -923,7 +923,7 @@ class CollectionBuilder:
             else:
                 raise Failed(f"{self.Type} Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
         elif method_name == "sonarr_series":
-            if str(method_data).lower() in sonarr.series_type:
+            if str(method_data).lower() in sonarr.series_types:
                 self.sonarr_details["series"] = str(method_data).lower()
             else:
                 raise Failed(f"{self.Type} Error: {method_name} attribute must be either standard, daily, or anime")

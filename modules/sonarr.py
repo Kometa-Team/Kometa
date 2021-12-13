@@ -6,7 +6,7 @@ from arrapi.exceptions import ArrException, Invalid
 
 logger = logging.getLogger("Plex Meta Manager")
 
-series_type = ["standard", "daily", "anime"]
+series_types = ["standard", "daily", "anime"]
 monitor_translation = {
     "all": "all", "future": "future", "missing": "missing", "existing": "existing",
     "pilot": "pilot", "first": "firstSeason", "latest": "latestSeason", "none": "none"
@@ -86,8 +86,9 @@ class Sonarr:
             if series.path:
                 arr_paths[series.path[:-1] if series.path.endswith(("/", "\\")) else series.path] = series.tvdbId
             arr_paths[series.tvdbId] = series
-        logger.debug(arr_paths)
-        logger.debug(arr_ids)
+        if self.config.trace_mode:
+            logger.debug(arr_paths)
+            logger.debug(arr_ids)
 
         added = []
         exists = []
