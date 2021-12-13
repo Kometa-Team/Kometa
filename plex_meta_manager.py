@@ -711,7 +711,7 @@ def run_collection(config, library, metadata, requested_collections):
                     util.separator("No Collection to Update", space=False, border=False)
                 else:
                     builder.update_details()
-                    if builder.custom_sort:
+                    if builder.custom_sort or builder.sort_by:
                         library.run_sort.append(builder)
                         # builder.sort_collection()
 

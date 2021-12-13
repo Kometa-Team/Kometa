@@ -85,10 +85,10 @@ boolean_details = [
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "delete_not_scheduled",
-    "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name"
+    "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name", "sort_by"
 ]
-details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "collection_changes_webhooks", "collection_mode", "collection_order",
-           "collection_level", "collection_minimum", "label"] + boolean_details + string_details
+details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "collection_changes_webhooks", "collection_mode",
+           "collection_minimum", "label"] + boolean_details + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
@@ -510,6 +510,19 @@ class CollectionBuilder:
                 else:
                     raise Failed(f"{self.Type} Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)")
 
+        self.sort_by = None
+        if "sort_by" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: sort_by")
+            if self.data[methods["sort_by"]] is None:
+                raise Failed(f"{self.Type} Error: sort_by attribute is blank")
+            else:
+                logger.debug(f"Value: {self.data[methods['sort_by']]}")
+                if (self.library.is_movie and self.data[methods["sort_by"]] not in plex.movie_sorts) or (self.library.is_show and self.data[methods["sort_by"]] in plex.show_sorts):
+                    raise Failed(f"{self.Type} Error: sort_by attribute {self.data[methods['sort_by']]} invalid")
+                else:
+                    self.sort_by = self.data[methods["sort_by"]]
+
         self.collection_level = "movie" if self.library.is_movie else "show"
         if "collection_level" in methods:
             logger.debug("")
@@ -597,6 +610,9 @@ class CollectionBuilder:
         cant_interact("smart_label_collection", "smart_url", fail=True)
         cant_interact("smart_label_collection", "parts_collection", fail=True)
         cant_interact("smart_url", "parts_collection", fail=True)
+        cant_interact("smart_url", "sort_by")
+        cant_interact("smart_label_collection", "sort_by")
+        cant_interact("parts_collection", "sort_by")
 
         self.smart = self.smart_url or self.smart_label_collection
 
@@ -2269,12 +2285,20 @@ class CollectionBuilder:
         logger.info("")
         util.separator(f"Sorting {self.name} Collection", space=False, border=False)
         logger.info("")
-        items = self.library.get_collection_items(self.obj, self.smart_label_collection)
-        keys = {item.ratingKey: item for item in items}
+        if self.sort_by:
+            search_data = self.build_filter("plex_search", {"sort_by": self.sort_by, "any": {"collection": self.name}})
+            keys = {}
+            rating_keys = []
+            for item in self.library.get_filter_items(search_data[2]):
+                keys[item.ratingKey] = item
+                rating_keys.append(item.ratingKey)
+        else:
+            keys = {_i.ratingKey: _i for _i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+            rating_keys = self.rating_keys
         previous = None
         logger.debug(keys)
-        logger.debug(self.rating_keys)
-        for key in self.rating_keys:
+        logger.debug(rating_keys)
+        for key in rating_keys:
             text = f"after {self.item_title(keys[previous])}" if previous else "to the beginning"
             logger.info(f"Moving {self.item_title(keys[key])} {text}")
             self.library.move_item(self.obj, key, after=previous)
