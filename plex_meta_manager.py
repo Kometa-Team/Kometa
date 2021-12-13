@@ -723,8 +723,6 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
 
-            builder.send_notifications()
-
             if builder.item_details and run_item_details and builder.builders:
                 try:
                     builder.load_collection_items()
@@ -733,6 +731,8 @@ def run_collection(config, library, metadata, requested_collections):
                     util.separator("No Items Found", space=False, border=False)
                 else:
                     builder.update_item_details()
+
+            builder.send_notifications()
 
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
