@@ -5,8 +5,8 @@ try:
     import plexapi, schedule
     from modules import util
     from modules.builder import CollectionBuilder
-    from modules.config import Config
-    from modules.meta import Metadata
+    from modules.config import ConfigFile
+    from modules.meta import MetadataFile
     from modules.util import Failed, NotScheduled
 except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
@@ -159,7 +159,7 @@ def start(attrs):
     global stats
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "removed": 0, "radarr": 0, "sonarr": 0}
     try:
-        config = Config(default_dir, attrs)
+        config = ConfigFile(default_dir, attrs)
     except Exception as e:
         util.print_stacktrace()
         util.print_multiline(e, critical=True)
@@ -535,7 +535,7 @@ def library_operations(config, library):
             logger.info("")
             util.separator(f"Starting TMDb Collections")
             logger.info("")
-            metadata = Metadata(config, library, "Data", {
+            metadata = MetadataFile(config, library, "Data", {
                 "collections": {
                     _n.replace(library.tmdb_collections["remove_suffix"], "").strip() if library.tmdb_collections["remove_suffix"] else _n:
                     {"template": {"name": "TMDb Collection", "collection_id": _i}}

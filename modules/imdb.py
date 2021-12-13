@@ -37,12 +37,31 @@ class IMDb:
             if not isinstance(imdb_dict, dict):
                 imdb_dict = {"url": imdb_dict}
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
-            imdb_url = util.parse("url", imdb_dict, methods=dict_methods, parent="imdb_list").strip()
+            if "url" not in dict_methods:
+                raise Failed(f"Collection Error: imdb_list url attribute not found")
+            elif imdb_dict[dict_methods["url"]] is None:
+                raise Failed(f"Collection Error: imdb_list url attribute is blank")
+            else:
+                imdb_url = imdb_dict[dict_methods["url"]].strip()
             if not imdb_url.startswith(tuple([v for k, v in urls.items()])):
                 fails = "\n".join([f"{v} (For {k.replace('_', ' ').title()})" for k, v in urls.items()])
                 raise Failed(f"IMDb Error: {imdb_url} must begin with either:{fails}")
             self._total(imdb_url, language)
-            list_count = util.parse("limit", imdb_dict, datatype="int", methods=dict_methods, default=0, parent="imdb_list", minimum=0) if "limit" in dict_methods else 0
+            list_count = None
+            if "limit" in dict_methods:
+                if imdb_dict[dict_methods["limit"]] is None:
+                    logger.warning(f"Collection Warning: imdb_list limit attribute is blank using 0 as default")
+                else:
+                    try:
+                        value = int(str(imdb_dict[dict_methods["limit"]]))
+                        if 0 <= value:
+                            list_count = value
+                    except ValueError:
+                        pass
+                if list_count is None:
+                    logger.warning(f"Collection Warning: imdb_list limit attribute must be an integer 0 or greater using 0 as default")
+            if list_count is None:
+                list_count = 0
             valid_lists.append({"url": imdb_url, "limit": list_count})
         return valid_lists
 
