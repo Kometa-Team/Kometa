@@ -70,13 +70,13 @@ class Webhooks:
                 json["collection"] = str(collection)
             self._request(self.error_webhooks, json)
 
-    def collection_hooks(self, webhooks, collection, created=False, deleted=False, additions=None, removals=None):
+    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, deleted=False, additions=None, removals=None):
         if self.library:
             thumb = None
-            if collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
+            if not poster_url and collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
                 thumb = self.config.get_image_encoded(f"{self.library.url}{collection.thumb}?X-Plex-Token={self.library.token}")
             art = None
-            if collection.art and next((f for f in collection.fields if f.name == "art"), None):
+            if not background_url and collection.art and next((f for f in collection.fields if f.name == "art"), None):
                 art = self.config.get_image_encoded(f"{self.library.url}{collection.art}?X-Plex-Token={self.library.token}")
             json = {
                 "server_name": self.library.PlexServer.friendlyName,
@@ -86,7 +86,9 @@ class Webhooks:
                 "created": created,
                 "deleted": deleted,
                 "poster": thumb,
-                "background": art
+                "background": art,
+                "poster_url": poster_url,
+                "background_url": background_url
             }
             if additions:
                 json["additions"] = additions

@@ -213,6 +213,8 @@ class CollectionBuilder:
         self.server_preroll = None
         self.current_time = datetime.now()
         self.current_year = self.current_time.year
+        self.collection_poster = None
+        self.collection_background = None
         self.exists = False
         self.created = False
         self.deleted = False
@@ -2215,53 +2217,53 @@ class CollectionBuilder:
             if background_image:
                 self.backgrounds["asset_directory"] = background_image
 
-        poster = None
+        self.collection_poster = None
         if len(self.posters) > 0:
             logger.debug(f"{len(self.posters)} posters found:")
             for p in self.posters:
                 logger.debug(f"Method: {p} Poster: {self.posters[p]}")
 
-            if "url_poster" in self.posters:                    poster = ImageData("url_poster", self.posters["url_poster"])
-            elif "file_poster" in self.posters:                 poster = ImageData("file_poster", self.posters["file_poster"], is_url=False)
-            elif "tmdb_poster" in self.posters:                 poster = ImageData("tmdb_poster", self.posters["tmdb_poster"])
-            elif "tmdb_profile" in self.posters:                poster = ImageData("tmdb_poster", self.posters["tmdb_profile"])
-            elif "tvdb_poster" in self.posters:                 poster = ImageData("tvdb_poster", self.posters["tvdb_poster"])
-            elif "asset_directory" in self.posters:             poster = self.posters["asset_directory"]
-            elif "tmdb_person" in self.posters:                 poster = ImageData("tmdb_person", self.posters["tmdb_person"])
-            elif "tmdb_collection_details" in self.posters:     poster = ImageData("tmdb_collection_details", self.posters["tmdb_collection_details"])
-            elif "tmdb_actor_details" in self.posters:          poster = ImageData("tmdb_actor_details", self.posters["tmdb_actor_details"])
-            elif "tmdb_crew_details" in self.posters:           poster = ImageData("tmdb_crew_details", self.posters["tmdb_crew_details"])
-            elif "tmdb_director_details" in self.posters:       poster = ImageData("tmdb_director_details", self.posters["tmdb_director_details"])
-            elif "tmdb_producer_details" in self.posters:       poster = ImageData("tmdb_producer_details", self.posters["tmdb_producer_details"])
-            elif "tmdb_writer_details" in self.posters:         poster = ImageData("tmdb_writer_details", self.posters["tmdb_writer_details"])
-            elif "tmdb_movie_details" in self.posters:          poster = ImageData("tmdb_movie_details", self.posters["tmdb_movie_details"])
-            elif "tvdb_movie_details" in self.posters:          poster = ImageData("tvdb_movie_details", self.posters["tvdb_movie_details"])
-            elif "tvdb_show_details" in self.posters:           poster = ImageData("tvdb_show_details", self.posters["tvdb_show_details"])
-            elif "tmdb_show_details" in self.posters:           poster = ImageData("tmdb_show_details", self.posters["tmdb_show_details"])
+            if "url_poster" in self.posters:                    self.collection_poster = ImageData("url_poster", self.posters["url_poster"])
+            elif "file_poster" in self.posters:                 self.collection_poster = ImageData("file_poster", self.posters["file_poster"], is_url=False)
+            elif "tmdb_poster" in self.posters:                 self.collection_poster = ImageData("tmdb_poster", self.posters["tmdb_poster"])
+            elif "tmdb_profile" in self.posters:                self.collection_poster = ImageData("tmdb_poster", self.posters["tmdb_profile"])
+            elif "tvdb_poster" in self.posters:                 self.collection_poster = ImageData("tvdb_poster", self.posters["tvdb_poster"])
+            elif "asset_directory" in self.posters:             self.collection_poster = self.posters["asset_directory"]
+            elif "tmdb_person" in self.posters:                 self.collection_poster = ImageData("tmdb_person", self.posters["tmdb_person"])
+            elif "tmdb_collection_details" in self.posters:     self.collection_poster = ImageData("tmdb_collection_details", self.posters["tmdb_collection_details"])
+            elif "tmdb_actor_details" in self.posters:          self.collection_poster = ImageData("tmdb_actor_details", self.posters["tmdb_actor_details"])
+            elif "tmdb_crew_details" in self.posters:           self.collection_poster = ImageData("tmdb_crew_details", self.posters["tmdb_crew_details"])
+            elif "tmdb_director_details" in self.posters:       self.collection_poster = ImageData("tmdb_director_details", self.posters["tmdb_director_details"])
+            elif "tmdb_producer_details" in self.posters:       self.collection_poster = ImageData("tmdb_producer_details", self.posters["tmdb_producer_details"])
+            elif "tmdb_writer_details" in self.posters:         self.collection_poster = ImageData("tmdb_writer_details", self.posters["tmdb_writer_details"])
+            elif "tmdb_movie_details" in self.posters:          self.collection_poster = ImageData("tmdb_movie_details", self.posters["tmdb_movie_details"])
+            elif "tvdb_movie_details" in self.posters:          self.collection_poster = ImageData("tvdb_movie_details", self.posters["tvdb_movie_details"])
+            elif "tvdb_show_details" in self.posters:           self.collection_poster = ImageData("tvdb_show_details", self.posters["tvdb_show_details"])
+            elif "tmdb_show_details" in self.posters:           self.collection_poster = ImageData("tmdb_show_details", self.posters["tmdb_show_details"])
         else:
             logger.info("No poster collection detail or asset folder found")
 
-        background = None
+        self.collection_background = None
         if len(self.backgrounds) > 0:
             logger.debug(f"{len(self.backgrounds)} backgrounds found:")
             for b in self.backgrounds:
                 logger.debug(f"Method: {b} Background: {self.backgrounds[b]}")
 
-            if "url_background" in self.backgrounds:            background = ImageData("url_background", self.backgrounds["url_background"], is_poster=False)
-            elif "file_background" in self.backgrounds:         background = ImageData("file_background", self.backgrounds["file_background"], is_poster=False, is_url=False)
-            elif "tmdb_background" in self.backgrounds:         background = ImageData("tmdb_background", self.backgrounds["tmdb_background"], is_poster=False)
-            elif "tvdb_background" in self.backgrounds:         background = ImageData("tvdb_background", self.backgrounds["tvdb_background"], is_poster=False)
-            elif "asset_directory" in self.backgrounds:         background = self.backgrounds["asset_directory"]
-            elif "tmdb_collection_details" in self.backgrounds: background = ImageData("tmdb_collection_details", self.backgrounds["tmdb_collection_details"], is_poster=False)
-            elif "tmdb_movie_details" in self.backgrounds:      background = ImageData("tmdb_movie_details", self.backgrounds["tmdb_movie_details"], is_poster=False)
-            elif "tvdb_movie_details" in self.backgrounds:      background = ImageData("tvdb_movie_details", self.backgrounds["tvdb_movie_details"], is_poster=False)
-            elif "tvdb_show_details" in self.backgrounds:       background = ImageData("tvdb_show_details", self.backgrounds["tvdb_show_details"], is_poster=False)
-            elif "tmdb_show_details" in self.backgrounds:       background = ImageData("tmdb_show_details", self.backgrounds["tmdb_show_details"], is_poster=False)
+            if "url_background" in self.backgrounds:            self.collection_background = ImageData("url_background", self.backgrounds["url_background"], is_poster=False)
+            elif "file_background" in self.backgrounds:         self.collection_background = ImageData("file_background", self.backgrounds["file_background"], is_poster=False, is_url=False)
+            elif "tmdb_background" in self.backgrounds:         self.collection_background = ImageData("tmdb_background", self.backgrounds["tmdb_background"], is_poster=False)
+            elif "tvdb_background" in self.backgrounds:         self.collection_background = ImageData("tvdb_background", self.backgrounds["tvdb_background"], is_poster=False)
+            elif "asset_directory" in self.backgrounds:         self.collection_background = self.backgrounds["asset_directory"]
+            elif "tmdb_collection_details" in self.backgrounds: self.collection_background = ImageData("tmdb_collection_details", self.backgrounds["tmdb_collection_details"], is_poster=False)
+            elif "tmdb_movie_details" in self.backgrounds:      self.collection_background = ImageData("tmdb_movie_details", self.backgrounds["tmdb_movie_details"], is_poster=False)
+            elif "tvdb_movie_details" in self.backgrounds:      self.collection_background = ImageData("tvdb_movie_details", self.backgrounds["tvdb_movie_details"], is_poster=False)
+            elif "tvdb_show_details" in self.backgrounds:       self.collection_background = ImageData("tvdb_show_details", self.backgrounds["tvdb_show_details"], is_poster=False)
+            elif "tmdb_show_details" in self.backgrounds:       self.collection_background = ImageData("tmdb_show_details", self.backgrounds["tmdb_show_details"], is_poster=False)
         else:
             logger.info("No background collection detail or asset folder found")
 
-        if poster or background:
-            self.library.upload_images(self.obj, poster=poster, background=background)
+        if self.collection_poster or self.collection_background:
+            self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
 
     def sort_collection(self):
         logger.info("")
@@ -2286,6 +2288,8 @@ class CollectionBuilder:
                 self.library.Webhooks.collection_hooks(
                     self.details["collection_changes_webhooks"],
                     self.obj,
+                    poster_url=self.collection_poster.location if self.collection_poster.is_url else None,
+                    background_url=self.collection_background.location if self.collection_background.is_url else None,
                     created=self.created,
                     deleted=self.deleted,
                     additions=self.notification_additions,
