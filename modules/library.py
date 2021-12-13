@@ -34,6 +34,7 @@ class Library(ABC):
         self.name = params["name"]
         self.original_mapping_name = params["mapping_name"]
         self.metadata_path = params["metadata_path"]
+        self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
@@ -260,9 +261,14 @@ class Library(ABC):
                 if os.path.isdir(os.path.join(ad, name)):
                     item_dir = os.path.join(ad, name)
                 else:
-                    matches = util.glob_filter(os.path.join(ad, "**", name))
-                    if len(matches) > 0:
-                        item_dir = os.path.abspath(matches[0])
+                    for n in range(1, self.asset_depth + 1):
+                        new_path = ad
+                        for i in range(1, n + 1):
+                            new_path = os.path.join(new_path, "*")
+                        matches = util.glob_filter(os.path.join(new_path, name))
+                        if len(matches) > 0:
+                            item_dir = os.path.abspath(matches[0])
+                            break
                 if item_dir is None:
                     continue
                 found_folder = True

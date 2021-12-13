@@ -631,9 +631,14 @@ class Plex(Library):
                 if os.path.isdir(os.path.join(ad, name)):
                     item_dir = os.path.join(ad, name)
                 else:
-                    matches = util.glob_filter(os.path.join(ad, "**", name))
-                    if len(matches) > 0:
-                        item_dir = os.path.abspath(matches[0])
+                    for n in range(1, self.asset_depth + 1):
+                        new_path = ad
+                        for i in range(1, n + 1):
+                            new_path = os.path.join(new_path, "*")
+                        matches = util.glob_filter(os.path.join(new_path, name))
+                        if len(matches) > 0:
+                            item_dir = os.path.abspath(matches[0])
+                            break
                 if item_dir is None:
                     continue
                 found_folder = True
