@@ -49,11 +49,11 @@ class Tautulli:
                     plex_item = library.fetchItem(int(item["rating_key"]))
                     if not isinstance(plex_item, (Movie, Show)):
                         raise BadRequest
-                    rating_keys.append(item["rating_key"])
+                    rating_keys.append((item["rating_key"], "ratingKey"))
                 except (BadRequest, NotFound):
                     new_item = library.exact_search(item["title"], year=item["year"])
                     if new_item:
-                        rating_keys.append(new_item[0].ratingKey)
+                        rating_keys.append((new_item[0].ratingKey, "ratingKey"))
                     else:
                         logger.error(f"Plex Error: Item {item} not found")
         logger.debug("")

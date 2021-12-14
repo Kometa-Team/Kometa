@@ -541,7 +541,7 @@ class Plex(Library):
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
-            ids = [item.ratingKey for item in items]
+            ids = [(item.ratingKey, "ratingKey") for item in items]
             logger.debug("")
             logger.debug(f"{len(ids)} Keys Found: {ids}")
             return ids
