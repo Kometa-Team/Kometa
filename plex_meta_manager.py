@@ -535,10 +535,17 @@ def library_operations(config, library):
             logger.info("")
             util.separator(f"Starting TMDb Collections")
             logger.info("")
+            suffixes = util.get_list(library.tmdb_collections["remove_suffix"])
+            def remove_suffixes(_name):
+                if suffixes:
+                    for suffix in suffixes:
+                        if _name.endswith(suffix):
+                            _name = _name[:-len(_name)]
+                return _name.strip()
+
             metadata = MetadataFile(config, library, "Data", {
                 "collections": {
-                    _n.replace(library.tmdb_collections["remove_suffix"], "").strip() if library.tmdb_collections["remove_suffix"] else _n:
-                    {"template": {"name": "TMDb Collection", "collection_id": _i}}
+                    remove_suffixes(_n): {"template": {"name": "TMDb Collection", "collection_id": _i}}
                     for _i, _n in tmdb_collections.items() if int(_i) not in library.tmdb_collections["exclude_ids"]
                 },
                 "templates": {
@@ -549,16 +556,16 @@ def library_operations(config, library):
 
     if library.delete_collections_with_less is not None or library.delete_unmanaged_collections:
         logger.info("")
-        suffix = ""
+        print_suffix = ""
         unmanaged = ""
         if library.delete_collections_with_less is not None and library.delete_collections_with_less > 0:
-            suffix = f" with less then {library.delete_collections_with_less} item{'s' if library.delete_collections_with_less > 1 else ''}"
+            print_suffix = f" with less then {library.delete_collections_with_less} item{'s' if library.delete_collections_with_less > 1 else ''}"
         if library.delete_unmanaged_collections:
             if library.delete_collections_with_less is None:
                 unmanaged = "Unmanaged Collections "
             elif library.delete_collections_with_less > 0:
                 unmanaged = "Unmanaged Collections and "
-        util.separator(f"Deleting All {unmanaged}Collections{suffix}", space=False, border=False)
+        util.separator(f"Deleting All {unmanaged}Collections{print_suffix}", space=False, border=False)
         logger.info("")
     unmanaged_collections = []
     for col in library.get_all_collections():
