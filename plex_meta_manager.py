@@ -778,11 +778,11 @@ try:
         while True:
             schedule.run_pending()
             if not no_countdown:
-                current = datetime.now().strftime("%H:%M")
+                current_time = datetime.now().strftime("%H:%M")
                 seconds = None
                 og_time_str = ""
                 for time_to_run in valid_times:
-                    new_seconds = (datetime.strptime(time_to_run, "%H:%M") - datetime.strptime(current, "%H:%M")).total_seconds()
+                    new_seconds = (datetime.strptime(time_to_run, "%H:%M") - datetime.strptime(current_time, "%H:%M")).total_seconds()
                     if new_seconds < 0:
                         new_seconds += 86400
                     if (seconds is None or new_seconds < seconds) and new_seconds > 0:
@@ -793,7 +793,7 @@ try:
                     minutes = int((seconds % 3600) // 60)
                     time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                     time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                    util.print_return(f"Current Time: {current} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
+                    util.print_return(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
                 else:
                     logger.error(f"Time Error: {valid_times}")
             time.sleep(60)
