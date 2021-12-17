@@ -192,8 +192,9 @@ class Library(ABC):
             if background_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
 
+    @abstractmethod
     def notify(self, text, collection=None, critical=True):
-        self.config.notify(text, library=self, collection=collection, critical=critical)
+        pass
 
     @abstractmethod
     def _upload_image(self, item, image):

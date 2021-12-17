@@ -60,17 +60,20 @@ class Webhooks:
                 "added_to_sonarr": stats["sonarr"],
             })
 
-    def error_hooks(self, text, library=None, collection=None, critical=True):
+    def error_hooks(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         if self.error_webhooks:
             json = {"error": str(text), "critical": critical}
+            if server:
+                json["server_name"] = str(server)
             if library:
-                json["server_name"] = library.PlexServer.friendlyName
-                json["library_name"] = library.name
+                json["library_name"] = str(library)
             if collection:
                 json["collection"] = str(collection)
+            if playlist:
+                json["playlist"] = str(playlist)
             self._request(self.error_webhooks, json)
 
-    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, deleted=False, additions=None, removals=None):
+    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, deleted=False, additions=None, removals=None, playlist=False):
         if self.library:
             thumb = None
             if not poster_url and collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
@@ -82,7 +85,7 @@ class Webhooks:
                 "server_name": self.library.PlexServer.friendlyName,
                 "library_name": self.library.name,
                 "type": "movie" if self.library.is_movie else "show",
-                "collection": collection.title,
+                "playlist" if playlist else "collection": collection.title,
                 "created": created,
                 "deleted": deleted,
                 "poster": thumb,

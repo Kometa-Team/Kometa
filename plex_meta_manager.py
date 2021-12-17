@@ -1,6 +1,10 @@
 import argparse, logging, os, sys, time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
+
+from plexapi.exceptions import NotFound
+from plexapi.video import Show, Season
+
 try:
     import plexapi, schedule
     from modules import util
@@ -278,6 +282,290 @@ def update_libraries(config):
             library.notify(e)
             util.print_stacktrace()
             util.print_multiline(e, critical=True)
+
+
+
+    if config.playlist_files:
+        library_map = {_l.original_mapping_name: _l for _l in config.libraries}
+        os.makedirs(os.path.join(default_dir, "logs", "playlists"), exist_ok=True)
+        pf_file_logger = os.path.join(default_dir, "logs", "playlists", "playlists.log")
+        should_roll_over = os.path.isfile(pf_file_logger)
+        playlists_handler = RotatingFileHandler(pf_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
+        util.apply_formatter(playlists_handler)
+        if should_roll_over:
+            playlists_handler.doRollover()
+        logger.addHandler(playlists_handler)
+
+        logger.info("")
+        util.separator("Playlists")
+        logger.info("")
+        for playlist_file in config.playlist_files:
+            for mapping_name, playlist_attrs in playlist_file.playlists.items():
+                playlist_start = datetime.now()
+                if config.test_mode and ("test" not in playlist_attrs or playlist_attrs["test"] is not True):
+                    no_template_test = True
+                    if "template" in playlist_attrs and playlist_attrs["template"]:
+                        for data_template in util.get_list(playlist_attrs["template"], split=False):
+                            if "name" in data_template \
+                                    and data_template["name"] \
+                                    and playlist_file.templates \
+                                    and data_template["name"] in playlist_file.templates \
+                                    and playlist_file.templates[data_template["name"]] \
+                                    and "test" in playlist_file.templates[data_template["name"]] \
+                                    and playlist_file.templates[data_template["name"]]["test"] is True:
+                                no_template_test = False
+                    if no_template_test:
+                        continue
+
+                if "name_mapping" in playlist_attrs and playlist_attrs["name_mapping"]:
+                    playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"])
+                else:
+                    playlist_log_name, output_str = util.validate_filename(mapping_name)
+                playlist_log_folder = os.path.join(default_dir, "logs", "playlists", playlist_log_name)
+                os.makedirs(playlist_log_folder, exist_ok=True)
+                ply_file_logger = os.path.join(playlist_log_folder, "playlist.log")
+                should_roll_over = os.path.isfile(ply_file_logger)
+                playlist_handler = RotatingFileHandler(ply_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
+                util.apply_formatter(playlist_handler)
+                if should_roll_over:
+                    playlist_handler.doRollover()
+                logger.addHandler(playlist_handler)
+                server_name = None
+                library_names = None
+                try:
+                    util.separator(f"{mapping_name} Playlist")
+                    logger.info("")
+                    if output_str:
+                        logger.info(output_str)
+                        logger.info("")
+                    if "libraries" not in playlist_attrs or not playlist_attrs["libraries"]:
+                        raise Failed("Playlist Error: libraries attribute is required and cannot be blank")
+                    pl_libraries = []
+                    for pl_library in util.get_list(playlist_attrs["libraries"]):
+                        if str(pl_library) in library_map:
+                            pl_libraries.append(library_map[pl_library])
+                        else:
+                            raise Failed(f"Playlist Error: Library: {pl_library} not defined")
+                    server_check = None
+                    for pl_library in pl_libraries:
+                        if server_check:
+                            if pl_library.PlexServer.machineIdentifier != server_check:
+                                raise Failed("Playlist Error: All defined libraries must be on the same server")
+                        else:
+                            server_check = pl_library.PlexServer.machineIdentifier
+
+                    util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
+
+                    builder = CollectionBuilder(config, pl_libraries[0], playlist_file, mapping_name, no_missing, playlist_attrs, playlist=True)
+                    logger.info("")
+
+                    util.separator(f"Running {mapping_name} Playlist", space=False, border=False)
+
+                    if len(builder.schedule) > 0:
+                        util.print_multiline(builder.schedule, info=True)
+
+                    items_added = 0
+                    items_removed = 0
+                    logger.info("")
+                    logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
+
+                    if builder.filters or builder.tmdb_filters:
+                        logger.info("")
+                        for filter_key, filter_value in builder.filters:
+                            logger.info(f"Playlist Filter {filter_key}: {filter_value}")
+                        for filter_key, filter_value in builder.tmdb_filters:
+                            logger.info(f"Playlist Filter {filter_key}: {filter_value}")
+
+                    method, value = builder.builders[0]
+                    logger.debug("")
+                    logger.debug(f"Builder: {method}: {value}")
+                    logger.info("")
+                    items = []
+                    ids = builder.gather_ids(method, value)
+
+                    if len(ids) > 0:
+                        total_ids = len(ids)
+                        logger.debug("")
+                        logger.debug(f"{total_ids} IDs Found: {ids}")
+                        for i, input_data in enumerate(ids, 1):
+                            input_id, id_type = input_data
+                            util.print_return(f"Parsing ID {i}/{total_ids}")
+                            if id_type == "tvdb_season":
+                                show_id, season_num = input_id.split("_")
+                                show_id = int(show_id)
+                                found = False
+                                for pl_library in pl_libraries:
+                                    if show_id in pl_library.show_map:
+                                        found = True
+                                        show_item = pl_library.fetchItem(pl_library.show_map[show_id][0])
+                                        try:
+                                            items.extend(show_item.season(season=int(season_num)).episodes())
+                                        except NotFound:
+                                            builder.missing_parts.append(f"{show_item.title} Season: {season_num} Missing")
+                                        break
+                                if not found and show_id not in builder.missing_shows:
+                                    builder.missing_shows.append(show_id)
+                            elif id_type == "tvdb_episode":
+                                show_id, season_num, episode_num = input_id.split("_")
+                                show_id = int(show_id)
+                                found = False
+                                for pl_library in pl_libraries:
+                                    if show_id in pl_library.show_map:
+                                        found = True
+                                        show_item = pl_library.fetchItem(pl_library.show_map[show_id][0])
+                                        try:
+                                            items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
+                                        except NotFound:
+                                            builder.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
+                                        break
+                                if not found and show_id not in builder.missing_shows:
+                                    builder.missing_shows.append(show_id)
+                            else:
+                                rating_keys = []
+                                if id_type == "ratingKey":
+                                    rating_keys = input_id
+                                elif id_type == "tmdb":
+                                    if input_id not in builder.ignore_ids:
+                                        found = False
+                                        for pl_library in pl_libraries:
+                                            if input_id in pl_library.movie_map:
+                                                found = True
+                                                rating_keys = pl_library.movie_map[input_id]
+                                                break
+                                        if not found and input_id not in builder.missing_movies:
+                                            builder.missing_movies.append(input_id)
+                                elif id_type in ["tvdb", "tmdb_show"]:
+                                    if id_type == "tmdb_show":
+                                        try:
+                                            input_id = config.Convert.tmdb_to_tvdb(input_id, fail=True)
+                                        except Failed as e:
+                                            logger.error(e)
+                                            continue
+                                    if input_id not in builder.ignore_ids:
+                                        found = False
+                                        for pl_library in pl_libraries:
+                                            if input_id in pl_library.show_map:
+                                                found = True
+                                                rating_keys = pl_library.show_map[input_id]
+                                                break
+                                        if not found and input_id not in builder.missing_shows:
+                                            builder.missing_shows.append(input_id)
+                                elif id_type == "imdb":
+                                    if input_id not in builder.ignore_imdb_ids:
+                                        found = False
+                                        for pl_library in pl_libraries:
+                                            if input_id in pl_library.imdb_map:
+                                                found = True
+                                                rating_keys = pl_library.imdb_map[input_id]
+                                                break
+                                        if not found and builder.do_missing:
+                                            try:
+                                                tmdb_id, tmdb_type = config.Convert.imdb_to_tmdb(input_id, fail=True)
+                                                if tmdb_type == "movie":
+                                                    if tmdb_id not in builder.missing_movies:
+                                                        builder.missing_movies.append(tmdb_id)
+                                                else:
+                                                    tvdb_id = config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
+                                                    if tvdb_id not in builder.missing_shows:
+                                                        builder.missing_shows.append(tvdb_id)
+                                            except Failed as e:
+                                                logger.error(e)
+                                                continue
+                                if not isinstance(rating_keys, list):
+                                    rating_keys = [rating_keys]
+                                for rk in rating_keys:
+                                    try:
+                                        item = builder.fetch_item(rk)
+                                        if isinstance(item, (Show, Season)):
+                                            items.extend(item.episodes())
+                                        else:
+                                            items.append(item)
+                                    except Failed as e:
+                                        logger.error(e)
+                        util.print_end()
+
+                    if len(items) > 0:
+                        builder.filter_and_save_items(items)
+
+                    if len(builder.added_items) >= builder.minimum:
+                        logger.info("")
+                        util.separator(f"Adding to {mapping_name} Playlist", space=False, border=False)
+                        logger.info("")
+                        items_added = builder.add_to_collection()
+                        stats["added"] += items_added
+                        items_removed = 0
+                        if builder.sync:
+                            items_removed = builder.sync_collection()
+                            stats["removed"] += items_removed
+                    elif len(builder.added_items) < builder.minimum:
+                        logger.info("")
+                        logger.info(f"Playlist Minimum: {builder.minimum} not met for {mapping_name} Playlist")
+                        if builder.details["delete_below_minimum"] and builder.obj:
+                            builder.delete_collection()
+                            builder.deleted = True
+                            logger.info("")
+                            logger.info(f"Playlist {builder.obj.title} deleted")
+
+                    if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                        if builder.details["show_missing"] is True:
+                            logger.info("")
+                            util.separator(f"Missing from Library", space=False, border=False)
+                            logger.info("")
+                        radarr_add, sonarr_add = builder.run_missing()
+                        stats["radarr"] += radarr_add
+                        stats["sonarr"] += sonarr_add
+
+                    run_item_details = True
+                    try:
+                        builder.load_collection()
+                        if builder.created:
+                            stats["created"] += 1
+                        elif items_added > 0 or items_removed > 0:
+                            stats["modified"] += 1
+                    except Failed:
+                        util.print_stacktrace()
+                        run_item_details = False
+                        logger.info("")
+                        util.separator("No Playlist to Update", space=False, border=False)
+                    else:
+                        builder.update_details()
+
+                    if builder.deleted:
+                        stats["deleted"] += 1
+
+                    if (builder.item_details or builder.custom_sort) and run_item_details and builder.builders:
+                        try:
+                            builder.load_collection_items()
+                        except Failed:
+                            logger.info("")
+                            util.separator("No Items Found", space=False, border=False)
+                        else:
+                            if builder.item_details:
+                                builder.update_item_details()
+                            if builder.custom_sort:
+                                builder.sort_collection()
+
+                    builder.send_notifications()
+
+
+
+
+
+
+                except NotScheduled as e:
+                    util.print_multiline(e, info=True)
+                except Failed as e:
+                    config.notify(e, server=server_name, library=library_names, playlist=mapping_name)
+                    util.print_stacktrace()
+                    util.print_multiline(e, error=True)
+                except Exception as e:
+                    config.notify(f"Unknown Error: {e}", server=server_name, library=library_names, playlist=mapping_name)
+                    util.print_stacktrace()
+                    logger.error(f"Unknown Error: {e}")
+                logger.info("")
+                util.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {str(datetime.now() - playlist_start).split('.')[0]}")
+                logger.removeHandler(playlist_handler)
+        logger.removeHandler(playlists_handler)
 
     has_run_again = False
     for library in config.libraries:
@@ -675,7 +963,7 @@ def run_collection(config, library, metadata, requested_collections):
 
                 builder.find_rating_keys()
 
-                if len(builder.rating_keys) >= builder.minimum and builder.build_collection:
+                if len(builder.added_items) >= builder.minimum and builder.build_collection:
                     logger.info("")
                     util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
                     logger.info("")
@@ -685,7 +973,7 @@ def run_collection(config, library, metadata, requested_collections):
                     if builder.sync:
                         items_removed = builder.sync_collection()
                         stats["removed"] += items_removed
-                elif len(builder.rating_keys) < builder.minimum and builder.build_collection:
+                elif len(builder.added_items) < builder.minimum and builder.build_collection:
                     logger.info("")
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
                     if builder.details["delete_below_minimum"] and builder.obj:
@@ -718,9 +1006,6 @@ def run_collection(config, library, metadata, requested_collections):
                     util.separator("No Collection to Update", space=False, border=False)
                 else:
                     builder.update_details()
-                    if builder.custom_sort or builder.sort_by:
-                        library.run_sort.append(builder)
-                        # builder.sort_collection()
 
             if builder.deleted:
                 stats["deleted"] += 1
@@ -730,14 +1015,18 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
 
-            if builder.item_details and run_item_details and builder.builders:
+            if (builder.item_details or builder.custom_sort or builder.sort_by) and run_item_details and builder.builders:
                 try:
                     builder.load_collection_items()
                 except Failed:
                     logger.info("")
                     util.separator("No Items Found", space=False, border=False)
                 else:
-                    builder.update_item_details()
+                    if builder.item_details:
+                        builder.update_item_details()
+                    if builder.custom_sort or builder.sort_by:
+                        library.run_sort.append(builder)
+                        # builder.sort_collection()
 
             builder.send_notifications()
 

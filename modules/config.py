@@ -13,6 +13,7 @@ from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
 from modules.notifiarr import Notifiarr
 from modules.omdb import OMDb
+from modules.playlist import PlaylistFile
 from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
@@ -28,7 +29,7 @@ from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
-sync_modes = {"append": "Only Add Items to the Collection", "sync": "Add & Remove Items from the Collection"}
+sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
 
 class ConfigFile:
@@ -94,6 +95,7 @@ class ConfigFile:
                         hooks("collection_removal")
                         new_config["libraries"][library]["webhooks"]["collection_changes"] = changes if changes else None
             if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
+            if "playlists" in new_config:                   new_config["playlists"] = new_config.pop("playlists")
             if "settings" in new_config:                    new_config["settings"] = new_config.pop("settings")
             if "webhooks" in new_config:
                 temp = new_config.pop("webhooks")
@@ -342,8 +344,6 @@ class ConfigFile:
             else:
                 logger.warning("mal attribute not found")
 
-            util.separator()
-
             self.AniDB = None
             if "anidb" in self.data:
                 util.separator()
@@ -359,6 +359,58 @@ class ConfigFile:
                 logger.info(f"My Anime List Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
             if self.AniDB is None:
                 self.AniDB = AniDB(self, None)
+
+            util.separator()
+
+            self.playlist_names = []
+            self.playlist_files = []
+            if "playlists" in self.data:
+                logger.info("Reading in Playlist Files")
+                if self.data["playlists"] is None:
+                    raise Failed("Config Error: playlists attribute is blank")
+                playlists_pairs = []
+                paths_to_check = self.data["playlists"] if isinstance(self.data["playlists"], list) else [self.data["playlists"]]
+                for path in paths_to_check:
+                    if isinstance(path, dict):
+                        def check_dict(attr):
+                            if attr in path:
+                                if path[attr] is None:
+                                    err = f"Config Error: playlists {attr} is blank"
+                                    self.errors.append(err)
+                                    logger.error(err)
+                                else:
+                                    return path[attr]
+
+                        url = check_dict("url")
+                        if url:
+                            playlists_pairs.append(("URL", url))
+                        git = check_dict("git")
+                        if git:
+                            playlists_pairs.append(("Git", git))
+                        file = check_dict("file")
+                        if file:
+                            playlists_pairs.append(("File", file))
+                        folder = check_dict("folder")
+                        if folder:
+                            if os.path.isdir(folder):
+                                yml_files = util.glob_filter(os.path.join(folder, "*.yml"))
+                                if yml_files:
+                                    playlists_pairs.extend([("File", yml) for yml in yml_files])
+                                else:
+                                    logger.error(f"Config Error: No YAML (.yml) files found in {folder}")
+                            else:
+                                logger.error(f"Config Error: Folder not found: {folder}")
+                    else:
+                        playlists_pairs.append(("File", path))
+                for file_type, playlist_file in playlists_pairs:
+                    try:
+                        playlist_obj = PlaylistFile(self, file_type, playlist_file)
+                        self.playlist_names.extend([p for p in playlist_obj.playlists])
+                        self.playlist_files.append(playlist_obj)
+                    except Failed as e:
+                        util.print_multiline(e, error=True)
+            else:
+                logger.warning("playlists attribute not found")
 
             self.TVDb = TVDb(self, self.general["tvdb_language"])
             self.IMDb = IMDb(self)
@@ -423,7 +475,6 @@ class ConfigFile:
             for library_name, lib in libs.items():
                 if self.requested_libraries and library_name not in self.requested_libraries:
                     continue
-                util.separator()
                 params = {
                     "mapping_name": str(library_name),
                     "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
@@ -674,10 +725,10 @@ class ConfigFile:
             self.notify(e)
             raise
 
-    def notify(self, text, library=None, collection=None, critical=True):
+    def notify(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         for error in util.get_list(text, split=False):
             try:
-                self.Webhooks.error_hooks(error, library=library, collection=collection, critical=critical)
+                self.Webhooks.error_hooks(error, server=server, library=library, collection=collection, playlist=playlist, critical=critical)
             except Failed as e:
                 util.print_stacktrace()
                 logger.error(f"Webhooks Error: {e}")
