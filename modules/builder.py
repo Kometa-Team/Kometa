@@ -524,7 +524,7 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: sort_by attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['sort_by']]}")
-                if (self.library.is_movie and self.data[methods["sort_by"]] not in plex.movie_sorts) or (self.library.is_show and self.data[methods["sort_by"]] in plex.show_sorts):
+                if (self.library.is_movie and self.data[methods["sort_by"]] not in plex.movie_sorts) or (self.library.is_show and self.data[methods["sort_by"]] not in plex.show_sorts):
                     raise Failed(f"{self.Type} Error: sort_by attribute {self.data[methods['sort_by']]} invalid")
                 else:
                     self.sort_by = self.data[methods["sort_by"]]
@@ -1747,13 +1747,13 @@ class CollectionBuilder:
                     self.library.alter_collection(item, name, smart_label_collection=self.smart_label_collection)
                 amount_added += 1
                 if self.details["collection_changes_webhooks"]:
-                    if self.library.is_movie and item.ratingKey in self.library.movie_rating_key_map:
+                    if item.ratingKey in self.library.movie_rating_key_map:
                         add_id = self.library.movie_rating_key_map[item.ratingKey]
-                    elif self.library.is_show and item.ratingKey in self.library.show_rating_key_map:
+                    elif item.ratingKey in self.library.show_rating_key_map:
                         add_id = self.library.show_rating_key_map[item.ratingKey]
                     else:
                         add_id = None
-                    self.notification_additions.append({"title": item.title, "id": add_id})
+                    self.notification_additions.append(util.item_set(item, add_id))
         if self.playlist and playlist_adds and not self.obj:
             self.obj = self.library.create_playlist(self.name, playlist_adds)
             logger.info("")
@@ -1782,14 +1782,15 @@ class CollectionBuilder:
                     self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
                 amount_removed += 1
                 if self.details["collection_changes_webhooks"]:
-                    if self.library.is_movie and item.ratingKey in self.library.movie_rating_key_map:
+                    if item.ratingKey in self.library.movie_rating_key_map:
                         remove_id = self.library.movie_rating_key_map[item.ratingKey]
-                    elif self.library.is_show and item.ratingKey in self.library.show_rating_key_map:
+                    elif item.ratingKey in self.library.show_rating_key_map:
                         remove_id = self.library.show_rating_key_map[item.ratingKey]
                     else:
                         remove_id = None
-                    self.notification_removals.append({"title": item.title, "id": remove_id})
+                    self.notification_removals.append(util.item_set(item, remove_id))
         if self.playlist and playlist_removes:
+            self.obj.reload()
             self.obj.removeItems(playlist_removes)
         if amount_removed > 0:
             logger.info("")
@@ -2315,8 +2316,8 @@ class CollectionBuilder:
                 self.library.Webhooks.collection_hooks(
                     self.details["collection_changes_webhooks"],
                     self.obj,
-                    poster_url=self.collection_poster.location if self.collection_poster.is_url else None,
-                    background_url=self.collection_background.location if self.collection_background.is_url else None,
+                    poster_url=self.collection_poster.location if self.collection_poster and self.collection_poster.is_url else None,
+                    background_url=self.collection_background.location if self.collection_background and self.collection_background.is_url else None,
                     created=self.created,
                     deleted=self.deleted,
                     additions=self.notification_additions,
@@ -2358,7 +2359,7 @@ class CollectionBuilder:
                         add_id = self.library.show_rating_key_map[current.ratingKey]
                     else:
                         add_id = None
-                    self.notification_additions.append({"title": current.title, "id": add_id})
+                    self.notification_additions.append(util.item_set(current, add_id))
             self.send_notifications()
             logger.info(f"{len(rating_keys)} {self.collection_level.capitalize()}{'s' if len(rating_keys) > 1 else ''} Processed")
 

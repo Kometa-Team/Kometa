@@ -545,7 +545,7 @@ def update_libraries(config):
                             if builder.custom_sort:
                                 builder.sort_collection()
 
-                    builder.send_notifications()
+                    builder.send_notifications(playlist=True)
 
 
 

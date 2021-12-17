@@ -99,16 +99,17 @@ class ConfigFile:
             if "settings" in new_config:                    new_config["settings"] = new_config.pop("settings")
             if "webhooks" in new_config:
                 temp = new_config.pop("webhooks")
-                changes = []
-                def hooks(attr):
-                    if attr in temp:
-                        items = util.get_list(temp.pop(attr), split=False)
-                        if items:
-                            changes.extend([w for w in items if w not in changes])
-                hooks("collection_creation")
-                hooks("collection_addition")
-                hooks("collection_removal")
-                temp["collection_changes"] = changes if changes else None
+                if "collection_changes" not in temp:
+                    changes = []
+                    def hooks(attr):
+                        if attr in temp:
+                            items = util.get_list(temp.pop(attr), split=False)
+                            if items:
+                                changes.extend([w for w in items if w not in changes])
+                    hooks("collection_creation")
+                    hooks("collection_addition")
+                    hooks("collection_removal")
+                    temp["collection_changes"] = changes if changes else None
                 new_config["webhooks"] = temp
             if "plex" in new_config:                        new_config["plex"] = new_config.pop("plex")
             if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
@@ -147,9 +148,9 @@ class ConfigFile:
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
                     else:                                                               endline = ""
                     yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
-                if default_is_none and var_type in ["list", "int_list"]:            return []
+                if default_is_none and var_type in ["list", "int_list"]:            return default if default else []
             elif data[attribute] is None:
-                if default_is_none and var_type in ["list", "int_list"]:            return []
+                if default_is_none and var_type in ["list", "int_list"]:            return default if default else []
                 elif default_is_none:                                               return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "url":
@@ -512,7 +513,7 @@ class ConfigFile:
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
-                params["collection_changes_webhooks"] = check_for_attribute(lib, "collection_creation", parent="webhooks", var_type="list", default=self.webhooks["collection_changes"], do_print=False, save=False, default_is_none=True)
+                params["collection_changes_webhooks"] = check_for_attribute(lib, "collection_changes", parent="webhooks", var_type="list", default=self.webhooks["collection_changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
                 params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
