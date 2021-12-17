@@ -259,6 +259,9 @@ def item_title(item):
     else:
         return item.title
 
+def item_set(item, item_id):
+    return {"title": item_title(item), "tmdb" if isinstance(item, Movie) else "tvdb": item_id}
+
 def is_locked(filepath):
     locked = None
     file_object = None

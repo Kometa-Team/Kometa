@@ -79,22 +79,18 @@ class Webhooks:
             if not poster_url and collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
                 thumb = self.config.get_image_encoded(f"{self.library.url}{collection.thumb}?X-Plex-Token={self.library.token}")
             art = None
-            if not background_url and collection.art and next((f for f in collection.fields if f.name == "art"), None):
+            if not playlist and not background_url and collection.art and next((f for f in collection.fields if f.name == "art"), None):
                 art = self.config.get_image_encoded(f"{self.library.url}{collection.art}?X-Plex-Token={self.library.token}")
-            json = {
+            self._request(webhooks, {
                 "server_name": self.library.PlexServer.friendlyName,
                 "library_name": self.library.name,
-                "type": "movie" if self.library.is_movie else "show",
                 "playlist" if playlist else "collection": collection.title,
                 "created": created,
                 "deleted": deleted,
                 "poster": thumb,
                 "background": art,
                 "poster_url": poster_url,
-                "background_url": background_url
-            }
-            if additions:
-                json["additions"] = additions
-            if removals:
-                json["removals"] = removals
-            self._request(webhooks, json)
+                "background_url": background_url,
+                "additions": additions if additions else [],
+                "removals": removals if removals else [],
+            })
