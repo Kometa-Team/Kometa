@@ -50,7 +50,6 @@ class FlixPatrol:
         if len(ids) > 0 and ids[0]:
             if "https://www.themoviedb.org" in ids[0]:
                 return util.regex_first_int(ids[0].split("https://www.themoviedb.org")[1], "TMDB Movie ID")
-            raise Failed(f"FlixPatrol Error: TMDb Movie ID not found in {ids[0]}")
         raise Failed(f"FlixPatrol Error: TMDb Movie ID not found at {flixpatrol_url}")
 
     def _parse_list(self, list_url, language, is_movie, limit=0):
