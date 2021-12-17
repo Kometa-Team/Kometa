@@ -5,6 +5,7 @@ from modules.util import Failed, ImageData
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
+from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from retrying import retry
 from urllib import parse
@@ -264,6 +265,9 @@ class Plex(Library):
             self.tmdb_collections = None
             logger.error("Config Error: tmdb_collections only work with Movie Libraries.")
 
+    def notify(self, text, collection=None, critical=True):
+        self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
+
     def set_server_preroll(self, preroll):
         self.PlexServer.settings.get('cinemaTrailersPrerollID').set(preroll)
         self.PlexServer.settings.save()
@@ -305,8 +309,16 @@ class Plex(Library):
         return results
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def create_playlist(self, name, items):
+        return self.PlexServer.createPlaylist(name, items=items)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def fetchItems(self, key, container_start, container_size):
         return self.Plex.fetchItems(key, container_start=container_start, container_size=container_size)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def moveItem(self, obj, item, after):
+        obj.moveItem(item, after=after)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def query(self, method):
@@ -475,6 +487,12 @@ class Plex(Library):
         key += f"&promotedToSharedHome={1 if (shared is None and visibility['shared']) or shared else 0}"
         self._query(key, post=True)
 
+    def get_playlist(self, title):
+        try:
+            return self.PlexServer.playlist(title)
+        except NotFound:
+            raise Failed(f"Plex Error: Playlist {title} not found")
+
     def get_collection(self, data):
         if isinstance(data, int):
             return self.fetchItem(data)
@@ -553,7 +571,7 @@ class Plex(Library):
     def get_collection_items(self, collection, smart_label_collection):
         if smart_label_collection:
             return self.get_labeled_items(collection.title if isinstance(collection, Collection) else str(collection))
-        elif isinstance(collection, Collection):
+        elif isinstance(collection, (Collection, Playlist)):
             if collection.smart:
                 return self.get_filter_items(self.smart_filter(collection))
             else:
@@ -566,7 +584,7 @@ class Plex(Library):
         return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
 
     def get_collection_name_and_items(self, collection, smart_label_collection):
-        name = collection.title if isinstance(collection, Collection) else str(collection)
+        name = collection.title if isinstance(collection, (Collection, Playlist)) else str(collection)
         return name, self.get_collection_items(collection, smart_label_collection)
 
     def get_tmdb_from_map(self, item):

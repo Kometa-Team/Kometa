@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+from plexapi.video import Season, Episode, Movie
 
 try:
     import msvcrt
@@ -240,6 +241,23 @@ def validate_filename(filename):
     else:
         mapping_name = sanitize_filename(filename)
         return mapping_name, f"Log Folder Name: {filename} is invalid using {mapping_name}"
+
+def item_title(item):
+    if isinstance(item, Season):
+        if f"Season {item.index}" == item.title:
+            return f"{item.parentTitle} {item.title}"
+        else:
+            return f"{item.parentTitle} Season {item.index}: {item.title}"
+    elif isinstance(item, Episode):
+        text = f"{item.grandparentTitle} S{add_zero(item.parentIndex)}E{add_zero(item.index)}"
+        if f"Season {item.parentIndex}" == item.parentTitle:
+            return f"{text}: {item.title}"
+        else:
+            return f"{text}: {item.parentTitle}: {item.title}"
+    elif isinstance(item, Movie) and item.year:
+        return f"{item.title} ({item.year})"
+    else:
+        return item.title
 
 def is_locked(filepath):
     locked = None

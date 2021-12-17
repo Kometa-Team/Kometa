@@ -81,7 +81,7 @@ class FlixPatrol:
             list_url = flixpatrol_list.strip()
             if not list_url.startswith(tuple([v for k, v in urls.items()])):
                 fails = "\n".join([f"{v} (For {k.replace('_', ' ').title()})" for k, v in urls.items()])
-                raise Failed(f"FlixPatrol Error: {list_url} must begin with either:{fails}")
+                raise Failed(f"FlixPatrol Error: {list_url} must begin with either:\n{fails}")
             elif len(self._parse_list(list_url, language, is_movie)) > 0:
                 valid_lists.append(list_url)
             else:
