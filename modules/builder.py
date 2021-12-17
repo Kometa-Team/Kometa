@@ -178,6 +178,7 @@ class CollectionBuilder:
         self.language = self.library.Plex.language
         self.details = {
             "show_filtered": self.library.show_filtered,
+            "show_options": self.library.show_options,
             "show_missing": self.library.show_missing,
             "save_missing": self.library.save_missing,
             "missing_only_released": self.library.missing_only_released,
@@ -538,7 +539,6 @@ class CollectionBuilder:
                 else:
                     raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)")
         self.parts_collection = self.collection_level in ["season", "episode"]
-        self.media_type = self.collection_level.capitalize()
 
         if "tmdb_person" in methods:
             logger.debug("")
@@ -1658,7 +1658,8 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data)
-            search_choices = self.library.get_search_choices(attribute, title=not pairs)
+            use_title = not pairs
+            search_choices, names = self.library.get_search_choices(attribute, title=use_title)
             valid_list = []
             for value in final_values:
                 if str(value).lower() in search_choices:
@@ -1668,6 +1669,8 @@ class CollectionBuilder:
                         valid_list.append(search_choices[str(value).lower()])
                 else:
                     error = f"Plex Error: {attribute}: {value} not found"
+                    if self.details["show_options"]:
+                        error += f"\nOptions: {names}"
                     if validate:
                         raise Failed(error)
                     else:

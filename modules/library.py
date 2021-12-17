@@ -50,6 +50,7 @@ class Library(ABC):
         self.missing_only_released = params["missing_only_released"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_filtered = params["show_filtered"]
+        self.show_options = params["show_options"]
         self.show_missing = params["show_missing"]
         self.show_missing_assets = params["show_missing_assets"]
         self.save_missing = params["save_missing"]

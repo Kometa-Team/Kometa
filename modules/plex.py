@@ -376,11 +376,13 @@ class Plex(Library):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         try:
+            names = []
             choices = {}
             for choice in self.Plex.listFilterChoices(final_search):
+                names.append(choice.title if title else choice.key)
                 choices[choice.title.lower()] = choice.title if title else choice.key
                 choices[choice.key.lower()] = choice.title if title else choice.key
-            return choices
+            return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
