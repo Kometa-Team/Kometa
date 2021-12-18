@@ -462,14 +462,30 @@ def update_libraries(config):
                                                 found = True
                                                 rating_keys = pl_library.imdb_map[input_id]
                                                 break
-                                        if not found and builder.do_missing:
+                                        if not found:
                                             try:
-                                                tmdb_id, tmdb_type = config.Convert.imdb_to_tmdb(input_id, fail=True)
-                                                if tmdb_type == "movie":
-                                                    if tmdb_id not in builder.missing_movies:
-                                                        builder.missing_movies.append(tmdb_id)
-                                                else:
-                                                    tvdb_id = config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
+                                                _id, tmdb_type = config.Convert.imdb_to_tmdb(input_id, fail=True)
+                                                if tmdb_type == "episode":
+                                                    tmdb_id, season_num, episode_num = _id.split("_")
+                                                    show_id = config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
+                                                    show_id = int(show_id)
+                                                    found = False
+                                                    for pl_library in pl_libraries:
+                                                        if show_id in pl_library.show_map:
+                                                            found = True
+                                                            show_item = pl_library.fetchItem(pl_library.show_map[show_id][0])
+                                                            try:
+                                                                items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
+                                                            except NotFound:
+                                                                builder.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
+                                                            break
+                                                    if not found and show_id not in builder.missing_shows:
+                                                        builder.missing_shows.append(show_id)
+                                                elif tmdb_type == "movie" and builder.do_missing:
+                                                    if _id not in builder.missing_movies:
+                                                        builder.missing_movies.append(_id)
+                                                elif tmdb_type == "show" and builder.do_missing:
+                                                    tvdb_id = config.Convert.tmdb_to_tvdb(_id, fail=True)
                                                     if tvdb_id not in builder.missing_shows:
                                                         builder.missing_shows.append(tvdb_id)
                                             except Failed as e:

@@ -102,7 +102,7 @@ sonarr_details = [
 parts_collection_valid = [
      "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "collection_changes_webhooks"
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
-     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "imdb_list"
 ] + summary_details + poster_details + background_details + string_details
 all_filters = [
     "actor", "actor.not",
@@ -137,6 +137,7 @@ all_filters = [
     "tmdb_year", "tmdb_year.gt", "tmdb_year.gte", "tmdb_year.lt", "tmdb_year.lte", "tmdb_year.not"
 ]
 tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "first_episode_aired", "last_episode_aired"]
+boolean_filters = ["has_collection", "has_overlay"]
 movie_only_filters = [
     "audio_language", "audio_language.not",
     "audio_track_title", "audio_track_title.not", "audio_track_title.is", "audio_track_title.isnot", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
@@ -1294,16 +1295,28 @@ class CollectionBuilder:
                                 self.missing_parts.append(f"{show_item.title} Season: {season_num} Missing")
                         elif show_id not in self.missing_shows:
                             self.missing_shows.append(show_id)
-                    elif id_type == "tvdb_episode" and self.collection_level == "episode":
-                        show_id, season_num, episode_num = input_id.split("_")
+                    elif id_type in ["tvdb_episode", "imdb"] and self.collection_level == "episode":
+                        if id_type == "tvdb_episode":
+                            show_id, season_num, episode_num = input_id.split("_")
+                        elif id_type == "imdb" and input_id not in self.ignore_imdb_ids:
+                            try:
+                                _id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
+                                if tmdb_type != "episode":
+                                    continue
+                                tmdb_id, season_num, episode_num = _id.split("_")
+                                show_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
+                            except Failed as e:
+                                logger.error(e)
+                                continue
+                        else:
+                            continue
                         show_id = int(show_id)
                         if show_id in self.library.show_map:
                             show_item = self.library.fetchItem(self.library.show_map[show_id][0])
                             try:
                                 items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
                             except NotFound:
-                                self.missing_parts.append(
-                                    f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
+                                self.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
                         elif show_id not in self.missing_shows:
                             self.missing_shows.append(show_id)
                     else:
@@ -1338,7 +1351,7 @@ class CollectionBuilder:
                                         if tmdb_type == "movie":
                                             if tmdb_id not in self.missing_movies:
                                                 self.missing_movies.append(tmdb_id)
-                                        else:
+                                        elif tmdb_type == "show":
                                             tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
                                             if tvdb_id not in self.missing_shows:
                                                 self.missing_shows.append(tvdb_id)
@@ -1616,7 +1629,7 @@ class CollectionBuilder:
             for value in values:
                 final_years.append(self._parse(final, value, datatype="int", minimum=1800, maximum=self.current_year))
             return smart_pair(final_years)
-        elif attribute in plex.boolean_attributes + ["has_collection", "has_overlay"]:
+        elif attribute in plex.boolean_attributes + boolean_filters:
             return self._parse(attribute, data, datatype="bool")
         else:
             raise Failed(f"{self.Type} Error: {final} attribute not supported")
@@ -1788,15 +1801,15 @@ class CollectionBuilder:
                         values = [getattr(current, filter_actual)]
                     if util.is_string_filter(values, modifier, filter_data):
                         return False
-                elif filter_attr == "has_collection":
-                    if util.is_boolean_filter(filter_data, len(current.collections) > 0):
-                        return False
-                elif filter_attr == "has_overlay":
-                    has_overlay = False
-                    for label in current.labels:
-                        if label.tag.lower().endswith(" overlay"):
-                            has_overlay = True
-                    if util.is_boolean_filter(filter_data, has_overlay):
+                elif filter_attr in boolean_filters:
+                    filter_check = False
+                    if filter_attr == "has_collection":
+                        filter_check = len(current.collections) > 0
+                    elif filter_attr == "has_overlay":
+                        for label in current.labels:
+                            if label.tag.lower().endswith(" overlay"):
+                                filter_check = True
+                    if util.is_boolean_filter(filter_data, filter_check):
                         return False
                 elif filter_attr == "history":
                     item_date = current.originallyAvailableAt
