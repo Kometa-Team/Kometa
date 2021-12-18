@@ -27,5 +27,5 @@ class Notifiarr:
         url = f"{dev_url if self.develop else base_url}{'notification/test' if self.test else f'{path}{self.apikey}'}"
         if self.config.trace_mode:
             logger.debug(url.replace(self.apikey, "APIKEY"))
-        params = {"event": "pmm" if self.test else "collections"}
+        params = {"event": "pmm"} if self.test else None
         return url, params
