@@ -655,7 +655,9 @@ def library_operations(config, library):
     logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
     logger.debug(f"Split Duplicates: {library.split_duplicates}")
     logger.debug(f"Radarr Add All: {library.radarr_add_all}")
+    logger.debug(f"Radarr Remove by Tag: {library.radarr_remove_by_tag}")
     logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
+    logger.debug(f"Sonarr Remove by Tag: {library.sonarr_remove_by_tag}")
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
     tmdb_operation = library.assets_for_all or library.mass_genre_update or library.mass_audience_rating_update \
@@ -861,6 +863,11 @@ def library_operations(config, library):
                 }
             })
             run_collection(config, library, metadata, metadata.get_collections(None))
+
+    if library.radarr_remove_by_tag:
+        library.Radarr.remove_all_with_tags(library.radarr_remove_by_tag)
+    if library.sonarr_remove_by_tag:
+        library.Sonarr.remove_all_with_tags(library.sonarr_remove_by_tag)
 
     if library.delete_collections_with_less is not None or library.delete_unmanaged_collections:
         logger.info("")

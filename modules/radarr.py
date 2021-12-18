@@ -168,3 +168,18 @@ class Radarr:
             logger.info("")
             for tmdb_id in not_exists:
                 logger.info(f"TMDb ID Not in Radarr | {tmdb_id}")
+
+    def remove_all_with_tags(self, tags):
+        lower_tags = [_t.lower() for _t in tags]
+        remove_items = []
+        for movie in self.api.all_movies():
+            tag_strs = [_t.label.lower() for _t in movie.tags]
+            remove = True
+            for tag in lower_tags:
+                if tag not in tag_strs:
+                    remove = False
+                    break
+            if remove:
+                remove_items.append(movie)
+        if remove_items:
+            self.api.delete_multiple_movies(remove_items)

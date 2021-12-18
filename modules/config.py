@@ -148,9 +148,9 @@ class ConfigFile:
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
                     else:                                                               endline = ""
                     yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
-                if default_is_none and var_type in ["list", "int_list"]:            return default if default else []
+                if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
             elif data[attribute] is None:
-                if default_is_none and var_type in ["list", "int_list"]:            return default if default else []
+                if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
                 elif default_is_none:                                               return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "url":
@@ -166,6 +166,7 @@ class ConfigFile:
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
             elif var_type == "list":                                            return util.get_list(data[attribute], split=False)
+            elif var_type == "comma_list":                                      return util.get_list(data[attribute])
             elif var_type == "int_list":                                        return util.get_list(data[attribute], int_list=True)
             elif var_type == "list_path":
                 temp_list = []
@@ -547,8 +548,12 @@ class ConfigFile:
                             params["split_duplicates"] = check_for_attribute(lib["operations"], "split_duplicates", var_type="bool", default=False, save=False)
                         if "radarr_add_all" in lib["operations"]:
                             params["radarr_add_all"] = check_for_attribute(lib["operations"], "radarr_add_all", var_type="bool", default=False, save=False)
+                        if "radarr_remove_by_tag" in lib["operations"]:
+                            params["radarr_remove_by_tag"] = check_for_attribute(lib["operations"], "radarr_remove_by_tag", var_type="comma_list", default=False, save=False)
                         if "sonarr_add_all" in lib["operations"]:
                             params["sonarr_add_all"] = check_for_attribute(lib["operations"], "sonarr_add_all", var_type="bool", default=False, save=False)
+                        if "sonarr_remove_by_tag" in lib["operations"]:
+                            params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
                         if "tmdb_collections" in lib["operations"]:
                             params["tmdb_collections"] = {"exclude_ids": [], "remove_suffix": None, "template": {"tmdb_collection_details": "<<collection_id>>"}}
                             if lib["operations"]["tmdb_collections"] and isinstance(lib["operations"]["tmdb_collections"], dict):
