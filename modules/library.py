@@ -34,6 +34,7 @@ class Library(ABC):
         self.name = params["name"]
         self.original_mapping_name = params["mapping_name"]
         self.metadata_path = params["metadata_path"]
+        self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
         self.default_dir = params["default_dir"]
