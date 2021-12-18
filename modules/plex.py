@@ -391,7 +391,10 @@ class Plex(Library):
             names = []
             choices = {}
             for choice in self.Plex.listFilterChoices(final_search):
-                names.append(choice.title if title else choice.key)
+                if choice.title not in names:
+                    names.append(choice.title)
+                if choice.key not in names:
+                    names.append(choice.key)
                 choices[choice.title.lower()] = choice.title if title else choice.key
                 choices[choice.key.lower()] = choice.title if title else choice.key
             return choices, names
