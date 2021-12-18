@@ -194,3 +194,18 @@ class Sonarr:
             logger.info("")
             for tvdb_id in not_exists:
                 logger.info(f"TVDb ID Not in Sonarr | {tvdb_id}")
+
+    def remove_all_with_tags(self, tags):
+        lower_tags = [_t.lower() for _t in tags]
+        remove_items = []
+        for series in self.api.all_series():
+            tag_strs = [_t.label.lower() for _t in series.tags]
+            remove = True
+            for tag in lower_tags:
+                if tag not in tag_strs:
+                    remove = False
+                    break
+            if remove:
+                remove_items.append(series)
+        if remove_items:
+            self.api.delete_multiple_series(remove_items)
