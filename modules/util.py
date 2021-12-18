@@ -277,26 +277,26 @@ def is_locked(filepath):
                 file_object.close()
     return locked
 
-def time_window(time_window):
+def time_window(tw):
     today = datetime.now()
-    if time_window == "today":
+    if tw == "today":
         return f"{today:%Y-%m-%d}"
-    elif time_window == "yesterday":
+    elif tw == "yesterday":
         return f"{today - timedelta(days=1):%Y-%m-%d}"
-    elif time_window == "this_week":
+    elif tw == "this_week":
         return f"{today:%Y-0%V}"
-    elif time_window == "last_week":
+    elif tw == "last_week":
         return f"{today - timedelta(weeks=1):%Y-0%V}"
-    elif time_window == "this_month":
+    elif tw == "this_month":
         return f"{today:%Y-%m}"
-    elif time_window == "last_month":
+    elif tw == "last_month":
         return f"{today.year}-{today.month - 1 or 12}"
-    elif time_window == "this_year":
+    elif tw == "this_year":
         return f"{today.year}"
-    elif time_window == "last_year":
+    elif tw == "last_year":
         return f"{today.year - 1}"
     else:
-        return time_window
+        return tw
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
@@ -347,3 +347,96 @@ def is_string_filter(values, modifier, data):
         if jailbreak: break
     return (jailbreak and modifier in [".not", ".isnot"]) or (not jailbreak and modifier in ["", ".is", ".begins", ".ends", ".regex"])
 
+def schedule_check(data, current_time, run_hour):
+    skip_collection = True
+    schedule_list = get_list(data)
+    next_month = current_time.replace(day=28) + timedelta(days=4)
+    last_day = next_month - timedelta(days=next_month.day)
+    schedule_str = ""
+    for schedule in schedule_list:
+        run_time = str(schedule).lower()
+        if run_time.startswith(("day", "daily")):
+            skip_collection = False
+        elif run_time == "never":
+            schedule_str += f"\nNever scheduled to run"
+        elif run_time.startswith(("hour", "week", "month", "year", "range")):
+            match = re.search("\\(([^)]+)\\)", run_time)
+            if not match:
+                logger.error(f"Schedule Error: failed to parse schedule: {schedule}")
+                continue
+            param = match.group(1)
+            if run_time.startswith("hour"):
+                try:
+                    if 0 <= int(param) <= 23:
+                        schedule_str += f"\nScheduled to run only on the {make_ordinal(int(param))} hour"
+                        if run_hour == int(param):
+                            skip_collection = False
+                    else:
+                        raise ValueError
+                except ValueError:
+                    logger.error(f"Schedule Error: hourly schedule attribute {schedule} invalid must be an integer between 0 and 23")
+            elif run_time.startswith("week"):
+                if param.lower() not in days_alias:
+                    logger.error(f"Schedule Error: weekly schedule attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
+                    continue
+                weekday = days_alias[param.lower()]
+                schedule_str += f"\nScheduled weekly on {pretty_days[weekday]}"
+                if weekday == current_time.weekday():
+                    skip_collection = False
+            elif run_time.startswith("month"):
+                try:
+                    if 1 <= int(param) <= 31:
+                        schedule_str += f"\nScheduled monthly on the {make_ordinal(int(param))}"
+                        if current_time.day == int(param) or (
+                                current_time.day == last_day.day and int(param) > last_day.day):
+                            skip_collection = False
+                    else:
+                        raise ValueError
+                except ValueError:
+                    logger.error(f"Schedule Error: monthly schedule attribute {schedule} invalid must be an integer between 1 and 31")
+            elif run_time.startswith("year"):
+                try:
+                    if "/" in param:
+                        opt = param.split("/")
+                        month = int(opt[0])
+                        day = int(opt[1])
+                        schedule_str += f"\nScheduled yearly on {pretty_months[month]} {make_ordinal(day)}"
+                        if current_time.month == month and (current_time.day == day or (
+                                current_time.day == last_day.day and day > last_day.day)):
+                            skip_collection = False
+                    else:
+                        raise ValueError
+                except ValueError:
+                    logger.error(
+                        f"Schedule Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+            elif run_time.startswith("range"):
+                match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
+                if not match:
+                    logger.error(f"Schedule Error: range schedule attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
+                    continue
+
+                def check_day(_m, _d):
+                    if _m in [1, 3, 5, 7, 8, 10, 12] and _d > 31:
+                        return _m, 31
+                    elif _m in [4, 6, 9, 11] and _d > 30:
+                        return _m, 30
+                    elif _m == 2 and _d > 28:
+                        return _m, 28
+                    else:
+                        return _m, _d
+
+                month_start, day_start = check_day(int(match.group(1)), int(match.group(2)))
+                month_end, day_end = check_day(int(match.group(3)), int(match.group(4)))
+                month_check, day_check = check_day(current_time.month, current_time.day)
+                check = datetime.strptime(f"{month_check}/{day_check}", "%m/%d")
+                start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
+                end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
+                schedule_str += f"\nScheduled between {pretty_months[month_start]} {make_ordinal(day_start)} and {pretty_months[month_end]} {make_ordinal(day_end)}"
+                if start <= check <= end if start < end else check <= end or check >= start:
+                    skip_collection = False
+        else:
+            logger.error(f"Schedule Error: schedule attribute {schedule} invalid")
+    if len(schedule_str) == 0:
+        skip_collection = False
+    if skip_collection:
+        raise NotScheduled(schedule_str)

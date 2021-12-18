@@ -189,6 +189,10 @@ def start(attrs):
 def update_libraries(config):
     global stats
     for library in config.libraries:
+        if library.skip_library:
+            logger.info("")
+            util.separator(f"Skipping {library.name} Library")
+            continue
         try:
             os.makedirs(os.path.join(default_dir, "logs", library.mapping_name, "collections"), exist_ok=True)
             col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, "library.log")

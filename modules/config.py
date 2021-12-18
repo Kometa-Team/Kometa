@@ -22,7 +22,7 @@ from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
 from modules.trakt import Trakt
 from modules.tvdb import TVDb
-from modules.util import Failed
+from modules.util import Failed, NotScheduled
 from modules.webhooks import Webhooks
 from retrying import retry
 from ruamel import yaml
@@ -473,6 +473,8 @@ class ConfigFile:
             self.libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
+            current_time = datetime.now()
+
             for library_name, lib in libs.items():
                 if self.requested_libraries and library_name not in self.requested_libraries:
                     continue
@@ -611,6 +613,18 @@ class ConfigFile:
                     else:
                         params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"))]
                     params["default_dir"] = default_dir
+
+                    params["skip_library"] = False
+                    if lib and "schedule" in lib:
+                        if not lib["schedule"]:
+                            raise Failed(f"Config Error: schedule attribute is blank")
+                        else:
+                            logger.debug(f"Value: {lib['schedule']}")
+                            try:
+                                util.schedule_check(lib["schedule"], current_time, self.run_hour)
+                            except NotScheduled:
+                                params["skip_library"] = True
+
                     params["plex"] = {
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
