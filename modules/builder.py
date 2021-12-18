@@ -132,7 +132,7 @@ all_filters = [
     "studio", "studio.not", "studio.is", "studio.isnot", "studio.begins", "studio.ends", "studio.regex",
     "subtitle_language", "subtitle_language.not",
     "resolution", "resolution.not",
-    "writer", "writer.not", "has_collection",
+    "writer", "writer.not", "has_collection", "has_overlay",
     "year", "year.gt", "year.gte", "year.lt", "year.lte", "year.not"
     "tmdb_year", "tmdb_year.gt", "tmdb_year.gte", "tmdb_year.lt", "tmdb_year.lte", "tmdb_year.not"
 ]
@@ -1616,7 +1616,7 @@ class CollectionBuilder:
             for value in values:
                 final_years.append(self._parse(final, value, datatype="int", minimum=1800, maximum=self.current_year))
             return smart_pair(final_years)
-        elif attribute in plex.boolean_attributes + ["has_collection"]:
+        elif attribute in plex.boolean_attributes + ["has_collection", "has_overlay"]:
             return self._parse(attribute, data, datatype="bool")
         else:
             raise Failed(f"{self.Type} Error: {final} attribute not supported")
@@ -1790,6 +1790,13 @@ class CollectionBuilder:
                         return False
                 elif filter_attr == "has_collection":
                     if util.is_boolean_filter(filter_data, len(current.collections) > 0):
+                        return False
+                elif filter_attr == "has_overlay":
+                    has_overlay = False
+                    for label in current.labels:
+                        if label.tag.lower().endswith(" overlay"):
+                            has_overlay = True
+                    if util.is_boolean_filter(filter_data, has_overlay):
                         return False
                 elif filter_attr == "history":
                     item_date = current.originallyAvailableAt
