@@ -347,6 +347,17 @@ def is_string_filter(values, modifier, data):
         if jailbreak: break
     return (jailbreak and modifier in [".not", ".isnot"]) or (not jailbreak and modifier in ["", ".is", ".begins", ".ends", ".regex"])
 
+
+def check_day(_m, _d):
+    if _m in [1, 3, 5, 7, 8, 10, 12] and _d > 31:
+        return _m, 31
+    elif _m in [4, 6, 9, 11] and _d > 30:
+        return _m, 30
+    elif _m == 2 and _d > 28:
+        return _m, 28
+    else:
+        return _m, _d
+
 def schedule_check(data, current_time, run_hour):
     skip_collection = True
     schedule_list = get_list(data)
@@ -414,17 +425,6 @@ def schedule_check(data, current_time, run_hour):
                 if not match:
                     logger.error(f"Schedule Error: range schedule attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
                     continue
-
-                def check_day(_m, _d):
-                    if _m in [1, 3, 5, 7, 8, 10, 12] and _d > 31:
-                        return _m, 31
-                    elif _m in [4, 6, 9, 11] and _d > 30:
-                        return _m, 30
-                    elif _m == 2 and _d > 28:
-                        return _m, 28
-                    else:
-                        return _m, _d
-
                 month_start, day_start = check_day(int(match.group(1)), int(match.group(2)))
                 month_end, day_end = check_day(int(match.group(3)), int(match.group(4)))
                 month_check, day_check = check_day(current_time.month, current_time.day)
@@ -432,7 +432,7 @@ def schedule_check(data, current_time, run_hour):
                 start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
                 end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
                 schedule_str += f"\nScheduled between {pretty_months[month_start]} {make_ordinal(day_start)} and {pretty_months[month_end]} {make_ordinal(day_end)}"
-                if start <= check <= end if start < end else check <= end or check >= start:
+                if start <= check <= end if start < end else (check <= end or check >= start):
                     skip_collection = False
         else:
             logger.error(f"Schedule Error: schedule attribute {schedule} invalid")
