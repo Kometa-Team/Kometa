@@ -358,7 +358,7 @@ def check_day(_m, _d):
     else:
         return _m, _d
 
-def schedule_check(data, current_time, run_hour):
+def schedule_check(attribute, data, current_time, run_hour):
     skip_collection = True
     schedule_list = get_list(data)
     next_month = current_time.replace(day=28) + timedelta(days=4)
@@ -373,7 +373,7 @@ def schedule_check(data, current_time, run_hour):
         elif run_time.startswith(("hour", "week", "month", "year", "range")):
             match = re.search("\\(([^)]+)\\)", run_time)
             if not match:
-                logger.error(f"Schedule Error: failed to parse schedule: {schedule}")
+                logger.error(f"Schedule Error: failed to parse {attribute}: {schedule}")
                 continue
             param = match.group(1)
             if run_time.startswith("hour"):
@@ -385,10 +385,10 @@ def schedule_check(data, current_time, run_hour):
                     else:
                         raise ValueError
                 except ValueError:
-                    logger.error(f"Schedule Error: hourly schedule attribute {schedule} invalid must be an integer between 0 and 23")
+                    logger.error(f"Schedule Error: hourly {attribute} attribute {schedule} invalid must be an integer between 0 and 23")
             elif run_time.startswith("week"):
                 if param.lower() not in days_alias:
-                    logger.error(f"Schedule Error: weekly schedule attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
+                    logger.error(f"Schedule Error: weekly {attribute} attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
                     continue
                 weekday = days_alias[param.lower()]
                 schedule_str += f"\nScheduled weekly on {pretty_days[weekday]}"
@@ -404,7 +404,7 @@ def schedule_check(data, current_time, run_hour):
                     else:
                         raise ValueError
                 except ValueError:
-                    logger.error(f"Schedule Error: monthly schedule attribute {schedule} invalid must be an integer between 1 and 31")
+                    logger.error(f"Schedule Error: monthly {attribute} attribute {schedule} invalid must be an integer between 1 and 31")
             elif run_time.startswith("year"):
                 try:
                     if "/" in param:
@@ -419,11 +419,11 @@ def schedule_check(data, current_time, run_hour):
                         raise ValueError
                 except ValueError:
                     logger.error(
-                        f"Schedule Error: yearly schedule attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+                        f"Schedule Error: yearly {attribute} attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
             elif run_time.startswith("range"):
                 match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
                 if not match:
-                    logger.error(f"Schedule Error: range schedule attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
+                    logger.error(f"Schedule Error: range {attribute} attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
                     continue
                 month_start, day_start = check_day(int(match.group(1)), int(match.group(2)))
                 month_end, day_end = check_day(int(match.group(3)), int(match.group(4)))
@@ -435,7 +435,7 @@ def schedule_check(data, current_time, run_hour):
                 if start <= check <= end if start < end else (check <= end or check >= start):
                     skip_collection = False
         else:
-            logger.error(f"Schedule Error: schedule attribute {schedule} invalid")
+            logger.error(f"Schedule Error: {attribute} attribute {schedule} invalid")
     if len(schedule_str) == 0:
         skip_collection = False
     if skip_collection:
