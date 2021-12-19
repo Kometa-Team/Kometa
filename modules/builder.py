@@ -78,7 +78,10 @@ summary_details = [
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
-boolean_details = ["show_filtered", "show_missing", "save_missing", "missing_only_released", "only_filter_missing", "delete_below_minimum"]
+boolean_details = [
+    "show_filtered", "show_missing", "save_missing", "missing_only_released", "only_filter_missing",
+    "delete_below_minimum", "asset_folders", "create_asset_folders"
+]
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
@@ -187,6 +190,7 @@ class CollectionBuilder:
             "save_missing": self.library.save_missing,
             "missing_only_released": self.library.missing_only_released,
             "only_filter_missing": self.library.only_filter_missing,
+            "asset_folders": self.library.asset_folders,
             "create_asset_folders": self.library.create_asset_folders,
             "delete_below_minimum": self.library.delete_below_minimum,
             "delete_not_scheduled": self.library.delete_not_scheduled,
@@ -2003,7 +2007,7 @@ class CollectionBuilder:
                 rating_keys.remove(int(item.ratingKey))
             if "item_assets" in self.item_details or overlay is not None:
                 try:
-                    self.library.find_assets(item, overlay=overlay)
+                    self.library.find_assets(item, overlay=overlay, folders=self.details["asset_folders"], create=self.details["create_asset_folders"])
                 except Failed as e:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
@@ -2189,7 +2193,7 @@ class CollectionBuilder:
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
-            poster_image, background_image = self.library.find_assets(self.obj, name=name_mapping, upload=False)
+            poster_image, background_image = self.library.find_assets(self.obj, name=name_mapping, upload=False, folders=self.details["asset_folders"], create=self.details["create_asset_folders"])
             if poster_image:
                 self.posters["asset_directory"] = poster_image
             if background_image:
