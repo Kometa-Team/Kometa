@@ -66,7 +66,7 @@ class Sonarr:
                 _paths.append(tvdb_id)
             else:
                 _ids.append(tvdb_id)
-        logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
+        logger.debug(f"Sonarr Adds: {_ids if _ids else ''}")
         for tvdb_id in _paths:
             logger.debug(tvdb_id)
         folder = options["folder"] if "folder" in options else self.root_folder_path
