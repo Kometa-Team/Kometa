@@ -653,6 +653,7 @@ def library_operations(config, library):
     logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
     logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
     logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
+    logger.debug(f"Mass Collection Mode Update: {library.mass_collection_mode}")
     logger.debug(f"Split Duplicates: {library.split_duplicates}")
     logger.debug(f"Radarr Add All: {library.radarr_add_all}")
     logger.debug(f"Radarr Remove by Tag: {library.radarr_remove_by_tag}")
@@ -891,6 +892,8 @@ def library_operations(config, library):
             logger.info(f"{col.title} Deleted")
         elif col.title not in library.collections:
             unmanaged_collections.append(col)
+        if library.mass_collection_mode:
+            library.collection_mode_query(col, library.mass_collection_mode)
 
     if library.show_unmanaged and len(unmanaged_collections) > 0:
         logger.info("")

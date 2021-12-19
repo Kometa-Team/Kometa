@@ -777,10 +777,7 @@ class CollectionBuilder:
 
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "collection_mode":
-            if str(method_data).lower() in plex.collection_mode_options:
-                self.details[method_name] = plex.collection_mode_options[str(method_data).lower()]
-            else:
-                raise Failed(f"{self.Type} Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
+            self.details[method_name] = util.check_collection_mode(method_data)
         elif method_name == "collection_minimum":
             self.minimum = self._parse(method_name, method_data, datatype="int", minimum=1)
         elif method_name == "server_preroll":
@@ -2148,10 +2145,7 @@ class CollectionBuilder:
                 logger.info(f"Detail: content_rating updated Collection Content Rating to {self.details['content_rating']}")
 
         if "collection_mode" in self.details:
-            if int(self.obj.collectionMode) not in plex.collection_mode_keys\
-                    or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:
-                self.library.collection_mode_query(self.obj, self.details["collection_mode"])
-                logger.info(f"Detail: collection_mode updated Collection Mode to {self.details['collection_mode']}")
+            self.library.collection_mode_query(self.obj, self.details["collection_mode"])
 
         if "collection_order" in self.details:
             if int(self.obj.collectionSort) not in plex.collection_order_keys\

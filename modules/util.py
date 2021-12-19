@@ -1,6 +1,7 @@
 import glob, logging, os, re, signal, sys, time, traceback
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
+from modules import plex
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
@@ -347,6 +348,11 @@ def is_string_filter(values, modifier, data):
         if jailbreak: break
     return (jailbreak and modifier in [".not", ".isnot"]) or (not jailbreak and modifier in ["", ".is", ".begins", ".ends", ".regex"])
 
+def check_collection_mode(collection_mode):
+    if collection_mode and str(collection_mode).lower() in plex.collection_mode_options:
+        return plex.collection_mode_options[str(collection_mode).lower()]
+    else:
+        raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
 
 def check_day(_m, _d):
     if _m in [1, 3, 5, 7, 8, 10, 12] and _d > 31:
