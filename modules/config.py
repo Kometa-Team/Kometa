@@ -527,6 +527,8 @@ class ConfigFile:
                 params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=False)
                 params["tmdb_collections"] = None
                 params["genre_mapper"] = None
+                params["radarr_remove_by_tag"] = None
+                params["sonarr_remove_by_tag"] = None
 
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
