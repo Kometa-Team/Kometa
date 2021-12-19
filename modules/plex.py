@@ -645,7 +645,7 @@ class Plex(Library):
                 logger.info(f"{obj.title[:25]:<25} | {attr.capitalize()} | {display}")
         return len(display) > 0
 
-    def find_assets(self, item, name=None, upload=True):
+    def find_assets(self, item, name=None, upload=True, overlay=None):
         if isinstance(item, Movie):
             name = os.path.basename(os.path.dirname(str(item.locations[0])))
         elif isinstance(item, Show):
@@ -707,7 +707,7 @@ class Plex(Library):
 
             if poster or background:
                 if upload:
-                    self.upload_images(item, poster=poster, background=background, overlay=name)
+                    self.upload_images(item, poster=poster, background=background, overlay=overlay)
                 else:
                     return poster, background
             if isinstance(item, Show):
@@ -745,12 +745,12 @@ class Plex(Library):
                             self.upload_images(episode, poster=episode_poster)
                 if self.show_missing_season_assets and found_season and missing_assets:
                     util.print_multiline(f"Missing Season Posters for {item.title}{missing_assets}", info=True)
-        if isinstance(item, (Movie, Show)) and not poster and name:
+        if isinstance(item, (Movie, Show)) and not poster and overlay:
             self.upload_images(item, overlay=name)
         if self.create_asset_folders and self.asset_folders and not found_folder:
             os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
             logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
-        elif isinstance(item, (Movie, Show)) and not name and self.asset_folders and not found_folder:
+        elif isinstance(item, (Movie, Show)) and not overlay and self.asset_folders and not found_folder:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
         elif isinstance(item, (Movie, Show)) and not poster and not background and self.show_missing_assets:
             logger.error(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
