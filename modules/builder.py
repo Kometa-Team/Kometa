@@ -79,13 +79,14 @@ summary_details = [
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
 boolean_details = ["show_filtered", "show_missing", "save_missing", "missing_only_released", "only_filter_missing", "delete_below_minimum"]
+scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "delete_not_scheduled",
     "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name", "sort_by", "libraries"
 ]
 details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "collection_changes_webhooks", "collection_mode",
-           "collection_minimum", "label", "visible_library", "visible_home", "visible_shared"] + boolean_details + string_details
+           "collection_minimum", "label"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
@@ -368,7 +369,7 @@ class CollectionBuilder:
             else:
                 logger.debug(f"Value: {self.data[methods['schedule']]}")
                 try:
-                    util.schedule_check(self.data[methods['schedule']], self.current_time, self.config.run_hour)
+                    util.schedule_check("schedule", self.data[methods['schedule']], self.current_time, self.config.run_hour)
                 except NotScheduled as e:
                     suffix = ""
                     if self.details["delete_not_scheduled"]:
@@ -795,7 +796,7 @@ class CollectionBuilder:
                 self.details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name == "collection_changes_webhooks":
             self.details[method_name] = self._parse(method_name, method_data, datatype="list")
-        elif method_name in ["visible_library", "visible_home", "visible_shared"]:
+        elif method_name in scheduled_boolean:
             if isinstance(method_data, bool):
                 self.details[method_name] = method_data
             elif isinstance(method_data, (int, float)):
@@ -805,18 +806,11 @@ class CollectionBuilder:
             elif str(method_data).lower() in ["f", "false"]:
                 self.details[method_name] = False
             else:
-                match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", method_data)
-                if not match:
-                    logger.error(f"{self.Type} Error: {method_name} must be either true, false or in the MM/DD-MM/DD format i.e. 12/01-12/25")
-                else:
-                    month_start, day_start = util.check_day(int(match.group(1)), int(match.group(2)))
-                    month_end, day_end = util.check_day(int(match.group(3)), int(match.group(4)))
-                    month_check, day_check = util.check_day(self.current_time.month, self.current_time.day)
-                    check = datetime.strptime(f"{month_check}/{day_check}", "%m/%d")
-                    start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
-                    end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
-                    logger.info(f"\n{method_name} between {util.pretty_months[month_start]} {util.make_ordinal(day_start)} and {util.pretty_months[month_end]} {util.make_ordinal(day_end)}")
-                    self.details[method_name] = start <= check <= end if start < end else (check <= end or check >= start)
+                try:
+                    util.schedule_check(method_name, self.details[method_name], self.current_time, self.config.run_hour)
+                    self.details[method_name] = True
+                except NotScheduled:
+                    self.details[method_name] = False
         elif method_name in boolean_details:
             default = self.details[method_name] if method_name in self.details else None
             self.details[method_name] = self._parse(method_name, method_data, datatype="bool", default=default)

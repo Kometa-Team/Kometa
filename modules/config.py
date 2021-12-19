@@ -642,7 +642,7 @@ class ConfigFile:
                         else:
                             logger.debug(f"Value: {lib['schedule']}")
                             try:
-                                util.schedule_check(lib["schedule"], current_time, self.run_hour)
+                                util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
                             except NotScheduled:
                                 params["skip_library"] = True
 
