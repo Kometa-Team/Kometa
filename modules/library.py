@@ -2,7 +2,7 @@ import logging, os, requests, shutil, time
 from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile
-from modules.util import Failed, ImageData
+from modules.util import Failed
 from PIL import Image
 from ruamel import yaml
 
@@ -43,6 +43,7 @@ class Library(ABC):
         self.missing_path = os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
+        self.dimensional_asset_rename = params["dimensional_asset_rename"]
         self.show_missing_season_assets = params["show_missing_season_assets"]
         self.sync_mode = params["sync_mode"]
         self.collection_minimum = params["collection_minimum"]
@@ -253,44 +254,3 @@ class Library(ABC):
         logger.info("")
         logger.info(util.adjust_space(f"Processed {len(items)} {self.type}s"))
         return items
-
-    def find_collection_assets(self, item, name=None, create=False):
-        if name is None:
-            name = item.title
-        found_folder = False
-        poster = None
-        background = None
-        for ad in self.asset_directory:
-            item_dir = None
-            if self.asset_folders:
-                if os.path.isdir(os.path.join(ad, name)):
-                    item_dir = os.path.join(ad, name)
-                else:
-                    for n in range(1, self.asset_depth + 1):
-                        new_path = ad
-                        for i in range(1, n + 1):
-                            new_path = os.path.join(new_path, "*")
-                        matches = util.glob_filter(os.path.join(new_path, name))
-                        if len(matches) > 0:
-                            item_dir = os.path.abspath(matches[0])
-                            break
-                if item_dir is None:
-                    continue
-                found_folder = True
-                poster_filter = os.path.join(item_dir, "poster.*")
-                background_filter = os.path.join(item_dir, "background.*")
-            else:
-                poster_filter = os.path.join(ad, f"{name}.*")
-                background_filter = os.path.join(ad, f"{name}_background.*")
-            matches = util.glob_filter(poster_filter)
-            if len(matches) > 0:
-                poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
-            matches = util.glob_filter(background_filter)
-            if len(matches) > 0:
-                background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
-            if poster or background:
-                return poster, background
-        if create and self.asset_folders and not found_folder:
-            os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
-            logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
-        return None, None

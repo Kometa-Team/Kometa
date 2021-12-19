@@ -1990,7 +1990,7 @@ class CollectionBuilder:
                 rating_keys.remove(int(item.ratingKey))
             if "item_assets" in self.item_details or overlay is not None:
                 try:
-                    self.library.update_item_from_assets(item, overlay=overlay)
+                    self.library.find_assets(item, name=overlay)
                 except Failed as e:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
@@ -2176,7 +2176,7 @@ class CollectionBuilder:
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
-            poster_image, background_image = self.library.find_collection_assets(self.obj, name=name_mapping)
+            poster_image, background_image = self.library.find_assets(self.obj, name=name_mapping, upload=False)
             if poster_image:
                 self.posters["asset_directory"] = poster_image
             if background_image:
