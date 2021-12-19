@@ -559,10 +559,22 @@ class ConfigFile:
                         if "sonarr_remove_by_tag" in lib["operations"]:
                             params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
                         if "tmdb_collections" in lib["operations"]:
-                            params["tmdb_collections"] = {"exclude_ids": [], "remove_suffix": None, "template": {"tmdb_collection_details": "<<collection_id>>"}}
+                            params["tmdb_collections"] = {
+                                "exclude_ids": [],
+                                "remove_suffix": None,
+                                "dictionary_variables": {},
+                                "template": {"tmdb_collection_details": "<<collection_id>>"}
+                            }
                             if lib["operations"]["tmdb_collections"] and isinstance(lib["operations"]["tmdb_collections"], dict):
+
                                 params["tmdb_collections"]["exclude_ids"] = check_for_attribute(lib["operations"]["tmdb_collections"], "exclude_ids", var_type="int_list", default_is_none=True, save=False)
                                 params["tmdb_collections"]["remove_suffix"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_suffix", default_is_none=True, save=False)
+                                if "dictionary_variables" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["dictionary_variables"] and isinstance(lib["operations"]["tmdb_collections"]["dictionary_variables"], dict):
+                                    for key, value in lib["operations"]["tmdb_collections"]["dictionary_variables"].items():
+                                        if isinstance(value, dict):
+                                            params["tmdb_collections"]["dictionary_variables"][key] = value
+                                        else:
+                                            logger.warning(f"Config Warning: tmdb_collections dictionary_variables {key} must be a dictionary")
                                 if "template" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["template"] and isinstance(lib["operations"]["tmdb_collections"]["template"], dict):
                                     params["tmdb_collections"]["template"] = lib["operations"]["tmdb_collections"]["template"]
                                 else:
