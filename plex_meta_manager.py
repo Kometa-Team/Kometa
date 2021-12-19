@@ -686,7 +686,7 @@ def library_operations(config, library):
                 continue
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
             if library.assets_for_all:
-                library.update_item_from_assets(item, create=library.create_asset_folders)
+                library.find_assets(item)
             tmdb_id = None
             tvdb_id = None
             imdb_id = None
@@ -910,8 +910,7 @@ def library_operations(config, library):
         util.separator(f"Unmanaged Collection Assets Check for {library.name} Library", space=False, border=False)
         logger.info("")
         for col in unmanaged_collections:
-            poster, background = library.find_collection_assets(col, create=library.create_asset_folders)
-            library.upload_images(col, poster=poster, background=background)
+            library.find_assets(col)
 
 def run_collection(config, library, metadata, requested_collections):
     global stats
