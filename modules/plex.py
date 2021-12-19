@@ -695,7 +695,7 @@ class Plex(Library):
             if item_dir and self.dimensional_asset_rename and (not poster or not background):
                 for file in util.glob_filter(os.path.join(item_dir, "*.*")):
                     if file.lower().endswith((".jpg", ".png", ".jpeg")):
-                        image = Image.open(poster)
+                        image = Image.open(file)
                         _w, _h = image.size
                         image.close()
                         if not poster and _h > _w:
