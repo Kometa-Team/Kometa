@@ -846,21 +846,21 @@ def library_operations(config, library):
             util.separator(f"Starting TMDb Collections")
             logger.info("")
             suffixes = util.get_list(library.tmdb_collections["remove_suffix"])
-            def remove_suffixes(_name):
-                if suffixes:
-                    for suffix in suffixes:
-                        if _name.endswith(suffix):
-                            _name = _name[:-len(_name)]
-                return _name.strip()
-
+            new_collections = {}
+            for _i, _n in tmdb_collections.items():
+                if int(_i) not in library.tmdb_collections["exclude_ids"]:
+                    template = {"name": "TMDb Collection", "collection_id": _i}
+                    for k, v in library.tmdb_collections["dictionary_variables"]:
+                        if int(_i) in v:
+                            template[k] = v[int(_i)]
+                    if suffixes:
+                        for suffix in suffixes:
+                            if _n.endswith(suffix):
+                                _n = _n[:-len(_n)]
+                    new_collections[_n.strip()] = {"template": template}
             metadata = MetadataFile(config, library, "Data", {
-                "collections": {
-                    remove_suffixes(_n): {"template": {"name": "TMDb Collection", "collection_id": _i}}
-                    for _i, _n in tmdb_collections.items() if int(_i) not in library.tmdb_collections["exclude_ids"]
-                },
-                "templates": {
-                    "TMDb Collection": library.tmdb_collections["template"]
-                }
+                "collections": new_collections,
+                "templates": {"TMDb Collection": library.tmdb_collections["template"]}
             })
             run_collection(config, library, metadata, metadata.get_collections(None))
 
