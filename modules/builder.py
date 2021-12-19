@@ -600,7 +600,7 @@ class CollectionBuilder:
             raise Failed(f"{self.Type} Error: " + ('Playlists' if playlist else 'collection_order: custom') +
                          (f" can only be used with a single builder per {self.type}" if len(self.builders) > 1 else f" cannot be used with {self.builders[0][0]}"))
 
-        if len(self.builders) == 0:
+        if not self.smart_url and len(self.builders) == 0:
             raise Failed(f"{self.Type} Error: No builders were found")
 
         if "add" not in self.radarr_details:
