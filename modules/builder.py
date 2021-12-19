@@ -2003,7 +2003,7 @@ class CollectionBuilder:
                 rating_keys.remove(int(item.ratingKey))
             if "item_assets" in self.item_details or overlay is not None:
                 try:
-                    self.library.find_assets(item, name=overlay)
+                    self.library.find_assets(item, overlay=overlay)
                 except Failed as e:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
