@@ -482,7 +482,12 @@ class ConfigFile:
                     continue
                 params = {
                     "mapping_name": str(library_name),
-                    "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
+                    "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name),
+                    "tmdb_collections": None,
+                    "genre_mapper": None,
+                    "radarr_remove_by_tag": None,
+                    "sonarr_remove_by_tag": None,
+                    "mass_collection_mode": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -527,10 +532,6 @@ class ConfigFile:
                 params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
                 params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False, do_print=False)
                 params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=False)
-                params["tmdb_collections"] = None
-                params["genre_mapper"] = None
-                params["radarr_remove_by_tag"] = None
-                params["sonarr_remove_by_tag"] = None
 
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
@@ -558,6 +559,11 @@ class ConfigFile:
                             params["sonarr_add_all"] = check_for_attribute(lib["operations"], "sonarr_add_all", var_type="bool", default=False, save=False)
                         if "sonarr_remove_by_tag" in lib["operations"]:
                             params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
+                        if "mass_collection_mode" in lib["operations"]:
+                            try:
+                                params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
+                            except Failed as e:
+                                logger.error(e)
                         if "tmdb_collections" in lib["operations"]:
                             params["tmdb_collections"] = {
                                 "exclude_ids": [],

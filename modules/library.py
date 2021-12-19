@@ -70,6 +70,7 @@ class Library(ABC):
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
         self.sonarr_add_all = params["sonarr_add_all"]
         self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
+        self.mass_collection_mode = params["mass_collection_mode"]
         self.tmdb_collections = params["tmdb_collections"]
         self.genre_mapper = params["genre_mapper"]
         self.error_webhooks = params["error_webhooks"]
