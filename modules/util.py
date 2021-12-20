@@ -1,7 +1,6 @@
 import glob, logging, os, re, signal, sys, time, traceback
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
-from modules import plex
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
@@ -67,6 +66,11 @@ pretty_months = {
 }
 seasons = ["winter", "spring", "summer", "fall"]
 pretty_ids = {"anidbid": "AniDB", "imdbid": "IMDb", "mal_id": "MyAnimeList", "themoviedb_id": "TMDb", "thetvdb_id": "TVDb", "tvdbid": "TVDb"}
+collection_mode_options = {
+    "default": "default", "hide": "hide",
+    "hide_items": "hideItems", "hideitems": "hideItems",
+    "show_items": "showItems", "showitems": "showItems"
+}
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
@@ -349,8 +353,8 @@ def is_string_filter(values, modifier, data):
     return (jailbreak and modifier in [".not", ".isnot"]) or (not jailbreak and modifier in ["", ".is", ".begins", ".ends", ".regex"])
 
 def check_collection_mode(collection_mode):
-    if collection_mode and str(collection_mode).lower() in plex.collection_mode_options:
-        return plex.collection_mode_options[str(collection_mode).lower()]
+    if collection_mode and str(collection_mode).lower() in collection_mode_options:
+        return collection_mode_options[str(collection_mode).lower()]
     else:
         raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
 
