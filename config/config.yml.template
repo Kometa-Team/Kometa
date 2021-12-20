@@ -1,19 +1,19 @@
 ## This file is a template remove the .template to use the file
 
-libraries:                                      # Library mappings must have a colon (:) placed after them
+libraries: # Library mappings must have a colon (:) placed after them
   Movies:
     metadata_path:
-      - file: config/Movies.yml                 # You have to create this file the other is online
+      - file: config/Movies.yml # You have to create this file the other is online
       - git: meisnate12/MovieCharts
   TV Shows:
     metadata_path:
-      - file: config/TV Shows.yml               # You have to create this file the other is online
+      - file: config/TV Shows.yml # You have to create this file the other is online
       - git: meisnate12/ShowCharts
   Anime:
     metadata_path:
-      - file: config/Anime.yml                  # You have to create this file the other is online
+      - file: config/Anime.yml # You have to create this file the other is online
       - git: meisnate12/AnimeCharts
-settings:                                       # Can be individually specified per library as well
+settings: # Can be individually specified per library as well
   cache: true
   cache_expiration: 60
   asset_directory: config/assets
@@ -35,32 +35,32 @@ settings:                                       # Can be individually specified 
   tvdb_language: eng
   ignore_ids:
   ignore_imdb_ids:
-webhooks:                                       # Can be individually specified per library as well
+webhooks: # Can be individually specified per library as well
   error:
   run_start:
   run_end:
   collection_changes:
-plex:                                           # Can be individually specified per library as well; REQUIRED for the script to run
+plex: # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: ####################
   timeout: 60
   clean_bundles: false
   empty_trash: false
   optimize: false
-tmdb:                                           # REQUIRED for the script to run
+tmdb: # REQUIRED for the script to run
   apikey: ################################
   language: en
-tautulli:                                       # Can be individually specified per library as well
+tautulli: # Can be individually specified per library as well
   url: http://192.168.1.12:8181
   apikey: ################################
 omdb:
   apikey: ########
 notifiarr:
   apikey: ####################################
-anidb:                                          # Not required for AniDB builders unless you want mature content
+anidb: # Not required for AniDB builders unless you want mature content
   username: ######
   password: ######
-radarr:                                         # Can be individually specified per library as well
+radarr: # Can be individually specified per library as well
   url: http://192.168.1.12:7878
   token: ################################
   add: false
@@ -72,7 +72,7 @@ radarr:                                         # Can be individually specified 
   search: false
   radarr_path:
   plex_path:
-sonarr:                                         # Can be individually specified per library as well
+sonarr: # Can be individually specified per library as well
   url: http://192.168.1.12:8989
   token: ################################
   add: false
