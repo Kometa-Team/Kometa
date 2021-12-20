@@ -19,6 +19,7 @@ class Webhooks:
             logger.debug("")
             logger.debug(f"JSON: {json}")
         for webhook in list(set(webhooks)):
+            response = None
             if self.config.trace_mode:
                 logger.debug(f"Webhook: {webhook}")
             if webhook == "notifiarr":
@@ -30,17 +31,18 @@ class Webhooks:
                             break
             else:
                 response = self.config.post(webhook, json=json)
-            try:
-                response_json = response.json()
-                if self.config.trace_mode:
-                    logger.debug(f"Response: {response_json}")
-                if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
-                    raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
-                if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
-                    raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
-            except JSONDecodeError:
-                if response.status_code >= 400:
-                    raise Failed(f"({response.status_code} [{response.reason}])")
+            if response:
+                try:
+                    response_json = response.json()
+                    if self.config.trace_mode:
+                        logger.debug(f"Response: {response_json}")
+                    if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
+                        raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
+                    if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
+                        raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
+                except JSONDecodeError:
+                    if response.status_code >= 400:
+                        raise Failed(f"({response.status_code} [{response.reason}])")
 
     def start_time_hooks(self, start_time):
         if self.run_start_webhooks:
