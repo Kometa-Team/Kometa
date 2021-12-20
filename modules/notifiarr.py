@@ -1,4 +1,5 @@
 import logging
+from json import JSONDecodeError
 
 from modules.util import Failed
 
@@ -16,7 +17,10 @@ class Notifiarr:
         self.test = params["test"]
         url, _ = self.get_url("user/validate/")
         response = self.config.get(url)
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except JSONDecodeError as e:
+            raise Failed(e)
         if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
             logger.debug(f"Response: {response_json}")
             raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
