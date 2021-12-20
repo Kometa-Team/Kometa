@@ -22,11 +22,12 @@ class Webhooks:
             if self.config.trace_mode:
                 logger.debug(f"Webhook: {webhook}")
             if webhook == "notifiarr":
-                url, params = self.notifiarr.get_url("notification/pmm/")
-                for x in range(6):
-                    response = self.config.get(url, json=json, params=params)
-                    if response.status_code < 500:
-                        break
+                if self.notifiarr:
+                    url, params = self.notifiarr.get_url("notification/pmm/")
+                    for x in range(6):
+                        response = self.config.get(url, json=json, params=params)
+                        if response.status_code < 500:
+                            break
             else:
                 response = self.config.post(webhook, json=json)
             try:

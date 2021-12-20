@@ -171,7 +171,7 @@ playlist_attributes = [
     "playlist_name", "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
     "server_preroll", "collection_changes_webhooks", "collection_minimum"
-] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
+] + custom_sort_builders + summary_details + poster_details + background_details + radarr_details + sonarr_details
 
 class CollectionBuilder:
     def __init__(self, config, library, metadata, name, no_missing, data, playlist=False):
@@ -832,7 +832,7 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: Cannot use {method_name}.remove and {method_name}.sync together")
             if method_name in methods and f"{method_name}.remove" in methods:
                 raise Failed(f"{self.Type} Error: Cannot use {method_name} and {method_name}.remove together")
-            self.item_details[method_name] = util.get_list(method_data)
+            self.item_details[method_name] = util.get_list(method_data, lower=True)
             self.item_details["apply_tags"] = method_mod[1:] if method_mod else ""
         elif method_name == "item_overlay":
             overlay = os.path.join(self.config.default_dir, "overlays", method_data, "overlay.png")
@@ -870,7 +870,7 @@ class CollectionBuilder:
         elif method_name == "radarr_quality":
             self.radarr_details["quality"] = method_data
         elif method_name == "radarr_tag":
-            self.radarr_details["tag"] = util.get_list(method_data)
+            self.radarr_details["tag"] = util.get_list(method_data, lower=True)
 
     def _sonarr(self, method_name, method_data):
         if method_name in ["sonarr_add", "sonarr_add_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
@@ -888,7 +888,7 @@ class CollectionBuilder:
             else:
                 raise Failed(f"{self.Type} Error: {method_name} attribute must be either standard, daily, or anime")
         elif method_name == "sonarr_tag":
-            self.sonarr_details["tag"] = util.get_list(method_data)
+            self.sonarr_details["tag"] = util.get_list(method_data, lower=True)
 
     def _anidb(self, method_name, method_data):
         if method_name == "anidb_popular":
