@@ -418,9 +418,8 @@ class CollectionBuilder:
         cant_interact("smart_label_collection", "smart_url", fail=True)
         cant_interact("smart_label_collection", "parts_collection", fail=True)
         cant_interact("smart_url", "parts_collection", fail=True)
-        cant_interact("smart_url", "sort_by")
-        cant_interact("smart_label_collection", "sort_by")
-        cant_interact("parts_collection", "sort_by")
+        if self.smart_url or self.smart_label_collection or self.parts_collection:
+            self.custom_sort = False
 
         self.smart = self.smart_url or self.smart_label_collection
 
