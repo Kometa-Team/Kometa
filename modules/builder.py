@@ -245,119 +245,10 @@ class CollectionBuilder:
         if "template" in methods:
             logger.debug("")
             logger.debug("Validating Method: template")
-            if not self.metadata.templates:
-                raise Failed(f"{self.Type} Error: No templates found")
-            elif not self.data[methods["template"]]:
-                raise Failed(f"{self.Type} Error: template attribute is blank")
-            else:
-                logger.debug(f"Value: {self.data[methods['template']]}")
-                for variables in util.get_list(self.data[methods["template"]], split=False):
-                    if not isinstance(variables, dict):
-                        raise Failed(f"{self.Type} Error: template attribute is not a dictionary")
-                    elif "name" not in variables:
-                        raise Failed(f"{self.Type} Error: template sub-attribute name is required")
-                    elif not variables["name"]:
-                        raise Failed(f"{self.Type} Error: template sub-attribute name is blank")
-                    elif variables["name"] not in self.metadata.templates:
-                        raise Failed(f"{self.Type} Error: template {variables['name']} not found")
-                    elif not isinstance(self.metadata.templates[variables["name"]], dict):
-                        raise Failed(f"{self.Type} Error: template {variables['name']} is not a dictionary")
-                    else:
-                        for tm in variables:
-                            if not variables[tm]:
-                                raise Failed(f"{self.Type} Error: template sub-attribute {tm} is blank")
-                        if "collection_name" not in variables:
-                            variables["collection_name"] = str(self.name)
-
-                        template_name = variables["name"]
-                        template = self.metadata.templates[template_name]
-
-                        default = {}
-                        if "default" in template:
-                            if template["default"]:
-                                if isinstance(template["default"], dict):
-                                    for dv in template["default"]:
-                                        if template["default"][dv]:
-                                            default[dv] = template["default"][dv]
-                                        else:
-                                            raise Failed(f"{self.Type} Error: template default sub-attribute {dv} is blank")
-                                else:
-                                    raise Failed(f"{self.Type} Error: template sub-attribute default is not a dictionary")
-                            else:
-                                raise Failed(f"{self.Type} Error: template sub-attribute default is blank")
-
-                        optional = []
-                        if "optional" in template:
-                            if template["optional"]:
-                                for op in util.get_list(template["optional"]):
-                                    if op not in default:
-                                        optional.append(str(op))
-                                    else:
-                                        logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
-                            else:
-                                raise Failed(f"{self.Type} Error: template sub-attribute optional is blank")
-
-                        if "move_collection_prefix" in template:
-                            if template["move_collection_prefix"]:
-                                for op in util.get_list(template["move_collection_prefix"]):
-                                    variables["collection_name"] = variables["collection_name"].replace(f"{str(op).strip()} ", "") + f", {str(op).strip()}"
-                            else:
-                                raise Failed(f"{self.Type} Error: template sub-attribute move_collection_prefix is blank")
-
-                        def check_data(_data):
-                            if isinstance(_data, dict):
-                                final_data = {}
-                                for sm, sd in _data.items():
-                                    try:
-                                        final_data[sm] = check_data(sd)
-                                    except Failed:
-                                        continue
-                            elif isinstance(_data, list):
-                                final_data = []
-                                for li in _data:
-                                    try:
-                                        final_data.append(check_data(li))
-                                    except Failed:
-                                        continue
-                            else:
-                                txt = str(_data)
-                                def scan_text(og_txt, var, var_value):
-                                    if og_txt == f"<<{var}>>":
-                                        return str(var_value)
-                                    elif f"<<{var}>>" in str(og_txt):
-                                        return str(og_txt).replace(f"<<{var}>>", str(var_value))
-                                    else:
-                                        return og_txt
-                                for option in optional:
-                                    if option not in variables and f"<<{option}>>" in txt:
-                                        raise Failed
-                                for variable, variable_data in variables.items():
-                                    if variable != "name":
-                                        txt = scan_text(txt, variable, variable_data)
-                                for dm, dd in default.items():
-                                    txt = scan_text(txt, dm, dd)
-                                if txt in ["true", "True"]:
-                                    final_data = True
-                                elif txt in ["false", "False"]:
-                                    final_data = False
-                                else:
-                                    try:
-                                        num_data = float(txt)
-                                        final_data = int(num_data) if num_data.is_integer() else num_data
-                                    except (ValueError, TypeError):
-                                        final_data = txt
-                            return final_data
-
-                        for method_name, attr_data in template.items():
-                            if method_name not in self.data and method_name not in ["default", "optional", "move_collection_prefix"]:
-                                if attr_data is None:
-                                    logger.error(f"Template Error: template attribute {method_name} is blank")
-                                    continue
-                                try:
-                                    self.data[method_name] = check_data(attr_data)
-                                    methods[method_name.lower()] = method_name
-                                except Failed:
-                                    continue
+            new_attributes = self.metadata.apply_template(self.name, self.data, self.data[methods["template"]])
+            for attr in new_attributes:
+                self.data[attr] = new_attributes[attr]
+                methods[attr.lower()] = attr
 
         if "delete_not_scheduled" in methods:
             logger.debug("")
@@ -438,19 +329,6 @@ class CollectionBuilder:
                     self.custom_sort = self.data[methods["collection_order"]].lower()
                 else:
                     raise Failed(f"{self.Type} Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
-
-        self.sort_by = None
-        if "sort_by" in methods and not self.playlist:
-            logger.debug("")
-            logger.debug("Validating Method: sort_by")
-            if self.data[methods["sort_by"]] is None:
-                raise Failed(f"{self.Type} Error: sort_by attribute is blank")
-            else:
-                logger.debug(f"Value: {self.data[methods['sort_by']]}")
-                if (self.library.is_movie and self.data[methods["sort_by"]] not in plex.movie_sorts) or (self.library.is_show and self.data[methods["sort_by"]] not in plex.show_sorts):
-                    raise Failed(f"{self.Type} Error: sort_by attribute {self.data[methods['sort_by']]} invalid")
-                else:
-                    self.sort_by = self.data[methods["sort_by"]]
 
         self.collection_level = "movie" if self.library.is_movie else "show"
         if self.playlist:
