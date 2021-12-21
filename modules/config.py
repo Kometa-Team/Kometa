@@ -267,6 +267,7 @@ class ConfigFile:
                     "test": check_for_attribute(self.data, "test", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False)
                 })
             except Failed as e:
+                util.print_stacktrace()
                 logger.error(e)
             logger.info(f"Notifiarr Connection {'Failed' if self.NotifiarrFactory is None else 'Successful'}")
         else:
@@ -567,14 +568,14 @@ class ConfigFile:
                         if "tmdb_collections" in lib["operations"]:
                             params["tmdb_collections"] = {
                                 "exclude_ids": [],
-                                "remove_suffix": None,
+                                "remove_suffix": [],
                                 "dictionary_variables": {},
                                 "template": {"tmdb_collection_details": "<<collection_id>>"}
                             }
                             if lib["operations"]["tmdb_collections"] and isinstance(lib["operations"]["tmdb_collections"], dict):
 
                                 params["tmdb_collections"]["exclude_ids"] = check_for_attribute(lib["operations"]["tmdb_collections"], "exclude_ids", var_type="int_list", default_is_none=True, save=False)
-                                params["tmdb_collections"]["remove_suffix"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_suffix", default_is_none=True, save=False)
+                                params["tmdb_collections"]["remove_suffix"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_suffix", var_type="comma_list", default_is_none=True, save=False)
                                 if "dictionary_variables" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["dictionary_variables"] and isinstance(lib["operations"]["tmdb_collections"]["dictionary_variables"], dict):
                                     for key, value in lib["operations"]["tmdb_collections"]["dictionary_variables"].items():
                                         if isinstance(value, dict):
@@ -587,8 +588,6 @@ class ConfigFile:
                                     logger.warning("Config Warning: Using default template for tmdb_collections")
                             else:
                                 logger.error("Config Error: tmdb_collections blank using default settings")
-                            if params["tmdb_collections"]["remove_suffix"]:
-                                params["tmdb_collections"]["remove_suffix"] = params["tmdb_collections"]["remove_suffix"].strip()
                         if "genre_mapper" in lib["operations"]:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
                                 params["genre_mapper"] = {}
