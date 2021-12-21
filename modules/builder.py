@@ -434,8 +434,10 @@ class CollectionBuilder:
                     self.details["collection_order"] = self.data[methods["collection_order"]].lower()
                     if self.data[methods["collection_order"]].lower() == "custom" and self.build_collection:
                         self.custom_sort = True
+                elif (self.library.is_movie and self.data[methods["collection_order"]].lower() in plex.movie_sorts) or (self.library.is_show and self.data[methods["collection_order"]].lower() in plex.show_sorts):
+                    self.custom_sort = self.data[methods["collection_order"]].lower()
                 else:
-                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)")
+                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
 
         self.sort_by = None
         if "sort_by" in methods and not self.playlist:
@@ -596,7 +598,7 @@ class CollectionBuilder:
                 else:
                     logger.error(e)
 
-        if self.custom_sort and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
+        if self.custom_sort is True and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
             raise Failed(f"{self.Type} Error: " + ('Playlists' if playlist else 'collection_order: custom') +
                          (f" can only be used with a single builder per {self.type}" if len(self.builders) > 1 else f" cannot be used with {self.builders[0][0]}"))
 
@@ -2245,11 +2247,11 @@ class CollectionBuilder:
         logger.info("")
         util.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
         logger.info("")
-        if self.sort_by:
-            search_data = self.build_filter("plex_search", {"sort_by": self.sort_by, "any": {"collection": self.name}})
-            items = self.library.get_filter_items(search_data[2])
-        else:
+        if self.custom_sort is True:
             items = self.added_items
+        else:
+            search_data = self.build_filter("plex_search", {"sort_by": self.custom_sort, "any": {"collection": self.name}})
+            items = self.library.get_filter_items(search_data[2])
         previous = None
         for item in items:
             text = f"after {util.item_title(previous)}" if previous else "to the beginning"

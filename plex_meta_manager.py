@@ -846,7 +846,6 @@ def library_operations(config, library):
             logger.info("")
             util.separator(f"Starting TMDb Collections")
             logger.info("")
-            suffixes = util.get_list(library.tmdb_collections["remove_suffix"])
             new_collections = {}
             for _i, _n in tmdb_collections.items():
                 if int(_i) not in library.tmdb_collections["exclude_ids"]:
@@ -854,10 +853,9 @@ def library_operations(config, library):
                     for k, v in library.tmdb_collections["dictionary_variables"]:
                         if int(_i) in v:
                             template[k] = v[int(_i)]
-                    if suffixes:
-                        for suffix in suffixes:
-                            if _n.endswith(suffix):
-                                _n = _n[:-len(_n)]
+                    for suffix in library.tmdb_collections["remove_suffix"]:
+                        if _n.endswith(suffix):
+                            _n = _n[:-len(_n)]
                     new_collections[_n.strip()] = {"template": template}
             metadata = MetadataFile(config, library, "Data", {
                 "collections": new_collections,
@@ -1044,7 +1042,7 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
 
-            if (builder.item_details or builder.custom_sort or builder.sort_by) and run_item_details and builder.builders:
+            if (builder.item_details or builder.custom_sort) and run_item_details and builder.builders:
                 try:
                     builder.load_collection_items()
                 except Failed:
@@ -1053,7 +1051,7 @@ def run_collection(config, library, metadata, requested_collections):
                 else:
                     if builder.item_details:
                         builder.update_item_details()
-                    if builder.custom_sort or builder.sort_by:
+                    if builder.custom_sort:
                         library.run_sort.append(builder)
                         # builder.sort_collection()
 
