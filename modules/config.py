@@ -13,7 +13,6 @@ from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
 from modules.notifiarr import Notifiarr
 from modules.omdb import OMDb
-from modules.playlist import PlaylistFile
 from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
