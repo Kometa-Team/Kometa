@@ -977,6 +977,7 @@ def run_collection(config, library, metadata, requested_collections):
 
             items_added = 0
             items_removed = 0
+            valid = True
             if not builder.smart_url and builder.builders:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
@@ -1003,6 +1004,7 @@ def run_collection(config, library, metadata, requested_collections):
                 elif len(builder.added_items) < builder.minimum and builder.build_collection:
                     logger.info("")
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
+                    valid = False
                     if builder.details["delete_below_minimum"] and builder.obj:
                         builder.delete_collection()
                         builder.deleted = True
@@ -1019,7 +1021,7 @@ def run_collection(config, library, metadata, requested_collections):
                     stats["sonarr"] += sonarr_add
 
             run_item_details = True
-            if builder.build_collection and (builder.builders or builder.smart_url):
+            if valid and builder.build_collection and (builder.builders or builder.smart_url):
                 try:
                     builder.load_collection()
                     if builder.created:

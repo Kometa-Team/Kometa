@@ -107,9 +107,9 @@ class Library(ABC):
             except Failed as e:
                 util.print_multiline(e, error=True)
 
-        if len(self.metadata_files) == 0 and not self.library_operation:
+        if len(self.metadata_files) == 0 and not self.library_operation and not self.config.playlist_files:
             logger.info("")
-            raise Failed("Config Error: No valid metadata files or library operations found")
+            raise Failed("Config Error: No valid metadata files, playlist files, or library operations found")
 
         if self.asset_directory:
             logger.info("")

@@ -56,7 +56,7 @@ class DataFile:
             elif os.path.exists(os.path.abspath(self.path)):
                 content = open(self.path, encoding="utf-8")
             else:
-                raise Failed(f"File Error: File does not exist {self.path}")
+                raise Failed(f"File Error: File does not exist {os.path.abspath(self.path)}")
             data, _, _ = yaml.util.load_yaml_guess_indent(content)
             return data
         except yaml.scanner.ScannerError as ye:
