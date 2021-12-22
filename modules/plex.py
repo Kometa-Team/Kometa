@@ -501,9 +501,13 @@ class Plex(Library):
         elif isinstance(data, Collection):
             return data
         else:
-            for d in self.search(title=str(data), libtype="collection"):
+            cols = self.search(title=str(data), libtype="collection")
+            for d in cols:
                 if d.title == data:
                     return d
+            for d in cols:
+                logger.debug(f"Found: {d.title}")
+            logger.debug(f"Looking for: {data}")
         raise Failed(f"Plex Error: Collection {data} not found")
 
     def validate_collections(self, collections):
