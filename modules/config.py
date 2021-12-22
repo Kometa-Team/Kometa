@@ -11,6 +11,7 @@ from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
+from modules.meta import PlaylistFile
 from modules.notifiarr import Notifiarr
 from modules.omdb import OMDb
 from modules.plex import Plex
@@ -367,18 +368,18 @@ class ConfigFile:
 
             self.playlist_names = []
             self.playlist_files = []
-            if "playlists" in self.data:
+            playlists_pairs = []
+            if "playlist_files" in self.data:
                 logger.info("Reading in Playlist Files")
-                if self.data["playlists"] is None:
-                    raise Failed("Config Error: playlists attribute is blank")
-                playlists_pairs = []
-                paths_to_check = self.data["playlists"] if isinstance(self.data["playlists"], list) else [self.data["playlists"]]
+                if self.data["playlist_files"] is None:
+                    raise Failed("Config Error: playlist_files attribute is blank")
+                paths_to_check = self.data["playlist_files"] if isinstance(self.data["playlist_files"], list) else [self.data["playlist_files"]]
                 for path in paths_to_check:
                     if isinstance(path, dict):
                         def check_dict(attr):
                             if attr in path:
                                 if path[attr] is None:
-                                    err = f"Config Error: playlists {attr} is blank"
+                                    err = f"Config Error: playlist_files {attr} is blank"
                                     self.errors.append(err)
                                     logger.error(err)
                                 else:
@@ -405,15 +406,20 @@ class ConfigFile:
                                 logger.error(f"Config Error: Folder not found: {folder}")
                     else:
                         playlists_pairs.append(("File", path))
-                for file_type, playlist_file in playlists_pairs:
-                    try:
-                        playlist_obj = PlaylistFile(self, file_type, playlist_file)
-                        self.playlist_names.extend([p for p in playlist_obj.playlists])
-                        self.playlist_files.append(playlist_obj)
-                    except Failed as e:
-                        util.print_multiline(e, error=True)
             else:
-                logger.warning("playlists attribute not found")
+                default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
+                if os.path.exists(default_playlist_file):
+                    playlists_pairs.append(("File", default_playlist_file))
+                    logger.warning(f"playlist_files attribute not found using {default_playlist_file} as default")
+                else:
+                    logger.warning("playlist_files attribute not found")
+            for file_type, playlist_file in playlists_pairs:
+                try:
+                    playlist_obj = PlaylistFile(self, file_type, playlist_file)
+                    self.playlist_names.extend([p for p in playlist_obj.playlists])
+                    self.playlist_files.append(playlist_obj)
+                except Failed as e:
+                    util.print_multiline(e, error=True)
 
             self.TVDb = TVDb(self, self.general["tvdb_language"])
             self.IMDb = IMDb(self)

@@ -18,7 +18,9 @@ settings:                                       # Can be individually specified 
   cache_expiration: 60
   asset_directory: config/assets
   asset_folders: true
+  asset_depth: 0
   create_asset_folders: false
+  dimensional_asset_rename: false
   show_missing_season_assets: false
   sync_mode: append
   collection_minimum: 1
@@ -29,6 +31,7 @@ settings:                                       # Can be individually specified 
   only_filter_missing: false
   show_unmanaged: true
   show_filtered: false
+  show_options: false
   show_missing: true
   show_missing_assets: true
   save_missing: true
