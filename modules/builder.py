@@ -86,7 +86,7 @@ scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "delete_not_scheduled",
-    "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name", "sort_by", "libraries"
+    "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name", "sort_by", "libraries", "sync_to_users"
 ]
 details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "collection_changes_webhooks", "collection_mode",
            "collection_minimum", "label"] + boolean_details + scheduled_boolean + string_details
@@ -2135,6 +2135,37 @@ class CollectionBuilder:
             logger.info(f"Moving {util.item_title(item)} {text}")
             self.library.moveItem(self.obj, item, previous)
             previous = item
+
+    def delete_user_playlist(self, title, user):
+        user_server = self.library.PlexServer.switchUser(user)
+        user_playlist = user_server.playlist(title)
+        user_playlist.delete()
+
+    def delete_playlist(self, users):
+        if self.obj:
+            self.library.query(self.obj.delete)
+            logger.info("")
+            logger.info(f"Playlist {self.obj.title} deleted")
+            if users:
+                for user in users:
+                    try:
+                        self.delete_user_playlist(self.obj.title, user)
+                        logger.info(f"Playlist {self.obj.title} deleted on User {user}")
+                    except NotFound:
+                        logger.error(f"Playlist {self.obj.title} not found on User {user}")
+
+    def sync_playlist(self, users):
+        if self.obj and users:
+            logger.info("")
+            util.separator(f"Syncing Playlist to Users", space=False, border=False)
+            logger.info("")
+            for user in users:
+                try:
+                    self.delete_user_playlist(self.obj.title, user)
+                except NotFound:
+                    pass
+                self.obj.copyToUser(user)
+                logger.info(f"Playlist: {self.name} synced to {user}")
 
     def send_notifications(self, playlist=False):
         if self.obj and self.details["collection_changes_webhooks"] and \

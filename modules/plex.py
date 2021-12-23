@@ -252,6 +252,7 @@ class Plex(Library):
         else:
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
+        self._users = []
         self.agent = self.Plex.agent
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
@@ -411,6 +412,16 @@ class Plex(Library):
         elif put:               method = self.Plex._server._session.put
         else:                   method = None
         return self.Plex._server.query(key, method=method)
+
+    @property
+    def users(self):
+        if not self._users:
+            users = []
+            for user in self.PlexServer.myPlexAccount().users():
+                if self.PlexServer.machineIdentifier in [s.machineIdentifier for s in user.servers]:
+                    users.append(user.title)
+            self._users = users
+        return self._users
 
     def alter_collection(self, item, collection, smart_label_collection=False, add=True):
         if smart_label_collection:
