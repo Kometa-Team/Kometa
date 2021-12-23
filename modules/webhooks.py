@@ -66,14 +66,10 @@ class Webhooks:
     def error_hooks(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         if self.error_webhooks:
             json = {"error": str(text), "critical": critical}
-            if server:
-                json["server_name"] = str(server)
-            if library:
-                json["library_name"] = str(library)
-            if collection:
-                json["collection"] = str(collection)
-            if playlist:
-                json["playlist"] = str(playlist)
+            if server:          json["server_name"] = str(server)
+            if library:         json["library_name"] = str(library)
+            if collection:      json["collection"] = str(collection)
+            if playlist:        json["playlist"] = str(playlist)
             self._request(self.error_webhooks, json)
 
     def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, deleted=False, additions=None, removals=None, playlist=False):

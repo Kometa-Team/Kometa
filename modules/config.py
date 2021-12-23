@@ -241,6 +241,7 @@ class ConfigFile:
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
             "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
+            "playlist_sync_to_user": check_for_attribute(self.data, "playlist_sync_to_user", parent="settings", default="all"),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.webhooks = {
