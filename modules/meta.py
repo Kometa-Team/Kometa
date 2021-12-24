@@ -120,12 +120,18 @@ class DataFile:
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute optional is blank")
 
-                    if "move_collection_prefix" in template:
-                        if template["move_collection_prefix"]:
-                            for op in util.get_list(template["move_collection_prefix"]):
+                    if "move_prefix" in template or "move_collection_prefix" in template:
+                        prefix = None
+                        if "move_prefix" in template:
+                            prefix = template["move_prefix"]
+                        elif "move_collection_prefix" in template:
+                            logger.warning(f"{self.data_type} Error: template sub-attribute move_collection_prefix will run as move_prefix")
+                            prefix = template["move_collection_prefix"]
+                        if prefix:
+                            for op in util.get_list(prefix):
                                 variables["collection_name"] = variables["collection_name"].replace(f"{str(op).strip()} ", "") + f", {str(op).strip()}"
                         else:
-                            raise Failed(f"{self.data_type} Error: template sub-attribute move_collection_prefix is blank")
+                            raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
 
                     def check_data(_method, _data):
                         if isinstance(_data, dict):
@@ -177,7 +183,7 @@ class DataFile:
 
                     new_attributes = {}
                     for method_name, attr_data in template.items():
-                        if method_name not in data and method_name not in ["default", "optional", "move_collection_prefix"]:
+                        if method_name not in data and method_name not in ["default", "optional", "move_collection_prefix", "move_prefix"]:
                             if attr_data is None:
                                 logger.error(f"Template Error: template attribute {method_name} is blank")
                                 continue

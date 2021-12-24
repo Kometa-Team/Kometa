@@ -33,7 +33,7 @@ sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": 
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
 
 class ConfigFile:
-    def __init__(self, default_dir, attrs):
+    def __init__(self, default_dir, attrs, read_only=False):
         logger.info("Locating config...")
         config_file = attrs["config_file"]
         if config_file and os.path.exists(config_file):                     self.config_path = os.path.abspath(config_file)
@@ -43,6 +43,7 @@ class ConfigFile:
         logger.info(f"Using {self.config_path} as config")
 
         self.default_dir = default_dir
+        self.read_only = read_only
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.start_time = attrs["time_obj"]
@@ -121,7 +122,8 @@ class ConfigFile:
             if "sonarr" in new_config:                      new_config["sonarr"] = new_config.pop("sonarr")
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
+            if not read_only:
+                yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
             raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
@@ -138,6 +140,8 @@ class ConfigFile:
                     data = None
                     do_print = False
                     save = False
+            if self.read_only:
+                save = False
             text = f"{attribute} attribute" if parent is None else f"{parent} sub-attribute {attribute}"
             if data is None or attribute not in data:
                 message = f"{text} not found"
