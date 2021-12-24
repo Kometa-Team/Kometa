@@ -13,6 +13,8 @@ libraries:                                      # Library mappings must have a c
     metadata_path:
       - file: config/Anime.yml                  # You have to create this file the other is online
       - git: meisnate12/AnimeCharts
+playlist_files:
+  - file: config/playlists.yml
 settings:                                       # Can be individually specified per library as well
   cache: true
   cache_expiration: 60
