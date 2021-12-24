@@ -166,7 +166,7 @@ def start(attrs):
     global stats
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "removed": 0, "radarr": 0, "sonarr": 0}
     try:
-        config = ConfigFile(default_dir, attrs)
+        config = ConfigFile(default_dir, attrs, read_only_config)
     except Exception as e:
         util.print_stacktrace()
         util.print_multiline(e, critical=True)
