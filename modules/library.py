@@ -1,8 +1,8 @@
 import logging, os, requests, shutil, time
 from abc import ABC, abstractmethod
 from modules import util
-from modules.meta import Metadata
-from modules.util import Failed, ImageData
+from modules.meta import MetadataFile
+from modules.util import Failed
 from PIL import Image
 from ruamel import yaml
 
@@ -34,6 +34,8 @@ class Library(ABC):
         self.name = params["name"]
         self.original_mapping_name = params["mapping_name"]
         self.metadata_path = params["metadata_path"]
+        self.skip_library = params["skip_library"]
+        self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
@@ -41,6 +43,7 @@ class Library(ABC):
         self.missing_path = os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
+        self.dimensional_asset_rename = params["dimensional_asset_rename"]
         self.show_missing_season_assets = params["show_missing_season_assets"]
         self.sync_mode = params["sync_mode"]
         self.collection_minimum = params["collection_minimum"]
@@ -49,6 +52,7 @@ class Library(ABC):
         self.missing_only_released = params["missing_only_released"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_filtered = params["show_filtered"]
+        self.show_options = params["show_options"]
         self.show_missing = params["show_missing"]
         self.show_missing_assets = params["show_missing_assets"]
         self.save_missing = params["save_missing"]
@@ -63,11 +67,14 @@ class Library(ABC):
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
         self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
         self.radarr_add_all = params["radarr_add_all"]
+        self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
         self.sonarr_add_all = params["sonarr_add_all"]
+        self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
+        self.mass_collection_mode = params["mass_collection_mode"]
         self.tmdb_collections = params["tmdb_collections"]
         self.genre_mapper = params["genre_mapper"]
         self.error_webhooks = params["error_webhooks"]
-        self.collection_changes_webhooks = params["collection_changes_webhooks"]
+        self.changes_webhooks = params["changes_webhooks"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
@@ -91,7 +98,7 @@ class Library(ABC):
                 metadata.append((file_type, metadata_file))
         for file_type, metadata_file in metadata:
             try:
-                meta_obj = Metadata(config, self, file_type, metadata_file)
+                meta_obj = MetadataFile(config, self, file_type, metadata_file)
                 if meta_obj.collections:
                     self.collections.extend([c for c in meta_obj.collections])
                 if meta_obj.metadata:
@@ -100,9 +107,9 @@ class Library(ABC):
             except Failed as e:
                 util.print_multiline(e, error=True)
 
-        if len(self.metadata_files) == 0 and not self.library_operation:
+        if len(self.metadata_files) == 0 and not self.library_operation and not self.config.playlist_files:
             logger.info("")
-            raise Failed("Config Error: No valid metadata files or library operations found")
+            raise Failed("Config Error: No valid metadata files, playlist files, or library operations found")
 
         if self.asset_directory:
             logger.info("")
@@ -190,8 +197,9 @@ class Library(ABC):
             if background_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
 
+    @abstractmethod
     def notify(self, text, collection=None, critical=True):
-        self.config.notify(text, library=self, collection=collection, critical=critical)
+        pass
 
     @abstractmethod
     def _upload_image(self, item, image):
@@ -247,30 +255,3 @@ class Library(ABC):
         logger.info("")
         logger.info(util.adjust_space(f"Processed {len(items)} {self.type}s"))
         return items
-
-    def find_collection_assets(self, item, name=None, create=False):
-        if name is None:
-            name = item.title
-        for ad in self.asset_directory:
-            poster = None
-            background = None
-            if self.asset_folders:
-                if not os.path.isdir(os.path.join(ad, name)):
-                    continue
-                poster_filter = os.path.join(ad, name, "poster.*")
-                background_filter = os.path.join(ad, name, "background.*")
-            else:
-                poster_filter = os.path.join(ad, f"{name}.*")
-                background_filter = os.path.join(ad, f"{name}_background.*")
-            matches = util.glob_filter(poster_filter)
-            if len(matches) > 0:
-                poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
-            matches = util.glob_filter(background_filter)
-            if len(matches) > 0:
-                background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
-            if poster or background:
-                return poster, background
-        if create and self.asset_folders and not os.path.isdir(os.path.join(self.asset_directory[0], name)):
-            os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
-            logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
-        return None, None

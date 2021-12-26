@@ -13,25 +13,33 @@ libraries:                                      # Library mappings must have a c
     metadata_path:
       - file: config/Anime.yml                  # You have to create this file the other is online
       - git: meisnate12/AnimeCharts
+playlist_files:
+  - file: config/playlists.yml
 settings:                                       # Can be individually specified per library as well
   cache: true
   cache_expiration: 60
   asset_directory: config/assets
   asset_folders: true
+  asset_depth: 0
   create_asset_folders: false
+  dimensional_asset_rename: false
+  show_missing_season_assets: false
   sync_mode: append
-  show_unmanaged: true
-  show_filtered: false
-  show_missing: true
-  show_missing_assets: true
-  save_missing: true
-  run_again_delay: 2
-  missing_only_released: false
-  only_filter_missing: false
   collection_minimum: 1
   delete_below_minimum: true
   delete_not_scheduled: false
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
+  show_unmanaged: true
+  show_filtered: false
+  show_options: false
+  show_missing: true
+  show_missing_assets: true
+  save_missing: true
   tvdb_language: eng
+  ignore_ids:
+  ignore_imdb_ids:
 webhooks:                                       # Can be individually specified per library as well
   error:
   run_start:

@@ -19,27 +19,30 @@ class Webhooks:
             logger.debug("")
             logger.debug(f"JSON: {json}")
         for webhook in list(set(webhooks)):
+            response = None
             if self.config.trace_mode:
                 logger.debug(f"Webhook: {webhook}")
             if webhook == "notifiarr":
-                url, params = self.notifiarr.get_url("notification/plex/")
-                for x in range(6):
-                    response = self.config.get(url, json=json, params=params)
-                    if response.status_code < 500:
-                        break
+                if self.notifiarr:
+                    url, params = self.notifiarr.get_url("notification/pmm/")
+                    for x in range(6):
+                        response = self.config.get(url, json=json, params=params)
+                        if response.status_code < 500:
+                            break
             else:
                 response = self.config.post(webhook, json=json)
-            try:
-                response_json = response.json()
-                if self.config.trace_mode:
-                    logger.debug(f"Response: {response_json}")
-                if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
-                    raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
-                if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
-                    raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
-            except JSONDecodeError:
-                if response.status_code >= 400:
-                    raise Failed(f"({response.status_code} [{response.reason}])")
+            if response:
+                try:
+                    response_json = response.json()
+                    if self.config.trace_mode:
+                        logger.debug(f"Response: {response_json}")
+                    if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
+                        raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
+                    if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
+                        raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
+                except JSONDecodeError:
+                    if response.status_code >= 400:
+                        raise Failed(f"({response.status_code} [{response.reason}])")
 
     def start_time_hooks(self, start_time):
         if self.run_start_webhooks:
@@ -60,36 +63,33 @@ class Webhooks:
                 "added_to_sonarr": stats["sonarr"],
             })
 
-    def error_hooks(self, text, library=None, collection=None, critical=True):
+    def error_hooks(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         if self.error_webhooks:
             json = {"error": str(text), "critical": critical}
-            if library:
-                json["server_name"] = library.PlexServer.friendlyName
-                json["library_name"] = library.name
-            if collection:
-                json["collection"] = str(collection)
+            if server:          json["server_name"] = str(server)
+            if library:         json["library_name"] = str(library)
+            if collection:      json["collection"] = str(collection)
+            if playlist:        json["playlist"] = str(playlist)
             self._request(self.error_webhooks, json)
 
-    def collection_hooks(self, webhooks, collection, created=False, deleted=False, additions=None, removals=None):
+    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, deleted=False, additions=None, removals=None, playlist=False):
         if self.library:
             thumb = None
-            if collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
+            if not poster_url and collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
                 thumb = self.config.get_image_encoded(f"{self.library.url}{collection.thumb}?X-Plex-Token={self.library.token}")
             art = None
-            if collection.art and next((f for f in collection.fields if f.name == "art"), None):
+            if not playlist and not background_url and collection.art and next((f for f in collection.fields if f.name == "art"), None):
                 art = self.config.get_image_encoded(f"{self.library.url}{collection.art}?X-Plex-Token={self.library.token}")
-            json = {
+            self._request(webhooks, {
                 "server_name": self.library.PlexServer.friendlyName,
                 "library_name": self.library.name,
-                "type": "movie" if self.library.is_movie else "show",
-                "collection": collection.title,
+                "playlist" if playlist else "collection": collection.title,
                 "created": created,
                 "deleted": deleted,
                 "poster": thumb,
-                "background": art
-            }
-            if additions:
-                json["additions"] = additions
-            if removals:
-                json["removals"] = removals
-            self._request(webhooks, json)
+                "background": art,
+                "poster_url": poster_url,
+                "background_url": background_url,
+                "additions": additions if additions else [],
+                "removals": removals if removals else [],
+            })

@@ -50,10 +50,9 @@ class FlixPatrol:
         if len(ids) > 0 and ids[0]:
             if "https://www.themoviedb.org" in ids[0]:
                 return util.regex_first_int(ids[0].split("https://www.themoviedb.org")[1], "TMDB Movie ID")
-            raise Failed(f"FlixPatrol Error: TMDb Movie ID not found in {ids[0]}")
         raise Failed(f"FlixPatrol Error: TMDb Movie ID not found at {flixpatrol_url}")
 
-    def _parse_list(self, list_url, language, is_movie):
+    def _parse_list(self, list_url, language, is_movie, limit=0):
         flixpatrol_urls = []
         if list_url.startswith(urls["top10"]):
             platform = list_url[len(urls["top10"]):].split("/")[0]
@@ -73,7 +72,7 @@ class FlixPatrol:
                 list_url, language,
                 f"//a[@class='flex group' and .//span[.='{'Movie' if is_movie else 'TV Show'}']]/@href"
             )
-        return flixpatrol_urls
+        return flixpatrol_urls if limit == 0  else flixpatrol_urls[:limit]
 
     def validate_flixpatrol_lists(self, flixpatrol_lists, language, is_movie):
         valid_lists = []
@@ -81,7 +80,7 @@ class FlixPatrol:
             list_url = flixpatrol_list.strip()
             if not list_url.startswith(tuple([v for k, v in urls.items()])):
                 fails = "\n".join([f"{v} (For {k.replace('_', ' ').title()})" for k, v in urls.items()])
-                raise Failed(f"FlixPatrol Error: {list_url} must begin with either:{fails}")
+                raise Failed(f"FlixPatrol Error: {list_url} must begin with either:\n{fails}")
             elif len(self._parse_list(list_url, language, is_movie)) > 0:
                 valid_lists.append(list_url)
             else:
@@ -133,7 +132,7 @@ class FlixPatrol:
             logger.info(f"Processing FlixPatrol URL: {data}")
         url = self.get_url(method, data, is_movie)
 
-        items = self._parse_list(url, language, is_movie)
+        items = self._parse_list(url, language, is_movie, limit=data["limit"] if isinstance(data, dict) else 0)
         media_type = "movie" if is_movie else "show"
         total_items = len(items)
         if total_items > 0:
