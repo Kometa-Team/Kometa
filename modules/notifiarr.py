@@ -1,4 +1,5 @@
 import logging
+from json import JSONDecodeError
 
 from modules.util import Failed
 
@@ -14,9 +15,14 @@ class Notifiarr:
         self.apikey = params["apikey"]
         self.develop = params["develop"]
         self.test = params["test"]
+        logger.debug(f"Environment: {'Test' if self.test else 'Develop' if self.develop else 'Production'}")
         url, _ = self.get_url("user/validate/")
         response = self.config.get(url)
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except JSONDecodeError as e:
+            logger.debug(e)
+            raise Failed("Notifiarr Error: Invalid response")
         if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
             logger.debug(f"Response: {response_json}")
             raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
@@ -27,5 +33,5 @@ class Notifiarr:
         url = f"{dev_url if self.develop else base_url}{'notification/test' if self.test else f'{path}{self.apikey}'}"
         if self.config.trace_mode:
             logger.debug(url.replace(self.apikey, "APIKEY"))
-        params = {"event": "pmm" if self.test else "collections"}
+        params = {"event": "pmm"} if self.test else None
         return url, params

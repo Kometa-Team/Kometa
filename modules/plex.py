@@ -2,10 +2,13 @@ import logging, os, plexapi, requests
 from modules import builder, util
 from modules.library import Library
 from modules.util import Failed, ImageData
+from PIL import Image
 from plexapi import utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
+from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
+from plexapi.video import Movie, Show
 from retrying import retry
 from urllib import parse
 from xml.etree.ElementTree import ParseError
@@ -79,11 +82,6 @@ plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
-collection_mode_options = {
-    "default": "default", "hide": "hide",
-    "hide_items": "hideItems", "hideitems": "hideItems",
-    "show_items": "showItems", "showitems": "showItems"
-}
 collection_order_options = ["release", "alpha", "custom"]
 collection_level_options = ["episode", "season"]
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
@@ -254,6 +252,7 @@ class Plex(Library):
         else:
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
+        self._users = []
         self.agent = self.Plex.agent
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
@@ -263,6 +262,9 @@ class Plex(Library):
         if self.tmdb_collections and self.is_show:
             self.tmdb_collections = None
             logger.error("Config Error: tmdb_collections only work with Movie Libraries.")
+
+    def notify(self, text, collection=None, critical=True):
+        self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
 
     def set_server_preroll(self, preroll):
         self.PlexServer.settings.get('cinemaTrailersPrerollID').set(preroll)
@@ -305,8 +307,16 @@ class Plex(Library):
         return results
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def create_playlist(self, name, items):
+        return self.PlexServer.createPlaylist(name, items=items)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def fetchItems(self, key, container_start, container_size):
         return self.Plex.fetchItems(key, container_start=container_start, container_size=container_size)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def moveItem(self, obj, item, after):
+        obj.moveItem(item, after=after)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def query(self, method):
@@ -325,7 +335,9 @@ class Plex(Library):
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_mode_query(self, collection, data):
-        collection.modeUpdate(mode=data)
+        if int(collection.collectionMode) not in collection_mode_keys or collection_mode_keys[int(collection.collectionMode)] != data:
+            collection.modeUpdate(mode=data)
+            logger.info(f"Detail: collection_order updated Collection Order to {data}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_order_query(self, collection, data):
@@ -376,14 +388,19 @@ class Plex(Library):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         try:
+            names = []
             choices = {}
             for choice in self.Plex.listFilterChoices(final_search):
+                if choice.title not in names:
+                    names.append(choice.title)
+                if choice.key not in names:
+                    names.append(choice.key)
                 choices[choice.title.lower()] = choice.title if title else choice.key
                 choices[choice.key.lower()] = choice.title if title else choice.key
-            return choices
+            return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
-            raise Failed(f"Collection Error: plex search attribute: {search_name} not supported")
+            raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_labels(self):
@@ -395,6 +412,16 @@ class Plex(Library):
         elif put:               method = self.Plex._server._session.put
         else:                   method = None
         return self.Plex._server.query(key, method=method)
+
+    @property
+    def users(self):
+        if not self._users:
+            users = []
+            for user in self.PlexServer.myPlexAccount().users():
+                if self.PlexServer.machineIdentifier in [s.machineIdentifier for s in user.servers]:
+                    users.append(user.title)
+            self._users = users
+        return self._users
 
     def alter_collection(self, item, collection, smart_label_collection=False, add=True):
         if smart_label_collection:
@@ -473,15 +500,25 @@ class Plex(Library):
         key += f"&promotedToSharedHome={1 if (shared is None and visibility['shared']) or shared else 0}"
         self._query(key, post=True)
 
+    def get_playlist(self, title):
+        try:
+            return self.PlexServer.playlist(title)
+        except NotFound:
+            raise Failed(f"Plex Error: Playlist {title} not found")
+
     def get_collection(self, data):
         if isinstance(data, int):
             return self.fetchItem(data)
         elif isinstance(data, Collection):
             return data
         else:
-            for d in self.search(title=str(data), libtype="collection"):
+            cols = self.search(title=str(data), libtype="collection")
+            for d in cols:
                 if d.title == data:
                     return d
+            for d in cols:
+                logger.debug(f"Found: {d.title}")
+            logger.debug(f"Looking for: {data}")
         raise Failed(f"Plex Error: Collection {data} not found")
 
     def validate_collections(self, collections):
@@ -541,7 +578,7 @@ class Plex(Library):
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
-            ids = [item.ratingKey for item in items]
+            ids = [(item.ratingKey, "ratingKey") for item in items]
             logger.debug("")
             logger.debug(f"{len(ids)} Keys Found: {ids}")
             return ids
@@ -551,7 +588,7 @@ class Plex(Library):
     def get_collection_items(self, collection, smart_label_collection):
         if smart_label_collection:
             return self.get_labeled_items(collection.title if isinstance(collection, Collection) else str(collection))
-        elif isinstance(collection, Collection):
+        elif isinstance(collection, (Collection, Playlist)):
             if collection.smart:
                 return self.get_filter_items(self.smart_filter(collection))
             else:
@@ -564,7 +601,7 @@ class Plex(Library):
         return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
 
     def get_collection_name_and_items(self, collection, smart_label_collection):
-        name = collection.title if isinstance(collection, Collection) else str(collection)
+        name = collection.title if isinstance(collection, (Collection, Playlist)) else str(collection)
         return name, self.get_collection_items(collection, smart_label_collection)
 
     def get_tmdb_from_map(self, item):
@@ -620,20 +657,36 @@ class Plex(Library):
                 logger.info(f"{obj.title[:25]:<25} | {attr.capitalize()} | {display}")
         return len(display) > 0
 
-    def update_item_from_assets(self, item, overlay=None, create=False):
-        name = os.path.basename(os.path.dirname(str(item.locations[0])) if self.is_movie else str(item.locations[0]))
+    def find_assets(self, item, name=None, upload=True, overlay=None, folders=None, create=None):
+        if isinstance(item, Movie):
+            name = os.path.basename(os.path.dirname(str(item.locations[0])))
+        elif isinstance(item, Show):
+            name = os.path.basename(str(item.locations[0]))
+        elif isinstance(item, Collection):
+            name = name if name else item.title
+        else:
+            return None, None
+        if not folders:
+            folders = self.asset_folders
+        if not create:
+            create = self.create_asset_folders
         found_folder = False
         poster = None
         background = None
         for ad in self.asset_directory:
             item_dir = None
-            if self.asset_folders:
+            if folders:
                 if os.path.isdir(os.path.join(ad, name)):
                     item_dir = os.path.join(ad, name)
                 else:
-                    matches = util.glob_filter(os.path.join(ad, "*", name))
-                    if len(matches) > 0:
-                        item_dir = os.path.abspath(matches[0])
+                    for n in range(1, self.asset_depth + 1):
+                        new_path = ad
+                        for i in range(1, n + 1):
+                            new_path = os.path.join(new_path, "*")
+                        matches = util.glob_filter(os.path.join(new_path, name))
+                        if len(matches) > 0:
+                            item_dir = os.path.abspath(matches[0])
+                            break
                 if item_dir is None:
                     continue
                 found_folder = True
@@ -642,15 +695,38 @@ class Plex(Library):
             else:
                 poster_filter = os.path.join(ad, f"{name}.*")
                 background_filter = os.path.join(ad, f"{name}_background.*")
-            matches = util.glob_filter(poster_filter)
-            if len(matches) > 0:
-                poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_url=False)
-            matches = util.glob_filter(background_filter)
-            if len(matches) > 0:
-                background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+
+            poster_matches = util.glob_filter(poster_filter)
+            if len(poster_matches) > 0:
+                poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=f"{item.title}'s ", is_url=False)
+
+            background_matches = util.glob_filter(background_filter)
+            if len(background_matches) > 0:
+                background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+
+            if item_dir and self.dimensional_asset_rename and (not poster or not background):
+                for file in util.glob_filter(os.path.join(item_dir, "*.*")):
+                    if file.lower().endswith((".jpg", ".png", ".jpeg")):
+                        image = Image.open(file)
+                        _w, _h = image.size
+                        image.close()
+                        if not poster and _h > _w:
+                            new_path = os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
+                            os.rename(file, new_path)
+                            poster = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_url=False)
+                        elif not background and _w > _h:
+                            new_path = os.path.join(os.path.dirname(file), f"background{os.path.splitext(file)[1].lower()}")
+                            os.rename(file, new_path)
+                            background = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+                        if poster and background:
+                            break
+
             if poster or background:
-                self.upload_images(item, poster=poster, background=background, overlay=overlay)
-            if self.is_show:
+                if upload:
+                    self.upload_images(item, poster=poster, background=background, overlay=overlay)
+                else:
+                    return poster, background
+            if isinstance(item, Show):
                 missing_assets = ""
                 found_season = False
                 for season in self.query(item.seasons):
@@ -685,12 +761,13 @@ class Plex(Library):
                             self.upload_images(episode, poster=episode_poster)
                 if self.show_missing_season_assets and found_season and missing_assets:
                     util.print_multiline(f"Missing Season Posters for {item.title}{missing_assets}", info=True)
-        if not poster and overlay:
+        if isinstance(item, (Movie, Show)) and not poster and overlay:
             self.upload_images(item, overlay=overlay)
-        if create and self.asset_folders and not found_folder:
+        if create and folders and not found_folder:
             os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
             logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
-        elif not overlay and self.asset_folders and not found_folder:
+        elif isinstance(item, (Movie, Show)) and not overlay and folders and not found_folder:
             logger.error(f"Asset Warning: No asset folder found called '{name}'")
-        elif not poster and not background and self.show_missing_assets:
+        elif isinstance(item, (Movie, Show)) and not poster and not background and self.show_missing_assets:
             logger.error(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
+        return None, None

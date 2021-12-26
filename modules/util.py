@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+from plexapi.video import Season, Episode, Movie
 
 try:
     import msvcrt
@@ -65,6 +66,11 @@ pretty_months = {
 }
 seasons = ["winter", "spring", "summer", "fall"]
 pretty_ids = {"anidbid": "AniDB", "imdbid": "IMDb", "mal_id": "MyAnimeList", "themoviedb_id": "TMDb", "thetvdb_id": "TVDb", "tvdbid": "TVDb"}
+collection_mode_options = {
+    "default": "default", "hide": "hide",
+    "hide_items": "hideItems", "hideitems": "hideItems",
+    "show_items": "showItems", "showitems": "showItems"
+}
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
@@ -241,6 +247,26 @@ def validate_filename(filename):
         mapping_name = sanitize_filename(filename)
         return mapping_name, f"Log Folder Name: {filename} is invalid using {mapping_name}"
 
+def item_title(item):
+    if isinstance(item, Season):
+        if f"Season {item.index}" == item.title:
+            return f"{item.parentTitle} {item.title}"
+        else:
+            return f"{item.parentTitle} Season {item.index}: {item.title}"
+    elif isinstance(item, Episode):
+        text = f"{item.grandparentTitle} S{add_zero(item.parentIndex)}E{add_zero(item.index)}"
+        if f"Season {item.parentIndex}" == item.parentTitle:
+            return f"{text}: {item.title}"
+        else:
+            return f"{text}: {item.parentTitle}: {item.title}"
+    elif isinstance(item, Movie) and item.year:
+        return f"{item.title} ({item.year})"
+    else:
+        return item.title
+
+def item_set(item, item_id):
+    return {"title": item_title(item), "tmdb" if isinstance(item, Movie) else "tvdb": item_id}
+
 def is_locked(filepath):
     locked = None
     file_object = None
@@ -256,26 +282,26 @@ def is_locked(filepath):
                 file_object.close()
     return locked
 
-def time_window(time_window):
+def time_window(tw):
     today = datetime.now()
-    if time_window == "today":
+    if tw == "today":
         return f"{today:%Y-%m-%d}"
-    elif time_window == "yesterday":
+    elif tw == "yesterday":
         return f"{today - timedelta(days=1):%Y-%m-%d}"
-    elif time_window == "this_week":
+    elif tw == "this_week":
         return f"{today:%Y-0%V}"
-    elif time_window == "last_week":
+    elif tw == "last_week":
         return f"{today - timedelta(weeks=1):%Y-0%V}"
-    elif time_window == "this_month":
+    elif tw == "this_month":
         return f"{today:%Y-%m}"
-    elif time_window == "last_month":
+    elif tw == "last_month":
         return f"{today.year}-{today.month - 1 or 12}"
-    elif time_window == "this_year":
+    elif tw == "this_year":
         return f"{today.year}"
-    elif time_window == "last_year":
+    elif tw == "last_year":
         return f"{today.year - 1}"
     else:
-        return time_window
+        return tw
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
@@ -309,6 +335,9 @@ def is_number_filter(value, modifier, data):
             or (modifier == ".lt" and value >= data) \
             or (modifier == ".lte" and value > data)
 
+def is_boolean_filter(value, data):
+    return (data and not value) or (not data and value)
+
 def is_string_filter(values, modifier, data):
     jailbreak = False
     for value in values:
@@ -323,72 +352,101 @@ def is_string_filter(values, modifier, data):
         if jailbreak: break
     return (jailbreak and modifier in [".not", ".isnot"]) or (not jailbreak and modifier in ["", ".is", ".begins", ".ends", ".regex"])
 
-def parse(attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None):
-    display = f"{parent + ' ' if parent else ''}{attribute} attribute"
-    if options is None and translation is not None:
-        options = [o for o in translation]
-    value = data[methods[attribute]] if methods and attribute in methods else data
-
-    if datatype == "list":
-        if value:
-            return [v for v in value if v] if isinstance(value, list) else [str(value)]
-        return []
-    elif datatype == "intlist":
-        if value:
-            try:
-                return [int(v) for v in value if v] if isinstance(value, list) else [int(value)]
-            except ValueError:
-                pass
-        return []
-    elif datatype == "dictlist":
-        final_list = []
-        for dict_data in get_list(value):
-            if isinstance(dict_data, dict):
-                final_list.append((dict_data, {dm.lower(): dm for dm in dict_data}))
-            else:
-                raise Failed(f"Collection Error: {display} {dict_data} is not a dictionary")
-        return final_list
-    elif methods and attribute not in methods:
-        message = f"{display} not found"
-    elif value is None:
-        message = f"{display} is blank"
-    elif regex is not None:
-        regex_str, example = regex
-        if re.compile(regex_str).match(str(value)):
-            return str(value)
-        else:
-            message = f"{display}: {value} must match pattern {regex_str} e.g. {example}"
-    elif datatype == "bool":
-        if isinstance(value, bool):
-            return value
-        elif isinstance(value, int):
-            return value > 0
-        elif str(value).lower() in ["t", "true"]:
-            return True
-        elif str(value).lower() in ["f", "false"]:
-            return False
-        else:
-            message = f"{display} must be either true or false"
-    elif datatype in ["int", "float"]:
-        try:
-            value = int(str(value)) if datatype == "int" else float(str(value))
-            if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
-                return value
-        except ValueError:
-            pass
-        pre = f"{display} {value} must {'an integer' if datatype == 'int' else 'a number'}"
-        if maximum is None:
-            message = f"{pre} {minimum} or greater"
-        else:
-            message = f"{pre} between {minimum} and {maximum}"
-    elif (translation is not None and str(value).lower() not in translation) or \
-            (options is not None and translation is None and str(value).lower() not in options):
-        message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
+def check_collection_mode(collection_mode):
+    if collection_mode and str(collection_mode).lower() in collection_mode_options:
+        return collection_mode_options[str(collection_mode).lower()]
     else:
-        return translation[value] if translation is not None else value
+        raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
 
-    if default is None:
-        raise Failed(f"Collection Error: {message}")
+def check_day(_m, _d):
+    if _m in [1, 3, 5, 7, 8, 10, 12] and _d > 31:
+        return _m, 31
+    elif _m in [4, 6, 9, 11] and _d > 30:
+        return _m, 30
+    elif _m == 2 and _d > 28:
+        return _m, 28
     else:
-        logger.warning(f"Collection Warning: {message} using {default} as default")
-        return translation[default] if translation is not None else default
+        return _m, _d
+
+def schedule_check(attribute, data, current_time, run_hour):
+    skip_collection = True
+    schedule_list = get_list(data)
+    next_month = current_time.replace(day=28) + timedelta(days=4)
+    last_day = next_month - timedelta(days=next_month.day)
+    schedule_str = ""
+    for schedule in schedule_list:
+        run_time = str(schedule).lower()
+        if run_time.startswith(("day", "daily")):
+            skip_collection = False
+        elif run_time == "never":
+            schedule_str += f"\nNever scheduled to run"
+        elif run_time.startswith(("hour", "week", "month", "year", "range")):
+            match = re.search("\\(([^)]+)\\)", run_time)
+            if not match:
+                logger.error(f"Schedule Error: failed to parse {attribute}: {schedule}")
+                continue
+            param = match.group(1)
+            if run_time.startswith("hour"):
+                try:
+                    if 0 <= int(param) <= 23:
+                        schedule_str += f"\nScheduled to run only on the {make_ordinal(int(param))} hour"
+                        if run_hour == int(param):
+                            skip_collection = False
+                    else:
+                        raise ValueError
+                except ValueError:
+                    logger.error(f"Schedule Error: hourly {attribute} attribute {schedule} invalid must be an integer between 0 and 23")
+            elif run_time.startswith("week"):
+                if param.lower() not in days_alias:
+                    logger.error(f"Schedule Error: weekly {attribute} attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
+                    continue
+                weekday = days_alias[param.lower()]
+                schedule_str += f"\nScheduled weekly on {pretty_days[weekday]}"
+                if weekday == current_time.weekday():
+                    skip_collection = False
+            elif run_time.startswith("month"):
+                try:
+                    if 1 <= int(param) <= 31:
+                        schedule_str += f"\nScheduled monthly on the {make_ordinal(int(param))}"
+                        if current_time.day == int(param) or (
+                                current_time.day == last_day.day and int(param) > last_day.day):
+                            skip_collection = False
+                    else:
+                        raise ValueError
+                except ValueError:
+                    logger.error(f"Schedule Error: monthly {attribute} attribute {schedule} invalid must be an integer between 1 and 31")
+            elif run_time.startswith("year"):
+                try:
+                    if "/" in param:
+                        opt = param.split("/")
+                        month = int(opt[0])
+                        day = int(opt[1])
+                        schedule_str += f"\nScheduled yearly on {pretty_months[month]} {make_ordinal(day)}"
+                        if current_time.month == month and (current_time.day == day or (
+                                current_time.day == last_day.day and day > last_day.day)):
+                            skip_collection = False
+                    else:
+                        raise ValueError
+                except ValueError:
+                    logger.error(
+                        f"Schedule Error: yearly {attribute} attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+            elif run_time.startswith("range"):
+                match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
+                if not match:
+                    logger.error(f"Schedule Error: range {attribute} attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
+                    continue
+                month_start, day_start = check_day(int(match.group(1)), int(match.group(2)))
+                month_end, day_end = check_day(int(match.group(3)), int(match.group(4)))
+                month_check, day_check = check_day(current_time.month, current_time.day)
+                check = datetime.strptime(f"{month_check}/{day_check}", "%m/%d")
+                start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
+                end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
+                schedule_str += f"\nScheduled between {pretty_months[month_start]} {make_ordinal(day_start)} and {pretty_months[month_end]} {make_ordinal(day_end)}"
+                if start <= check <= end if start < end else (check <= end or check >= start):
+                    skip_collection = False
+        else:
+            logger.error(f"Schedule Error: {attribute} attribute {schedule} invalid")
+    if len(schedule_str) == 0:
+        skip_collection = False
+    if skip_collection:
+        raise NotScheduled(schedule_str)

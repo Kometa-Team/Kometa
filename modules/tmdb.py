@@ -112,6 +112,9 @@ class TMDb:
             return int(search["movie_results"][0]["id"]), "movie"
         elif len(search["tv_results"]) > 0:
             return int(search["tv_results"][0]["id"]), "show"
+        elif len(search["tv_episode_results"]) > 0:
+            item = search['tv_episode_results'][0]
+            return f"{item['show_id']}_{item['season_number']}_{item['episode_number']}", "episode"
         else:
             raise Failed(f"TMDb Error: No TMDb ID found for IMDb ID {imdb_id}")
 

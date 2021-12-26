@@ -9,61 +9,211 @@ logger = logging.getLogger("Plex Meta Manager")
 
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
-class Metadata:
-    def __init__(self, config, library, file_type, path):
+
+def get_dict(attribute, attr_data, check_list=None):
+    if check_list is None:
+        check_list = []
+    if attr_data and attribute in attr_data:
+        if attr_data[attribute]:
+            if isinstance(attr_data[attribute], dict):
+                new_dict = {}
+                for _name, _data in attr_data[attribute].items():
+                    if _name in check_list:
+                        logger.error(
+                            f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
+                    elif _data is None:
+                        logger.error(
+                            f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
+                    elif not isinstance(_data, dict):
+                        logger.error(
+                            f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
+                    else:
+                        new_dict[str(_name)] = _data
+                return new_dict
+            else:
+                logger.warning(f"Config Warning: {attribute} must be a dictionary")
+        else:
+            logger.warning(f"Config Warning: {attribute} attribute is blank")
+    return None
+
+
+class DataFile:
+    def __init__(self, config, file_type, path):
         self.config = config
-        self.library = library
         self.type = file_type
         self.path = path
-        def get_dict(attribute, attr_data, check_list=None):
-            if check_list is None:
-                check_list = []
-            if attr_data and attribute in attr_data:
-                if attr_data[attribute]:
-                    if isinstance(attr_data[attribute], dict):
-                        new_dict = {}
-                        for a_name, a_data in attr_data[attribute].items():
-                            if a_name in check_list:
-                                logger.error(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {a_name}")
-                            else:
-                                new_dict[str(a_name)] = a_data
-                        return new_dict
-                    else:
-                        logger.warning(f"Config Warning: {attribute} must be a dictionary")
+        self.data_type = ""
+        self.templates = {}
+
+    def load_file(self):
+        try:
+            if self.type in ["URL", "Git"]:
+                content_path = self.path if self.type == "URL" else f"{github_base}{self.path}.yml"
+                response = self.config.get(content_path)
+                if response.status_code >= 400:
+                    raise Failed(f"URL Error: No file found at {content_path}")
+                content = response.content
+            elif os.path.exists(os.path.abspath(self.path)):
+                content = open(self.path, encoding="utf-8")
+            else:
+                raise Failed(f"File Error: File does not exist {os.path.abspath(self.path)}")
+            data, _, _ = yaml.util.load_yaml_guess_indent(content)
+            return data
+        except yaml.scanner.ScannerError as ye:
+            raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
+        except Exception as e:
+            util.print_stacktrace()
+            raise Failed(f"YAML Error: {e}")
+
+    def apply_template(self, name, data, template):
+        if not self.templates:
+            raise Failed(f"{self.data_type} Error: No templates found")
+        elif not template:
+            raise Failed(f"{self.data_type} Error: template attribute is blank")
+        else:
+            logger.debug(f"Value: {template}")
+            for variables in util.get_list(template, split=False):
+                if not isinstance(variables, dict):
+                    raise Failed(f"{self.data_type} Error: template attribute is not a dictionary")
+                elif "name" not in variables:
+                    raise Failed(f"{self.data_type} Error: template sub-attribute name is required")
+                elif not variables["name"]:
+                    raise Failed(f"{self.data_type} Error: template sub-attribute name is blank")
+                elif variables["name"] not in self.templates:
+                    raise Failed(f"{self.data_type} Error: template {variables['name']} not found")
+                elif not isinstance(self.templates[variables["name"]], dict):
+                    raise Failed(f"{self.data_type} Error: template {variables['name']} is not a dictionary")
                 else:
-                    logger.warning(f"Config Warning: {attribute} attribute is blank")
-            return None
+                    for tm in variables:
+                        if not variables[tm]:
+                            raise Failed(f"{self.data_type} Error: template sub-attribute {tm} is blank")
+                    if self.data_type == "Collection" and "collection_name" not in variables:
+                        variables["collection_name"] = str(name)
+                    if self.data_type == "Playlist" and "playlist_name" not in variables:
+                        variables["playlist_name"] = str(name)
+
+                    template_name = variables["name"]
+                    template = self.templates[template_name]
+
+                    default = {}
+                    if "default" in template:
+                        if template["default"]:
+                            if isinstance(template["default"], dict):
+                                for dv in template["default"]:
+                                    if template["default"][dv]:
+                                        default[dv] = template["default"][dv]
+                                    else:
+                                        raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
+                            else:
+                                raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
+                        else:
+                            raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
+
+                    optional = []
+                    if "optional" in template:
+                        if template["optional"]:
+                            for op in util.get_list(template["optional"]):
+                                if op not in default:
+                                    optional.append(str(op))
+                                else:
+                                    logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
+                        else:
+                            raise Failed(f"{self.data_type} Error: template sub-attribute optional is blank")
+
+                    if "move_prefix" in template or "move_collection_prefix" in template:
+                        prefix = None
+                        if "move_prefix" in template:
+                            prefix = template["move_prefix"]
+                        elif "move_collection_prefix" in template:
+                            logger.warning(f"{self.data_type} Error: template sub-attribute move_collection_prefix will run as move_prefix")
+                            prefix = template["move_collection_prefix"]
+                        if prefix:
+                            for op in util.get_list(prefix):
+                                variables["collection_name"] = variables["collection_name"].replace(f"{str(op).strip()} ", "") + f", {str(op).strip()}"
+                        else:
+                            raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
+
+                    def check_data(_method, _data):
+                        if isinstance(_data, dict):
+                            final_data = {}
+                            for sm, sd in _data.items():
+                                try:
+                                    final_data[sm] = check_data(_method, sd)
+                                except Failed:
+                                    continue
+                        elif isinstance(_data, list):
+                            final_data = []
+                            for li in _data:
+                                try:
+                                    final_data.append(check_data(_method, li))
+                                except Failed:
+                                    continue
+                        else:
+                            txt = str(_data)
+
+                            def scan_text(og_txt, var, var_value):
+                                if og_txt == f"<<{var}>>":
+                                    return str(var_value)
+                                elif f"<<{var}>>" in str(og_txt):
+                                    return str(og_txt).replace(f"<<{var}>>", str(var_value))
+                                else:
+                                    return og_txt
+
+                            for option in optional:
+                                if option not in variables and f"<<{option}>>" in txt:
+                                    raise Failed
+                            for variable, variable_data in variables.items():
+                                if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                    txt = scan_text(txt, variable, variable_data.replace(",", ""))
+                                elif variable != "name":
+                                    txt = scan_text(txt, variable, variable_data)
+                            for dm, dd in default.items():
+                                txt = scan_text(txt, dm, dd)
+                            if txt in ["true", "True"]:
+                                final_data = True
+                            elif txt in ["false", "False"]:
+                                final_data = False
+                            else:
+                                try:
+                                    num_data = float(txt)
+                                    final_data = int(num_data) if num_data.is_integer() else num_data
+                                except (ValueError, TypeError):
+                                    final_data = txt
+                        return final_data
+
+                    new_attributes = {}
+                    for method_name, attr_data in template.items():
+                        if method_name not in data and method_name not in ["default", "optional", "move_collection_prefix", "move_prefix"]:
+                            if attr_data is None:
+                                logger.error(f"Template Error: template attribute {method_name} is blank")
+                                continue
+                            try:
+                                new_attributes[method_name] = check_data(method_name, attr_data)
+                            except Failed:
+                                continue
+                    return new_attributes
+
+
+class MetadataFile(DataFile):
+    def __init__(self, config, library, file_type, path):
+        super().__init__(config, file_type, path)
+        self.data_type = "Collection"
+        self.library = library
         if file_type == "Data":
             self.metadata = None
             self.collections = get_dict("collections", path, library.collections)
             self.templates = get_dict("templates", path)
         else:
-            try:
-                logger.info("")
-                logger.info(f"Loading Metadata {file_type}: {path}")
-                if file_type in ["URL", "Git"]:
-                    content_path = path if file_type == "URL" else f"{github_base}{path}.yml"
-                    response = self.config.get(content_path)
-                    if response.status_code >= 400:
-                        raise Failed(f"URL Error: No file found at {content_path}")
-                    content = response.content
-                elif os.path.exists(os.path.abspath(path)):
-                    content = open(path, encoding="utf-8")
-                else:
-                    raise Failed(f"File Error: File does not exist {path}")
-                data, ind, bsi = yaml.util.load_yaml_guess_indent(content)
-                self.metadata = get_dict("metadata", data, library.metadatas)
-                self.templates = get_dict("templates", data)
-                self.collections = get_dict("collections", data, library.collections)
+            logger.info("")
+            logger.info(f"Loading Metadata {file_type}: {path}")
+            data = self.load_file()
+            self.metadata = get_dict("metadata", data, library.metadatas)
+            self.templates = get_dict("templates", data)
+            self.collections = get_dict("collections", data, library.collections)
 
-                if self.metadata is None and self.collections is None:
-                    raise Failed("YAML Error: metadata or collections attribute is required")
-                logger.info(f"Metadata File Loaded Successfully")
-            except yaml.scanner.ScannerError as ye:
-                raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
-            except Exception as e:
-                util.print_stacktrace()
-                raise Failed(f"YAML Error: {e}")
+            if self.metadata is None and self.collections is None:
+                raise Failed("YAML Error: metadata or collections attribute is required")
+            logger.info(f"Metadata File Loaded Successfully")
 
     def get_collections(self, requested_collections):
         if requested_collections:
@@ -97,7 +247,17 @@ class Metadata:
                                 final_value = util.validate_date(value, name, return_as="%Y-%m-%d")
                                 current = current[:-9]
                             elif var_type == "float":
-                                final_value = util.parse(name, value, datatype="float", minimum=0, maximum=10)
+                                if value is None:
+                                    raise Failed(f"Metadata Error: {name} attribute is blank")
+                                final_value = None
+                                try:
+                                    value = float(str(value))
+                                    if 0 <= value <= 10:
+                                        final_value = value
+                                except ValueError:
+                                    pass
+                                if final_value is None:
+                                    raise Failed(f"Metadata Error: {name} attribute must be a number between 0 and 10")
                             else:
                                 final_value = value
                             if current != str(final_value):
@@ -174,7 +334,17 @@ class Metadata:
             logger.info("")
             year = None
             if "year" in methods:
-                year = util.parse("year", meta, datatype="int", methods=methods, minimum=1800, maximum=datetime.now().year + 1)
+                next_year = datetime.now().year + 1
+                if meta[methods["year"]] is None:
+                    raise Failed("Metadata Error: year attribute is blank")
+                try:
+                    year_value = int(str(meta[methods["year"]]))
+                    if 1800 <= year_value <= next_year:
+                        year = year_value
+                except ValueError:
+                    pass
+                if year is None:
+                    raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
 
             title = mapping_name
             if "title" in methods:
@@ -379,3 +549,18 @@ class Metadata:
                     logger.error("Metadata Error: episodes attribute is blank")
             elif "episodes" in methods:
                 logger.error("Metadata Error: episodes attribute only works for show libraries")
+
+
+class PlaylistFile(DataFile):
+    def __init__(self, config, file_type, path):
+        super().__init__(config, file_type, path)
+        self.data_type = "Playlist"
+        self.playlists = {}
+        logger.info("")
+        logger.info(f"Loading Playlist File {file_type}: {path}")
+        data = self.load_file()
+        self.playlists = get_dict("playlists", data, self.config.playlist_names)
+        self.templates = get_dict("templates", data)
+        if not self.playlists:
+            raise Failed("YAML Error: playlists attribute is required")
+        logger.info(f"Playlist File Loaded Successfully")

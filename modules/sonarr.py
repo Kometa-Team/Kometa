@@ -6,7 +6,7 @@ from arrapi.exceptions import ArrException, Invalid
 
 logger = logging.getLogger("Plex Meta Manager")
 
-series_type = ["standard", "daily", "anime"]
+series_types = ["standard", "daily", "anime"]
 monitor_translation = {
     "all": "all", "future": "future", "missing": "missing", "existing": "existing",
     "pilot": "pilot", "first": "firstSeason", "latest": "latestSeason", "none": "none"
@@ -66,7 +66,7 @@ class Sonarr:
                 _paths.append(tvdb_id)
             else:
                 _ids.append(tvdb_id)
-        logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
+        logger.debug(f"Sonarr Adds: {_ids if _ids else ''}")
         for tvdb_id in _paths:
             logger.debug(tvdb_id)
         folder = options["folder"] if "folder" in options else self.root_folder_path
@@ -74,7 +74,7 @@ class Sonarr:
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
         language_profile = options["language"] if "language" in options else self.language_profile
         language_profile = language_profile if self.api._raw.v3 else 1
-        series = options["series"] if "series" in options else self.series_type
+        series_type = options["series"] if "series" in options else self.series_type
         season = options["season"] if "season" in options else self.season_folder
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
@@ -86,8 +86,9 @@ class Sonarr:
             if series.path:
                 arr_paths[series.path[:-1] if series.path.endswith(("/", "\\")) else series.path] = series.tvdbId
             arr_paths[series.tvdbId] = series
-        logger.debug(arr_paths)
-        logger.debug(arr_ids)
+        if self.config.trace_mode:
+            logger.debug(arr_paths)
+            logger.debug(arr_ids)
 
         added = []
         exists = []
@@ -127,7 +128,7 @@ class Sonarr:
             if len(shows) == 100 or len(tvdb_ids) == i:
                 try:
                     _a, _e, _i = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor,
-                                                              season, search, cutoff_search, series, tags, per_request=100)
+                                                              season, search, cutoff_search, series_type, tags, per_request=100)
                     added.extend(_a)
                     exists.extend(_e)
                     invalid.extend(_i)
@@ -193,3 +194,18 @@ class Sonarr:
             logger.info("")
             for tvdb_id in not_exists:
                 logger.info(f"TVDb ID Not in Sonarr | {tvdb_id}")
+
+    def remove_all_with_tags(self, tags):
+        lower_tags = [_t.lower() for _t in tags]
+        remove_items = []
+        for series in self.api.all_series():
+            tag_strs = [_t.label.lower() for _t in series.tags]
+            remove = True
+            for tag in lower_tags:
+                if tag not in tag_strs:
+                    remove = False
+                    break
+            if remove:
+                remove_items.append(series)
+        if remove_items:
+            self.api.delete_multiple_series(remove_items)

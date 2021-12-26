@@ -10,22 +10,52 @@ anime_lists_url = "https://raw.githubusercontent.com/Fribb/anime-lists/master/an
 class Convert:
     def __init__(self, config):
         self.config = config
-        self.anidb_ids = {}
-        self.mal_to_anidb = {}
-        self.anilist_to_anidb = {}
-        self.anidb_to_imdb = {}
-        self.anidb_to_tvdb = {}
-        for anime_id in self.config.get_json(anime_lists_url):
-            if "anidb_id" in anime_id:
-                self.anidb_ids[anime_id["anidb_id"]] = anime_id
-                if "mal_id" in anime_id:
-                    self.mal_to_anidb[int(anime_id["mal_id"])] = int(anime_id["anidb_id"])
-                if "anilist_id" in anime_id:
-                    self.anilist_to_anidb[int(anime_id["anilist_id"])] = int(anime_id["anidb_id"])
-                if "imdb_id" in anime_id and str(anime_id["imdb_id"]).startswith("tt"):
-                    self.anidb_to_imdb[int(anime_id["anidb_id"])] = util.get_list(anime_id["imdb_id"])
-                if "thetvdb_id" in anime_id:
-                    self.anidb_to_tvdb[int(anime_id["anidb_id"])] = int(anime_id["thetvdb_id"])
+        self._loaded = False
+        self._anidb_ids = {}
+        self._mal_to_anidb = {}
+        self._anilist_to_anidb = {}
+        self._anidb_to_imdb = {}
+        self._anidb_to_tvdb = {}
+
+    @property
+    def anidb_ids(self):
+        self._load_anime_conversion()
+        return self._anidb_ids
+
+    @property
+    def mal_to_anidb(self):
+        self._load_anime_conversion()
+        return self._mal_to_anidb
+
+    @property
+    def anilist_to_anidb(self):
+        self._load_anime_conversion()
+        return self._anilist_to_anidb
+
+    @property
+    def anidb_to_imdb(self):
+        self._load_anime_conversion()
+        return self._anidb_to_imdb
+
+    @property
+    def anidb_to_tvdb(self):
+        self._load_anime_conversion()
+        return self._anidb_to_tvdb
+
+    def _load_anime_conversion(self):
+        if not self._loaded:
+            for anime_id in self.config.get_json(anime_lists_url):
+                if "anidb_id" in anime_id:
+                    self._anidb_ids[anime_id["anidb_id"]] = anime_id
+                    if "mal_id" in anime_id:
+                        self._mal_to_anidb[int(anime_id["mal_id"])] = int(anime_id["anidb_id"])
+                    if "anilist_id" in anime_id:
+                        self._anilist_to_anidb[int(anime_id["anilist_id"])] = int(anime_id["anidb_id"])
+                    if "imdb_id" in anime_id and str(anime_id["imdb_id"]).startswith("tt"):
+                        self._anidb_to_imdb[int(anime_id["anidb_id"])] = util.get_list(anime_id["imdb_id"])
+                    if "thetvdb_id" in anime_id:
+                        self._anidb_to_tvdb[int(anime_id["anidb_id"])] = int(anime_id["thetvdb_id"])
+            self._loaded = True
 
     def anidb_to_ids(self, anidb_ids, library):
         ids = []
@@ -224,6 +254,16 @@ class Convert:
             elif item_type == "imdb":                       imdb_id.append(check_id)
             elif item_type == "thetvdb":                    tvdb_id.append(int(check_id))
             elif item_type == "themoviedb":                 tmdb_id.append(int(check_id))
+            elif item_type in ["xbmcnfo", "xbmcnfotv"]:
+                if len(check_id) > 10:
+                    raise Failed(f"XMBC NFO Local ID: {check_id}")
+                try:
+                    if item_type == "xbmcnfo":
+                        tmdb_id.append(int(check_id))
+                    else:
+                        tvdb_id.append(int(check_id))
+                except ValueError:
+                    imdb_id.append(check_id)
             elif item_type == "hama":
                 if check_id.startswith("tvdb"):
                     tvdb_id.append(int(re.search("-(.*)", check_id).group(1)))

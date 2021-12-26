@@ -11,6 +11,7 @@ from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
+from modules.meta import PlaylistFile
 from modules.notifiarr import Notifiarr
 from modules.omdb import OMDb
 from modules.plex import Plex
@@ -21,18 +22,18 @@ from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
 from modules.trakt import Trakt
 from modules.tvdb import TVDb
-from modules.util import Failed
+from modules.util import Failed, NotScheduled
 from modules.webhooks import Webhooks
 from retrying import retry
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
 
-sync_modes = {"append": "Only Add Items to the Collection", "sync": "Add & Remove Items from the Collection"}
+sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
 
-class Config:
-    def __init__(self, default_dir, attrs):
+class ConfigFile:
+    def __init__(self, default_dir, attrs, read_only):
         logger.info("Locating config...")
         config_file = attrs["config_file"]
         if config_file and os.path.exists(config_file):                     self.config_path = os.path.abspath(config_file)
@@ -42,6 +43,7 @@ class Config:
         logger.info(f"Using {self.config_path} as config")
 
         self.default_dir = default_dir
+        self.read_only = read_only
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.start_time = attrs["time_obj"]
@@ -92,21 +94,25 @@ class Config:
                         hooks("collection_creation")
                         hooks("collection_addition")
                         hooks("collection_removal")
-                        new_config["libraries"][library]["webhooks"]["collection_changes"] = changes if changes else None
+                        hooks("collection_changes")
+                        new_config["libraries"][library]["webhooks"]["changes"] = changes if changes else None
             if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
+            if "playlists" in new_config:                   new_config["playlists"] = new_config.pop("playlists")
             if "settings" in new_config:                    new_config["settings"] = new_config.pop("settings")
             if "webhooks" in new_config:
                 temp = new_config.pop("webhooks")
-                changes = []
-                def hooks(attr):
-                    if attr in temp:
-                        items = util.get_list(temp.pop(attr), split=False)
-                        if items:
-                            changes.extend([w for w in items if w not in changes])
-                hooks("collection_creation")
-                hooks("collection_addition")
-                hooks("collection_removal")
-                temp["collection_changes"] = changes if changes else None
+                if "changes" not in temp:
+                    changes = []
+                    def hooks(attr):
+                        if attr in temp:
+                            items = util.get_list(temp.pop(attr), split=False)
+                            if items:
+                                changes.extend([w for w in items if w not in changes])
+                    hooks("collection_creation")
+                    hooks("collection_addition")
+                    hooks("collection_removal")
+                    hooks("collection_changes")
+                    temp["changes"] = changes if changes else None
                 new_config["webhooks"] = temp
             if "plex" in new_config:                        new_config["plex"] = new_config.pop("plex")
             if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
@@ -118,7 +124,8 @@ class Config:
             if "sonarr" in new_config:                      new_config["sonarr"] = new_config.pop("sonarr")
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
+            if not read_only:
+                yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
             raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
@@ -135,6 +142,8 @@ class Config:
                     data = None
                     do_print = False
                     save = False
+            if self.read_only:
+                save = False
             text = f"{attribute} attribute" if parent is None else f"{parent} sub-attribute {attribute}"
             if data is None or attribute not in data:
                 message = f"{text} not found"
@@ -145,9 +154,9 @@ class Config:
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
                     else:                                                               endline = ""
                     yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
-                if default_is_none and var_type in ["list", "int_list"]:            return []
+                if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
             elif data[attribute] is None:
-                if default_is_none and var_type in ["list", "int_list"]:            return []
+                if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
                 elif default_is_none:                                               return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "url":
@@ -163,6 +172,7 @@ class Config:
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
             elif var_type == "list":                                            return util.get_list(data[attribute], split=False)
+            elif var_type == "comma_list":                                      return util.get_list(data[attribute])
             elif var_type == "int_list":                                        return util.get_list(data[attribute], int_list=True)
             elif var_type == "list_path":
                 temp_list = []
@@ -217,7 +227,9 @@ class Config:
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60),
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")], default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
+            "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
             "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False),
+            "dimensional_asset_rename": check_for_attribute(self.data, "dimensional_asset_rename", parent="settings", var_type="bool", default=False),
             "show_missing_season_assets": check_for_attribute(self.data, "show_missing_season_assets", parent="settings", var_type="bool", default=False),
             "sync_mode": check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes),
             "collection_minimum": check_for_attribute(self.data, "collection_minimum", parent="settings", var_type="int", default=1),
@@ -228,19 +240,21 @@ class Config:
             "only_filter_missing": check_for_attribute(self.data, "only_filter_missing", parent="settings", var_type="bool", default=False),
             "show_unmanaged": check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True),
             "show_filtered": check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False),
+            "show_options": check_for_attribute(self.data, "show_options", parent="settings", var_type="bool", default=False),
             "show_missing": check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True),
             "show_missing_assets": check_for_attribute(self.data, "show_missing_assets", parent="settings", var_type="bool", default=True),
             "save_missing": check_for_attribute(self.data, "save_missing", parent="settings", var_type="bool", default=True),
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
             "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
+            "playlist_sync_to_user": check_for_attribute(self.data, "playlist_sync_to_user", parent="settings", default="all"),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.webhooks = {
             "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
             "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
             "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
-            "collection_changes": check_for_attribute(self.data, "collection_changes", parent="webhooks", var_type="list", default_is_none=True)
+            "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True)
         }
         if self.general["cache"]:
             util.separator()
@@ -260,6 +274,7 @@ class Config:
                     "test": check_for_attribute(self.data, "test", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False)
                 })
             except Failed as e:
+                util.print_stacktrace()
                 logger.error(e)
             logger.info(f"Notifiarr Connection {'Failed' if self.NotifiarrFactory is None else 'Successful'}")
         else:
@@ -340,8 +355,6 @@ class Config:
             else:
                 logger.warning("mal attribute not found")
 
-            util.separator()
-
             self.AniDB = None
             if "anidb" in self.data:
                 util.separator()
@@ -357,6 +370,63 @@ class Config:
                 logger.info(f"My Anime List Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
             if self.AniDB is None:
                 self.AniDB = AniDB(self, None)
+
+            util.separator()
+
+            self.playlist_names = []
+            self.playlist_files = []
+            playlists_pairs = []
+            if "playlist_files" in self.data:
+                logger.info("Reading in Playlist Files")
+                if self.data["playlist_files"] is None:
+                    raise Failed("Config Error: playlist_files attribute is blank")
+                paths_to_check = self.data["playlist_files"] if isinstance(self.data["playlist_files"], list) else [self.data["playlist_files"]]
+                for path in paths_to_check:
+                    if isinstance(path, dict):
+                        def check_dict(attr):
+                            if attr in path:
+                                if path[attr] is None:
+                                    err = f"Config Error: playlist_files {attr} is blank"
+                                    self.errors.append(err)
+                                    logger.error(err)
+                                else:
+                                    return path[attr]
+
+                        url = check_dict("url")
+                        if url:
+                            playlists_pairs.append(("URL", url))
+                        git = check_dict("git")
+                        if git:
+                            playlists_pairs.append(("Git", git))
+                        file = check_dict("file")
+                        if file:
+                            playlists_pairs.append(("File", file))
+                        folder = check_dict("folder")
+                        if folder:
+                            if os.path.isdir(folder):
+                                yml_files = util.glob_filter(os.path.join(folder, "*.yml"))
+                                if yml_files:
+                                    playlists_pairs.extend([("File", yml) for yml in yml_files])
+                                else:
+                                    logger.error(f"Config Error: No YAML (.yml) files found in {folder}")
+                            else:
+                                logger.error(f"Config Error: Folder not found: {folder}")
+                    else:
+                        playlists_pairs.append(("File", path))
+            else:
+                default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
+                if os.path.exists(default_playlist_file):
+                    playlists_pairs.append(("File", default_playlist_file))
+                    logger.warning(f"playlist_files attribute not found using {default_playlist_file} as default")
+                else:
+                    logger.warning("playlist_files attribute not found")
+            for file_type, playlist_file in playlists_pairs:
+                try:
+                    playlist_obj = PlaylistFile(self, file_type, playlist_file)
+                    self.playlist_names.extend([p for p in playlist_obj.playlists])
+                    self.playlist_files.append(playlist_obj)
+                except Failed as e:
+                    util.print_multiline(e, error=True)
 
             self.TVDb = TVDb(self, self.general["tvdb_language"])
             self.IMDb = IMDb(self)
@@ -418,13 +488,19 @@ class Config:
             self.libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
+            current_time = datetime.now()
+
             for library_name, lib in libs.items():
                 if self.requested_libraries and library_name not in self.requested_libraries:
                     continue
-                util.separator()
                 params = {
                     "mapping_name": str(library_name),
-                    "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
+                    "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name),
+                    "tmdb_collections": None,
+                    "genre_mapper": None,
+                    "radarr_remove_by_tag": None,
+                    "sonarr_remove_by_tag": None,
+                    "mass_collection_mode": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -437,15 +513,18 @@ class Config:
                     logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
 
                 params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
+                params["asset_depth"] = check_for_attribute(lib, "asset_depth", parent="settings", var_type="int", default=self.general["asset_depth"], do_print=False, save=False)
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
                 params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
                 params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
+                params["show_options"] = check_for_attribute(lib, "show_options", parent="settings", var_type="bool", default=self.general["show_options"], do_print=False, save=False)
                 params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
                 params["show_missing_assets"] = check_for_attribute(lib, "show_missing_assets", parent="settings", var_type="bool", default=self.general["show_missing_assets"], do_print=False, save=False)
                 params["save_missing"] = check_for_attribute(lib, "save_missing", parent="settings", var_type="bool", default=self.general["save_missing"], do_print=False, save=False)
                 params["missing_only_released"] = check_for_attribute(lib, "missing_only_released", parent="settings", var_type="bool", default=self.general["missing_only_released"], do_print=False, save=False)
                 params["only_filter_missing"] = check_for_attribute(lib, "only_filter_missing", parent="settings", var_type="bool", default=self.general["only_filter_missing"], do_print=False, save=False)
                 params["create_asset_folders"] = check_for_attribute(lib, "create_asset_folders", parent="settings", var_type="bool", default=self.general["create_asset_folders"], do_print=False, save=False)
+                params["dimensional_asset_rename"] = check_for_attribute(lib, "dimensional_asset_rename", parent="settings", var_type="bool", default=self.general["dimensional_asset_rename"], do_print=False, save=False)
                 params["show_missing_season_assets"] = check_for_attribute(lib, "show_missing_season_assets", parent="settings", var_type="bool", default=self.general["show_missing_season_assets"], do_print=False, save=False)
                 params["collection_minimum"] = check_for_attribute(lib, "collection_minimum", parent="settings", var_type="int", default=self.general["collection_minimum"], do_print=False, save=False)
                 params["delete_below_minimum"] = check_for_attribute(lib, "delete_below_minimum", parent="settings", var_type="bool", default=self.general["delete_below_minimum"], do_print=False, save=False)
@@ -457,7 +536,7 @@ class Config:
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
-                params["collection_changes_webhooks"] = check_for_attribute(lib, "collection_creation", parent="webhooks", var_type="list", default=self.webhooks["collection_changes"], do_print=False, save=False, default_is_none=True)
+                params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
                 params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
@@ -466,8 +545,6 @@ class Config:
                 params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
                 params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False, do_print=False)
                 params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=False)
-                params["tmdb_collections"] = None
-                params["genre_mapper"] = None
 
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
@@ -489,21 +566,40 @@ class Config:
                             params["split_duplicates"] = check_for_attribute(lib["operations"], "split_duplicates", var_type="bool", default=False, save=False)
                         if "radarr_add_all" in lib["operations"]:
                             params["radarr_add_all"] = check_for_attribute(lib["operations"], "radarr_add_all", var_type="bool", default=False, save=False)
+                        if "radarr_remove_by_tag" in lib["operations"]:
+                            params["radarr_remove_by_tag"] = check_for_attribute(lib["operations"], "radarr_remove_by_tag", var_type="comma_list", default=False, save=False)
                         if "sonarr_add_all" in lib["operations"]:
                             params["sonarr_add_all"] = check_for_attribute(lib["operations"], "sonarr_add_all", var_type="bool", default=False, save=False)
+                        if "sonarr_remove_by_tag" in lib["operations"]:
+                            params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
+                        if "mass_collection_mode" in lib["operations"]:
+                            try:
+                                params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
+                            except Failed as e:
+                                logger.error(e)
                         if "tmdb_collections" in lib["operations"]:
-                            params["tmdb_collections"] = {"exclude_ids": [], "remove_suffix": None, "template": {"tmdb_collection_details": "<<collection_id>>"}}
+                            params["tmdb_collections"] = {
+                                "exclude_ids": [],
+                                "remove_suffix": [],
+                                "dictionary_variables": {},
+                                "template": {"tmdb_collection_details": "<<collection_id>>"}
+                            }
                             if lib["operations"]["tmdb_collections"] and isinstance(lib["operations"]["tmdb_collections"], dict):
+
                                 params["tmdb_collections"]["exclude_ids"] = check_for_attribute(lib["operations"]["tmdb_collections"], "exclude_ids", var_type="int_list", default_is_none=True, save=False)
-                                params["tmdb_collections"]["remove_suffix"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_suffix", default_is_none=True, save=False)
+                                params["tmdb_collections"]["remove_suffix"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_suffix", var_type="comma_list", default_is_none=True, save=False)
+                                if "dictionary_variables" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["dictionary_variables"] and isinstance(lib["operations"]["tmdb_collections"]["dictionary_variables"], dict):
+                                    for key, value in lib["operations"]["tmdb_collections"]["dictionary_variables"].items():
+                                        if isinstance(value, dict):
+                                            params["tmdb_collections"]["dictionary_variables"][key] = value
+                                        else:
+                                            logger.warning(f"Config Warning: tmdb_collections dictionary_variables {key} must be a dictionary")
                                 if "template" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["template"] and isinstance(lib["operations"]["tmdb_collections"]["template"], dict):
                                     params["tmdb_collections"]["template"] = lib["operations"]["tmdb_collections"]["template"]
                                 else:
                                     logger.warning("Config Warning: Using default template for tmdb_collections")
                             else:
                                 logger.error("Config Error: tmdb_collections blank using default settings")
-                            if params["tmdb_collections"]["remove_suffix"]:
-                                params["tmdb_collections"]["remove_suffix"] = params["tmdb_collections"]["remove_suffix"].strip()
                         if "genre_mapper" in lib["operations"]:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
                                 params["genre_mapper"] = {}
@@ -555,6 +651,18 @@ class Config:
                     else:
                         params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"))]
                     params["default_dir"] = default_dir
+
+                    params["skip_library"] = False
+                    if lib and "schedule" in lib:
+                        if not lib["schedule"]:
+                            raise Failed(f"Config Error: schedule attribute is blank")
+                        else:
+                            logger.debug(f"Value: {lib['schedule']}")
+                            try:
+                                util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
+                            except NotScheduled:
+                                params["skip_library"] = True
+
                     params["plex"] = {
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
@@ -670,10 +778,10 @@ class Config:
             self.notify(e)
             raise
 
-    def notify(self, text, library=None, collection=None, critical=True):
+    def notify(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         for error in util.get_list(text, split=False):
             try:
-                self.Webhooks.error_hooks(error, library=library, collection=collection, critical=critical)
+                self.Webhooks.error_hooks(error, server=server, library=library, collection=collection, playlist=playlist, critical=critical)
             except Failed as e:
                 util.print_stacktrace()
                 logger.error(f"Webhooks Error: {e}")

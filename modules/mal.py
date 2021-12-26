@@ -108,7 +108,7 @@ class MyAnimeList:
 
     def _save(self, authorization):
         if authorization is not None and "access_token" in authorization and authorization["access_token"] and self._check(authorization):
-            if self.authorization != authorization:
+            if self.authorization != authorization and self.config.read_only:
                 yaml.YAML().allow_duplicate_keys = True
                 config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
                 config["mal"]["authorization"] = {
