@@ -42,7 +42,8 @@ method_alias = {
     "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
     "mal_producer": "mal_studio", "mal_licensor": "mal_studio",
-    "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly"
+    "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
+    "collection_changes_webhooks": "changes_webhooks"
 }
 filter_translation = {
     "actor": "actors",
@@ -85,10 +86,11 @@ boolean_details = [
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
-    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "delete_not_scheduled",
-    "tmdb_person", "build_collection", "collection_order", "collection_level", "validate_builders", "collection_name", "sort_by", "libraries", "sync_to_users"
+    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
+    "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level",
+    "validate_builders", "sort_by", "libraries", "sync_to_users", "collection_name", "playlist_name", "name"
 ]
-details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "collection_changes_webhooks", "collection_mode",
+details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode",
            "collection_minimum", "label"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
@@ -101,7 +103,7 @@ sonarr_details = [
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
 parts_collection_valid = [
-     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "collection_changes_webhooks"
+     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "changes_webhooks"
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
      "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "imdb_list"
 ] + summary_details + poster_details + background_details + string_details
@@ -168,13 +170,13 @@ custom_sort_builders = [
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
 playlist_attributes = [
-    "playlist_name", "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
+    "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
-    "server_preroll", "collection_changes_webhooks", "collection_minimum"
-] + custom_sort_builders + summary_details + poster_details + background_details + radarr_details + sonarr_details
+    "server_preroll", "changes_webhooks", "collection_minimum",
+] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 
 class CollectionBuilder:
-    def __init__(self, config, library, metadata, name, no_missing, data, playlist=False):
+    def __init__(self, config, library, metadata, name, no_missing, data, playlist=False, valid_users=None):
         self.config = config
         self.library = library
         self.metadata = metadata
@@ -182,6 +184,7 @@ class CollectionBuilder:
         self.no_missing = no_missing
         self.data = data
         self.playlist = playlist
+        self.valid_users = valid_users
         self.language = self.library.Plex.language
         self.details = {
             "show_filtered": self.library.show_filtered,
@@ -194,7 +197,7 @@ class CollectionBuilder:
             "create_asset_folders": self.library.create_asset_folders,
             "delete_below_minimum": self.library.delete_below_minimum,
             "delete_not_scheduled": self.library.delete_not_scheduled,
-            "collection_changes_webhooks": self.library.collection_changes_webhooks
+            "changes_webhooks": self.library.changes_webhooks
         }
         self.item_details = {}
         self.radarr_details = {}
@@ -232,13 +235,21 @@ class CollectionBuilder:
 
         methods = {m.lower(): m for m in self.data}
 
-        if f"{self.type}_name" in methods:
+        if "name" in methods:
+            name = self.data[methods["name"]]
+        elif f"{self.type}_name" in methods:
+            logger.warning(f"Config Warning: Running {self.type}_name as name")
+            name = self.data[methods[f"{self.type}_name"]]
+        else:
+            name = None
+
+        if name:
             logger.debug("")
-            logger.debug(f"Validating Method: {self.type}_name")
-            if not self.data[methods[f"{self.type}_name"]]:
-                raise Failed(f"{self.Type} Error: {self.type}_name attribute is blank")
-            logger.debug(f"Value: {self.data[methods['{}_name'.format(self.type)]]}")
-            self.name = self.data[methods[f"{self.type}_name"]]
+            logger.debug("Validating Method: name")
+            if not name:
+                raise Failed(f"{self.Type} Error: name attribute is blank")
+            logger.debug(f"Value: {name}")
+            self.name = name
         else:
             self.name = self.mapping_name
 
@@ -269,13 +280,13 @@ class CollectionBuilder:
                     suffix = ""
                     if self.details["delete_not_scheduled"]:
                         try:
-                            self.obj = self.library.get_collection(self.name)
-                            self.delete_collection()
+                            self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name)
+                            util.print_multiline(self.delete())
                             self.deleted = True
                             suffix = f" and was deleted"
                         except Failed:
                             suffix = f" and could not be found to delete"
-                    raise NotScheduled(f"{e}\n\nCollection {self.name} not scheduled to run{suffix}")
+                    raise NotScheduled(f"{e}\n\n{self.Type} {self.name} not scheduled to run{suffix}")
 
         self.collectionless = "plex_collectionless" in methods and not self.playlist
 
@@ -674,7 +685,7 @@ class CollectionBuilder:
                 self.details["label.sync"] = util.get_list(method_data) if method_data else []
             else:
                 self.details[method_final] = util.get_list(method_data) if method_data else []
-        elif method_name == "collection_changes_webhooks":
+        elif method_name == "changes_webhooks":
             self.details[method_name] = self._parse(method_name, method_data, datatype="list")
         elif method_name in scheduled_boolean:
             if isinstance(method_data, bool):
@@ -1570,7 +1581,7 @@ class CollectionBuilder:
                 else:
                     self.library.alter_collection(item, name, smart_label_collection=self.smart_label_collection)
                 amount_added += 1
-                if self.details["collection_changes_webhooks"]:
+                if self.details["changes_webhooks"]:
                     if item.ratingKey in self.library.movie_rating_key_map:
                         add_id = self.library.movie_rating_key_map[item.ratingKey]
                     elif item.ratingKey in self.library.show_rating_key_map:
@@ -1605,7 +1616,7 @@ class CollectionBuilder:
                 else:
                     self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
                 amount_removed += 1
-                if self.details["collection_changes_webhooks"]:
+                if self.details["changes_webhooks"]:
                     if item.ratingKey in self.library.movie_rating_key_map:
                         remove_id = self.library.movie_rating_key_map[item.ratingKey]
                     elif item.ratingKey in self.library.show_rating_key_map:
@@ -1950,10 +1961,6 @@ class CollectionBuilder:
                 os.remove(og_image)
             self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, "", "")
 
-    def delete_collection(self):
-        if self.obj:
-            self.library.query(self.obj.delete)
-
     def load_collection(self):
         if not self.obj and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
@@ -2141,25 +2148,27 @@ class CollectionBuilder:
         user_playlist = user_server.playlist(title)
         user_playlist.delete()
 
-    def delete_playlist(self, users):
+    def delete(self):
+        output = ""
         if self.obj:
             self.library.query(self.obj.delete)
-            logger.info("")
-            logger.info(f"Playlist {self.obj.title} deleted")
-            if users:
-                for user in users:
-                    try:
-                        self.delete_user_playlist(self.obj.title, user)
-                        logger.info(f"Playlist {self.obj.title} deleted on User {user}")
-                    except NotFound:
-                        logger.error(f"Playlist {self.obj.title} not found on User {user}")
+            output = f"{self.Type} {self.obj.title} deleted"
+            if self.playlist:
+                if self.valid_users:
+                    for user in self.valid_users:
+                        try:
+                            self.delete_user_playlist(self.obj.title, user)
+                            output += f"\nPlaylist {self.obj.title} deleted on User {user}"
+                        except NotFound:
+                            output += f"\nPlaylist {self.obj.title} not found on User {user}"
+        return output
 
-    def sync_playlist(self, users):
-        if self.obj and users:
+    def sync_playlist(self):
+        if self.obj and self.valid_users:
             logger.info("")
             util.separator(f"Syncing Playlist to Users", space=False, border=False)
             logger.info("")
-            for user in users:
+            for user in self.valid_users:
                 try:
                     self.delete_user_playlist(self.obj.title, user)
                 except NotFound:
@@ -2168,12 +2177,12 @@ class CollectionBuilder:
                 logger.info(f"Playlist: {self.name} synced to {user}")
 
     def send_notifications(self, playlist=False):
-        if self.obj and self.details["collection_changes_webhooks"] and \
+        if self.obj and self.details["changes_webhooks"] and \
                 (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
             self.obj.reload()
             try:
                 self.library.Webhooks.collection_hooks(
-                    self.details["collection_changes_webhooks"],
+                    self.details["changes_webhooks"],
                     self.obj,
                     poster_url=self.collection_poster.location if self.collection_poster and self.collection_poster.is_url else None,
                     background_url=self.collection_background.location if self.collection_background and self.collection_background.is_url else None,
