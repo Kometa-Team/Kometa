@@ -74,7 +74,7 @@ class Library(ABC):
         self.tmdb_collections = params["tmdb_collections"]
         self.genre_mapper = params["genre_mapper"]
         self.error_webhooks = params["error_webhooks"]
-        self.collection_changes_webhooks = params["collection_changes_webhooks"]
+        self.changes_webhooks = params["changes_webhooks"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?

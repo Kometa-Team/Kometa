@@ -33,7 +33,7 @@ sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": 
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
 
 class ConfigFile:
-    def __init__(self, default_dir, attrs, read_only=False):
+    def __init__(self, default_dir, attrs, read_only):
         logger.info("Locating config...")
         config_file = attrs["config_file"]
         if config_file and os.path.exists(config_file):                     self.config_path = os.path.abspath(config_file)
@@ -94,13 +94,14 @@ class ConfigFile:
                         hooks("collection_creation")
                         hooks("collection_addition")
                         hooks("collection_removal")
-                        new_config["libraries"][library]["webhooks"]["collection_changes"] = changes if changes else None
+                        hooks("collection_changes")
+                        new_config["libraries"][library]["webhooks"]["changes"] = changes if changes else None
             if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
             if "playlists" in new_config:                   new_config["playlists"] = new_config.pop("playlists")
             if "settings" in new_config:                    new_config["settings"] = new_config.pop("settings")
             if "webhooks" in new_config:
                 temp = new_config.pop("webhooks")
-                if "collection_changes" not in temp:
+                if "changes" not in temp:
                     changes = []
                     def hooks(attr):
                         if attr in temp:
@@ -110,7 +111,8 @@ class ConfigFile:
                     hooks("collection_creation")
                     hooks("collection_addition")
                     hooks("collection_removal")
-                    temp["collection_changes"] = changes if changes else None
+                    hooks("collection_changes")
+                    temp["changes"] = changes if changes else None
                 new_config["webhooks"] = temp
             if "plex" in new_config:                        new_config["plex"] = new_config.pop("plex")
             if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
@@ -252,7 +254,7 @@ class ConfigFile:
             "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
             "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
             "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
-            "collection_changes": check_for_attribute(self.data, "collection_changes", parent="webhooks", var_type="list", default_is_none=True)
+            "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True)
         }
         if self.general["cache"]:
             util.separator()
@@ -534,7 +536,7 @@ class ConfigFile:
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
-                params["collection_changes_webhooks"] = check_for_attribute(lib, "collection_changes", parent="webhooks", var_type="list", default=self.webhooks["collection_changes"], do_print=False, save=False, default_is_none=True)
+                params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
                 params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)

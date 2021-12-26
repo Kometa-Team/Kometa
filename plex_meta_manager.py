@@ -34,7 +34,7 @@ parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collec
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
-parser.add_argument("-ro", "--read-only-config", dest="read_only_config", help="Config must be read only", action="store_true", default=False)
+parser.add_argument("-ro", "--read-only-config", dest="read_only_config", help="Run without writing to the config", action="store_true", default=False)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -721,10 +721,9 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
                     valid = False
                     if builder.details["delete_below_minimum"] and builder.obj:
-                        builder.delete_collection()
-                        builder.deleted = True
                         logger.info("")
-                        logger.info(f"Collection {builder.obj.title} deleted")
+                        util.print_multiline(builder.delete(), info=True)
+                        builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     if builder.details["show_missing"] is True:
@@ -875,7 +874,7 @@ def run_playlists(config):
                 util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
                 builder = CollectionBuilder(config, pl_libraries[0], playlist_file, mapping_name, no_missing,
-                                            playlist_attrs, playlist=True)
+                                            playlist_attrs, playlist=True, valid_users=valid_users)
                 logger.info("")
 
                 util.separator(f"Running {mapping_name} Playlist", space=False, border=False)
@@ -1043,7 +1042,8 @@ def run_playlists(config):
                     logger.info(f"Playlist Minimum: {builder.minimum} not met for {mapping_name} Playlist")
                     valid = False
                     if builder.details["delete_below_minimum"] and builder.obj:
-                        builder.delete_playlist(valid_users)
+                        logger.info("")
+                        util.print_multiline(builder.delete(), info=True)
                         builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
@@ -1086,7 +1086,7 @@ def run_playlists(config):
                             builder.sort_collection()
 
                 if valid:
-                    builder.sync_playlist(valid_users)
+                    builder.sync_playlist()
 
                 builder.send_notifications(playlist=True)
 
