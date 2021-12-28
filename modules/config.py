@@ -124,7 +124,7 @@ class ConfigFile:
             if "sonarr" in new_config:                      new_config["sonarr"] = new_config.pop("sonarr")
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            if not read_only:
+            if not self.read_only:
                 yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
