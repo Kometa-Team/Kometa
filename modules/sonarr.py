@@ -84,8 +84,8 @@ class Sonarr:
         arr_ids = {}
         for series in self.api.all_series():
             if series.path:
-                arr_paths[series.path[:-1] if series.path.endswith(("/", "\\")) else series.path] = series.tvdbId
-            arr_paths[series.tvdbId] = series
+                arr_paths[series.path[:-1].lower() if series.path.endswith(("/", "\\")) else series.path.lower()] = series.tvdbId
+            arr_ids[series.tvdbId] = series
         if self.config.trace_mode:
             logger.debug(arr_paths)
             logger.debug(arr_ids)
@@ -111,11 +111,11 @@ class Sonarr:
                 if tvdb_id in arr_ids:
                     exists.append(arr_ids[tvdb_id])
                     continue
-                if path in arr_paths:
+                if path.lower() in arr_paths:
                     mismatched[path] = tvdb_id
                     continue
                 show = self.api.get_series(tvdb_id=tvdb_id)
-                if f"{folder}/{show.folder}" in arr_paths:
+                if f"{folder}/{show.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{show.folder}"] = tvdb_id
                     continue
                 if path:
@@ -160,14 +160,14 @@ class Sonarr:
             logger.info("")
             logger.info("Items in Plex that have already been added to Sonarr but under a different TVDb ID then in Plex")
             for path, tmdb_id in mismatched.items():
-                logger.info(f"Plex TVDb ID: {tmdb_id:<7} | Sonarr TVDb ID: {arr_paths[path]:<7} | Path: {path}")
+                logger.info(f"Plex TVDb ID: {tmdb_id:<7} | Sonarr TVDb ID: {arr_paths[path.lower()]:<7} | Path: {path}")
             logger.info(f"{len(mismatched)} Series with mismatched TVDb IDs")
 
         if len(path_in_use) > 0:
             logger.info("")
             logger.info("TVDb IDs that cannot be added to Sonarr because the path they will use is already in use by a different TVDb ID")
             for path, tvdb_id in path_in_use.items():
-                logger.info(f"TVDb ID: {tvdb_id:<7} | Sonarr TVDb ID: {arr_paths[path]:<7} | Path: {path}")
+                logger.info(f"TVDb ID: {tvdb_id:<7} | Sonarr TVDb ID: {arr_paths[path.lower()]:<7} | Path: {path}")
             logger.info(f"{len(path_in_use)} Series with paths already in use by other TVDb IDs")
 
         if len(invalid) > 0:
