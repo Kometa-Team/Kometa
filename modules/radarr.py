@@ -58,7 +58,7 @@ class Radarr:
         arr_ids = {}
         for movie in self.api.all_movies():
             if movie.path:
-                arr_paths[movie.path[:-1] if movie.path.endswith(("/", "\\")) else movie.path] = movie.tmdbId
+                arr_paths[movie.path[:-1].lower() if movie.path.endswith(("/", "\\")) else movie.path.lower()] = movie.tmdbId
             arr_ids[movie.tmdbId] = movie
         if self.config.trace_mode:
             logger.debug(arr_paths)
@@ -85,11 +85,11 @@ class Radarr:
                 if tmdb_id in arr_ids:
                     exists.append(arr_ids[tmdb_id])
                     continue
-                if path in arr_paths:
+                if path.lower() in arr_paths:
                     mismatched[path] = tmdb_id
                     continue
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
-                if f"{folder}/{movie.folder}" in arr_paths:
+                if f"{folder}/{movie.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{movie.folder}"] = tmdb_id
                     continue
                 if path:
@@ -134,14 +134,14 @@ class Radarr:
             logger.info("")
             logger.info("Items in Plex that have already been added to Radarr but under a different TMDb ID then in Plex")
             for path, tmdb_id in mismatched.items():
-                logger.info(f"Plex TMDb ID: {tmdb_id:<7} | Radarr TMDb ID: {arr_paths[path]:<7} | Path: {path}")
+                logger.info(f"Plex TMDb ID: {tmdb_id:<7} | Radarr TMDb ID: {arr_paths[path.lower()]:<7} | Path: {path}")
             logger.info(f"{len(mismatched)} Movie{'s' if len(mismatched) > 1 else ''} with mismatched TMDb IDs")
 
         if len(path_in_use) > 0:
             logger.info("")
             logger.info("TMDb IDs that cannot be added to Radarr because the path they will use is already in use by a different TMDb ID")
             for path, tmdb_id in path_in_use.items():
-                logger.info(f"TMDb ID: {tmdb_id:<7} | Radarr TMDb ID: {arr_paths[path]:<7} | Path: {path}")
+                logger.info(f"TMDb ID: {tmdb_id:<7} | Radarr TMDb ID: {arr_paths[path.lower()]:<7} | Path: {path}")
             logger.info(f"{len(path_in_use)} Movie{'s' if len(path_in_use) > 1 else ''} with paths already in use by other TMDb IDs")
 
         if len(invalid) > 0:
