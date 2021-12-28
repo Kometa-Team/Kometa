@@ -570,7 +570,7 @@ def library_operations(config, library):
                             template[k] = v[int(_i)]
                     for suffix in library.tmdb_collections["remove_suffix"]:
                         if _n.endswith(suffix):
-                            _n = _n[:-len(_n)]
+                            _n = _n[:-len(suffix)]
                     new_collections[_n.strip()] = {"template": template}
             metadata = MetadataFile(config, library, "Data", {
                 "collections": new_collections,
