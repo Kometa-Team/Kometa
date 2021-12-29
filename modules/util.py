@@ -2,6 +2,7 @@ import glob, logging, os, re, signal, sys, time, traceback
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from pathvalidate import is_valid_filename, sanitize_filename
+from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
 
@@ -261,6 +262,10 @@ def item_title(item):
             return f"{text}: {item.parentTitle}: {item.title}"
     elif isinstance(item, Movie) and item.year:
         return f"{item.title} ({item.year})"
+    elif isinstance(item, Album):
+        return f"{item.parentTitle}: {item.title}"
+    elif isinstance(item, Track):
+        return f"{item.grandparentTitle}: {item.parentTitle}: {item.title}"
     else:
         return item.title
 

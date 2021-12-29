@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
 from modules.util import Failed, ImageData, NotScheduled
 from PIL import Image
+from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
 from urllib.parse import quote
 
 logger = logging.getLogger("Plex Meta Manager")
 
-string_filters = ["title", "episode_title", "studio"]
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
 method_alias = {
@@ -46,6 +46,7 @@ method_alias = {
     "collection_changes_webhooks": "changes_webhooks"
 }
 filter_translation = {
+    "record_label": "studio",
     "actor": "actors",
     "audience_rating": "audienceRating",
     "collection": "collections",
@@ -73,6 +74,7 @@ movie_only_builders = [
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
     "tvdb_movie", "tvdb_movie_details", "trakt_boxoffice"
 ]
+music_only_builders = ["item_album_sorting"]
 summary_details = [
     "summary", "tmdb_summary", "tmdb_description", "tmdb_biography", "tvdb_summary",
     "tvdb_description", "trakt_description", "letterboxd_description", "icheckmovies_description"
@@ -91,7 +93,7 @@ ignored_details = [
     "validate_builders", "sort_by", "libraries", "sync_to_users", "collection_name", "playlist_name", "name"
 ]
 details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode",
-           "collection_minimum", "label"] + boolean_details + scheduled_boolean + string_details
+           "collection_minimum", "label", "album_sorting"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
@@ -102,56 +104,51 @@ sonarr_details = [
     "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
-parts_collection_valid = [
-     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "changes_webhooks"
-     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
-     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "imdb_list"
-] + summary_details + poster_details + background_details + string_details
-all_filters = [
-    "actor", "actor.not",
-    "audio_language", "audio_language.not",
-    "audio_track_title", "audio_track_title.not", "audio_track_title.is", "audio_track_title.isnot", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
-    "collection", "collection.not",
-    "content_rating", "content_rating.not",
-    "country", "country.not",
-    "director", "director.not",
-    "filepath", "filepath.not", "filepath.is", "filepath.isnot", "filepath.begins", "filepath.ends", "filepath.regex",
-    "genre", "genre.not",
-    "label", "label.not",
-    "producer", "producer.not",
-    "release", "release.not", "release.before", "release.after", "release.regex", "history",
-    "added", "added.not", "added.before", "added.after", "added.regex",
-    "last_played", "last_played.not", "last_played.before", "last_played.after", "last_played.regex",
-    "first_episode_aired", "first_episode_aired.not", "first_episode_aired.before", "first_episode_aired.after", "first_episode_aired.regex",
-    "last_episode_aired", "last_episode_aired.not", "last_episode_aired.before", "last_episode_aired.after", "last_episode_aired.regex",
-    "title", "title.not", "title.is", "title.isnot", "title.begins", "title.ends", "title.regex",
-    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
-    "tmdb_vote_count.gt", "tmdb_vote_count.gte", "tmdb_vote_count.lt", "tmdb_vote_count.lte",
-    "duration.gt", "duration.gte", "duration.lt", "duration.lte",
-    "original_language", "original_language.not",
-    "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
-    "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
-    "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
-    "studio", "studio.not", "studio.is", "studio.isnot", "studio.begins", "studio.ends", "studio.regex",
-    "subtitle_language", "subtitle_language.not",
-    "resolution", "resolution.not",
-    "writer", "writer.not", "has_collection", "has_overlay",
-    "year", "year.gt", "year.gte", "year.lt", "year.lte", "year.not"
-    "tmdb_year", "tmdb_year.gt", "tmdb_year.gte", "tmdb_year.lt", "tmdb_year.lte", "tmdb_year.not"
-]
+album_details = ["item_label", "item_album_sorting"]
+filters_by_type = {
+    "movie_show_season_episode_artist_album_track": ["title", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
+    "movie_show_season_episode_album_track": ["year"],
+    "movie_show_episode_artist_track": ["filepath"],
+    "movie_show_episode_album": ["release", "critic_rating", "history"],
+    "movie_show_episode_track": ["duration"],
+    "movie_show_artist_album": ["genre"],
+    "movie_show_episode": ["actor", "content_rating", "audience_rating"],
+    "movie_show_album": ["label"],
+    "movie_episode_track": ["audio_track_title"],
+    "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year"],
+    "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language"],
+    "movie_artist": ["country"],
+    "show": ["network", "first_episode_aired", "last_episode_aired"],
+    "album": ["record_label"]
+}
+filters = {
+    "movie": [item for check, sub in filters_by_type.items() for item in sub if "movie" in check],
+    "show": [item for check, sub in filters_by_type.items() for item in sub if "show" in check],
+    "season": [item for check, sub in filters_by_type.items() for item in sub if "season" in check],
+    "episode": [item for check, sub in filters_by_type.items() for item in sub if "episode" in check],
+    "artist": [item for check, sub in filters_by_type.items() for item in sub if "artist" in check],
+    "album": [item for check, sub in filters_by_type.items() for item in sub if "album" in check],
+    "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
+}
 tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "first_episode_aired", "last_episode_aired"]
-boolean_filters = ["has_collection", "has_overlay"]
-movie_only_filters = [
-    "audio_language", "audio_language.not",
-    "audio_track_title", "audio_track_title.not", "audio_track_title.is", "audio_track_title.isnot", "audio_track_title.begins", "audio_track_title.ends", "audio_track_title.regex",
-    "country", "country.not",
-    "director", "director.not",
-    "duration.gt", "duration.gte", "duration.lt", "duration.lte",
-    "subtitle_language", "subtitle_language.not",
-    "resolution", "resolution.not",
-    "writer", "writer.not"
+string_filters = ["title", "studio", "record_label", "filepath", "audio_track_title"]
+string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
+tag_filters = [
+    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
+    "writer", "original_language", "resolution", "audio_language", "subtitle_language"
 ]
-show_only_filters = ["first_episode_aired", "last_episode_aired", "network"]
+tag_modifiers = ["", ".not"]
+boolean_filters = ["has_collection", "has_overlay"]
+date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired"]
+date_modifiers = ["", ".not", ".before", ".after", ".regex"]
+number_filters = ["year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration"]
+number_modifiers = [".gt", ".gte", ".lt", ".lte"]
+special_filters = ["history"]
+all_filters = boolean_filters + special_filters + \
+              [f"{f}{m}" for f in string_filters for m in string_modifiers] + \
+              [f"{f}{m}" for f in tag_filters for m in tag_modifiers] + \
+              [f"{f}{m}" for f in date_filters for m in date_modifiers] + \
+              [f"{f}{m}" for f in number_filters for m in number_modifiers]
 smart_invalid = ["collection_order", "collection_level"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
@@ -168,11 +165,20 @@ custom_sort_builders = [
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
+parts_collection_valid = [
+     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "changes_webhooks"
+     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "imdb_list"
+] + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
     "server_preroll", "changes_webhooks", "collection_minimum",
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
+music_attributes = [
+   "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
+   "item_refresh", "plex_search", "plex_all", "filters"
+] + details + summary_details + poster_details + background_details
 
 class CollectionBuilder:
     def __init__(self, config, library, metadata, name, no_missing, data, playlist=False, valid_users=None):
@@ -347,16 +353,22 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: collection_level")
             if self.library.is_movie:
-                raise Failed(f"{self.Type} Error: collection_level attribute only works for show libraries")
+                raise Failed(f"{self.Type} Error: collection_level attribute only works for show and music libraries")
             elif self.data[methods["collection_level"]] is None:
                 raise Failed(f"{self.Type} Error: collection_level attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['collection_level']]}")
-                if self.data[methods["collection_level"]].lower() in plex.collection_level_options:
+
+                if (self.library.is_show and self.data[methods["collection_level"]].lower() in plex.collection_level_show_options) or \
+                        (self.library.is_music and self.data[methods["collection_level"]].lower() in plex.collection_level_music_options):
                     self.collection_level = self.data[methods["collection_level"]].lower()
                 else:
-                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)")
-        self.parts_collection = self.collection_level in ["season", "episode"]
+                    if self.library.is_show:
+                        options = "\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)"
+                    else:
+                        options = "\n\talbum (Collection at the Album Level)\n\ttrack (Collection at the Track Level)"
+                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid{options}")
+        self.parts_collection = self.collection_level in plex.collection_level_options
 
         if "tmdb_person" in methods:
             logger.debug("")
@@ -380,7 +392,7 @@ class CollectionBuilder:
 
         self.smart_sort = "random"
         self.smart_label_collection = False
-        if "smart_label" in methods and not self.playlist:
+        if "smart_label" in methods and not self.playlist and not self.library.is_music:
             logger.debug("")
             logger.debug("Validating Method: smart_label")
             self.smart_label_collection = True
@@ -441,44 +453,88 @@ class CollectionBuilder:
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
-                if method_data is None and method_name in all_builders + plex.searches:     raise Failed(f"{self.Type} Error: {method_final} attribute is blank")
-                elif method_data is None and method_final not in none_details:              logger.warning(f"Collection Warning: {method_final} attribute is blank")
-                elif self.playlist and method_name not in playlist_attributes:              raise Failed(f"{self.Type} Error: {method_final} attribute not allowed when using playlists")
-                elif not self.config.Trakt and "trakt" in method_name:                      raise Failed(f"{self.Type} Error: {method_final} requires Trakt to be configured")
-                elif not self.library.Radarr and "radarr" in method_name:                   raise Failed(f"{self.Type} Error: {method_final} requires Radarr to be configured")
-                elif not self.library.Sonarr and "sonarr" in method_name:                   raise Failed(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
-                elif not self.library.Tautulli and "tautulli" in method_name:               raise Failed(f"{self.Type} Error: {method_final} requires Tautulli to be configured")
-                elif not self.config.MyAnimeList and "mal" in method_name:                  raise Failed(f"{self.Type} Error: {method_final} requires MyAnimeList to be configured")
-                elif self.library.is_movie and method_name in show_only_builders:           raise Failed(f"{self.Type} Error: {method_final} attribute only works for show libraries")
-                elif self.library.is_show and method_name in movie_only_builders:           raise Failed(f"{self.Type} Error: {method_final} attribute only works for movie libraries")
-                elif self.library.is_show and method_name in plex.movie_only_searches:      raise Failed(f"{self.Type} Error: {method_final} plex search only works for movie libraries")
-                elif self.library.is_movie and method_name in plex.show_only_searches:      raise Failed(f"{self.Type} Error: {method_final} plex search only works for show libraries")
-                elif self.parts_collection and method_name not in parts_collection_valid:   raise Failed(f"{self.Type} Error: {method_final} attribute does not work with Collection Level: {self.collection_level.capitalize()}")
-                elif self.smart and method_name in smart_invalid:                           raise Failed(f"{self.Type} Error: {method_final} attribute only works with normal collections")
-                elif self.collectionless and method_name not in collectionless_details:     raise Failed(f"{self.Type} Error: {method_final} attribute does not work for Collectionless collection")
-                elif self.smart_url and method_name in all_builders + smart_url_invalid:    raise Failed(f"{self.Type} Error: {method_final} builder not allowed when using smart_filter")
-                elif method_name in summary_details:                                        self._summary(method_name, method_data)
-                elif method_name in poster_details:                                         self._poster(method_name, method_data)
-                elif method_name in background_details:                                     self._background(method_name, method_data)
-                elif method_name in details:                                                self._details(method_name, method_data, method_final, methods)
-                elif method_name in item_details:                                           self._item_details(method_name, method_data, method_mod, method_final, methods)
-                elif method_name in radarr_details:                                         self._radarr(method_name, method_data)
-                elif method_name in sonarr_details:                                         self._sonarr(method_name, method_data)
-                elif method_name in anidb.builders:                                         self._anidb(method_name, method_data)
-                elif method_name in anilist.builders:                                       self._anilist(method_name, method_data)
-                elif method_name in flixpatrol.builders:                                    self._flixpatrol(method_name, method_data)
-                elif method_name in icheckmovies.builders:                                  self._icheckmovies(method_name, method_data)
-                elif method_name in letterboxd.builders:                                    self._letterboxd(method_name, method_data)
-                elif method_name in imdb.builders:                                          self._imdb(method_name, method_data)
-                elif method_name in mal.builders:                                           self._mal(method_name, method_data)
-                elif method_name in plex.builders or method_final in plex.searches:         self._plex(method_name, method_data)
-                elif method_name in stevenlu.builders:                                      self._stevenlu(method_name, method_data)
-                elif method_name in tautulli.builders:                                      self._tautulli(method_name, method_data)
-                elif method_name in tmdb.builders:                                          self._tmdb(method_name, method_data)
-                elif method_name in trakt.builders:                                         self._trakt(method_name, method_data)
-                elif method_name in tvdb.builders:                                          self._tvdb(method_name, method_data)
-                elif method_name == "filters":                                              self._filters(method_name, method_data)
-                else:                                                                       raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
+                if method_data is None and method_name in all_builders + plex.searches:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute is blank")
+                elif method_data is None and method_final not in none_details:
+                    logger.warning(f"Collection Warning: {method_final} attribute is blank")
+                elif self.playlist and method_name not in playlist_attributes:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed when using playlists")
+                elif not self.config.Trakt and "trakt" in method_name:
+                    raise Failed(f"{self.Type} Error: {method_final} requires Trakt to be configured")
+                elif not self.library.Radarr and "radarr" in method_name:
+                    raise Failed(f"{self.Type} Error: {method_final} requires Radarr to be configured")
+                elif not self.library.Sonarr and "sonarr" in method_name:
+                    raise Failed(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
+                elif not self.library.Tautulli and "tautulli" in method_name:
+                    raise Failed(f"{self.Type} Error: {method_final} requires Tautulli to be configured")
+                elif not self.config.MyAnimeList and "mal" in method_name:
+                    raise Failed(f"{self.Type} Error: {method_final} requires MyAnimeList to be configured")
+                elif self.library.is_movie and method_name in show_only_builders:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for show libraries")
+                elif self.library.is_show and method_name in movie_only_builders:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for movie libraries")
+                elif self.library.is_show and method_name in plex.movie_only_searches:
+                    raise Failed(f"{self.Type} Error: {method_final} plex search only allowed for movie libraries")
+                elif self.library.is_movie and method_name in plex.show_only_searches:
+                    raise Failed(f"{self.Type} Error: {method_final} plex search only allowed for show libraries")
+                elif self.library.is_music and method_name not in music_attributes:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed for music libraries")
+                elif self.library.is_music and method_name in album_details and self.collection_level != "album":
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for album collections")
+                elif not self.library.is_music and method_name in music_only_builders:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for music libraries")
+                elif self.parts_collection and method_name not in parts_collection_valid:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed with Collection Level: {self.collection_level.capitalize()}")
+                elif self.smart and method_name in smart_invalid:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with normal collections")
+                elif self.collectionless and method_name not in collectionless_details:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed for Collectionless collection")
+                elif self.smart_url and method_name in all_builders + smart_url_invalid:
+                    raise Failed(f"{self.Type} Error: {method_final} builder not allowed when using smart_filter")
+                elif method_name in summary_details:
+                    self._summary(method_name, method_data)
+                elif method_name in poster_details:
+                    self._poster(method_name, method_data)
+                elif method_name in background_details:
+                    self._background(method_name, method_data)
+                elif method_name in details:
+                    self._details(method_name, method_data, method_final, methods)
+                elif method_name in item_details:
+                    self._item_details(method_name, method_data, method_mod, method_final, methods)
+                elif method_name in radarr_details:
+                    self._radarr(method_name, method_data)
+                elif method_name in sonarr_details:
+                    self._sonarr(method_name, method_data)
+                elif method_name in anidb.builders:
+                    self._anidb(method_name, method_data)
+                elif method_name in anilist.builders:
+                    self._anilist(method_name, method_data)
+                elif method_name in flixpatrol.builders:
+                    self._flixpatrol(method_name, method_data)
+                elif method_name in icheckmovies.builders:
+                    self._icheckmovies(method_name, method_data)
+                elif method_name in letterboxd.builders:
+                    self._letterboxd(method_name, method_data)
+                elif method_name in imdb.builders:
+                    self._imdb(method_name, method_data)
+                elif method_name in mal.builders:
+                    self._mal(method_name, method_data)
+                elif method_name in plex.builders or method_final in plex.searches:
+                    self._plex(method_name, method_data)
+                elif method_name in stevenlu.builders:
+                    self._stevenlu(method_name, method_data)
+                elif method_name in tautulli.builders:
+                    self._tautulli(method_name, method_data)
+                elif method_name in tmdb.builders:
+                    self._tmdb(method_name, method_data)
+                elif method_name in trakt.builders:
+                    self._trakt(method_name, method_data)
+                elif method_name in tvdb.builders:
+                    self._tvdb(method_name, method_data)
+                elif method_name == "filters":
+                    self._filters(method_name, method_data)
+                else:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
             except Failed as e:
                 if self.validate_builders:
                     raise
@@ -502,7 +558,7 @@ class CollectionBuilder:
         if "add_existing" not in self.sonarr_details:
             self.sonarr_details["add_existing"] = self.library.Sonarr.add_existing if self.library.Sonarr else False
             
-        if self.smart_url or self.collectionless:
+        if self.smart_url or self.collectionless or self.library.is_music:
             self.radarr_details["add"] = False
             self.radarr_details["add_existing"] = False
             self.sonarr_details["add"] = False
@@ -1123,10 +1179,8 @@ class CollectionBuilder:
                 message = None
                 if filter_final not in all_filters:
                     message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
-                elif filter_final in movie_only_filters and self.library.is_show:
-                    message = f"{self.Type} Error: {filter_final} filter attribute only works for movie libraries"
-                elif filter_final in show_only_filters and self.library.is_movie:
-                    message = f"{self.Type} Error: {filter_final} filter attribute only works for show libraries"
+                elif self.collection_level in filters and filter_attr not in filters[self.collection_level]:
+                    message = f"{self.Type} Error: {filter_final} is not a valid {self.collection_level} filter attribute"
                 elif filter_final is None:
                     message = f"{self.Type} Error: {filter_final} filter attribute is blank"
                 elif filter_attr in tmdb_filters:
@@ -1280,8 +1334,8 @@ class CollectionBuilder:
             logger.info("")
             logger.info("Filtering Builders:")
         for i, item in enumerate(items, 1):
-            if not isinstance(item, (Movie, Show, Season, Episode)):
-                logger.error(f"{self.Type} Error: Item: {item} must be Movie, Show, Season, or Episode")
+            if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
+                logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
                 continue
             if item not in self.added_items:
                 if item.ratingKey in self.filtered_keys:
@@ -1318,8 +1372,14 @@ class CollectionBuilder:
             if plex_filter[filter_alias["type"]] not in ["shows", "seasons", "episodes"]:
                 raise Failed(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either shows, season, or episodes")
             sort_type = plex_filter[filter_alias["type"]]
+        elif smart and "type" in filter_alias and self.library.is_music:
+            if plex_filter[filter_alias["type"]] not in ["artists", "albums", "tracks"]:
+                raise Failed(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either artists, albums, or tracks")
+            sort_type = plex_filter[filter_alias["type"]]
         elif self.library.is_show:
             sort_type = "shows"
+        elif self.library.is_music:
+            sort_type = "artists"
         else:
             sort_type = "movies"
         ms = method.split("_")
@@ -1369,7 +1429,7 @@ class CollectionBuilder:
                         mod = plex.modifier_translation[modifier] if modifier in plex.modifier_translation else modifier
                     if arg_s is None:
                         arg_s = arg
-                    if attr in string_filters and modifier in ["", ".not"]:
+                    if attr in plex.string_attributes and modifier in ["", ".not"]:
                         mod_s = "does not contain" if modifier == ".not" else "contains"
                     elif mod_s is None:
                         mod_s = util.mod_displays[modifier]
@@ -1379,10 +1439,14 @@ class CollectionBuilder:
 
                 if final_attr not in plex.searches and not final_attr.startswith(("any", "all")):
                     raise Failed(f"{self.Type} Error: {final_attr} is not a valid {method} attribute")
-                elif final_attr in plex.movie_only_searches and self.library.is_show:
+                elif self.library.is_show and final_attr in plex.movie_only_searches:
                     raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for movie libraries")
-                elif final_attr in plex.show_only_searches and self.library.is_movie:
+                elif self.library.is_movie and final_attr in plex.show_only_searches:
                     raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries")
+                elif self.library.is_music and final_attr not in plex.music_searches:
+                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for movie or show libraries")
+                elif not self.library.is_music and final_attr in plex.music_searches:
+                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries")
                 elif _data is None:
                     raise Failed(f"{self.Type} Error: {final_attr} {method} attribute is blank")
                 elif final_attr.startswith(("any", "all")):
@@ -1410,11 +1474,11 @@ class CollectionBuilder:
                         bool_mod = "" if validation else "!"
                         bool_arg = "true" if validation else "false"
                         results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
-                    elif (attr in ["title", "episode_title", "studio", "decade", "year", "episode_year"] or attr in plex.tags) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends"]:
+                    elif (attr in plex.tag_attributes + plex.string_attributes + plex.year_attributes) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends"]:
                         results = ""
                         display_add = ""
                         for og_value, result in validation:
-                            built_arg = build_url_arg(quote(str(result)) if attr in string_filters else result, arg_s=og_value)
+                            built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
                             display_add += built_arg[1]
                             results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
                     else:
@@ -1475,7 +1539,7 @@ class CollectionBuilder:
                     else:
                         logger.error(err)
             return valid_regex
-        elif attribute in ["title", "studio", "episode_title", "audio_track_title"] and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
+        elif attribute in plex.string_attributes + ["audio_track_title"] and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "original_language":
             return util.get_list(data, lower=True)
@@ -1488,7 +1552,7 @@ class CollectionBuilder:
                 if str(data).lower() in ["day", "month"]:
                     return data.lower()
             raise Failed(f"{self.Type} Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
-        elif attribute in plex.tags and modifier in ["", ".not"]:
+        elif attribute in plex.tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
                 for value in util.get_list(data):
@@ -1517,20 +1581,18 @@ class CollectionBuilder:
                     else:
                         logger.error(error)
             return valid_list
-        elif attribute in ["year", "episode_year", "tmdb_year"] and modifier in [".gt", ".gte", ".lt", ".lte"]:
-            return self._parse(final, data, datatype="int", minimum=1800, maximum=self.current_year)
         elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
             return util.validate_date(data, final, return_as="%Y-%m-%d")
-        elif attribute in plex.number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
-            return self._parse(final, data, datatype="int")
-        elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
-            return self._parse(final, data, datatype="float", minimum=0, maximum=10)
-        elif attribute in ["decade", "year", "episode_year", "tmdb_year"] and modifier in ["", ".not"]:
+        elif attribute in plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not"]:
             final_years = []
             values = util.get_list(data)
             for value in values:
-                final_years.append(self._parse(final, value, datatype="int", minimum=1800, maximum=self.current_year))
+                final_years.append(self._parse(final, value, datatype="int"))
             return smart_pair(final_years)
+        elif attribute in plex.number_attributes + plex.date_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
+            return self._parse(final, data, datatype="int")
+        elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
+            return self._parse(final, data, datatype="float", minimum=0, maximum=10)
         elif attribute in plex.boolean_attributes + boolean_filters:
             return self._parse(attribute, data, datatype="bool")
         else:
@@ -1556,8 +1618,8 @@ class CollectionBuilder:
 
     def fetch_item(self, item):
         try:
-            current = self.library.fetchItem(item.ratingKey if isinstance(item, (Movie, Show, Season, Episode)) else int(item))
-            if not isinstance(current, (Movie, Show, Season, Episode)):
+            current = self.library.fetchItem(item.ratingKey if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) else int(item))
+            if not isinstance(current, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 raise NotFound
             return current
         except (BadRequest, NotFound):
@@ -1668,53 +1730,73 @@ class CollectionBuilder:
                 return False
         return True
 
-    def check_filters(self, current, display):
+    def check_filters(self, item, display):
         if (self.filters or self.tmdb_filters) and not self.details["only_filter_missing"]:
-            util.print_return(f"Filtering {display} {current.title}")
-            if self.tmdb_filters:
-                if current.ratingKey not in self.library.movie_rating_key_map and current.ratingKey not in self.library.show_rating_key_map:
-                    logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {current.title}")
+            util.print_return(f"Filtering {display} {item.title}")
+            if self.tmdb_filters and isinstance(item, (Movie, Show)):
+                if item.ratingKey not in self.library.movie_rating_key_map and item.ratingKey not in self.library.show_rating_key_map:
+                    logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")
                     return False
                 try:
-                    if current.ratingKey in self.library.movie_rating_key_map:
-                        t_id = self.library.movie_rating_key_map[current.ratingKey]
+                    if item.ratingKey in self.library.movie_rating_key_map:
+                        t_id = self.library.movie_rating_key_map[item.ratingKey]
                     else:
-                        t_id = self.library.show_rating_key_map[current.ratingKey]
+                        t_id = self.library.show_rating_key_map[item.ratingKey]
                 except Failed as e:
                     logger.error(e)
                     return False
-                if not self.check_tmdb_filter(t_id, current.ratingKey in self.library.movie_rating_key_map):
+                if not self.check_tmdb_filter(t_id, item.ratingKey in self.library.movie_rating_key_map):
                     return False
             for filter_method, filter_data in self.filters:
                 filter_attr, modifier, filter_final = self._split(filter_method)
                 filter_actual = filter_translation[filter_attr] if filter_attr in filter_translation else filter_attr
-                if filter_attr in ["release", "added", "last_played"]:
-                    if util.is_date_filter(getattr(current, filter_actual), modifier, filter_data, filter_final, self.current_time):
+                item_type = self.collection_level
+                if self.collection_level == "item":
+                    if isinstance(item, Movie):
+                        item_type = "movie"
+                    elif isinstance(item, Show):
+                        item_type = "show"
+                    elif isinstance(item, Season):
+                        item_type = "season"
+                    elif isinstance(item, Episode):
+                        item_type = "episode"
+                    elif isinstance(item, Artist):
+                        item_type = "artist"
+                    elif isinstance(item, Album):
+                        item_type = "album"
+                    elif isinstance(item, Track):
+                        item_type = "track"
+                    else:
+                        continue
+                if filter_attr not in filters[item_type]:
+                    continue
+                elif filter_attr in ["release", "added", "last_played"]:
+                    if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, self.current_time):
                         return False
                 elif filter_attr in ["audio_track_title", "filepath", "title", "studio"]:
                     values = []
                     if filter_attr == "audio_track_title":
-                        for media in current.media:
+                        for media in item.media:
                             for part in media.parts:
                                 values.extend([a.title for a in part.audioStreams() if a.title])
                     elif filter_attr == "filepath":
-                        values = [loc for loc in current.locations]
+                        values = [loc for loc in item.locations]
                     elif filter_attr in ["title", "studio"]:
-                        values = [getattr(current, filter_actual)]
+                        values = [getattr(item, filter_actual)]
                     if util.is_string_filter(values, modifier, filter_data):
                         return False
                 elif filter_attr in boolean_filters:
                     filter_check = False
                     if filter_attr == "has_collection":
-                        filter_check = len(current.collections) > 0
+                        filter_check = len(item.collections) > 0
                     elif filter_attr == "has_overlay":
-                        for label in current.labels:
+                        for label in item.labels:
                             if label.tag.lower().endswith(" overlay"):
                                 filter_check = True
                     if util.is_boolean_filter(filter_data, filter_check):
                         return False
                 elif filter_attr == "history":
-                    item_date = current.originallyAvailableAt
+                    item_date = item.originallyAvailableAt
                     if item_date is None:
                         return False
                     elif filter_data == "day":
@@ -1733,12 +1815,12 @@ class CollectionBuilder:
                             return False
                 elif modifier in [".gt", ".gte", ".lt", ".lte"]:
                     divider = 60000 if filter_attr == "duration" else 1
-                    if util.is_number_filter(getattr(current, filter_actual) / divider, modifier, filter_data):
+                    if util.is_number_filter(getattr(item, filter_actual) / divider, modifier, filter_data):
                         return False
                 else:
                     attrs = []
                     if filter_attr in ["resolution", "audio_language", "subtitle_language"]:
-                        for media in current.media:
+                        for media in item.media:
                             if filter_attr == "resolution":
                                 attrs.extend([media.videoResolution])
                             for part in media.parts:
@@ -1747,16 +1829,16 @@ class CollectionBuilder:
                                 if filter_attr == "subtitle_language":
                                     attrs.extend([s.language for s in part.subtitleStreams()])
                     elif filter_attr in ["content_rating", "year", "rating"]:
-                        attrs = [str(getattr(current, filter_actual))]
+                        attrs = [str(getattr(item, filter_actual))]
                     elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection"]:
-                        attrs = [attr.tag for attr in getattr(current, filter_actual)]
+                        attrs = [attr.tag for attr in getattr(item, filter_actual)]
                     else:
                         raise Failed(f"Filter Error: filter: {filter_final} not supported")
 
                     if (not list(set(filter_data) & set(attrs)) and modifier == "") \
                             or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                         return False
-            util.print_return(f"Filtering {display} {current.title}")
+            util.print_return(f"Filtering {display} {item.title}")
         return True
 
     def run_missing(self):
@@ -1924,7 +2006,7 @@ class CollectionBuilder:
                     logger.error(e)
 
             # Locking should come before refreshing since refreshing can change metadata (i.e. if specified to both lock
-            # background/poster and also refreshing, assume that the current background/poster should be kept)
+            # background/poster and also refreshing, assume that the item background/poster should be kept)
             if "item_lock_background" in self.item_details:
                 self.library.query(item.lockArt)
             if "item_lock_poster" in self.item_details:
