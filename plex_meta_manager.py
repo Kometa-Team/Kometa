@@ -670,7 +670,7 @@ def run_collection(config, library, metadata, requested_collections):
         logger.addHandler(collection_handler)
 
         try:
-            util.separator(f"{mapping_name} Collection")
+            util.separator(f"{mapping_name} Collection in {library.name}")
             logger.info("")
             if output_str:
                 logger.info(output_str)
