@@ -23,6 +23,8 @@ method_alias = {
     "directors": "director",
     "genres": "genre",
     "labels": "label",
+    "collection_minimum": "minimum_items",
+    "playlist_minimum": "minimum_items",
     "rating": "critic_rating",
     "show_user_rating": "user_rating",
     "video_resolution": "resolution",
@@ -93,7 +95,7 @@ ignored_details = [
     "validate_builders", "sort_by", "libraries", "sync_to_users", "collection_name", "playlist_name", "name"
 ]
 details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode",
-           "collection_minimum", "label", "album_sorting"] + boolean_details + scheduled_boolean + string_details
+           "minimum_items", "label", "album_sorting"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
@@ -173,7 +175,7 @@ parts_collection_valid = [
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
-    "server_preroll", "changes_webhooks", "collection_minimum",
+    "server_preroll", "changes_webhooks", "minimum_items",
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
    "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
@@ -224,7 +226,7 @@ class CollectionBuilder:
         self.backgrounds = {}
         self.summaries = {}
         self.schedule = ""
-        self.minimum = self.library.collection_minimum
+        self.minimum = self.library.minimum_items
         self.ignore_ids = [i for i in self.library.ignore_ids]
         self.ignore_imdb_ids = [i for i in self.library.ignore_imdb_ids]
         self.server_preroll = None
@@ -723,7 +725,7 @@ class CollectionBuilder:
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "collection_mode":
             self.details[method_name] = util.check_collection_mode(method_data)
-        elif method_name == "collection_minimum":
+        elif method_name == "minimum_items":
             self.minimum = self._parse(method_name, method_data, datatype="int", minimum=1)
         elif method_name == "server_preroll":
             self.server_preroll = self._parse(method_name, method_data)
