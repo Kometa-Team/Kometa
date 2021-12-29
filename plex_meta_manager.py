@@ -246,7 +246,7 @@ def update_libraries(config):
             logger.debug(f"Optimize: {library.optimize}")
             logger.debug(f"Timeout: {library.timeout}")
 
-            if not library.is_other:
+            if not library.is_other and not library.is_music:
                 logger.info("")
                 util.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
@@ -775,7 +775,6 @@ def run_collection(config, library, metadata, requested_collections):
 
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
-
 
         except NotScheduled as e:
             util.print_multiline(e, info=True)

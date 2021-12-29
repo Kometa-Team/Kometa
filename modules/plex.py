@@ -41,7 +41,47 @@ search_translation = {
     "audio_language": "audioLanguage",
     "progress": "inProgress",
     "episode_progress": "episode.inProgress",
-    "unplayed_episodes": "show.unwatchedLeaves"
+    "unplayed_episodes": "show.unwatchedLeaves",
+    "artist_title": "artist.title",
+    "artist_user_rating": "artist.userRating",
+    "artist_genre": "artist.genre",
+    "artist_collection": "artist.collection",
+    "artist_country": "artist.country",
+    "artist_mood": "artist.mood",
+    "artist_style": "artist.style",
+    "artist_added": "artist.addedAt",
+    "artist_last_played": "artist.lastViewedAt",
+    "artist_unmatched": "artist.unmatched",
+    "album_title": "album.title",
+    "album_year": "album.year",
+    "album_decade": "album.decade",
+    "album_genre": "album.genre",
+    "album_plays": "album.viewCount",
+    "album_last_played": "album.lastViewedAt",
+    "album_user_rating": "album.userRating",
+    "album_critic_rating": "album.rating",
+    "album_record_label": "album.studio",
+    "album_mood": "album.mood",
+    "album_style": "album.style",
+    "album_format": "album.format",
+    "album_type": "album.subformat",
+    "album_collection": "album.collection",
+    "album_added": "album.addedAt",
+    "album_released": "album.originallyAvailableAt",
+    "album_unmatched": "album.unmatched",
+    "album_source": "album.source",
+    "album_label": "album.label",
+    "track_mood": "track.mood",
+    "track_title": "track.title",
+    "track_plays": "track.viewCount",
+    "track_last_played": "track.lastViewedAt",
+    "track_skips": "track.skipCount",
+    "track_last_skipped": "track.lastSkippedAt",
+    "track_user_rating": "track.userRating",
+    "track_last_rated": "track.lastRatedAt",
+    "track_added": "track.addedAt",
+    "track_trash": "track.trash",
+    "track_source": "track.source"
 }
 show_translation = {
     "title": "show.title",
@@ -71,6 +111,7 @@ modifier_translation = {
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E"
 }
 episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
+album_sorting_options = {"default": -1, "newest": 0, "oldest": 1, "name": 2}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
 delete_episodes_options = {"never": 0, "day": 1, "week": 7, "refresh": 100}
 season_display_options = {"default": -1, "show": 0, "hide": 1}
@@ -83,10 +124,13 @@ metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
 collection_order_options = ["release", "alpha", "custom"]
-collection_level_options = ["episode", "season"]
+collection_level_show_options = ["episode", "season"]
+collection_level_music_options = ["album", "track"]
+collection_level_options = collection_level_show_options + collection_level_music_options
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 item_advance_keys = {
+    "item_album_sorting": ("albumSort", album_sorting_options),
     "item_episode_sorting": ("episodeSort", episode_sorting_options),
     "item_keep_episodes": ("autoDeletionItemPolicyUnwatchedLibrary", keep_episodes_options),
     "item_delete_episodes": ("autoDeletionItemPolicyWatchedLibrary", delete_episodes_options),
@@ -96,6 +140,48 @@ item_advance_keys = {
     "item_use_original_title": ("useOriginalTitle", use_original_title_options)
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
+music_searches = [
+    "artist_title", "artist_title.not", "artist_title.is", "artist_title.isnot", "artist_title.begins", "artist_title.ends",
+    "artist_user_rating.gt", "artist_user_rating.gte", "artist_user_rating.lt", "artist_user_rating.lte",
+    "artist_genre", "artist_genre.not",
+    "artist_collection", "artist_collection.not",
+    "artist_country", "artist_country.not",
+    "artist_mood", "artist_mood.not",
+    "artist_style", "artist_style.not",
+    "artist_added", "artist_added.not", "artist_added.before", "artist_added.after",
+    "artist_last_played", "artist_last_played.not", "artist_last_played.before", "artist_last_played.after",
+    "artist_unmatched",
+    "album_title", "album_title.not", "album_title.is", "album_title.isnot", "album_title.begins", "album_title.ends",
+    "album_year.gt", "album_year.gte", "album_year.lt", "album_year.lte",
+    "album_decade",
+    "album_genre", "album_genre.not",
+    "album_plays.gt", "album_plays.gte", "album_plays.lt", "album_plays.lte",
+    "album_last_played", "album_last_played.not", "album_last_played.before", "album_last_played.after",
+    "album_user_rating.gt", "album_user_rating.gte", "album_user_rating.lt", "album_user_rating.lte",
+    "album_critic_rating.gt", "album_critic_rating.gte", "album_critic_rating.lt", "album_critic_rating.lte",
+    "album_record_label", "album_record_label.not", "album_record_label.is", "album_record_label.isnot", "album_record_label.begins", "album_record_label.ends",
+    "album_mood", "album_mood.not",
+    "album_style", "album_style.not",
+    "album_format", "album_format.not",
+    "album_type", "album_type.not",
+    "album_collection", "album_collection.not",
+    "album_added", "album_added.not", "album_added.before", "album_added.after",
+    "album_released", "album_released.not", "album_released.before", "album_released.after",
+    "album_unmatched",
+    "album_source", "album_source.not",
+    "album_label", "album_label.not",
+    "track_mood", "track_mood.not",
+    "track_title", "track_title.not", "track_title.is", "track_title.isnot", "track_title.begins", "track_title.ends",
+    "track_plays.gt", "track_plays.gte", "track_plays.lt", "track_plays.lte",
+    "track_last_played", "track_last_played.not", "track_last_played.before", "track_last_played.after",
+    "track_skips.gt", "track_skips.gte", "track_skips.lt", "track_skips.lte",
+    "track_last_skipped", "track_last_skipped.not", "track_last_skipped.before", "track_last_skipped.after",
+    "track_user_rating.gt", "track_user_rating.gte", "track_user_rating.lt", "track_user_rating.lte",
+    "track_last_rated", "track_last_rated.not", "track_last_rated.before", "track_last_rated.after",
+    "track_added", "track_added.not", "track_added.before", "track_added.after",
+    "track_trash",
+    "track_source", "track_source.not"
+]
 searches = [
     "title", "title.not", "title.is", "title.isnot", "title.begins", "title.ends",
     "studio", "studio.not", "studio.is", "studio.isnot", "studio.begins", "studio.ends",
@@ -129,7 +215,7 @@ searches = [
     "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
-]
+] + music_searches
 and_searches = [
     "title.and", "studio.and", "actor.and", "audio_language.and", "collection.and",
     "content_rating.and", "country.and",  "director.and", "genre.and", "label.and",
@@ -157,18 +243,29 @@ show_only_searches = [
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
 ]
-float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "audience_rating"]
+string_attributes = ["title", "studio", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
+float_attributes = [
+    "user_rating", "episode_user_rating", "critic_rating", "audience_rating",
+    "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
+]
 boolean_attributes = [
-    "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
-    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
+    "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash", "unplayed_episodes", "episode_unplayed",
+    "episode_duplicate", "episode_progress", "episode_unmatched", "artist_unmatched", "album_unmatched", "track_trash"
 ]
 tmdb_attributes = ["actor", "director", "producer", "writer"]
-date_attributes = ["added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played", "first_episode_aired", "last_episode_aired"]
-number_attributes = ["plays", "episode_plays", "duration", "tmdb_vote_count"] + date_attributes
+date_attributes = [
+    "added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played",
+    "first_episode_aired", "last_episode_aired", "artist_added", "artist_last_played", "album_last_played",
+    "album_added", "album_released", "track_last_played", "track_last_skipped", "track_last_rated", "track_added"
+]
+year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
+number_attributes = ["plays", "episode_plays", "duration", "tmdb_vote_count", "album_plays", "track_plays", "track_skips"] + year_attributes
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
-tags = [
-    "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label",
-    "network", "producer", "resolution", "studio", "subtitle_language", "writer"
+tag_attributes = [
+    "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
+    "producer", "resolution", "studio", "subtitle_language", "writer" "artist_genre", "artist_collection",
+    "artist_country", "artist_mood", "artist_style", "album_genre", "album_mood", "album_style", "album_format",
+    "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source"
 ]
 movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
@@ -180,8 +277,12 @@ movie_sorts = {
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
     "content_rating.asc": "contentRating", "content_rating.desc": "contentRating%3Adesc",
     "duration.asc": "duration", "duration.desc": "duration%3Adesc",
+    "progress.asc": "viewOffset", "progress.desc": "viewOffset%3Adesc",
     "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "viewed.asc": "lastViewedAt", "viewed.desc": "lastViewedAt%3Adesc",
+    "resolution.asc": "mediaHeight", "resolution.desc": "mediaHeight%3Adesc",
+    "bitrate.asc": "mediaBitrate", "bitrate.desc": "mediaBitrate%3Adesc",
     "random": "random"
 }
 show_sorts = {
@@ -193,8 +294,10 @@ show_sorts = {
     "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
     "content_rating.asc": "contentRating", "content_rating.desc": "contentRating%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "unplayed.asc": "unviewedLeafCount", "unplayed.desc": "unviewedLeafCount%3Adesc",
     "episode_added.asc": "episode.addedAt", "episode_added.desc": "episode.addedAt%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "viewed.asc": "lastViewedAt", "viewed.desc": "lastViewedAt%3Adesc",
     "random": "random"
 }
 season_sorts = {
@@ -215,11 +318,61 @@ episode_sorts = {
     "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
     "duration.asc": "duration", "duration.desc": "duration%3Adesc",
+    "progress.asc": "viewOffset", "progress.desc": "viewOffset%3Adesc",
     "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "viewed.asc": "lastViewedAt", "viewed.desc": "lastViewedAt%3Adesc",
+    "resolution.asc": "mediaHeight", "resolution.desc": "mediaHeight%3Adesc",
+    "bitrate.asc": "mediaBitrate", "bitrate.desc": "mediaBitrate%3Adesc",
     "random": "random"
 }
-sort_types = {"movies": (1, movie_sorts), "shows": (2, show_sorts), "seasons": (3, season_sorts), "episodes": (4, episode_sorts)}
+artist_sorts = {
+    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "played.asc": "lastViewedAt", "played.desc": "lastViewedAt%3Adesc",
+    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
+    "random": "random"
+}
+album_sorts = {
+    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "album_artist.asc": "artist.titleSort%2Calbum.titleSort%2Calbum.index%2Calbum.id%2Calbum.originallyAvailableAt",
+    "album_artist.desc": "artist.titleSort%3Adesc%2Calbum.titleSort%2Calbum.index%2Calbum.id%2Calbum.originallyAvailableAt",
+    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
+    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
+    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "played.asc": "lastViewedAt", "played.desc": "lastViewedAt%3Adesc",
+    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
+    "random": "random"
+}
+track_sorts = {
+    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "album_artist.asc": "artist.titleSort%2Calbum.titleSort%2Calbum.year%2Ctrack.absoluteIndex%2Ctrack.index%2Ctrack.titleSort%2Ctrack.id",
+    "album_artist.desc": "artist.titleSort%3Adesc%2Calbum.titleSort%2Calbum.year%2Ctrack.absoluteIndex%2Ctrack.index%2Ctrack.titleSort%2Ctrack.id",
+    "artist.asc": "originalTitle", "artist.desc": "originalTitle%3Adesc",
+    "album.asc": "album.titleSort", "album.desc": "album.titleSort%3Adesc",
+    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
+    "duration.asc": "duration", "duration.desc": "duration%3Adesc",
+    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
+    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
+    "played.asc": "lastViewedAt", "played.desc": "lastViewedAt%3Adesc",
+    "rated.asc": "lastRatedAt", "rated.desc": "lastRatedAt%3Adesc",
+    "popularity.asc": "ratingCount", "popularity.desc": "ratingCount%3Adesc",
+    "bitrate.asc": "mediaBitrate", "bitrate.desc": "mediaBitrate%3Adesc",
+    "random": "random"
+}
+sort_types = {
+    "movies": (1, movie_sorts),
+    "shows": (2, show_sorts),
+    "seasons": (3, season_sorts),
+    "episodes": (4, episode_sorts),
+    "artists": (8, artist_sorts),
+    "albums": (9, album_sorts),
+    "tracks": (10, track_sorts)
+}
 
 class Plex(Library):
     def __init__(self, config, params):
@@ -247,7 +400,7 @@ class Plex(Library):
                 break
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library {params['name']} not found. Options: {library_names}")
-        if self.Plex.type in ["movie", "show"]:
+        if self.Plex.type in ["movie", "show", "artist"]:
             self.type = self.Plex.type.capitalize()
         else:
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
@@ -256,6 +409,7 @@ class Plex(Library):
         self.agent = self.Plex.agent
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
+        self.is_music = self.type == "Artist"
         self.is_other = self.agent == "com.plexapp.agents.none"
         if self.is_other:
             self.type = "Video"
@@ -395,6 +549,8 @@ class Plex(Library):
                     names.append(choice.title)
                 if choice.key not in names:
                     names.append(choice.key)
+                choices[choice.title] = choice.title if title else choice.key
+                choices[choice.key] = choice.title if title else choice.key
                 choices[choice.title.lower()] = choice.title if title else choice.key
                 choices[choice.key.lower()] = choice.title if title else choice.key
             return choices, names
@@ -636,6 +792,8 @@ class Plex(Library):
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
         display = ""
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
+        attr_display = attr.replace("_", " ").title()
+        attr_call = attr_display.replace(" ", "")
         if add_tags or remove_tags or sync_tags is not None:
             _add_tags = add_tags if add_tags else []
             _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
@@ -648,13 +806,13 @@ class Plex(Library):
             _add = [f"{t[:1].upper()}{t[1:]}" for t in _add_tags + _sync_tags if t.lower() not in _item_tags]
             _remove = [t for t in _item_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]
             if _add:
-                self.query_data(getattr(obj, f"add{attr.capitalize()}"), _add)
+                self.query_data(getattr(obj, f"add{attr_call}"), _add)
                 display += f"+{', +'.join(_add)}"
             if _remove:
-                self.query_data(getattr(obj, f"remove{attr.capitalize()}"), _remove)
+                self.query_data(getattr(obj, f"remove{attr_call}"), _remove)
                 display += f"-{', -'.join(_remove)}"
             if len(display) > 0:
-                logger.info(f"{obj.title[:25]:<25} | {attr.capitalize()} | {display}")
+                logger.info(f"{obj.title[:25]:<25} | {attr_display} | {display}")
         return len(display) > 0
 
     def find_assets(self, item, name=None, upload=True, overlay=None, folders=None, create=None):
