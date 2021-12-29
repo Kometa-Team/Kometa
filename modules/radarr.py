@@ -85,7 +85,7 @@ class Radarr:
                 if tmdb_id in arr_ids:
                     exists.append(arr_ids[tmdb_id])
                     continue
-                if path.lower() in arr_paths:
+                if path and path.lower() in arr_paths:
                     mismatched[path] = tmdb_id
                     continue
                 movie = self.api.get_movie(tmdb_id=tmdb_id)

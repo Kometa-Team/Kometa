@@ -111,7 +111,7 @@ class Sonarr:
                 if tvdb_id in arr_ids:
                     exists.append(arr_ids[tvdb_id])
                     continue
-                if path.lower() in arr_paths:
+                if path and path.lower() in arr_paths:
                     mismatched[path] = tvdb_id
                     continue
                 show = self.api.get_series(tvdb_id=tvdb_id)
