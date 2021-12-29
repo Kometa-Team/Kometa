@@ -202,10 +202,13 @@ class Cache:
                 if row and row[to_id]:
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
-                    try:
-                        id_to_return = int(row[to_id])
-                    except ValueError:
+                    if "_" in row[to_id]:
                         id_to_return = row[to_id]
+                    else:
+                        try:
+                            id_to_return = int(row[to_id])
+                        except ValueError:
+                            id_to_return = row[to_id]
                     expired = time_between_insertion.days > self.expiration
                     out_type = row["media_type"] if return_type else None
         if return_type:

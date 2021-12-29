@@ -124,7 +124,7 @@ class ConfigFile:
             if "sonarr" in new_config:                      new_config["sonarr"] = new_config.pop("sonarr")
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            if not read_only:
+            if not self.read_only:
                 yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
@@ -247,7 +247,7 @@ class ConfigFile:
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
             "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
-            "playlist_sync_to_user": check_for_attribute(self.data, "playlist_sync_to_user", parent="settings", default="all"),
+            "playlist_sync_to_user": check_for_attribute(self.data, "playlist_sync_to_user", parent="settings", default="all", default_is_none=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.webhooks = {
