@@ -331,6 +331,29 @@ class CollectionBuilder:
                 else:
                     self.sync = self.data[methods["sync_mode"]].lower() == "sync"
 
+        test_sort = None
+        if "collection_order" in methods and not self.playlist:
+            if self.data[methods["collection_order"]] is None:
+                raise Failed(f"{self.Type} Warning: collection_order attribute is blank")
+            else:
+                test_sort = self.data[methods["collection_order"]]
+        elif "collection_order" not in methods and not self.playlist and self.library.default_collection_order:
+            test_sort = self.library.default_collection_order
+            logger.warning(f"{self.Type} Warning: collection_order not found using library default_collection_order: {self.library.default_collection_order}")
+        self.custom_sort = self.playlist
+        if test_sort:
+            logger.debug("")
+            logger.debug("Validating Method: collection_order")
+            logger.debug(f"Value: {test_sort}")
+            if test_sort.lower() in plex.collection_order_options:
+                self.details["collection_order"] = test_sort.lower()
+                if test_sort.lower() == "custom" and self.build_collection:
+                    self.custom_sort = True
+            elif (self.library.is_movie and test_sort.lower() in plex.movie_sorts) or (self.library.is_show and test_sort.lower() in plex.show_sorts):
+                self.custom_sort = test_sort.lower()
+            else:
+                raise Failed(f"{self.Type} Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
+
         self.custom_sort = self.playlist
         if "collection_order" in methods and not self.playlist:
             logger.debug("")

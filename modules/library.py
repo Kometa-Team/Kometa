@@ -46,6 +46,7 @@ class Library(ABC):
         self.dimensional_asset_rename = params["dimensional_asset_rename"]
         self.show_missing_season_assets = params["show_missing_season_assets"]
         self.sync_mode = params["sync_mode"]
+        self.default_collection_order = params["default_collection_order"]
         self.minimum_items = params["minimum_items"]
         self.delete_below_minimum = params["delete_below_minimum"]
         self.delete_not_scheduled = params["delete_not_scheduled"]
