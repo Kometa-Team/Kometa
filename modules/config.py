@@ -86,6 +86,9 @@ class ConfigFile:
                         replace_attr(new_config["libraries"][library], "show_filtered", "plex")
                         replace_attr(new_config["libraries"][library], "show_missing", "plex")
                         replace_attr(new_config["libraries"][library], "save_missing", "plex")
+                    if new_config["libraries"][library] and "settings" in new_config["libraries"][library]:
+                        if "collection_minimum" in new_config["libraries"][library]["settings"]:
+                            new_config["libraries"][library]["settings"]["minimum_items"] = new_config["libraries"][library]["settings"].pop("collection_minimum")
                     if new_config["libraries"][library] and "webhooks" in new_config["libraries"][library] and "collection_changes" not in new_config["libraries"][library]["webhooks"]:
                         changes = []
                         def hooks(attr):
@@ -95,10 +98,14 @@ class ConfigFile:
                         hooks("collection_addition")
                         hooks("collection_removal")
                         hooks("collection_changes")
-                        new_config["libraries"][library]["webhooks"]["changes"] = changes if changes else None
+                        new_config["libraries"][library]["webhooks"]["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
             if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
             if "playlists" in new_config:                   new_config["playlists"] = new_config.pop("playlists")
-            if "settings" in new_config:                    new_config["settings"] = new_config.pop("settings")
+            if "settings" in new_config:
+                temp = new_config.pop("settings")
+                if "collection_minimum" in temp:
+                    temp["minimum_items"] = temp.pop("collection_minimum")
+                new_config["settings"] = temp
             if "webhooks" in new_config:
                 temp = new_config.pop("webhooks")
                 if "changes" not in temp:
@@ -112,7 +119,7 @@ class ConfigFile:
                     hooks("collection_addition")
                     hooks("collection_removal")
                     hooks("collection_changes")
-                    temp["changes"] = changes if changes else None
+                    temp["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
                 new_config["webhooks"] = temp
             if "plex" in new_config:                        new_config["plex"] = new_config.pop("plex")
             if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
@@ -232,7 +239,7 @@ class ConfigFile:
             "dimensional_asset_rename": check_for_attribute(self.data, "dimensional_asset_rename", parent="settings", var_type="bool", default=False),
             "show_missing_season_assets": check_for_attribute(self.data, "show_missing_season_assets", parent="settings", var_type="bool", default=False),
             "sync_mode": check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes),
-            "collection_minimum": check_for_attribute(self.data, "collection_minimum", parent="settings", var_type="int", default=1),
+            "minimum_items": check_for_attribute(self.data, "minimum_items", parent="settings", var_type="int", default=1),
             "delete_below_minimum": check_for_attribute(self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False),
             "delete_not_scheduled": check_for_attribute(self.data, "delete_not_scheduled", parent="settings", var_type="bool", default=False),
             "run_again_delay": check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0),
@@ -526,7 +533,7 @@ class ConfigFile:
                 params["create_asset_folders"] = check_for_attribute(lib, "create_asset_folders", parent="settings", var_type="bool", default=self.general["create_asset_folders"], do_print=False, save=False)
                 params["dimensional_asset_rename"] = check_for_attribute(lib, "dimensional_asset_rename", parent="settings", var_type="bool", default=self.general["dimensional_asset_rename"], do_print=False, save=False)
                 params["show_missing_season_assets"] = check_for_attribute(lib, "show_missing_season_assets", parent="settings", var_type="bool", default=self.general["show_missing_season_assets"], do_print=False, save=False)
-                params["collection_minimum"] = check_for_attribute(lib, "collection_minimum", parent="settings", var_type="int", default=self.general["collection_minimum"], do_print=False, save=False)
+                params["minimum_items"] = check_for_attribute(lib, "minimum_items", parent="settings", var_type="int", default=self.general["minimum_items"], do_print=False, save=False)
                 params["delete_below_minimum"] = check_for_attribute(lib, "delete_below_minimum", parent="settings", var_type="bool", default=self.general["delete_below_minimum"], do_print=False, save=False)
                 params["delete_not_scheduled"] = check_for_attribute(lib, "delete_not_scheduled", parent="settings", var_type="bool", default=self.general["delete_not_scheduled"], do_print=False, save=False)
                 params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", parent="settings", var_type="bool", default=False, do_print=False, save=False)
