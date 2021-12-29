@@ -147,7 +147,6 @@ movie_only_filters = [
     "country", "country.not",
     "director", "director.not",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte",
-    "original_language", "original_language.not",
     "subtitle_language", "subtitle_language.not",
     "resolution", "resolution.not",
     "writer", "writer.not"
@@ -738,8 +737,7 @@ class CollectionBuilder:
         elif method_name in plex.item_advance_keys:
             key, options = plex.item_advance_keys[method_name]
             if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
-                logger.error(
-                    f"Metadata Error: {method_name} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                logger.error(f"Metadata Error: {method_name} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
             elif method_name in advance_show and not self.library.is_show:
                 logger.error(f"Metadata Error: {method_name} attribute only works for show libraries")
             elif str(method_data).lower() not in options:
