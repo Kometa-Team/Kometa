@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import RadarrAPI
-from arrapi.exceptions import ArrException, Invalid
+from arrapi.exceptions import ArrException, Invalid, NotFound
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -107,7 +107,7 @@ class Radarr:
                     exists.extend(_e)
                     invalid.extend(_i)
                     movies = []
-                except Invalid as e:
+                except (Invalid, NotFound) as e:
                     raise Failed(f"Radarr Error: {e}")
 
         if len(added) > 0:
