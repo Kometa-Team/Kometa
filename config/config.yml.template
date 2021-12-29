@@ -40,6 +40,7 @@ settings:                                       # Can be individually specified 
   tvdb_language: eng
   ignore_ids:
   ignore_imdb_ids:
+  playlist_sync_to_user: all
 webhooks:                                       # Can be individually specified per library as well
   error:
   run_start:

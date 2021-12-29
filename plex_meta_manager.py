@@ -570,7 +570,7 @@ def library_operations(config, library):
                             template[k] = v[int(_i)]
                     for suffix in library.tmdb_collections["remove_suffix"]:
                         if _n.endswith(suffix):
-                            _n = _n[:-len(_n)]
+                            _n = _n[:-len(suffix)]
                     new_collections[_n.strip()] = {"template": template}
             metadata = MetadataFile(config, library, "Data", {
                 "collections": new_collections,
@@ -853,23 +853,22 @@ def run_playlists(config):
                         server_check = pl_library.PlexServer.machineIdentifier
 
                 sync_to_users = config.general["playlist_sync_to_user"]
-                if "sync_to_users" not in playlist_attrs:
-                    logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_user: {sync_to_users}")
-                elif not playlist_attrs["sync_to_users"]:
-                    logger.warning(f"Playlist Error: sync_to_users attribute is blank defaulting to playlist_sync_to_user: {sync_to_users}")
-                else:
+                if "sync_to_users" in playlist_attrs:
                     sync_to_users = playlist_attrs["sync_to_users"]
+                else:
+                    logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_user: {sync_to_users}")
 
                 valid_users = []
                 plex_users = pl_libraries[0].users
-                if str(sync_to_users) == "all":
-                    valid_users = plex_users
-                else:
-                    for user in util.get_list(sync_to_users):
-                        if user in plex_users:
-                            valid_users.append(user)
-                        else:
-                            raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
+                if sync_to_users:
+                    if str(sync_to_users) == "all":
+                        valid_users = plex_users
+                    else:
+                        for user in util.get_list(sync_to_users):
+                            if user in plex_users:
+                                valid_users.append(user)
+                            else:
+                                raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
 
                 util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 

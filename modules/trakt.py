@@ -80,7 +80,7 @@ class Trakt:
 
     def _save(self, authorization):
         if authorization and self._check(authorization):
-            if self.authorization != authorization and self.config.read_only:
+            if self.authorization != authorization and not self.config.read_only:
                 yaml.YAML().allow_duplicate_keys = True
                 config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
                 config["trakt"]["authorization"] = {
