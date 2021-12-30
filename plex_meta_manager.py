@@ -354,12 +354,16 @@ def update_libraries(config):
         for title in playlist_status:
             if len(title) > longest:
                 longest = len(title)
+
     def print_status(section, status):
         logger.info("")
         util.separator(f"{section} Summary", space=False, border=False)
         logger.info("")
+        logger.info(f"{'Title':^{longest}} |  +  |  =  |  -  | {'Status':^13}")
+        breaker = f"{util.separating_character * longest}|{util.separating_character * 5}|{util.separating_character * 5}|{util.separating_character * 5}|"
+        util.separator(breaker, space=False, border=False, side_space=False, left=True)
         for name, data in status.items():
-            logger.info(f"{name:<{longest}} | {data['status']:<13} | +{data['added']} ={data['unchanged']} -{data['removed']}")
+            logger.info(f"{name:<{longest}} | {data['added']:^3} | {data['unchanged']:^3} | {data['removed']:^3} | {data['status']}")
             if data["errors"]:
                 for error in data["errors"]:
                     util.print_multiline(error, info=True)

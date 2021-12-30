@@ -183,19 +183,19 @@ def regex_first_int(data, id_type, default=None):
     else:
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
-def centered(text, sep=" "):
+def centered(text, sep=" ", side_space=True, left=False):
     if len(text) > screen_width - 2:
         return text
     space = screen_width - len(text) - 2
-    text = f" {text} "
+    text = f"{' ' if side_space else sep}{text}{' ' if side_space else sep}"
     if space % 2 == 1:
         text += sep
         space -= 1
     side = int(space / 2) - 1
-    final_text = f"{sep * side}{text}{sep * side}"
+    final_text = f"{text}{sep * side}{sep * side}" if left else f"{sep * side}{text}{sep * side}"
     return final_text
 
-def separator(text=None, space=True, border=True, debug=False):
+def separator(text=None, space=True, border=True, debug=False, side_space=True, left=False):
     sep = " " if space else separating_character
     for handler in logger.handlers:
         apply_formatter(handler, border=False)
@@ -208,9 +208,9 @@ def separator(text=None, space=True, border=True, debug=False):
         text_list = text.split("\n")
         for t in text_list:
             if debug:
-                logger.debug(f"|{sep}{centered(t, sep=sep)}{sep}|")
+                logger.debug(f"|{sep}{centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
             else:
-                logger.info(f"|{sep}{centered(t, sep=sep)}{sep}|")
+                logger.info(f"|{sep}{centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
         if border and debug:
             logger.debug(border_text)
         elif border:
