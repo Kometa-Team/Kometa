@@ -1660,6 +1660,7 @@ class CollectionBuilder:
         total = len(self.added_items)
         spacing = len(str(total)) * 2 + 1
         amount_added = 0
+        amount_unchanged = 0
         playlist_adds = []
         for i, item in enumerate(self.added_items, 1):
             current_operation = "=" if item in collection_items else "+"
@@ -1667,6 +1668,7 @@ class CollectionBuilder:
             logger.info(util.adjust_space(f"{number_text:>{spacing}} | {name} {self.Type} | {current_operation} | {util.item_title(item)}"))
             if item in collection_items:
                 self.plex_map[item.ratingKey] = None
+                amount_unchanged += 1
             else:
                 if self.playlist:
                     playlist_adds.append(item)
@@ -1690,7 +1692,7 @@ class CollectionBuilder:
         util.print_end()
         logger.info("")
         logger.info(f"{total} {self.collection_level.capitalize()}{'s' if total > 1 else ''} Processed")
-        return amount_added
+        return amount_added, amount_unchanged
 
     def sync_collection(self):
         amount_removed = 0
@@ -2326,6 +2328,7 @@ class CollectionBuilder:
         name, collection_items = self.library.get_collection_name_and_items(self.obj, self.smart_label_collection)
         self.created = False
         rating_keys = []
+        amount_added = 0
         self.notification_additions = []
         for mm in self.run_again_movies:
             if mm in self.library.movie_map:
@@ -2345,6 +2348,7 @@ class CollectionBuilder:
                     logger.info(f"{name} {self.Type} | = | {util.item_title(current)}")
                 else:
                     self.library.alter_collection(current, name, smart_label_collection=self.smart_label_collection)
+                    amount_added += 1
                     logger.info(f"{name} {self.Type} | + | {util.item_title(current)}")
                     if self.library.is_movie and current.ratingKey in self.library.movie_rating_key_map:
                         add_id = self.library.movie_rating_key_map[current.ratingKey]
@@ -2383,3 +2387,5 @@ class CollectionBuilder:
                     if self.details["show_missing"] is True:
                         logger.info(f"{name} {self.Type} | ? | {title} (TVDb: {missing_id})")
             logger.info(f"{len(self.run_again_shows)} Show{'s' if len(self.run_again_shows) > 1 else ''} Missing")
+
+        return amount_added
