@@ -1262,6 +1262,7 @@ class CollectionBuilder:
                 total_ids = len(ids)
                 logger.debug("")
                 logger.debug(f"{total_ids} IDs Found: {ids}")
+                logger.debug("")
                 for i, input_data in enumerate(ids, 1):
                     input_id, id_type = input_data
                     util.print_return(f"Parsing ID {i}/{total_ids}")
@@ -1614,7 +1615,7 @@ class CollectionBuilder:
             for value in values:
                 final_years.append(self._parse(final, value, datatype="int"))
             return smart_pair(final_years)
-        elif attribute in plex.number_attributes + plex.date_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
+        elif attribute in plex.number_attributes + plex.date_attributes + plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
             return self._parse(final, data, datatype="int")
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
             return self._parse(final, data, datatype="float", minimum=0, maximum=10)
@@ -1651,13 +1652,18 @@ class CollectionBuilder:
             raise Failed(f"Plex Error: Item {item} not found")
 
     def add_to_collection(self):
+        logger.info("")
+        util.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
+        logger.info("")
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
         total = len(self.added_items)
+        spacing = len(str(total)) * 2 + 1
         amount_added = 0
         playlist_adds = []
-        for item in self.added_items:
+        for i, item in enumerate(self.added_items, 1):
             current_operation = "=" if item in collection_items else "+"
-            logger.info(util.adjust_space(f"{name} {self.Type} | {current_operation} | {util.item_title(item)}"))
+            number_text = f"{i}/{total}"
+            logger.info(util.adjust_space(f"{number_text:>{spacing}} | {name} {self.Type} | {current_operation} | {util.item_title(item)}"))
             if item in collection_items:
                 self.plex_map[item.ratingKey] = None
             else:
@@ -1688,14 +1694,17 @@ class CollectionBuilder:
     def sync_collection(self):
         amount_removed = 0
         playlist_removes = []
-        for ratingKey, item in self.plex_map.items():
-            if item is not None:
-                if amount_removed == 0:
-                    logger.info("")
-                    util.separator(f"Removed from {self.name} {self.Type}", space=False, border=False)
-                    logger.info("")
+        items = [item for _, item in self.plex_map.items() if item is not None]
+        if items:
+            logger.info("")
+            util.separator(f"Removed from {self.name} {self.Type}", space=False, border=False)
+            logger.info("")
+            total = len(items)
+            spacing = len(str(total)) * 2 + 1
+            for i, item in enumerate(items, 1):
                 self.library.reload(item)
-                logger.info(f"{self.name} {self.Type} | - | {util.item_title(item)}")
+                number_text = f"{i}/{total}"
+                logger.info(f"{number_text:>{spacing}} | {self.name} {self.Type} | - | {util.item_title(item)}")
                 if self.playlist:
                     playlist_removes.append(item)
                 else:
@@ -1709,10 +1718,9 @@ class CollectionBuilder:
                     else:
                         remove_id = None
                     self.notification_removals.append(util.item_set(item, remove_id))
-        if self.playlist and playlist_removes:
-            self.obj.reload()
-            self.obj.removeItems(playlist_removes)
-        if amount_removed > 0:
+            if self.playlist and playlist_removes:
+                self.obj.reload()
+                self.obj.removeItems(playlist_removes)
             logger.info("")
             logger.info(f"{amount_removed} {self.collection_level.capitalize()}{'s' if amount_removed == 1 else ''} Removed")
         return amount_removed
@@ -1870,6 +1878,10 @@ class CollectionBuilder:
         added_to_radarr = 0
         added_to_sonarr = 0
         if len(self.missing_movies) > 0:
+            if self.details["show_missing"] is True:
+                logger.info("")
+                util.separator(f"Missing Movies from Library: {self.name}", space=False, border=False)
+                logger.info("")
             missing_movies_with_names = []
             for missing_id in self.missing_movies:
                 try:
@@ -1906,6 +1918,10 @@ class CollectionBuilder:
                     if self.run_again:
                         self.run_again_movies.extend(missing_tmdb_ids)
         if len(self.missing_shows) > 0 and self.library.is_show:
+            if self.details["show_missing"] is True:
+                logger.info("")
+                util.separator(f"Missing Shows from Library: {self.name}", space=False, border=False)
+                logger.info("")
             missing_shows_with_names = []
             for missing_id in self.missing_shows:
                 try:

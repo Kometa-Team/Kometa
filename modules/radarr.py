@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import RadarrAPI
-from arrapi.exceptions import ArrException, Invalid, NotFound
+from arrapi.exceptions import ArrException
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -89,6 +89,8 @@ class Radarr:
                     mismatched[path] = tmdb_id
                     continue
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
+                if self.config.trace_mode:
+                    logger.debug(f"Folder to Check: {folder}/{movie.folder}")
                 if f"{folder}/{movie.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{movie.folder}"] = tmdb_id
                     continue
@@ -107,7 +109,8 @@ class Radarr:
                     exists.extend(_e)
                     invalid.extend(_i)
                     movies = []
-                except (Invalid, NotFound) as e:
+                except ArrException as e:
+                    util.print_stacktrace()
                     raise Failed(f"Radarr Error: {e}")
 
         if len(added) > 0:

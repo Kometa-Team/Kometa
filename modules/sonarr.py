@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import SonarrAPI
-from arrapi.exceptions import ArrException, Invalid, NotFound
+from arrapi.exceptions import ArrException
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -115,6 +115,8 @@ class Sonarr:
                     mismatched[path] = tvdb_id
                     continue
                 show = self.api.get_series(tvdb_id=tvdb_id)
+                if self.config.trace_mode:
+                    logger.debug(f"Folder to Check: {folder}/{show.folder}")
                 if f"{folder}/{show.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{show.folder}"] = tvdb_id
                     continue
@@ -133,7 +135,8 @@ class Sonarr:
                     exists.extend(_e)
                     invalid.extend(_i)
                     shows = []
-                except (Invalid, NotFound) as e:
+                except ArrException as e:
+                    util.print_stacktrace()
                     raise Failed(f"Sonarr Error: {e}")
 
         if len(added) > 0:
