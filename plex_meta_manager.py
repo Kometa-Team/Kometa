@@ -707,9 +707,6 @@ def run_collection(config, library, metadata, requested_collections):
                 builder.find_rating_keys()
 
                 if len(builder.added_items) >= builder.minimum and builder.build_collection:
-                    logger.info("")
-                    util.separator(f"Adding to {mapping_name} Collection", space=False, border=False)
-                    logger.info("")
                     items_added = builder.add_to_collection()
                     stats["added"] += items_added
                     items_removed = 0
@@ -726,10 +723,6 @@ def run_collection(config, library, metadata, requested_collections):
                         builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
-                    if builder.details["show_missing"] is True:
-                        logger.info("")
-                        util.separator(f"Missing from Library", space=False, border=False)
-                        logger.info("")
                     radarr_add, sonarr_add = builder.run_missing()
                     stats["radarr"] += radarr_add
                     stats["sonarr"] += sonarr_add
@@ -1026,9 +1019,6 @@ def run_playlists(config):
                     builder.filter_and_save_items(items)
 
                 if len(builder.added_items) >= builder.minimum:
-                    logger.info("")
-                    util.separator(f"Adding to {mapping_name} Playlist", space=False, border=False)
-                    logger.info("")
                     items_added = builder.add_to_collection()
                     stats["added"] += items_added
                     items_removed = 0
@@ -1045,10 +1035,6 @@ def run_playlists(config):
                         builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
-                    if builder.details["show_missing"] is True:
-                        logger.info("")
-                        util.separator(f"Missing from Library", space=False, border=False)
-                        logger.info("")
                     radarr_add, sonarr_add = builder.run_missing()
                     stats["radarr"] += radarr_add
                     stats["sonarr"] += sonarr_add
