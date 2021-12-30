@@ -399,7 +399,7 @@ class Plex(Library):
                 self.Plex = s
                 break
         if not self.Plex:
-            raise Failed(f"Plex Error: Plex Library {params['name']} not found. Options: {library_names}")
+            raise Failed(f"Plex Error: Plex Library '{params['name']}' not found. Options: {library_names}")
         if self.Plex.type in ["movie", "show", "artist"]:
             self.type = self.Plex.type.capitalize()
         else:

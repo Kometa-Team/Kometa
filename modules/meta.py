@@ -338,7 +338,6 @@ class MetadataFile(DataFile):
                     else:
                         logger.error(f"Metadata Error: {attr} attribute is blank")
 
-
             logger.info("")
             util.separator()
             logger.info("")
