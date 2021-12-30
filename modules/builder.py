@@ -1848,7 +1848,10 @@ class CollectionBuilder:
                             return False
                 elif modifier in [".gt", ".gte", ".lt", ".lte"]:
                     divider = 60000 if filter_attr == "duration" else 1
-                    if util.is_number_filter(getattr(item, filter_actual) / divider, modifier, filter_data):
+                    test_number = getattr(item, filter_actual)
+                    if not test_number:
+                        return False
+                    if util.is_number_filter(test_number / divider, modifier, filter_data):
                         return False
                 else:
                     attrs = []
