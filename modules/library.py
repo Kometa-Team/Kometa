@@ -67,9 +67,9 @@ class Library(ABC):
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
         self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
-        self.radarr_add_all = params["radarr_add_all"]
+        self.radarr_add_all_existing = params["radarr_add_all_existing"]
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
-        self.sonarr_add_all = params["sonarr_add_all"]
+        self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
         self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
         self.mass_collection_mode = params["mass_collection_mode"]
         self.tmdb_collections = params["tmdb_collections"]
@@ -80,10 +80,13 @@ class Library(ABC):
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
         self.optimize = params["plex"]["optimize"] # TODO: Here or just in Plex?
-        self.library_operation = self.assets_for_all or self.delete_unmanaged_collections or self.delete_collections_with_less \
-                                 or self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update \
-                                 or self.mass_trakt_rating_update or self.radarr_add_all or self.sonarr_add_all \
-                                 or self.tmdb_collections or self.genre_mapper
+
+        self.tmdb_library_operation = self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
+                                      or self.mass_critic_rating_update or self.mass_trakt_rating_update \
+                                      or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing
+        self.library_operation = self.tmdb_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
+                                 or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
+                                 or self.genre_mapper
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":

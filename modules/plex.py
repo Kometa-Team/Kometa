@@ -263,7 +263,7 @@ number_attributes = ["plays", "episode_plays", "duration", "tmdb_vote_count", "a
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
-    "producer", "resolution", "studio", "subtitle_language", "writer" "artist_genre", "artist_collection",
+    "producer", "resolution", "studio", "subtitle_language", "writer", "artist_genre", "artist_collection",
     "artist_country", "artist_mood", "artist_style", "album_genre", "album_mood", "album_style", "album_format",
     "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source"
 ]

@@ -229,18 +229,6 @@ def update_libraries(config):
             logger.debug(f"Show Missing: {library.show_missing}")
             logger.debug(f"Show Missing Assets: {library.show_missing_assets}")
             logger.debug(f"Save Missing: {library.save_missing}")
-            logger.debug(f"Assets For All: {library.assets_for_all}")
-            logger.debug(f"Delete Collections With Less: {library.delete_collections_with_less}")
-            logger.debug(f"Delete Unmanaged Collections: {library.delete_unmanaged_collections}")
-            logger.debug(f"Mass Genre Update: {library.mass_genre_update}")
-            logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
-            logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
-            logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
-            logger.debug(f"Split Duplicates: {library.split_duplicates}")
-            logger.debug(f"Radarr Add All: {library.radarr_add_all}")
-            logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
-            logger.debug(f"TMDb Collections: {library.tmdb_collections}")
-            logger.debug(f"Genre Mapper: {library.genre_mapper}")
             logger.debug(f"Clean Bundles: {library.clean_bundles}")
             logger.debug(f"Empty Trash: {library.empty_trash}")
             logger.debug(f"Optimize: {library.optimize}")
@@ -281,7 +269,7 @@ def update_libraries(config):
                     logger.info("")
                     builder.sort_collection()
 
-            if not config.test_mode and not collection_only:
+            if library.library_operation and not config.test_mode and not collection_only:
                 library_operations(config, library)
 
             logger.removeHandler(library_handler)
@@ -370,16 +358,13 @@ def library_operations(config, library):
     logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
     logger.debug(f"Mass Collection Mode Update: {library.mass_collection_mode}")
     logger.debug(f"Split Duplicates: {library.split_duplicates}")
-    logger.debug(f"Radarr Add All: {library.radarr_add_all}")
+    logger.debug(f"Radarr Add All Existing: {library.radarr_add_all_existing}")
     logger.debug(f"Radarr Remove by Tag: {library.radarr_remove_by_tag}")
-    logger.debug(f"Sonarr Add All: {library.sonarr_add_all}")
+    logger.debug(f"Sonarr Add All Existing: {library.sonarr_add_all_existing}")
     logger.debug(f"Sonarr Remove by Tag: {library.sonarr_remove_by_tag}")
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
-    tmdb_operation = library.assets_for_all or library.mass_genre_update or library.mass_audience_rating_update \
-                     or library.mass_critic_rating_update or library.mass_trakt_rating_update \
-                     or library.tmdb_collections or library.radarr_add_all or library.sonarr_add_all
-    logger.debug(f"TMDb Operation: {tmdb_operation}")
+    logger.debug(f"TMDb Operation: {library.tmdb_library_operation}")
 
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
@@ -387,7 +372,7 @@ def library_operations(config, library):
             item.split()
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
-    if tmdb_operation:
+    if library.tmdb_library_operation:
         items = library.get_all()
         radarr_adds = []
         sonarr_adds = []
@@ -435,11 +420,11 @@ def library_operations(config, library):
                     pass
 
             path = os.path.dirname(str(item.locations[0])) if library.is_movie else str(item.locations[0])
-            if library.Radarr and library.radarr_add_all and tmdb_id:
+            if library.Radarr and library.radarr_add_all_existing and tmdb_id:
                 path = path.replace(library.Radarr.plex_path, library.Radarr.radarr_path)
                 path = path[:-1] if path.endswith(('/', '\\')) else path
                 radarr_adds.append((tmdb_id, path))
-            if library.Sonarr and library.sonarr_add_all and tvdb_id:
+            if library.Sonarr and library.sonarr_add_all_existing and tvdb_id:
                 path = path.replace(library.Sonarr.plex_path, library.Sonarr.sonarr_path)
                 path = path[:-1] if path.endswith(('/', '\\')) else path
                 sonarr_adds.append((tvdb_id, path))
@@ -545,13 +530,13 @@ def library_operations(config, library):
                 except Failed:
                     pass
 
-        if library.Radarr and library.radarr_add_all:
+        if library.Radarr and library.radarr_add_all_existing:
             try:
                 library.Radarr.add_tmdb(radarr_adds)
             except Failed as e:
                 logger.error(e)
 
-        if library.Sonarr and library.sonarr_add_all:
+        if library.Sonarr and library.sonarr_add_all_existing:
             try:
                 library.Sonarr.add_tvdb(sonarr_adds)
             except Failed as e:
