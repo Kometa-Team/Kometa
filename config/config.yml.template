@@ -70,7 +70,8 @@ anidb:                                          # Not required for AniDB builder
 radarr:                                         # Can be individually specified per library as well
   url: http://192.168.1.12:7878
   token: ################################
-  add: false
+  add_missing: false
+  add_existing: false
   root_folder_path: S:/Movies
   monitor: true
   availability: announced
@@ -82,7 +83,8 @@ radarr:                                         # Can be individually specified 
 sonarr:                                         # Can be individually specified per library as well
   url: http://192.168.1.12:8989
   token: ################################
-  add: false
+  add_missing: false
+  add_existing: false
   root_folder_path: "S:/TV Shows"
   monitor: all
   quality_profile: HD-1080p

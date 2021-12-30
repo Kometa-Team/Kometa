@@ -40,7 +40,7 @@ class Sonarr:
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"], params["language_profile"])
         except ArrException as e:
             raise Failed(e)
-        self.add = params["add"]
+        self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
