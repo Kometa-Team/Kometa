@@ -45,7 +45,8 @@ method_alias = {
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
     "mal_producer": "mal_studio", "mal_licensor": "mal_studio",
     "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
-    "collection_changes_webhooks": "changes_webhooks"
+    "collection_changes_webhooks": "changes_webhooks",
+    "radarr_add": "radarr_add_missing", "sonarr_add": "sonarr_add_missing",
 }
 filter_translation = {
     "record_label": "studio",
@@ -101,9 +102,9 @@ collectionless_details = ["collection_order", "plex_collectionless", "label", "l
 item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
 item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync"]
-radarr_details = ["radarr_add", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
+radarr_details = ["radarr_add_missing", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
-    "sonarr_add", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
+    "sonarr_add_missing", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
 album_details = ["item_label", "item_album_sorting"]
@@ -573,20 +574,20 @@ class CollectionBuilder:
         if not self.smart_url and len(self.builders) == 0:
             raise Failed(f"{self.Type} Error: No builders were found")
 
-        if "add" not in self.radarr_details:
-            self.radarr_details["add"] = self.library.Radarr.add if self.library.Radarr else False
+        if "add_missing" not in self.radarr_details:
+            self.radarr_details["add_missing"] = self.library.Radarr.add_missing if self.library.Radarr else False
         if "add_existing" not in self.radarr_details:
             self.radarr_details["add_existing"] = self.library.Radarr.add_existing if self.library.Radarr else False
 
-        if "add" not in self.sonarr_details:
-            self.sonarr_details["add"] = self.library.Sonarr.add if self.library.Sonarr else False
+        if "add_missing" not in self.sonarr_details:
+            self.sonarr_details["add_missing"] = self.library.Sonarr.add_missing if self.library.Sonarr else False
         if "add_existing" not in self.sonarr_details:
             self.sonarr_details["add_existing"] = self.library.Sonarr.add_existing if self.library.Sonarr else False
             
         if self.smart_url or self.collectionless or self.library.is_music:
-            self.radarr_details["add"] = False
+            self.radarr_details["add_missing"] = False
             self.radarr_details["add_existing"] = False
-            self.sonarr_details["add"] = False
+            self.sonarr_details["add_missing"] = False
             self.sonarr_details["add_existing"] = False
 
         if self.radarr_details["add_existing"] or self.sonarr_details["add_existing"]:
@@ -597,8 +598,8 @@ class CollectionBuilder:
             self.sync = True
 
         self.do_missing = not self.no_missing and (self.details["show_missing"] or self.details["save_missing"]
-                                                   or (self.library.Radarr and self.radarr_details["add"])
-                                                   or (self.library.Sonarr and self.sonarr_details["add"]))
+                                                   or (self.library.Radarr and self.radarr_details["add_missing"])
+                                                   or (self.library.Sonarr and self.sonarr_details["add_missing"]))
 
         if self.build_collection:
             try:
@@ -827,7 +828,7 @@ class CollectionBuilder:
                 self.item_details[method_name] = str(method_data).lower()
 
     def _radarr(self, method_name, method_data):
-        if method_name in ["radarr_add", "radarr_add_existing", "radarr_monitor", "radarr_search"]:
+        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_monitor", "radarr_search"]:
             self.radarr_details[method_name[7:]] = self._parse(method_name, method_data, datatype="bool")
         elif method_name == "radarr_folder":
             self.radarr_details["folder"] = method_data
@@ -842,7 +843,7 @@ class CollectionBuilder:
             self.radarr_details["tag"] = util.get_list(method_data, lower=True)
 
     def _sonarr(self, method_name, method_data):
-        if method_name in ["sonarr_add", "sonarr_add_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
+        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
             self.sonarr_details[method_name[7:]] = self._parse(method_name, method_data, datatype="bool")
         elif method_name in ["sonarr_folder", "sonarr_quality", "sonarr_language"]:
             self.sonarr_details[method_name[7:]] = method_data
@@ -1630,7 +1631,7 @@ class CollectionBuilder:
         modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
 
         if attribute == "add_to_arr":
-            attribute = "radarr_add" if self.library.is_movie else "sonarr_add"
+            attribute = "radarr_add_missing" if self.library.is_movie else "sonarr_add_missing"
         elif attribute in ["arr_tag", "arr_folder"]:
             attribute = f"{'rad' if self.library.is_movie else 'son'}{attribute}"
         elif attribute in plex.date_attributes and modifier in [".gt", ".gte"]:
@@ -1905,10 +1906,10 @@ class CollectionBuilder:
             if len(missing_movies_with_names) > 0:
                 if self.details["save_missing"] is True:
                     self.library.add_missing(self.name, missing_movies_with_names, True)
-                if self.run_again or (self.library.Radarr and (self.radarr_details["add"] or "item_radarr_tag" in self.item_details)):
+                if self.run_again or (self.library.Radarr and (self.radarr_details["add_missing"] or "item_radarr_tag" in self.item_details)):
                     missing_tmdb_ids = [missing_id for title, missing_id in missing_movies_with_names]
                     if self.library.Radarr:
-                        if self.radarr_details["add"]:
+                        if self.radarr_details["add_missing"]:
                             try:
                                 added_to_radarr += self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_details)
                             except Failed as e:
@@ -1944,10 +1945,10 @@ class CollectionBuilder:
             if len(missing_shows_with_names) > 0:
                 if self.details["save_missing"] is True:
                     self.library.add_missing(self.name, missing_shows_with_names, False)
-                if self.run_again or (self.library.Sonarr and (self.sonarr_details["add"] or "item_sonarr_tag" in self.item_details)):
+                if self.run_again or (self.library.Sonarr and (self.sonarr_details["add_missing"] or "item_sonarr_tag" in self.item_details)):
                     missing_tvdb_ids = [missing_id for title, missing_id in missing_shows_with_names]
                     if self.library.Sonarr:
-                        if self.sonarr_details["add"]:
+                        if self.sonarr_details["add_missing"]:
                             try:
                                 added_to_sonarr += self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_details)
                             except Failed as e:

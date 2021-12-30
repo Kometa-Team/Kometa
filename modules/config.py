@@ -79,6 +79,10 @@ class ConfigFile:
             replace_attr(new_config, "save_missing", "plex")
             if new_config["libraries"]:
                 for library in new_config["libraries"]:
+                    if "radarr_add_all" in new_config["libraries"][library]:
+                        new_config["libraries"][library]["radarr_add_all_existing"] = new_config["libraries"][library].pop("radarr_add_all")
+                    if "sonarr_add_all" in new_config["libraries"][library]:
+                        new_config["libraries"][library]["sonarr_add_all_existing"] = new_config["libraries"][library].pop("sonarr_add_all")
                     if new_config["libraries"][library] and "plex" in new_config["libraries"][library]:
                         replace_attr(new_config["libraries"][library], "asset_directory", "plex")
                         replace_attr(new_config["libraries"][library], "sync_mode", "plex")
@@ -89,6 +93,17 @@ class ConfigFile:
                     if new_config["libraries"][library] and "settings" in new_config["libraries"][library]:
                         if "collection_minimum" in new_config["libraries"][library]["settings"]:
                             new_config["libraries"][library]["settings"]["minimum_items"] = new_config["libraries"][library]["settings"].pop("collection_minimum")
+                    if new_config["libraries"][library] and "radarr" in new_config["libraries"][library]:
+                        if "add" in new_config["libraries"][library]["radarr"]:
+                            new_config["libraries"][library]["radarr"]["add_missing"] = new_config["libraries"][library]["radarr"].pop("add")
+                    if new_config["libraries"][library] and "sonarr" in new_config["libraries"][library]:
+                        if "add" in new_config["libraries"][library]["sonarr"]:
+                            new_config["libraries"][library]["sonarr"]["add_missing"] = new_config["libraries"][library]["sonarr"].pop("add")
+                    if new_config["libraries"][library] and "operations" in new_config["libraries"][library]:
+                        if "radarr_add_all" in new_config["libraries"][library]["operations"]:
+                            new_config["libraries"][library]["operations"]["radarr_add_all_existing"] = new_config["libraries"][library]["operations"].pop("radarr_add_all")
+                        if "sonarr_add_all" in new_config["libraries"][library]["operations"]:
+                            new_config["libraries"][library]["operations"]["sonarr_add_all_existing"] = new_config["libraries"][library]["operations"].pop("sonarr_add_all")
                     if new_config["libraries"][library] and "webhooks" in new_config["libraries"][library] and "collection_changes" not in new_config["libraries"][library]["webhooks"]:
                         changes = []
                         def hooks(attr):
@@ -127,8 +142,16 @@ class ConfigFile:
             if "omdb" in new_config:                        new_config["omdb"] = new_config.pop("omdb")
             if "notifiarr" in new_config:                   new_config["notifiarr"] = new_config.pop("notifiarr")
             if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
-            if "radarr" in new_config:                      new_config["radarr"] = new_config.pop("radarr")
-            if "sonarr" in new_config:                      new_config["sonarr"] = new_config.pop("sonarr")
+            if "radarr" in new_config:
+                temp = new_config.pop("radarr")
+                if "add" in temp:
+                    temp["add_missing"] = temp.pop("add")
+                new_config["radarr"] = temp
+            if "sonarr" in new_config:
+                temp = new_config.pop("sonarr")
+                if "add" in temp:
+                    temp["add_missing"] = temp.pop("add")
+                new_config["sonarr"] = temp
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
             if not self.read_only:
@@ -460,7 +483,7 @@ class ConfigFile:
             self.general["radarr"] = {
                 "url": check_for_attribute(self.data, "url", parent="radarr", var_type="url", default_is_none=True),
                 "token": check_for_attribute(self.data, "token", parent="radarr", default_is_none=True),
-                "add": check_for_attribute(self.data, "add", parent="radarr", var_type="bool", default=False),
+                "add_missing": check_for_attribute(self.data, "add_missing", parent="radarr", var_type="bool", default=False),
                 "add_existing": check_for_attribute(self.data, "add_existing", parent="radarr", var_type="bool", default=False),
                 "root_folder_path": check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True),
                 "monitor": check_for_attribute(self.data, "monitor", parent="radarr", var_type="bool", default=True),
@@ -474,7 +497,7 @@ class ConfigFile:
             self.general["sonarr"] = {
                 "url": check_for_attribute(self.data, "url", parent="sonarr", var_type="url", default_is_none=True),
                 "token": check_for_attribute(self.data, "token", parent="sonarr", default_is_none=True),
-                "add": check_for_attribute(self.data, "add", parent="sonarr", var_type="bool", default=False),
+                "add_missing": check_for_attribute(self.data, "add_missing", parent="sonarr", var_type="bool", default=False),
                 "add_existing": check_for_attribute(self.data, "add_existing", parent="sonarr", var_type="bool", default=False),
                 "root_folder_path": check_for_attribute(self.data, "root_folder_path", parent="sonarr", default_is_none=True),
                 "monitor": check_for_attribute(self.data, "monitor", parent="sonarr", test_list=sonarr.monitor_descriptions, default="all"),
@@ -552,8 +575,8 @@ class ConfigFile:
                 params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
                 params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
                 params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
-                params["radarr_add_all"] = check_for_attribute(lib, "radarr_add_all", var_type="bool", default=False, save=False, do_print=False)
-                params["sonarr_add_all"] = check_for_attribute(lib, "sonarr_add_all", var_type="bool", default=False, save=False, do_print=False)
+                params["radarr_add_all_existing"] = check_for_attribute(lib, "radarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
+                params["sonarr_add_all_existing"] = check_for_attribute(lib, "sonarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
 
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
@@ -573,12 +596,12 @@ class ConfigFile:
                             params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False)
                         if "split_duplicates" in lib["operations"]:
                             params["split_duplicates"] = check_for_attribute(lib["operations"], "split_duplicates", var_type="bool", default=False, save=False)
-                        if "radarr_add_all" in lib["operations"]:
-                            params["radarr_add_all"] = check_for_attribute(lib["operations"], "radarr_add_all", var_type="bool", default=False, save=False)
+                        if "radarr_add_all_existing" in lib["operations"]:
+                            params["radarr_add_all_existing"] = check_for_attribute(lib["operations"], "radarr_add_all_existing", var_type="bool", default=False, save=False)
                         if "radarr_remove_by_tag" in lib["operations"]:
                             params["radarr_remove_by_tag"] = check_for_attribute(lib["operations"], "radarr_remove_by_tag", var_type="comma_list", default=False, save=False)
-                        if "sonarr_add_all" in lib["operations"]:
-                            params["sonarr_add_all"] = check_for_attribute(lib["operations"], "sonarr_add_all", var_type="bool", default=False, save=False)
+                        if "sonarr_add_all_existing" in lib["operations"]:
+                            params["sonarr_add_all_existing"] = check_for_attribute(lib["operations"], "sonarr_add_all_existing", var_type="bool", default=False, save=False)
                         if "sonarr_remove_by_tag" in lib["operations"]:
                             params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
                         if "mass_collection_mode" in lib["operations"]:
@@ -700,7 +723,7 @@ class ConfigFile:
                         library.Radarr = Radarr(self, library, {
                             "url": check_for_attribute(lib, "url", parent="radarr", var_type="url", default=self.general["radarr"]["url"], req_default=True, save=False),
                             "token": check_for_attribute(lib, "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False),
-                            "add": check_for_attribute(lib, "add", parent="radarr", var_type="bool", default=self.general["radarr"]["add"], save=False),
+                            "add_missing": check_for_attribute(lib, "add_missing", parent="radarr", var_type="bool", default=self.general["radarr"]["add_missing"], save=False),
                             "add_existing": check_for_attribute(lib, "add_existing", parent="radarr", var_type="bool", default=self.general["radarr"]["add_existing"], save=False),
                             "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False),
                             "monitor": check_for_attribute(lib, "monitor", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor"], save=False),
@@ -728,7 +751,7 @@ class ConfigFile:
                         library.Sonarr = Sonarr(self, library, {
                             "url": check_for_attribute(lib, "url", parent="sonarr", var_type="url", default=self.general["sonarr"]["url"], req_default=True, save=False),
                             "token": check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False),
-                            "add": check_for_attribute(lib, "add", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add"], save=False),
+                            "add_missing": check_for_attribute(lib, "add_missing", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add_missing"], save=False),
                             "add_existing": check_for_attribute(lib, "add_existing", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add_existing"], save=False),
                             "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="sonarr", default=self.general["sonarr"]["root_folder_path"], req_default=True, save=False),
                             "monitor": check_for_attribute(lib, "monitor", parent="sonarr", test_list=sonarr.monitor_descriptions, default=self.general["sonarr"]["monitor"], save=False),
