@@ -534,7 +534,8 @@ class ConfigFile:
                     "genre_mapper": None,
                     "radarr_remove_by_tag": None,
                     "sonarr_remove_by_tag": None,
-                    "mass_collection_mode": None
+                    "mass_collection_mode": None,
+                    "genre_collections": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -642,6 +643,32 @@ class ConfigFile:
                                         params["genre_mapper"][old_genre] = new_genre
                             else:
                                 logger.error("Config Error: genre_mapper is blank")
+                        if "genre_collections" in lib["operations"]:
+                            params["genre_collections"] = {
+                                "exclude_genres": [],
+                                "dictionary_variables": {},
+                                "title_format": "Top <<genre>> <<library_type>>s",
+                                "template": {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "all": {"genre": "<<genre>>"}}}
+                            }
+                            if lib["operations"]["genre_collections"] and isinstance(lib["operations"]["genre_collections"], dict):
+                                params["genre_collections"]["exclude_genres"] = check_for_attribute(lib["operations"]["genre_collections"], "exclude_genres", var_type="comma_list", default_is_none=True, save=False)
+                                title_format = check_for_attribute(lib["operations"]["genre_collections"], "title_format", default=params["genre_collections"]["title_format"], save=False)
+                                if "<<genre>>" in title_format:
+                                    params["genre_collections"]["title_format"] = title_format
+                                else:
+                                    logger.error(f"Config Error: using default title_format. <<genre>> not in title_format attribute: {title_format} ")
+                                if "dictionary_variables" in lib["operations"]["genre_collections"] and lib["operations"]["genre_collections"]["dictionary_variables"] and isinstance(lib["operations"]["genre_collections"]["dictionary_variables"], dict):
+                                    for key, value in lib["operations"]["genre_collections"]["dictionary_variables"].items():
+                                        if isinstance(value, dict):
+                                            params["genre_collections"]["dictionary_variables"][key] = value
+                                        else:
+                                            logger.warning(f"Config Warning: genre_collections dictionary_variables {key} must be a dictionary")
+                                if "template" in lib["operations"]["genre_collections"] and lib["operations"]["genre_collections"]["template"] and isinstance(lib["operations"]["genre_collections"]["template"], dict):
+                                    params["genre_collections"]["template"] = lib["operations"]["genre_collections"]["template"]
+                                else:
+                                    logger.warning("Config Warning: Using default template for genre_collections")
+                            else:
+                                logger.error("Config Error: genre_collections blank using default settings")
                     else:
                         logger.error("Config Error: operations must be a dictionary")
 

@@ -426,6 +426,7 @@ def library_operations(config, library):
     logger.debug(f"Sonarr Add All Existing: {library.sonarr_add_all_existing}")
     logger.debug(f"Sonarr Remove by Tag: {library.sonarr_remove_by_tag}")
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
+    logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
     logger.debug(f"TMDb Operation: {library.tmdb_library_operation}")
 
@@ -435,11 +436,11 @@ def library_operations(config, library):
             item.split()
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
+    tmdb_collections = {}
     if library.tmdb_library_operation:
         items = library.get_all()
         radarr_adds = []
         sonarr_adds = []
-        tmdb_collections = {}
         trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
         for i, item in enumerate(items, 1):
@@ -605,11 +606,15 @@ def library_operations(config, library):
             except Failed as e:
                 logger.error(e)
 
+    if tmdb_collections or library.genre_collections:
+        logger.info("")
+        util.separator(f"Starting Automated Collections")
+        logger.info("")
+        new_collections = {}
+        templates = {}
+
         if tmdb_collections:
-            logger.info("")
-            util.separator(f"Starting TMDb Collections")
-            logger.info("")
-            new_collections = {}
+            templates["TMDb Collection"] = library.tmdb_collections["template"]
             for _i, _n in tmdb_collections.items():
                 if int(_i) not in library.tmdb_collections["exclude_ids"]:
                     template = {"name": "TMDb Collection", "collection_id": _i}
@@ -620,11 +625,23 @@ def library_operations(config, library):
                         if _n.endswith(suffix):
                             _n = _n[:-len(suffix)]
                     new_collections[_n.strip()] = {"template": template}
-            metadata = MetadataFile(config, library, "Data", {
-                "collections": new_collections,
-                "templates": {"TMDb Collection": library.tmdb_collections["template"]}
-            })
-            run_collection(config, library, metadata, metadata.get_collections(None))
+
+        if library.genre_collections:
+            templates["Genre Collection"] = library.genre_collections["template"]
+            for genre in library.get_genres():
+                if genre not in library.genre_collections["exclude_genres"]:
+                    template = {"name": "Genre Collection", "genre": genre}
+                    for k, v in library.genre_collections["dictionary_variables"]:
+                        if genre in v:
+                            template[k] = v[genre]
+                    title = library.genre_collections["title_format"]
+                    title = title.replace("<<genre>>", genre)
+                    if "<<library_type>>" in title:
+                        title = title.replace("<<library_type>>", library.type)
+                    new_collections[title] = {"template": template}
+
+        metadata = MetadataFile(config, library, "Data", {"collections": new_collections, "templates": templates})
+        run_collection(config, library, metadata, metadata.get_collections(None))
 
     if library.radarr_remove_by_tag:
         library.Radarr.remove_all_with_tags(library.radarr_remove_by_tag)
