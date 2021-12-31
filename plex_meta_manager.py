@@ -32,6 +32,7 @@ parser.add_argument("-co", "--collection-only", "--collections-only", dest="coll
 parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
+parser.add_argument("-dc", "--delete", "--delete-collections", dest="delete", help="Deletes all Collections in the Plex Library before running", action="store_true", default=False)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
 parser.add_argument("-ro", "--read-only-config", dest="read_only_config", help="Run without writing to the config", action="store_true", default=False)
@@ -64,6 +65,7 @@ collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool
 library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
 collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
+delete = get_arg("PMM_DELETE_COLLECTIONS", args.delete, arg_bool=True)
 resume = get_arg("PMM_RESUME", args.resume)
 no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
 no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
@@ -151,6 +153,7 @@ def start(attrs):
     logger.debug(f"--libraries-only (PMM_LIBRARIES_ONLY): {library_only}")
     logger.debug(f"--run-collections (PMM_COLLECTIONS): {collections}")
     logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
+    logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete}")
     logger.debug(f"--resume (PMM_RESUME): {resume}")
     logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
     logger.debug(f"--no-missing (PMM_NO_MISSING): {no_missing}")
@@ -231,6 +234,13 @@ def update_libraries(config):
             logger.debug(f"Optimize: {library.optimize}")
             logger.debug(f"Timeout: {library.timeout}")
 
+            if config.delete_collections:
+                logger.info("")
+                util.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
+                logger.info("")
+                for collection in library.get_all_collections():
+                    logger.info(f"Collection {collection.title} Deleted")
+                    library.query(collection.delete)
             if not library.is_other and not library.is_music:
                 logger.info("")
                 util.separator(f"Mapping {library.name} Library", space=False, border=False)
@@ -1171,6 +1181,7 @@ try:
         start({
             "config_file": config_file,
             "test": test,
+            "delete": delete,
             "collections": collections,
             "libraries": libraries,
             "resume": resume,
@@ -1188,7 +1199,7 @@ try:
                 else:
                     raise Failed(f"Argument Error: blank time argument")
         for time_to_run in valid_times:
-            schedule.every().day.at(time_to_run).do(start, {"config_file": config_file, "time": time_to_run, "trace": trace})
+            schedule.every().day.at(time_to_run).do(start, {"config_file": config_file, "time": time_to_run, "delete": delete, "trace": trace})
         while True:
             schedule.run_pending()
             if not no_countdown:

@@ -469,7 +469,7 @@ class MetadataFile(DataFile):
                         logger.info(f"Updating season {season_id} of {mapping_name}...")
                         try:
                             if isinstance(season_id, int):
-                                season = item.season(seasson=season_id)
+                                season = item.season(season=season_id)
                             else:
                                 season = item.season(title=season_id)
                         except NotFound:
