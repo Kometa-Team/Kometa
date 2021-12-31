@@ -537,6 +537,10 @@ class Plex(Library):
         item.uploadPoster(filepath=image)
         self.reload(item)
 
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def get_genres(self):
+        return [genre.title for genre in self.Plex.listFilterChoices("genre")]
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
