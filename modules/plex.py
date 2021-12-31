@@ -925,7 +925,7 @@ class Plex(Library):
             os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
             logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
         elif isinstance(item, (Movie, Show)) and not overlay and folders and not found_folder:
-            logger.error(f"Asset Warning: No asset folder found called '{name}'")
+            logger.warning(f"Asset Warning: No asset folder found called '{name}'")
         elif isinstance(item, (Movie, Show)) and not poster and not background and self.show_missing_assets:
-            logger.error(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
+            logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
         return None, None
