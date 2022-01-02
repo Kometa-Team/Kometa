@@ -40,7 +40,7 @@ class Library(ABC):
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
-        self.missing_path = os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
+        self.missing_path = params["missing_path"] if params["missing_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
         self.dimensional_asset_rename = params["dimensional_asset_rename"]
