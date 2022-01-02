@@ -779,7 +779,7 @@ class CollectionBuilder:
                 self.details[method_name] = False
             else:
                 try:
-                    util.schedule_check(method_name, self.details[method_name], self.current_time, self.config.run_hour)
+                    util.schedule_check(method_name, self._parse(method_name, method_data), self.current_time, self.config.run_hour)
                     self.details[method_name] = True
                 except NotScheduled:
                     self.details[method_name] = False
