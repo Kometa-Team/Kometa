@@ -86,28 +86,28 @@ class ConfigFile:
                         new_config["libraries"][library]["radarr_add_all_existing"] = new_config["libraries"][library].pop("radarr_add_all")
                     if "sonarr_add_all" in new_config["libraries"][library]:
                         new_config["libraries"][library]["sonarr_add_all_existing"] = new_config["libraries"][library].pop("sonarr_add_all")
-                    if "plex" in new_config["libraries"][library]:
+                    if "plex" in new_config["libraries"][library] and new_config["libraries"][library]["plex"]:
                         replace_attr(new_config["libraries"][library], "asset_directory", "plex")
                         replace_attr(new_config["libraries"][library], "sync_mode", "plex")
                         replace_attr(new_config["libraries"][library], "show_unmanaged", "plex")
                         replace_attr(new_config["libraries"][library], "show_filtered", "plex")
                         replace_attr(new_config["libraries"][library], "show_missing", "plex")
                         replace_attr(new_config["libraries"][library], "save_missing", "plex")
-                    if "settings" in new_config["libraries"][library]:
+                    if "settings" in new_config["libraries"][library] and new_config["libraries"][library]["settings"]:
                         if "collection_minimum" in new_config["libraries"][library]["settings"]:
                             new_config["libraries"][library]["settings"]["minimum_items"] = new_config["libraries"][library]["settings"].pop("collection_minimum")
-                    if "radarr" in new_config["libraries"][library]:
+                    if "radarr" in new_config["libraries"][library] and new_config["libraries"][library]["radarr"]:
                         if "add" in new_config["libraries"][library]["radarr"]:
                             new_config["libraries"][library]["radarr"]["add_missing"] = new_config["libraries"][library]["radarr"].pop("add")
-                    if "sonarr" in new_config["libraries"][library]:
+                    if "sonarr" in new_config["libraries"][library] and new_config["libraries"][library]["sonarr"]:
                         if "add" in new_config["libraries"][library]["sonarr"]:
                             new_config["libraries"][library]["sonarr"]["add_missing"] = new_config["libraries"][library]["sonarr"].pop("add")
-                    if "operations" in new_config["libraries"][library]:
+                    if "operations" in new_config["libraries"][library] and new_config["libraries"][library]["operations"]:
                         if "radarr_add_all" in new_config["libraries"][library]["operations"]:
                             new_config["libraries"][library]["operations"]["radarr_add_all_existing"] = new_config["libraries"][library]["operations"].pop("radarr_add_all")
                         if "sonarr_add_all" in new_config["libraries"][library]["operations"]:
                             new_config["libraries"][library]["operations"]["sonarr_add_all_existing"] = new_config["libraries"][library]["operations"].pop("sonarr_add_all")
-                    if "webhooks" in new_config["libraries"][library] and "collection_changes" not in new_config["libraries"][library]["webhooks"]:
+                    if "webhooks" in new_config["libraries"][library] and new_config["libraries"][library]["webhooks"] and "collection_changes" not in new_config["libraries"][library]["webhooks"]:
                         changes = []
                         def hooks(attr):
                             if attr in new_config["libraries"][library]["webhooks"]:
