@@ -275,7 +275,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
             self.details["delete_not_scheduled"] = self._parse("delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
 
-        if "schedule" in methods and not config.requested_collections:
+        if "schedule" in methods and not self.config.requested_collections and not self.config.ignore_schedules:
             logger.debug("")
             logger.debug("Validating Method: schedule")
             if not self.data[methods["schedule"]]:
@@ -354,23 +354,6 @@ class CollectionBuilder:
                 self.custom_sort = test_sort.lower()
             else:
                 raise Failed(f"{self.Type} Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
-
-        self.custom_sort = self.playlist
-        if "collection_order" in methods and not self.playlist:
-            logger.debug("")
-            logger.debug("Validating Method: collection_order")
-            if self.data[methods["collection_order"]] is None:
-                raise Failed(f"{self.Type} Warning: collection_order attribute is blank")
-            else:
-                logger.debug(f"Value: {self.data[methods['collection_order']]}")
-                if self.data[methods["collection_order"]].lower() in plex.collection_order_options:
-                    self.details["collection_order"] = self.data[methods["collection_order"]].lower()
-                    if self.data[methods["collection_order"]].lower() == "custom" and self.build_collection:
-                        self.custom_sort = True
-                elif (self.library.is_movie and self.data[methods["collection_order"]].lower() in plex.movie_sorts) or (self.library.is_show and self.data[methods["collection_order"]].lower() in plex.show_sorts):
-                    self.custom_sort = self.data[methods["collection_order"]].lower()
-                else:
-                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
 
         self.collection_level = "movie" if self.library.is_movie else "show"
         if self.playlist:
@@ -466,10 +449,30 @@ class CollectionBuilder:
         cant_interact("smart_label_collection", "smart_url", fail=True)
         cant_interact("smart_label_collection", "parts_collection", fail=True)
         cant_interact("smart_url", "parts_collection", fail=True)
-        if self.smart_url or self.smart_label_collection or self.parts_collection:
-            self.custom_sort = False
 
         self.smart = self.smart_url or self.smart_label_collection
+
+        self.custom_sort = self.playlist
+        if "collection_order" in methods and not self.playlist:
+            if self.smart:
+                raise Failed(f"{self.Type} Error: collection_order does not work with Smart Collections")
+            logger.debug("")
+            logger.debug("Validating Method: collection_order")
+            if self.data[methods["collection_order"]] is None:
+                raise Failed(f"{self.Type} Error: collection_order attribute is blank")
+            else:
+                logger.debug(f"Value: {self.data[methods['collection_order']]}")
+                if self.data[methods["collection_order"]].lower() in plex.collection_order_options:
+                    self.details["collection_order"] = self.data[methods["collection_order"]].lower()
+                    if self.data[methods["collection_order"]].lower() == "custom" and self.build_collection:
+                        self.custom_sort = True
+                elif (self.library.is_movie and self.data[methods["collection_order"]].lower() in plex.movie_sorts) or (self.library.is_show and self.data[methods["collection_order"]].lower() in plex.show_sorts):
+                    self.custom_sort = self.data[methods["collection_order"]].lower()
+                else:
+                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_order']]} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
+
+        if self.smart_url or self.smart_label_collection or self.parts_collection:
+            self.custom_sort = False
 
         for method_key, method_data in self.data.items():
             method_name, method_mod, method_final = self._split(method_key)

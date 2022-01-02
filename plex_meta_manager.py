@@ -27,6 +27,7 @@ parser.add_argument("-c", "--config", dest="config", help="Run with desired *.ym
 parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 03:00) (comma-separated list)", default="03:00", type=str)
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
+parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="Run ignoring collection schedules", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
 parser.add_argument("-co", "--collection-only", "--collections-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
 parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
@@ -61,6 +62,7 @@ config_file = get_arg("PMM_CONFIG", args.config)
 times = get_arg("PMM_TIME", args.times)
 run = get_arg("PMM_RUN", args.run, arg_bool=True)
 test = get_arg("PMM_TEST", args.test, arg_bool=True)
+ignore_schedules = get_arg("PMM_IGNORE_SCHEDULES", args.ignore_schedules, arg_bool=True)
 collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
 library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
 collections = get_arg("PMM_COLLECTIONS", args.collections)
@@ -153,6 +155,7 @@ def start(attrs):
     logger.debug(f"--libraries-only (PMM_LIBRARIES_ONLY): {library_only}")
     logger.debug(f"--run-collections (PMM_COLLECTIONS): {collections}")
     logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
+    logger.debug(f"--ignore-schedules (PMM_IGNORE_SCHEDULES): {ignore_schedules}")
     logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete}")
     logger.debug(f"--resume (PMM_RESUME): {resume}")
     logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
@@ -1199,6 +1202,7 @@ try:
             "config_file": config_file,
             "test": test,
             "delete": delete,
+            "ignore_schedules": ignore_schedules,
             "collections": collections,
             "libraries": libraries,
             "resume": resume,
