@@ -47,6 +47,7 @@ class ConfigFile:
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.delete_collections = attrs["delete"] if "delete" in attrs else False
+        self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
         self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
@@ -714,7 +715,7 @@ class ConfigFile:
                     params["default_dir"] = default_dir
 
                     params["skip_library"] = False
-                    if lib and "schedule" in lib:
+                    if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules:
                         if not lib["schedule"]:
                             raise Failed(f"Config Error: schedule attribute is blank")
                         else:
