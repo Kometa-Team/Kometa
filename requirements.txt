@@ -7,4 +7,4 @@ ruamel.yaml==0.17.19
 schedule==1.1.0
 retrying==1.3.3
 pathvalidate==2.5.0
-pillow==8.4.0
+pillow==9.0.0
