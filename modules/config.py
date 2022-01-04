@@ -48,6 +48,7 @@ class ConfigFile:
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.delete_collections = attrs["delete"] if "delete" in attrs else False
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
+        self.library_first = attrs["library_first"] if "library_first" in attrs else False
         self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
@@ -148,12 +149,12 @@ class ConfigFile:
             if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
             if "radarr" in new_config:
                 temp = new_config.pop("radarr")
-                if "add" in temp:
+                if temp and "add" in temp:
                     temp["add_missing"] = temp.pop("add")
                 new_config["radarr"] = temp
             if "sonarr" in new_config:
                 temp = new_config.pop("sonarr")
-                if "add" in temp:
+                if temp and "add" in temp:
                     temp["add_missing"] = temp.pop("add")
                 new_config["sonarr"] = temp
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
