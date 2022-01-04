@@ -491,9 +491,9 @@ class CollectionBuilder:
                 elif not self.config.Trakt and "trakt" in method_name:
                     raise Failed(f"{self.Type} Error: {method_final} requires Trakt to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
-                    raise Failed(f"{self.Type} Error: {method_final} requires Radarr to be configured")
+                    logger.error(f"{self.Type} Error: {method_final} requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
-                    raise Failed(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
+                    logger.error(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
                     raise Failed(f"{self.Type} Error: {method_final} requires Tautulli to be configured")
                 elif not self.config.MyAnimeList and "mal" in method_name:
@@ -1226,7 +1226,7 @@ class CollectionBuilder:
         if "plex" in method:
             return self.library.get_rating_keys(method, value)
         elif "tautulli" in method:
-            return self.library.Tautulli.get_rating_keys(self.library, value)
+            return self.library.Tautulli.get_rating_keys(self.library, value, self.playlist)
         elif "anidb" in method:
             anidb_ids = self.config.AniDB.get_anidb_ids(method, value, self.language)
             return self.config.Convert.anidb_to_ids(anidb_ids, self.library)

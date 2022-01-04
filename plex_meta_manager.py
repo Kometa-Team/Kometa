@@ -31,6 +31,7 @@ parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
 parser.add_argument("-co", "--collection-only", "--collections-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
 parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
+parser.add_argument("-lof", "--library-first", "--libraries-first", dest="library_first", help="Run library operations before collections", action="store_true", default=False)
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-dc", "--delete", "--delete-collections", dest="delete", help="Deletes all Collections in the Plex Library before running", action="store_true", default=False)
@@ -65,6 +66,7 @@ test = get_arg("PMM_TEST", args.test, arg_bool=True)
 ignore_schedules = get_arg("PMM_IGNORE_SCHEDULES", args.ignore_schedules, arg_bool=True)
 collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
 library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
+library_first = get_arg("PMM_LIBRARIES_FIRST", args.library_first, arg_bool=True)
 collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
 delete = get_arg("PMM_DELETE_COLLECTIONS", args.delete, arg_bool=True)
@@ -153,6 +155,7 @@ def start(attrs):
     logger.debug(f"--run-tests (PMM_TEST): {test}")
     logger.debug(f"--collections-only (PMM_COLLECTIONS_ONLY): {collection_only}")
     logger.debug(f"--libraries-only (PMM_LIBRARIES_ONLY): {library_only}")
+    logger.debug(f"--libraries-first (PMM_LIBRARIES_FIRST): {library_first}")
     logger.debug(f"--run-collections (PMM_COLLECTIONS): {collections}")
     logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
     logger.debug(f"--ignore-schedules (PMM_IGNORE_SCHEDULES): {ignore_schedules}")
@@ -190,7 +193,7 @@ def start(attrs):
         except Failed as e:
             util.print_stacktrace()
             logger.error(f"Webhooks Error: {e}")
-    util.separator(f"Finished {start_type}Run\nRun Time: {run_time}")
+    util.separator(f"Finished {start_type}Run\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
     logger.removeHandler(file_handler)
 
 def update_libraries(config):
@@ -212,6 +215,9 @@ def update_libraries(config):
             plexapi.server.TIMEOUT = library.timeout
             logger.info("")
             util.separator(f"{library.name} Library")
+
+            if config.library_first and library.library_operation and not config.test_mode and not collection_only:
+                library_operations(config, library)
 
             logger.debug("")
             logger.debug(f"Mapping Name: {library.original_mapping_name}")
@@ -279,7 +285,7 @@ def update_libraries(config):
                     logger.info("")
                     builder.sort_collection()
 
-            if library.library_operation and not config.test_mode and not collection_only:
+            if not config.library_first and library.library_operation and not config.test_mode and not collection_only:
                 library_operations(config, library)
 
             logger.removeHandler(library_handler)
@@ -1205,6 +1211,7 @@ try:
             "ignore_schedules": ignore_schedules,
             "collections": collections,
             "libraries": libraries,
+            "library_first": library_first,
             "resume": resume,
             "trace": trace
         })
@@ -1220,7 +1227,7 @@ try:
                 else:
                     raise Failed(f"Argument Error: blank time argument")
         for time_to_run in valid_times:
-            schedule.every().day.at(time_to_run).do(start, {"config_file": config_file, "time": time_to_run, "delete": delete, "trace": trace})
+            schedule.every().day.at(time_to_run).do(start, {"config_file": config_file, "time": time_to_run, "delete": delete, "library_first": library_first, "trace": trace})
         while True:
             schedule.run_pending()
             if not no_countdown:
