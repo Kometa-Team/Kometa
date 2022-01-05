@@ -810,15 +810,22 @@ class CollectionBuilder:
             self.item_details["apply_tags"] = method_mod[1:] if method_mod else ""
         elif method_name == "item_overlay":
             if isinstance(method_data, dict):
-                if "name" not in method_data or "url" not in method_data or not method_data["name"] or not method_data["url"]:
-                    raise Failed(f"{self.Type} Error: item_overlay must have both name and url attributes")
+                if "name" not in method_data or not method_data["name"]:
+                    raise Failed(f"{self.Type} Error: item_overlay must have the name attribute")
+                if "git" in method_data and method_data["git"]:
+                    url = f"https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/{method_data['git']}.png"
+                elif "url" in method_data and method_data["url"]:
+                    url = method_data["url"]
+                else:
+                    raise Failed(f"{self.Type} Error: item_overlay must have either the git or url attribute")
                 name = method_data["name"]
-                response = self.config.get(method_data["url"])
+                response = self.config.get(url)
                 if response.status_code >= 400:
-                    raise Failed(f"{self.Type} Error: Overlay Image not found at: {method_data['url']}")
+                    raise Failed(f"{self.Type} Error: Overlay Image not found at: {url}")
                 overlay_dir = os.path.join(self.config.default_dir, "overlays", name)
                 if not os.path.exists(overlay_dir) or not os.path.isdir(overlay_dir):
-                    raise Failed(f"{self.Type} Error: Overlay Folder not found at: {overlay_dir}")
+                    os.makedirs(overlay_dir, exist_ok=False)
+                    logger.info(f"Creating Overlay Folder found at: {overlay_dir}")
                 overlay = os.path.join(overlay_dir, "overlay.png")
                 with open(overlay, "wb") as handler:
                     handler.write(response.content)
