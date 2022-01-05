@@ -80,7 +80,10 @@ class Cache:
                     imdb_votes INTEGER,
                     metacritic_rating INTEGER,
                     type TEXT,
-                    expiration_date TEXT)"""
+                    expiration_date TEXT,
+                    series_id TEXT,
+                    season_num INTEGER,
+                    episode_num INTEGER)"""
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS anime_map (

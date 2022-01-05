@@ -1308,21 +1308,24 @@ class CollectionBuilder:
                     elif id_type in ["tvdb_episode", "imdb"] and self.collection_level == "episode":
                         if id_type == "tvdb_episode":
                             show_id, season_num, episode_num = input_id.split("_")
+                            fetch_id = int(self.library.show_map[show_id][0])
                         elif id_type == "imdb" and input_id not in self.ignore_imdb_ids:
                             try:
-                                _id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
-                                if tmdb_type != "episode":
-                                    continue
-                                tmdb_id, season_num, episode_num = _id.split("_")
-                                show_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
-                            except Failed as e:
+                                omdb_item = self.config.OMDb.get_omdb(input_id)
+                                show_id = omdb_item.series_id
+                                season_num = omdb_item.season_num
+                                episode_num = omdb_item.episode_num
+                                if show_id is None or season_num is None or episode_num is None:
+                                    raise Failed(f"Convert Error: Failed to find episode information for IMDB ID: {input_id}")
+                                fetch_id = self.library.imdb_map[show_id][0]
+                            except (Failed, KeyError) as e:
                                 logger.error(e)
                                 continue
                         else:
                             continue
-                        show_id = int(show_id)
-                        if show_id in self.library.show_map:
-                            show_item = self.library.fetchItem(self.library.show_map[show_id][0])
+                        if show_id in self.library.show_map or show_id in self.library.imdb_map:
+                            logger.debug(f"Fetch ID: {fetch_id}")
+                            show_item = self.library.fetchItem(fetch_id)
                             try:
                                 items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
                             except NotFound:
