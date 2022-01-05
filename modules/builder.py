@@ -1,4 +1,4 @@
-import logging, os, re
+import logging, os, re, time
 from datetime import datetime, timedelta
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
 from modules.util import Failed, ImageData, NotScheduled
@@ -809,13 +809,30 @@ class CollectionBuilder:
             self.item_details[method_name] = util.get_list(method_data, lower=True)
             self.item_details["apply_tags"] = method_mod[1:] if method_mod else ""
         elif method_name == "item_overlay":
-            overlay = os.path.join(self.config.default_dir, "overlays", method_data, "overlay.png")
+            if isinstance(method_data, dict):
+                if "name" not in method_data or "url" not in method_data or not method_data["name"] or not method_data["url"]:
+                    raise Failed(f"{self.Type} Error: item_overlay must have both name and url attributes")
+                name = method_data["name"]
+                response = self.config.get(method_data["url"])
+                if response.status_code >= 400:
+                    raise Failed(f"{self.Type} Error: Overlay Image not found at: {method_data['url']}")
+                overlay_dir = os.path.join(self.config.default_dir, "overlays", name)
+                if not os.path.exists(overlay_dir) or not os.path.isdir(overlay_dir):
+                    raise Failed(f"{self.Type} Error: Overlay Folder not found at: {overlay_dir}")
+                overlay = os.path.join(overlay_dir, "overlay.png")
+                with open(overlay, "wb") as handler:
+                    handler.write(response.content)
+                while util.is_locked(overlay):
+                    time.sleep(1)
+            else:
+                overlay = os.path.join(self.config.default_dir, "overlays", method_data, "overlay.png")
+                name = method_data
             if not os.path.exists(overlay):
-                raise Failed(f"{self.Type} Error: {method_data} overlay image not found at {overlay}")
-            if method_data in self.library.overlays:
+                raise Failed(f"{self.Type} Error: {name} overlay image not found at {overlay}")
+            if name in self.library.overlays:
                 raise Failed("Each Overlay can only be used once per Library")
-            self.library.overlays.append(method_data)
-            self.item_details[method_name] = method_data
+            self.library.overlays.append(name)
+            self.item_details[method_name] = name
         elif method_name in item_bool_details:
             if self._parse(method_name, method_data, datatype="bool", default=False):
                 self.item_details[method_name] = True

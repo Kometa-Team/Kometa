@@ -89,7 +89,7 @@ class Library(ABC):
                                       or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing
         self.library_operation = self.tmdb_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
-                                 or self.genre_collections or self.genre_mapper
+                                 or self.genre_collections or self.genre_mapper or self.show_unmanaged
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":
@@ -158,7 +158,7 @@ class Library(ABC):
             if poster_uploaded or image is None or image != item.thumb or f"{overlay_name.lower()} overlay" not in item_labels:
                 if not item.posterUrl:
                     raise Failed(f"Overlay Error: No existing poster to Overlay for {item.title}")
-                response = requests.get(item.posterUrl)
+                response = self.config.get(item.posterUrl)
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
                 og_image = response.content
