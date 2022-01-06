@@ -109,7 +109,7 @@ sonarr_details = [
 ]
 album_details = ["item_label", "item_album_sorting"]
 filters_by_type = {
-    "movie_show_season_episode_artist_album_track": ["title", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
+    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
     "movie_show_season_episode_album_track": ["year"],
     "movie_show_episode_artist_track": ["filepath"],
     "movie_show_episode_album": ["release", "critic_rating", "history"],
@@ -134,7 +134,7 @@ filters = {
     "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
 }
 tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "first_episode_aired", "last_episode_aired"]
-string_filters = ["title", "studio", "record_label", "filepath", "audio_track_title"]
+string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
@@ -1616,7 +1616,7 @@ class CollectionBuilder:
                     else:
                         logger.error(err)
             return valid_regex
-        elif attribute in plex.string_attributes + ["audio_track_title"] and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
+        elif attribute in plex.string_attributes + string_filters and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "original_language":
             return util.get_list(data, lower=True)
@@ -1856,10 +1856,10 @@ class CollectionBuilder:
                         continue
                 if filter_attr not in filters[item_type]:
                     continue
-                elif filter_attr in ["release", "added", "last_played"]:
+                elif filter_attr in date_filters:
                     if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, self.current_time):
                         return False
-                elif filter_attr in ["audio_track_title", "filepath", "title", "studio"]:
+                elif filter_attr in string_filters:
                     values = []
                     if filter_attr == "audio_track_title":
                         for media in item.media:
@@ -1867,7 +1867,7 @@ class CollectionBuilder:
                                 values.extend([a.title for a in part.audioStreams() if a.title])
                     elif filter_attr == "filepath":
                         values = [loc for loc in item.locations]
-                    elif filter_attr in ["title", "studio"]:
+                    else:
                         values = [getattr(item, filter_actual)]
                     if util.is_string_filter(values, modifier, filter_data):
                         return False
