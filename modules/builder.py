@@ -1,7 +1,7 @@
 import logging, os, re, time
 from datetime import datetime, timedelta
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
-from modules.util import Failed, ImageData, NotScheduled
+from modules.util import Failed, ImageData, NotScheduled, NotScheduledRange
 from PIL import Image
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
@@ -275,16 +275,23 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
             self.details["delete_not_scheduled"] = self._parse("delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
 
-        if "schedule" in methods and not self.config.requested_collections and not self.config.ignore_schedules:
+        if "schedule" in methods and not self.config.requested_collections:
             logger.debug("")
             logger.debug("Validating Method: schedule")
             if not self.data[methods["schedule"]]:
                 raise Failed(f"{self.Type} Error: schedule attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['schedule']]}")
+                e = None
+                not_running = False
                 try:
                     util.schedule_check("schedule", self.data[methods['schedule']], self.current_time, self.config.run_hour)
+                except NotScheduledRange as e:
+                    not_running = True
                 except NotScheduled as e:
+                    if not self.config.ignore_schedules:
+                        not_running = True
+                if not_running:
                     suffix = ""
                     if self.details["delete_not_scheduled"]:
                         try:
