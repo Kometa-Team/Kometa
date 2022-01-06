@@ -219,8 +219,8 @@ class ConfigFile:
                         if len(warning_message) > 0:
                             warning_message += "\n"
                         warning_message += f"Config Warning: Path does not exist: {os.path.abspath(p)}"
-                if do_print:
-                    util.print_multiline(f"Config Warning: {warning_message}")
+                if do_print and warning_message:
+                    util.print_multiline(warning_message)
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
             elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
