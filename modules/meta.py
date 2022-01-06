@@ -74,14 +74,14 @@ class DataFile:
             util.print_stacktrace()
             raise Failed(f"YAML Error: {e}")
 
-    def apply_template(self, name, data, template):
+    def apply_template(self, name, data, template_call):
         if not self.templates:
             raise Failed(f"{self.data_type} Error: No templates found")
-        elif not template:
+        elif not template_call:
             raise Failed(f"{self.data_type} Error: template attribute is blank")
         else:
-            logger.debug(f"Value: {template}")
-            for variables in util.get_list(template, split=False):
+            logger.debug(f"Value: {template_call}")
+            for variables in util.get_list(template_call, split=False):
                 if not isinstance(variables, dict):
                     raise Failed(f"{self.data_type} Error: template attribute is not a dictionary")
                 elif "name" not in variables:
@@ -93,9 +93,10 @@ class DataFile:
                 elif not isinstance(self.templates[variables["name"]], dict):
                     raise Failed(f"{self.data_type} Error: template {variables['name']} is not a dictionary")
                 else:
+                    optional = []
                     for tm in variables:
-                        if not variables[tm]:
-                            raise Failed(f"{self.data_type} Error: template sub-attribute {tm} is blank")
+                        if variables[tm] is None:
+                            optional.append(str(tm))
                     if self.data_type == "Collection" and "collection_name" not in variables:
                         variables["collection_name"] = str(name)
                     if self.data_type == "Playlist" and "playlist_name" not in variables:
@@ -109,16 +110,21 @@ class DataFile:
                         if template["default"]:
                             if isinstance(template["default"], dict):
                                 for dv in template["default"]:
-                                    if template["default"][dv]:
-                                        default[dv] = template["default"][dv]
-                                    else:
-                                        raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
+                                    if str(dv) not in optional:
+                                        if template["default"][dv] is not None:
+                                            final_value = str(template["default"][dv])
+                                            if "<<collection_name>>" in final_value:
+                                                final_value = final_value.replace("<<collection_name>>", str(name))
+                                            if "<<playlist_name>>" in final_value:
+                                                final_value = final_value.replace("<<playlist_name>>", str(name))
+                                            default[dv] = final_value
+                                        else:
+                                            raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
                             else:
                                 raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
 
-                    optional = []
                     if "optional" in template:
                         if template["optional"]:
                             for op in util.get_list(template["optional"]):
