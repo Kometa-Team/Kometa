@@ -2252,12 +2252,18 @@ class CollectionBuilder:
             self.library.edit_query(self.obj, edits)
             logger.info("Details: have been updated")
 
+        poster_image = None
+        background_image = None
+        asset_location = None
         if self.library.asset_directory:
             name_mapping = self.name
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
-            poster_image, background_image = self.library.find_assets(self.obj, name=name_mapping, upload=False, folders=self.details["asset_folders"], create=self.details["create_asset_folders"])
+            poster_image, background_image, asset_location = self.library.find_assets(
+                self.obj, name=name_mapping, upload=False,
+                folders=self.details["asset_folders"], create=self.details["create_asset_folders"]
+            )
             if poster_image:
                 self.posters["asset_directory"] = poster_image
             if background_image:
@@ -2269,7 +2275,21 @@ class CollectionBuilder:
             for p in self.posters:
                 logger.debug(f"Method: {p} Poster: {self.posters[p]}")
 
-            if "url_poster" in self.posters:                    self.collection_poster = ImageData("url_poster", self.posters["url_poster"])
+            if "url_poster" in self.posters:
+                if self.library.download_url_assets and asset_location:
+                    if poster_image:
+                        self.collection_poster = self.posters["asset_directory"]
+                    else:
+                        response = self.config.get(self.posters["url_poster"], headers=util.header())
+                        if response.status_code >= 400 or "Content-Type" not in response.headers or response.headers["Content-Type"] not in ["image/png", "image/jpeg"]:
+                            logger.error(f"Image Error: Failed to parse Image at {self.posters['url_poster']}")
+                        else:
+                            new_image = os.path.join(asset_location, f"poster{'.png' if response.headers['Content-Type'] == 'image/png' else '.jpg'}")
+                            with open(new_image, "wb") as handler:
+                                handler.write(response.content)
+                            self.collection_poster = ImageData("asset_directory", new_image, prefix=f"{self.obj.title}'s ", is_url=False)
+                if not self.collection_poster:
+                    self.collection_poster = ImageData("url_poster", self.posters["url_poster"])
             elif "file_poster" in self.posters:                 self.collection_poster = ImageData("file_poster", self.posters["file_poster"], is_url=False)
             elif "tmdb_poster" in self.posters:                 self.collection_poster = ImageData("tmdb_poster", self.posters["tmdb_poster"])
             elif "tmdb_profile" in self.posters:                self.collection_poster = ImageData("tmdb_poster", self.posters["tmdb_profile"])
@@ -2295,7 +2315,21 @@ class CollectionBuilder:
             for b in self.backgrounds:
                 logger.debug(f"Method: {b} Background: {self.backgrounds[b]}")
 
-            if "url_background" in self.backgrounds:            self.collection_background = ImageData("url_background", self.backgrounds["url_background"], is_poster=False)
+            if "url_background" in self.backgrounds:
+                if self.library.download_url_assets and asset_location:
+                    if background_image:
+                        self.collection_background = self.backgrounds["asset_directory"]
+                    else:
+                        response = self.config.get(self.backgrounds["url_background"], headers=util.header())
+                        if response.status_code >= 400 or "Content-Type" not in response.headers or response.headers["Content-Type"] not in ["image/png", "image/jpeg"]:
+                            logger.error(f"Image Error: Failed to parse Image at {self.backgrounds['url_background']}")
+                        else:
+                            new_image = os.path.join(asset_location, f"background{'.png' if response.headers['Content-Type'] == 'image/png' else '.jpg'}")
+                            with open(new_image, "wb") as handler:
+                                handler.write(response.content)
+                            self.collection_background = ImageData("asset_directory", new_image, prefix=f"{self.obj.title}'s ", is_url=False, is_poster=False)
+                if not self.collection_background:
+                    self.collection_background = ImageData("url_background", self.backgrounds["url_background"], is_poster=False)
             elif "file_background" in self.backgrounds:         self.collection_background = ImageData("file_background", self.backgrounds["file_background"], is_poster=False, is_url=False)
             elif "tmdb_background" in self.backgrounds:         self.collection_background = ImageData("tmdb_background", self.backgrounds["tmdb_background"], is_poster=False)
             elif "tvdb_background" in self.backgrounds:         self.collection_background = ImageData("tvdb_background", self.backgrounds["tvdb_background"], is_poster=False)
