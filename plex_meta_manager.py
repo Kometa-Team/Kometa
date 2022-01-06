@@ -627,7 +627,7 @@ def library_operations(config, library):
             for _i, _n in tmdb_collections.items():
                 if int(_i) not in library.tmdb_collections["exclude_ids"]:
                     template = {"name": "TMDb Collection", "collection_id": _i}
-                    for k, v in library.tmdb_collections["dictionary_variables"]:
+                    for k, v in library.tmdb_collections["dictionary_variables"].items():
                         if int(_i) in v:
                             template[k] = v[int(_i)]
                     for suffix in library.tmdb_collections["remove_suffix"]:
@@ -640,7 +640,7 @@ def library_operations(config, library):
             for genre in library.get_genres():
                 if genre not in library.genre_collections["exclude_genres"]:
                     template = {"name": "Genre Collection", "genre": genre}
-                    for k, v in library.genre_collections["dictionary_variables"]:
+                    for k, v in library.genre_collections["dictionary_variables"].items():
                         if genre in v:
                             template[k] = v[genre]
                     title = library.genre_collections["title_format"]
