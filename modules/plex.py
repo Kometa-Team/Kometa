@@ -827,12 +827,12 @@ class Plex(Library):
         elif isinstance(item, Collection):
             name = name if name else item.title
         else:
-            return None, None
+            return None, None, None
         if not folders:
             folders = self.asset_folders
         if not create:
             create = self.create_asset_folders
-        found_folder = False
+        found_folder = None
         poster = None
         background = None
         for ad in self.asset_directory:
@@ -851,7 +851,7 @@ class Plex(Library):
                             break
                 if item_dir is None:
                     continue
-                found_folder = True
+                found_folder = item_dir
                 poster_filter = os.path.join(item_dir, "poster.*")
                 background_filter = os.path.join(item_dir, "background.*")
             else:
@@ -887,7 +887,7 @@ class Plex(Library):
                 if upload:
                     self.upload_images(item, poster=poster, background=background, overlay=overlay)
                 else:
-                    return poster, background
+                    return poster, background, item_dir
             if isinstance(item, Show):
                 missing_assets = ""
                 found_season = False
@@ -923,13 +923,15 @@ class Plex(Library):
                             self.upload_images(episode, poster=episode_poster)
                 if self.show_missing_season_assets and found_season and missing_assets:
                     util.print_multiline(f"Missing Season Posters for {item.title}{missing_assets}", info=True)
+
         if isinstance(item, (Movie, Show)) and not poster and overlay:
             self.upload_images(item, overlay=overlay)
         if create and folders and not found_folder:
-            os.makedirs(os.path.join(self.asset_directory[0], name), exist_ok=True)
-            logger.info(f"Asset Directory Created: {os.path.join(self.asset_directory[0], name)}")
+            found_folder = os.path.join(self.asset_directory[0], name)
+            os.makedirs(found_folder, exist_ok=True)
+            logger.info(f"Asset Directory Created: {found_folder}")
         elif isinstance(item, (Movie, Show)) and not overlay and folders and not found_folder:
             logger.warning(f"Asset Warning: No asset folder found called '{name}'")
         elif isinstance(item, (Movie, Show)) and not poster and not background and self.show_missing_assets:
             logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
-        return None, None
+        return None, None, found_folder

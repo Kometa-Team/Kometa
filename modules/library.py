@@ -44,6 +44,7 @@ class Library(ABC):
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
         self.dimensional_asset_rename = params["dimensional_asset_rename"]
+        self.download_url_assets = params["download_url_assets"]
         self.show_missing_season_assets = params["show_missing_season_assets"]
         self.sync_mode = params["sync_mode"]
         self.default_collection_order = params["default_collection_order"]
