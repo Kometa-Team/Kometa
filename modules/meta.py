@@ -93,11 +93,15 @@ class DataFile:
                 elif not isinstance(self.templates[variables["name"]], dict):
                     raise Failed(f"{self.data_type} Error: template {variables['name']} is not a dictionary")
                 else:
-                    optional = []
+                    remove_variables = []
                     for tm in variables:
                         if variables[tm] is None:
-                            optional.append(str(tm))
-                            variables.pop(tm)
+                            remove_variables.append(tm)
+                    optional = []
+                    for remove_variable in remove_variables:
+                        variables.pop(remove_variable)
+                        optional.append(str(remove_variable))
+
                     if self.data_type == "Collection" and "collection_name" not in variables:
                         variables["collection_name"] = str(name)
                     if self.data_type == "Playlist" and "playlist_name" not in variables:
