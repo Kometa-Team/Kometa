@@ -1308,27 +1308,50 @@ class CollectionBuilder:
                     elif id_type in ["tvdb_episode", "imdb"] and self.collection_level == "episode":
                         if id_type == "tvdb_episode":
                             show_id, season_num, episode_num = input_id.split("_")
+                            show_id = int(show_id)
                         elif id_type == "imdb" and input_id not in self.ignore_imdb_ids:
                             try:
                                 _id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
                                 if tmdb_type != "episode":
-                                    continue
+                                    raise Failed
                                 tmdb_id, season_num, episode_num = _id.split("_")
                                 show_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
                             except Failed as e:
-                                logger.error(e)
-                                continue
+                                if self.config.OMDb:
+                                    try:
+                                        if self.config.OMDb.limit:
+                                            raise Failed(f" and OMDb limit reached.")
+                                        omdb_item = self.config.OMDb.get_omdb(input_id)
+                                        show_id = omdb_item.series_id
+                                        season_num = omdb_item.season_num
+                                        episode_num = omdb_item.episode_num
+                                        if not show_id or not season_num or not episode_num:
+                                            raise Failed(f" and OMDb metadata lookup Failed for IMDb ID: {input_id}")
+                                    except Failed as ee:
+                                        logger.error(f"{e}{ee}")
+                                        continue
+                                else:
+                                    logger.error(e)
+                                    continue
                         else:
                             continue
-                        show_id = int(show_id)
-                        if show_id in self.library.show_map:
-                            show_item = self.library.fetchItem(self.library.show_map[show_id][0])
+                        if show_id in self.library.show_map or show_id in self.library.imdb_map:
+                            show_item = self.library.fetchItem(self.library.show_map[show_id][0] if show_id in self.library.show_map else self.library.imdb_map[show_id][0])
                             try:
                                 items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
                             except NotFound:
                                 self.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
-                        elif show_id not in self.missing_shows:
-                            self.missing_shows.append(show_id)
+                        else:
+                            if isinstance(show_id, str) and self.do_missing:
+                                try:
+                                    tmdb_id, _ = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
+                                    tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
+                                    if tvdb_id not in self.missing_shows:
+                                        self.missing_shows.append(tvdb_id)
+                                except Failed as e:
+                                    logger.error(e)
+                            elif show_id not in self.missing_shows:
+                                self.missing_shows.append(show_id)
                     else:
                         rating_keys = []
                         if id_type == "ratingKey":
