@@ -22,6 +22,7 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS imdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS tmdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS imdb_map")
+                cursor.execute("DROP TABLE IF EXISTS omdb_data")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guids_map (
                     key INTEGER PRIMARY KEY,
@@ -69,7 +70,7 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS omdb_data (
+                    """CREATE TABLE IF NOT EXISTS omdb_data2 (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     title TEXT,
@@ -80,6 +81,9 @@ class Cache:
                     imdb_votes INTEGER,
                     metacritic_rating INTEGER,
                     type TEXT,
+                    series_id TEXT,
+                    season_num INTEGER,
+                    episode_num INTEGER,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
@@ -235,7 +239,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM omdb_data WHERE imdb_id = ?", (imdb_id,))
+                cursor.execute("SELECT * FROM omdb_data2 WHERE imdb_id = ?", (imdb_id,))
                 row = cursor.fetchone()
                 if row:
                     omdb_dict["imdbID"] = row["imdb_id"] if row["imdb_id"] else None
@@ -247,6 +251,9 @@ class Cache:
                     omdb_dict["imdbVotes"] = row["imdb_votes"] if row["imdb_votes"] else None
                     omdb_dict["Metascore"] = row["metacritic_rating"] if row["metacritic_rating"] else None
                     omdb_dict["Type"] = row["type"] if row["type"] else None
+                    omdb_dict["seriesID"] = row["series_id"] if row["series_id"] else None
+                    omdb_dict["Season"] = row["season_num"] if row["season_num"] else None
+                    omdb_dict["Episode"] = row["episode_num"] if row["episode_num"] else None
                     omdb_dict["Response"] = "True"
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
@@ -258,9 +265,14 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO omdb_data(imdb_id) VALUES(?)", (omdb.imdb_id,))
-                update_sql = "UPDATE omdb_data SET title = ?, year = ?, content_rating = ?, genres = ?, imdb_rating = ?, imdb_votes = ?, metacritic_rating = ?, type = ?, expiration_date = ? WHERE imdb_id = ?"
-                cursor.execute(update_sql, (omdb.title, omdb.year, omdb.content_rating, omdb.genres_str, omdb.imdb_rating, omdb.imdb_votes, omdb.metacritic_rating, omdb.type, expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
+                cursor.execute("INSERT OR IGNORE INTO omdb_data2(imdb_id) VALUES(?)", (omdb.imdb_id,))
+                update_sql = "UPDATE omdb_data2 SET title = ?, year = ?, content_rating = ?, genres = ?, " \
+                             "imdb_rating = ?, imdb_votes = ?, metacritic_rating = ?, type = ?, series_id = ?, " \
+                             "season_num = ?, episode_num = ?, expiration_date = ? WHERE imdb_id = ?"
+                cursor.execute(update_sql, (omdb.title, omdb.year, omdb.content_rating, omdb.genres_str,
+                                            omdb.imdb_rating, omdb.imdb_votes, omdb.metacritic_rating, omdb.type,
+                                            omdb.series_id, omdb.season_num, omdb.episode_num,
+                                            expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
 
     def query_anime_map(self, anime_id, id_type):
         ids = None

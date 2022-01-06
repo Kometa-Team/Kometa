@@ -34,6 +34,19 @@ class OMDbObj:
             self.metacritic_rating = None
         self.imdb_id = data["imdbID"]
         self.type = data["Type"]
+        try:
+            self.series_id = data["seriesID"]
+        except (ValueError, TypeError, KeyError):
+            self.series_id = None
+        try:
+            self.season_num = int(data["Season"])
+        except (ValueError, TypeError, KeyError):
+            self.season_num = None
+        try:
+            self.episode_num = int(data["Episode"])
+        except (ValueError, TypeError, KeyError):
+            self.episode_num = None
+
 
 class OMDb:
     def __init__(self, config, params):
