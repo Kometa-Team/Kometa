@@ -97,6 +97,7 @@ class DataFile:
                     for tm in variables:
                         if variables[tm] is None:
                             optional.append(str(tm))
+                            variables.pop(tm)
                     if self.data_type == "Collection" and "collection_name" not in variables:
                         variables["collection_name"] = str(name)
                     if self.data_type == "Playlist" and "playlist_name" not in variables:
