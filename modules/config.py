@@ -256,6 +256,10 @@ class ConfigFile:
             return default
 
         self.session = requests.Session()
+        self.session.verify = False
+        if self.session.verify is False:
+            import urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         self.general = {
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
@@ -585,7 +589,7 @@ class ConfigFile:
                 params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
                 params["radarr_add_all_existing"] = check_for_attribute(lib, "radarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
                 params["sonarr_add_all_existing"] = check_for_attribute(lib, "sonarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
-                params["missing_path"] = check_for_attribute(lib, "missing_path", var_type="path", default_is_none=True, save=False, do_print=True)
+                params["missing_path"] = check_for_attribute(lib, "missing_path", var_type="path", default_is_none=True, save=False)
 
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
