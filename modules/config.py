@@ -255,12 +255,6 @@ class ConfigFile:
                     util.print_multiline(options)
             return default
 
-        self.session = requests.Session()
-        self.session.verify = False
-        if self.session.verify is False:
-            import urllib3
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
         self.general = {
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60),
@@ -289,8 +283,17 @@ class ConfigFile:
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
             "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
             "playlist_sync_to_user": check_for_attribute(self.data, "playlist_sync_to_user", parent="settings", default="all", default_is_none=True),
+            "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
+
+        self.session = requests.Session()
+        if not self.general["verify_ssl"]:
+            self.session.verify = False
+            if self.session.verify is False:
+                import urllib3
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         self.webhooks = {
             "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
             "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
