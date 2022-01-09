@@ -45,7 +45,7 @@ method_alias = {
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
     "mal_producer": "mal_studio", "mal_licensor": "mal_studio",
     "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
-    "collection_changes_webhooks": "changes_webhooks",
+    "collection_changes_webhooks": "changes_webhooks", "sort_by": "collection_order",
     "radarr_add": "radarr_add_missing", "sonarr_add": "sonarr_add_missing",
 }
 filter_translation = {
@@ -282,16 +282,15 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: schedule attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['schedule']]}")
-                e = None
-                not_running = False
+                err = None
                 try:
                     util.schedule_check("schedule", self.data[methods['schedule']], self.current_time, self.config.run_hour)
                 except NotScheduledRange as e:
-                    not_running = True
+                    err = e
                 except NotScheduled as e:
                     if not self.config.ignore_schedules:
-                        not_running = True
-                if not_running:
+                        err = e
+                if err:
                     suffix = ""
                     if self.details["delete_not_scheduled"]:
                         try:
@@ -301,7 +300,7 @@ class CollectionBuilder:
                             suffix = f" and was deleted"
                         except Failed:
                             suffix = f" and could not be found to delete"
-                    raise NotScheduled(f"{e}\n\n{self.Type} {self.name} not scheduled to run{suffix}")
+                    raise NotScheduled(f"{err}\n\n{self.Type} {self.name} not scheduled to run{suffix}")
 
         self.collectionless = "plex_collectionless" in methods and not self.playlist
 
@@ -442,7 +441,7 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Warning: collection_order attribute is blank")
             else:
                 test_sort = self.data[methods["collection_order"]]
-        elif "collection_order" not in methods and not self.playlist and self.library.default_collection_order:
+        elif "collection_order" not in methods and not self.playlist and self.library.default_collection_order and not self.smart:
             test_sort = self.library.default_collection_order
             logger.warning(f"{self.Type} Warning: collection_order not found using library default_collection_order: {self.library.default_collection_order}")
         self.custom_sort = self.playlist
