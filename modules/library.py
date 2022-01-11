@@ -40,13 +40,15 @@ class Library(ABC):
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
-        self.missing_path = os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
+        self.missing_path = params["missing_path"] if params["missing_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
         self.dimensional_asset_rename = params["dimensional_asset_rename"]
+        self.download_url_assets = params["download_url_assets"]
         self.show_missing_season_assets = params["show_missing_season_assets"]
         self.sync_mode = params["sync_mode"]
-        self.collection_minimum = params["collection_minimum"]
+        self.default_collection_order = params["default_collection_order"]
+        self.minimum_items = params["minimum_items"]
         self.delete_below_minimum = params["delete_below_minimum"]
         self.delete_not_scheduled = params["delete_not_scheduled"]
         self.missing_only_released = params["missing_only_released"]
@@ -66,12 +68,13 @@ class Library(ABC):
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
         self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
-        self.radarr_add_all = params["radarr_add_all"]
+        self.radarr_add_all_existing = params["radarr_add_all_existing"]
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
-        self.sonarr_add_all = params["sonarr_add_all"]
+        self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
         self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
         self.mass_collection_mode = params["mass_collection_mode"]
         self.tmdb_collections = params["tmdb_collections"]
+        self.genre_collections = params["genre_collections"]
         self.genre_mapper = params["genre_mapper"]
         self.error_webhooks = params["error_webhooks"]
         self.changes_webhooks = params["changes_webhooks"]
@@ -79,10 +82,15 @@ class Library(ABC):
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
         self.optimize = params["plex"]["optimize"] # TODO: Here or just in Plex?
-        self.library_operation = self.assets_for_all or self.delete_unmanaged_collections or self.delete_collections_with_less \
-                                 or self.mass_genre_update or self.mass_audience_rating_update or self.mass_critic_rating_update \
-                                 or self.mass_trakt_rating_update or self.radarr_add_all or self.sonarr_add_all \
-                                 or self.tmdb_collections or self.genre_mapper
+        self.stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+        self.status = {}
+
+        self.tmdb_library_operation = self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
+                                      or self.mass_critic_rating_update or self.mass_trakt_rating_update \
+                                      or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing
+        self.library_operation = self.tmdb_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
+                                 or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
+                                 or self.genre_collections or self.genre_mapper or self.show_unmanaged
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":
@@ -151,7 +159,7 @@ class Library(ABC):
             if poster_uploaded or image is None or image != item.thumb or f"{overlay_name.lower()} overlay" not in item_labels:
                 if not item.posterUrl:
                     raise Failed(f"Overlay Error: No existing poster to Overlay for {item.title}")
-                response = requests.get(item.posterUrl)
+                response = self.config.get(item.posterUrl)
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
                 og_image = response.content
@@ -218,7 +226,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def get_all(self):
+    def get_all(self, collection_level=None):
         pass
 
     def add_missing(self, collection, items, is_movie):

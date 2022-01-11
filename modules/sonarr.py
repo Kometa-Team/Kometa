@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import SonarrAPI
-from arrapi.exceptions import ArrException, Invalid
+from arrapi.exceptions import ArrException
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -40,7 +40,7 @@ class Sonarr:
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"], params["language_profile"])
         except ArrException as e:
             raise Failed(e)
-        self.add = params["add"]
+        self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
@@ -56,9 +56,6 @@ class Sonarr:
         self.plex_path = params["plex_path"] if params["sonarr_path"] and params["plex_path"] else ""
 
     def add_tvdb(self, tvdb_ids, **options):
-        logger.info("")
-        util.separator("Adding to Sonarr", space=False, border=False)
-        logger.debug("")
         _ids = []
         _paths = []
         for tvdb_id in tvdb_ids:
@@ -66,6 +63,9 @@ class Sonarr:
                 _paths.append(tvdb_id)
             else:
                 _ids.append(tvdb_id)
+        logger.info("")
+        util.separator(f"Adding {'Missing' if _ids else 'Existing'} to Sonarr", space=False, border=False)
+        logger.debug("")
         logger.debug(f"Sonarr Adds: {_ids if _ids else ''}")
         for tvdb_id in _paths:
             logger.debug(tvdb_id)
@@ -94,10 +94,23 @@ class Sonarr:
         exists = []
         skipped = []
         invalid = []
+        invalid_root = []
         shows = []
         path_lookup = {}
         mismatched = {}
         path_in_use = {}
+
+        def mass_add():
+            try:
+                _a, _e, _i = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor,
+                                                          season, search, cutoff_search, series_type, tags, per_request=100)
+                added.extend(_a)
+                exists.extend(_e)
+                invalid.extend(_i)
+            except ArrException as e:
+                util.print_stacktrace()
+                raise Failed(f"Radarr Error: {e}")
+
         for i, item in enumerate(tvdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tvdb_id = item[0] if isinstance(item, tuple) else item
@@ -114,7 +127,12 @@ class Sonarr:
                 if path and path.lower() in arr_paths:
                     mismatched[path] = tvdb_id
                     continue
+                if path and not path.startswith(folder):
+                    invalid_root.append(item)
+                    continue
                 show = self.api.get_series(tvdb_id=tvdb_id)
+                if self.config.trace_mode:
+                    logger.debug(f"Folder to Check: {folder}/{show.folder}")
                 if f"{folder}/{show.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{show.folder}"] = tvdb_id
                     continue
@@ -126,20 +144,16 @@ class Sonarr:
             except ArrException:
                 invalid.append(item)
             if len(shows) == 100 or len(tvdb_ids) == i:
-                try:
-                    _a, _e, _i = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor,
-                                                              season, search, cutoff_search, series_type, tags, per_request=100)
-                    added.extend(_a)
-                    exists.extend(_e)
-                    invalid.extend(_i)
-                    shows = []
-                except Invalid as e:
-                    raise Failed(f"Sonarr Error: {e}")
+                mass_add()
+                shows = []
+        if shows:
+            mass_add()
+            shows = []
 
         if len(added) > 0:
             logger.info("")
             for series in added:
-                logger.info(f"Added to Sonarr | {series.tvdbId:<6} | {series.title}")
+                logger.info(f"Added to Sonarr | {series.tvdbId:<7} | {series.title}")
                 if self.config.Cache:
                     self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Series added to Sonarr")
@@ -148,7 +162,7 @@ class Sonarr:
             logger.info("")
             if len(exists) > 0:
                 for series in exists:
-                    logger.info(f"Already in Sonarr | {series.tvdbId:<6} | {series.title}")
+                    logger.info(f"Already in Sonarr | {series.tvdbId:<7} | {series.title}")
                     if self.config.Cache:
                         self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             if len(skipped) > 0:
@@ -175,6 +189,12 @@ class Sonarr:
                 logger.info("")
                 logger.info(f"Invalid TVDb ID | {tvdb_id}")
             logger.info(f"{len(invalid)} Series with Invalid IDs")
+
+        if len(invalid_root) > 0:
+            logger.info("")
+            for tvdb_id, path in invalid_root:
+                logger.info(f"Invalid Root Folder for TVDb ID | {tvdb_id:<7} | {path}")
+            logger.info(f"{len(invalid_root)} Series with Invalid Paths")
 
         return len(added)
 

@@ -14,7 +14,8 @@ libraries:                                      # Library mappings must have a c
       - file: config/Anime.yml                  # You have to create this file the other is online
       - git: meisnate12/AnimeCharts
 playlist_files:
-  - file: config/playlists.yml
+  - file: config/playlists.yml                  # You have to create this file the other is online
+  - git: meisnate12/Playlists
 settings:                                       # Can be individually specified per library as well
   cache: true
   cache_expiration: 60
@@ -23,9 +24,11 @@ settings:                                       # Can be individually specified 
   asset_depth: 0
   create_asset_folders: false
   dimensional_asset_rename: false
+  download_url_assets: false
   show_missing_season_assets: false
   sync_mode: append
-  collection_minimum: 1
+  minimum_items: 1
+  default_collection_order:
   delete_below_minimum: true
   delete_not_scheduled: false
   run_again_delay: 2
@@ -41,11 +44,12 @@ settings:                                       # Can be individually specified 
   ignore_ids:
   ignore_imdb_ids:
   playlist_sync_to_user: all
+  verify_ssl: true
 webhooks:                                       # Can be individually specified per library as well
   error:
   run_start:
   run_end:
-  collection_changes:
+  changes:
 plex:                                           # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: ####################
@@ -69,7 +73,8 @@ anidb:                                          # Not required for AniDB builder
 radarr:                                         # Can be individually specified per library as well
   url: http://192.168.1.12:7878
   token: ################################
-  add: false
+  add_missing: false
+  add_existing: false
   root_folder_path: S:/Movies
   monitor: true
   availability: announced
@@ -81,7 +86,8 @@ radarr:                                         # Can be individually specified 
 sonarr:                                         # Can be individually specified per library as well
   url: http://192.168.1.12:8989
   token: ################################
-  add: false
+  add_missing: false
+  add_existing: false
   root_folder_path: "S:/TV Shows"
   monitor: all
   quality_profile: HD-1080p

@@ -24,7 +24,7 @@ class Tautulli:
         if response["response"]["result"] != "success":
             raise Failed(f"Tautulli Error: {response['response']['message']}")
 
-    def get_rating_keys(self, library, params):
+    def get_rating_keys(self, library, params, all_items):
         query_size = int(params["list_size"]) + int(params["list_buffer"])
         logger.info(f"Processing Tautulli Most {params['list_type'].capitalize()}: {params['list_size']} {'Movies' if library.is_movie else 'Shows'}")
         response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_home_stats&time_range={params['list_days']}&stats_count={query_size}")
@@ -42,7 +42,7 @@ class Tautulli:
         section_id = self._section_id(library.name)
         rating_keys = []
         for item in items:
-            if item["section_id"] == section_id and len(rating_keys) < int(params['list_size']):
+            if (all_items or item["section_id"] == section_id) and len(rating_keys) < int(params['list_size']):
                 if int(item[stat_type]) < params['list_minimum']:
                     continue
                 try:
