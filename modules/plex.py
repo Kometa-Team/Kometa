@@ -338,10 +338,10 @@ album_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "album_artist.asc": "artist.titleSort%2Calbum.titleSort%2Calbum.index%2Calbum.id%2Calbum.originallyAvailableAt",
     "album_artist.desc": "artist.titleSort%3Adesc%2Calbum.titleSort%2Calbum.index%2Calbum.id%2Calbum.originallyAvailableAt",
+    "year.asc": "year", "year.desc": "year%3Adesc",
     "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
     "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
     "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
-    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
     "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
     "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
     "played.asc": "lastViewedAt", "played.desc": "lastViewedAt%3Adesc",
@@ -447,9 +447,12 @@ class Plex(Library):
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
-    def get_all(self):
-        logger.info(f"Loading All {self.type}s from Library: {self.name}")
-        key = f"/library/sections/{self.Plex.key}/all?includeGuids=1&type={utils.searchType(self.Plex.TYPE)}"
+    def get_all(self, collection_level=None):
+        collection_type = collection_level if collection_level else self.Plex.TYPE
+        if not collection_level:
+            collection_level = self.type
+        logger.info(f"Loading All {collection_level.capitalize()}s from Library: {self.name}")
+        key = f"/library/sections/{self.Plex.key}/all?includeGuids=1&type={utils.searchType(collection_type)}"
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
         results = []
@@ -457,7 +460,7 @@ class Plex(Library):
             results.extend(self.fetchItems(key, container_start, container_size))
             util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
-        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {self.type}s"))
+        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {collection_level.capitalize()}s"))
         return results
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -530,6 +533,7 @@ class Plex(Library):
                 item.uploadArt(filepath=image.location)
             self.reload(item)
         except BadRequest as e:
+            item.refresh()
             raise Failed(e)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -693,8 +697,8 @@ class Plex(Library):
     def get_rating_keys(self, method, data):
         items = []
         if method == "plex_all":
-            logger.info(f"Processing Plex All {self.type}s")
-            items = self.get_all()
+            logger.info(f"Processing Plex All {data.capitalize()}s")
+            items = self.get_all(collection_level=data)
         elif method == "plex_search":
             util.print_multiline(data[1], info=True)
             items = self.get_filter_items(data[2])
