@@ -100,7 +100,7 @@ details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks"
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
-item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
+item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add_missing", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
@@ -171,7 +171,7 @@ custom_sort_builders = [
 parts_collection_valid = [
      "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "changes_webhooks"
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
-     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "imdb_list"
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list"
 ] + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
@@ -180,7 +180,7 @@ playlist_attributes = [
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
    "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
-   "item_refresh", "plex_search", "plex_all", "filters"
+   "item_refresh", "item_refresh_delay", "plex_search", "plex_all", "filters"
 ] + details + summary_details + poster_details + background_details
 
 class CollectionBuilder:
@@ -831,6 +831,8 @@ class CollectionBuilder:
                 raise Failed("Each Overlay can only be used once per Library")
             self.library.overlays.append(name)
             self.item_details[method_name] = name
+        elif method_name == "item_refresh_delay":
+            self.item_details[method_name] = self._parse(method_name, method_data, datatype="int", default=0, minimum=0)
         elif method_name in item_bool_details:
             if self._parse(method_name, method_data, datatype="bool", default=False):
                 self.item_details[method_name] = True
@@ -2103,6 +2105,11 @@ class CollectionBuilder:
                 self.library.edit_query(item, {"title.locked": 1})
             if "item_refresh" in self.item_details:
                 self.library.query(item.refresh)
+
+                item_refresh_delay = int(self.item_details["item_refresh_delay"]) if "item_refresh_delay" in self.item_details else 0
+
+                if item_refresh_delay > 0:
+                    time.sleep(item_refresh_delay)
 
         if self.library.Radarr and tmdb_paths:
             if "item_radarr_tag" in self.item_details:
