@@ -2104,12 +2104,10 @@ class CollectionBuilder:
             if "item_lock_title" in self.item_details:
                 self.library.edit_query(item, {"title.locked": 1})
             if "item_refresh" in self.item_details:
+                delay = self.item_details["item_refresh_delay"] if "item_refresh_delay" in self.item_details else self.library.item_refresh_delay
+                if delay > 0:
+                    time.sleep(delay)
                 self.library.query(item.refresh)
-
-                item_refresh_delay = int(self.item_details["item_refresh_delay"]) if "item_refresh_delay" in self.item_details else 0
-
-                if item_refresh_delay > 0:
-                    time.sleep(item_refresh_delay)
 
         if self.library.Radarr and tmdb_paths:
             if "item_radarr_tag" in self.item_details:
