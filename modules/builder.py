@@ -437,13 +437,14 @@ class CollectionBuilder:
         self.smart = self.smart_url or self.smart_label_collection
 
         test_sort = None
-        if "collection_order" in methods and not self.playlist:
+        if "collection_order" in methods and not self.playlist and self.build_collection:
             if self.data[methods["collection_order"]] is None:
                 raise Failed(f"{self.Type} Warning: collection_order attribute is blank")
             else:
                 test_sort = self.data[methods["collection_order"]]
-        elif "collection_order" not in methods and not self.playlist and self.library.default_collection_order and not self.smart:
+        elif "collection_order" not in methods and not self.playlist and self.build_collection and self.library.default_collection_order and not self.smart:
             test_sort = self.library.default_collection_order
+            logger.warning("")
             logger.warning(f"{self.Type} Warning: collection_order not found using library default_collection_order: {self.library.default_collection_order}")
         self.custom_sort = self.playlist
         if test_sort:
