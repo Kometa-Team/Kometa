@@ -13,7 +13,7 @@ advance_tags_to_edit = {
     "Movie": ["metadata_language", "use_original_title"],
     "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering",
              "metadata_language", "use_original_title"],
-    "Artist": ["album_sort"]
+    "Artist": ["album_sorting"]
 }
 
 tags_to_edit = {
@@ -616,26 +616,31 @@ class MetadataFile(DataFile):
                 else:
                     for album_name, album_dict in meta[methods["albums"]].items():
                         updated = False
+                        title = None
+                        album_methods = {am.lower(): am for am in album_dict}
                         logger.info("")
                         logger.info(f"Updating album {album_name} of {mapping_name}...")
                         try:
                             album = item.album(album_name)
                         except NotFound:
-                            logger.error(f"Metadata Error: Album: {album_name} not found")
-                            continue
-                        album_methods = {am.lower(): am for am in album_dict}
+                            try:
+                                if "alt_title" not in album_methods or not album_dict[album_methods["alt_title"]]:
+                                    raise NotFound
+                                album = item.album(album_dict[album_methods["alt_title"]])
+                                title = album_name
+                            except NotFound:
+                                logger.error(f"Metadata Error: Album: {album_name} not found")
+                                continue
 
-                        if "album" in album_methods and album_dict[album_methods["album"]]:
-                            title = album_dict[album_methods["album"]]
-                        else:
+                        if not title:
                             title = album.title
                         edits = {}
-                        add_edit("album", album, album_dict, album_methods, key="title", value=title)
-                        add_edit("sort_album", album, album_dict, album_methods, key="titleSort")
+                        add_edit("title", album, album_dict, album_methods, value=title)
+                        add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
                         add_edit("rating", album, album_dict, album_methods, var_type="float")
                         add_edit("originally_available", album, album_dict, album_methods, key="originallyAvailableAt", var_type="date")
                         add_edit("record_label", album, album_dict, album_methods, key="studio")
-                        add_edit("review", album, album_dict, album_methods, key="summary")
+                        add_edit("summary", album, album_dict, album_methods)
                         if self.library.edit_item(album, title, "Album", edits):
                             updated = True
                         for tag_edit in ["genre", "style", "mood", "collection", "label"]:
@@ -652,6 +657,8 @@ class MetadataFile(DataFile):
                             else:
                                 for track_num, track_dict in album_dict[album_methods["tracks"]].items():
                                     updated = False
+                                    title = None
+                                    track_methods = {tm.lower(): tm for tm in track_dict}
                                     logger.info("")
                                     logger.info(f"Updating track {track_num} on {album_name} of {mapping_name}...")
                                     try:
@@ -660,20 +667,23 @@ class MetadataFile(DataFile):
                                         else:
                                             track = album.track(title=track_num)
                                     except NotFound:
-                                        logger.error(f"Metadata Error: Track: {track_num} not found")
-                                        continue
-                                    track_methods = {tm.lower(): tm for tm in track_dict}
+                                        try:
+                                            if "alt_title" not in track_methods or not track_dict[track_methods["alt_title"]]:
+                                                raise NotFound
+                                            track = album.track(title=track_dict[track_methods["alt_title"]])
+                                            title = track_num
+                                        except NotFound:
+                                            logger.error(f"Metadata Error: Track: {track_num} not found")
+                                            continue
 
-                                    if "title" in track_methods and track_dict[track_methods["title"]]:
-                                        title = track_dict[track_methods["title"]]
-                                    else:
+                                    if not title:
                                         title = track.title
                                     edits = {}
                                     add_edit("title", track, track_dict, track_methods, value=title)
                                     add_edit("rating", track, track_dict, track_methods, var_type="float")
                                     add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
                                     add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
-                                    add_edit("artist", track, track_dict, track_methods, key="originalTitle")
+                                    add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")
                                     if self.library.edit_item(album, title, "Track", edits):
                                         updated = True
                                     if self.edit_tags("mood", track, track_dict, track_methods):

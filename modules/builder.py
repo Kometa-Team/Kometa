@@ -169,7 +169,7 @@ custom_sort_builders = [
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
 parts_collection_valid = [
-     "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "changes_webhooks"
+     "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "changes_webhooks"
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
      "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "imdb_list"
 ] + summary_details + poster_details + background_details + string_details
@@ -338,9 +338,10 @@ class CollectionBuilder:
                 else:
                     self.sync = self.data[methods["sync_mode"]].lower() == "sync"
 
-        self.collection_level = "movie" if self.library.is_movie else "show"
-        if self.playlist:
-            self.collection_level = "item"
+        if self.playlist:               self.collection_level = "item"
+        elif self.library.is_show:      self.collection_level = "show"
+        elif self.library.is_music:     self.collection_level = "artist"
+        else:                           self.collection_level = "movie"
         if "collection_level" in methods and not self.playlist:
             logger.debug("")
             logger.debug("Validating Method: collection_level")
@@ -719,10 +720,10 @@ class CollectionBuilder:
         elif method_name == "tvdb_poster":
             self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).poster_path}"
         elif method_name == "file_poster":
-            if os.path.exists(method_data):
+            if os.path.exists(os.path.abspath(method_data)):
                 self.posters[method_name] = os.path.abspath(method_data)
             else:
-                raise Failed(f"{self.Type} Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
+                logger.error(f"{self.Type} Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
 
     def _background(self, method_name, method_data):
         if method_name == "url_background":
@@ -733,10 +734,10 @@ class CollectionBuilder:
         elif method_name == "tvdb_background":
             self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).background_path}"
         elif method_name == "file_background":
-            if os.path.exists(method_data):
+            if os.path.exists(os.path.abspath(method_data)):
                 self.backgrounds[method_name] = os.path.abspath(method_data)
             else:
-                raise Failed(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
+                logger.error(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
 
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "collection_mode":
@@ -1053,7 +1054,7 @@ class CollectionBuilder:
 
     def _plex(self, method_name, method_data):
         if method_name == "plex_all":
-            self.builders.append((method_name, True))
+            self.builders.append((method_name, self.collection_level))
         elif method_name in ["plex_search", "plex_collectionless"]:
             for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
@@ -1510,7 +1511,7 @@ class CollectionBuilder:
                 elif self.library.is_movie and final_attr in plex.show_only_searches:
                     raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries")
                 elif self.library.is_music and final_attr not in plex.music_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for movie or show libraries")
+                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries")
                 elif not self.library.is_music and final_attr in plex.music_searches:
                     raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries")
                 elif _data is None:
