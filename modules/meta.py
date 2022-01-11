@@ -9,6 +9,18 @@ logger = logging.getLogger("Plex Meta Manager")
 
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
+advance_tags_to_edit = {
+    "Movie": ["metadata_language", "use_original_title"],
+    "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering",
+             "metadata_language", "use_original_title"],
+    "Artist": ["album_sorting"]
+}
+
+tags_to_edit = {
+    "Movie": ["genre", "label", "collection", "country", "director", "producer", "writer"],
+    "Show": ["genre", "label", "collection"],
+    "Artist": ["genre", "style", "mood", "country", "collection", "similar_artist"]
+}
 
 def get_dict(attribute, attr_data, check_list=None):
     if check_list is None:
@@ -19,14 +31,11 @@ def get_dict(attribute, attr_data, check_list=None):
                 new_dict = {}
                 for _name, _data in attr_data[attribute].items():
                     if _name in check_list:
-                        logger.error(
-                            f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
+                        logger.error(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
                     elif _data is None:
-                        logger.error(
-                            f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
+                        logger.error(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
                     elif not isinstance(_data, dict):
-                        logger.error(
-                            f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
+                        logger.error(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
                     else:
                         new_dict[str(_name)] = _data
                 return new_dict
@@ -65,14 +74,14 @@ class DataFile:
             util.print_stacktrace()
             raise Failed(f"YAML Error: {e}")
 
-    def apply_template(self, name, data, template):
+    def apply_template(self, name, data, template_call):
         if not self.templates:
             raise Failed(f"{self.data_type} Error: No templates found")
-        elif not template:
+        elif not template_call:
             raise Failed(f"{self.data_type} Error: template attribute is blank")
         else:
-            logger.debug(f"Value: {template}")
-            for variables in util.get_list(template, split=False):
+            logger.debug(f"Value: {template_call}")
+            for variables in util.get_list(template_call, split=False):
                 if not isinstance(variables, dict):
                     raise Failed(f"{self.data_type} Error: template attribute is not a dictionary")
                 elif "name" not in variables:
@@ -84,9 +93,15 @@ class DataFile:
                 elif not isinstance(self.templates[variables["name"]], dict):
                     raise Failed(f"{self.data_type} Error: template {variables['name']} is not a dictionary")
                 else:
+                    remove_variables = []
                     for tm in variables:
-                        if not variables[tm]:
-                            raise Failed(f"{self.data_type} Error: template sub-attribute {tm} is blank")
+                        if variables[tm] is None:
+                            remove_variables.append(tm)
+                    optional = []
+                    for remove_variable in remove_variables:
+                        variables.pop(remove_variable)
+                        optional.append(str(remove_variable))
+
                     if self.data_type == "Collection" and "collection_name" not in variables:
                         variables["collection_name"] = str(name)
                     if self.data_type == "Playlist" and "playlist_name" not in variables:
@@ -100,16 +115,21 @@ class DataFile:
                         if template["default"]:
                             if isinstance(template["default"], dict):
                                 for dv in template["default"]:
-                                    if template["default"][dv]:
-                                        default[dv] = template["default"][dv]
-                                    else:
-                                        raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
+                                    if str(dv) not in optional:
+                                        if template["default"][dv] is not None:
+                                            final_value = str(template["default"][dv])
+                                            if "<<collection_name>>" in final_value:
+                                                final_value = final_value.replace("<<collection_name>>", str(name))
+                                            if "<<playlist_name>>" in final_value:
+                                                final_value = final_value.replace("<<playlist_name>>", str(name))
+                                            default[dv] = final_value
+                                        else:
+                                            raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
                             else:
                                 raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
 
-                    optional = []
                     if "optional" in template:
                         if template["optional"]:
                             for op in util.get_list(template["optional"]):
@@ -221,6 +241,48 @@ class MetadataFile(DataFile):
         else:
             return self.collections
 
+    def edit_tags(self, attr, obj, group, alias, extra=None):
+        if attr in alias and f"{attr}.sync" in alias:
+            logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
+        elif f"{attr}.remove" in alias and f"{attr}.sync" in alias:
+            logger.error(f"Metadata Error: Cannot use {attr}.remove and {attr}.sync together")
+        elif attr in alias and group[alias[attr]] is None:
+            logger.error(f"Metadata Error: {attr} attribute is blank")
+        elif f"{attr}.remove" in alias and group[alias[f"{attr}.remove"]] is None:
+            logger.error(f"Metadata Error: {attr}.remove attribute is blank")
+        elif f"{attr}.sync" in alias and group[alias[f"{attr}.sync"]] is None:
+            logger.error(f"Metadata Error: {attr}.sync attribute is blank")
+        elif attr in alias or f"{attr}.remove" in alias or f"{attr}.sync" in alias:
+            add_tags = util.get_list(group[alias[attr]]) if attr in alias else []
+            if extra:
+                add_tags.extend(extra)
+            remove_tags = util.get_list(group[alias[f"{attr}.remove"]]) if f"{attr}.remove" in alias else None
+            sync_tags = util.get_list(group[alias[f"{attr}.sync"]] if group[alias[f"{attr}.sync"]] else []) if f"{attr}.sync" in alias else None
+            return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+        return False
+
+    def set_images(self, obj, group, alias):
+
+        def set_image(attr, is_poster=True, is_url=True):
+            if group[alias[attr]]:
+                return ImageData(attr, group[alias[attr]], is_poster=is_poster, is_url=is_url)
+            else:
+                logger.error(f"Metadata Error: {attr} attribute is blank")
+
+        poster = None
+        background = None
+        if "url_poster" in alias:
+            poster = set_image("url_poster")
+        elif "file_poster" in alias:
+            poster = set_image("file_poster", is_url=False)
+        if "url_background" in alias:
+            background = set_image("url_background", is_poster=False)
+        elif "file_background" in alias:
+            background = set_image("file_background",is_poster=False, is_url=False)
+
+        if poster or background:
+            self.library.upload_images(obj, poster=poster, background=background)
+
     def update_metadata(self):
         if not self.metadata:
             return None
@@ -229,8 +291,6 @@ class MetadataFile(DataFile):
         logger.info("")
         for mapping_name, meta in self.metadata.items():
             methods = {mm.lower(): mm for mm in meta}
-            if self.config.test_mode and ("test" not in methods or meta[methods["test"]] is not True):
-                continue
 
             updated = False
             edits = {}
@@ -243,13 +303,11 @@ class MetadataFile(DataFile):
                         if value is None:       value = group[alias[name]]
                         try:
                             current = str(getattr(current_item, key, ""))
+                            final_value = None
                             if var_type == "date":
                                 final_value = util.validate_date(value, name, return_as="%Y-%m-%d")
                                 current = current[:-9]
                             elif var_type == "float":
-                                if value is None:
-                                    raise Failed(f"Metadata Error: {name} attribute is blank")
-                                final_value = None
                                 try:
                                     value = float(str(value))
                                     if 0 <= value <= 10:
@@ -258,6 +316,13 @@ class MetadataFile(DataFile):
                                     pass
                                 if final_value is None:
                                     raise Failed(f"Metadata Error: {name} attribute must be a number between 0 and 10")
+                            elif var_type == "int":
+                                try:
+                                    final_value = int(str(value))
+                                except ValueError:
+                                    pass
+                                if final_value is None:
+                                    raise Failed(f"Metadata Error: {name} attribute must be an integer")
                             else:
                                 final_value = value
                             if current != str(final_value):
@@ -269,13 +334,11 @@ class MetadataFile(DataFile):
                     else:
                         logger.error(f"Metadata Error: {name} attribute is blank")
 
-            def add_advanced_edit(attr, obj, group, alias, show_library=False, new_agent=False):
+            def add_advanced_edit(attr, obj, group, alias, new_agent=False):
                 key, options = plex.item_advance_keys[f"item_{attr}"]
                 if attr in alias:
                     if new_agent and self.library.agent not in plex.new_plex_agents:
                         logger.error(f"Metadata Error: {attr} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
-                    elif show_library and not self.library.is_show:
-                        logger.error(f"Metadata Error: {attr} attribute only works for show libraries")
                     elif group[alias[attr]]:
                         method_data = str(group[alias[attr]]).lower()
                         if method_data not in options:
@@ -286,54 +349,11 @@ class MetadataFile(DataFile):
                     else:
                         logger.error(f"Metadata Error: {attr} attribute is blank")
 
-            def edit_tags(attr, obj, group, alias, extra=None, movie_library=False):
-                if movie_library and not self.library.is_movie and (attr in alias or f"{attr}.sync" in alias or f"{attr}.remove" in alias):
-                    logger.error(f"Metadata Error: {attr} attribute only works for movie libraries")
-                elif attr in alias and f"{attr}.sync" in alias:
-                    logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
-                elif f"{attr}.remove" in alias and f"{attr}.sync" in alias:
-                    logger.error(f"Metadata Error: Cannot use {attr}.remove and {attr}.sync together")
-                elif attr in alias and group[alias[attr]] is None:
-                    logger.error(f"Metadata Error: {attr} attribute is blank")
-                elif f"{attr}.remove" in alias and group[alias[f"{attr}.remove"]] is None:
-                    logger.error(f"Metadata Error: {attr}.remove attribute is blank")
-                elif f"{attr}.sync" in alias and group[alias[f"{attr}.sync"]] is None:
-                    logger.error(f"Metadata Error: {attr}.sync attribute is blank")
-                elif attr in alias or f"{attr}.remove" in alias or f"{attr}.sync" in alias:
-                    add_tags = util.get_list(group[alias[attr]]) if attr in alias else []
-                    if extra:
-                        add_tags.extend(extra)
-                    remove_tags = util.get_list(group[alias[f"{attr}.remove"]]) if f"{attr}.remove" in alias else None
-                    sync_tags = util.get_list(group[alias[f"{attr}.sync"]] if group[alias[f"{attr}.sync"]] else []) if f"{attr}.sync" in alias else None
-                    return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
-                return False
-
-            def set_image(attr, group, alias, is_poster=True, is_url=True):
-                if group[alias[attr]]:
-                    return ImageData(attr, group[alias[attr]], is_poster=is_poster, is_url=is_url)
-                else:
-                    logger.error(f"Metadata Error: {attr} attribute is blank")
-
-            def set_images(obj, group, alias):
-                poster = None
-                background = None
-                if "url_poster" in alias:
-                    poster = set_image("url_poster", group, alias)
-                elif "file_poster" in alias:
-                    poster = set_image("file_poster", group, alias, is_url=False)
-                if "url_background" in alias:
-                    background = set_image("url_background", group, alias, is_poster=False)
-                elif "file_background" in alias:
-                    background = set_image("file_background", group, alias, is_poster=False, is_url=False)
-
-                if poster or background:
-                    self.library.upload_images(obj, poster=poster, background=background)
-
             logger.info("")
             util.separator()
             logger.info("")
             year = None
-            if "year" in methods:
+            if "year" in methods and not self.library.is_music:
                 next_year = datetime.now().year + 1
                 if meta[methods["year"]] is None:
                     raise Failed("Metadata Error: year attribute is blank")
@@ -370,15 +390,14 @@ class MetadataFile(DataFile):
                 logger.error(f"Skipping {mapping_name}")
                 continue
 
-            item_type = "Movie" if self.library.is_movie else "Show"
-            logger.info(f"Updating {item_type}: {title}...")
+            logger.info(f"Updating {self.library.type}: {title}...")
 
             tmdb_item = None
             tmdb_is_movie = None
-            if ("tmdb_show" in methods or "tmdb_id" in methods) and "tmdb_movie" in methods:
+            if not self.library.is_music and ("tmdb_show" in methods or "tmdb_id" in methods) and "tmdb_movie" in methods:
                 logger.error("Metadata Error: Cannot use tmdb_movie and tmdb_show when editing the same metadata item")
 
-            if "tmdb_show" in methods or "tmdb_id" in methods or "tmdb_movie" in methods:
+            if not self.library.is_music and "tmdb_show" in methods or "tmdb_id" in methods or "tmdb_movie" in methods:
                 try:
                     if "tmdb_show" in methods or "tmdb_id" in methods:
                         data = meta[methods["tmdb_show" if "tmdb_show" in methods else "tmdb_id"]]
@@ -421,134 +440,255 @@ class MetadataFile(DataFile):
             edits = {}
             add_edit("title", item, meta, methods, value=title)
             add_edit("sort_title", item, meta, methods, key="titleSort")
-            add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
-            add_edit("critic_rating", item, meta, methods, value=rating, key="rating", var_type="float")
-            add_edit("audience_rating", item, meta, methods, key="audienceRating", var_type="float")
-            add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
-            add_edit("content_rating", item, meta, methods, key="contentRating")
-            add_edit("original_title", item, meta, methods, key="originalTitle", value=original_title)
-            add_edit("studio", item, meta, methods, value=studio)
-            add_edit("tagline", item, meta, methods, value=tagline)
+            if not self.library.is_music:
+                add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
+                add_edit("critic_rating", item, meta, methods, value=rating, key="rating", var_type="float")
+                add_edit("audience_rating", item, meta, methods, key="audienceRating", var_type="float")
+                add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
+                add_edit("content_rating", item, meta, methods, key="contentRating")
+                add_edit("original_title", item, meta, methods, key="originalTitle", value=original_title)
+                add_edit("studio", item, meta, methods, value=studio)
+                add_edit("tagline", item, meta, methods, value=tagline)
             add_edit("summary", item, meta, methods, value=summary)
-            if self.library.edit_item(item, mapping_name, item_type, edits):
+            if self.library.edit_item(item, mapping_name, self.library.type, edits):
                 updated = True
 
             advance_edits = {}
-            for advance_edit in ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering", "metadata_language", "use_original_title"]:
-                is_show = advance_edit in ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering"]
+            for advance_edit in advance_tags_to_edit[self.library.type]:
                 is_new_agent = advance_edit in ["metadata_language", "use_original_title"]
-                add_advanced_edit(advance_edit, item, meta, methods, show_library=is_show, new_agent=is_new_agent)
-            if self.library.edit_item(item, mapping_name, item_type, advance_edits, advanced=True):
+                add_advanced_edit(advance_edit, item, meta, methods, new_agent=is_new_agent)
+            if self.library.edit_item(item, mapping_name, self.library.type, advance_edits, advanced=True):
                 updated = True
 
-            for tag_edit in ["genre", "label", "collection", "country", "director", "producer", "writer"]:
-                is_movie = tag_edit in ["country", "director", "producer", "writer"]
-                has_extra = genres if tag_edit == "genre" else None
-                if edit_tags(tag_edit, item, meta, methods, movie_library=is_movie, extra=has_extra):
+            for tag_edit in tags_to_edit[self.library.type]:
+                if self.edit_tags(tag_edit, item, meta, methods, extra=genres if tag_edit == "genre" else None):
                     updated = True
 
-            logger.info(f"{item_type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+            logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-            set_images(item, meta, methods)
+            self.set_images(item, meta, methods)
 
             if "seasons" in methods and self.library.is_show:
-                if meta[methods["seasons"]]:
-                    for season_id in meta[methods["seasons"]]:
+                if not meta[methods["seasons"]]:
+                    logger.error("Metadata Error: seasons attribute is blank")
+                elif not isinstance(meta[methods["seasons"]], dict):
+                    logger.error("Metadata Error: seasons attribute must be a dictionary")
+                else:
+                    for season_id, season_dict in meta[methods["seasons"]].items():
                         updated = False
                         logger.info("")
                         logger.info(f"Updating season {season_id} of {mapping_name}...")
-                        if isinstance(season_id, int):
-                            season = None
-                            for s in item.seasons():
-                                if s.index == season_id:
-                                    season = s
-                                    break
-                            if season is None:
-                                logger.error(f"Metadata Error: Season: {season_id} not found")
+                        try:
+                            if isinstance(season_id, int):
+                                season = item.season(season=season_id)
                             else:
-                                season_dict = meta[methods["seasons"]][season_id]
-                                season_methods = {sm.lower(): sm for sm in season_dict}
+                                season = item.season(title=season_id)
+                        except NotFound:
+                            logger.error(f"Metadata Error: Season: {season_id} not found")
+                            continue
+                        season_methods = {sm.lower(): sm for sm in season_dict}
 
-                                if "title" in season_methods and season_dict[season_methods["title"]]:
-                                    title = season_dict[season_methods["title"]]
-                                else:
-                                    title = season.title
-                                if "sub" in season_methods:
-                                    if season_dict[season_methods["sub"]] is None:
-                                        logger.error("Metadata Error: sub attribute is blank")
-                                    elif season_dict[season_methods["sub"]] is True and "(SUB)" not in title:
-                                        title = f"{title} (SUB)"
-                                    elif season_dict[season_methods["sub"]] is False and title.endswith(" (SUB)"):
-                                        title = title[:-6]
-                                    else:
-                                        logger.error("Metadata Error: sub attribute must be True or False")
-
-                                edits = {}
-                                add_edit("title", season, season_dict, season_methods, value=title)
-                                add_edit("summary", season, season_dict, season_methods)
-                                if self.library.edit_item(season, season_id, "Season", edits):
-                                    updated = True
-                                set_images(season, season_dict, season_methods)
+                        if "title" in season_methods and season_dict[season_methods["title"]]:
+                            title = season_dict[season_methods["title"]]
                         else:
-                            logger.error(f"Metadata Error: Season: {season_id} invalid, it must be an integer")
+                            title = season.title
+                        if "sub" in season_methods:
+                            if season_dict[season_methods["sub"]] is None:
+                                logger.error("Metadata Error: sub attribute is blank")
+                            elif season_dict[season_methods["sub"]] is True and "(SUB)" not in title:
+                                title = f"{title} (SUB)"
+                            elif season_dict[season_methods["sub"]] is False and title.endswith(" (SUB)"):
+                                title = title[:-6]
+                            else:
+                                logger.error("Metadata Error: sub attribute must be True or False")
+
+                        edits = {}
+                        add_edit("title", season, season_dict, season_methods, value=title)
+                        add_edit("summary", season, season_dict, season_methods)
+                        if self.library.edit_item(season, season_id, "Season", edits):
+                            updated = True
+                        self.set_images(season, season_dict, season_methods)
                         logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
-                else:
-                    logger.error("Metadata Error: seasons attribute is blank")
-            elif "seasons" in methods:
-                logger.error("Metadata Error: seasons attribute only works for show libraries")
+
+                        if "episodes" in season_methods and self.library.is_show:
+                            if not season_dict[season_methods["episodes"]]:
+                                logger.error("Metadata Error: episodes attribute is blank")
+                            elif not isinstance(season_dict[season_methods["episodes"]], dict):
+                                logger.error("Metadata Error: episodes attribute must be a dictionary")
+                            else:
+                                for episode_str, episode_dict in season_dict[season_methods["episodes"]].items():
+                                    updated = False
+                                    logger.info("")
+                                    logger.info(f"Updating episode {episode_str} in {season_id} of {mapping_name}...")
+                                    try:
+                                        if isinstance(episode_str, int):
+                                            episode = season.episode(episode=episode_str)
+                                        else:
+                                            episode = season.episode(title=episode_str)
+                                    except NotFound:
+                                        logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
+                                        continue
+                                    episode_methods = {em.lower(): em for em in episode_dict}
+
+                                    if "title" in episode_methods and episode_dict[episode_methods["title"]]:
+                                        title = episode_dict[episode_methods["title"]]
+                                    else:
+                                        title = episode.title
+                                    if "sub" in episode_dict:
+                                        if episode_dict[episode_methods["sub"]] is None:
+                                            logger.error("Metadata Error: sub attribute is blank")
+                                        elif episode_dict[episode_methods["sub"]] is True and "(SUB)" not in title:
+                                            title = f"{title} (SUB)"
+                                        elif episode_dict[episode_methods["sub"]] is False and title.endswith(" (SUB)"):
+                                            title = title[:-6]
+                                        else:
+                                            logger.error("Metadata Error: sub attribute must be True or False")
+                                    edits = {}
+                                    add_edit("title", episode, episode_dict, episode_methods, value=title)
+                                    add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
+                                    add_edit("rating", episode, episode_dict, episode_methods, var_type="float")
+                                    add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
+                                    add_edit("summary", episode, episode_dict, episode_methods)
+                                    if self.library.edit_item(episode, f"{episode_str} in Season: {season_id}", "Episode", edits):
+                                        updated = True
+                                    for tag_edit in ["director", "writer"]:
+                                        if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
+                                            updated = True
+                                    self.set_images(episode, episode_dict, episode_methods)
+                                    logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
             if "episodes" in methods and self.library.is_show:
-                if meta[methods["episodes"]]:
-                    for episode_str in meta[methods["episodes"]]:
+                if not meta[methods["episodes"]]:
+                    logger.error("Metadata Error: episodes attribute is blank")
+                elif not isinstance(meta[methods["episodes"]], dict):
+                    logger.error("Metadata Error: episodes attribute must be a dictionary")
+                else:
+                    for episode_str, episode_dict in meta[methods["episodes"]].items():
                         updated = False
                         logger.info("")
                         match = re.search("[Ss]\\d+[Ee]\\d+", episode_str)
-                        if match:
-                            output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
-                            season_id = int(output[0])
-                            episode_id = int(output[1])
-                            logger.info(f"Updating episode S{season_id}E{episode_id} of {mapping_name}...")
-                            try:
-                                episode = item.episode(season=season_id, episode=episode_id)
-                            except NotFound:
-                                logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
-                            else:
-                                episode_dict = meta[methods["episodes"]][episode_str]
-                                episode_methods = {em.lower(): em for em in episode_dict}
-
-                                if "title" in episode_methods and episode_dict[episode_methods["title"]]:
-                                    title = episode_dict[episode_methods["title"]]
-                                else:
-                                    title = episode.title
-                                if "sub" in episode_dict:
-                                    if episode_dict[episode_methods["sub"]] is None:
-                                        logger.error("Metadata Error: sub attribute is blank")
-                                    elif episode_dict[episode_methods["sub"]] is True and "(SUB)" not in title:
-                                        title = f"{title} (SUB)"
-                                    elif episode_dict[episode_methods["sub"]] is False and title.endswith(" (SUB)"):
-                                        title = title[:-6]
-                                    else:
-                                        logger.error("Metadata Error: sub attribute must be True or False")
-                                edits = {}
-                                add_edit("title", episode, episode_dict, episode_methods, value=title)
-                                add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
-                                add_edit("rating", episode, episode_dict, episode_methods, var_type="float")
-                                add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
-                                add_edit("summary", episode, episode_dict, episode_methods)
-                                if self.library.edit_item(episode, f"{season_id} Episode: {episode_id}", "Season", edits):
-                                    updated = True
-                                if edit_tags("director", episode, episode_dict, episode_methods):
-                                    updated = True
-                                if edit_tags("writer", episode, episode_dict, episode_methods):
-                                    updated = True
-                                set_images(episode, episode_dict, episode_methods)
-                            logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
-                        else:
+                        if not match:
                             logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
+                            continue
+                        output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
+                        season_id = int(output[0])
+                        episode_id = int(output[1])
+                        logger.info(f"Updating episode S{season_id}E{episode_id} of {mapping_name}...")
+                        try:
+                            episode = item.episode(season=season_id, episode=episode_id)
+                        except NotFound:
+                            logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
+                            continue
+                        episode_methods = {em.lower(): em for em in episode_dict}
+
+                        if "title" in episode_methods and episode_dict[episode_methods["title"]]:
+                            title = episode_dict[episode_methods["title"]]
+                        else:
+                            title = episode.title
+                        if "sub" in episode_dict:
+                            if episode_dict[episode_methods["sub"]] is None:
+                                logger.error("Metadata Error: sub attribute is blank")
+                            elif episode_dict[episode_methods["sub"]] is True and "(SUB)" not in title:
+                                title = f"{title} (SUB)"
+                            elif episode_dict[episode_methods["sub"]] is False and title.endswith(" (SUB)"):
+                                title = title[:-6]
+                            else:
+                                logger.error("Metadata Error: sub attribute must be True or False")
+                        edits = {}
+                        add_edit("title", episode, episode_dict, episode_methods, value=title)
+                        add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
+                        add_edit("rating", episode, episode_dict, episode_methods, var_type="float")
+                        add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
+                        add_edit("summary", episode, episode_dict, episode_methods)
+                        if self.library.edit_item(episode, f"{season_id} Episode: {episode_id}", "Season", edits):
+                            updated = True
+                        for tag_edit in ["director", "writer"]:
+                            if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
+                                updated = True
+                        self.set_images(episode, episode_dict, episode_methods)
+                        logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+            if "albums" in methods and self.library.is_music:
+                if not meta[methods["albums"]]:
+                    logger.error("Metadata Error: albums attribute is blank")
+                elif not isinstance(meta[methods["albums"]], dict):
+                    logger.error("Metadata Error: albums attribute must be a dictionary")
                 else:
-                    logger.error("Metadata Error: episodes attribute is blank")
-            elif "episodes" in methods:
-                logger.error("Metadata Error: episodes attribute only works for show libraries")
+                    for album_name, album_dict in meta[methods["albums"]].items():
+                        updated = False
+                        title = None
+                        album_methods = {am.lower(): am for am in album_dict}
+                        logger.info("")
+                        logger.info(f"Updating album {album_name} of {mapping_name}...")
+                        try:
+                            album = item.album(album_name)
+                        except NotFound:
+                            try:
+                                if "alt_title" not in album_methods or not album_dict[album_methods["alt_title"]]:
+                                    raise NotFound
+                                album = item.album(album_dict[album_methods["alt_title"]])
+                                title = album_name
+                            except NotFound:
+                                logger.error(f"Metadata Error: Album: {album_name} not found")
+                                continue
+
+                        if not title:
+                            title = album.title
+                        edits = {}
+                        add_edit("title", album, album_dict, album_methods, value=title)
+                        add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
+                        add_edit("rating", album, album_dict, album_methods, var_type="float")
+                        add_edit("originally_available", album, album_dict, album_methods, key="originallyAvailableAt", var_type="date")
+                        add_edit("record_label", album, album_dict, album_methods, key="studio")
+                        add_edit("summary", album, album_dict, album_methods)
+                        if self.library.edit_item(album, title, "Album", edits):
+                            updated = True
+                        for tag_edit in ["genre", "style", "mood", "collection", "label"]:
+                            if self.edit_tags(tag_edit, album, album_dict, album_methods):
+                                updated = True
+                        self.set_images(album, album_dict, album_methods)
+                        logger.info(f"Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+                        if "tracks" in album_methods:
+                            if not album_dict[album_methods["tracks"]]:
+                                logger.error("Metadata Error: tracks attribute is blank")
+                            elif not isinstance(album_dict[album_methods["tracks"]], dict):
+                                logger.error("Metadata Error: tracks attribute must be a dictionary")
+                            else:
+                                for track_num, track_dict in album_dict[album_methods["tracks"]].items():
+                                    updated = False
+                                    title = None
+                                    track_methods = {tm.lower(): tm for tm in track_dict}
+                                    logger.info("")
+                                    logger.info(f"Updating track {track_num} on {album_name} of {mapping_name}...")
+                                    try:
+                                        if isinstance(track_num, int):
+                                            track = album.track(track=track_num)
+                                        else:
+                                            track = album.track(title=track_num)
+                                    except NotFound:
+                                        try:
+                                            if "alt_title" not in track_methods or not track_dict[track_methods["alt_title"]]:
+                                                raise NotFound
+                                            track = album.track(title=track_dict[track_methods["alt_title"]])
+                                            title = track_num
+                                        except NotFound:
+                                            logger.error(f"Metadata Error: Track: {track_num} not found")
+                                            continue
+
+                                    if not title:
+                                        title = track.title
+                                    edits = {}
+                                    add_edit("title", track, track_dict, track_methods, value=title)
+                                    add_edit("rating", track, track_dict, track_methods, var_type="float")
+                                    add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
+                                    add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
+                                    add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")
+                                    if self.library.edit_item(album, title, "Track", edits):
+                                        updated = True
+                                    if self.edit_tags("mood", track, track_dict, track_methods):
+                                        updated = True
+                                    logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
 
 class PlaylistFile(DataFile):

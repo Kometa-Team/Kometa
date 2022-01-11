@@ -2,6 +2,7 @@ import glob, logging, os, re, signal, sys, time, traceback
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from pathvalidate import is_valid_filename, sanitize_filename
+from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
 
@@ -21,6 +22,9 @@ class Failed(Exception):
     pass
 
 class NotScheduled(Exception):
+    pass
+
+class NotScheduledRange(NotScheduled):
     pass
 
 class ImageData:
@@ -182,19 +186,19 @@ def regex_first_int(data, id_type, default=None):
     else:
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
-def centered(text, sep=" "):
+def centered(text, sep=" ", side_space=True, left=False):
     if len(text) > screen_width - 2:
         return text
     space = screen_width - len(text) - 2
-    text = f" {text} "
+    text = f"{' ' if side_space else sep}{text}{' ' if side_space else sep}"
     if space % 2 == 1:
         text += sep
         space -= 1
     side = int(space / 2) - 1
-    final_text = f"{sep * side}{text}{sep * side}"
+    final_text = f"{text}{sep * side}{sep * side}" if left else f"{sep * side}{text}{sep * side}"
     return final_text
 
-def separator(text=None, space=True, border=True, debug=False):
+def separator(text=None, space=True, border=True, debug=False, side_space=True, left=False):
     sep = " " if space else separating_character
     for handler in logger.handlers:
         apply_formatter(handler, border=False)
@@ -207,9 +211,9 @@ def separator(text=None, space=True, border=True, debug=False):
         text_list = text.split("\n")
         for t in text_list:
             if debug:
-                logger.debug(f"|{sep}{centered(t, sep=sep)}{sep}|")
+                logger.debug(f"|{sep}{centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
             else:
-                logger.info(f"|{sep}{centered(t, sep=sep)}{sep}|")
+                logger.info(f"|{sep}{centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
         if border and debug:
             logger.debug(border_text)
         elif border:
@@ -261,6 +265,10 @@ def item_title(item):
             return f"{text}: {item.parentTitle}: {item.title}"
     elif isinstance(item, Movie) and item.year:
         return f"{item.title} ({item.year})"
+    elif isinstance(item, Album):
+        return f"{item.parentTitle}: {item.title}"
+    elif isinstance(item, Track):
+        return f"{item.grandparentTitle}: {item.parentTitle}: {item.title}"
     else:
         return item.title
 
@@ -370,12 +378,14 @@ def check_day(_m, _d):
 
 def schedule_check(attribute, data, current_time, run_hour):
     skip_collection = True
+    range_collection = False
     schedule_list = get_list(data)
     next_month = current_time.replace(day=28) + timedelta(days=4)
     last_day = next_month - timedelta(days=next_month.day)
     schedule_str = ""
     for schedule in schedule_list:
         run_time = str(schedule).lower()
+        display = f"{attribute} attribute {schedule} invalid"
         if run_time.startswith(("day", "daily")):
             skip_collection = False
         elif run_time == "never":
@@ -395,10 +405,10 @@ def schedule_check(attribute, data, current_time, run_hour):
                     else:
                         raise ValueError
                 except ValueError:
-                    logger.error(f"Schedule Error: hourly {attribute} attribute {schedule} invalid must be an integer between 0 and 23")
+                    logger.error(f"Schedule Error: hourly {display} must be an integer between 0 and 23")
             elif run_time.startswith("week"):
                 if param.lower() not in days_alias:
-                    logger.error(f"Schedule Error: weekly {attribute} attribute {schedule} invalid must be a day of the week i.e. weekly(Monday)")
+                    logger.error(f"Schedule Error: weekly {display} must be a day of the week i.e. weekly(Monday)")
                     continue
                 weekday = days_alias[param.lower()]
                 schedule_str += f"\nScheduled weekly on {pretty_days[weekday]}"
@@ -414,7 +424,7 @@ def schedule_check(attribute, data, current_time, run_hour):
                     else:
                         raise ValueError
                 except ValueError:
-                    logger.error(f"Schedule Error: monthly {attribute} attribute {schedule} invalid must be an integer between 1 and 31")
+                    logger.error(f"Schedule Error: monthly {display} must be an integer between 1 and 31")
             elif run_time.startswith("year"):
                 try:
                     if "/" in param:
@@ -428,12 +438,11 @@ def schedule_check(attribute, data, current_time, run_hour):
                     else:
                         raise ValueError
                 except ValueError:
-                    logger.error(
-                        f"Schedule Error: yearly {attribute} attribute {schedule} invalid must be in the MM/DD format i.e. yearly(11/22)")
+                    logger.error(f"Schedule Error: yearly {display} must be in the MM/DD format i.e. yearly(11/22)")
             elif run_time.startswith("range"):
                 match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", param)
                 if not match:
-                    logger.error(f"Schedule Error: range {attribute} attribute {schedule} invalid must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
+                    logger.error(f"Schedule Error: range {display} must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
                     continue
                 month_start, day_start = check_day(int(match.group(1)), int(match.group(2)))
                 month_end, day_end = check_day(int(match.group(3)), int(match.group(4)))
@@ -441,12 +450,15 @@ def schedule_check(attribute, data, current_time, run_hour):
                 check = datetime.strptime(f"{month_check}/{day_check}", "%m/%d")
                 start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
                 end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
+                range_collection = True
                 schedule_str += f"\nScheduled between {pretty_months[month_start]} {make_ordinal(day_start)} and {pretty_months[month_end]} {make_ordinal(day_end)}"
                 if start <= check <= end if start < end else (check <= end or check >= start):
                     skip_collection = False
         else:
-            logger.error(f"Schedule Error: {attribute} attribute {schedule} invalid")
+            logger.error(f"Schedule Error: {display}")
     if len(schedule_str) == 0:
         skip_collection = False
-    if skip_collection:
+    if skip_collection and range_collection:
+        raise NotScheduledRange(schedule_str)
+    elif skip_collection:
         raise NotScheduled(schedule_str)

@@ -2,7 +2,7 @@ import logging
 from modules import util
 from modules.util import Failed
 from arrapi import RadarrAPI
-from arrapi.exceptions import ArrException, Invalid
+from arrapi.exceptions import ArrException
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -22,7 +22,7 @@ class Radarr:
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"])
         except ArrException as e:
             raise Failed(e)
-        self.add = params["add"]
+        self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
@@ -34,9 +34,6 @@ class Radarr:
         self.plex_path = params["plex_path"] if params["radarr_path"] and params["plex_path"] else ""
 
     def add_tmdb(self, tmdb_ids, **options):
-        logger.info("")
-        util.separator("Adding to Radarr", space=False, border=False)
-        logger.debug("")
         _ids = []
         _paths = []
         for tmdb_id in tmdb_ids:
@@ -44,6 +41,9 @@ class Radarr:
                 _paths.append(tmdb_id)
             else:
                 _ids.append(tmdb_id)
+        logger.info("")
+        util.separator(f"Adding {'Missing' if _ids else 'Existing'} to Radarr", space=False, border=False)
+        logger.debug("")
         logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
         for tmdb_id in _paths:
             logger.debug(tmdb_id)
@@ -68,10 +68,23 @@ class Radarr:
         exists = []
         skipped = []
         invalid = []
+        invalid_root = []
         movies = []
         path_lookup = {}
         mismatched = {}
         path_in_use = {}
+
+        def mass_add():
+            try:
+                _a, _e, _i = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search,
+                                                          availability, tags, per_request=100)
+                added.extend(_a)
+                exists.extend(_e)
+                invalid.extend(_i)
+            except ArrException as e:
+                util.print_stacktrace()
+                raise Failed(f"Radarr Error: {e}")
+
         for i, item in enumerate(tmdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tmdb_id = item[0] if isinstance(item, tuple) else item
@@ -88,7 +101,12 @@ class Radarr:
                 if path and path.lower() in arr_paths:
                     mismatched[path] = tmdb_id
                     continue
+                if path and not path.startswith(folder):
+                    invalid_root.append(item)
+                    continue
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
+                if self.config.trace_mode:
+                    logger.debug(f"Folder to Check: {folder}/{movie.folder}")
                 if f"{folder}/{movie.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{movie.folder}"] = tmdb_id
                     continue
@@ -100,20 +118,16 @@ class Radarr:
             except ArrException:
                 invalid.append(item)
             if len(movies) == 100 or len(tmdb_ids) == i:
-                try:
-                    _a, _e, _i = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search,
-                                                              availability, tags, per_request=100)
-                    added.extend(_a)
-                    exists.extend(_e)
-                    invalid.extend(_i)
-                    movies = []
-                except Invalid as e:
-                    raise Failed(f"Radarr Error: {e}")
+                mass_add()
+                movies = []
+        if movies:
+            mass_add()
+            movies = []
 
         if len(added) > 0:
             logger.info("")
             for movie in added:
-                logger.info(f"Added to Radarr | {movie.tmdbId:<6} | {movie.title}")
+                logger.info(f"Added to Radarr | {movie.tmdbId:<7} | {movie.title}")
                 if self.config.Cache:
                     self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Movie{'s' if len(added) > 1 else ''} added to Radarr")
@@ -122,7 +136,7 @@ class Radarr:
             logger.info("")
             if len(exists) > 0:
                 for movie in exists:
-                    logger.info(f"Already in Radarr | {movie.tmdbId:<6} | {movie.title}")
+                    logger.info(f"Already in Radarr | {movie.tmdbId:<7} | {movie.title}")
                     if self.config.Cache:
                         self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
             if len(skipped) > 0:
@@ -149,6 +163,12 @@ class Radarr:
             for tmdb_id in invalid:
                 logger.info(f"Invalid TMDb ID | {tmdb_id}")
             logger.info(f"{len(invalid)} Movie{'s' if len(invalid) > 1 else ''} with Invalid IDs")
+
+        if len(invalid_root) > 0:
+            logger.info("")
+            for tmdb_id, path in invalid_root:
+                logger.info(f"Invalid Root Folder for TMDb ID | {tmdb_id:<7} | {path}")
+            logger.info(f"{len(invalid_root)} Movie{'s' if len(invalid_root) > 1 else ''} with Invalid Paths")
 
         return len(added)
 
