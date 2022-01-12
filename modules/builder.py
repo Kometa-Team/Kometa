@@ -95,7 +95,7 @@ string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level",
-    "validate_builders", "sort_by", "libraries", "sync_to_users", "collection_name", "playlist_name", "name"
+    "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name"
 ]
 details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode",
            "minimum_items", "label", "album_sorting"] + boolean_details + scheduled_boolean + string_details
@@ -915,9 +915,9 @@ class CollectionBuilder:
             for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
-                    search_attr, modifier, search_final = self._split(search_method)
-                    if search_final not in anilist.searches:
-                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute not supported")
+                    search_attr, modifier = os.path.splitext(str(search_method).lower())
+                    if search_method not in anilist.searches:
+                        raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute not supported")
                     elif search_attr == "season":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
                         if "year" not in dict_methods:
@@ -926,7 +926,7 @@ class CollectionBuilder:
                     elif search_attr == "year":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="int", parent=method_name, default=default_year, minimum=1917, maximum=default_year + 1)
                     elif search_data is None:
-                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute is blank")
+                        raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute is blank")
                     elif search_attr == "adult":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="bool", parent=method_name)
                     elif search_attr == "country":
@@ -934,17 +934,17 @@ class CollectionBuilder:
                     elif search_attr == "source":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, options=anilist.media_source, parent=method_name)
                     elif search_attr in ["episodes", "duration", "score", "popularity"]:
-                        new_dictionary[search_final] = self._parse(search_final, search_data, datatype="int", parent=method_name)
+                        new_dictionary[search_method] = self._parse(search_method, search_data, datatype="int", parent=method_name)
                     elif search_attr in ["format", "status", "genre", "tag", "tag_category"]:
-                        new_dictionary[search_final] = self.config.AniList.validate(search_attr.replace("_", " ").title(), self._parse(search_final, search_data))
+                        new_dictionary[search_method] = self.config.AniList.validate(search_attr.replace("_", " ").title(), self._parse(search_method, search_data))
                     elif search_attr in ["start", "end"]:
-                        new_dictionary[search_final] = util.validate_date(search_data, f"{method_name} {search_final} attribute", return_as="%m/%d/%Y")
+                        new_dictionary[search_method] = util.validate_date(search_data, f"{method_name} {search_method} attribute", return_as="%m/%d/%Y")
                     elif search_attr == "min_tag_percent":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="int", parent=method_name, minimum=0, maximum=100)
                     elif search_attr == "search":
                         new_dictionary[search_attr] = str(search_data)
-                    elif search_final not in ["sort_by", "limit"]:
-                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute not supported")
+                    elif search_method not in ["sort_by", "limit"]:
+                        raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute not supported")
                 if len(new_dictionary) == 0:
                     raise Failed(f"{self.Type} Error: {method_name} must have at least one valid search option")
                 new_dictionary["sort_by"] = self._parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.sort_options)
@@ -1096,59 +1096,59 @@ class CollectionBuilder:
             for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {"limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name)}
                 for discover_method, discover_data in dict_data.items():
-                    discover_attr, modifier, discover_final = self._split(discover_method)
+                    discover_attr, modifier = os.path.splitext(str(discover_method).lower())
                     if discover_data is None:
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute is blank")
-                    elif discover_final not in tmdb.discover_all:
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute not supported")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute is blank")
+                    elif discover_method not in tmdb.discover_all:
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute not supported")
                     elif self.library.is_movie and discover_attr in tmdb.discover_tv_only:
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute only works for show libraries")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute only works for show libraries")
                     elif self.library.is_show and discover_attr in tmdb.discover_movie_only:
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute only works for movie libraries")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute only works for movie libraries")
                     elif discover_attr in ["language", "region"]:
                         regex = ("([a-z]{2})-([A-Z]{2})", "en-US") if discover_attr == "language" else ("^[A-Z]{2}$", "US")
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, parent=method_name, regex=regex)
                     elif discover_attr == "sort_by" and self.library.is_movie:
                         options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
-                        new_dictionary[discover_final] = self._parse(discover_attr, discover_data, parent=method_name, options=options)
+                        new_dictionary[discover_method] = self._parse(discover_attr, discover_data, parent=method_name, options=options)
                     elif discover_attr == "certification_country":
                         if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
-                            new_dictionary[discover_final] = discover_data
+                            new_dictionary[discover_method] = discover_data
                         else:
                             raise Failed(f"{self.Type} Error: {method_name} {discover_attr} attribute: must be used with either certification, certification.lte, or certification.gte")
                     elif discover_attr == "certification":
                         if "certification_country" in dict_data:
-                            new_dictionary[discover_final] = discover_data
+                            new_dictionary[discover_method] = discover_data
                         else:
-                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with certification_country")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with certification_country")
                     elif discover_attr == "watch_region":
                         if "with_watch_providers" in dict_data or "without_watch_providers" in dict_data or "with_watch_monetization_types" in dict_data:
-                            new_dictionary[discover_final] = discover_data
+                            new_dictionary[discover_method] = discover_data
                         else:
-                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
                     elif discover_attr == "with_watch_monetization_types":
                         if "watch_region" in dict_data:
-                            new_dictionary[discover_final] = self._parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
+                            new_dictionary[discover_method] = self._parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
                         else:
-                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with watch_region")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with watch_region")
                     elif discover_attr in tmdb.discover_booleans:
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="bool", parent=method_name)
                     elif discover_attr == "vote_average":
-                        new_dictionary[discover_final] = self._parse(discover_final, discover_data, datatype="float", parent=method_name)
+                        new_dictionary[discover_method] = self._parse(discover_method, discover_data, datatype="float", parent=method_name)
                     elif discover_attr == "with_status":
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
                     elif discover_attr == "with_type":
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
-                    elif discover_final in tmdb.discover_dates:
-                        new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} {discover_final} attribute", return_as="%m/%d/%Y")
+                    elif discover_method in tmdb.discover_dates:
+                        new_dictionary[discover_method] = util.validate_date(discover_data, f"{method_name} {discover_method} attribute", return_as="%m/%d/%Y")
                     elif discover_attr in tmdb.discover_years:
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
                     elif discover_attr in tmdb.discover_ints:
-                        new_dictionary[discover_final] = self._parse(discover_final, discover_data, datatype="int", parent=method_name)
-                    elif discover_final in tmdb.discover_strings:
-                        new_dictionary[discover_final] = discover_data
+                        new_dictionary[discover_method] = self._parse(discover_method, discover_data, datatype="int", parent=method_name)
+                    elif discover_method in tmdb.discover_strings:
+                        new_dictionary[discover_method] = discover_data
                     elif discover_attr != "limit":
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute not supported")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute not supported")
                 if len(new_dictionary) > 1:
                     self.builders.append((method_name, new_dictionary))
                 else:
