@@ -65,7 +65,9 @@ filter_translation = {
     "last_played": "lastViewedAt",
     "plays": "viewCount",
     "user_rating": "userRating",
-    "writer": "writers"
+    "writer": "writers",
+    "mood": "moods",
+    "style": "styles"
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
