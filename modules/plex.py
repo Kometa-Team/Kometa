@@ -552,15 +552,16 @@ class Plex(Library):
         try:
             names = []
             choices = {}
+            use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
             for choice in self.Plex.listFilterChoices(final_search):
                 if choice.title not in names:
                     names.append(choice.title)
                 if choice.key not in names:
                     names.append(choice.key)
-                choices[choice.title] = choice.title if title else choice.key
-                choices[choice.key] = choice.title if title else choice.key
-                choices[choice.title.lower()] = choice.title if title else choice.key
-                choices[choice.key.lower()] = choice.title if title else choice.key
+                choices[choice.title] = choice.title if use_title else choice.key
+                choices[choice.key] = choice.title if use_title else choice.key
+                choices[choice.title.lower()] = choice.title if use_title else choice.key
+                choices[choice.key.lower()] = choice.title if use_title else choice.key
             return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
