@@ -948,6 +948,8 @@ def run_playlists(config):
                 sync_to_users = config.general["playlist_sync_to_user"]
                 if "sync_to_users" in playlist_attrs:
                     sync_to_users = playlist_attrs["sync_to_users"]
+                elif "sync_to_user" in playlist_attrs:
+                    sync_to_users = playlist_attrs["sync_to_user"]
                 else:
                     logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_user: {sync_to_users}")
 
