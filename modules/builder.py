@@ -1,6 +1,6 @@
 import logging, os, re, time
 from datetime import datetime, timedelta
-from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, util
+from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, ImageData, NotScheduled, NotScheduledRange
 from PIL import Image
 from plexapi.audio import Artist, Album, Track
@@ -70,7 +70,7 @@ filter_translation = {
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
                letterboxd.builders + mal.builders + plex.builders + stevenlu.builders + tautulli.builders + \
-               tmdb.builders + trakt.builders + tvdb.builders
+               tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders
 show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level", "item_tmdb_season_titles"]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
@@ -551,6 +551,8 @@ class CollectionBuilder:
                     self._trakt(method_name, method_data)
                 elif method_name in tvdb.builders:
                     self._tvdb(method_name, method_data)
+                elif method_name in mdblist.builders:
+                    self._mdblist(method_name, method_data)
                 elif method_name == "filters":
                     self._filters(method_name, method_data)
                 else:
@@ -1077,6 +1079,9 @@ class CollectionBuilder:
     def _stevenlu(self, method_name, method_data):
         self.builders.append((method_name, self._parse(method_name, method_data, "bool")))
 
+    def _mdblist(self, method_name, method_data):
+        self.builders.append((method_name, self._parse(method_name, method_data, datatype="true")))
+
     def _tautulli(self, method_name, method_data):
         for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
             self.builders.append((method_name, {
@@ -1263,6 +1268,8 @@ class CollectionBuilder:
             return self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
         elif "stevenlu" in method:
             return self.config.StevenLu.get_stevenlu_ids(method)
+        elif "mdblist" in method:
+            return self.config.Mdblist.get_mdblist_ids(method, value)
         elif "tmdb" in method:
             return self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie)
         elif "trakt" in method:
