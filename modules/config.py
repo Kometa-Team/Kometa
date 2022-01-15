@@ -125,6 +125,8 @@ class ConfigFile:
                 temp = new_config.pop("settings")
                 if "collection_minimum" in temp:
                     temp["minimum_items"] = temp.pop("collection_minimum")
+                if "playlist_sync_to_user" in temp:
+                    temp["playlist_sync_to_users"] = temp.pop("playlist_sync_to_user")
                 new_config["settings"] = temp
             if "webhooks" in new_config:
                 temp = new_config.pop("webhooks")
@@ -283,7 +285,7 @@ class ConfigFile:
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
             "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
-            "playlist_sync_to_user": check_for_attribute(self.data, "playlist_sync_to_user", parent="settings", default="all", default_is_none=True),
+            "playlist_sync_to_users": check_for_attribute(self.data, "playlist_sync_to_users", parent="settings", default="all", default_is_none=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
