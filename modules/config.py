@@ -18,6 +18,7 @@ from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
+from modules.mdblist import Mdblist
 from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
 from modules.trakt import Trakt
@@ -480,6 +481,7 @@ class ConfigFile:
             self.ICheckMovies = ICheckMovies(self)
             self.Letterboxd = Letterboxd(self)
             self.StevenLu = StevenLu(self)
+            self.Mdblist = Mdblist(self)
 
             util.separator()
 
