@@ -929,6 +929,31 @@ class Plex(Library):
                             self.upload_images(episode, poster=episode_poster)
                 if self.show_missing_season_assets and found_season and missing_assets:
                     util.print_multiline(f"Missing Season Posters for {item.title}{missing_assets}", info=True)
+            if isinstance(item, Artist):
+                missing_assets = ""
+                found_album = False
+                for album in self.query(item.albums):
+                    if item_dir:
+                        album_poster_filter = os.path.join(item_dir, f"{album.title}.*")
+                        album_background_filter = os.path.join(item_dir, f"{album.title}_background.*")
+                    else:
+                        album_poster_filter = os.path.join(ad, f"{name}_{album.title}.*")
+                        album_background_filter = os.path.join(ad, f"{name}_{album.title}_background.*")
+                    album_poster = None
+                    album_background = None
+                    matches = util.glob_filter(album_poster_filter)
+                    if len(matches) > 0:
+                        album_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Album {album.title}'s ", is_url=False)
+                        found_album = True
+                    else:
+                        missing_assets += f"\nMissing Album {album.title} Poster"
+                    matches = util.glob_filter(album_background_filter)
+                    if len(matches) > 0:
+                        album_background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Album {album.title}'s ", is_poster=False, is_url=False)
+                    if album_poster or album_background:
+                        self.upload_images(album, poster=album_poster, background=album_background)
+                if self.show_missing_season_assets and found_album and missing_assets:
+                    util.print_multiline(f"Missing Album Posters for {item.title}{missing_assets}", info=True)
 
         if isinstance(item, (Movie, Show)) and not poster and overlay:
             self.upload_images(item, overlay=overlay)
