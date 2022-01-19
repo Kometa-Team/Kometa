@@ -945,7 +945,7 @@ def run_playlists(config):
                     else:
                         server_check = pl_library.PlexServer.machineIdentifier
 
-                sync_to_users = config.general["playlist_sync_to_user"]
+                sync_to_users = config.general["playlist_sync_to_users"]
                 if "sync_to_users" in playlist_attrs:
                     sync_to_users = playlist_attrs["sync_to_users"]
                 elif "sync_to_user" in playlist_attrs:

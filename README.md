@@ -57,6 +57,7 @@ Before posting on GitHub about an enhancement, error, or configuration question 
 ## Wiki Table of Contents
 - [Home](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Home)
 - [Installation](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Installation)
+- [Run Commands & Environmental Variables](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Run-Commands-&-Environmental-Variables)
   - [Local Walkthrough](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Local-Walkthrough)
   - [Docker Walkthrough](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Docker-Walkthrough)
   - [unRAID Walkthrough](https://github.com/meisnate12/Plex-Meta-Manager/wiki/unRAID-Walkthrough)
