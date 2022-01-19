@@ -414,7 +414,7 @@ class ConfigFile:
                 except Failed as e:
                     self.errors.append(e)
                     logger.error(e)
-                logger.info(f"My Anime List Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
+                logger.info(f"AniDB Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
             if self.AniDB is None:
                 self.AniDB = AniDB(self, None)
 
