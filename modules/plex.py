@@ -4,6 +4,7 @@ from modules.library import Library
 from modules.util import Failed, ImageData
 from PIL import Image
 from plexapi import utils
+from plexapi.audio import Artist
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
 from plexapi.playlist import Playlist
@@ -827,7 +828,7 @@ class Plex(Library):
     def find_assets(self, item, name=None, upload=True, overlay=None, folders=None, create=None):
         if isinstance(item, Movie):
             name = os.path.basename(os.path.dirname(str(item.locations[0])))
-        elif isinstance(item, Show):
+        elif isinstance(item, (Artist, Show)):
             name = os.path.basename(str(item.locations[0]))
         elif isinstance(item, Collection):
             name = name if name else item.title
