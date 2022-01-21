@@ -231,7 +231,7 @@ class MetadataFile(DataFile):
             self.templates = get_dict("templates", data)
             self.collections = get_dict("collections", data, library.collections)
 
-            if self.metadata is None and self.collections is None:
+            if not self.metadata and not self.collections:
                 raise Failed("YAML Error: metadata or collections attribute is required")
             logger.info(f"Metadata File Loaded Successfully")
 
@@ -423,15 +423,15 @@ class MetadataFile(DataFile):
             summary = None
             genres = []
             if tmdb_item:
-                originally_available = tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date
-                if tmdb_item and tmdb_is_movie is True and tmdb_item.original_title != tmdb_item.title:
+                originally_available = datetime.strftime(tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date, "%Y-%m-%d")
+                if tmdb_is_movie and tmdb_item.original_title != tmdb_item.title:
                     original_title = tmdb_item.original_title
-                elif tmdb_item and tmdb_is_movie is False and tmdb_item.original_name != tmdb_item.name:
+                elif not tmdb_is_movie and tmdb_item.original_name != tmdb_item.name:
                     original_title = tmdb_item.original_name
                 rating = tmdb_item.vote_average
-                if tmdb_is_movie is True and tmdb_item.production_companies:
+                if tmdb_is_movie and tmdb_item.production_companies:
                     studio = tmdb_item.production_companies[0].name
-                elif tmdb_is_movie is False and tmdb_item.networks:
+                elif not tmdb_is_movie and tmdb_item.networks:
                     studio = tmdb_item.networks[0].name
                 tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
                 summary = tmdb_item.overview

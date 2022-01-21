@@ -376,10 +376,10 @@ class CollectionBuilder:
                 for tmdb_id in util.get_int_list(self.data[methods["tmdb_person"]], "TMDb Person ID"):
                     person = self.config.TMDb.get_person(tmdb_id)
                     valid_names.append(person.name)
-                    if hasattr(person, "biography") and person.biography:
+                    if person.biography:
                         self.summaries["tmdb_person"] = person.biography
-                    if hasattr(person, "profile_path") and person.profile_path:
-                        self.posters["tmdb_person"] = f"{self.config.TMDb.image_url}{person.profile_path}"
+                    if person.profile_url:
+                        self.posters["tmdb_person"] = person.profile_url
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
@@ -715,11 +715,9 @@ class CollectionBuilder:
         if method_name == "url_poster":
             self.posters[method_name] = method_data
         elif method_name == "tmdb_poster":
-            url_slug = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path
-            self.posters[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+            self.posters[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_url
         elif method_name == "tmdb_profile":
-            url_slug = self.config.TMDb.get_person(util.regex_first_int(method_data, 'TMDb Person ID')).profile_path
-            self.posters[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+            self.posters[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, 'TMDb Person ID')).profile_url
         elif method_name == "tvdb_poster":
             self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).poster_path}"
         elif method_name == "file_poster":
@@ -732,8 +730,7 @@ class CollectionBuilder:
         if method_name == "url_background":
             self.backgrounds[method_name] = method_data
         elif method_name == "tmdb_background":
-            url_slug = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path
-            self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+            self.backgrounds[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).backdrop_url
         elif method_name == "tvdb_background":
             self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).background_path}"
         elif method_name == "file_background":
@@ -1160,21 +1157,21 @@ class CollectionBuilder:
             if method_name.endswith("_details"):
                 if method_name.startswith(("tmdb_collection", "tmdb_movie", "tmdb_show")):
                     item = self.config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
-                    if hasattr(item, "overview") and item.overview:
+                    if item.overview:
                         self.summaries[method_name] = item.overview
-                    if hasattr(item, "backdrop_path") and item.backdrop_path:
-                        self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{item.backdrop_path}"
-                    if hasattr(item, "poster_path") and item.poster_path:
-                        self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
+                    if item.backdrop_url:
+                        self.backgrounds[method_name] = item.backdrop_url
+                    if item.poster_path:
+                        self.posters[method_name] = item.poster_url
                 elif method_name.startswith(("tmdb_actor", "tmdb_crew", "tmdb_director", "tmdb_producer", "tmdb_writer")):
                     item = self.config.TMDb.get_person(values[0])
-                    if hasattr(item, "biography") and item.biography:
+                    if item.biography:
                         self.summaries[method_name] = item.biography
-                    if hasattr(item, "profile_path") and item.profile_path:
-                        self.posters[method_name] = f"{self.config.TMDb.image_url}{item.profile_path}"
+                    if item.profile_path:
+                        self.posters[method_name] = item.profile_url
                 elif method_name.startswith("tmdb_list"):
                     item = self.config.TMDb.get_list(values[0])
-                    if hasattr(item, "description") and item.description:
+                    if item.description:
                         self.summaries[method_name] = item.description
             for value in values:
                 self.builders.append((method_name[:-8] if method_name.endswith("_details") else method_name, value))
@@ -1202,12 +1199,10 @@ class CollectionBuilder:
         if method_name.endswith("_details"):
             if method_name.startswith(("tvdb_movie", "tvdb_show")):
                 item = self.config.TVDb.get_item(values[0], method_name.startswith("tvdb_movie"))
-                if hasattr(item, "description") and item.description:
-                    self.summaries[method_name] = item.description
-                if hasattr(item, "background_path") and item.background_path:
-                    self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{item.background_path}"
-                if hasattr(item, "poster_path") and item.poster_path:
-                    self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
+                if item.background_path:
+                    self.backgrounds[method_name] = item.background_path
+                if item.poster_path:
+                    self.posters[method_name] = item.poster_path
             elif method_name.startswith("tvdb_list"):
                 self.summaries[method_name] = self.config.TVDb.get_list_description(values[0])
         for value in values:
@@ -1779,20 +1774,21 @@ class CollectionBuilder:
                 if item is None:
                     item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
                 if check_released:
-                    if util.validate_date(item.release_date if is_movie else item.first_air_date, "") > self.current_time:
+                    date_to_check = item.release_date if is_movie else item.first_air_date
+                    if date_to_check > self.current_time:
                         return False
                 for filter_method, filter_data in self.tmdb_filters:
                     filter_attr, modifier, filter_final = self._split(filter_method)
                     if filter_attr == "original_language":
-                        if (modifier == ".not" and item.original_language in filter_data) \
-                                or (modifier == "" and item.original_language not in filter_data):
+                        if (modifier == ".not" and item.original_language.iso_639_1 in filter_data) \
+                                or (modifier == "" and item.original_language.iso_639_1 not in filter_data):
                             return False
                     elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
                         tmdb_date = None
                         if filter_attr == "first_episode_aired":
-                            tmdb_date = util.validate_date(item.first_air_date, "TMDB First Air Date")
+                            tmdb_date = item.first_air_date
                         elif filter_attr == "last_episode_aired":
-                            tmdb_date = util.validate_date(item.last_air_date, "TMDB Last Air Date")
+                            tmdb_date = item.last_air_date
                         if util.is_date_filter(tmdb_date, modifier, filter_data, filter_final, self.current_time):
                             return False
                     elif modifier in [".gt", ".gte", ".lt", ".lte"]:
@@ -1801,10 +1797,8 @@ class CollectionBuilder:
                             attr = item.vote_count
                         elif filter_attr == "tmdb_year" and is_movie:
                             attr = item.year
-                        elif filter_attr == "tmdb_year" and not is_movie:
-                            air_date = item.first_air_date
-                            if air_date:
-                                attr = util.validate_date(air_date, "TMDb Year Filter").year
+                        elif filter_attr == "tmdb_year" and not is_movie and item.first_air_date:
+                            attr = item.first_air_date.year
                         if util.is_number_filter(attr, modifier, filter_data):
                             return False
             except Failed:
@@ -1940,7 +1934,7 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
                     continue
-                current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
+                current_title = f"{movie.title} ({movie.release_date.year})" if movie.release_date else movie.title
                 if self.check_tmdb_filter(missing_id, True, item=movie, check_released=self.details["missing_only_released"]):
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
@@ -2090,10 +2084,10 @@ class CollectionBuilder:
             if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
                 try:
                     tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey])
-                    names = {str(s.season_number): s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
+                    names = {s.season_number: s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
                     for season in self.library.query(item.seasons):
-                        if str(season.index) in names:
-                            self.library.edit_query(season, {"title.locked": 1, "title.value": names[str(season.index)]})
+                        if season.index in names:
+                            self.library.edit_query(season, {"title.locked": 1, "title.value": names[season.index]})
                 except Failed as e:
                     logger.error(e)
 
@@ -2452,7 +2446,7 @@ class CollectionBuilder:
                         logger.error(e)
                         continue
                     if self.details["show_missing"] is True:
-                        current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
+                        current_title = f"{movie.title} ({movie.release_date.year})" if movie.release_date else movie.title
                         logger.info(f"{name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(self.run_again_movies)} Movie{'s' if len(self.run_again_movies) > 1 else ''} Missing")

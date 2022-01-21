@@ -544,8 +544,8 @@ def library_operations(config, library):
                 else:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
 
-            if library.tmdb_collections and tmdb_item and tmdb_item.belongs_to_collection:
-                tmdb_collections[tmdb_item.belongs_to_collection.id] = tmdb_item.belongs_to_collection.name
+            if library.tmdb_collections and tmdb_item and tmdb_item.collection:
+                tmdb_collections[tmdb_item.collection.id] = tmdb_item.collection.name
 
             if library.mass_genre_update:
                 try:
