@@ -2074,10 +2074,11 @@ class CollectionBuilder:
                 path = path[:-1] if path.endswith(('/', '\\')) else path
                 tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], path))
             advance_edits = {}
+            prefs = [p.id for p in item.preferences()]
             for method_name, method_data in self.item_details.items():
                 if method_name in plex.item_advance_keys:
                     key, options = plex.item_advance_keys[method_name]
-                    if getattr(item, key) != options[method_data]:
+                    if key in prefs and getattr(item, key) != options[method_data]:
                         advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
 
