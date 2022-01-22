@@ -294,7 +294,6 @@ class MetadataFile(DataFile):
 
             updated = False
             edits = {}
-            advance_edits = {}
 
             def add_edit(name, current_item, group, alias, key=None, value=None, var_type="str"):
                 if value or name in alias:
@@ -333,21 +332,6 @@ class MetadataFile(DataFile):
                             logger.error(ee)
                     else:
                         logger.error(f"Metadata Error: {name} attribute is blank")
-
-            def add_advanced_edit(attr, obj, group, alias, new_agent=False):
-                key, options = plex.item_advance_keys[f"item_{attr}"]
-                if attr in alias:
-                    if new_agent and self.library.agent not in plex.new_plex_agents:
-                        logger.error(f"Metadata Error: {attr} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
-                    elif group[alias[attr]]:
-                        method_data = str(group[alias[attr]]).lower()
-                        if method_data not in options:
-                            logger.error(f"Metadata Error: {group[alias[attr]]} {attr} attribute invalid")
-                        elif getattr(obj, key) != options[method_data]:
-                            advance_edits[key] = options[method_data]
-                            logger.info(f"Detail: {attr} updated to {method_data}")
-                    else:
-                        logger.error(f"Metadata Error: {attr} attribute is blank")
 
             logger.info("")
             util.separator()
@@ -454,9 +438,21 @@ class MetadataFile(DataFile):
                 updated = True
 
             advance_edits = {}
+            prefs = [p.id for p in item.preferences()]
             for advance_edit in advance_tags_to_edit[self.library.type]:
-                is_new_agent = advance_edit in ["metadata_language", "use_original_title"]
-                add_advanced_edit(advance_edit, item, meta, methods, new_agent=is_new_agent)
+                key, options = plex.item_advance_keys[f"item_{advance_edit}"]
+                if advance_edit in methods:
+                    if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
+                        logger.error(f"Metadata Error: {advance_edit} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                    elif meta[methods[advance_edit]]:
+                        method_data = str(meta[methods[advance_edit]]).lower()
+                        if method_data not in options:
+                            logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
+                        elif key in prefs and getattr(item, key) != options[method_data]:
+                            advance_edits[key] = options[method_data]
+                            logger.info(f"Detail: {advance_edit} updated to {method_data}")
+                    else:
+                        logger.error(f"Metadata Error: {advance_edit} attribute is blank")
             if self.library.edit_item(item, mapping_name, self.library.type, advance_edits, advanced=True):
                 updated = True
 
