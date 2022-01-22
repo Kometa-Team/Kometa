@@ -246,7 +246,7 @@ show_only_searches = [
 ]
 string_attributes = ["title", "studio", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
 float_attributes = [
-    "user_rating", "episode_user_rating", "critic_rating", "audience_rating",
+    "user_rating", "episode_user_rating", "critic_rating", "audience_rating", "duration",
     "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
 ]
 boolean_attributes = [
@@ -260,7 +260,7 @@ date_attributes = [
     "album_added", "album_released", "track_last_played", "track_last_skipped", "track_last_rated", "track_added"
 ]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
-number_attributes = ["plays", "episode_plays", "duration", "tmdb_vote_count", "album_plays", "track_plays", "track_skips"] + year_attributes
+number_attributes = ["plays", "episode_plays", "tmdb_vote_count", "album_plays", "track_plays", "track_skips"] + year_attributes
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
