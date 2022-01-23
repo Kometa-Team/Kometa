@@ -217,20 +217,20 @@ class TMDb:
                 person = self.get_person(tmdb_id)
                 tmdb_name = person.name
                 if method == "tmdb_actor":
-                    ids = [(i.id, "tmdb") for i in person.movie_cast]
-                    ids.extend([(i.id, "tmdb_show") for i in person.tv_cast])
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_cast]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_cast])
                 elif method == "tmdb_crew":
-                    ids = [(i.id, "tmdb") for i in person.movie_crew]
-                    ids.extend([(i.id, "tmdb_show") for i in person.tv_crew])
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_crew]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew])
                 elif method == "tmdb_director":
-                    ids = [(i.id, "tmdb") for i in person.movie_crew if i.department == "Directing"]
-                    ids.extend([(i.id, "tmdb_show") for i in person.tv_crew])
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_crew if i.department == "Directing"]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew if i.department == "Directing"])
                 elif method == "tmdb_writer":
-                    ids = [(i.id, "tmdb") for i in person.movie_crew if i.department == "Writing"]
-                    ids.extend([(i.id, "tmdb_show") for i in person.tv_crew])
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_crew if i.department == "Writing"]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew if i.department == "Writing"])
                 elif method == "tmdb_producer":
-                    ids = [(i.id, "tmdb") for i in person.movie_crew if i.department == "Production"]
-                    ids.extend([(i.id, "tmdb_show") for i in person.tv_crew])
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_crew if i.department == "Production"]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew if i.department == "Production"])
                 else:
                     raise Failed(f"TMDb Error: Method {method} not supported")
             if len(ids) > 0:
