@@ -1,7 +1,7 @@
 import logging
 from modules import util
 from modules.util import Failed
-from tmdbapis import TMDbAPIs, TMDbException
+from tmdbapis import TMDbAPIs, TMDbException, NotFound
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -82,15 +82,18 @@ class TMDb:
         return results.tv_results[0].id
 
     def convert_imdb_to(self, imdb_id):
-        results = self.TMDb.find_by_id(imdb_id=imdb_id)
-        if results.movie_results:
-            return results.movie_results[0].id, "movie"
-        elif results.tv_results:
-            return results.tv_results[0].id, "show"
-        elif results.tv_episode_results:
-            item = results.tv_episode_results[0]
-            return f"{item.tv_id}_{item.season_number}_{item.episode_number}", "episode"
-        else:
+        try:
+            results = self.TMDb.find_by_id(imdb_id=imdb_id)
+            if results.movie_results:
+                return results.movie_results[0].id, "movie"
+            elif results.tv_results:
+                return results.tv_results[0].id, "show"
+            elif results.tv_episode_results:
+                item = results.tv_episode_results[0]
+                return f"{item.tv_id}_{item.season_number}_{item.episode_number}", "episode"
+            else:
+                raise NotFound
+        except NotFound:
             raise Failed(f"TMDb Error: No TMDb ID found for IMDb ID {imdb_id}")
 
     def get_movie_show_or_collection(self, tmdb_id, is_movie):
