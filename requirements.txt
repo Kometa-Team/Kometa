@@ -1,5 +1,5 @@
 PlexAPI==4.8.0
-tmdbapis==0.1.6
+tmdbapis==0.1.7
 arrapi==1.3.0
 lxml==4.7.1
 requests==2.27.1
