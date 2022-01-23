@@ -1515,7 +1515,7 @@ class CollectionBuilder:
                     error = f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
                     error = f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries"
-                elif not _data:
+                elif _data is not False and not _data:
                     error = f"{self.Type} Error: {final_attr} {method} attribute is blank"
                 else:
                     if final_attr.startswith(("any", "all")):
