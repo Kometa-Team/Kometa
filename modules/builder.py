@@ -1504,54 +1504,63 @@ class CollectionBuilder:
                     display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                     return f"{arg_key}{mod}={arg}&", display_line
 
+                error = None
                 if final_attr not in plex.searches and not final_attr.startswith(("any", "all")):
-                    raise Failed(f"{self.Type} Error: {final_attr} is not a valid {method} attribute")
+                    error = f"{self.Type} Error: {final_attr} is not a valid {method} attribute"
                 elif self.library.is_show and final_attr in plex.movie_only_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for movie libraries")
+                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for movie libraries"
                 elif self.library.is_movie and final_attr in plex.show_only_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries")
+                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries"
                 elif self.library.is_music and final_attr not in plex.music_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries")
+                    error = f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries")
-                elif _data is None:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute is blank")
-                elif final_attr.startswith(("any", "all")):
-                    dicts = util.get_list(_data)
-                    results = ""
-                    display_add = ""
-                    for dict_data in dicts:
-                        if not isinstance(dict_data, dict):
-                            raise Failed(f"{self.Type} Error: {attr} must be either a dictionary or list of dictionaries")
-                        inside_filter, inside_display = _filter(dict_data, is_all=attr == "all", level=level)
-                        if len(inside_filter) > 0:
-                            display_add += inside_display
-                            results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
+                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries"
+                elif not _data:
+                    error = f"{self.Type} Error: {final_attr} {method} attribute is blank"
                 else:
-                    validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, pairs=True)
-                    if validation is None:
-                        continue
-                    elif attr in plex.date_attributes and modifier in ["", ".not"]:
-                        last_text = "is not in the last" if modifier == ".not" else "is in the last"
-                        last_mod = "%3E%3E" if modifier == "" else "%3C%3C"
-                        results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
-                    elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
-                        results, display_add = build_url_arg(validation * 60000)
-                    elif attr in plex.boolean_attributes:
-                        bool_mod = "" if validation else "!"
-                        bool_arg = "true" if validation else "false"
-                        results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
-                    elif (attr in plex.tag_attributes + plex.string_attributes + plex.year_attributes) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends"]:
+                    if final_attr.startswith(("any", "all")):
+                        dicts = util.get_list(_data)
                         results = ""
                         display_add = ""
-                        for og_value, result in validation:
-                            built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
-                            display_add += built_arg[1]
-                            results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
+                        for dict_data in dicts:
+                            if not isinstance(dict_data, dict):
+                                raise Failed(
+                                    f"{self.Type} Error: {attr} must be either a dictionary or list of dictionaries")
+                            inside_filter, inside_display = _filter(dict_data, is_all=attr == "all", level=level)
+                            if len(inside_filter) > 0:
+                                display_add += inside_display
+                                results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                     else:
-                        results, display_add = build_url_arg(validation)
-                display += display_add
-                output += f"{conjunction if len(output) > 0 else ''}{results}"
+                        validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, pairs=True)
+                        if validation is None:
+                            continue
+                        elif attr in plex.date_attributes and modifier in ["", ".not"]:
+                            last_text = "is not in the last" if modifier == ".not" else "is in the last"
+                            last_mod = "%3E%3E" if modifier == "" else "%3C%3C"
+                            results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
+                        elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
+                            results, display_add = build_url_arg(validation * 60000)
+                        elif attr in plex.boolean_attributes:
+                            bool_mod = "" if validation else "!"
+                            bool_arg = "true" if validation else "false"
+                            results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
+                        elif (attr in plex.tag_attributes + plex.string_attributes + plex.year_attributes) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends"]:
+                            results = ""
+                            display_add = ""
+                            for og_value, result in validation:
+                                built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
+                                display_add += built_arg[1]
+                                results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
+                        else:
+                            results, display_add = build_url_arg(validation)
+                    display += display_add
+                    output += f"{conjunction if len(output) > 0 else ''}{results}"
+                if error:
+                    if validate:
+                        raise Failed(error)
+                    else:
+                        logger.error(error)
+                        continue
             return output, display
 
         if "any" not in filter_alias and "all" not in filter_alias:
