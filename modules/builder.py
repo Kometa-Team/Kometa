@@ -1775,7 +1775,7 @@ class CollectionBuilder:
                     item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
                 if check_released:
                     date_to_check = item.release_date if is_movie else item.first_air_date
-                    if date_to_check > self.current_time:
+                    if not date_to_check or date_to_check > self.current_time:
                         return False
                 for filter_method, filter_data in self.tmdb_filters:
                     filter_attr, modifier, filter_final = self._split(filter_method)
