@@ -76,10 +76,13 @@ class TMDb:
         return check_id
 
     def convert_tvdb_to(self, tvdb_id):
-        results = self.TMDb.find_by_id(tvdb_id=tvdb_id)
-        if not results.tv_results:
-            raise Failed(f"TMDb Error: No TMDb ID found for TVDb ID {tvdb_id}")
-        return results.tv_results[0].id
+        try:
+            results = self.TMDb.find_by_id(tvdb_id=tvdb_id)
+            if results.tv_results:
+                return results.tv_results[0].id
+        except NotFound:
+            pass
+        raise Failed(f"TMDb Error: No TMDb ID found for TVDb ID {tvdb_id}")
 
     def convert_imdb_to(self, imdb_id):
         try:
@@ -91,10 +94,9 @@ class TMDb:
             elif results.tv_episode_results:
                 item = results.tv_episode_results[0]
                 return f"{item.tv_id}_{item.season_number}_{item.episode_number}", "episode"
-            else:
-                raise NotFound
         except NotFound:
-            raise Failed(f"TMDb Error: No TMDb ID found for IMDb ID {imdb_id}")
+            pass
+        raise Failed(f"TMDb Error: No TMDb ID found for IMDb ID {imdb_id}")
 
     def get_movie_show_or_collection(self, tmdb_id, is_movie):
         if is_movie:
