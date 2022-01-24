@@ -565,12 +565,12 @@ class CollectionBuilder:
                 else:
                     logger.error(e)
 
+        if not self.server_preroll and not self.smart_url and len(self.builders) == 0:
+            raise Failed(f"{self.Type} Error: No builders were found")
+
         if self.custom_sort is True and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
             raise Failed(f"{self.Type} Error: " + ('Playlists' if playlist else 'collection_order: custom') +
                          (f" can only be used with a single builder per {self.type}" if len(self.builders) > 1 else f" cannot be used with {self.builders[0][0]}"))
-
-        if not self.server_preroll and not self.smart_url and len(self.builders) == 0:
-            raise Failed(f"{self.Type} Error: No builders were found")
 
         if "add_missing" not in self.radarr_details:
             self.radarr_details["add_missing"] = self.library.Radarr.add_missing if self.library.Radarr else False
