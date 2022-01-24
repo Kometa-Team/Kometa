@@ -658,8 +658,11 @@ class ConfigFile:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
                                 params["genre_mapper"] = {}
                                 for new_genre, old_genres in lib["operations"]["genre_mapper"].items():
-                                    for old_genre in util.get_list(old_genres, split=False):
-                                        params["genre_mapper"][old_genre] = new_genre
+                                    for old_genre in util.get_list(old_genres):
+                                        if old_genre == new_genre:
+                                            logger.error("Config Error: genres cannot be mapped to themselves")
+                                        else:
+                                            params["genre_mapper"][old_genre] = new_genre
                             else:
                                 logger.error("Config Error: genre_mapper is blank")
                         if "genre_collections" in lib["operations"]:
