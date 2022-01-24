@@ -16,7 +16,7 @@ from xml.etree.ElementTree import ParseError
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = ["plex_all", "plex_collectionless", "plex_search"]
+builders = ["plex_all", "plex_pilots", "plex_collectionless", "plex_search"]
 search_translation = {
     "episode_title": "episode.title",
     "network": "show.network",
@@ -701,6 +701,14 @@ class Plex(Library):
         if method == "plex_all":
             logger.info(f"Processing Plex All {data.capitalize()}s")
             items = self.get_all(collection_level=data)
+        elif method == "plex_pilots":
+            logger.info(f"Processing Plex Pilot {data.capitalize()}s")
+            items = []
+            for item in self.get_all():
+                try:
+                    items.append(item.episode(season=1, episode=1))
+                except NotFound:
+                    logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
             util.print_multiline(data[1], info=True)
             items = self.get_filter_items(data[2])
