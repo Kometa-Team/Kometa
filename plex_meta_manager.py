@@ -600,7 +600,8 @@ def library_operations(config, library):
                     for genre in item.genres:
                         if genre.tag in library.genre_mapper:
                             deletes.append(genre.tag)
-                            adds.append(library.genre_mapper[genre.tag])
+                            if library.genre_mapper[genre.tag]:
+                                adds.append(library.genre_mapper[genre.tag])
                     library.edit_tags("genre", item, add_tags=adds, remove_tags=deletes)
                 except Failed:
                     pass
