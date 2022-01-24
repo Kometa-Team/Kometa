@@ -54,6 +54,7 @@ class ConfigFile:
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
+        self.requested_metadata = util.get_list(attrs["metadata"]) if "metadata" in attrs else None
         self.resume_from = attrs["resume"] if "resume" in attrs else None
 
         yaml.YAML().allow_duplicate_keys = True
