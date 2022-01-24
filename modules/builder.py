@@ -1080,8 +1080,8 @@ class CollectionBuilder:
         self.builders.append((method_name, self._parse(method_name, method_data, "bool")))
 
     def _mdblist(self, method_name, method_data):
-        for imdb_dict in self.config.Mdblist.validate_mdb_lists(method_data, self.language):
-            self.builders.append((method_name, imdb_dict))
+        for mdb_dict in self.config.Mdblist.validate_mdb_lists(method_data, self.language):
+            self.builders.append((method_name, mdb_dict))
 
     def _tautulli(self, method_name, method_data):
         for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
