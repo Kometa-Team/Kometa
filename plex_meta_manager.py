@@ -34,6 +34,7 @@ parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_o
 parser.add_argument("-lf", "--library-first", "--libraries-first", dest="library_first", help="Run library operations before collections", action="store_true", default=False)
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
+parser.add_argument("-rm", "-m", "--metadata", "--metadatas", "--run-metadata", "--run-metadatas", dest="metadata", help="Process only specified Metadata files (comma-separated list)", type=str)
 parser.add_argument("-dc", "--delete", "--delete-collections", dest="delete", help="Deletes all Collections in the Plex Library before running", action="store_true", default=False)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
@@ -69,6 +70,7 @@ library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
 library_first = get_arg("PMM_LIBRARIES_FIRST", args.library_first, arg_bool=True)
 collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
+metadatas = get_arg("PMM_METADATA", args.metadata)
 delete = get_arg("PMM_DELETE_COLLECTIONS", args.delete, arg_bool=True)
 resume = get_arg("PMM_RESUME", args.resume)
 no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
@@ -158,6 +160,7 @@ def start(attrs):
     logger.debug(f"--libraries-first (PMM_LIBRARIES_FIRST): {library_first}")
     logger.debug(f"--run-collections (PMM_COLLECTIONS): {collections}")
     logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
+    logger.debug(f"--run-metadata (PMM_METADATA): {metadatas}")
     logger.debug(f"--ignore-schedules (PMM_IGNORE_SCHEDULES): {ignore_schedules}")
     logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete}")
     logger.debug(f"--resume (PMM_RESUME): {resume}")
@@ -258,8 +261,11 @@ def update_libraries(config):
                 logger.info("")
                 library.map_guids()
             for metadata in library.metadata_files:
+                metadata_name = metadata.get_file_name()
+                if config.requested_metadata and metadata_name not in config.requested_metadata:
+                    continue
                 logger.info("")
-                util.separator(f"Running Metadata File\n{metadata.path}")
+                util.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
                 if not config.test_mode and not config.resume_from and not collection_only:
                     try:
                         metadata.update_metadata()
@@ -1208,7 +1214,7 @@ def run_playlists(config):
     return status, stats
 
 try:
-    if run or test or collections or libraries or resume:
+    if run or test or collections or libraries or metadatas or resume:
         start({
             "config_file": config_file,
             "test": test,
@@ -1216,6 +1222,7 @@ try:
             "ignore_schedules": ignore_schedules,
             "collections": collections,
             "libraries": libraries,
+            "metadata": metadatas,
             "library_first": library_first,
             "resume": resume,
             "trace": trace
