@@ -65,8 +65,10 @@ class DataFile:
 
     def load_file(self):
         try:
-            if self.type in ["URL", "Git"]:
-                content_path = self.path if self.type == "URL" else f"{github_base}{self.path}.yml"
+            if self.type in ["URL", "Git", "Repo"]:
+                if self.type == "Repo" and not self.config.custom_repo:
+                    raise Failed("Config Error: No custom_repo defined")
+                content_path = self.path if self.type == "URL" else f"{self.config.custom_repo if self.type == 'Repo' else github_base}{self.path}.yml"
                 response = self.config.get(content_path)
                 if response.status_code >= 400:
                     raise Failed(f"URL Error: No file found at {content_path}")

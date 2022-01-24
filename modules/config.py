@@ -289,8 +289,10 @@ class ConfigFile:
             "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
             "playlist_sync_to_users": check_for_attribute(self.data, "playlist_sync_to_users", parent="settings", default="all", default_is_none=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
+            "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
+        self.custom_repo = self.general["custom_repo"]
 
         self.session = requests.Session()
         if not self.general["verify_ssl"]:
@@ -447,6 +449,9 @@ class ConfigFile:
                         git = check_dict("git")
                         if git:
                             playlists_pairs.append(("Git", git))
+                        repo = check_dict("repo")
+                        if repo:
+                            playlists_pairs.append(("Repo", repo))
                         file = check_dict("file")
                         if file:
                             playlists_pairs.append(("File", file))
@@ -727,6 +732,7 @@ class ConfigFile:
                                             params["metadata_path"].append((name, path[attr]))
                                 check_dict("url", "URL")
                                 check_dict("git", "Git")
+                                check_dict("repo", "Repo")
                                 check_dict("file", "File")
                                 check_dict("folder", "Folder")
                             else:
