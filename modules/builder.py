@@ -1105,7 +1105,7 @@ class CollectionBuilder:
                     elif discover_attr in ["language", "region"]:
                         regex = ("([a-z]{2})-([A-Z]{2})", "en-US") if discover_attr == "language" else ("^[A-Z]{2}$", "US")
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, parent=method_name, regex=regex)
-                    elif discover_attr == "sort_by" and self.library.is_movie:
+                    elif discover_attr == "sort_by":
                         options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
                         new_dictionary[discover_method] = self._parse(discover_attr, discover_data, parent=method_name, options=options)
                     elif discover_attr == "certification_country":
