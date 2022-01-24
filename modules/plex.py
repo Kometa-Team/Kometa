@@ -830,7 +830,7 @@ class Plex(Library):
             name = os.path.basename(os.path.dirname(str(item.locations[0])))
         elif isinstance(item, (Artist, Show)):
             name = os.path.basename(str(item.locations[0]))
-        elif isinstance(item, Collection):
+        elif isinstance(item, (Collection, Playlist)):
             name = name if name else item.title
         else:
             return None, None, None
