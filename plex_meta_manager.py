@@ -439,7 +439,7 @@ def library_operations(config, library):
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
-    logger.debug(f"TMDb Operation: {library.tmdb_library_operation}")
+    logger.debug(f"TMDb Operation: {library.items_library_operation}")
 
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
@@ -448,7 +448,7 @@ def library_operations(config, library):
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
     tmdb_collections = {}
-    if library.tmdb_library_operation:
+    if library.items_library_operation:
         items = library.get_all()
         radarr_adds = []
         sonarr_adds = []
