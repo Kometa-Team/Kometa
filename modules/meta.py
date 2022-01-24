@@ -660,26 +660,24 @@ class MetadataFile(DataFile):
                             elif not isinstance(album_dict[album_methods["tracks"]], dict):
                                 logger.error("Metadata Error: tracks attribute must be a dictionary")
                             else:
+                                tracks = {}
+                                for track in album.tracks():
+                                    tracks[track.title] = track
+                                    tracks[int(track.index)] = track
                                 for track_num, track_dict in album_dict[album_methods["tracks"]].items():
                                     updated = False
                                     title = None
                                     track_methods = {tm.lower(): tm for tm in track_dict}
                                     logger.info("")
                                     logger.info(f"Updating track {track_num} on {album_name} of {mapping_name}...")
-                                    try:
-                                        if isinstance(track_num, int):
-                                            track = album.track(track=track_num)
-                                        else:
-                                            track = album.track(title=track_num)
-                                    except NotFound:
-                                        try:
-                                            if "alt_title" not in track_methods or not track_dict[track_methods["alt_title"]]:
-                                                raise NotFound
-                                            track = album.track(title=track_dict[track_methods["alt_title"]])
-                                            title = track_num
-                                        except NotFound:
-                                            logger.error(f"Metadata Error: Track: {track_num} not found")
-                                            continue
+                                    if track_num in tracks:
+                                        track = tracks[track_num]
+                                    elif "alt_title" in track_methods and track_dict[track_methods["alt_title"]] and track_dict[track_methods["alt_title"]] in tracks:
+                                        track = tracks[track_dict[track_methods["alt_title"]]]
+                                        title = track_num
+                                    else:
+                                        logger.error(f"Metadata Error: Track: {track_num} not found")
+                                        continue
 
                                     if not title:
                                         title = track.title
@@ -689,7 +687,7 @@ class MetadataFile(DataFile):
                                     add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
                                     add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
                                     add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")
-                                    if self.library.edit_item(album, title, "Track", edits):
+                                    if self.library.edit_item(track, title, "Track", edits):
                                         updated = True
                                     if self.edit_tags("mood", track, track_dict, track_methods):
                                         updated = True
