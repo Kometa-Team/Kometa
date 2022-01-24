@@ -170,11 +170,12 @@ custom_sort_builders = [
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
+episode_parts_only = ["plex_pilots"]
 parts_collection_valid = [
-     "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "changes_webhooks"
-     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
+     "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library",
+     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll", "changes_webhooks",
      "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list"
-] + summary_details + poster_details + background_details + string_details
+] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
@@ -505,6 +506,8 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for album collections")
                 elif not self.library.is_music and method_name in music_only_builders:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for music libraries")
+                elif self.collection_level != "episode" and method_name in episode_parts_only:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with Collection Level: episode")
                 elif self.parts_collection and method_name not in parts_collection_valid:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed with Collection Level: {self.collection_level.capitalize()}")
                 elif self.smart and method_name in smart_invalid:
@@ -1057,7 +1060,7 @@ class CollectionBuilder:
                 }))
 
     def _plex(self, method_name, method_data):
-        if method_name == "plex_all":
+        if method_name in ["plex_all", "plex_pilots"]:
             self.builders.append((method_name, self.collection_level))
         elif method_name in ["plex_search", "plex_collectionless"]:
             for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
@@ -2091,12 +2094,13 @@ class CollectionBuilder:
                 path = path[:-1] if path.endswith(('/', '\\')) else path
                 tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], path))
             advance_edits = {}
-            prefs = [p.id for p in item.preferences()]
-            for method_name, method_data in self.item_details.items():
-                if method_name in plex.item_advance_keys:
-                    key, options = plex.item_advance_keys[method_name]
-                    if key in prefs and getattr(item, key) != options[method_data]:
-                        advance_edits[key] = options[method_data]
+            if hasattr(item, "preferences"):
+                prefs = [p.id for p in item.preferences()]
+                for method_name, method_data in self.item_details.items():
+                    if method_name in plex.item_advance_keys:
+                        key, options = plex.item_advance_keys[method_name]
+                        if key in prefs and getattr(item, key) != options[method_data]:
+                            advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
 
             if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:

@@ -1001,7 +1001,16 @@ def run_playlists(config):
                 logger.debug(f"Builder: {method}: {value}")
                 logger.info("")
                 items = []
-                ids = builder.gather_ids(method, value)
+                if "plex" in method:
+                    ids = []
+                    for pl_library in pl_libraries:
+                        ids.extend(pl_library.get_rating_keys(method, value))
+                elif "tautulli" in method:
+                    ids = []
+                    for pl_library in pl_libraries:
+                        ids.extend(pl_library.Tautulli.get_rating_keys(pl_library, value, True))
+                else:
+                    ids = builder.gather_ids(method, value)
 
                 if len(ids) > 0:
                     total_ids = len(ids)
