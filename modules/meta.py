@@ -479,16 +479,17 @@ class MetadataFile(DataFile):
                 elif not isinstance(meta[methods["seasons"]], dict):
                     logger.error("Metadata Error: seasons attribute must be a dictionary")
                 else:
+                    seasons = {}
+                    for season in item.seasons():
+                        seasons[season.title] = season
+                        seasons[int(season.index)] = season
                     for season_id, season_dict in meta[methods["seasons"]].items():
                         updated = False
                         logger.info("")
                         logger.info(f"Updating season {season_id} of {mapping_name}...")
-                        try:
-                            if isinstance(season_id, int):
-                                season = item.season(season=season_id)
-                            else:
-                                season = item.season(title=season_id)
-                        except NotFound:
+                        if season_id in seasons:
+                            season = seasons[season_id]
+                        else:
                             logger.error(f"Metadata Error: Season: {season_id} not found")
                             continue
                         season_methods = {sm.lower(): sm for sm in season_dict}
@@ -521,16 +522,17 @@ class MetadataFile(DataFile):
                             elif not isinstance(season_dict[season_methods["episodes"]], dict):
                                 logger.error("Metadata Error: episodes attribute must be a dictionary")
                             else:
+                                episodes = {}
+                                for episode in season.episodes():
+                                    episodes[episode.title] = episode
+                                    episodes[int(episode.index)] = episode
                                 for episode_str, episode_dict in season_dict[season_methods["episodes"]].items():
                                     updated = False
                                     logger.info("")
                                     logger.info(f"Updating episode {episode_str} in {season_id} of {mapping_name}...")
-                                    try:
-                                        if isinstance(episode_str, int):
-                                            episode = season.episode(episode=episode_str)
-                                        else:
-                                            episode = season.episode(title=episode_str)
-                                    except NotFound:
+                                    if episode_str in episodes:
+                                        episode = episodes[episode_str]
+                                    else:
                                         logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
                                         continue
                                     episode_methods = {em.lower(): em for em in episode_dict}
@@ -619,24 +621,21 @@ class MetadataFile(DataFile):
                 elif not isinstance(meta[methods["albums"]], dict):
                     logger.error("Metadata Error: albums attribute must be a dictionary")
                 else:
+                    albums = {album.title: album for album in item.albums()}
                     for album_name, album_dict in meta[methods["albums"]].items():
                         updated = False
                         title = None
                         album_methods = {am.lower(): am for am in album_dict}
                         logger.info("")
                         logger.info(f"Updating album {album_name} of {mapping_name}...")
-                        try:
-                            album = item.album(album_name)
-                        except NotFound:
-                            try:
-                                if "alt_title" not in album_methods or not album_dict[album_methods["alt_title"]]:
-                                    raise NotFound
-                                album = item.album(album_dict[album_methods["alt_title"]])
-                                title = album_name
-                            except NotFound:
-                                logger.error(f"Metadata Error: Album: {album_name} not found")
-                                continue
-
+                        if album_name in albums:
+                            album = albums[album_name]
+                        elif "alt_title" in album_methods and album_dict[album_methods["alt_title"]] and album_dict[album_methods["alt_title"]] in albums:
+                            album = albums[album_dict[album_methods["alt_title"]]]
+                            title = album_name
+                        else:
+                            logger.error(f"Metadata Error: Album: {album_name} not found")
+                            continue
                         if not title:
                             title = album.title
                         edits = {}
