@@ -102,7 +102,7 @@ details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks"
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
-item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
+item_details = ["non_item_remove_label", "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add_missing", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
@@ -794,6 +794,10 @@ class CollectionBuilder:
             if "item_label.remove" in methods and "item_label.sync" in methods:
                 raise Failed(f"{self.Type} Error: Cannot use item_label.remove and item_label.sync together")
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
+        elif method_name == "non_item_remove_label":
+            if not method_data:
+                raise Failed(f"{self.Type} Error: non_item_remove_label is blank")
+            self.item_details[method_final] = util.get_list(method_data)
         elif method_name in ["item_radarr_tag", "item_sonarr_tag"]:
             if method_name in methods and f"{method_name}.sync" in methods:
                 raise Failed(f"{self.Type} Error: Cannot use {method_name} and {method_name}.sync together")
@@ -2072,6 +2076,13 @@ class CollectionBuilder:
         add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
+
+        if "non_item_remove_label" in self.item_details:
+            rk_compare = [item.rakingKey for item in self.items]
+            for remove_label in self.item_details["non_item_remove_label"]:
+                for non_item in self.library.get_labeled_items(remove_label):
+                    if non_item.ratingKey not in rk_compare:
+                        self.library.edit_tags("label", non_item, remove_tags=[remove_label])
 
         tmdb_paths = []
         tvdb_paths = []
