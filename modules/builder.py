@@ -109,7 +109,7 @@ sonarr_details = [
     "sonarr_add_missing", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
-album_details = ["item_label", "item_album_sorting"]
+album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
 filters_by_type = {
     "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
     "movie_show_season_episode_album_track": ["year"],
@@ -165,7 +165,7 @@ custom_sort_builders = [
     "flixpatrol_url", "flixpatrol_demographics", "flixpatrol_popular", "flixpatrol_top",
     "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
-    "tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
+    "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list",
     "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
@@ -182,7 +182,7 @@ playlist_attributes = [
     "server_preroll", "changes_webhooks", "minimum_items",
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
-   "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
+   "non_item_remove_label", "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
    "item_refresh", "item_refresh_delay", "plex_search", "plex_all", "filters"
 ] + details + summary_details + poster_details + background_details
 
@@ -1090,7 +1090,7 @@ class CollectionBuilder:
         self.builders.append((method_name, self._parse(method_name, method_data, "bool")))
 
     def _mdblist(self, method_name, method_data):
-        for mdb_dict in self.config.Mdblist.validate_mdb_lists(method_data, self.language):
+        for mdb_dict in self.config.Mdblist.validate_mdblist_lists(method_data):
             self.builders.append((method_name, mdb_dict))
 
     def _tautulli(self, method_name, method_data):
@@ -1356,7 +1356,7 @@ class CollectionBuilder:
                                     if tvdb_id not in self.missing_shows:
                                         self.missing_shows.append(tvdb_id)
                                 except Failed as e:
-                                    logger.error(e)
+                                    logger.warning(e)
                             elif show_id not in self.missing_shows:
                                 self.missing_shows.append(show_id)
                     else:
@@ -1374,7 +1374,7 @@ class CollectionBuilder:
                                 try:
                                     input_id = self.config.Convert.tmdb_to_tvdb(input_id, fail=True)
                                 except Failed as e:
-                                    logger.error(e)
+                                    logger.warning(e)
                                     continue
                             if input_id not in self.ignore_ids:
                                 if input_id in self.library.show_map:
@@ -1396,7 +1396,7 @@ class CollectionBuilder:
                                             if tvdb_id not in self.missing_shows:
                                                 self.missing_shows.append(tvdb_id)
                                     except Failed as e:
-                                        logger.error(e)
+                                        logger.warning(e)
                                         continue
                         if not isinstance(rating_keys, list):
                             rating_keys = [rating_keys]

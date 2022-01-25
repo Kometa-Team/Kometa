@@ -1,4 +1,4 @@
-import logging, os, requests, shutil, time
+import logging, os, shutil, time
 from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile

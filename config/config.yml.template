@@ -26,6 +26,8 @@ settings:                                       # Can be individually specified 
   dimensional_asset_rename: false
   download_url_assets: false
   show_missing_season_assets: false
+  show_missing_episode_assets: false
+  show_asset_not_needed: true
   sync_mode: append
   minimum_items: 1
   default_collection_order:
@@ -43,6 +45,7 @@ settings:                                       # Can be individually specified 
   tvdb_language: eng
   ignore_ids:
   ignore_imdb_ids:
+  item_refresh_delay: 0
   playlist_sync_to_user: all
   verify_ssl: true
 webhooks:                                       # Can be individually specified per library as well
