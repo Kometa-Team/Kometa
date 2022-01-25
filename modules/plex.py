@@ -904,7 +904,7 @@ class Plex(Library):
                     return poster, background, item_dir
             if isinstance(item, Show):
                 missing_assets = ""
-                found_season = False
+                found_image = False
                 for season in self.query(item.seasons):
                     season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
                     if item_dir:
@@ -918,8 +918,8 @@ class Plex(Library):
                     matches = util.glob_filter(season_poster_filter)
                     if len(matches) > 0:
                         season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
-                        found_season = True
-                    elif season.seasonNumber > 0:
+                        found_image = True
+                    elif self.show_missing_season_assets and season.seasonNumber > 0:
                         missing_assets += f"\nMissing Season {season.seasonNumber} Poster"
                     matches = util.glob_filter(season_background_filter)
                     if len(matches) > 0:
@@ -934,9 +934,13 @@ class Plex(Library):
                         matches = util.glob_filter(episode_filter)
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
+                            found_image = True
                             self.upload_images(episode, poster=episode_poster)
-                if self.show_missing_season_assets and found_season and missing_assets:
-                    util.print_multiline(f"Missing Season Posters for {item.title}{missing_assets}", info=True)
+                        elif self.show_missing_episode_assets:
+                            missing_assets += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
+
+                if found_image and missing_assets:
+                    util.print_multiline(f"Missing Posters for {item.title}{missing_assets}", info=True)
             if isinstance(item, Artist):
                 missing_assets = ""
                 found_album = False
