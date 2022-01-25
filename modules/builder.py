@@ -120,7 +120,7 @@ filters_by_type = {
     "movie_show_episode": ["actor", "content_rating", "audience_rating"],
     "movie_show_album": ["label"],
     "movie_episode_track": ["audio_track_title"],
-    "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year"],
+    "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre"],
     "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language"],
     "movie_artist": ["country"],
     "show": ["network", "first_episode_aired", "last_episode_aired"],
@@ -135,12 +135,12 @@ filters = {
     "album": [item for check, sub in filters_by_type.items() for item in sub if "album" in check],
     "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
 }
-tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "first_episode_aired", "last_episode_aired"]
+tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "first_episode_aired", "last_episode_aired"]
 string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
-    "writer", "original_language", "resolution", "audio_language", "subtitle_language"
+    "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_genre"
 ]
 tag_modifiers = ["", ".not"]
 boolean_filters = ["has_collection", "has_overlay"]
@@ -1636,7 +1636,7 @@ class CollectionBuilder:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "original_language":
             return util.get_list(data, lower=True)
-        elif attribute == "filepath":
+        elif attribute in ["filepath", "tmdb_genre"]:
             return util.get_list(data)
         elif attribute == "history":
             try:
@@ -1826,6 +1826,11 @@ class CollectionBuilder:
                         elif filter_attr == "tmdb_year" and not is_movie and item.first_air_date:
                             attr = item.first_air_date.year
                         if util.is_number_filter(attr, modifier, filter_data):
+                            return False
+                    elif filter_attr == "tmdb_genre":
+                        attrs = [g.name for g in item.genres]
+                        if (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                                or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             return False
             except Failed:
                 return False
