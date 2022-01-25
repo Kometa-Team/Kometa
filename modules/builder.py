@@ -216,6 +216,8 @@ class CollectionBuilder:
         self.missing_movies = []
         self.missing_shows = []
         self.missing_parts = []
+        self.added_to_radarr = []
+        self.added_to_sonarr = []
         self.builders = []
         self.filters = []
         self.tmdb_filters = []
@@ -1976,7 +1978,9 @@ class CollectionBuilder:
                     if self.library.Radarr:
                         if self.radarr_details["add_missing"]:
                             try:
-                                added_to_radarr += self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_details)
+                                added = self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_details)
+                                self.added_to_radarr.extend([movie.tmdbId for movie in added])
+                                added_to_radarr += len(added)
                             except Failed as e:
                                 logger.error(e)
                         if "item_radarr_tag" in self.item_details:
@@ -2015,7 +2019,9 @@ class CollectionBuilder:
                     if self.library.Sonarr:
                         if self.sonarr_details["add_missing"]:
                             try:
-                                added_to_sonarr += self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_details)
+                                added = self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_details)
+                                self.added_to_sonarr.extend([show.tvdbId for show in added])
+                                added_to_sonarr += len(added)
                             except Failed as e:
                                 logger.error(e)
                         if "item_sonarr_tag" in self.item_details:
@@ -2142,13 +2148,15 @@ class CollectionBuilder:
             if "item_radarr_tag" in self.item_details:
                 self.library.Radarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tmdb_paths], self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
             if self.radarr_details["add_existing"]:
-                self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
+                added = self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
+                self.added_to_radarr.extend([movie.tmdbId for movie in added])
 
         if self.library.Sonarr and tvdb_paths:
             if "item_sonarr_tag" in self.item_details:
                 self.library.Sonarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tvdb_paths], self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
             if self.sonarr_details["add_existing"]:
-                self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
+                added = self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
+                self.added_to_sonarr.extend([show.tvdbId for show in added])
 
         for rating_key in rating_keys:
             try:
@@ -2426,6 +2434,8 @@ class CollectionBuilder:
                     deleted=self.deleted,
                     additions=self.notification_additions,
                     removals=self.notification_removals,
+                    radarr=self.added_to_radarr,
+                    sonarr=self.added_to_sonarr,
                     playlist=playlist
                 )
             except Failed as e:
@@ -2439,6 +2449,8 @@ class CollectionBuilder:
         rating_keys = []
         amount_added = 0
         self.notification_additions = []
+        self.added_to_radarr = []
+        self.added_to_sonarr = []
         for mm in self.run_again_movies:
             if mm in self.library.movie_map:
                 rating_keys.extend(self.library.movie_map[mm])
