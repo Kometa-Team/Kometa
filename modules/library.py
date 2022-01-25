@@ -47,6 +47,7 @@ class Library(ABC):
         self.download_url_assets = params["download_url_assets"]
         self.show_missing_season_assets = params["show_missing_season_assets"]
         self.show_missing_episode_assets = params["show_missing_episode_assets"]
+        self.show_asset_not_needed = params["show_asset_not_needed"]
         self.sync_mode = params["sync_mode"]
         self.default_collection_order = params["default_collection_order"]
         self.minimum_items = params["minimum_items"]
@@ -145,7 +146,7 @@ class Library(ABC):
                     self._upload_image(item, poster)
                     poster_uploaded = True
                     logger.info(f"Detail: {poster.attribute} updated {poster.message}")
-                else:
+                elif self.show_asset_not_needed:
                     logger.info(f"Detail: {poster.prefix}poster update not needed")
             except Failed:
                 util.print_stacktrace()
@@ -195,7 +196,7 @@ class Library(ABC):
                     self._upload_image(item, background)
                     background_uploaded = True
                     logger.info(f"Detail: {background.attribute} updated {background.message}")
-                else:
+                elif self.show_asset_not_needed:
                     logger.info(f"Detail: {background.prefix}background update not needed")
             except Failed:
                 util.print_stacktrace()
