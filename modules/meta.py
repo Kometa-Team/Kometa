@@ -424,8 +424,8 @@ class MetadataFile(DataFile):
                 elif not tmdb_is_movie and tmdb_item.original_name != tmdb_item.name:
                     original_title = tmdb_item.original_name
                 rating = tmdb_item.vote_average
-                if tmdb_is_movie and tmdb_item.production_companies:
-                    studio = tmdb_item.production_companies[0].name
+                if tmdb_is_movie and tmdb_item.companies:
+                    studio = tmdb_item.companies[0].name
                 elif not tmdb_is_movie and tmdb_item.networks:
                     studio = tmdb_item.networks[0].name
                 tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
