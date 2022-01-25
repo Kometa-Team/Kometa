@@ -170,7 +170,7 @@ class Radarr:
                 logger.info(f"Invalid Root Folder for TMDb ID | {tmdb_id:<7} | {path}")
             logger.info(f"{len(invalid_root)} Movie{'s' if len(invalid_root) > 1 else ''} with Invalid Paths")
 
-        return len(added)
+        return added
 
     def edit_tags(self, tmdb_ids, tags, apply_tags):
         logger.info("")

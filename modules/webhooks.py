@@ -73,7 +73,8 @@ class Webhooks:
             if playlist:        json["playlist"] = str(playlist)
             self._request(self.error_webhooks, json)
 
-    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, deleted=False, additions=None, removals=None, playlist=False):
+    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, deleted=False,
+                         additions=None, removals=None, radarr=None, sonarr=None, playlist=False):
         if self.library:
             thumb = None
             if not poster_url and collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
@@ -93,4 +94,6 @@ class Webhooks:
                 "background_url": background_url,
                 "additions": additions if additions else [],
                 "removals": removals if removals else [],
+                "radarr_adds": radarr if radarr else [],
+                "sonarr_adds": sonarr if sonarr else [],
             })

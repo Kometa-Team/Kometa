@@ -65,7 +65,9 @@ filter_translation = {
     "last_played": "lastViewedAt",
     "plays": "viewCount",
     "user_rating": "userRating",
-    "writer": "writers"
+    "writer": "writers",
+    "mood": "moods",
+    "style": "styles"
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
@@ -93,21 +95,21 @@ string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level",
-    "validate_builders", "sort_by", "libraries", "sync_to_users", "collection_name", "playlist_name", "name"
+    "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name"
 ]
 details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode",
            "minimum_items", "label", "album_sorting"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
-item_details = ["item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay"] + item_bool_details + list(plex.item_advance_keys.keys())
+item_details = ["non_item_remove_label", "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add_missing", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
 sonarr_details = [
     "sonarr_add_missing", "sonarr_add_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language", "sonarr_series",
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
-album_details = ["item_label", "item_album_sorting"]
+album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
 filters_by_type = {
     "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
     "movie_show_season_episode_album_track": ["year"],
@@ -118,7 +120,7 @@ filters_by_type = {
     "movie_show_episode": ["actor", "content_rating", "audience_rating"],
     "movie_show_album": ["label"],
     "movie_episode_track": ["audio_track_title"],
-    "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year"],
+    "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre"],
     "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language"],
     "movie_artist": ["country"],
     "show": ["network", "first_episode_aired", "last_episode_aired"],
@@ -133,12 +135,12 @@ filters = {
     "album": [item for check, sub in filters_by_type.items() for item in sub if "album" in check],
     "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
 }
-tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "first_episode_aired", "last_episode_aired"]
+tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "first_episode_aired", "last_episode_aired"]
 string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
-    "writer", "original_language", "resolution", "audio_language", "subtitle_language"
+    "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_genre"
 ]
 tag_modifiers = ["", ".not"]
 boolean_filters = ["has_collection", "has_overlay"]
@@ -163,24 +165,25 @@ custom_sort_builders = [
     "flixpatrol_url", "flixpatrol_demographics", "flixpatrol_popular", "flixpatrol_top",
     "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
-    "tautulli_popular", "tautulli_watched", "letterboxd_list", "icheckmovies_list",
+    "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list",
     "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
+episode_parts_only = ["plex_pilots"]
 parts_collection_valid = [
-     "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "changes_webhooks"
-     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll",
-     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "imdb_list"
-] + summary_details + poster_details + background_details + string_details
+     "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library",
+     "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll", "changes_webhooks",
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list"
+] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
     "server_preroll", "changes_webhooks", "minimum_items",
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
-   "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
-   "item_refresh", "plex_search", "plex_all", "filters"
+   "non_item_remove_label", "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
+   "item_refresh", "item_refresh_delay", "plex_search", "plex_all", "filters"
 ] + details + summary_details + poster_details + background_details
 
 class CollectionBuilder:
@@ -213,6 +216,8 @@ class CollectionBuilder:
         self.missing_movies = []
         self.missing_shows = []
         self.missing_parts = []
+        self.added_to_radarr = []
+        self.added_to_sonarr = []
         self.builders = []
         self.filters = []
         self.tmdb_filters = []
@@ -374,10 +379,10 @@ class CollectionBuilder:
                 for tmdb_id in util.get_int_list(self.data[methods["tmdb_person"]], "TMDb Person ID"):
                     person = self.config.TMDb.get_person(tmdb_id)
                     valid_names.append(person.name)
-                    if hasattr(person, "biography") and person.biography:
+                    if person.biography:
                         self.summaries["tmdb_person"] = person.biography
-                    if hasattr(person, "profile_path") and person.profile_path:
-                        self.posters["tmdb_person"] = f"{self.config.TMDb.image_url}{person.profile_path}"
+                    if person.profile_url:
+                        self.posters["tmdb_person"] = person.profile_url
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
@@ -503,6 +508,8 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for album collections")
                 elif not self.library.is_music and method_name in music_only_builders:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for music libraries")
+                elif self.collection_level != "episode" and method_name in episode_parts_only:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with Collection Level: episode")
                 elif self.parts_collection and method_name not in parts_collection_valid:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed with Collection Level: {self.collection_level.capitalize()}")
                 elif self.smart and method_name in smart_invalid:
@@ -563,12 +570,12 @@ class CollectionBuilder:
                 else:
                     logger.error(e)
 
+        if not self.server_preroll and not self.smart_url and len(self.builders) == 0:
+            raise Failed(f"{self.Type} Error: No builders were found")
+
         if self.custom_sort is True and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
             raise Failed(f"{self.Type} Error: " + ('Playlists' if playlist else 'collection_order: custom') +
                          (f" can only be used with a single builder per {self.type}" if len(self.builders) > 1 else f" cannot be used with {self.builders[0][0]}"))
-
-        if not self.server_preroll and not self.smart_url and len(self.builders) == 0:
-            raise Failed(f"{self.Type} Error: No builders were found")
 
         if "add_missing" not in self.radarr_details:
             self.radarr_details["add_missing"] = self.library.Radarr.add_missing if self.library.Radarr else False
@@ -715,11 +722,9 @@ class CollectionBuilder:
         if method_name == "url_poster":
             self.posters[method_name] = method_data
         elif method_name == "tmdb_poster":
-            url_slug = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path
-            self.posters[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+            self.posters[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_url
         elif method_name == "tmdb_profile":
-            url_slug = self.config.TMDb.get_person(util.regex_first_int(method_data, 'TMDb Person ID')).profile_path
-            self.posters[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+            self.posters[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, 'TMDb Person ID')).profile_url
         elif method_name == "tvdb_poster":
             self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).poster_path}"
         elif method_name == "file_poster":
@@ -732,8 +737,7 @@ class CollectionBuilder:
         if method_name == "url_background":
             self.backgrounds[method_name] = method_data
         elif method_name == "tmdb_background":
-            url_slug = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_path
-            self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{url_slug}"
+            self.backgrounds[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).backdrop_url
         elif method_name == "tvdb_background":
             self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).background_path}"
         elif method_name == "file_background":
@@ -792,6 +796,10 @@ class CollectionBuilder:
             if "item_label.remove" in methods and "item_label.sync" in methods:
                 raise Failed(f"{self.Type} Error: Cannot use item_label.remove and item_label.sync together")
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
+        elif method_name == "non_item_remove_label":
+            if not method_data:
+                raise Failed(f"{self.Type} Error: non_item_remove_label is blank")
+            self.item_details[method_final] = util.get_list(method_data)
         elif method_name in ["item_radarr_tag", "item_sonarr_tag"]:
             if method_name in methods and f"{method_name}.sync" in methods:
                 raise Failed(f"{self.Type} Error: Cannot use {method_name} and {method_name}.sync together")
@@ -833,6 +841,8 @@ class CollectionBuilder:
                 raise Failed("Each Overlay can only be used once per Library")
             self.library.overlays.append(name)
             self.item_details[method_name] = name
+        elif method_name == "item_refresh_delay":
+            self.item_details[method_name] = self._parse(method_name, method_data, datatype="int", default=0, minimum=0)
         elif method_name in item_bool_details:
             if self._parse(method_name, method_data, datatype="bool", default=False):
                 self.item_details[method_name] = True
@@ -913,9 +923,9 @@ class CollectionBuilder:
             for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
-                    search_attr, modifier, search_final = self._split(search_method)
-                    if search_final not in anilist.searches:
-                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute not supported")
+                    search_attr, modifier = os.path.splitext(str(search_method).lower())
+                    if search_method not in anilist.searches:
+                        raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute not supported")
                     elif search_attr == "season":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
                         if "year" not in dict_methods:
@@ -924,7 +934,7 @@ class CollectionBuilder:
                     elif search_attr == "year":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="int", parent=method_name, default=default_year, minimum=1917, maximum=default_year + 1)
                     elif search_data is None:
-                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute is blank")
+                        raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute is blank")
                     elif search_attr == "adult":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="bool", parent=method_name)
                     elif search_attr == "country":
@@ -932,17 +942,17 @@ class CollectionBuilder:
                     elif search_attr == "source":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, options=anilist.media_source, parent=method_name)
                     elif search_attr in ["episodes", "duration", "score", "popularity"]:
-                        new_dictionary[search_final] = self._parse(search_final, search_data, datatype="int", parent=method_name)
+                        new_dictionary[search_method] = self._parse(search_method, search_data, datatype="int", parent=method_name)
                     elif search_attr in ["format", "status", "genre", "tag", "tag_category"]:
-                        new_dictionary[search_final] = self.config.AniList.validate(search_attr.replace("_", " ").title(), self._parse(search_final, search_data))
+                        new_dictionary[search_method] = self.config.AniList.validate(search_attr.replace("_", " ").title(), self._parse(search_method, search_data))
                     elif search_attr in ["start", "end"]:
-                        new_dictionary[search_final] = util.validate_date(search_data, f"{method_name} {search_final} attribute", return_as="%m/%d/%Y")
+                        new_dictionary[search_method] = util.validate_date(search_data, f"{method_name} {search_method} attribute", return_as="%m/%d/%Y")
                     elif search_attr == "min_tag_percent":
                         new_dictionary[search_attr] = self._parse(search_attr, search_data, datatype="int", parent=method_name, minimum=0, maximum=100)
                     elif search_attr == "search":
                         new_dictionary[search_attr] = str(search_data)
-                    elif search_final not in ["sort_by", "limit"]:
-                        raise Failed(f"{self.Type} Error: {method_name} {search_final} attribute not supported")
+                    elif search_method not in ["sort_by", "limit"]:
+                        raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute not supported")
                 if len(new_dictionary) == 0:
                     raise Failed(f"{self.Type} Error: {method_name} must have at least one valid search option")
                 new_dictionary["sort_by"] = self._parse("sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.sort_options)
@@ -1056,7 +1066,7 @@ class CollectionBuilder:
                 }))
 
     def _plex(self, method_name, method_data):
-        if method_name == "plex_all":
+        if method_name in ["plex_all", "plex_pilots"]:
             self.builders.append((method_name, self.collection_level))
         elif method_name in ["plex_search", "plex_collectionless"]:
             for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
@@ -1080,7 +1090,7 @@ class CollectionBuilder:
         self.builders.append((method_name, self._parse(method_name, method_data, "bool")))
 
     def _mdblist(self, method_name, method_data):
-        for mdb_dict in self.config.Mdblist.validate_mdb_lists(method_data, self.language):
+        for mdb_dict in self.config.Mdblist.validate_mdblist_lists(method_data):
             self.builders.append((method_name, mdb_dict))
 
     def _tautulli(self, method_name, method_data):
@@ -1098,59 +1108,59 @@ class CollectionBuilder:
             for dict_data, dict_methods in self._parse(method_name, method_data, datatype="dictlist"):
                 new_dictionary = {"limit": self._parse("limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name)}
                 for discover_method, discover_data in dict_data.items():
-                    discover_attr, modifier, discover_final = self._split(discover_method)
+                    discover_attr, modifier = os.path.splitext(str(discover_method).lower())
                     if discover_data is None:
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute is blank")
-                    elif discover_final not in tmdb.discover_all:
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute not supported")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute is blank")
+                    elif discover_method not in tmdb.discover_all:
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute not supported")
                     elif self.library.is_movie and discover_attr in tmdb.discover_tv_only:
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute only works for show libraries")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute only works for show libraries")
                     elif self.library.is_show and discover_attr in tmdb.discover_movie_only:
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute only works for movie libraries")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute only works for movie libraries")
                     elif discover_attr in ["language", "region"]:
                         regex = ("([a-z]{2})-([A-Z]{2})", "en-US") if discover_attr == "language" else ("^[A-Z]{2}$", "US")
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, parent=method_name, regex=regex)
-                    elif discover_attr == "sort_by" and self.library.is_movie:
+                    elif discover_attr == "sort_by":
                         options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
-                        new_dictionary[discover_final] = self._parse(discover_attr, discover_data, parent=method_name, options=options)
+                        new_dictionary[discover_method] = self._parse(discover_attr, discover_data, parent=method_name, options=options)
                     elif discover_attr == "certification_country":
                         if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
-                            new_dictionary[discover_final] = discover_data
+                            new_dictionary[discover_method] = discover_data
                         else:
                             raise Failed(f"{self.Type} Error: {method_name} {discover_attr} attribute: must be used with either certification, certification.lte, or certification.gte")
                     elif discover_attr == "certification":
                         if "certification_country" in dict_data:
-                            new_dictionary[discover_final] = discover_data
+                            new_dictionary[discover_method] = discover_data
                         else:
-                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with certification_country")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with certification_country")
                     elif discover_attr == "watch_region":
                         if "with_watch_providers" in dict_data or "without_watch_providers" in dict_data or "with_watch_monetization_types" in dict_data:
-                            new_dictionary[discover_final] = discover_data
+                            new_dictionary[discover_method] = discover_data
                         else:
-                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
                     elif discover_attr == "with_watch_monetization_types":
                         if "watch_region" in dict_data:
-                            new_dictionary[discover_final] = self._parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
+                            new_dictionary[discover_method] = self._parse(discover_attr, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
                         else:
-                            raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute: must be used with watch_region")
+                            raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with watch_region")
                     elif discover_attr in tmdb.discover_booleans:
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="bool", parent=method_name)
                     elif discover_attr == "vote_average":
-                        new_dictionary[discover_final] = self._parse(discover_final, discover_data, datatype="float", parent=method_name)
+                        new_dictionary[discover_method] = self._parse(discover_method, discover_data, datatype="float", parent=method_name)
                     elif discover_attr == "with_status":
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
                     elif discover_attr == "with_type":
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
-                    elif discover_final in tmdb.discover_dates:
-                        new_dictionary[discover_final] = util.validate_date(discover_data, f"{method_name} {discover_final} attribute", return_as="%m/%d/%Y")
+                    elif discover_method in tmdb.discover_dates:
+                        new_dictionary[discover_method] = util.validate_date(discover_data, f"{method_name} {discover_method} attribute", return_as="%m/%d/%Y")
                     elif discover_attr in tmdb.discover_years:
                         new_dictionary[discover_attr] = self._parse(discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
                     elif discover_attr in tmdb.discover_ints:
-                        new_dictionary[discover_final] = self._parse(discover_final, discover_data, datatype="int", parent=method_name)
-                    elif discover_final in tmdb.discover_strings:
-                        new_dictionary[discover_final] = discover_data
+                        new_dictionary[discover_method] = self._parse(discover_method, discover_data, datatype="int", parent=method_name)
+                    elif discover_method in tmdb.discover_strings:
+                        new_dictionary[discover_method] = discover_data
                     elif discover_attr != "limit":
-                        raise Failed(f"{self.Type} Error: {method_name} {discover_final} attribute not supported")
+                        raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute not supported")
                 if len(new_dictionary) > 1:
                     self.builders.append((method_name, new_dictionary))
                 else:
@@ -1162,21 +1172,21 @@ class CollectionBuilder:
             if method_name.endswith("_details"):
                 if method_name.startswith(("tmdb_collection", "tmdb_movie", "tmdb_show")):
                     item = self.config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
-                    if hasattr(item, "overview") and item.overview:
+                    if item.overview:
                         self.summaries[method_name] = item.overview
-                    if hasattr(item, "backdrop_path") and item.backdrop_path:
-                        self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{item.backdrop_path}"
-                    if hasattr(item, "poster_path") and item.poster_path:
-                        self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
+                    if item.backdrop_url:
+                        self.backgrounds[method_name] = item.backdrop_url
+                    if item.poster_path:
+                        self.posters[method_name] = item.poster_url
                 elif method_name.startswith(("tmdb_actor", "tmdb_crew", "tmdb_director", "tmdb_producer", "tmdb_writer")):
                     item = self.config.TMDb.get_person(values[0])
-                    if hasattr(item, "biography") and item.biography:
+                    if item.biography:
                         self.summaries[method_name] = item.biography
-                    if hasattr(item, "profile_path") and item.profile_path:
-                        self.posters[method_name] = f"{self.config.TMDb.image_url}{item.profile_path}"
+                    if item.profile_path:
+                        self.posters[method_name] = item.profile_url
                 elif method_name.startswith("tmdb_list"):
                     item = self.config.TMDb.get_list(values[0])
-                    if hasattr(item, "description") and item.description:
+                    if item.description:
                         self.summaries[method_name] = item.description
             for value in values:
                 self.builders.append((method_name[:-8] if method_name.endswith("_details") else method_name, value))
@@ -1204,12 +1214,10 @@ class CollectionBuilder:
         if method_name.endswith("_details"):
             if method_name.startswith(("tvdb_movie", "tvdb_show")):
                 item = self.config.TVDb.get_item(values[0], method_name.startswith("tvdb_movie"))
-                if hasattr(item, "description") and item.description:
-                    self.summaries[method_name] = item.description
-                if hasattr(item, "background_path") and item.background_path:
-                    self.backgrounds[method_name] = f"{self.config.TMDb.image_url}{item.background_path}"
-                if hasattr(item, "poster_path") and item.poster_path:
-                    self.posters[method_name] = f"{self.config.TMDb.image_url}{item.poster_path}"
+                if item.background_path:
+                    self.backgrounds[method_name] = item.background_path
+                if item.poster_path:
+                    self.posters[method_name] = item.poster_path
             elif method_name.startswith("tvdb_list"):
                 self.summaries[method_name] = self.config.TVDb.get_list_description(values[0])
         for value in values:
@@ -1348,7 +1356,7 @@ class CollectionBuilder:
                                     if tvdb_id not in self.missing_shows:
                                         self.missing_shows.append(tvdb_id)
                                 except Failed as e:
-                                    logger.error(e)
+                                    logger.warning(e)
                             elif show_id not in self.missing_shows:
                                 self.missing_shows.append(show_id)
                     else:
@@ -1366,7 +1374,7 @@ class CollectionBuilder:
                                 try:
                                     input_id = self.config.Convert.tmdb_to_tvdb(input_id, fail=True)
                                 except Failed as e:
-                                    logger.error(e)
+                                    logger.warning(e)
                                     continue
                             if input_id not in self.ignore_ids:
                                 if input_id in self.library.show_map:
@@ -1388,7 +1396,7 @@ class CollectionBuilder:
                                             if tvdb_id not in self.missing_shows:
                                                 self.missing_shows.append(tvdb_id)
                                     except Failed as e:
-                                        logger.error(e)
+                                        logger.warning(e)
                                         continue
                         if not isinstance(rating_keys, list):
                             rating_keys = [rating_keys]
@@ -1513,54 +1521,63 @@ class CollectionBuilder:
                     display_line = f"{indent}{param_s} {mod_s} {arg_s}"
                     return f"{arg_key}{mod}={arg}&", display_line
 
+                error = None
                 if final_attr not in plex.searches and not final_attr.startswith(("any", "all")):
-                    raise Failed(f"{self.Type} Error: {final_attr} is not a valid {method} attribute")
+                    error = f"{self.Type} Error: {final_attr} is not a valid {method} attribute"
                 elif self.library.is_show and final_attr in plex.movie_only_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for movie libraries")
+                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for movie libraries"
                 elif self.library.is_movie and final_attr in plex.show_only_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries")
+                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries"
                 elif self.library.is_music and final_attr not in plex.music_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries")
+                    error = f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries")
-                elif _data is None:
-                    raise Failed(f"{self.Type} Error: {final_attr} {method} attribute is blank")
-                elif final_attr.startswith(("any", "all")):
-                    dicts = util.get_list(_data)
-                    results = ""
-                    display_add = ""
-                    for dict_data in dicts:
-                        if not isinstance(dict_data, dict):
-                            raise Failed(f"{self.Type} Error: {attr} must be either a dictionary or list of dictionaries")
-                        inside_filter, inside_display = _filter(dict_data, is_all=attr == "all", level=level)
-                        if len(inside_filter) > 0:
-                            display_add += inside_display
-                            results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
+                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries"
+                elif _data is not False and not _data:
+                    error = f"{self.Type} Error: {final_attr} {method} attribute is blank"
                 else:
-                    validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, pairs=True)
-                    if validation is None:
-                        continue
-                    elif attr in plex.date_attributes and modifier in ["", ".not"]:
-                        last_text = "is not in the last" if modifier == ".not" else "is in the last"
-                        last_mod = "%3E%3E" if modifier == "" else "%3C%3C"
-                        results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
-                    elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
-                        results, display_add = build_url_arg(validation * 60000)
-                    elif attr in plex.boolean_attributes:
-                        bool_mod = "" if validation else "!"
-                        bool_arg = "true" if validation else "false"
-                        results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
-                    elif (attr in plex.tag_attributes + plex.string_attributes + plex.year_attributes) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends"]:
+                    if final_attr.startswith(("any", "all")):
+                        dicts = util.get_list(_data)
                         results = ""
                         display_add = ""
-                        for og_value, result in validation:
-                            built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
-                            display_add += built_arg[1]
-                            results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
+                        for dict_data in dicts:
+                            if not isinstance(dict_data, dict):
+                                raise Failed(
+                                    f"{self.Type} Error: {attr} must be either a dictionary or list of dictionaries")
+                            inside_filter, inside_display = _filter(dict_data, is_all=attr == "all", level=level)
+                            if len(inside_filter) > 0:
+                                display_add += inside_display
+                                results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                     else:
-                        results, display_add = build_url_arg(validation)
-                display += display_add
-                output += f"{conjunction if len(output) > 0 else ''}{results}"
+                        validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, pairs=True)
+                        if validation is None:
+                            continue
+                        elif attr in plex.date_attributes and modifier in ["", ".not"]:
+                            last_text = "is not in the last" if modifier == ".not" else "is in the last"
+                            last_mod = "%3E%3E" if modifier == "" else "%3C%3C"
+                            results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
+                        elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
+                            results, display_add = build_url_arg(validation * 60000)
+                        elif attr in plex.boolean_attributes:
+                            bool_mod = "" if validation else "!"
+                            bool_arg = "true" if validation else "false"
+                            results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
+                        elif (attr in plex.tag_attributes + plex.string_attributes + plex.year_attributes) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends"]:
+                            results = ""
+                            display_add = ""
+                            for og_value, result in validation:
+                                built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
+                                display_add += built_arg[1]
+                                results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
+                        else:
+                            results, display_add = build_url_arg(validation)
+                    display += display_add
+                    output += f"{conjunction if len(output) > 0 else ''}{results}"
+                if error:
+                    if validate:
+                        raise Failed(error)
+                    else:
+                        logger.error(error)
+                        continue
             return output, display
 
         if "any" not in filter_alias and "all" not in filter_alias:
@@ -1619,7 +1636,7 @@ class CollectionBuilder:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "original_language":
             return util.get_list(data, lower=True)
-        elif attribute == "filepath":
+        elif attribute in ["filepath", "tmdb_genre"]:
             return util.get_list(data)
         elif attribute == "history":
             try:
@@ -1783,20 +1800,21 @@ class CollectionBuilder:
                 if item is None:
                     item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
                 if check_released:
-                    if util.validate_date(item.release_date if is_movie else item.first_air_date, "") > self.current_time:
+                    date_to_check = item.release_date if is_movie else item.first_air_date
+                    if not date_to_check or date_to_check > self.current_time:
                         return False
                 for filter_method, filter_data in self.tmdb_filters:
                     filter_attr, modifier, filter_final = self._split(filter_method)
                     if filter_attr == "original_language":
-                        if (modifier == ".not" and item.original_language in filter_data) \
-                                or (modifier == "" and item.original_language not in filter_data):
+                        if (modifier == ".not" and item.original_language.iso_639_1 in filter_data) \
+                                or (modifier == "" and item.original_language.iso_639_1 not in filter_data):
                             return False
                     elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
                         tmdb_date = None
                         if filter_attr == "first_episode_aired":
-                            tmdb_date = util.validate_date(item.first_air_date, "TMDB First Air Date")
+                            tmdb_date = item.first_air_date
                         elif filter_attr == "last_episode_aired":
-                            tmdb_date = util.validate_date(item.last_air_date, "TMDB Last Air Date")
+                            tmdb_date = item.last_air_date
                         if util.is_date_filter(tmdb_date, modifier, filter_data, filter_final, self.current_time):
                             return False
                     elif modifier in [".gt", ".gte", ".lt", ".lte"]:
@@ -1805,11 +1823,14 @@ class CollectionBuilder:
                             attr = item.vote_count
                         elif filter_attr == "tmdb_year" and is_movie:
                             attr = item.year
-                        elif filter_attr == "tmdb_year" and not is_movie:
-                            air_date = item.first_air_date
-                            if air_date:
-                                attr = util.validate_date(air_date, "TMDb Year Filter").year
+                        elif filter_attr == "tmdb_year" and not is_movie and item.first_air_date:
+                            attr = item.first_air_date.year
                         if util.is_number_filter(attr, modifier, filter_data):
+                            return False
+                    elif filter_attr == "tmdb_genre":
+                        attrs = [g.name for g in item.genres]
+                        if (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                                or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             return False
             except Failed:
                 return False
@@ -1944,7 +1965,7 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
                     continue
-                current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
+                current_title = f"{movie.title} ({movie.release_date.year})" if movie.release_date else movie.title
                 if self.check_tmdb_filter(missing_id, True, item=movie, check_released=self.details["missing_only_released"]):
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
@@ -1962,7 +1983,9 @@ class CollectionBuilder:
                     if self.library.Radarr:
                         if self.radarr_details["add_missing"]:
                             try:
-                                added_to_radarr += self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_details)
+                                added = self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_details)
+                                self.added_to_radarr.extend([movie.tmdbId for movie in added])
+                                added_to_radarr += len(added)
                             except Failed as e:
                                 logger.error(e)
                         if "item_radarr_tag" in self.item_details:
@@ -2001,7 +2024,9 @@ class CollectionBuilder:
                     if self.library.Sonarr:
                         if self.sonarr_details["add_missing"]:
                             try:
-                                added_to_sonarr += self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_details)
+                                added = self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_details)
+                                self.added_to_sonarr.extend([show.tvdbId for show in added])
+                                added_to_sonarr += len(added)
                             except Failed as e:
                                 logger.error(e)
                         if "item_sonarr_tag" in self.item_details:
@@ -2063,6 +2088,13 @@ class CollectionBuilder:
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
 
+        if "non_item_remove_label" in self.item_details:
+            rk_compare = [item.rakingKey for item in self.items]
+            for remove_label in self.item_details["non_item_remove_label"]:
+                for non_item in self.library.get_labeled_items(remove_label):
+                    if non_item.ratingKey not in rk_compare:
+                        self.library.edit_tags("label", non_item, remove_tags=[remove_label])
+
         tmdb_paths = []
         tvdb_paths = []
         for item in self.items:
@@ -2084,20 +2116,22 @@ class CollectionBuilder:
                 path = path[:-1] if path.endswith(('/', '\\')) else path
                 tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], path))
             advance_edits = {}
-            for method_name, method_data in self.item_details.items():
-                if method_name in plex.item_advance_keys:
-                    key, options = plex.item_advance_keys[method_name]
-                    if getattr(item, key) != options[method_data]:
-                        advance_edits[key] = options[method_data]
+            if hasattr(item, "preferences"):
+                prefs = [p.id for p in item.preferences()]
+                for method_name, method_data in self.item_details.items():
+                    if method_name in plex.item_advance_keys:
+                        key, options = plex.item_advance_keys[method_name]
+                        if key in prefs and getattr(item, key) != options[method_data]:
+                            advance_edits[key] = options[method_data]
             self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
 
             if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
                 try:
                     tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey])
-                    names = {str(s.season_number): s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
+                    names = {s.season_number: s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
                     for season in self.library.query(item.seasons):
-                        if str(season.index) in names:
-                            self.library.edit_query(season, {"title.locked": 1, "title.value": names[str(season.index)]})
+                        if season.index in names:
+                            self.library.edit_query(season, {"title.locked": 1, "title.value": names[season.index]})
                 except Failed as e:
                     logger.error(e)
 
@@ -2110,19 +2144,24 @@ class CollectionBuilder:
             if "item_lock_title" in self.item_details:
                 self.library.edit_query(item, {"title.locked": 1})
             if "item_refresh" in self.item_details:
+                delay = self.item_details["item_refresh_delay"] if "item_refresh_delay" in self.item_details else self.library.item_refresh_delay
+                if delay > 0:
+                    time.sleep(delay)
                 self.library.query(item.refresh)
 
         if self.library.Radarr and tmdb_paths:
             if "item_radarr_tag" in self.item_details:
                 self.library.Radarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tmdb_paths], self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
             if self.radarr_details["add_existing"]:
-                self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
+                added = self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
+                self.added_to_radarr.extend([movie.tmdbId for movie in added])
 
         if self.library.Sonarr and tvdb_paths:
             if "item_sonarr_tag" in self.item_details:
                 self.library.Sonarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tvdb_paths], self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
             if self.sonarr_details["add_existing"]:
-                self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
+                added = self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
+                self.added_to_sonarr.extend([show.tvdbId for show in added])
 
         for rating_key in rating_keys:
             try:
@@ -2400,6 +2439,8 @@ class CollectionBuilder:
                     deleted=self.deleted,
                     additions=self.notification_additions,
                     removals=self.notification_removals,
+                    radarr=self.added_to_radarr,
+                    sonarr=self.added_to_sonarr,
                     playlist=playlist
                 )
             except Failed as e:
@@ -2413,6 +2454,8 @@ class CollectionBuilder:
         rating_keys = []
         amount_added = 0
         self.notification_additions = []
+        self.added_to_radarr = []
+        self.added_to_sonarr = []
         for mm in self.run_again_movies:
             if mm in self.library.movie_map:
                 rating_keys.extend(self.library.movie_map[mm])
@@ -2453,7 +2496,7 @@ class CollectionBuilder:
                         logger.error(e)
                         continue
                     if self.details["show_missing"] is True:
-                        current_title = f"{movie.title} ({util.validate_date(movie.release_date, 'test').year})" if movie.release_date else movie.title
+                        current_title = f"{movie.title} ({movie.release_date.year})" if movie.release_date else movie.title
                         logger.info(f"{name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(self.run_again_movies)} Movie{'s' if len(self.run_again_movies) > 1 else ''} Missing")

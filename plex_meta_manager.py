@@ -34,6 +34,7 @@ parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_o
 parser.add_argument("-lf", "--library-first", "--libraries-first", dest="library_first", help="Run library operations before collections", action="store_true", default=False)
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
+parser.add_argument("-rm", "-m", "--metadata", "--metadata-files", "--run-metadata-files", dest="metadata", help="Process only specified Metadata files (comma-separated list)", type=str)
 parser.add_argument("-dc", "--delete", "--delete-collections", dest="delete", help="Deletes all Collections in the Plex Library before running", action="store_true", default=False)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
@@ -69,6 +70,7 @@ library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
 library_first = get_arg("PMM_LIBRARIES_FIRST", args.library_first, arg_bool=True)
 collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
+metadata_files = get_arg("PMM_METADATA_FILES", args.metadata)
 delete = get_arg("PMM_DELETE_COLLECTIONS", args.delete, arg_bool=True)
 resume = get_arg("PMM_RESUME", args.resume)
 no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
@@ -158,6 +160,7 @@ def start(attrs):
     logger.debug(f"--libraries-first (PMM_LIBRARIES_FIRST): {library_first}")
     logger.debug(f"--run-collections (PMM_COLLECTIONS): {collections}")
     logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
+    logger.debug(f"--run-metadata-files (PMM_METADATA_FILES): {metadata_files}")
     logger.debug(f"--ignore-schedules (PMM_IGNORE_SCHEDULES): {ignore_schedules}")
     logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete}")
     logger.debug(f"--resume (PMM_RESUME): {resume}")
@@ -258,8 +261,11 @@ def update_libraries(config):
                 logger.info("")
                 library.map_guids()
             for metadata in library.metadata_files:
+                metadata_name = metadata.get_file_name()
+                if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
+                    continue
                 logger.info("")
-                util.separator(f"Running Metadata File\n{metadata.path}")
+                util.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
                 if not config.test_mode and not config.resume_from and not collection_only:
                     try:
                         metadata.update_metadata()
@@ -439,7 +445,7 @@ def library_operations(config, library):
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
-    logger.debug(f"TMDb Operation: {library.tmdb_library_operation}")
+    logger.debug(f"TMDb Operation: {library.items_library_operation}")
 
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
@@ -448,7 +454,7 @@ def library_operations(config, library):
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
     tmdb_collections = {}
-    if library.tmdb_library_operation:
+    if library.items_library_operation:
         items = library.get_all()
         radarr_adds = []
         sonarr_adds = []
@@ -544,8 +550,8 @@ def library_operations(config, library):
                 else:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
 
-            if library.tmdb_collections and tmdb_item and tmdb_item.belongs_to_collection:
-                tmdb_collections[tmdb_item.belongs_to_collection.id] = tmdb_item.belongs_to_collection.name
+            if library.tmdb_collections and tmdb_item and tmdb_item.collection:
+                tmdb_collections[tmdb_item.collection.id] = tmdb_item.collection.name
 
             if library.mass_genre_update:
                 try:
@@ -600,7 +606,8 @@ def library_operations(config, library):
                     for genre in item.genres:
                         if genre.tag in library.genre_mapper:
                             deletes.append(genre.tag)
-                            adds.append(library.genre_mapper[genre.tag])
+                            if library.genre_mapper[genre.tag]:
+                                adds.append(library.genre_mapper[genre.tag])
                     library.edit_tags("genre", item, add_tags=adds, remove_tags=deletes)
                 except Failed:
                     pass
@@ -652,6 +659,8 @@ def library_operations(config, library):
                     new_collections[title] = {"template": template}
 
         metadata = MetadataFile(config, library, "Data", {"collections": new_collections, "templates": templates})
+        if metadata.collections:
+            library.collections.extend([c for c in metadata.collections])
         run_collection(config, library, metadata, metadata.get_collections(None))
 
     if library.radarr_remove_by_tag:
@@ -945,9 +954,11 @@ def run_playlists(config):
                     else:
                         server_check = pl_library.PlexServer.machineIdentifier
 
-                sync_to_users = config.general["playlist_sync_to_user"]
+                sync_to_users = config.general["playlist_sync_to_users"]
                 if "sync_to_users" in playlist_attrs:
                     sync_to_users = playlist_attrs["sync_to_users"]
+                elif "sync_to_user" in playlist_attrs:
+                    sync_to_users = playlist_attrs["sync_to_user"]
                 else:
                     logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_user: {sync_to_users}")
 
@@ -992,7 +1003,16 @@ def run_playlists(config):
                 logger.debug(f"Builder: {method}: {value}")
                 logger.info("")
                 items = []
-                ids = builder.gather_ids(method, value)
+                if "plex" in method:
+                    ids = []
+                    for pl_library in pl_libraries:
+                        ids.extend(pl_library.get_rating_keys(method, value))
+                elif "tautulli" in method:
+                    ids = []
+                    for pl_library in pl_libraries:
+                        ids.extend(pl_library.Tautulli.get_rating_keys(pl_library, value, True))
+                else:
+                    ids = builder.gather_ids(method, value)
 
                 if len(ids) > 0:
                     total_ids = len(ids)
@@ -1052,7 +1072,7 @@ def run_playlists(config):
                                     try:
                                         input_id = config.Convert.tmdb_to_tvdb(input_id, fail=True)
                                     except Failed as e:
-                                        logger.error(e)
+                                        logger.warning(e)
                                         continue
                                 if input_id not in builder.ignore_ids:
                                     found = False
@@ -1101,7 +1121,7 @@ def run_playlists(config):
                                                 if tvdb_id not in builder.missing_shows:
                                                     builder.missing_shows.append(tvdb_id)
                                         except Failed as e:
-                                            logger.error(e)
+                                            logger.warning(e)
                                             continue
                             if not isinstance(rating_keys, list):
                                 rating_keys = [rating_keys]
@@ -1205,7 +1225,7 @@ def run_playlists(config):
     return status, stats
 
 try:
-    if run or test or collections or libraries or resume:
+    if run or test or collections or libraries or metadata_files or resume:
         start({
             "config_file": config_file,
             "test": test,
@@ -1213,6 +1233,7 @@ try:
             "ignore_schedules": ignore_schedules,
             "collections": collections,
             "libraries": libraries,
+            "metadata_files": metadata_files,
             "library_first": library_first,
             "resume": resume,
             "trace": trace

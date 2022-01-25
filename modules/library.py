@@ -1,4 +1,4 @@
-import logging, os, requests, shutil, time
+import logging, os, shutil, time
 from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile
@@ -46,9 +46,12 @@ class Library(ABC):
         self.dimensional_asset_rename = params["dimensional_asset_rename"]
         self.download_url_assets = params["download_url_assets"]
         self.show_missing_season_assets = params["show_missing_season_assets"]
+        self.show_missing_episode_assets = params["show_missing_episode_assets"]
+        self.show_asset_not_needed = params["show_asset_not_needed"]
         self.sync_mode = params["sync_mode"]
         self.default_collection_order = params["default_collection_order"]
         self.minimum_items = params["minimum_items"]
+        self.item_refresh_delay = params["item_refresh_delay"]
         self.delete_below_minimum = params["delete_below_minimum"]
         self.delete_not_scheduled = params["delete_not_scheduled"]
         self.missing_only_released = params["missing_only_released"]
@@ -85,12 +88,12 @@ class Library(ABC):
         self.stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
         self.status = {}
 
-        self.tmdb_library_operation = self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
-                                      or self.mass_critic_rating_update or self.mass_trakt_rating_update \
+        self.items_library_operation = self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
+                                      or self.mass_critic_rating_update or self.mass_trakt_rating_update or self.genre_mapper \
                                       or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing
-        self.library_operation = self.tmdb_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
+        self.library_operation = self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
-                                 or self.genre_collections or self.genre_mapper or self.show_unmanaged
+                                 or self.genre_collections or self.show_unmanaged
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":
@@ -143,7 +146,7 @@ class Library(ABC):
                     self._upload_image(item, poster)
                     poster_uploaded = True
                     logger.info(f"Detail: {poster.attribute} updated {poster.message}")
-                else:
+                elif self.show_asset_not_needed:
                     logger.info(f"Detail: {poster.prefix}poster update not needed")
             except Failed:
                 util.print_stacktrace()
@@ -193,7 +196,7 @@ class Library(ABC):
                     self._upload_image(item, background)
                     background_uploaded = True
                     logger.info(f"Detail: {background.attribute} updated {background.message}")
-                else:
+                elif self.show_asset_not_needed:
                     logger.info(f"Detail: {background.prefix}background update not needed")
             except Failed:
                 util.print_stacktrace()

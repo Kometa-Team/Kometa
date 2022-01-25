@@ -1,8 +1,7 @@
-import logging, tmdbv3api
+import logging
 from modules import util
 from modules.util import Failed
-from retrying import retry
-from tmdbv3api.exceptions import TMDbException
+from tmdbapis import TMDbAPIs, TMDbException, NotFound
 
 logger = logging.getLogger("Plex Meta Manager")
 
@@ -62,61 +61,42 @@ discover_monetization_types = ["flatrate", "free", "ads", "rent", "buy"]
 class TMDb:
     def __init__(self, config, params):
         self.config = config
-        self.TMDb = tmdbv3api.TMDb(session=self.config.session)
-        self.TMDb.api_key = params["apikey"]
-        self.TMDb.language = params["language"]
-        try:
-            response = tmdbv3api.Configuration().info()
-            if hasattr(response, "status_message"):
-                raise Failed(f"TMDb Error: {response.status_message}")
-        except TMDbException as e:
-            raise Failed(f"TMDb Error: {e}")
         self.apikey = params["apikey"]
         self.language = params["language"]
-        self.Movie = tmdbv3api.Movie()
-        self.TV = tmdbv3api.TV()
-        self.Discover = tmdbv3api.Discover()
-        self.Trending = tmdbv3api.Trending()
-        self.Keyword = tmdbv3api.Keyword()
-        self.List = tmdbv3api.List()
-        self.Company = tmdbv3api.Company()
-        self.Network = tmdbv3api.Network()
-        self.Collection = tmdbv3api.Collection()
-        self.Person = tmdbv3api.Person()
-        self.image_url = "https://image.tmdb.org/t/p/original"
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def convert_from(self, tmdb_id, convert_to, is_movie):
         try:
-            id_to_return = self.Movie.external_ids(tmdb_id)[convert_to] if is_movie else self.TV.external_ids(tmdb_id)[convert_to]
-            if not id_to_return or (convert_to == "tvdb_id" and id_to_return == 0):
-                raise Failed(f"TMDb Error: No {convert_to.upper().replace('B_', 'b ')} found for TMDb ID {tmdb_id}")
-            return id_to_return if convert_to == "imdb_id" else int(id_to_return)
-        except TMDbException:
-            raise Failed(f"TMDb Error: TMDb {'Movie' if is_movie else 'Show'} ID: {tmdb_id} not found")
+            self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
+        except TMDbException as e:
+            raise Failed(f"TMDb Error: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def convert_to(self, external_id, external_source):
-        return self.Movie.external(external_id=external_id, external_source=external_source)
+    def convert_from(self, tmdb_id, convert_to, is_movie):
+        item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
+        check_id = item.tvdb_id if convert_to == "tvdb_id" and not is_movie else item.imdb_id
+        if not check_id:
+            raise Failed(f"TMDb Error: No {convert_to.upper().replace('B_', 'b ')} found for TMDb ID {tmdb_id}")
+        return check_id
 
     def convert_tvdb_to(self, tvdb_id):
-        search = self.convert_to(tvdb_id, "tvdb_id")
-        if len(search["tv_results"]) == 1:
-            return int(search["tv_results"][0]["id"])
-        else:
-            raise Failed(f"TMDb Error: No TMDb ID found for TVDb ID {tvdb_id}")
+        try:
+            results = self.TMDb.find_by_id(tvdb_id=tvdb_id)
+            if results.tv_results:
+                return results.tv_results[0].id
+        except NotFound:
+            pass
+        raise Failed(f"TMDb Error: No TMDb ID found for TVDb ID {tvdb_id}")
 
     def convert_imdb_to(self, imdb_id):
-        search = self.convert_to(imdb_id, "imdb_id")
-        if len(search["movie_results"]) > 0:
-            return int(search["movie_results"][0]["id"]), "movie"
-        elif len(search["tv_results"]) > 0:
-            return int(search["tv_results"][0]["id"]), "show"
-        elif len(search["tv_episode_results"]) > 0:
-            item = search['tv_episode_results'][0]
-            return f"{item['show_id']}_{item['season_number']}_{item['episode_number']}", "episode"
-        else:
-            raise Failed(f"TMDb Error: No TMDb ID found for IMDb ID {imdb_id}")
+        try:
+            results = self.TMDb.find_by_id(imdb_id=imdb_id)
+            if results.movie_results:
+                return results.movie_results[0].id, "movie"
+            elif results.tv_results:
+                return results.tv_results[0].id, "show"
+            elif results.tv_episode_results:
+                item = results.tv_episode_results[0]
+                return f"{item.tv_id}_{item.season_number}_{item.episode_number}", "episode"
+        except NotFound:
+            pass
+        raise Failed(f"TMDb Error: No TMDb ID found for IMDb ID {imdb_id}")
 
     def get_movie_show_or_collection(self, tmdb_id, is_movie):
         if is_movie:
@@ -126,111 +106,37 @@ class TMDb:
                 except Failed:                  raise Failed(f"TMDb Error: No Movie or Collection found for TMDb ID {tmdb_id}")
         else:                           return self.get_show(tmdb_id)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_movie(self, tmdb_id):
-        try:                            return self.Movie.details(tmdb_id)
+        try:                            return self.TMDb.movie(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Movie found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_show(self, tmdb_id):
-        try:                            return self.TV.details(tmdb_id)
+        try:                            return self.TMDb.tv_show(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Show found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_collection(self, tmdb_id):
-        try:                            return self.Collection.details(tmdb_id)
+        try:                            return self.TMDb.collection(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Collection found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_person(self, tmdb_id):
-        try:                            return self.Person.details(tmdb_id)
+        try:                            return self.TMDb.person(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def _person_credits(self, tmdb_id):
-        try:                            return self.Person.combined_credits(tmdb_id)
-        except TMDbException as e:      raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def _company(self, tmdb_id):
-        try:                            return self.Company.details(tmdb_id)
+        try:                            return self.TMDb.company(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Company found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def _network(self, tmdb_id):
-        try:                            return self.Network.details(tmdb_id)
+        try:                            return self.TMDb.network(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Network found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def _keyword(self, tmdb_id):
-        try:                            return self.Keyword.details(tmdb_id)
+        try:                            return self.TMDb.keyword(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Keyword found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_list(self, tmdb_id):
-        try:                            return self.List.details(tmdb_id, all_details=True)
+        try:                            return self.TMDb.list(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
-
-    def _credits(self, tmdb_id, actor=False, crew=False, director=False, producer=False, writer=False):
-        ids = []
-        actor_credits = self._person_credits(tmdb_id)
-        if actor:
-            for credit in actor_credits.cast:
-                if credit.media_type == "movie":
-                    ids.append((credit.id, "tmdb"))
-                elif credit.media_type == "tv":
-                    ids.append((credit.id, "tmdb_show"))
-        for credit in actor_credits.crew:
-            if crew or \
-                    (director and credit.department == "Directing") or  \
-                    (producer and credit.department == "Production") or \
-                    (writer and credit.department == "Writing"):
-                if credit.media_type == "movie":
-                    ids.append((credit.id, "tmdb"))
-                elif credit.media_type == "tv":
-                    ids.append((credit.id, "tmdb_show"))
-        return ids
-
-    def _pagenation(self, method, amount, is_movie):
-        ids = []
-        for x in range(int(amount / 20) + 1):
-            if method == "tmdb_popular":                        tmdb_items = self.Movie.popular(x + 1) if is_movie else self.TV.popular(x + 1)
-            elif method == "tmdb_top_rated":                    tmdb_items = self.Movie.top_rated(x + 1) if is_movie else self.TV.top_rated(x + 1)
-            elif method == "tmdb_now_playing" and is_movie:     tmdb_items = self.Movie.now_playing(x + 1)
-            elif method == "tmdb_trending_daily":               tmdb_items = self.Trending.movie_day(x + 1) if is_movie else self.Trending.tv_day(x + 1)
-            elif method == "tmdb_trending_weekly":              tmdb_items = self.Trending.movie_week(x + 1) if is_movie else self.Trending.tv_week(x + 1)
-            else:                                               raise Failed(f"TMDb Error: {method} method not supported")
-            for tmdb_item in tmdb_items:
-                try:
-                    ids.append((tmdb_item.id, "tmdb" if is_movie else "tmdb_show"))
-                except Failed as e:
-                    logger.error(e)
-                if len(ids) == amount: break
-            if len(ids) == amount: break
-        return ids
-
-    def _discover(self, attrs, amount, is_movie):
-        ids = []
-        for date_attr in discover_dates:
-            if date_attr in attrs:
-                attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
-        if self.config.trace_mode:
-            logger.debug(f"Params: {attrs}")
-        self.Discover.discover_movies(attrs) if is_movie else self.Discover.discover_tv_shows(attrs)
-        total_pages = int(self.TMDb.total_pages)
-        total_results = int(self.TMDb.total_results)
-        amount = total_results if amount == 0 or total_results < amount else amount
-        for x in range(total_pages):
-            attrs["page"] = x + 1
-            tmdb_items = self.Discover.discover_movies(attrs) if is_movie else self.Discover.discover_tv_shows(attrs)
-            for tmdb_item in tmdb_items:
-                try:
-                    ids.append((tmdb_item.id, "tmdb" if is_movie else "tmdb_show"))
-                except Failed as e:
-                    logger.error(e)
-                if len(ids) == amount: break
-            if len(ids) == amount: break
-        return ids, amount
 
     def validate_tmdb_ids(self, tmdb_ids, tmdb_method):
         tmdb_list = util.get_int_list(tmdb_ids, f"TMDb {type_map[tmdb_method]} ID")
@@ -249,74 +155,86 @@ class TMDb:
         elif tmdb_type == "Person":                 self.get_person(tmdb_id)
         elif tmdb_type == "Company":                self._company(tmdb_id)
         elif tmdb_type == "Network":                self._network(tmdb_id)
+        elif tmdb_type == "Keyword":                self._keyword(tmdb_id)
         elif tmdb_type == "List":                   self.get_list(tmdb_id)
         return tmdb_id
 
     def get_tmdb_ids(self, method, data, is_movie):
         pretty = method.replace("_", " ").title().replace("Tmdb", "TMDb")
         media_type = "Movie" if is_movie else "Show"
+        result_type = "tmdb" if is_movie else "tmdb_show"
         ids = []
-        if method in ["tmdb_discover", "tmdb_company", "tmdb_keyword"] or (method == "tmdb_network" and not is_movie):
-            attrs = None
-            tmdb_id = ""
-            tmdb_name = ""
-            if method in ["tmdb_company", "tmdb_network", "tmdb_keyword"]:
-                tmdb_id = int(data)
-                if method == "tmdb_company":
-                    tmdb_name = str(self._company(tmdb_id).name)
-                    attrs = {"with_companies": tmdb_id}
-                elif method == "tmdb_network":
-                    tmdb_name = str(self._network(tmdb_id).name)
-                    attrs = {"with_networks": tmdb_id}
-                elif method == "tmdb_keyword":
-                    tmdb_name = str(self._keyword(tmdb_id).name)
-                    attrs = {"with_keywords": tmdb_id}
-                limit = 0
+        if method in ["tmdb_network", "tmdb_company", "tmdb_keyword"]:
+            if method == "tmdb_company":
+                item = self._company(int(data))
+            elif method == "tmdb_network":
+                item = self._network(int(data))
             else:
-                attrs = data.copy()
-                limit = int(attrs.pop("limit"))
-            ids, amount = self._discover(attrs, limit, is_movie)
-            if method in ["tmdb_company", "tmdb_network", "tmdb_keyword"]:
-                logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({amount} {media_type}{'' if amount == 1 else 's'})")
-            elif method == "tmdb_discover":
-                logger.info(f"Processing {pretty}: {amount} {media_type}{'' if amount == 1 else 's'}")
-                for attr, value in attrs.items():
-                    logger.info(f"           {attr}: {value}")
+                item = self._keyword(int(data))
+            results = item.movies if is_movie else item.tv_shows
+            ids = [(i.id, result_type) for i in results.get_results(results.total_results)]
+            logger.info(f"Processing {pretty}: ({data}) {item.name} ({len(results)} {media_type}{'' if len(results) == 1 else 's'})")
+        elif method == "tmdb_discover":
+            attrs = data.copy()
+            limit = int(attrs.pop("limit"))
+            for date_attr in discover_dates:
+                if date_attr in attrs:
+                    attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
+            if self.config.trace_mode:
+                logger.debug(f"Params: {attrs}")
+            results = self.TMDb.discover_movies(**attrs) if is_movie else self.TMDb.discover_tv_shows(**attrs)
+            amount = results.total_results if limit == 0 or results.total_results < limit else limit
+            ids = [(i.id, result_type) for i in results.get_results(amount)]
+            logger.info(f"Processing {pretty}: {amount} {media_type}{'' if amount == 1 else 's'}")
+            for attr, value in attrs.items():
+                logger.info(f"           {attr}: {value}")
         elif method in ["tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_trending_daily", "tmdb_trending_weekly"]:
-            ids = self._pagenation(method, data, is_movie)
+            if method == "tmdb_popular":
+                results = self.TMDb.popular_movies() if is_movie else self.TMDb.popular_tv()
+            elif method == "tmdb_top_rated":
+                results = self.TMDb.top_rated_movies() if is_movie else self.TMDb.top_rated_tv()
+            elif method == "tmdb_now_playing":
+                results = self.TMDb.now_playing_movies()
+            else:
+                results = self.TMDb.trending("movie" if is_movie else "tv", "day" if method == "tmdb_trending_daily" else "week")
+            ids = [(i.id, result_type) for i in results.get_results(data)]
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
         else:
             tmdb_id = int(data)
             if method == "tmdb_list":
-                tmdb_list = self.get_list(tmdb_id)
-                tmdb_name = tmdb_list.name
-                for tmdb_item in tmdb_list.items:
-                    if tmdb_item.media_type == "movie":
-                        ids.append((tmdb_item.id, "tmdb"))
-                    elif tmdb_item.media_type == "tv":
-                        try:
-                            ids.append((tmdb_item.id, "tmdb_show"))
-                        except Failed:
-                            pass
+                results = self.get_list(tmdb_id)
+                tmdb_name = results.name
+                ids = [(i.id, result_type) for i in results.get_results(results.total_results)]
             elif method == "tmdb_movie":
-                tmdb_name = str(self.get_movie(tmdb_id).title)
+                tmdb_name = self.get_movie(tmdb_id).title
                 ids.append((tmdb_id, "tmdb"))
             elif method == "tmdb_collection":
-                tmdb_items = self.get_collection(tmdb_id)
-                tmdb_name = str(tmdb_items.name)
-                for tmdb_item in tmdb_items.parts:
-                    ids.append((tmdb_item["id"], "tmdb"))
+                collection = self.get_collection(tmdb_id)
+                tmdb_name = collection.name
+                ids = [(t.id, "tmdb") for t in collection.movies]
             elif method == "tmdb_show":
-                tmdb_name = str(self.get_show(tmdb_id).name)
+                tmdb_name = self.get_show(tmdb_id).name
                 ids.append((tmdb_id, "tmdb_show"))
             else:
-                tmdb_name = str(self.get_person(tmdb_id).name)
-                if method == "tmdb_actor":                  ids = self._credits(tmdb_id, actor=True)
-                elif method == "tmdb_director":             ids = self._credits(tmdb_id, director=True)
-                elif method == "tmdb_producer":             ids = self._credits(tmdb_id, producer=True)
-                elif method == "tmdb_writer":               ids = self._credits(tmdb_id, writer=True)
-                elif method == "tmdb_crew":                 ids = self._credits(tmdb_id, crew=True)
-                else:                                       raise Failed(f"TMDb Error: Method {method} not supported")
+                person = self.get_person(tmdb_id)
+                tmdb_name = person.name
+                if method == "tmdb_actor":
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_cast]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_cast])
+                elif method == "tmdb_crew":
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_crew]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew])
+                elif method == "tmdb_director":
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_crew if i.department == "Directing"]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew if i.department == "Directing"])
+                elif method == "tmdb_writer":
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_crew if i.department == "Writing"]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew if i.department == "Writing"])
+                elif method == "tmdb_producer":
+                    ids = [(i.movie.id, "tmdb") for i in person.movie_crew if i.department == "Production"]
+                    ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew if i.department == "Production"])
+                else:
+                    raise Failed(f"TMDb Error: Method {method} not supported")
             if len(ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(ids)} Item{'' if len(ids) == 1 else 's'})")
         return ids
