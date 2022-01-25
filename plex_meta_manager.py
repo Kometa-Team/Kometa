@@ -659,6 +659,8 @@ def library_operations(config, library):
                     new_collections[title] = {"template": template}
 
         metadata = MetadataFile(config, library, "Data", {"collections": new_collections, "templates": templates})
+        if metadata.collections:
+            library.collections.extend([c for c in metadata.collections])
         run_collection(config, library, metadata, metadata.get_collections(None))
 
     if library.radarr_remove_by_tag:
