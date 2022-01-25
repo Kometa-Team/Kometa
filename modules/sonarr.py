@@ -196,7 +196,7 @@ class Sonarr:
                 logger.info(f"Invalid Root Folder for TVDb ID | {tvdb_id:<7} | {path}")
             logger.info(f"{len(invalid_root)} Series with Invalid Paths")
 
-        return len(added)
+        return added
 
     def edit_tags(self, tvdb_ids, tags, apply_tags):
         logger.info("")

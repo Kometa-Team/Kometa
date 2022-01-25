@@ -4,6 +4,7 @@ from modules.library import Library
 from modules.util import Failed, ImageData
 from PIL import Image
 from plexapi import utils
+from plexapi.audio import Artist
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
 from plexapi.playlist import Playlist
@@ -15,7 +16,7 @@ from xml.etree.ElementTree import ParseError
 
 logger = logging.getLogger("Plex Meta Manager")
 
-builders = ["plex_all", "plex_collectionless", "plex_search"]
+builders = ["plex_all", "plex_pilots", "plex_collectionless", "plex_search"]
 search_translation = {
     "episode_title": "episode.title",
     "network": "show.network",
@@ -245,7 +246,7 @@ show_only_searches = [
 ]
 string_attributes = ["title", "studio", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
 float_attributes = [
-    "user_rating", "episode_user_rating", "critic_rating", "audience_rating",
+    "user_rating", "episode_user_rating", "critic_rating", "audience_rating", "duration",
     "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
 ]
 boolean_attributes = [
@@ -259,7 +260,7 @@ date_attributes = [
     "album_added", "album_released", "track_last_played", "track_last_skipped", "track_last_rated", "track_added"
 ]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
-number_attributes = ["plays", "episode_plays", "duration", "tmdb_vote_count", "album_plays", "track_plays", "track_skips"] + year_attributes
+number_attributes = ["plays", "episode_plays", "tmdb_vote_count", "album_plays", "track_plays", "track_skips"] + year_attributes
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
@@ -552,15 +553,16 @@ class Plex(Library):
         try:
             names = []
             choices = {}
+            use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
             for choice in self.Plex.listFilterChoices(final_search):
                 if choice.title not in names:
                     names.append(choice.title)
                 if choice.key not in names:
                     names.append(choice.key)
-                choices[choice.title] = choice.title if title else choice.key
-                choices[choice.key] = choice.title if title else choice.key
-                choices[choice.title.lower()] = choice.title if title else choice.key
-                choices[choice.key.lower()] = choice.title if title else choice.key
+                choices[choice.title] = choice.title if use_title else choice.key
+                choices[choice.key] = choice.title if use_title else choice.key
+                choices[choice.title.lower()] = choice.title if use_title else choice.key
+                choices[choice.key.lower()] = choice.title if use_title else choice.key
             return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
@@ -699,6 +701,14 @@ class Plex(Library):
         if method == "plex_all":
             logger.info(f"Processing Plex All {data.capitalize()}s")
             items = self.get_all(collection_level=data)
+        elif method == "plex_pilots":
+            logger.info(f"Processing Plex Pilot {data.capitalize()}s")
+            items = []
+            for item in self.get_all():
+                try:
+                    items.append(item.episode(season=1, episode=1))
+                except NotFound:
+                    logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
             util.print_multiline(data[1], info=True)
             items = self.get_filter_items(data[2])
@@ -826,9 +836,9 @@ class Plex(Library):
     def find_assets(self, item, name=None, upload=True, overlay=None, folders=None, create=None):
         if isinstance(item, Movie):
             name = os.path.basename(os.path.dirname(str(item.locations[0])))
-        elif isinstance(item, Show):
+        elif isinstance(item, (Artist, Show)):
             name = os.path.basename(str(item.locations[0]))
-        elif isinstance(item, Collection):
+        elif isinstance(item, (Collection, Playlist)):
             name = name if name else item.title
         else:
             return None, None, None
@@ -894,7 +904,7 @@ class Plex(Library):
                     return poster, background, item_dir
             if isinstance(item, Show):
                 missing_assets = ""
-                found_season = False
+                found_image = False
                 for season in self.query(item.seasons):
                     season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
                     if item_dir:
@@ -908,8 +918,8 @@ class Plex(Library):
                     matches = util.glob_filter(season_poster_filter)
                     if len(matches) > 0:
                         season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
-                        found_season = True
-                    elif season.seasonNumber > 0:
+                        found_image = True
+                    elif self.show_missing_season_assets and season.seasonNumber > 0:
                         missing_assets += f"\nMissing Season {season.seasonNumber} Poster"
                     matches = util.glob_filter(season_background_filter)
                     if len(matches) > 0:
@@ -924,9 +934,38 @@ class Plex(Library):
                         matches = util.glob_filter(episode_filter)
                         if len(matches) > 0:
                             episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
+                            found_image = True
                             self.upload_images(episode, poster=episode_poster)
-                if self.show_missing_season_assets and found_season and missing_assets:
-                    util.print_multiline(f"Missing Season Posters for {item.title}{missing_assets}", info=True)
+                        elif self.show_missing_episode_assets:
+                            missing_assets += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
+
+                if found_image and missing_assets:
+                    util.print_multiline(f"Missing Posters for {item.title}{missing_assets}", info=True)
+            if isinstance(item, Artist):
+                missing_assets = ""
+                found_album = False
+                for album in self.query(item.albums):
+                    if item_dir:
+                        album_poster_filter = os.path.join(item_dir, f"{album.title}.*")
+                        album_background_filter = os.path.join(item_dir, f"{album.title}_background.*")
+                    else:
+                        album_poster_filter = os.path.join(ad, f"{name}_{album.title}.*")
+                        album_background_filter = os.path.join(ad, f"{name}_{album.title}_background.*")
+                    album_poster = None
+                    album_background = None
+                    matches = util.glob_filter(album_poster_filter)
+                    if len(matches) > 0:
+                        album_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Album {album.title}'s ", is_url=False)
+                        found_album = True
+                    else:
+                        missing_assets += f"\nMissing Album {album.title} Poster"
+                    matches = util.glob_filter(album_background_filter)
+                    if len(matches) > 0:
+                        album_background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Album {album.title}'s ", is_poster=False, is_url=False)
+                    if album_poster or album_background:
+                        self.upload_images(album, poster=album_poster, background=album_background)
+                if self.show_missing_season_assets and found_album and missing_assets:
+                    util.print_multiline(f"Missing Album Posters for {item.title}{missing_assets}", info=True)
 
         if isinstance(item, (Movie, Show)) and not poster and overlay:
             self.upload_images(item, overlay=overlay)

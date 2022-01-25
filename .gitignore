@@ -9,7 +9,7 @@ __pycache__/
 # Distribution / packaging
 .idea
 .Python
-/test.py
+/test*
 logs/
 config/*
 !config/overlays/

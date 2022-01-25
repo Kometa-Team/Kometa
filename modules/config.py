@@ -54,6 +54,7 @@ class ConfigFile:
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
+        self.requested_metadata_files = util.get_list(attrs["metadata_files"]) if "metadata_files" in attrs else None
         self.resume_from = attrs["resume"] if "resume" in attrs else None
 
         yaml.YAML().allow_duplicate_keys = True
@@ -126,6 +127,8 @@ class ConfigFile:
                 temp = new_config.pop("settings")
                 if "collection_minimum" in temp:
                     temp["minimum_items"] = temp.pop("collection_minimum")
+                if "playlist_sync_to_user" in temp:
+                    temp["playlist_sync_to_users"] = temp.pop("playlist_sync_to_user")
                 new_config["settings"] = temp
             if "webhooks" in new_config:
                 temp = new_config.pop("webhooks")
@@ -266,9 +269,12 @@ class ConfigFile:
             "dimensional_asset_rename": check_for_attribute(self.data, "dimensional_asset_rename", parent="settings", var_type="bool", default=False),
             "download_url_assets": check_for_attribute(self.data, "download_url_assets", parent="settings", var_type="bool", default=False),
             "show_missing_season_assets": check_for_attribute(self.data, "show_missing_season_assets", parent="settings", var_type="bool", default=False),
+            "show_missing_episode_assets": check_for_attribute(self.data, "show_missing_episode_assets", parent="settings", var_type="bool", default=False),
+            "show_asset_not_needed": check_for_attribute(self.data, "show_asset_not_needed", parent="settings", var_type="bool", default=True),
             "sync_mode": check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes),
             "default_collection_order": check_for_attribute(self.data, "default_collection_order", parent="settings", default_is_none=True),
             "minimum_items": check_for_attribute(self.data, "minimum_items", parent="settings", var_type="int", default=1),
+            "item_refresh_delay": check_for_attribute(self.data, "item_refresh_delay", parent="settings", var_type="int", default=0),
             "delete_below_minimum": check_for_attribute(self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False),
             "delete_not_scheduled": check_for_attribute(self.data, "delete_not_scheduled", parent="settings", var_type="bool", default=False),
             "run_again_delay": check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0),
@@ -283,10 +289,12 @@ class ConfigFile:
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
             "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
-            "playlist_sync_to_user": check_for_attribute(self.data, "playlist_sync_to_user", parent="settings", default="all", default_is_none=True),
+            "playlist_sync_to_users": check_for_attribute(self.data, "playlist_sync_to_users", parent="settings", default="all", default_is_none=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
+            "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
+        self.custom_repo = self.general["custom_repo"]
 
         self.session = requests.Session()
         if not self.general["verify_ssl"]:
@@ -412,7 +420,7 @@ class ConfigFile:
                 except Failed as e:
                     self.errors.append(e)
                     logger.error(e)
-                logger.info(f"My Anime List Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
+                logger.info(f"AniDB Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
             if self.AniDB is None:
                 self.AniDB = AniDB(self, None)
 
@@ -443,6 +451,9 @@ class ConfigFile:
                         git = check_dict("git")
                         if git:
                             playlists_pairs.append(("Git", git))
+                        repo = check_dict("repo")
+                        if repo:
+                            playlists_pairs.append(("Repo", repo))
                         file = check_dict("file")
                         if file:
                             playlists_pairs.append(("File", file))
@@ -575,7 +586,10 @@ class ConfigFile:
                 params["dimensional_asset_rename"] = check_for_attribute(lib, "dimensional_asset_rename", parent="settings", var_type="bool", default=self.general["dimensional_asset_rename"], do_print=False, save=False)
                 params["download_url_assets"] = check_for_attribute(lib, "download_url_assets", parent="settings", var_type="bool", default=self.general["download_url_assets"], do_print=False, save=False)
                 params["show_missing_season_assets"] = check_for_attribute(lib, "show_missing_season_assets", parent="settings", var_type="bool", default=self.general["show_missing_season_assets"], do_print=False, save=False)
+                params["show_missing_episode_assets"] = check_for_attribute(lib, "show_missing_episode_assets", parent="settings", var_type="bool", default=self.general["show_missing_episode_assets"], do_print=False, save=False)
+                params["show_asset_not_needed"] = check_for_attribute(lib, "show_asset_not_needed", parent="settings", var_type="bool", default=self.general["show_asset_not_needed"], do_print=False, save=False)
                 params["minimum_items"] = check_for_attribute(lib, "minimum_items", parent="settings", var_type="int", default=self.general["minimum_items"], do_print=False, save=False)
+                params["item_refresh_delay"] = check_for_attribute(lib, "item_refresh_delay", parent="settings", var_type="int", default=self.general["item_refresh_delay"], do_print=False, save=False)
                 params["delete_below_minimum"] = check_for_attribute(lib, "delete_below_minimum", parent="settings", var_type="bool", default=self.general["delete_below_minimum"], do_print=False, save=False)
                 params["delete_not_scheduled"] = check_for_attribute(lib, "delete_not_scheduled", parent="settings", var_type="bool", default=self.general["delete_not_scheduled"], do_print=False, save=False)
                 params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", parent="settings", var_type="bool", default=False, do_print=False, save=False)
@@ -653,8 +667,14 @@ class ConfigFile:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
                                 params["genre_mapper"] = {}
                                 for new_genre, old_genres in lib["operations"]["genre_mapper"].items():
-                                    for old_genre in util.get_list(old_genres, split=False):
-                                        params["genre_mapper"][old_genre] = new_genre
+                                    if old_genres is None:
+                                        params["genre_mapper"][new_genre] = old_genres
+                                    else:
+                                        for old_genre in util.get_list(old_genres):
+                                            if old_genre == new_genre:
+                                                logger.error("Config Error: genres cannot be mapped to themselves")
+                                            else:
+                                                params["genre_mapper"][old_genre] = new_genre
                             else:
                                 logger.error("Config Error: genre_mapper is blank")
                         if "genre_collections" in lib["operations"]:
@@ -719,6 +739,7 @@ class ConfigFile:
                                             params["metadata_path"].append((name, path[attr]))
                                 check_dict("url", "URL")
                                 check_dict("git", "Git")
+                                check_dict("repo", "Repo")
                                 check_dict("file", "File")
                                 check_dict("folder", "Folder")
                             else:

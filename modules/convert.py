@@ -75,9 +75,9 @@ class Convert:
             elif anidb_id in self.anidb_to_tvdb:
                 ids.append((self.anidb_to_tvdb[anidb_id], "tvdb"))
             elif anidb_id in self.anidb_ids:
-                logger.error(f"Convert Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
+                logger.warning(f"Convert Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
             else:
-                logger.error(f"Convert Error: AniDB ID: {anidb_id} not found")
+                logger.warning(f"Convert Error: AniDB ID: {anidb_id} not found")
         return ids
 
     def anilist_to_ids(self, anilist_ids, library):
@@ -86,7 +86,7 @@ class Convert:
             if anilist_id in self.anilist_to_anidb:
                 anidb_ids.append(self.anilist_to_anidb[anilist_id])
             else:
-                logger.error(f"Convert Error: AniDB ID not found for AniList ID: {anilist_id}")
+                logger.warning(f"Convert Error: AniDB ID not found for AniList ID: {anilist_id}")
         return self.anidb_to_ids(anidb_ids, library)
 
     def myanimelist_to_ids(self, mal_ids, library):
@@ -97,7 +97,7 @@ class Convert:
             elif int(mal_id) in self.mal_to_anidb:
                 ids.extend(self.anidb_to_ids(self.mal_to_anidb[int(mal_id)], library))
             else:
-                logger.error(f"Convert Error: AniDB ID not found for MyAnimeList ID: {mal_id}")
+                logger.warning(f"Convert Error: AniDB ID not found for MyAnimeList ID: {mal_id}")
         return ids
 
     def tmdb_to_imdb(self, tmdb_id, is_movie=True, fail=False):

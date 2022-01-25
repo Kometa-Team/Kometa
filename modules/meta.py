@@ -31,18 +31,18 @@ def get_dict(attribute, attr_data, check_list=None):
                 new_dict = {}
                 for _name, _data in attr_data[attribute].items():
                     if _name in check_list:
-                        logger.error(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
+                        logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
                     elif _data is None:
-                        logger.error(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
+                        logger.error(f"Config Error: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
                     elif not isinstance(_data, dict):
-                        logger.error(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
+                        logger.error(f"Config Error: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
                     else:
                         new_dict[str(_name)] = _data
                 return new_dict
             else:
-                logger.warning(f"Config Warning: {attribute} must be a dictionary")
+                logger.error(f"Config Error: {attribute} must be a dictionary")
         else:
-            logger.warning(f"Config Warning: {attribute} attribute is blank")
+            logger.error(f"Config Error: {attribute} attribute is blank")
     return None
 
 
@@ -54,10 +54,21 @@ class DataFile:
         self.data_type = ""
         self.templates = {}
 
+    def get_file_name(self):
+        data = f"{github_base}{self.path}.yml" if self.type == "GIT" else self.path
+        if "/" in data:
+            return data[data.rfind("/") + 1:-4]
+        elif "\\" in data:
+            return data[data.rfind("\\") + 1:-4]
+        else:
+            return data
+
     def load_file(self):
         try:
-            if self.type in ["URL", "Git"]:
-                content_path = self.path if self.type == "URL" else f"{github_base}{self.path}.yml"
+            if self.type in ["URL", "Git", "Repo"]:
+                if self.type == "Repo" and not self.config.custom_repo:
+                    raise Failed("Config Error: No custom_repo defined")
+                content_path = self.path if self.type == "URL" else f"{self.config.custom_repo if self.type == 'Repo' else github_base}{self.path}.yml"
                 response = self.config.get(content_path)
                 if response.status_code >= 400:
                     raise Failed(f"URL Error: No file found at {content_path}")
@@ -227,11 +238,11 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info(f"Loading Metadata {file_type}: {path}")
             data = self.load_file()
-            self.metadata = get_dict("metadata", data, library.metadatas)
+            self.metadata = get_dict("metadata", data, library.metadata_files)
             self.templates = get_dict("templates", data)
             self.collections = get_dict("collections", data, library.collections)
 
-            if self.metadata is None and self.collections is None:
+            if not self.metadata and not self.collections:
                 raise Failed("YAML Error: metadata or collections attribute is required")
             logger.info(f"Metadata File Loaded Successfully")
 
@@ -294,7 +305,6 @@ class MetadataFile(DataFile):
 
             updated = False
             edits = {}
-            advance_edits = {}
 
             def add_edit(name, current_item, group, alias, key=None, value=None, var_type="str"):
                 if value or name in alias:
@@ -333,21 +343,6 @@ class MetadataFile(DataFile):
                             logger.error(ee)
                     else:
                         logger.error(f"Metadata Error: {name} attribute is blank")
-
-            def add_advanced_edit(attr, obj, group, alias, new_agent=False):
-                key, options = plex.item_advance_keys[f"item_{attr}"]
-                if attr in alias:
-                    if new_agent and self.library.agent not in plex.new_plex_agents:
-                        logger.error(f"Metadata Error: {attr} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
-                    elif group[alias[attr]]:
-                        method_data = str(group[alias[attr]]).lower()
-                        if method_data not in options:
-                            logger.error(f"Metadata Error: {group[alias[attr]]} {attr} attribute invalid")
-                        elif getattr(obj, key) != options[method_data]:
-                            advance_edits[key] = options[method_data]
-                            logger.info(f"Detail: {attr} updated to {method_data}")
-                    else:
-                        logger.error(f"Metadata Error: {attr} attribute is blank")
 
             logger.info("")
             util.separator()
@@ -423,15 +418,15 @@ class MetadataFile(DataFile):
             summary = None
             genres = []
             if tmdb_item:
-                originally_available = tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date
-                if tmdb_item and tmdb_is_movie is True and tmdb_item.original_title != tmdb_item.title:
+                originally_available = datetime.strftime(tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date, "%Y-%m-%d")
+                if tmdb_is_movie and tmdb_item.original_title != tmdb_item.title:
                     original_title = tmdb_item.original_title
-                elif tmdb_item and tmdb_is_movie is False and tmdb_item.original_name != tmdb_item.name:
+                elif not tmdb_is_movie and tmdb_item.original_name != tmdb_item.name:
                     original_title = tmdb_item.original_name
                 rating = tmdb_item.vote_average
-                if tmdb_is_movie is True and tmdb_item.production_companies:
+                if tmdb_is_movie and tmdb_item.production_companies:
                     studio = tmdb_item.production_companies[0].name
-                elif tmdb_is_movie is False and tmdb_item.networks:
+                elif not tmdb_is_movie and tmdb_item.networks:
                     studio = tmdb_item.networks[0].name
                 tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
                 summary = tmdb_item.overview
@@ -454,9 +449,21 @@ class MetadataFile(DataFile):
                 updated = True
 
             advance_edits = {}
+            prefs = [p.id for p in item.preferences()]
             for advance_edit in advance_tags_to_edit[self.library.type]:
-                is_new_agent = advance_edit in ["metadata_language", "use_original_title"]
-                add_advanced_edit(advance_edit, item, meta, methods, new_agent=is_new_agent)
+                key, options = plex.item_advance_keys[f"item_{advance_edit}"]
+                if advance_edit in methods:
+                    if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
+                        logger.error(f"Metadata Error: {advance_edit} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                    elif meta[methods[advance_edit]]:
+                        method_data = str(meta[methods[advance_edit]]).lower()
+                        if method_data not in options:
+                            logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
+                        elif key in prefs and getattr(item, key) != options[method_data]:
+                            advance_edits[key] = options[method_data]
+                            logger.info(f"Detail: {advance_edit} updated to {method_data}")
+                    else:
+                        logger.error(f"Metadata Error: {advance_edit} attribute is blank")
             if self.library.edit_item(item, mapping_name, self.library.type, advance_edits, advanced=True):
                 updated = True
 
@@ -474,16 +481,17 @@ class MetadataFile(DataFile):
                 elif not isinstance(meta[methods["seasons"]], dict):
                     logger.error("Metadata Error: seasons attribute must be a dictionary")
                 else:
+                    seasons = {}
+                    for season in item.seasons():
+                        seasons[season.title] = season
+                        seasons[int(season.index)] = season
                     for season_id, season_dict in meta[methods["seasons"]].items():
                         updated = False
                         logger.info("")
                         logger.info(f"Updating season {season_id} of {mapping_name}...")
-                        try:
-                            if isinstance(season_id, int):
-                                season = item.season(season=season_id)
-                            else:
-                                season = item.season(title=season_id)
-                        except NotFound:
+                        if season_id in seasons:
+                            season = seasons[season_id]
+                        else:
                             logger.error(f"Metadata Error: Season: {season_id} not found")
                             continue
                         season_methods = {sm.lower(): sm for sm in season_dict}
@@ -516,16 +524,17 @@ class MetadataFile(DataFile):
                             elif not isinstance(season_dict[season_methods["episodes"]], dict):
                                 logger.error("Metadata Error: episodes attribute must be a dictionary")
                             else:
+                                episodes = {}
+                                for episode in season.episodes():
+                                    episodes[episode.title] = episode
+                                    episodes[int(episode.index)] = episode
                                 for episode_str, episode_dict in season_dict[season_methods["episodes"]].items():
                                     updated = False
                                     logger.info("")
                                     logger.info(f"Updating episode {episode_str} in {season_id} of {mapping_name}...")
-                                    try:
-                                        if isinstance(episode_str, int):
-                                            episode = season.episode(episode=episode_str)
-                                        else:
-                                            episode = season.episode(title=episode_str)
-                                    except NotFound:
+                                    if episode_str in episodes:
+                                        episode = episodes[episode_str]
+                                    else:
                                         logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
                                         continue
                                     episode_methods = {em.lower(): em for em in episode_dict}
@@ -614,24 +623,21 @@ class MetadataFile(DataFile):
                 elif not isinstance(meta[methods["albums"]], dict):
                     logger.error("Metadata Error: albums attribute must be a dictionary")
                 else:
+                    albums = {album.title: album for album in item.albums()}
                     for album_name, album_dict in meta[methods["albums"]].items():
                         updated = False
                         title = None
                         album_methods = {am.lower(): am for am in album_dict}
                         logger.info("")
                         logger.info(f"Updating album {album_name} of {mapping_name}...")
-                        try:
-                            album = item.album(album_name)
-                        except NotFound:
-                            try:
-                                if "alt_title" not in album_methods or not album_dict[album_methods["alt_title"]]:
-                                    raise NotFound
-                                album = item.album(album_dict[album_methods["alt_title"]])
-                                title = album_name
-                            except NotFound:
-                                logger.error(f"Metadata Error: Album: {album_name} not found")
-                                continue
-
+                        if album_name in albums:
+                            album = albums[album_name]
+                        elif "alt_title" in album_methods and album_dict[album_methods["alt_title"]] and album_dict[album_methods["alt_title"]] in albums:
+                            album = albums[album_dict[album_methods["alt_title"]]]
+                            title = album_name
+                        else:
+                            logger.error(f"Metadata Error: Album: {album_name} not found")
+                            continue
                         if not title:
                             title = album.title
                         edits = {}
@@ -655,26 +661,24 @@ class MetadataFile(DataFile):
                             elif not isinstance(album_dict[album_methods["tracks"]], dict):
                                 logger.error("Metadata Error: tracks attribute must be a dictionary")
                             else:
+                                tracks = {}
+                                for track in album.tracks():
+                                    tracks[track.title] = track
+                                    tracks[int(track.index)] = track
                                 for track_num, track_dict in album_dict[album_methods["tracks"]].items():
                                     updated = False
                                     title = None
                                     track_methods = {tm.lower(): tm for tm in track_dict}
                                     logger.info("")
                                     logger.info(f"Updating track {track_num} on {album_name} of {mapping_name}...")
-                                    try:
-                                        if isinstance(track_num, int):
-                                            track = album.track(track=track_num)
-                                        else:
-                                            track = album.track(title=track_num)
-                                    except NotFound:
-                                        try:
-                                            if "alt_title" not in track_methods or not track_dict[track_methods["alt_title"]]:
-                                                raise NotFound
-                                            track = album.track(title=track_dict[track_methods["alt_title"]])
-                                            title = track_num
-                                        except NotFound:
-                                            logger.error(f"Metadata Error: Track: {track_num} not found")
-                                            continue
+                                    if track_num in tracks:
+                                        track = tracks[track_num]
+                                    elif "alt_title" in track_methods and track_dict[track_methods["alt_title"]] and track_dict[track_methods["alt_title"]] in tracks:
+                                        track = tracks[track_dict[track_methods["alt_title"]]]
+                                        title = track_num
+                                    else:
+                                        logger.error(f"Metadata Error: Track: {track_num} not found")
+                                        continue
 
                                     if not title:
                                         title = track.title
@@ -684,7 +688,7 @@ class MetadataFile(DataFile):
                                     add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
                                     add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
                                     add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")
-                                    if self.library.edit_item(album, title, "Track", edits):
+                                    if self.library.edit_item(track, title, "Track", edits):
                                         updated = True
                                     if self.edit_tags("mood", track, track_dict, track_methods):
                                         updated = True

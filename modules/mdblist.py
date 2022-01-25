@@ -1,19 +1,20 @@
 import logging
 from modules import util
 from modules.util import Failed
+from urllib.parse import urlparse
 
 logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["mdblist_list"]
 base_url = "https://mdblist.com/lists"
 
-headers = { 'User-Agent': 'Plex-Meta-Manager' }
+headers = {"User-Agent": "Plex-Meta-Manager"}
 
 class Mdblist:
     def __init__(self, config):
         self.config = config
 
-    def validate_mdb_lists(self, mdb_lists, language):
+    def validate_mdblist_lists(self, mdb_lists):
         valid_lists = []
         for mdb_dict in util.get_list(mdb_lists, split=False):
             if not isinstance(mdb_dict, dict):
@@ -49,7 +50,9 @@ class Mdblist:
         if method == "mdblist_list":
             limit_status = f" Limit at: {data['limit']} items" if data['limit'] > 0 else ''
             logger.info(f"Processing Mdblist.com List: {data['url']}{limit_status}")
-            url = f"{data['url']}?limit={data['limit']}"
-            return [(i["imdb_id"], "imdb") for i in self.config.get_json(url,headers=headers)]
+            parsed_url = urlparse(data["url"])
+            url_base = parsed_url._replace(query=None).geturl()
+            params = {"limit": data["limit"]} if data["limit"] > 0 else None
+            return [(i["imdb_id"], "imdb") for i in self.config.get_json(url_base, headers=headers, params=params)]
         else:
             raise Failed(f"Mdblist Error: Method {method} not supported")
