@@ -54,7 +54,7 @@ class ConfigFile:
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
-        self.requested_metadata = util.get_list(attrs["metadata"]) if "metadata" in attrs else None
+        self.requested_metadata_files = util.get_list(attrs["metadata_files"]) if "metadata_files" in attrs else None
         self.resume_from = attrs["resume"] if "resume" in attrs else None
 
         yaml.YAML().allow_duplicate_keys = True
@@ -667,11 +667,14 @@ class ConfigFile:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
                                 params["genre_mapper"] = {}
                                 for new_genre, old_genres in lib["operations"]["genre_mapper"].items():
-                                    for old_genre in util.get_list(old_genres):
-                                        if old_genre == new_genre:
-                                            logger.error("Config Error: genres cannot be mapped to themselves")
-                                        else:
-                                            params["genre_mapper"][old_genre] = new_genre
+                                    if old_genres is None:
+                                        params["genre_mapper"][new_genre] = old_genres
+                                    else:
+                                        for old_genre in util.get_list(old_genres):
+                                            if old_genre == new_genre:
+                                                logger.error("Config Error: genres cannot be mapped to themselves")
+                                            else:
+                                                params["genre_mapper"][old_genre] = new_genre
                             else:
                                 logger.error("Config Error: genre_mapper is blank")
                         if "genre_collections" in lib["operations"]:

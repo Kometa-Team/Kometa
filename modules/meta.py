@@ -31,18 +31,18 @@ def get_dict(attribute, attr_data, check_list=None):
                 new_dict = {}
                 for _name, _data in attr_data[attribute].items():
                     if _name in check_list:
-                        logger.error(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
+                        logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
                     elif _data is None:
-                        logger.error(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
+                        logger.error(f"Config Error: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
                     elif not isinstance(_data, dict):
-                        logger.error(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
+                        logger.error(f"Config Error: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
                     else:
                         new_dict[str(_name)] = _data
                 return new_dict
             else:
-                logger.warning(f"Config Warning: {attribute} must be a dictionary")
+                logger.error(f"Config Error: {attribute} must be a dictionary")
         else:
-            logger.warning(f"Config Warning: {attribute} attribute is blank")
+            logger.error(f"Config Error: {attribute} attribute is blank")
     return None
 
 
@@ -238,7 +238,7 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info(f"Loading Metadata {file_type}: {path}")
             data = self.load_file()
-            self.metadata = get_dict("metadata", data, library.metadatas)
+            self.metadata = get_dict("metadata", data, library.metadata_files)
             self.templates = get_dict("templates", data)
             self.collections = get_dict("collections", data, library.collections)
 

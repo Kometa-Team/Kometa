@@ -80,9 +80,9 @@ Before posting on GitHub about an enhancement, error, or configuration question 
   - [MyAnimeList Attributes](https://github.com/meisnate12/Plex-Meta-Manager/wiki/MyAnimeList-Attributes)
 - [Metadata and Playlist Files](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Metadata-and-Playlist-Files)
   - Metadata
-    - [Movies Metadata](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Movies-Metadata)
-    - [Shows Metadata](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Shows-Metadata)
-    - [Artists Metadata](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Artists-Metadata)
+    - [Movie Library Metadata](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Movie-Library-Metadata)
+    - [TV Show Library Metadata](https://github.com/meisnate12/Plex-Meta-Manager/wiki/TV-Show-Library-Metadata)
+    - [Music Library Metadata](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Music-Library-Metadata)
   - [Templates](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Templates)
   - [Filters](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Filters)
   - Builders
@@ -93,6 +93,7 @@ Before posting on GitHub about an enhancement, error, or configuration question 
     - [IMDb Builders](https://github.com/meisnate12/Plex-Meta-Manager/wiki/IMDb-Builders)
     - [Trakt Builders](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Trakt-Builders)
     - [Tautulli Builders](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Tautulli-Builders)
+    - [MdbList Builders](https://github.com/meisnate12/Plex-Meta-Manager/wiki/MdbList-Builders)
     - [Letterboxd Builders](https://github.com/meisnate12/Plex-Meta-Manager/wiki/Letterboxd-Builders)
     - [ICheckMovies Builders](https://github.com/meisnate12/Plex-Meta-Manager/wiki/ICheckMovies-Builders)
     - [FlixPatrol Builders](https://github.com/meisnate12/Plex-Meta-Manager/wiki/FlixPatrol-Builders)
