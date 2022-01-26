@@ -2092,7 +2092,7 @@ class CollectionBuilder:
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
 
         if "non_item_remove_label" in self.item_details:
-            rk_compare = [item.rakingKey for item in self.items]
+            rk_compare = [item.ratingKey for item in self.items]
             for remove_label in self.item_details["non_item_remove_label"]:
                 for non_item in self.library.get_labeled_items(remove_label):
                     if non_item.ratingKey not in rk_compare:
