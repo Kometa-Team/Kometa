@@ -906,38 +906,40 @@ class Plex(Library):
                 missing_assets = ""
                 found_image = False
                 for season in self.query(item.seasons):
-                    season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
-                    if item_dir:
-                        season_poster_filter = os.path.join(item_dir, f"{season_name}.*")
-                        season_background_filter = os.path.join(item_dir, f"{season_name}_background.*")
-                    else:
-                        season_poster_filter = os.path.join(ad, f"{name}_{season_name}.*")
-                        season_background_filter = os.path.join(ad, f"{name}_{season_name}_background.*")
-                    season_poster = None
-                    season_background = None
-                    matches = util.glob_filter(season_poster_filter)
-                    if len(matches) > 0:
-                        season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
-                        found_image = True
-                    elif self.show_missing_season_assets and season.seasonNumber > 0:
-                        missing_assets += f"\nMissing Season {season.seasonNumber} Poster"
-                    matches = util.glob_filter(season_background_filter)
-                    if len(matches) > 0:
-                        season_background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_poster=False, is_url=False)
-                    if season_poster or season_background:
-                        self.upload_images(season, poster=season_poster, background=season_background)
-                    for episode in self.query(season.episodes):
+                    if season.seasonNumber:
+                        season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
                         if item_dir:
-                            episode_filter = os.path.join(item_dir, f"{episode.seasonEpisode.upper()}.*")
+                            season_poster_filter = os.path.join(item_dir, f"{season_name}.*")
+                            season_background_filter = os.path.join(item_dir, f"{season_name}_background.*")
                         else:
-                            episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
-                        matches = util.glob_filter(episode_filter)
+                            season_poster_filter = os.path.join(ad, f"{name}_{season_name}.*")
+                            season_background_filter = os.path.join(ad, f"{name}_{season_name}_background.*")
+                        season_poster = None
+                        season_background = None
+                        matches = util.glob_filter(season_poster_filter)
                         if len(matches) > 0:
-                            episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
+                            season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
                             found_image = True
-                            self.upload_images(episode, poster=episode_poster)
-                        elif self.show_missing_episode_assets:
-                            missing_assets += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
+                        elif self.show_missing_season_assets and season.seasonNumber > 0:
+                            missing_assets += f"\nMissing Season {season.seasonNumber} Poster"
+                        matches = util.glob_filter(season_background_filter)
+                        if len(matches) > 0:
+                            season_background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_poster=False, is_url=False)
+                        if season_poster or season_background:
+                            self.upload_images(season, poster=season_poster, background=season_background)
+                    for episode in self.query(season.episodes):
+                        if episode.seasonEpisode:
+                            if item_dir:
+                                episode_filter = os.path.join(item_dir, f"{episode.seasonEpisode.upper()}.*")
+                            else:
+                                episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
+                            matches = util.glob_filter(episode_filter)
+                            if len(matches) > 0:
+                                episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
+                                found_image = True
+                                self.upload_images(episode, poster=episode_poster)
+                            elif self.show_missing_episode_assets:
+                                missing_assets += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
 
                 if found_image and missing_assets:
                     util.print_multiline(f"Missing Posters for {item.title}{missing_assets}", info=True)
