@@ -2138,11 +2138,11 @@ class CollectionBuilder:
             # Locking should come before refreshing since refreshing can change metadata (i.e. if specified to both lock
             # background/poster and also refreshing, assume that the item background/poster should be kept)
             if "item_lock_background" in self.item_details:
-                self.library.query(item.lockArt)
+                self.library.query(item.lockArt if self.item_details["item_lock_background"] else item.unlockArt)
             if "item_lock_poster" in self.item_details:
-                self.library.query(item.lockPoster)
+                self.library.query(item.lockPoster if self.item_details["item_lock_poster"] else item.unlockPoster)
             if "item_lock_title" in self.item_details:
-                self.library.edit_query(item, {"title.locked": 1})
+                self.library.edit_query(item, {"title.locked": 1 if self.item_details["item_lock_title"] else 0})
             if "item_refresh" in self.item_details:
                 delay = self.item_details["item_refresh_delay"] if "item_refresh_delay" in self.item_details else self.library.item_refresh_delay
                 if delay > 0:
