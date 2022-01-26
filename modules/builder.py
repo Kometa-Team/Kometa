@@ -101,7 +101,8 @@ details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks"
            "minimum_items", "label", "album_sorting"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
-item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh"]
+item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
+item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_refresh"] + item_false_details
 item_details = ["non_item_remove_label", "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add_missing", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
@@ -846,6 +847,8 @@ class CollectionBuilder:
         elif method_name in item_bool_details:
             if self._parse(method_name, method_data, datatype="bool", default=False):
                 self.item_details[method_name] = True
+            elif method_name in item_false_details:
+                self.item_details[method_name] = False
         elif method_name in plex.item_advance_keys:
             key, options = plex.item_advance_keys[method_name]
             if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
