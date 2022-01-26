@@ -2,8 +2,6 @@ import argparse, logging, os, sys, time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
-from plexapi.exceptions import NotFound
-from plexapi.video import Show, Season
 
 try:
     import plexapi, schedule
@@ -12,6 +10,8 @@ try:
     from modules.config import ConfigFile
     from modules.meta import MetadataFile
     from modules.util import Failed, NotScheduled
+    from plexapi.exceptions import NotFound
+    from plexapi.video import Show, Season
 except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
     sys.exit(0)
