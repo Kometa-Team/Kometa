@@ -77,7 +77,7 @@ collection_mode_options = {
 }
 
 def tab_new_lines(data):
-    return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
+    return str(data).replace("\n", "\n      ") if "\n" in str(data) else str(data)
 
 def make_ordinal(n):
     return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
