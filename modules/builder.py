@@ -1234,7 +1234,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: validate filter attribute is blank")
                 if not isinstance(dict_data["validate"], bool):
                     raise Failed(f"{self.Type} Error: validate filter attribute must be either true or false")
-                validate = dict_data["validate"]
+                validate = dict_data.pop("validate")
             for filter_method, filter_data in dict_data.items():
                 filter_attr, modifier, filter_final = self._split(filter_method)
                 message = None
