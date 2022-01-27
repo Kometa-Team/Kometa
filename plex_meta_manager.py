@@ -12,6 +12,7 @@ try:
     from modules.util import Failed, NotScheduled
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
+    from ruamel import yaml
 except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
     sys.exit(0)
@@ -445,7 +446,8 @@ def library_operations(config, library):
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
-    logger.debug(f"TMDb Operation: {library.items_library_operation}")
+    logger.debug(f"Metadata Backup: {library.metadata_backup}")
+    logger.debug(f"Item Operation: {library.items_library_operation}")
 
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
@@ -469,22 +471,7 @@ def library_operations(config, library):
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
             if library.assets_for_all:
                 library.find_assets(item)
-            tmdb_id = None
-            tvdb_id = None
-            imdb_id = None
-            if config.Cache:
-                t_id, i_id, guid_media_type, _ = config.Cache.query_guid_map(item.guid)
-                if t_id:
-                    if "movie" in guid_media_type:
-                        tmdb_id = t_id[0]
-                    else:
-                        tvdb_id = t_id[0]
-                if i_id:
-                    imdb_id = i_id[0]
-            if not tmdb_id and not tvdb_id:
-                tmdb_id = library.get_tmdb_from_map(item)
-            if not tmdb_id and not tvdb_id and library.is_show:
-                tvdb_id = library.get_tvdb_from_map(item)
+            tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
 
             if library.mass_trakt_rating_update:
                 try:
@@ -512,15 +499,7 @@ def library_operations(config, library):
 
             tmdb_item = None
             if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
-                if tvdb_id and not tmdb_id:
-                    tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
-                if tmdb_id:
-                    try:
-                        tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
-                    except Failed as e:
-                        logger.error(util.adjust_space(str(e)))
-                else:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
+                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.is_movie)
 
             omdb_item = None
             if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
@@ -712,6 +691,29 @@ def library_operations(config, library):
         logger.info("")
         for col in unmanaged_collections:
             library.find_assets(col)
+
+    if library.metadata_backup:
+        logger.info("")
+        util.separator(f"Metadata Backup for {library.name} Library", space=False, border=False)
+        logger.info("")
+        logger.info(f"Metadata Backup Path: {library.metadata_backup['path']}")
+        logger.info("")
+        meta = {}
+        items = library.get_all()
+        titles = [i.title for i in items]
+        for i, item in enumerate(items, 1):
+            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            map_key, attrs = library.get_locked_attributes(item, titles)
+            if attrs or library.metadata_backup["add_blank_entries"]:
+                meta[map_key] = attrs
+        util.print_end()
+        with open(library.metadata_backup["path"], "w"):
+            pass
+        try:
+            yaml.round_trip_dump({"metadata": meta}, open(library.metadata_backup["path"], "w", encoding="utf-8"))
+            logger.info(f"{len(meta)} {library.type.capitalize()}{'s' if len(meta) > 1 else ''} Backed Up")
+        except yaml.scanner.ScannerError as e:
+            util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
 
 def run_collection(config, library, metadata, requested_collections):
     logger.info("")

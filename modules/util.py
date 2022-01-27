@@ -75,6 +75,18 @@ collection_mode_options = {
     "hide_items": "hideItems", "hideitems": "hideItems",
     "show_items": "showItems", "showitems": "showItems"
 }
+advance_tags_to_edit = {
+    "Movie": ["metadata_language", "use_original_title"],
+    "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering",
+             "metadata_language", "use_original_title"],
+    "Artist": ["album_sorting"]
+}
+
+tags_to_edit = {
+    "Movie": ["genre", "label", "collection", "country", "director", "producer", "writer"],
+    "Show": ["genre", "label", "collection"],
+    "Artist": ["genre", "style", "mood", "country", "collection", "similar_artist"]
+}
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n      ") if "\n" in str(data) else str(data)

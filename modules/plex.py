@@ -1,15 +1,16 @@
 import logging, os, plexapi, requests
+from datetime import datetime
 from modules import builder, util
 from modules.library import Library
 from modules.util import Failed, ImageData
 from PIL import Image
 from plexapi import utils
-from plexapi.audio import Artist
+from plexapi.audio import Artist, Track, Album
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
 from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
-from plexapi.video import Movie, Show
+from plexapi.video import Movie, Show, Season, Episode
 from retrying import retry
 from urllib import parse
 from xml.etree.ElementTree import ParseError
@@ -111,8 +112,8 @@ modifier_translation = {
     "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E"
 }
-episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
 album_sorting_options = {"default": -1, "newest": 0, "oldest": 1, "name": 2}
+episode_sorting_options = {"default": -1, "oldest": 0, "newest": 1}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
 delete_episodes_options = {"never": 0, "day": 1, "week": 7, "refresh": 100}
 season_display_options = {"default": -1, "show": 0, "hide": 1}
@@ -987,3 +988,108 @@ class Plex(Library):
         elif isinstance(item, (Movie, Show)) and not poster and not background and self.show_missing_assets:
             logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
         return None, None, found_folder
+
+    def get_ids(self, item):
+        tmdb_id = None
+        tvdb_id = None
+        imdb_id = None
+        if self.config.Cache:
+            t_id, i_id, guid_media_type, _ = self.config.Cache.query_guid_map(item.guid)
+            if t_id:
+                if "movie" in guid_media_type:
+                    tmdb_id = t_id[0]
+                else:
+                    tvdb_id = t_id[0]
+            if i_id:
+                imdb_id = i_id[0]
+        if not tmdb_id and not tvdb_id:
+            tmdb_id = self.get_tmdb_from_map(item)
+        if not tmdb_id and not tvdb_id and self.is_show:
+            tvdb_id = self.get_tvdb_from_map(item)
+        return tmdb_id, tvdb_id, imdb_id
+
+    def get_locked_attributes(self, item, titles=None):
+        attrs = {}
+        fields = {f.name: f for f in item.fields if f.locked}
+        if isinstance(item, (Movie, Show)) and titles and titles.count(item.title) > 1:
+            map_key = f"{item.title} ({item.year})"
+            attrs["title"] = item.title
+            attrs["year"] = item.year
+        elif isinstance(item, (Season, Episode, Track)) and item.index:
+            map_key = int(item.index)
+        else:
+            map_key = item.title
+
+        if "title" in fields:
+            if isinstance(item, (Movie, Show)):
+                tmdb_id, tvdb_id, imdb_id = self.get_ids(item)
+                tmdb_item = self.config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=isinstance(item, Movie))
+                if tmdb_item:
+                    attrs["alt_title"] = tmdb_item.title
+            elif isinstance(item, (Season, Episode, Track)):
+                attrs["title"] = item.title
+
+        def check_field(plex_key, pmm_key, var_key=None):
+            if plex_key in fields and pmm_key not in self.metadata_backup["exclude"]:
+                if not var_key:
+                    var_key = plex_key
+                if hasattr(item, var_key):
+                    plex_value = getattr(item, var_key)
+                    if isinstance(plex_value, list):
+                        plex_tags = [t.tag for t in plex_value]
+                        if len(plex_tags) > 0 or self.metadata_backup["sync_tags"]:
+                            attrs[f"{pmm_key}.sync" if self.metadata_backup["sync_tags"] else pmm_key] = None if not plex_tags else plex_tags[0] if len(plex_tags) == 1 else plex_tags
+                    elif isinstance(plex_value, datetime):
+                        attrs[pmm_key] = datetime.strftime(plex_value, "%Y-%m-%d")
+                    else:
+                        attrs[pmm_key] = plex_value
+
+        check_field("titleSort", "sort_title")
+        check_field("originalTitle", "original_artist" if self.is_music else "original_title")
+        check_field("originallyAvailableAt", "originally_available")
+        check_field("contentRating", "content_rating")
+        check_field("userRating", "user_rating")
+        check_field("audienceRating", "audience_rating")
+        check_field("rating", "critic_rating")
+        check_field("studio", "record_label" if self.is_music else "studio")
+        check_field("tagline", "tagline")
+        check_field("summary", "summary")
+        check_field("index", "track")
+        check_field("parentIndex", "disc")
+        check_field("director", "director", var_key="directors")
+        check_field("country", "country", var_key="countries")
+        check_field("genre", "genre", var_key="genres")
+        check_field("writer", "writer", var_key="writers")
+        check_field("producer", "producer", var_key="producers")
+        check_field("collection", "collection", var_key="collections")
+        check_field("label", "label", var_key="labels")
+        check_field("mood", "mood", var_key="moods")
+        check_field("style", "style", var_key="styles")
+        check_field("similar", "similar_artist")
+        for advance_edit in util.advance_tags_to_edit[self.type]:
+            key, options = item_advance_keys[f"item_{advance_edit}"]
+            if advance_edit in self.metadata_backup["exclude"] or not hasattr(item, key):
+                continue
+            keys = {v: k for k, v in options.items()}
+            if keys[getattr(item, key)] not in ["default", "all", "never"]:
+                attrs[advance_edit] = keys[getattr(item, key)]
+
+        def _recur(sub):
+            sub_items = {}
+            for sub_item in getattr(item, sub)():
+                sub_item_key, sub_item_attrs = self.get_locked_attributes(sub_item)
+                if sub_item_attrs:
+                    sub_items[sub_item_key] = sub_item_attrs
+            if sub_items:
+                attrs[sub] = sub_items
+
+        if isinstance(item, Show):
+            _recur("seasons")
+        elif isinstance(item, Season):
+            _recur("episodes")
+        elif isinstance(item, Artist):
+            _recur("albums")
+        elif isinstance(item, Album):
+            _recur("tracks")
+
+        return map_key, attrs if attrs else None

@@ -558,6 +558,7 @@ class ConfigFile:
                     "radarr_remove_by_tag": None,
                     "sonarr_remove_by_tag": None,
                     "mass_collection_mode": None,
+                    "metadata_backup": None,
                     "genre_collections": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
@@ -641,6 +642,18 @@ class ConfigFile:
                                 params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
                             except Failed as e:
                                 logger.error(e)
+                        if "metadata_backup" in lib["operations"]:
+                            params["metadata_backup"] = {
+                                "path": os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml"),
+                                "exclude": [],
+                                "sync_tags": False,
+                                "add_blank_entries": True
+                            }
+                            if lib["operations"]["metadata_backup"] and isinstance(lib["operations"]["metadata_backup"], dict):
+                                params["metadata_backup"]["path"] = check_for_attribute(lib["operations"]["metadata_backup"], "path", var_type="path", default=params["metadata_backup"]["path"], save=False)
+                                params["metadata_backup"]["exclude"] = check_for_attribute(lib["operations"]["metadata_backup"], "exclude", var_type="comma_list", default_is_none=True, save=False)
+                                params["metadata_backup"]["sync_tags"] = check_for_attribute(lib["operations"]["metadata_backup"], "sync_tags", var_type="bool", default=False, save=False)
+                                params["metadata_backup"]["add_blank_entries"] = check_for_attribute(lib["operations"]["metadata_backup"], "add_blank_entries", var_type="bool", default=True, save=False)
                         if "tmdb_collections" in lib["operations"]:
                             params["tmdb_collections"] = {
                                 "exclude_ids": [],
