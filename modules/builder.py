@@ -1544,15 +1544,14 @@ class CollectionBuilder:
                         display_add = ""
                         for dict_data in dicts:
                             if not isinstance(dict_data, dict):
-                                raise Failed(
-                                    f"{self.Type} Error: {attr} must be either a dictionary or list of dictionaries")
+                                raise Failed(f"{self.Type} Error: {attr} must be either a dictionary or list of dictionaries")
                             inside_filter, inside_display = _filter(dict_data, is_all=attr == "all", level=level)
                             if len(inside_filter) > 0:
                                 display_add += inside_display
                                 results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                     else:
                         validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, pairs=True)
-                        if validation is None:
+                        if validation is not False and not validation:
                             continue
                         elif attr in plex.date_attributes and modifier in ["", ".not"]:
                             last_text = "is not in the last" if modifier == ".not" else "is in the last"
