@@ -448,6 +448,7 @@ def library_operations(config, library):
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
     logger.debug(f"Metadata Backup: {library.metadata_backup}")
     logger.debug(f"Item Operation: {library.items_library_operation}")
+    logger.debug("")
 
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
