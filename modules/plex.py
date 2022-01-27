@@ -631,13 +631,23 @@ class Plex(Library):
         }
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
+    def create_blank_collection(self, title):
+        args = {
+            "type": 1 if self.is_movie else 2 if self.is_show else 8,
+            "title": title,
+            "smart": 0,
+            "sectionId": self.Plex.key,
+            "uri": f"{self.PlexServer._uriRoot()}/library/metadata"
+        }
+        self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
+
     def get_smart_filter_from_uri(self, uri):
         smart_filter = parse.parse_qs(parse.urlparse(uri.replace("/#!/", "/")).query)["key"][0]
         args = smart_filter[smart_filter.index("?"):]
         return self.build_smart_filter(args), int(args[args.index("type=") + 5:args.index("type=") + 6])
 
     def build_smart_filter(self, uri_args):
-        return f"server://{self.PlexServer.machineIdentifier}/com.plexapp.plugins.library/library/sections/{self.Plex.key}/all{uri_args}"
+        return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
 
     def update_smart_collection(self, collection, uri_args):
         self.test_smart_filter(uri_args)

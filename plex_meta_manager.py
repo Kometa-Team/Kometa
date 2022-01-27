@@ -780,7 +780,7 @@ def run_collection(config, library, metadata, requested_collections):
             items_added = 0
             items_removed = 0
             valid = True
-            if not builder.smart_url and builder.builders:
+            if not builder.smart_url and builder.builders and not builder.blank_collection:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
@@ -821,7 +821,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[mapping_name]["sonarr"] += sonarr_add
 
             run_item_details = True
-            if valid and builder.build_collection and (builder.builders or builder.smart_url):
+            if valid and builder.build_collection and (builder.builders or builder.smart_url or builder.blank_collection):
                 try:
                     builder.load_collection()
                     if builder.created:

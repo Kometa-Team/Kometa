@@ -95,7 +95,7 @@ string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level",
-    "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name"
+    "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
 details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode",
            "minimum_items", "label", "album_sorting"] + boolean_details + scheduled_boolean + string_details
@@ -330,6 +330,13 @@ class CollectionBuilder:
             logger.debug("Validating Method: build_collection")
             logger.debug(f"Value: {data[methods['build_collection']]}")
             self.build_collection = self._parse("build_collection", self.data, datatype="bool", methods=methods, default=True)
+
+        self.blank_collection = False
+        if "blank_collection" in methods and not self.playlist:
+            logger.debug("")
+            logger.debug("Validating Method: blank_collection")
+            logger.debug(f"Value: {data[methods['blank_collection']]}")
+            self.blank_collection = self._parse("blank_collection", self.data, datatype="bool", methods=methods, default=False)
 
         self.sync = self.library.sync_mode == "sync"
         if "sync_mode" in methods:
@@ -571,8 +578,11 @@ class CollectionBuilder:
                 else:
                     logger.error(e)
 
-        if not self.server_preroll and not self.smart_url and len(self.builders) == 0:
+        if not self.server_preroll and not self.smart_url and not self.blank_collection and len(self.builders) == 0:
             raise Failed(f"{self.Type} Error: No builders were found")
+
+        if self.blank_collection and len(self.builders) > 0:
+            raise Failed(f"{self.Type} Error: No builders allowed with blank_collection")
 
         if self.custom_sort is True and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
             raise Failed(f"{self.Type} Error: " + ('Playlists' if playlist else 'collection_order: custom') +
@@ -2185,6 +2195,8 @@ class CollectionBuilder:
     def load_collection(self):
         if not self.obj and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
+        elif not self.obj and self.blank_collection:
+            self.library.create_blank_collection(self.name)
         elif self.smart_label_collection:
             try:
                 smart_type, self.smart_url = self.library.smart_label_url(self.name, self.smart_sort)
