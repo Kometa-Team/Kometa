@@ -69,7 +69,7 @@ class TMDb:
             raise Failed(f"TMDb Error: {e}")
 
     def convert_from(self, tmdb_id, convert_to, is_movie):
-        item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
+        item = self.get_movie(tmdb_id, partial="external_ids") if is_movie else self.get_show(tmdb_id, partial="external_ids")
         check_id = item.tvdb_id if convert_to == "tvdb_id" and not is_movie else item.imdb_id
         if not check_id:
             raise Failed(f"TMDb Error: No {convert_to.upper().replace('B_', 'b ')} found for TMDb ID {tmdb_id}")
@@ -106,28 +106,28 @@ class TMDb:
                 except Failed:                  raise Failed(f"TMDb Error: No Movie or Collection found for TMDb ID {tmdb_id}")
         else:                           return self.get_show(tmdb_id)
 
-    def get_movie(self, tmdb_id):
-        try:                            return self.TMDb.movie(tmdb_id)
+    def get_movie(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.movie(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Movie found for TMDb ID {tmdb_id}: {e}")
 
-    def get_show(self, tmdb_id):
-        try:                            return self.TMDb.tv_show(tmdb_id)
+    def get_show(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.tv_show(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Show found for TMDb ID {tmdb_id}: {e}")
 
-    def get_collection(self, tmdb_id):
-        try:                            return self.TMDb.collection(tmdb_id)
+    def get_collection(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.collection(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Collection found for TMDb ID {tmdb_id}: {e}")
 
-    def get_person(self, tmdb_id):
-        try:                            return self.TMDb.person(tmdb_id)
+    def get_person(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.person(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
 
-    def _company(self, tmdb_id):
-        try:                            return self.TMDb.company(tmdb_id)
+    def _company(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.company(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Company found for TMDb ID {tmdb_id}: {e}")
 
-    def _network(self, tmdb_id):
-        try:                            return self.TMDb.network(tmdb_id)
+    def _network(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.network(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Network found for TMDb ID {tmdb_id}: {e}")
 
     def _keyword(self, tmdb_id):
@@ -216,7 +216,7 @@ class TMDb:
                 tmdb_name = self.get_show(tmdb_id).name
                 ids.append((tmdb_id, "tmdb_show"))
             else:
-                person = self.get_person(tmdb_id)
+                person = self.get_person(tmdb_id, partial="movie_credits,tv_credits")
                 tmdb_name = person.name
                 if method == "tmdb_actor":
                     ids = [(i.movie.id, "tmdb") for i in person.movie_cast]
