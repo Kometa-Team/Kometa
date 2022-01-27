@@ -91,11 +91,10 @@ class Library(ABC):
 
         self.items_library_operation = self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
                                        or self.mass_critic_rating_update or self.mass_trakt_rating_update or self.genre_mapper \
-                                       or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing \
-                                       or self.metadata_backup
+                                       or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing
         self.library_operation = self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
-                                 or self.genre_collections or self.show_unmanaged
+                                 or self.genre_collections or self.show_unmanaged or self.metadata_backup
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":
