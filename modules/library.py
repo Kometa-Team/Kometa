@@ -76,6 +76,7 @@ class Library(ABC):
         self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
         self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
         self.mass_collection_mode = params["mass_collection_mode"]
+        self.metadata_backup = params["metadata_backup"]
         self.tmdb_collections = params["tmdb_collections"]
         self.genre_collections = params["genre_collections"]
         self.genre_mapper = params["genre_mapper"]
@@ -89,8 +90,9 @@ class Library(ABC):
         self.status = {}
 
         self.items_library_operation = self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
-                                      or self.mass_critic_rating_update or self.mass_trakt_rating_update or self.genre_mapper \
-                                      or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing
+                                       or self.mass_critic_rating_update or self.mass_trakt_rating_update or self.genre_mapper \
+                                       or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing \
+                                       or self.metadata_backup
         self.library_operation = self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
                                  or self.genre_collections or self.show_unmanaged

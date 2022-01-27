@@ -9,19 +9,6 @@ logger = logging.getLogger("Plex Meta Manager")
 
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
-advance_tags_to_edit = {
-    "Movie": ["metadata_language", "use_original_title"],
-    "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering",
-             "metadata_language", "use_original_title"],
-    "Artist": ["album_sorting"]
-}
-
-tags_to_edit = {
-    "Movie": ["genre", "label", "collection", "country", "director", "producer", "writer"],
-    "Show": ["genre", "label", "collection"],
-    "Artist": ["genre", "style", "mood", "country", "collection", "similar_artist"]
-}
-
 def get_dict(attribute, attr_data, check_list=None):
     if check_list is None:
         check_list = []
@@ -33,9 +20,9 @@ def get_dict(attribute, attr_data, check_list=None):
                     if _name in check_list:
                         logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
                     elif _data is None:
-                        logger.error(f"Config Error: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
+                        logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
                     elif not isinstance(_data, dict):
-                        logger.error(f"Config Error: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
+                        logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
                     else:
                         new_dict[str(_name)] = _data
                 return new_dict
@@ -435,11 +422,11 @@ class MetadataFile(DataFile):
             edits = {}
             add_edit("title", item, meta, methods, value=title)
             add_edit("sort_title", item, meta, methods, key="titleSort")
+            add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
             if not self.library.is_music:
                 add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
                 add_edit("critic_rating", item, meta, methods, value=rating, key="rating", var_type="float")
                 add_edit("audience_rating", item, meta, methods, key="audienceRating", var_type="float")
-                add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
                 add_edit("content_rating", item, meta, methods, key="contentRating")
                 add_edit("original_title", item, meta, methods, key="originalTitle", value=original_title)
                 add_edit("studio", item, meta, methods, value=studio)
@@ -450,12 +437,12 @@ class MetadataFile(DataFile):
 
             advance_edits = {}
             prefs = [p.id for p in item.preferences()]
-            for advance_edit in advance_tags_to_edit[self.library.type]:
-                key, options = plex.item_advance_keys[f"item_{advance_edit}"]
+            for advance_edit in util.advance_tags_to_edit[self.library.type]:
                 if advance_edit in methods:
                     if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
                         logger.error(f"Metadata Error: {advance_edit} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
                     elif meta[methods[advance_edit]]:
+                        key, options = plex.item_advance_keys[f"item_{advance_edit}"]
                         method_data = str(meta[methods[advance_edit]]).lower()
                         if method_data not in options:
                             logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
@@ -467,7 +454,7 @@ class MetadataFile(DataFile):
             if self.library.edit_item(item, mapping_name, self.library.type, advance_edits, advanced=True):
                 updated = True
 
-            for tag_edit in tags_to_edit[self.library.type]:
+            for tag_edit in util.tags_to_edit[self.library.type]:
                 if self.edit_tags(tag_edit, item, meta, methods, extra=genres if tag_edit == "genre" else None):
                     updated = True
 
@@ -495,24 +482,10 @@ class MetadataFile(DataFile):
                             logger.error(f"Metadata Error: Season: {season_id} not found")
                             continue
                         season_methods = {sm.lower(): sm for sm in season_dict}
-
-                        if "title" in season_methods and season_dict[season_methods["title"]]:
-                            title = season_dict[season_methods["title"]]
-                        else:
-                            title = season.title
-                        if "sub" in season_methods:
-                            if season_dict[season_methods["sub"]] is None:
-                                logger.error("Metadata Error: sub attribute is blank")
-                            elif season_dict[season_methods["sub"]] is True and "(SUB)" not in title:
-                                title = f"{title} (SUB)"
-                            elif season_dict[season_methods["sub"]] is False and title.endswith(" (SUB)"):
-                                title = title[:-6]
-                            else:
-                                logger.error("Metadata Error: sub attribute must be True or False")
-
                         edits = {}
-                        add_edit("title", season, season_dict, season_methods, value=title)
+                        add_edit("title", season, season_dict, season_methods)
                         add_edit("summary", season, season_dict, season_methods)
+                        add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
                         if self.library.edit_item(season, season_id, "Season", edits):
                             updated = True
                         self.set_images(season, season_dict, season_methods)
@@ -538,24 +511,12 @@ class MetadataFile(DataFile):
                                         logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
                                         continue
                                     episode_methods = {em.lower(): em for em in episode_dict}
-
-                                    if "title" in episode_methods and episode_dict[episode_methods["title"]]:
-                                        title = episode_dict[episode_methods["title"]]
-                                    else:
-                                        title = episode.title
-                                    if "sub" in episode_dict:
-                                        if episode_dict[episode_methods["sub"]] is None:
-                                            logger.error("Metadata Error: sub attribute is blank")
-                                        elif episode_dict[episode_methods["sub"]] is True and "(SUB)" not in title:
-                                            title = f"{title} (SUB)"
-                                        elif episode_dict[episode_methods["sub"]] is False and title.endswith(" (SUB)"):
-                                            title = title[:-6]
-                                        else:
-                                            logger.error("Metadata Error: sub attribute must be True or False")
                                     edits = {}
-                                    add_edit("title", episode, episode_dict, episode_methods, value=title)
+                                    add_edit("title", episode, episode_dict, episode_methods)
                                     add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
-                                    add_edit("rating", episode, episode_dict, episode_methods, var_type="float")
+                                    add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
+                                    add_edit("audience_rating", episode, episode_dict, episode_methods, key="audienceRating", var_type="float")
+                                    add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
                                     add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
                                     add_edit("summary", episode, episode_dict, episode_methods)
                                     if self.library.edit_item(episode, f"{episode_str} in Season: {season_id}", "Episode", edits):
@@ -589,24 +550,12 @@ class MetadataFile(DataFile):
                             logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
                             continue
                         episode_methods = {em.lower(): em for em in episode_dict}
-
-                        if "title" in episode_methods and episode_dict[episode_methods["title"]]:
-                            title = episode_dict[episode_methods["title"]]
-                        else:
-                            title = episode.title
-                        if "sub" in episode_dict:
-                            if episode_dict[episode_methods["sub"]] is None:
-                                logger.error("Metadata Error: sub attribute is blank")
-                            elif episode_dict[episode_methods["sub"]] is True and "(SUB)" not in title:
-                                title = f"{title} (SUB)"
-                            elif episode_dict[episode_methods["sub"]] is False and title.endswith(" (SUB)"):
-                                title = title[:-6]
-                            else:
-                                logger.error("Metadata Error: sub attribute must be True or False")
                         edits = {}
-                        add_edit("title", episode, episode_dict, episode_methods, value=title)
+                        add_edit("title", episode, episode_dict, episode_methods)
                         add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
-                        add_edit("rating", episode, episode_dict, episode_methods, var_type="float")
+                        add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
+                        add_edit("audience_rating", episode, episode_dict, episode_methods, key="audienceRating", var_type="float")
+                        add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
                         add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
                         add_edit("summary", episode, episode_dict, episode_methods)
                         if self.library.edit_item(episode, f"{season_id} Episode: {episode_id}", "Season", edits):
@@ -643,7 +592,8 @@ class MetadataFile(DataFile):
                         edits = {}
                         add_edit("title", album, album_dict, album_methods, value=title)
                         add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
-                        add_edit("rating", album, album_dict, album_methods, var_type="float")
+                        add_edit("critic_rating", album, album_dict, album_methods, key="rating", var_type="float")
+                        add_edit("user_rating", album, album_dict, album_methods, key="userRating", var_type="float")
                         add_edit("originally_available", album, album_dict, album_methods, key="originallyAvailableAt", var_type="date")
                         add_edit("record_label", album, album_dict, album_methods, key="studio")
                         add_edit("summary", album, album_dict, album_methods)
@@ -684,7 +634,7 @@ class MetadataFile(DataFile):
                                         title = track.title
                                     edits = {}
                                     add_edit("title", track, track_dict, track_methods, value=title)
-                                    add_edit("rating", track, track_dict, track_methods, var_type="float")
+                                    add_edit("user_rating", track, track_dict, track_methods, key="userRating", var_type="float")
                                     add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
                                     add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
                                     add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")

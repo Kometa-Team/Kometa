@@ -238,3 +238,20 @@ class TMDb:
             if len(ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(ids)} Item{'' if len(ids) == 1 else 's'})")
         return ids
+
+    def get_item(self, item, tmdb_id, tvdb_id, imdb_id, is_movie=True):
+        tmdb_item = None
+        if tvdb_id and not tmdb_id:
+            tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
+        if imdb_id and not tmdb_id:
+            _id, _type = self.config.Convert.imdb_to_tmdb(imdb_id)
+            if _id and ((_type == "movie" and is_movie) or (_type == "show" and not is_movie)):
+                tmdb_id = _id
+        if tmdb_id:
+            try:
+                tmdb_item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
+            except Failed as e:
+                logger.error(util.adjust_space(str(e)))
+        else:
+            logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
+        return tmdb_item
