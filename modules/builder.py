@@ -143,7 +143,7 @@ tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
     "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_genre"
 ]
-tag_modifiers = ["", ".not"]
+tag_modifiers = ["", ".not", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_overlay"]
 date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired"]
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
@@ -173,7 +173,7 @@ custom_sort_builders = [
 ]
 episode_parts_only = ["plex_pilots"]
 parts_collection_valid = [
-     "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library",
+     "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library",
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll", "changes_webhooks",
      "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
@@ -1685,7 +1685,8 @@ class CollectionBuilder:
             for value in values:
                 final_years.append(self._parse(final, value, datatype="int"))
             return smart_pair(final_years)
-        elif attribute in plex.number_attributes + plex.date_attributes + plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
+        elif (attribute in plex.number_attributes + plex.date_attributes + plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
+                or (attribute in plex.tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return self._parse(final, data, datatype="int")
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
             return self._parse(final, data, datatype="float", minimum=0, maximum=10)
@@ -1922,10 +1923,13 @@ class CollectionBuilder:
                                 date_match = True
                         if date_match is False:
                             return False
-                elif modifier in [".gt", ".gte", ".lt", ".lte"]:
+                elif modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                     divider = 60000 if filter_attr == "duration" else 1
                     test_number = getattr(item, filter_actual)
-                    if not test_number:
+                    if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
+                        test_number = len(test_number) if test_number else 0
+                        modifier = f".{modifier[7:]}"
+                    elif not test_number:
                         return False
                     if util.is_number_filter(test_number / divider, modifier, filter_data):
                         return False
