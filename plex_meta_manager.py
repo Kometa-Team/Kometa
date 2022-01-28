@@ -626,14 +626,14 @@ def library_operations(config, library):
 
         if library.genre_collections:
             templates["Genre Collection"] = library.genre_collections["template"]
-            for genre in library.get_genres():
-                if genre not in library.genre_collections["exclude_genres"]:
-                    template = {"name": "Genre Collection", "genre": genre}
+            for genre in library.get_tags("genre"):
+                if genre.title not in library.genre_collections["exclude_genres"]:
+                    template = {"name": "Genre Collection", "genre": genre.title}
                     for k, v in library.genre_collections["dictionary_variables"].items():
-                        if genre in v:
-                            template[k] = v[genre]
+                        if genre.title in v:
+                            template[k] = v[genre.title]
                     title = library.genre_collections["title_format"]
-                    title = title.replace("<<genre>>", genre)
+                    title = title.replace("<<genre>>", genre.title)
                     if "<<library_type>>" in title:
                         title = title.replace("<<library_type>>", library.type)
                     new_collections[title] = {"template": template}
