@@ -482,11 +482,19 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
     value = data[methods[attribute]] if methods and attribute in methods else data
 
     if datatype in ["list", "commalist"]:
+        final_list = []
         if value:
             if datatype == "commalist":
                 value = get_list(value)
-            return [v for v in value if v] if isinstance(value, list) else [str(value)]
-        return []
+            if not isinstance(value, list):
+                value = [value]
+            for v in value:
+                if v:
+                    if options is None or (options and v in options):
+                        final_list.append(v)
+                    elif options:
+                        raise Failed(f"{error} Error: {v} is invalid options are: {options}")
+        return final_list
     elif datatype == "intlist":
         if value:
             try:

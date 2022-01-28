@@ -111,6 +111,8 @@ sonarr_details = [
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
+discover_types = {0: "returning", 1: "planned", 2: "production", 3: "ended", 4: "cancelled", 5: "pilot"}
+discover_status = {0: "documentary", 1: "news", 2: "miniseries", 3: "reality", 4: "scripted", 5: "talk_show", 6: "video"}
 filters_by_type = {
     "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
     "movie_show_season_episode_album_track": ["year"],
@@ -124,7 +126,7 @@ filters_by_type = {
     "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre"],
     "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language"],
     "movie_artist": ["country"],
-    "show": ["network", "first_episode_aired", "last_episode_aired"],
+    "show": ["tmdb_status", "tmdb_type", "network", "first_episode_aired", "last_episode_aired"],
     "album": ["record_label"]
 }
 filters = {
@@ -136,12 +138,12 @@ filters = {
     "album": [item for check, sub in filters_by_type.items() for item in sub if "album" in check],
     "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
 }
-tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "first_episode_aired", "last_episode_aired"]
+tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type"]
 string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
-    "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_genre"
+    "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_genre", "tmdb_status", "tmdb_type"
 ]
 tag_modifiers = ["", ".not", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_overlay"]
@@ -1586,6 +1588,10 @@ class CollectionBuilder:
                 if str(data).lower() in ["day", "month"]:
                     return data.lower()
             raise Failed(f"{self.Type} Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
+        elif attribute == "tmdb_type":
+            return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_types.items()]).lower()
+        elif attribute == "tmdb_status":
+            return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_status.items()]).lower()
         elif attribute in plex.tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
@@ -1747,9 +1753,14 @@ class CollectionBuilder:
                         return False
                 for filter_method, filter_data in self.tmdb_filters:
                     filter_attr, modifier, filter_final = self._split(filter_method)
-                    if filter_attr == "original_language":
-                        if (modifier == ".not" and item.original_language.iso_639_1 in filter_data) \
-                                or (modifier == "" and item.original_language.iso_639_1 not in filter_data):
+                    if filter_attr == ["tmdb_status", "tmdb_type", "original_language"]:
+                        if filter_attr == "tmdb_status":
+                            check_value = discover_status[item.status]
+                        elif filter_attr == "tmdb_type":
+                            check_value = discover_types[item.type]
+                        elif filter_attr == "original_language":
+                            check_value = item.original_language.iso_639_1
+                        if (modifier == ".not" and check_value in filter_data) or (modifier == "" and check_value not in filter_data):
                             return False
                     elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
                         tmdb_date = None
