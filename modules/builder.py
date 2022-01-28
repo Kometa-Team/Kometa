@@ -364,7 +364,6 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: collection_level attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['collection_level']]}")
-
                 if (self.library.is_show and self.data[methods["collection_level"]].lower() in plex.collection_level_show_options) or \
                         (self.library.is_music and self.data[methods["collection_level"]].lower() in plex.collection_level_music_options):
                     self.collection_level = self.data[methods["collection_level"]].lower()
@@ -475,7 +474,7 @@ class CollectionBuilder:
             else:
                 raise Failed(f"{self.Type} Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
 
-        if self.smart_url or self.smart_label_collection or self.parts_collection:
+        if self.smart_url or self.smart_label_collection:
             self.custom_sort = False
 
         for method_key, method_data in self.data.items():
@@ -604,7 +603,7 @@ class CollectionBuilder:
             self.sonarr_details["add_missing"] = False
             self.sonarr_details["add_existing"] = False
 
-        if self.radarr_details["add_existing"] or self.sonarr_details["add_existing"]:
+        if (self.radarr_details["add_existing"] or self.sonarr_details["add_existing"]) and not self.parts_collection:
             self.item_details["add_existing"] = True
 
         if self.collectionless:

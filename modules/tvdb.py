@@ -1,4 +1,5 @@
 import logging, requests, time
+from lxml.etree import ParserError
 from modules import util
 from modules.util import Failed
 
@@ -51,7 +52,10 @@ class TVDbObj:
 
         if self.config.trace_mode:
             logger.debug(f"URL: {tvdb_url}")
-        response = self.config.get_html(self.tvdb_url, headers=util.header(self.language))
+        try:
+            response = self.config.get_html(self.tvdb_url, headers=util.header(self.language))
+        except ParserError:
+            raise Failed(f"TVDb Error: Could not parse {self.tvdb_url}")
         results = response.xpath(f"//*[text()='TheTVDB.com {self.media_type} ID']/parent::node()/span/text()")
         if len(results) > 0:
             self.id = int(results[0])
