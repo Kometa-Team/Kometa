@@ -542,10 +542,6 @@ class Plex(Library):
         item.uploadPoster(filepath=image)
         self.reload(item)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def get_genres(self):
-        return [genre.title for genre in self.Plex.listFilterChoices("genre")]
-
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
@@ -569,8 +565,8 @@ class Plex(Library):
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def get_labels(self):
-        return {label.title: label.key for label in self.Plex.listFilterChoices(field="label")}
+    def get_tags(self, tag):
+        return self.Plex.listFilterChoices(field=tag)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _query(self, key, post=False, put=False):
@@ -606,7 +602,7 @@ class Plex(Library):
         self._query(key, put=True)
 
     def smart_label_url(self, title, sort):
-        labels = self.get_labels()
+        labels = {l.title: l.key for l in self.get_tags("label")}
         if title not in labels:
             raise Failed(f"Plex Error: Label: {title} does not exist")
         smart_type = 1 if self.is_movie else 2

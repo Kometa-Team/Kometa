@@ -9,6 +9,15 @@ logger = logging.getLogger("Plex Meta Manager")
 
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
+all_auto = ["genre"]
+
+auto = {
+    "Movie": ["tmdb_collection", "country"] + all_auto,
+    "Show": ["network"] + all_auto,
+    "Artist": ["mood", "style", "country"] + all_auto,
+    "Video": ["country"] + all_auto
+}
+
 def get_dict(attribute, attr_data, check_list=None):
     if check_list is None:
         check_list = []
@@ -237,31 +246,38 @@ class MetadataFile(DataFile):
                         raise Failed(f"Config Error: {auto_name}'s auto_list attribute not found")
                     elif not auto_data[auto_methods["auto_list"]]:
                         raise Failed(f"Config Error: {auto_name}'s auto_list attribute is blank")
-                    elif auto_data[auto_methods["auto_list"]] not in ["genre", "tmdb_collection"]:
-                        raise Failed(f"Config Error: {auto_name}'s auto_list attribute {auto_data[auto_methods['auto_list']]} invalid")
+                    elif auto_data[auto_methods["auto_list"]].lower() not in auto[library.type]:
+                        raise Failed(f"Config Error: auto_list attribute {auto_data[auto_methods['auto_list']].lower()} invalid Options: {auto[library.type]}")
+                    elif auto_data[auto_methods["auto_list"]].lower() == "network" and library.agent not in plex.new_plex_agents:
+                        raise Failed(f"Config Error: network auto_list only works with the New Plex TV Agent")
                     else:
-                        auto_type = auto_data[auto_methods["auto_list"]]
-                    exclude = util.parse("Config", "exclude", auto_data, methods=auto_methods, datatype="list") if "exclude" in auto_methods else []
-                    if auto_type == "genre":
-                        auto_list = {genre: genre for genre in library.get_genres() if genre not in exclude}
-                        default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "all": {"genre": "<<genre>>"}}}
-                        default_title_format = "Top <<title>> <<library_type>>s"
-                    elif auto_type == "tmdb_collection":
-                        auto_list = {}
-                        items = library.get_all()
-                        for i, item in enumerate(items, 1):
-                            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
-                            tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
-                            tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
-                            if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
-                                auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
-                        util.print_end()
-                        default_template = {"tmdb_collection_details": "<<tmdb_collection>>"}
-                        default_title_format = "<<title>>"
-                    else:
-                        raise Failed
-                    title_format = util.parse("Config", "title_format", auto_data, methods=auto_methods, default=default_title_format)
-
+                        auto_type = auto_data[auto_methods["auto_list"]].lower()
+                        exclude = util.parse("Config", "exclude", auto_data, methods=auto_methods, datatype="list") if "exclude" in auto_methods else []
+                        if auto_type in ["genre", "mood", "style", "country", "network"]:
+                            auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
+                            if library.is_music:
+                                use_filter = f"artist_{auto_type}"
+                            else:
+                                use_filter = auto_type
+                            default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "all": {use_filter: f"<<{auto_type}>>"}}}
+                            default_title_format = "Top <<title>> <<library_type>>s"
+                        elif auto_type == "tmdb_collection":
+                            auto_list = {}
+                            items = library.get_all()
+                            for i, item in enumerate(items, 1):
+                                util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+                                tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
+                                if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
+                                    auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
+                            util.print_end()
+                            default_template = {"tmdb_collection_details": "<<tmdb_collection>>"}
+                            default_title_format = "<<title>>"
+                        else:
+                            raise Failed(f"Config Error: {auto_name}'s auto_list attribute {auto_data[auto_methods['auto_list']]} invalid")
+                    title_format = default_title_format
+                    if "title_format" in auto_methods:
+                        title_format = util.parse("Config", "title_format", auto_data, methods=auto_methods, default=default_title_format)
                     if "<<title>>" not in title_format:
                         logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
