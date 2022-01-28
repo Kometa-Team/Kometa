@@ -474,3 +474,84 @@ def schedule_check(attribute, data, current_time, run_hour):
         raise NotScheduledRange(schedule_str)
     elif skip_collection:
         raise NotScheduled(schedule_str)
+
+def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None):
+    display = f"{parent + ' ' if parent else ''}{attribute} attribute"
+    if options is None and translation is not None:
+        options = [o for o in translation]
+    value = data[methods[attribute]] if methods and attribute in methods else data
+
+    if datatype in ["list", "commalist"]:
+        if value:
+            if datatype == "commalist":
+                value = get_list(value)
+            return [v for v in value if v] if isinstance(value, list) else [str(value)]
+        return []
+    elif datatype == "intlist":
+        if value:
+            try:
+                return [int(v) for v in value if v] if isinstance(value, list) else [int(value)]
+            except ValueError:
+                pass
+        return []
+    elif datatype == "dictlist":
+        final_list = []
+        for dict_data in get_list(value):
+            if isinstance(dict_data, dict):
+                final_list.append((dict_data, {dm.lower(): dm for dm in dict_data}))
+            else:
+                raise Failed(f"{error} Error: {display} {dict_data} is not a dictionary")
+        return final_list
+    elif datatype == "dictdict":
+        final_dict = {}
+        if isinstance(value, dict):
+            for dict_key, dict_data in value.items():
+                if isinstance(dict_data, dict) and dict_data:
+                    final_dict[dict_key] = dict_data
+                else:
+                    raise Failed(f"{error} Warning: {display} {dict_key} is not a dictionary")
+        return final_dict
+    elif methods and attribute not in methods:
+        message = f"{display} not found"
+    elif value is None:
+        message = f"{display} is blank"
+    elif regex is not None:
+        regex_str, example = regex
+        if re.compile(regex_str).match(str(value)):
+            return str(value)
+        else:
+            message = f"{display}: {value} must match pattern {regex_str} e.g. {example}"
+    elif datatype == "bool":
+        if isinstance(value, bool):
+            return value
+        elif isinstance(value, (int, float)):
+            return value > 0
+        elif str(value).lower() in ["t", "true"]:
+            return True
+        elif str(value).lower() in ["f", "false"]:
+            return False
+        else:
+            message = f"{display} must be either true or false"
+    elif datatype in ["int", "float"]:
+        try:
+            value = int(str(value)) if datatype == "int" else float(str(value))
+            if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
+                return value
+        except ValueError:
+            pass
+        pre = f"{display} {value} must be {'an integer' if datatype == 'int' else 'a number'}"
+        if maximum is None:
+            message = f"{pre} {minimum} or greater"
+        else:
+            message = f"{pre} between {minimum} and {maximum}"
+    elif (translation is not None and str(value).lower() not in translation) or \
+            (options is not None and translation is None and str(value).lower() not in options):
+        message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
+    else:
+        return translation[value] if translation is not None else value
+
+    if default is None:
+        raise Failed(f"{error} Error: {message}")
+    else:
+        logger.warning(f"{error} Warning: {message} using {default} as default")
+        return translation[default] if translation is not None else default

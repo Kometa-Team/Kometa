@@ -95,6 +95,17 @@ class Library(ABC):
         self.library_operation = self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
                                  or self.genre_collections or self.show_unmanaged or self.metadata_backup
+
+        if self.asset_directory:
+            logger.info("")
+            for ad in self.asset_directory:
+                logger.info(f"Using Asset Directory: {ad}")
+
+        if output:
+            logger.info("")
+            logger.info(output)
+
+    def scan_metadata_files(self):
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":
@@ -110,7 +121,7 @@ class Library(ABC):
                 metadata.append((file_type, metadata_file))
         for file_type, metadata_file in metadata:
             try:
-                meta_obj = MetadataFile(config, self, file_type, metadata_file)
+                meta_obj = MetadataFile(self.config, self, file_type, metadata_file)
                 if meta_obj.collections:
                     self.collections.extend([c for c in meta_obj.collections])
                 if meta_obj.metadata:
@@ -122,15 +133,6 @@ class Library(ABC):
         if len(self.metadata_files) == 0 and not self.library_operation and not self.config.playlist_files:
             logger.info("")
             raise Failed("Config Error: No valid metadata files, playlist files, or library operations found")
-
-        if self.asset_directory:
-            logger.info("")
-            for ad in self.asset_directory:
-                logger.info(f"Using Asset Directory: {ad}")
-
-        if output:
-            logger.info("")
-            logger.info(output)
 
     def upload_images(self, item, poster=None, background=None, overlay=None):
         image = None

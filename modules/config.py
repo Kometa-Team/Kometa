@@ -566,6 +566,7 @@ class ConfigFile:
                 util.separator(f"{display_name} Configuration")
                 logger.info("")
                 logger.info(f"Connecting to {display_name} Library...")
+                logger.info("")
 
                 params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
                 if params["asset_directory"] is None:
@@ -772,6 +773,9 @@ class ConfigFile:
                             except NotScheduled:
                                 params["skip_library"] = True
 
+                    logger.info("")
+                    util.separator("Plex Configuration", space=False, border=False)
+                    logger.info("")
                     params["plex"] = {
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
@@ -788,6 +792,18 @@ class ConfigFile:
                     util.print_multiline(e, error=True)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
+                    continue
+                try:
+                    logger.info("")
+                    util.separator("Scaning Metadata Files", space=False, border=False)
+                    logger.info("")
+                    library.scan_metadata_files()
+                except Failed as e:
+                    self.errors.append(e)
+                    util.print_stacktrace()
+                    util.print_multiline(e, error=True)
+                    logger.info("")
+                    logger.info(f"{display_name} Metadata Failed to Load")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):

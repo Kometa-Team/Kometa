@@ -383,7 +383,6 @@ class Plex(Library):
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
         self.timeout = params["plex"]["timeout"]
-        logger.info("")
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
         except Unauthorized:

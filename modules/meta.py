@@ -30,7 +30,7 @@ def get_dict(attribute, attr_data, check_list=None):
                 logger.error(f"Config Error: {attribute} must be a dictionary")
         else:
             logger.error(f"Config Error: {attribute} attribute is blank")
-    return None
+    return {}
 
 
 class DataFile:
@@ -224,10 +224,80 @@ class MetadataFile(DataFile):
         else:
             logger.info("")
             logger.info(f"Loading Metadata {file_type}: {path}")
+            logger.info("")
             data = self.load_file()
             self.metadata = get_dict("metadata", data, library.metadata_files)
             self.templates = get_dict("templates", data)
             self.collections = get_dict("collections", data, library.collections)
+            col_names = library.collections + [c for c in self.collections]
+            for auto_name, auto_data in get_dict("auto_collections", data).items():
+                try:
+                    auto_methods = {dm.lower(): dm for dm in auto_data}
+                    if "auto_list" not in auto_methods:
+                        raise Failed(f"Config Error: {auto_name}'s auto_list attribute not found")
+                    elif not auto_data[auto_methods["auto_list"]]:
+                        raise Failed(f"Config Error: {auto_name}'s auto_list attribute is blank")
+                    elif auto_data[auto_methods["auto_list"]] not in ["genre", "tmdb_collection"]:
+                        raise Failed(f"Config Error: {auto_name}'s auto_list attribute {auto_data[auto_methods['auto_list']]} invalid")
+                    else:
+                        auto_type = auto_data[auto_methods["auto_list"]]
+                    exclude = util.parse("Config", "exclude", auto_data, methods=auto_methods, datatype="list") if "exclude" in auto_methods else []
+                    if auto_type == "genre":
+                        auto_list = {genre: genre for genre in library.get_genres() if genre not in exclude}
+                        default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "all": {"genre": "<<genre>>"}}}
+                        default_title_format = "Top <<title>> <<library_type>>s"
+                    elif auto_type == "tmdb_collection":
+                        auto_list = {}
+                        items = library.get_all()
+                        for i, item in enumerate(items, 1):
+                            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+                            tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+                            tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
+                            if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
+                                auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
+                        util.print_end()
+                        default_template = {"tmdb_collection_details": "<<tmdb_collection>>"}
+                        default_title_format = "<<title>>"
+                    else:
+                        raise Failed
+                    title_format = util.parse("Config", "title_format", auto_data, methods=auto_methods, default=default_title_format)
+
+                    if "<<title>>" not in title_format:
+                        logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
+                        title_format = default_title_format
+                    if "<<library_type>>" in title_format:
+                        title_format = title_format.replace("<<library_type>>", library.type)
+                    dictionary_variables = util.parse("Config", "dictionary_variables", auto_data, methods=auto_methods, datatype="dictdict") if "dictionary_variables" in auto_methods else {}
+                    template_name = util.parse("Config", "template", auto_data, methods=auto_methods)
+                    if template_name:
+                        if template_name not in self.templates:
+                            raise Failed(f"Config Error: template: {template_name} not found")
+                        if f"<<{auto_type}>>" not in str(self.templates[template_name]):
+                            raise Failed(f"Config Error: template: {template_name} is required to have the template variable <<{auto_type}>>")
+                    else:
+                        self.templates[auto_name] = default_template
+                        template_name = auto_name
+                    remove_prefix = util.parse("Config", "remove_prefix", auto_data, methods=auto_methods, datatype="commalist") if "remove_prefix" in auto_methods else []
+                    remove_suffix = util.parse("Config", "remove_suffix", auto_data, methods=auto_methods, datatype="commalist") if "remove_suffix" in auto_methods else []
+                    for key, value in auto_list.items():
+                        template_call = {"name": template_name, auto_type: key}
+                        for k, v in dictionary_variables.items():
+                            if key in v:
+                                template_call[k] = v[key]
+                        for prefix in remove_prefix:
+                            if value.startswith(prefix):
+                                value = value[len(prefix):].strip()
+                        for suffix in remove_suffix:
+                            if value.endswith(suffix):
+                                value = value[:-len(suffix)].strip()
+                        collection_title = title_format.replace("<<title>>", value)
+                        if collection_title in col_names:
+                            logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
+                        else:
+                            self.collections[collection_title] = {"template": template_call}
+                except Failed as e:
+                    logger.error(e)
+                    continue
 
             if not self.metadata and not self.collections:
                 raise Failed("YAML Error: metadata or collections attribute is required")
