@@ -10,10 +10,10 @@ logger = logging.getLogger("Plex Meta Manager")
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
 all_auto = ["genre"]
-
+ms_auto = ["trakt_user_lists", "trakt_people_list"]
 auto = {
-    "Movie": ["tmdb_collection", "country"] + all_auto,
-    "Show": ["network"] + all_auto,
+    "Movie": ["tmdb_collection", "country"] + all_auto + ms_auto,
+    "Show": ["network"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country"] + all_auto
 }
@@ -239,20 +239,23 @@ class MetadataFile(DataFile):
             self.templates = get_dict("templates", data)
             self.collections = get_dict("collections", data, library.collections)
             col_names = library.collections + [c for c in self.collections]
-            for auto_name, auto_data in get_dict("auto_collections", data).items():
+            for map_name, dynamic in get_dict("dynamic_collections", data).items():
                 try:
-                    auto_methods = {dm.lower(): dm for dm in auto_data}
-                    if "auto_list" not in auto_methods:
-                        raise Failed(f"Config Error: {auto_name}'s auto_list attribute not found")
-                    elif not auto_data[auto_methods["auto_list"]]:
-                        raise Failed(f"Config Error: {auto_name}'s auto_list attribute is blank")
-                    elif auto_data[auto_methods["auto_list"]].lower() not in auto[library.type]:
-                        raise Failed(f"Config Error: auto_list attribute {auto_data[auto_methods['auto_list']].lower()} invalid Options: {auto[library.type]}")
-                    elif auto_data[auto_methods["auto_list"]].lower() == "network" and library.agent not in plex.new_plex_agents:
-                        raise Failed(f"Config Error: network auto_list only works with the New Plex TV Agent")
+                    methods = {dm.lower(): dm for dm in dynamic}
+                    if "type" not in methods:
+                        raise Failed(f"Config Error: {map_name}'s type attribute not found")
+                    elif not dynamic[methods["type"]]:
+                        raise Failed(f"Config Error: {map_name}'s type attribute is blank")
+                    elif dynamic[methods["type"]].lower() not in auto[library.type]:
+                        raise Failed(f"Config Error: type attribute {dynamic[methods['type']].lower()} invalid Options: {auto[library.type]}")
+                    elif dynamic[methods["type"]].lower() == "network" and library.agent not in plex.new_plex_agents:
+                        raise Failed(f"Config Error: network type only works with the New Plex TV Agent")
+                    elif dynamic[methods["type"]].lower().startswith("trakt") and not self.config.Trakt:
+                        raise Failed(f"Config Error: trakt must be configured to use {dynamic[methods['type']]}")
                     else:
-                        auto_type = auto_data[auto_methods["auto_list"]].lower()
-                        exclude = util.parse("Config", "exclude", auto_data, methods=auto_methods, datatype="list") if "exclude" in auto_methods else []
+                        auto_type = dynamic[methods["type"]].lower()
+                        exclude = util.parse("Config", "exclude", dynamic, methods=methods, datatype="list") if "exclude" in methods else []
+                        default_title_format = "<<title>>"
                         if auto_type in ["genre", "mood", "style", "country", "network"]:
                             auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
                             if library.is_music:
@@ -272,29 +275,47 @@ class MetadataFile(DataFile):
                                     auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
                             util.print_end()
                             default_template = {"tmdb_collection_details": "<<tmdb_collection>>"}
-                            default_title_format = "<<title>>"
                         else:
-                            raise Failed(f"Config Error: {auto_name}'s auto_list attribute {auto_data[auto_methods['auto_list']]} invalid")
+                            if "data" not in methods:
+                                raise Failed(f"Config Error: {map_name}'s data attribute not found")
+                            elif not dynamic[methods["data"]]:
+                                raise Failed(f"Config Error: {map_name}'s data attribute is blank")
+                            else:
+                                options = dynamic[methods["data"]]
+                            if not isinstance(options, list):
+                                options = [options]
+                            if auto_type == "trakt_people_list":
+                                auto_list = []
+                                for option in options:
+                                    auto_list.extend(self.config.Trakt.get_people(option))
+                                default_template = {"tmdb_person": "<<trakt_people_list>>", "plex_search": {"all": {"actor": "tmdb"}}}
+                            elif auto_type == "trakt_user_lists":
+                                auto_list = []
+                                for option in options:
+                                    auto_list.extend(self.config.Trakt.get_user_lists(option))
+                                default_template = {"trakt_list_details": "<<trakt_user_lists>>"}
+                            else:
+                                raise Failed(f"Config Error: {map_name}'s type attribute {dynamic[methods['type']]} invalid")
                     title_format = default_title_format
-                    if "title_format" in auto_methods:
-                        title_format = util.parse("Config", "title_format", auto_data, methods=auto_methods, default=default_title_format)
+                    if "title_format" in methods:
+                        title_format = util.parse("Config", "title_format", dynamic, methods=methods, default=default_title_format)
                     if "<<title>>" not in title_format:
                         logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
                     if "<<library_type>>" in title_format:
                         title_format = title_format.replace("<<library_type>>", library.type)
-                    dictionary_variables = util.parse("Config", "dictionary_variables", auto_data, methods=auto_methods, datatype="dictdict") if "dictionary_variables" in auto_methods else {}
-                    template_name = util.parse("Config", "template", auto_data, methods=auto_methods)
+                    dictionary_variables = util.parse("Config", "dictionary_variables", dynamic, methods=methods, datatype="dictdict") if "dictionary_variables" in methods else {}
+                    template_name = util.parse("Config", "template", dynamic, methods=methods)
                     if template_name:
                         if template_name not in self.templates:
                             raise Failed(f"Config Error: template: {template_name} not found")
                         if f"<<{auto_type}>>" not in str(self.templates[template_name]):
                             raise Failed(f"Config Error: template: {template_name} is required to have the template variable <<{auto_type}>>")
                     else:
-                        self.templates[auto_name] = default_template
-                        template_name = auto_name
-                    remove_prefix = util.parse("Config", "remove_prefix", auto_data, methods=auto_methods, datatype="commalist") if "remove_prefix" in auto_methods else []
-                    remove_suffix = util.parse("Config", "remove_suffix", auto_data, methods=auto_methods, datatype="commalist") if "remove_suffix" in auto_methods else []
+                        self.templates[map_name] = default_template
+                        template_name = map_name
+                    remove_prefix = util.parse("Config", "remove_prefix", dynamic, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
+                    remove_suffix = util.parse("Config", "remove_suffix", dynamic, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     for key, value in auto_list.items():
                         template_call = {"name": template_name, auto_type: key}
                         for k, v in dictionary_variables.items():

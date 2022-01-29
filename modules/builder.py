@@ -111,8 +111,8 @@ sonarr_details = [
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
-discover_types = {0: "returning", 1: "planned", 2: "production", 3: "ended", 4: "cancelled", 5: "pilot"}
-discover_status = {0: "documentary", 1: "news", 2: "miniseries", 3: "reality", 4: "scripted", 5: "talk_show", 6: "video"}
+discover_types = {0: "documentary", 1: "news", 2: "miniseries", 3: "reality", 4: "scripted", 5: "talk_show", 6: "video"}
+discover_status = {0: "returning", 1: "planned", 2: "production", 3: "ended", 4: "cancelled", 5: "pilot"}
 filters_by_type = {
     "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
     "movie_show_season_episode_album_track": ["year"],
@@ -1589,9 +1589,9 @@ class CollectionBuilder:
                     return data.lower()
             raise Failed(f"{self.Type} Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
         elif attribute == "tmdb_type":
-            return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_types.items()]).lower()
+            return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_types.items()])
         elif attribute == "tmdb_status":
-            return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_status.items()]).lower()
+            return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_status.items()])
         elif attribute in plex.tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []

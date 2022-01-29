@@ -18,7 +18,7 @@ sorts = [
     "rank", "added", "title", "released", "runtime", "popularity",
     "percentage", "votes", "random", "my_rating", "watched", "collected"
 ]
-id_translation = {"movie": "tmdb", "show": "tvdb", "season": "TVDb Season", "episode": "TVDb Episode"}
+id_translation = {"movie": "movie", "show": "show", "season": "show", "episode": "show", "person": "person"}
 
 class Trakt:
     def __init__(self, config, params):
@@ -159,22 +159,33 @@ class Trakt:
                 data = item[item_type]
                 current_type = item_type
             elif "type" in item and item["type"] in id_translation:
-                data = item["movie" if item["type"] == "movie" else "show"]
+                data = item[id_translation[item["type"]]]
                 current_type = item["type"]
             else:
                 continue
-            id_type = "tmdb" if current_type == "movie" else "tvdb"
+            id_type = "tmdb" if current_type in ["movie", "person"] else "tvdb"
             if id_type in data["ids"] and data["ids"][id_type]:
                 final_id = data["ids"][id_type]
                 if current_type == "episode":
                     final_id = f"{final_id}_{item[current_type]['season']}"
                 if current_type in ["episode", "season"]:
                     final_id = f"{final_id}_{item[current_type]['number']}"
-                final_type = f"{id_type}_{current_type}" if current_type in ["episode", "season"] else id_type
+                if current_type == "person":
+                    final_id = (final_id, data["name"])
+                final_type = f"{id_type}_{current_type}" if current_type in ["episode", "season", "person"] else id_type
                 ids.append((final_id, final_type))
             else:
                 logger.error(f"Trakt Error: No {id_type.upper().replace('B', 'b')} ID found for {data['title']} ({data['year']})")
         return ids
+
+    def get_user_lists(self, data):
+        try:
+            items = self._request(f"/users/{data}/lists")
+        except Failed:
+            raise Failed(f"Trakt Error: User {data} not found")
+        if len(items) == 0:
+            raise Failed(f"Trakt Error: User {data} has no lists")
+        return {f"{base_url}/users/{data}/lists/{i['ids']['slug']}": i["name"] for i in items}
 
     def _user_list(self, data):
         try:
@@ -197,6 +208,9 @@ class Trakt:
     def _pagenation(self, pagenation, amount, is_movie):
         items = self._request(f"/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
         return self._parse(items, typeless=pagenation == "popular", item_type="movie" if is_movie else "show")
+
+    def get_people(self, data):
+        return {i[0][0]: i[0][1] for i in self._user_list(data) if i[1] == "tmdb_person"}
 
     def validate_trakt(self, trakt_lists, is_movie, trakt_type="list"):
         values = util.get_list(trakt_lists, split=False)
