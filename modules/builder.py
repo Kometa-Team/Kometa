@@ -841,7 +841,7 @@ class CollectionBuilder:
             for anidb_id in self.config.AniDB.validate_anidb_ids(method_data, self.language):
                 self.builders.append((method_name, anidb_id))
         elif method_name == "anidb_tag":
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 new_dictionary = {}
                 if "tag" not in dict_methods:
                     raise Failed(f"{self.Type} Error: anidb_tag tag attribute is required")
@@ -864,7 +864,7 @@ class CollectionBuilder:
             elif self.current_time.month in [6, 7, 8]:          current_season = "summer"
             else:                                               current_season = "fall"
             default_year = self.current_year + 1 if self.current_time.month == 12 else self.current_year
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
                     search_attr, modifier = os.path.splitext(str(search_method).lower())
@@ -909,7 +909,7 @@ class CollectionBuilder:
             for flixpatrol_list in flixpatrol_lists:
                 self.builders.append(("flixpatrol_url", flixpatrol_list))
         elif method_name in flixpatrol.builders:
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 if method_name == "flixpatrol_demographics":
                     data = {
                         "generation": util.parse(self.Type, "generation", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.generations),
@@ -979,7 +979,7 @@ class CollectionBuilder:
         elif method_name in ["mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special", "mal_popular", "mal_favorite", "mal_suggested"]:
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100 if method_name == "mal_suggested" else 500)))
         elif method_name in ["mal_season", "mal_userlist"]:
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 if method_name == "mal_season":
                     if self.current_time.month in [1, 2, 3]:            default_season = "winter"
                     elif self.current_time.month in [4, 5, 6]:          default_season = "spring"
@@ -1003,7 +1003,7 @@ class CollectionBuilder:
             final_data = []
             for data in util.get_list(method_data):
                 final_data.append(data if isinstance(data, dict) else {id_name: data, "limit": 0})
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 self.builders.append((method_name, {
                     id_name: util.parse(self.Type, id_name, dict_data, datatype="int", methods=dict_methods, parent=method_name, maximum=999999),
                     "limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
@@ -1013,7 +1013,7 @@ class CollectionBuilder:
         if method_name in ["plex_all", "plex_pilots"]:
             self.builders.append((method_name, self.collection_level))
         elif method_name in ["plex_search", "plex_collectionless"]:
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 new_dictionary = {}
                 if method_name == "plex_search":
                     type_override = f"{self.collection_level}s" if self.collection_level in plex.collection_level_options else None
@@ -1038,7 +1038,7 @@ class CollectionBuilder:
             self.builders.append((method_name, mdb_dict))
 
     def _tautulli(self, method_name, method_data):
-        for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+        for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             self.builders.append((method_name, {
                 "list_type": "popular" if method_name == "tautulli_popular" else "watched",
                 "list_days": util.parse(self.Type, "list_days", dict_data, datatype="int", methods=dict_methods, default=30, parent=method_name),
@@ -1049,7 +1049,7 @@ class CollectionBuilder:
 
     def _tmdb(self, method_name, method_data):
         if method_name == "tmdb_discover":
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 new_dictionary = {"limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name)}
                 for discover_method, discover_data in dict_data.items():
                     discover_attr, modifier = os.path.splitext(str(discover_method).lower())
@@ -1168,7 +1168,7 @@ class CollectionBuilder:
             self.builders.append((method_name[:-8] if method_name.endswith("_details") else method_name, value))
 
     def _filters(self, method_name, method_data):
-        for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="dictlist"):
+        for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             validate = True
             if "validate" in dict_data:
                 if dict_data["validate"] is None:
