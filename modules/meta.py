@@ -301,6 +301,7 @@ class MetadataFile(DataFile):
                         title_format = default_title_format
                     titles = util.parse("Config", "titles", dynamic, parent=map_name, methods=methods, datatype="dict") if "titles" in methods else {}
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
+                    sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
                         title_format = title_format.replace("<<library_type>>", library.type)
                     dictionary_variables = util.parse("Config", "dictionary_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "dictionary_variables" in methods else {}
@@ -315,6 +316,7 @@ class MetadataFile(DataFile):
                         template_name = map_name
                     remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
                     remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
+                    sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
                     for key, value in auto_list.items():
                         template_call = {"name": template_name, auto_type: [key].extend(add_ons[key]) if key in add_ons else key}
                         for k, v in dictionary_variables.items():
@@ -333,10 +335,15 @@ class MetadataFile(DataFile):
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                         else:
-                            col = {"template": template_call}
+                            col = {"template": template_call, "label": str(map_name)}
                             if test:
                                 col["test"] = True
+                            if collection_title in sync:
+                                sync.pop(collection_title)
                             self.collections[collection_title] = col
+                    for col_title, col in sync.items():
+                        col.delete()
+                        logger.info(f"{map_name} Dynamic Collection: {col_title} Deleted")
                 except Failed as e:
                     logger.error(e)
                     logger.error(f"{map_name} Dynamic Collection Failed")
