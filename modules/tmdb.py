@@ -138,6 +138,9 @@ class TMDb:
         try:                            return self.TMDb.list(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
 
+    def get_popular_people(self, limit):
+        return {p.id: p.name for p in self.TMDb.popular_people().get_results(limit)}
+
     def validate_tmdb_ids(self, tmdb_ids, tmdb_method):
         tmdb_list = util.get_int_list(tmdb_ids, f"TMDb {type_map[tmdb_method]} ID")
         tmdb_values = []
