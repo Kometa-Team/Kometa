@@ -284,7 +284,7 @@ class MetadataFile(DataFile):
                                 auto_list.extend(self.config.Trakt.get_user_lists(option))
                             default_template = {"trakt_list_details": "<<trakt_user_lists>>"}
                         else:
-                            default_template = {"tmdb_person": "<<trakt_people_list>>", "plex_search": {"all": {"actor": "tmdb"}}}
+                            default_template = {"tmdb_person": f"<<{auto_type}>>", "plex_search": {"all": {"actor": "tmdb"}}}
                             if auto_type == "tmdb_popular_people":
                                 auto_list = self.config.TMDb.get_popular_people(util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1))
                             elif auto_type == "trakt_people_list":
