@@ -243,18 +243,18 @@ class MetadataFile(DataFile):
                 try:
                     methods = {dm.lower(): dm for dm in dynamic}
                     if "type" not in methods:
-                        raise Failed(f"Config Error: {map_name}'s type attribute not found")
+                        raise Failed(f"Config Error: {map_name} type attribute not found")
                     elif not dynamic[methods["type"]]:
-                        raise Failed(f"Config Error: {map_name}'s type attribute is blank")
+                        raise Failed(f"Config Error: {map_name} type attribute is blank")
                     elif dynamic[methods["type"]].lower() not in auto[library.type]:
-                        raise Failed(f"Config Error: type attribute {dynamic[methods['type']].lower()} invalid Options: {auto[library.type]}")
+                        raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']].lower()} invalid Options: {auto[library.type]}")
                     elif dynamic[methods["type"]].lower() == "network" and library.agent not in plex.new_plex_agents:
-                        raise Failed(f"Config Error: network type only works with the New Plex TV Agent")
+                        raise Failed(f"Config Error: {map_name} type attribute: network only works with the New Plex TV Agent")
                     elif dynamic[methods["type"]].lower().startswith("trakt") and not self.config.Trakt:
-                        raise Failed(f"Config Error: trakt must be configured to use {dynamic[methods['type']]}")
+                        raise Failed(f"Config Error: {map_name} type attribute: {dynamic[methods['type']]} requires trakt to be configured")
                     else:
                         auto_type = dynamic[methods["type"]].lower()
-                        exclude = util.parse("Config", "exclude", dynamic, methods=methods, datatype="list") if "exclude" in methods else []
+                        exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
                         default_title_format = "<<title>>"
                         if auto_type in ["genre", "mood", "style", "country", "network"]:
                             auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
@@ -277,9 +277,9 @@ class MetadataFile(DataFile):
                             default_template = {"tmdb_collection_details": "<<tmdb_collection>>"}
                         else:
                             if "data" not in methods:
-                                raise Failed(f"Config Error: {map_name}'s data attribute not found")
+                                raise Failed(f"Config Error: {map_name} data attribute not found")
                             elif not dynamic[methods["data"]]:
-                                raise Failed(f"Config Error: {map_name}'s data attribute is blank")
+                                raise Failed(f"Config Error: {map_name} data attribute is blank")
                             else:
                                 options = dynamic[methods["data"]]
                             if not isinstance(options, list):
@@ -295,27 +295,27 @@ class MetadataFile(DataFile):
                                     auto_list.extend(self.config.Trakt.get_user_lists(option))
                                 default_template = {"trakt_list_details": "<<trakt_user_lists>>"}
                             else:
-                                raise Failed(f"Config Error: {map_name}'s type attribute {dynamic[methods['type']]} invalid")
+                                raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
                     title_format = default_title_format
                     if "title_format" in methods:
-                        title_format = util.parse("Config", "title_format", dynamic, methods=methods, default=default_title_format)
+                        title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
                     if "<<title>>" not in title_format:
                         logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
                     if "<<library_type>>" in title_format:
                         title_format = title_format.replace("<<library_type>>", library.type)
-                    dictionary_variables = util.parse("Config", "dictionary_variables", dynamic, methods=methods, datatype="dictdict") if "dictionary_variables" in methods else {}
-                    template_name = util.parse("Config", "template", dynamic, methods=methods)
-                    if template_name:
+                    dictionary_variables = util.parse("Config", "dictionary_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "dictionary_variables" in methods else {}
+                    if "template" in methods:
+                        template_name = util.parse("Config", "template", dynamic, parent=map_name, methods=methods)
                         if template_name not in self.templates:
-                            raise Failed(f"Config Error: template: {template_name} not found")
+                            raise Failed(f"Config Error: {map_name} template: {template_name} not found")
                         if f"<<{auto_type}>>" not in str(self.templates[template_name]):
-                            raise Failed(f"Config Error: template: {template_name} is required to have the template variable <<{auto_type}>>")
+                            raise Failed(f"Config Error: {map_name} template: {template_name} is required to have the template variable <<{auto_type}>>")
                     else:
                         self.templates[map_name] = default_template
                         template_name = map_name
-                    remove_prefix = util.parse("Config", "remove_prefix", dynamic, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
-                    remove_suffix = util.parse("Config", "remove_suffix", dynamic, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
+                    remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
+                    remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     for key, value in auto_list.items():
                         template_call = {"name": template_name, auto_type: key}
                         for k, v in dictionary_variables.items():
@@ -334,6 +334,7 @@ class MetadataFile(DataFile):
                             self.collections[collection_title] = {"template": template_call}
                 except Failed as e:
                     logger.error(e)
+                    logger.error(f"{map_name} Dynamic Collection Failed")
                     continue
 
             if not self.metadata and not self.collections:
