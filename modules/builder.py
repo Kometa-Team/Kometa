@@ -274,8 +274,9 @@ class CollectionBuilder:
             logger.debug("Validating Method: template")
             new_attributes = self.metadata.apply_template(self.name, self.data, self.data[methods["template"]])
             for attr in new_attributes:
-                self.data[attr] = new_attributes[attr]
-                methods[attr.lower()] = attr
+                if attr.lower() not in methods:
+                    self.data[attr] = new_attributes[attr]
+                    methods[attr.lower()] = attr
 
         if "delete_not_scheduled" in methods:
             logger.debug("")

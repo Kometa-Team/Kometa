@@ -17,6 +17,13 @@ auto = {
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country"] + all_auto
 }
+default_templates = {
+    "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>"},
+    "trakt_user_lists": {"trakt_list_details": "<<trakt_user_lists>>"},
+    "trakt_liked_lists": {"trakt_list_details": "<<trakt_liked_lists>>"},
+    "tmdb_popular_people": {"tmdb_person": f"<<tmdb_popular_people>>", "plex_search": {"all": {"actor": "tmdb"}}},
+    "trakt_people_list": {"tmdb_person": f"<<trakt_people_list>>", "plex_search": {"all": {"actor": "tmdb"}}}
+}
 
 def get_dict(attribute, attr_data, check_list=None):
     if check_list is None:
@@ -176,36 +183,25 @@ class DataFile:
                                 except Failed:
                                     continue
                         else:
-                            txt = str(_data)
-
+                            final_data = _data
                             def scan_text(og_txt, var, var_value):
-                                if og_txt == f"<<{var}>>":
-                                    return str(var_value)
+                                if str(og_txt) == f"<<{var}>>":
+                                    return var_value
                                 elif f"<<{var}>>" in str(og_txt):
                                     return str(og_txt).replace(f"<<{var}>>", str(var_value))
                                 else:
                                     return og_txt
 
                             for option in optional:
-                                if option not in variables and f"<<{option}>>" in txt:
+                                if option not in variables and f"<<{option}>>" in str(final_data):
                                     raise Failed
                             for variable, variable_data in variables.items():
                                 if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                    txt = scan_text(txt, variable, variable_data.replace(",", ""))
+                                    final_data = scan_text(final_data, variable, variable_data.replace(",", ""))
                                 elif variable != "name":
-                                    txt = scan_text(txt, variable, variable_data)
+                                    final_data = scan_text(final_data, variable, variable_data)
                             for dm, dd in default.items():
-                                txt = scan_text(txt, dm, dd)
-                            if txt in ["true", "True"]:
-                                final_data = True
-                            elif txt in ["false", "False"]:
-                                final_data = False
-                            else:
-                                try:
-                                    num_data = float(txt)
-                                    final_data = int(num_data) if num_data.is_integer() else num_data
-                                except (ValueError, TypeError):
-                                    final_data = txt
+                                final_data = scan_text(final_data, dm, dd)
                         return final_data
 
                     new_attributes = {}
@@ -255,16 +251,14 @@ class MetadataFile(DataFile):
                     else:
                         auto_type = dynamic[methods["type"]].lower()
                         exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
-                        add_ons = util.parse("Config", "add_ons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "add_ons" in methods else {}
-                        for k, v in add_ons.items():
+                        addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "addons" in methods else {}
+                        for k, v in addons.items():
                             exclude.extend(v)
                         default_title_format = "<<title>>"
+                        default_template = None
                         if auto_type in ["genre", "mood", "style", "country", "network"]:
                             auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
-                            if library.is_music:
-                                use_filter = f"artist_{auto_type}"
-                            else:
-                                use_filter = auto_type
+                            use_filter = f"artist_{auto_type}" if library.is_music else auto_type
                             default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "all": {use_filter: f"<<{auto_type}>>"}}}
                             default_title_format = "Top <<title>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
@@ -277,22 +271,20 @@ class MetadataFile(DataFile):
                                 if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
                                     auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
                             util.print_end()
-                            default_template = {"tmdb_collection_details": "<<tmdb_collection>>"}
                         elif auto_type == "trakt_user_lists":
                             auto_list = []
                             for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
                                 auto_list.extend(self.config.Trakt.get_user_lists(option))
-                            default_template = {"trakt_list_details": "<<trakt_user_lists>>"}
+                        elif auto_type == "trakt_liked_lists":
+                            auto_list = self.config.Trakt.get_liked_lists()
+                        elif auto_type == "tmdb_popular_people":
+                            auto_list = self.config.TMDb.get_popular_people(util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1))
+                        elif auto_type == "trakt_people_list":
+                            auto_list = []
+                            for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
+                                auto_list.extend(self.config.Trakt.get_people(option))
                         else:
-                            default_template = {"tmdb_person": f"<<{auto_type}>>", "plex_search": {"all": {"actor": "tmdb"}}}
-                            if auto_type == "tmdb_popular_people":
-                                auto_list = self.config.TMDb.get_popular_people(util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1))
-                            elif auto_type == "trakt_people_list":
-                                auto_list = []
-                                for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
-                                    auto_list.extend(self.config.Trakt.get_people(option))
-                            else:
-                                raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
+                            raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
                     title_format = default_title_format
                     if "title_format" in methods:
                         title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
@@ -312,13 +304,13 @@ class MetadataFile(DataFile):
                         if f"<<{auto_type}>>" not in str(self.templates[template_name]):
                             raise Failed(f"Config Error: {map_name} template: {template_name} is required to have the template variable <<{auto_type}>>")
                     else:
-                        self.templates[map_name] = default_template
+                        self.templates[map_name] = default_template if default_template else default_templates[auto_type]
                         template_name = map_name
                     remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
                     remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
                     for key, value in auto_list.items():
-                        template_call = {"name": template_name, auto_type: [key].extend(add_ons[key]) if key in add_ons else key}
+                        template_call = {"name": template_name, auto_type: [key] + addons[key] if key in addons else key}
                         for k, v in dictionary_variables.items():
                             if key in v:
                                 template_call[k] = v[key]
