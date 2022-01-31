@@ -111,8 +111,14 @@ sonarr_details = [
     "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag"
 ]
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
-discover_types = {0: "documentary", 1: "news", 2: "miniseries", 3: "reality", 4: "scripted", 5: "talk_show", 6: "video"}
-discover_status = {0: "returning", 1: "planned", 2: "production", 3: "ended", 4: "cancelled", 5: "pilot"}
+discover_types = {
+    "Documentary": "documentary", "News": "news", "Miniseries": "miniseries",
+    "Reality": "reality", "Scripted": "scripted", "Talk Show": "talk_show", "Video": "video"
+}
+discover_status = {
+    "Returning Series": "returning", "Planned": "planned", "In Production": "production",
+    "Ended": "ended", "Cancelled": "cancelled", "Pilot": "pilot"
+}
 filters_by_type = {
     "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
     "movie_show_season_episode_album_track": ["year"],
@@ -1754,7 +1760,7 @@ class CollectionBuilder:
                         return False
                 for filter_method, filter_data in self.tmdb_filters:
                     filter_attr, modifier, filter_final = self._split(filter_method)
-                    if filter_attr == ["tmdb_status", "tmdb_type", "original_language"]:
+                    if filter_attr in ["tmdb_status", "tmdb_type", "original_language"]:
                         if filter_attr == "tmdb_status":
                             check_value = discover_status[item.status]
                         elif filter_attr == "tmdb_type":
