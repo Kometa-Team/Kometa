@@ -117,7 +117,7 @@ discover_types = {
 }
 discover_status = {
     "Returning Series": "returning", "Planned": "planned", "In Production": "production",
-    "Ended": "ended", "Cancelled": "cancelled", "Pilot": "pilot"
+    "Ended": "ended", "Canceled": "canceled", "Pilot": "pilot"
 }
 filters_by_type = {
     "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
