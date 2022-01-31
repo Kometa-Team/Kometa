@@ -259,8 +259,8 @@ class MetadataFile(DataFile):
                         if auto_type in ["genre", "mood", "style", "country", "network"]:
                             auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
                             use_filter = f"artist_{auto_type}" if library.is_music else auto_type
-                            default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "all": {use_filter: f"<<{auto_type}>>"}}}
-                            default_title_format = "Top <<title>> <<library_type>>s"
+                            default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc" if library.is_music else "critic_rating.desc", "all": {use_filter: f"<<{auto_type}>>"}}}
+                            default_title_format = "Most Played <<title>> <<library_type>>s" if library.is_music else "Top <<title>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
                             auto_list = {}
                             items = library.get_all()

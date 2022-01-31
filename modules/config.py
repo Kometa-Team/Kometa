@@ -775,7 +775,6 @@ class ConfigFile:
 
                     logger.info("")
                     util.separator("Plex Configuration", space=False, border=False)
-                    logger.info("")
                     params["plex"] = {
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
@@ -795,8 +794,7 @@ class ConfigFile:
                     continue
                 try:
                     logger.info("")
-                    util.separator("Scaning Metadata Files", space=False, border=False)
-                    logger.info("")
+                    util.separator("Scanning Metadata Files", space=False, border=False)
                     library.scan_metadata_files()
                 except Failed as e:
                     self.errors.append(e)
