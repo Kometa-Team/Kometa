@@ -1026,8 +1026,8 @@ class CollectionBuilder:
                     type_override = f"{self.collection_level}s" if self.collection_level in plex.collection_level_options else None
                     new_dictionary = self.build_filter("plex_search", dict_data, type_override=type_override)
                 elif method_name == "plex_collectionless":
-                    prefix_list = util.parse(self.Type, "exclude_prefix", dict_data, datatype="list", methods=dict_methods)
-                    exact_list = util.parse(self.Type, "exclude", dict_data, datatype="list", methods=dict_methods)
+                    prefix_list = util.parse(self.Type, "exclude_prefix", dict_data, datatype="list", methods=dict_methods) if "exclude_prefix" in dict_methods else []
+                    exact_list = util.parse(self.Type, "exclude", dict_data, datatype="list", methods=dict_methods) if "exclude" in dict_methods else []
                     if len(prefix_list) == 0 and len(exact_list) == 0:
                         raise Failed(f"{self.Type} Error: you must have at least one exclusion")
                     exact_list.append(self.name)
