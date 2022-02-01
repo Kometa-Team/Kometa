@@ -277,9 +277,12 @@ class MetadataFile(DataFile):
                         elif auto_type == "actor":
                             auto_list = {}
                             people = {}
-                            actor_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
-                            actor_depth = util.parse("Config", "actor_depth", actor_data, parent="data", datatype="int", default=3, minimum=1)
-                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent="data", datatype="int", default=3, minimum=1)
+                            if "data" in methods:
+                                actor_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            else:
+                                raise Failed(f"Config Error: {map_name} data attribute not found")
+                            actor_depth = util.parse("Config", "actor_depth", actor_data, parent=f"{map_name} data", datatype="int", default=3, minimum=1)
+                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", datatype="int", default=3, minimum=1)
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
