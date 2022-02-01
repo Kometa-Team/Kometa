@@ -10,9 +10,9 @@ logger = logging.getLogger("Plex Meta Manager")
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
 all_auto = ["genre"]
-ms_auto = ["actor", "tmdb_popular_people", "trakt_user_lists", "trakt_people_list"]
+ms_auto = ["actor", "year", "tmdb_popular_people", "trakt_user_lists", "trakt_people_list"]
 auto = {
-    "Movie": ["tmdb_collection", "country"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "decade", "country"] + all_auto + ms_auto,
     "Show": ["network"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country"] + all_auto
@@ -258,11 +258,14 @@ class MetadataFile(DataFile):
                             exclude.extend(v)
                         default_title_format = "<<title>>"
                         default_template = None
-                        if auto_type in ["genre", "mood", "style", "country", "network"]:
+                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade"]:
                             auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
-                            use_filter = f"artist_{auto_type}" if library.is_music else auto_type
-                            default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc" if library.is_music else "critic_rating.desc", "all": {use_filter: f"<<{auto_type}>>"}}}
-                            default_title_format = "Most Played <<title>> <<library_type>>s" if library.is_music else "Top <<title>> <<library_type>>s"
+                            if library.is_music:
+                                default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
+                                default_title_format = "Most Played <<title>> <<library_type>>s"
+                            else:
+                                default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<{auto_type}>>"}}}
+                                default_title_format = "Best <<library_type>>s of <<title>>" if auto_type in ["year", "decade"] else "Top <<title>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
                             auto_list = {}
                             if not all_items:
