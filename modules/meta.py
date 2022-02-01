@@ -1,4 +1,4 @@
-import logging, os, re
+import logging, operator, os, re
 from datetime import datetime
 from modules import plex, util
 from modules.util import Failed, ImageData
@@ -10,7 +10,7 @@ logger = logging.getLogger("Plex Meta Manager")
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
 all_auto = ["genre"]
-ms_auto = ["tmdb_popular_people", "trakt_user_lists", "trakt_people_list"]
+ms_auto = ["actor", "tmdb_popular_people", "trakt_user_lists", "trakt_people_list"]
 auto = {
     "Movie": ["tmdb_collection", "country"] + all_auto + ms_auto,
     "Show": ["network"] + all_auto + ms_auto,
@@ -18,6 +18,7 @@ auto = {
     "Video": ["country"] + all_auto
 }
 default_templates = {
+    "actor": {"tmdb_person": f"<<actor>>", "plex_search": {"all": {"actor": "tmdb"}}},
     "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>"},
     "trakt_user_lists": {"trakt_list_details": "<<trakt_user_lists>>"},
     "trakt_liked_lists": {"trakt_list_details": "<<trakt_liked_lists>>"},
@@ -235,6 +236,7 @@ class MetadataFile(DataFile):
             self.templates = get_dict("templates", data)
             self.collections = get_dict("collections", data, library.collections)
             col_names = library.collections + [c for c in self.collections]
+            all_items = None
             for map_name, dynamic in get_dict("dynamic_collections", data).items():
                 try:
                     methods = {dm.lower(): dm for dm in dynamic}
@@ -263,14 +265,42 @@ class MetadataFile(DataFile):
                             default_title_format = "Most Played <<title>> <<library_type>>s" if library.is_music else "Top <<title>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
                             auto_list = {}
-                            items = library.get_all()
-                            for i, item in enumerate(items, 1):
-                                util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+                            if not all_items:
+                                all_items = library.get_all()
+                            for i, item in enumerate(all_items, 1):
+                                util.print_return(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
                                 if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
                                     auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
                             util.print_end()
+                        elif auto_type == "actor":
+                            auto_list = {}
+                            people = {}
+                            actor_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            actor_depth = util.parse("Config", "actor_depth", actor_data, parent="data", datatype="int", default=3, minimum=1)
+                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent="data", datatype="int", default=3, minimum=1)
+                            if not all_items:
+                                all_items = library.get_all()
+                            for i, item in enumerate(all_items, 1):
+                                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                                            includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
+                                            includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                                            includeOnDeck=False, includePopularLeaves=False, includeRelated=False, includeRelatedCount=0,
+                                            includeReviews=False, includeStations=False)
+                                for actor in item.actors[:actor_depth]:
+                                    if actor.id not in people:
+                                        people[actor.id] = {"name": actor.tag, "count": 0}
+                                    people[actor.id]["count"] += 1
+                            roles = [data for _, data in people.items()]
+                            roles.sort(key=operator.itemgetter('count'), reverse=True)
+                            for role in roles:
+                                if role["count"] >= actor_minimum:
+                                    try:
+                                        results = self.config.TMDb.people_search(role["name"])
+                                        auto_list[results[0].id] = results[0].name
+                                    except NotFound:
+                                        logger.error(f"TMDb Error: Actor {role['name']} Not Found")
                         elif auto_type == "trakt_user_lists":
                             auto_list = []
                             for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
