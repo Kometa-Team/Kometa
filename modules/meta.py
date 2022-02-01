@@ -284,8 +284,9 @@ class MetadataFile(DataFile):
                                 actor_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
                             else:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
-                            actor_depth = util.parse("Config", "actor_depth", actor_data, parent=f"{map_name} data", datatype="int", default=3, minimum=1)
-                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", datatype="int", default=3, minimum=1)
+                            actor_methods = {am.lower(): am for am in actor_data}
+                            actor_depth = util.parse("Config", "actor_depth", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
+                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
@@ -302,7 +303,7 @@ class MetadataFile(DataFile):
                             for role in roles:
                                 if role["count"] >= actor_minimum:
                                     try:
-                                        results = self.config.TMDb.people_search(role["name"])
+                                        results = self.config.TMDb.search_people(role["name"])
                                         auto_list[results[0].id] = results[0].name
                                     except NotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
@@ -377,7 +378,7 @@ class MetadataFile(DataFile):
                     continue
 
             if not self.metadata and not self.collections:
-                raise Failed("YAML Error: metadata or collections attribute is required")
+                raise Failed("YAML Error: metadata, collections, or dynamic_collections attribute is required")
             logger.info(f"Metadata File Loaded Successfully")
 
     def get_collections(self, requested_collections):
