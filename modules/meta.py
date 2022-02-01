@@ -283,15 +283,14 @@ class MetadataFile(DataFile):
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
-                                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                                            includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                                            includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                                            includeOnDeck=False, includePopularLeaves=False, includeRelated=False, includeRelatedCount=0,
-                                            includeReviews=False, includeStations=False)
-                                for actor in item.actors[:actor_depth]:
-                                    if actor.id not in people:
-                                        people[actor.id] = {"name": actor.tag, "count": 0}
-                                    people[actor.id]["count"] += 1
+                                try:
+                                    self.library.reload(item)
+                                    for actor in item.actors[:actor_depth]:
+                                        if actor.id not in people:
+                                            people[actor.id] = {"name": actor.tag, "count": 0}
+                                        people[actor.id]["count"] += 1
+                                except Failed as e:
+                                    logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
                             roles.sort(key=operator.itemgetter('count'), reverse=True)
                             for role in roles:
