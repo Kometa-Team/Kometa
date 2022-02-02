@@ -88,7 +88,7 @@ poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "f
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
 boolean_details = [
     "show_filtered", "show_missing", "save_missing", "missing_only_released", "only_filter_missing",
-    "delete_below_minimum", "asset_folders", "create_asset_folders", "cache_builders"
+    "delete_below_minimum", "asset_folders", "create_asset_folders"
 ]
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
@@ -98,7 +98,7 @@ ignored_details = [
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
 details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode",
-           "minimum_items", "label", "album_sorting"] + boolean_details + scheduled_boolean + string_details
+           "minimum_items", "label", "album_sorting", "cache_builders"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
@@ -218,7 +218,7 @@ class CollectionBuilder:
             "delete_below_minimum": self.library.delete_below_minimum,
             "delete_not_scheduled": self.library.delete_not_scheduled,
             "changes_webhooks": self.library.changes_webhooks,
-            "cache_builders": False
+            "cache_builders": 0
         }
         self.item_details = {}
         self.radarr_details = {}
@@ -701,6 +701,8 @@ class CollectionBuilder:
             self.details[method_name] = util.check_collection_mode(method_data)
         elif method_name == "minimum_items":
             self.minimum = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
+        elif method_name == "cache_builders":
+            self.details[method_name] = util.parse(self.Type, method_name, method_data, datatype="int", minimum=0)
         elif method_name == "server_preroll":
             self.server_preroll = util.parse(self.Type, method_name, method_data)
         elif method_name == "ignore_ids":
@@ -1207,7 +1209,7 @@ class CollectionBuilder:
         expired = None
         list_key = None
         if self.config.Cache and self.details["cache_builders"]:
-            list_key, expired = self.config.Cache.query_list_cache(method, str(value))
+            list_key, expired = self.config.Cache.query_list_cache(method, str(value), self.details["cache_builders"])
             if list_key and expired is False:
                 return self.config.Cache.query_list_ids(list_key)
         if "plex" in method:
@@ -1247,7 +1249,7 @@ class CollectionBuilder:
         if self.config.Cache and self.details["cache_builders"] and ids:
             if list_key:
                 self.config.Cache.delete_list_ids(list_key)
-            list_key = self.config.Cache.update_list_cache(method, str(value), expired)
+            list_key = self.config.Cache.update_list_cache(method, str(value), expired, self.details["cache_builders"])
             self.config.Cache.update_list_ids(list_key, ids)
         return ids
 
