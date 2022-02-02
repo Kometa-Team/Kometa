@@ -88,7 +88,7 @@ poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "f
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
 boolean_details = [
     "show_filtered", "show_missing", "save_missing", "missing_only_released", "only_filter_missing",
-    "delete_below_minimum", "asset_folders", "create_asset_folders"
+    "delete_below_minimum", "asset_folders", "create_asset_folders", "cache_builders"
 ]
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
@@ -183,12 +183,12 @@ episode_parts_only = ["plex_pilots"]
 parts_collection_valid = [
      "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library",
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll", "changes_webhooks",
-     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list"
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "cache_builders"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
-    "server_preroll", "changes_webhooks", "minimum_items",
+    "server_preroll", "changes_webhooks", "minimum_items", "cache_builders"
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
    "non_item_remove_label", "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
@@ -217,7 +217,8 @@ class CollectionBuilder:
             "create_asset_folders": self.library.create_asset_folders,
             "delete_below_minimum": self.library.delete_below_minimum,
             "delete_not_scheduled": self.library.delete_not_scheduled,
-            "changes_webhooks": self.library.changes_webhooks
+            "changes_webhooks": self.library.changes_webhooks,
+            "cache_builders": False
         }
         self.item_details = {}
         self.radarr_details = {}
@@ -1203,39 +1204,52 @@ class CollectionBuilder:
                         logger.error(message)
 
     def gather_ids(self, method, value):
+        expired = None
+        list_key = None
+        if self.config.Cache and self.details["cache_builders"]:
+            list_key, expired = self.config.Cache.query_list_cache(method, str(value))
+            if list_key and expired is False:
+                return self.config.Cache.query_list_ids(list_key)
         if "plex" in method:
-            return self.library.get_rating_keys(method, value)
+            ids = self.library.get_rating_keys(method, value)
         elif "tautulli" in method:
-            return self.library.Tautulli.get_rating_keys(self.library, value, self.playlist)
+            ids = self.library.Tautulli.get_rating_keys(self.library, value, self.playlist)
         elif "anidb" in method:
             anidb_ids = self.config.AniDB.get_anidb_ids(method, value, self.language)
-            return self.config.Convert.anidb_to_ids(anidb_ids, self.library)
+            ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
         elif "anilist" in method:
             anilist_ids = self.config.AniList.get_anilist_ids(method, value)
-            return self.config.Convert.anilist_to_ids(anilist_ids, self.library)
+            ids = self.config.Convert.anilist_to_ids(anilist_ids, self.library)
         elif "mal" in method:
             mal_ids = self.config.MyAnimeList.get_mal_ids(method, value)
-            return self.config.Convert.myanimelist_to_ids(mal_ids, self.library)
+            ids = self.config.Convert.myanimelist_to_ids(mal_ids, self.library)
         elif "tvdb" in method:
-            return self.config.TVDb.get_tvdb_ids(method, value)
+            ids = self.config.TVDb.get_tvdb_ids(method, value)
         elif "imdb" in method:
-            return self.config.IMDb.get_imdb_ids(method, value, self.language)
+            ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
         elif "flixpatrol" in method:
-            return self.config.FlixPatrol.get_flixpatrol_ids(method, value, self.language, self.library.is_movie)
+            ids = self.config.FlixPatrol.get_flixpatrol_ids(method, value, self.language, self.library.is_movie)
         elif "icheckmovies" in method:
-            return self.config.ICheckMovies.get_icheckmovies_ids(method, value, self.language)
+            ids = self.config.ICheckMovies.get_icheckmovies_ids(method, value, self.language)
         elif "letterboxd" in method:
-            return self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
+            ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
         elif "stevenlu" in method:
-            return self.config.StevenLu.get_stevenlu_ids(method)
+            ids = self.config.StevenLu.get_stevenlu_ids(method)
         elif "mdblist" in method:
-            return self.config.Mdblist.get_mdblist_ids(method, value)
+            ids = self.config.Mdblist.get_mdblist_ids(method, value)
         elif "tmdb" in method:
-            return self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie)
+            ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie)
         elif "trakt" in method:
-            return self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
+            ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
         else:
+            ids = []
             logger.error(f"{self.Type} Error: {method} method not supported")
+        if self.config.Cache and self.details["cache_builders"] and ids:
+            if list_key:
+                self.config.Cache.delete_list_ids(list_key)
+            list_key = self.config.Cache.update_list_cache(method, str(value), expired)
+            self.config.Cache.update_list_ids(list_key, ids)
+        return ids
 
     def find_rating_keys(self):
         for method, value in self.builders:
