@@ -112,6 +112,20 @@ class Cache:
                     tvdb_id TEXT,
                     library TEXT)"""
                 )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS list_cache (
+                    key INTEGER PRIMARY KEY,
+                    list_type TEXT,
+                    list_data TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS list_ids (
+                    key INTEGER PRIMARY KEY,
+                    list_key TEXT,
+                    media_id TEXT,
+                    media_type TEXT)"""
+                )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute(f"SELECT DISTINCT library FROM image_map")
@@ -396,3 +410,57 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"INSERT OR IGNORE INTO {arr}_adds({id_type}, library) VALUES(?, ?)", (t_id, library))
+
+    def update_list_ids(self, list_key, media_ids):
+        final_ids = []
+        for media_id, media_type in media_ids:
+            final_ids.append((list_key, media_id, media_type))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.executemany(f"INSERT OR IGNORE INTO list_ids(list_key, media_id, media_type) VALUES(?, ?, ?)", final_ids)
+
+    def update_list_cache(self, list_type, list_data, expired):
+        list_key = None
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"INSERT OR IGNORE INTO list_cache(list_type, list_data) VALUES(?, ?)", (list_type, list_data))
+                cursor.execute(f"UPDATE list_cache SET expiration_date = ? WHERE list_type = ? AND list_data = ?", (expiration_date.strftime("%Y-%m-%d"), list_type, list_data))
+                cursor.execute(f"SELECT * FROM list_cache WHERE list_type = ? AND list_data = ?", (list_type, list_data))
+                row = cursor.fetchone()
+                if row and row["key"]:
+                    list_key = row["key"]
+        return list_key
+
+    def query_list_cache(self, list_type, list_data):
+        list_key = None
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM list_cache WHERE list_type = ? AND list_data = ?", (list_type, list_data))
+                row = cursor.fetchone()
+                if row and row["key"]:
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    list_key = row["key"]
+                    expired = time_between_insertion.days > self.expiration
+        return list_key, expired
+
+    def query_list_ids(self, list_key):
+        ids = []
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM list_ids WHERE list_key = ?", (list_key,))
+                for row in cursor:
+                    ids.append((row["media_id"], row["media_type"]))
+        return ids
+
+    def delete_list_ids(self, list_key):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"DELETE FROM list_ids WHERE list_key = ?", (list_key,))
