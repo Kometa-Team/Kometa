@@ -420,9 +420,9 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.executemany(f"INSERT OR IGNORE INTO list_ids(list_key, media_id, media_type) VALUES(?, ?, ?)", final_ids)
 
-    def update_list_cache(self, list_type, list_data, expired):
+    def update_list_cache(self, list_type, list_data, expired, expiration):
         list_key = None
-        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=expiration))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
@@ -434,7 +434,7 @@ class Cache:
                     list_key = row["key"]
         return list_key
 
-    def query_list_cache(self, list_type, list_data):
+    def query_list_cache(self, list_type, list_data, expiration):
         list_key = None
         expired = None
         with sqlite3.connect(self.cache_path) as connection:
@@ -446,7 +446,7 @@ class Cache:
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     list_key = row["key"]
-                    expired = time_between_insertion.days > self.expiration
+                    expired = time_between_insertion.days > expiration
         return list_key, expired
 
     def query_list_ids(self, list_key):
