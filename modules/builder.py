@@ -1640,7 +1640,7 @@ class CollectionBuilder:
                 or (attribute in plex.tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return util.parse(self.Type, final, data, datatype="int")
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
-            return util.parse(self.Type, final, data, datatype="float", minimum=0, maximum=10)
+            return util.parse(self.Type, final, data, datatype="float", minimum=0, maximum=None if attribute == "duration" else 10)
         elif attribute in plex.boolean_attributes + boolean_filters:
             return util.parse(self.Type, attribute, data, datatype="bool")
         else:
