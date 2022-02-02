@@ -52,6 +52,8 @@ class Mdblist:
             logger.info(f"Processing Mdblist.com List: {data['url']}{limit_status}")
             parsed_url = urlparse(data["url"])
             url_base = parsed_url._replace(query=None).geturl()
+            url_base = url_base if url_base.endswith("/") else f"{url_base}/"
+            url_base = url_base if url_base.endswith("json/") else f"{url_base}json/"
             params = {"limit": data["limit"]} if data["limit"] > 0 else None
             return [(i["imdb_id"], "imdb") for i in self.config.get_json(url_base, headers=headers, params=params)]
         else:
