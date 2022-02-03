@@ -10,7 +10,7 @@ logger = logging.getLogger("Plex Meta Manager")
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
 all_auto = ["genre"]
-ms_auto = ["actor", "year", "tmdb_popular_people", "trakt_user_lists", "trakt_people_list"]
+ms_auto = ["actor", "year", "tmdb_popular_people", "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"]
 auto = {
     "Movie": ["tmdb_collection", "decade", "country"] + all_auto + ms_auto,
     "Show": ["network"] + all_auto + ms_auto,
