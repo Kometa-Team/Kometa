@@ -458,7 +458,7 @@ def library_operations(config, library):
 
     tmdb_collections = {}
     if library.items_library_operation:
-        items = library.get_all()
+        items = library.get_all(load=True)
         radarr_adds = []
         sonarr_adds = []
         trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
@@ -700,7 +700,7 @@ def library_operations(config, library):
         logger.info(f"Metadata Backup Path: {library.metadata_backup['path']}")
         logger.info("")
         meta = {}
-        items = library.get_all()
+        items = library.get_all(load=True)
         titles = [i.title for i in items]
         for i, item in enumerate(items, 1):
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")

@@ -355,8 +355,12 @@ class MetadataFile(DataFile):
                     remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
                     remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
+                    other_name = util.parse("Config", "other", dynamic, parent=map_name, methods=methods) if "other" in methods else None
+                    other_keys = []
                     for key, value in auto_list.items():
                         if include and key not in include:
+                            if key not in exclude:
+                                other_keys.append(key)
                             continue
                         template_call = {"name": template_name, auto_type: [key] + addons[key] if key in addons else key}
                         for k, v in dictionary_variables.items():
@@ -381,6 +385,13 @@ class MetadataFile(DataFile):
                             if collection_title in sync:
                                 sync.pop(collection_title)
                             self.collections[collection_title] = col
+                    if other_name:
+                        col = {"template": {"name": template_name, auto_type: other_keys}, "label": str(map_name)}
+                        if test:
+                            col["test"] = True
+                        if other_name in sync:
+                            sync.pop(other_name)
+                        self.collections[other_name] = col
                     for col_title, col in sync.items():
                         col.delete()
                         logger.info(f"{map_name} Dynamic Collection: {col_title} Deleted")
