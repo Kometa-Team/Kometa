@@ -253,11 +253,20 @@ class MetadataFile(DataFile):
                     else:
                         auto_type = dynamic[methods["type"]].lower()
                         exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
+                        include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="list") if "include" in methods else []
+
+                        if exclude and include:
+                            raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "addons" in methods else {}
                         for k, v in addons.items():
                             exclude.extend(v)
                         default_title_format = "<<title>>"
                         default_template = None
+                        auto_list = {}
+                        def _check_dict(check_dict):
+                            for ck, cv in check_dict.items():
+                                if ck not in exclude and cv not in exclude:
+                                    auto_list[ck] = cv
                         if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade"]:
                             auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
                             if library.is_music:
@@ -267,7 +276,6 @@ class MetadataFile(DataFile):
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<{auto_type}>>"}}}
                                 default_title_format = "Best <<library_type>>s of <<title>>" if auto_type in ["year", "decade"] else "Top <<title>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
-                            auto_list = {}
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
@@ -278,7 +286,6 @@ class MetadataFile(DataFile):
                                     auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
                             util.print_end()
                         elif auto_type == "actor":
-                            auto_list = {}
                             people = {}
                             if "data" in methods:
                                 actor_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
@@ -286,7 +293,10 @@ class MetadataFile(DataFile):
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
                             actor_methods = {am.lower(): am for am in actor_data}
                             actor_depth = util.parse("Config", "actor_depth", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
-                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
+                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1) if "actor_minimum" else None
+                            number_of_actors = util.parse("Config", "number_of_actors", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=25, minimum=1) if "number_of_actors" else None
+                            if not actor_minimum and not number_of_actors:
+                                actor_minimum = 3
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
@@ -300,27 +310,25 @@ class MetadataFile(DataFile):
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
                             roles.sort(key=operator.itemgetter('count'), reverse=True)
+                            actor_count = 0
                             for role in roles:
-                                if role["count"] >= actor_minimum:
+                                if role["name"] not in exclude and ((number_of_actors and actor_count < number_of_actors) or (actor_minimum and role["count"] >= actor_minimum)):
                                     try:
                                         results = self.config.TMDb.search_people(role["name"])
                                         auto_list[results[0].id] = results[0].name
+                                        actor_count += 1
                                     except NotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
                         elif auto_type == "trakt_user_lists":
-                            auto_list = {}
                             for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
-                                for k, v in self.config.Trakt.get_user_lists(option).items():
-                                    auto_list[k] = v
+                                _check_dict(self.config.Trakt.get_user_lists(option))
                         elif auto_type == "trakt_liked_lists":
-                            auto_list = self.config.Trakt.get_liked_lists()
+                            _check_dict(self.config.Trakt.get_liked_lists())
                         elif auto_type == "tmdb_popular_people":
-                            auto_list = self.config.TMDb.get_popular_people(util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1))
+                            _check_dict(self.config.TMDb.get_popular_people(util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)))
                         elif auto_type == "trakt_people_list":
-                            auto_list = {}
                             for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
-                                for k, v in self.config.Trakt.get_people(option).items():
-                                    auto_list[k] = v
+                                _check_dict(self.config.Trakt.get_people(option))
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
                     title_format = default_title_format
@@ -348,6 +356,8 @@ class MetadataFile(DataFile):
                     remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
                     for key, value in auto_list.items():
+                        if include and key not in include:
+                            continue
                         template_call = {"name": template_name, auto_type: [key] + addons[key] if key in addons else key}
                         for k, v in dictionary_variables.items():
                             if key in v:
