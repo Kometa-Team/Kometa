@@ -448,7 +448,11 @@ class Plex(Library):
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
-    def get_all(self, collection_level=None):
+    def get_all(self, collection_level=None, load=False):
+        if load and not collection_level:
+            self._all_items = []
+        if self._all_items and not collection_level:
+            return self._all_items
         collection_type = collection_level if collection_level else self.Plex.TYPE
         if not collection_level:
             collection_level = self.type
