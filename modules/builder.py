@@ -1339,6 +1339,7 @@ class CollectionBuilder:
                                 elif input_id not in self.missing_movies:
                                     self.missing_movies.append(input_id)
                         elif id_type in ["tvdb", "tmdb_show"] and not self.parts_collection:
+                            input_id = int(input_id)
                             if id_type == "tmdb_show":
                                 try:
                                     input_id = self.config.Convert.tmdb_to_tvdb(input_id, fail=True)
