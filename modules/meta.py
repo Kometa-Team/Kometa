@@ -310,7 +310,7 @@ class MetadataFile(DataFile):
                         elif auto_type == "trakt_user_lists":
                             auto_list = {}
                             for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
-                                for k, v in self.config.Trakt.get_user_lists(option):
+                                for k, v in self.config.Trakt.get_user_lists(option).items():
                                     auto_list[k] = v
                         elif auto_type == "trakt_liked_lists":
                             auto_list = self.config.Trakt.get_liked_lists()
