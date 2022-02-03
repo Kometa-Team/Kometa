@@ -1330,8 +1330,9 @@ class CollectionBuilder:
                     else:
                         rating_keys = []
                         if id_type == "ratingKey":
-                            rating_keys = input_id
+                            rating_keys = int(input_id)
                         elif id_type == "tmdb" and not self.parts_collection:
+                            input_id = int(input_id)
                             if input_id not in self.ignore_ids:
                                 if input_id in self.library.movie_map:
                                     rating_keys = self.library.movie_map[input_id]
