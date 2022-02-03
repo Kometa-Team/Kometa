@@ -1211,6 +1211,7 @@ class CollectionBuilder:
         if self.config.Cache and self.details["cache_builders"]:
             list_key, expired = self.config.Cache.query_list_cache(method, str(value), self.details["cache_builders"])
             if list_key and expired is False:
+                logger.info(f"Builder: {method} loaded from Cache")
                 return self.config.Cache.query_list_ids(list_key)
         if "plex" in method:
             ids = self.library.get_rating_keys(method, value)
