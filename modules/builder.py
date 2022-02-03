@@ -1645,7 +1645,10 @@ class CollectionBuilder:
                         logger.error(error)
             return valid_list
         elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
-            return util.validate_date(data, final, return_as="%Y-%m-%d")
+            if data == "today":
+                return datetime.strftime(datetime.now(), "%Y-%m-%d")
+            else:
+                return util.validate_date(data, final, return_as="%Y-%m-%d")
         elif attribute in plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not"]:
             final_years = []
             values = util.get_list(data)
