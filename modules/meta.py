@@ -308,17 +308,19 @@ class MetadataFile(DataFile):
                                     except NotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
                         elif auto_type == "trakt_user_lists":
-                            auto_list = []
+                            auto_list = {}
                             for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
-                                auto_list.extend(self.config.Trakt.get_user_lists(option))
+                                for k, v in self.config.Trakt.get_user_lists(option):
+                                    auto_list[k] = v
                         elif auto_type == "trakt_liked_lists":
                             auto_list = self.config.Trakt.get_liked_lists()
                         elif auto_type == "tmdb_popular_people":
                             auto_list = self.config.TMDb.get_popular_people(util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1))
                         elif auto_type == "trakt_people_list":
-                            auto_list = []
+                            auto_list = {}
                             for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
-                                auto_list.extend(self.config.Trakt.get_people(option))
+                                for k, v in self.config.Trakt.get_people(option).items():
+                                    auto_list[k] = v
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
                     title_format = default_title_format
