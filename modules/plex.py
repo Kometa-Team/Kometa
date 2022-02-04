@@ -407,6 +407,7 @@ class Plex(Library):
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
         self._users = []
+        self._all_items = []
         self.agent = self.Plex.agent
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
@@ -466,6 +467,7 @@ class Plex(Library):
             util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
         logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {collection_level.capitalize()}s"))
+        self._all_items = results
         return results
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
