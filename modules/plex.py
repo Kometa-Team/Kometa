@@ -415,6 +415,10 @@ class Plex(Library):
         self.is_other = self.agent == "com.plexapp.agents.none"
         if self.is_other:
             self.type = "Video"
+        if not self.is_music and self.update_blank_track_titles:
+            self.update_blank_track_titles = False
+            logger.error(f"update_blank_track_titles library operation only works with music libraries")
+
         if self.tmdb_collections and self.is_show:
             self.tmdb_collections = None
             logger.error("Config Error: tmdb_collections only work with Movie Libraries.")

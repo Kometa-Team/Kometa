@@ -559,7 +559,8 @@ class ConfigFile:
                     "sonarr_remove_by_tag": None,
                     "mass_collection_mode": None,
                     "metadata_backup": None,
-                    "genre_collections": None
+                    "genre_collections": None,
+                    "update_blank_track_titles": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -638,6 +639,8 @@ class ConfigFile:
                             params["sonarr_add_all_existing"] = check_for_attribute(lib["operations"], "sonarr_add_all_existing", var_type="bool", default=False, save=False)
                         if "sonarr_remove_by_tag" in lib["operations"]:
                             params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
+                        if "update_blank_track_titles" in lib["operations"]:
+                            params["update_blank_track_titles"] = check_for_attribute(lib["operations"], "update_blank_track_titles", var_type="bool", default=False, save=False)
                         if "mass_collection_mode" in lib["operations"]:
                             try:
                                 params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
