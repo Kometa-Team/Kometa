@@ -443,6 +443,7 @@ def library_operations(config, library):
     logger.debug(f"Radarr Remove by Tag: {library.radarr_remove_by_tag}")
     logger.debug(f"Sonarr Add All Existing: {library.sonarr_add_all_existing}")
     logger.debug(f"Sonarr Remove by Tag: {library.sonarr_remove_by_tag}")
+    logger.debug(f"Update Blank Track Titles: {library.update_blank_track_titles}")
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
@@ -455,6 +456,11 @@ def library_operations(config, library):
         for item in items:
             item.split()
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
+
+    if library.update_blank_track_titles:
+        for item in library.get_all(collection_level="track"):
+            if not item.title and item.sortTitle:
+                library.edit_query(item, {"title.locked": 1, "title.value": item.sortTitle})
 
     tmdb_collections = {}
     if library.items_library_operation:
