@@ -626,6 +626,7 @@ class MetadataFile(DataFile):
                     albums = {album.title: album for album in item.albums()}
                     special_albums = []
                     for album_types in item.hubs()[:6]:
+                        album_types.reload()
                         if album_types.items:
                             special_albums.extend(album_types.items)
                     albums |= ({album.title: album for album in special_albums})
