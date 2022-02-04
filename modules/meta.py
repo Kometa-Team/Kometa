@@ -744,16 +744,16 @@ class MetadataFile(DataFile):
                     logger.error("Metadata Error: albums attribute must be a dictionary")
                 else:
                     albums = {album.title: album for album in item.albums()}
+                    special_albums = []
+                    for album_types in item.hubs()[:6]:
+                        album_types.reload()
+                        if album_types.items:
+                            special_albums.extend(album_types.items)
+                    albums = {**albums, **{album.title: album for album in special_albums}}
                     for album_name, album_dict in meta[methods["albums"]].items():
                         updated = False
                         title = None
                         album_methods = {am.lower(): am for am in album_dict}
-                        special_albums = []
-                        for album_types in item.hubs()[:6]:
-                            album_types.reload()
-                            if album_types.items:
-                                special_albums.extend(album_types.items)
-                        albums = {**albums, **{album.title: album for album in special_albums}}
                         logger.info("")
                         logger.info(f"Updating album {album_name} of {mapping_name}...")
                         if album_name in albums:
