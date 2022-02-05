@@ -1422,11 +1422,11 @@ class CollectionBuilder:
 
         if type_override:
             sort_type = type_override
-        elif smart and "type" in filter_alias and self.library.is_show:
+        elif "type" in filter_alias and self.library.is_show:
             if plex_filter[filter_alias["type"]] not in ["shows", "seasons", "episodes"]:
                 raise Failed(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either shows, season, or episodes")
             sort_type = plex_filter[filter_alias["type"]]
-        elif smart and "type" in filter_alias and self.library.is_music:
+        elif "type" in filter_alias and self.library.is_music:
             if plex_filter[filter_alias["type"]] not in ["artists", "albums", "tracks"]:
                 raise Failed(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either artists, albums, or tracks")
             sort_type = plex_filter[filter_alias["type"]]
