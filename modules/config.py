@@ -32,6 +32,19 @@ logger = logging.getLogger("Plex Meta Manager")
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
+mass_rating_options = {
+    "tmdb": "Use TMDb Rating",
+    "omdb": "Use IMDb Rating through OMDb",
+    "mdb": "Use MdbList Average Score",
+    "mdb_imdb": "Use IMDb Rating through MDbList",
+    "mdb_metacritic": "Use Metacritic Rating through MDbList",
+    "mdb_metacriticuser": "Use Metacritic User Rating through MDbList",
+    "mdb_trakt": "Use Trakt Rating through MDbList",
+    "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDbList",
+    "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDbList",
+    "mdb_tmdb": "Use TMDb Rating through MDbList",
+    "mdb_letterboxd": "Use Letterboxd Rating through MDbList"
+}
 
 class ConfigFile:
     def __init__(self, default_dir, attrs, read_only):
@@ -149,6 +162,7 @@ class ConfigFile:
             if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
             if "tautulli" in new_config:                    new_config["tautulli"] = new_config.pop("tautulli")
             if "omdb" in new_config:                        new_config["omdb"] = new_config.pop("omdb")
+            if "mdblist" in new_config:                     new_config["mdblist"] = new_config.pop("mdblist")
             if "notifiarr" in new_config:                   new_config["notifiarr"] = new_config.pop("notifiarr")
             if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
             if "radarr" in new_config:
@@ -372,6 +386,21 @@ class ConfigFile:
 
             util.separator()
 
+            self.Mdblist = Mdblist(self)
+            if "mdblist" in self.data:
+                logger.info("Connecting to Mdblist...")
+                try:
+                    self.Mdblist.add_key(check_for_attribute(self.data, "apikey", parent="mdblist", throw=True))
+                    logger.info("Mdblist Connection Successful")
+                except Failed as e:
+                    self.errors.append(e)
+                    logger.error(e)
+                    logger.info("Mdblist Connection Failed")
+            else:
+                logger.warning("mdblist attribute not found")
+
+            util.separator()
+
             self.Trakt = None
             if "trakt" in self.data:
                 logger.info("Connecting to Trakt...")
@@ -492,7 +521,6 @@ class ConfigFile:
             self.ICheckMovies = ICheckMovies(self)
             self.Letterboxd = Letterboxd(self)
             self.StevenLu = StevenLu(self)
-            self.Mdblist = Mdblist(self)
 
             util.separator()
 
@@ -605,8 +633,8 @@ class ConfigFile:
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
-                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
-                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
+                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
+                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
                 params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
                 params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
                 params["radarr_add_all_existing"] = check_for_attribute(lib, "radarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
@@ -624,9 +652,9 @@ class ConfigFile:
                         if "mass_genre_update" in lib["operations"]:
                             params["mass_genre_update"] = check_for_attribute(lib["operations"], "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
                         if "mass_audience_rating_update" in lib["operations"]:
-                            params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                            params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
                         if "mass_critic_rating_update" in lib["operations"]:
-                            params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                            params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
                         if "mass_trakt_rating_update" in lib["operations"]:
                             params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False)
                         if "split_duplicates" in lib["operations"]:
@@ -724,8 +752,8 @@ class ConfigFile:
                         logger.error("Config Error: operations must be a dictionary")
 
                 def error_check(attr, service):
+                    err = f"Config Error: {attr} cannot be {params[attr]} without a successful {service} Connection"
                     params[attr] = None
-                    err = f"Config Error: {attr} cannot be omdb without a successful {service} Connection"
                     self.errors.append(err)
                     logger.error(err)
 
@@ -735,6 +763,10 @@ class ConfigFile:
                     error_check("mass_audience_rating_update", "OMDb")
                 if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
                     error_check("mass_critic_rating_update", "OMDb")
+                if not self.Mdblist.has_key and params["mass_audience_rating_update"] in util.mdb_types:
+                    error_check("mass_audience_rating_update", "MdbList API")
+                if not self.Mdblist.has_key and params["mass_critic_rating_update"] in util.mdb_types:
+                    error_check("mass_critic_rating_update", "MdbList API")
                 if self.Trakt is None and params["mass_trakt_rating_update"]:
                     error_check("mass_trakt_rating_update", "Trakt")
 

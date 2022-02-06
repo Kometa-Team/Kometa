@@ -8,12 +8,103 @@ logger = logging.getLogger("Plex Meta Manager")
 builders = ["mdblist_list"]
 list_sorts = ["score", "released", "updated", "imdbrating", "rogerebert", "imdbvotes", "budget", "revenue"]
 base_url = "https://mdblist.com/lists"
+api_url = "https://mdblist.com/api/"
 
 headers = {"User-Agent": "Plex-Meta-Manager"}
+
+class MDbObj:
+    def __init__(self, data):
+        self._data = data
+        self.title = data["title"]
+        self.year = util.check_num(data["year"])
+        self.type = data["type"]
+        self.imdbid = data["imdbid"]
+        self.traktid = util.check_num(data["traktid"])
+        self.tmdbid = util.check_num(data["tmdbid"])
+        self.score = util.check_num(data["score"])
+        self.imdb_rating = None
+        self.metacritic_rating = None
+        self.metacriticuser_rating = None
+        self.trakt_rating = None
+        self.tomatoes_rating = None
+        self.tomatoesaudience_rating = None
+        self.tmdb_rating = None
+        self.letterboxd_rating = None
+        for rating in data["ratings"]:
+            if rating["source"] == "imdb":
+                self.imdb_rating = util.check_num(rating["value"], is_int=False)
+            elif rating["source"] == "metacritic":
+                self.metacritic_rating = util.check_num(rating["value"])
+            elif rating["source"] == "metacriticuser":
+                self.metacriticuser_rating = util.check_num(rating["value"], is_int=False)
+            elif rating["source"] == "trakt":
+                self.trakt_rating = util.check_num(rating["value"])
+            elif rating["source"] == "tomatoes":
+                self.tomatoes_rating = util.check_num(rating["value"])
+            elif rating["source"] == "tomatoesaudience":
+                self.tomatoesaudience_rating = util.check_num(rating["value"])
+            elif rating["source"] == "tmdb":
+                self.tmdb_rating = util.check_num(rating["value"])
+            elif rating["source"] == "letterboxd":
+                self.letterboxd_rating = util.check_num(rating["value"], is_int=False)
+        self.commonsense = data["commonsense"]
+
 
 class Mdblist:
     def __init__(self, config):
         self.config = config
+        self.apikey = None
+        self.limit = False
+
+    def add_key(self, apikey):
+        self.apikey = apikey
+        try:
+            self._request(imdb_id="tt0080684", ignore_cache=True)
+        except Failed:
+            self.apikey = None
+            raise
+
+    @property
+    def has_key(self):
+        return self.apikey is not None
+
+    def _request(self, imdb_id=None, tmdb_id=None, is_movie=True, ignore_cache=False):
+        params = {"apikey": self.apikey}
+        if imdb_id:
+            params["i"] = imdb_id
+            key = imdb_id
+        elif tmdb_id:
+            params["tm"] = tmdb_id
+            params["m"] = "movie" if is_movie else "show"
+            key = f"{'tm' if is_movie else 'ts'}{tmdb_id}"
+        else:
+            raise Failed("MdbList Error: Either IMDb ID or TMDb ID and TMDb Type Required")
+        expired = None
+        if self.config.Cache and not ignore_cache:
+            mdb_dict, expired = self.config.Cache.query_mdb(key)
+            if mdb_dict and expired is False:
+                return MDbObj(mdb_dict)
+        if self.config.trace_mode:
+            logger.debug(f"ID: {key}")
+        response = self.config.get_json(api_url, params=params)
+        if "response" in response and response["response"] is False:
+            if response["error"] == "API Limit Reached!":
+                self.limit = True
+            raise Failed(f"MdbList Error: {response['error']}")
+        else:
+            mdb = MDbObj(response)
+            if self.config.Cache and not ignore_cache:
+                self.config.Cache.update_mdb(expired, key, mdb)
+            return mdb
+
+    def get_imdb(self, imdb_id):
+        return self._request(imdb_id=imdb_id)
+
+    def get_series(self, tmdb_id):
+        return self._request(tmdb_id=tmdb_id, is_movie=False)
+
+    def get_movie(self, tmdb_id):
+        return self._request(tmdb_id=tmdb_id, is_movie=True)
 
     def validate_mdblist_lists(self, mdb_lists):
         valid_lists = []

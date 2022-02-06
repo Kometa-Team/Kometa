@@ -536,8 +536,52 @@ def library_operations(config, library):
                 else:
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
 
+            mdb_item = None
+            if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types:
+                if config.Mdblist.limit is False:
+                    if tmdb_id and not imdb_id:
+                        imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
+                    elif tvdb_id and not imdb_id:
+                        imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
+                    if imdb_id:
+                        try:
+                            mdb_item = config.Mdblist.get_imdb(imdb_id)
+                        except Failed as e:
+                            logger.error(util.adjust_space(str(e)))
+                        except Exception:
+                            logger.error(f"IMDb ID: {imdb_id}")
+                            raise
+                    else:
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
+
             if library.tmdb_collections and tmdb_item and tmdb_item.collection:
                 tmdb_collections[tmdb_item.collection.id] = tmdb_item.collection.name
+
+            def get_rating(attribute):
+                if tmdb_item and attribute == "tmdb":
+                    return tmdb_item.vote_average
+                elif omdb_item and attribute in ["omdb", "imdb"]:
+                    return omdb_item.imdb_rating
+                elif mdb_item and attribute == "mdb":
+                    return mdb_item.score / 10 if mdb_item.score else None
+                elif mdb_item and attribute == "mdb_imdb":
+                    return mdb_item.imdb_rating if mdb_item.imdb_rating else None
+                elif mdb_item and attribute == "mdb_metacritic":
+                    return mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
+                elif mdb_item and attribute == "mdb_metacriticuser":
+                    return mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
+                elif mdb_item and attribute == "mdb_trakt":
+                    return mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
+                elif mdb_item and attribute == "mdb_tomatoes":
+                    return mdb_item.tmdb_rating / 10 if mdb_item.tomatoes_rating else None
+                elif mdb_item and attribute == "mdb_tomatoesaudience":
+                    return mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
+                elif mdb_item and attribute == "mdb_tmdb":
+                    return mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
+                elif mdb_item and attribute == "mdb_letterboxd":
+                    return mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                else:
+                    raise Failed
 
             if library.mass_genre_update:
                 try:
@@ -554,34 +598,22 @@ def library_operations(config, library):
                     pass
             if library.mass_audience_rating_update:
                 try:
-                    if tmdb_item and library.mass_audience_rating_update == "tmdb":
-                        new_rating = tmdb_item.vote_average
-                    elif omdb_item and library.mass_audience_rating_update in ["omdb", "imdb"]:
-                        new_rating = omdb_item.imdb_rating
-                    else:
-                        raise Failed
+                    new_rating = get_rating(library.mass_audience_rating_update)
                     if new_rating is None:
                         logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
-                    else:
-                        if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
-                            library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
+                    elif str(item.audienceRating) != str(new_rating):
+                        library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
                 except Failed:
                     pass
             if library.mass_critic_rating_update:
                 try:
-                    if tmdb_item and library.mass_critic_rating_update == "tmdb":
-                        new_rating = tmdb_item.vote_average
-                    elif omdb_item and library.mass_critic_rating_update in ["omdb", "imdb"]:
-                        new_rating = omdb_item.imdb_rating
-                    else:
-                        raise Failed
+                    new_rating = get_rating(library.mass_critic_rating_update)
                     if new_rating is None:
                         logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
-                    else:
-                        if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
-                            library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
-                            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
+                    elif str(item.rating) != str(new_rating):
+                        library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
                 except Failed:
                     pass
             if library.genre_mapper:
