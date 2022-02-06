@@ -87,6 +87,28 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS mdb_data (
+                    key INTEGER PRIMARY KEY,
+                    key_id TEXT UNIQUE,
+                    title TEXT,
+                    year INTEGER,
+                    type TEXT,
+                    imdbid TEXT,
+                    traktid INTEGER,
+                    tmdbid INTEGER,
+                    score INTEGER,
+                    imdb_rating REAL,
+                    metacritic_rating INTEGER,
+                    metacriticuser_rating REAL,
+                    trakt_rating INTEGER,
+                    tomatoes_rating INTEGER,
+                    tomatoesaudience_rating INTEGER,
+                    tmdb_rating INTEGER,
+                    letterboxd_rating REAL,
+                    commonsense TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS anime_map (
                     key INTEGER PRIMARY KEY,
                     anidb TEXT UNIQUE,
@@ -287,6 +309,55 @@ class Cache:
                                             omdb.imdb_rating, omdb.imdb_votes, omdb.metacritic_rating, omdb.type,
                                             omdb.series_id, omdb.season_num, omdb.episode_num,
                                             expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
+
+    def query_mdb(self, key_id):
+        mdb_dict = {}
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM mdb_data WHERE key_id = ?", (key_id,))
+                row = cursor.fetchone()
+                if row:
+                    mdb_dict["title"] = row["title"] if row["title"] else None
+                    mdb_dict["year"] = row["year"] if row["year"] else None
+                    mdb_dict["type"] = row["type"] if row["type"] else None
+                    mdb_dict["imdbid"] = row["imdbid"] if row["imdbid"] else None
+                    mdb_dict["traktid"] = row["traktid"] if row["traktid"] else None
+                    mdb_dict["tmdbid"] = row["tmdbid"] if row["tmdbid"] else None
+                    mdb_dict["score"] = row["score"] if row["score"] else None
+                    mdb_dict["commonsense"] = row["commonsense"] if row["commonsense"] else None
+                    mdb_dict["ratings"] = [
+                        {"source": "imdb", "value": row["imdb_rating"] if row["imdb_rating"] else None},
+                        {"source": "metacritic", "value": row["metacritic_rating"] if row["metacritic_rating"] else None},
+                        {"source": "metacriticuser", "value": row["metacriticuser_rating"] if row["metacriticuser_rating"] else None},
+                        {"source": "trakt", "value": row["trakt_rating"] if row["trakt_rating"] else None},
+                        {"source": "tomatoes", "value": row["tomatoes_rating"] if row["tomatoes_rating"] else None},
+                        {"source": "tomatoesaudience", "value": row["tomatoesaudience_rating"] if row["tomatoesaudience_rating"] else None},
+                        {"source": "tmdb", "value": row["tmdb_rating"] if row["tmdb_rating"] else None},
+                        {"source": "letterboxd", "value": row["letterboxd_rating"] if row["letterboxd_rating"] else None}
+                    ]
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    expired = time_between_insertion.days > self.expiration
+        return mdb_dict, expired
+
+    def update_mdb(self, expired, key_id, mdb):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO mdb_data(key_id) VALUES(?)", (key_id,))
+                update_sql = "UPDATE mdb_data SET title = ?, year = ?, type = ?, imdbid = ?, traktid = ?, " \
+                             "tmdbid = ?, score = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, " \
+                             "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, " \
+                             "letterboxd_rating = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
+                cursor.execute(update_sql, (
+                    mdb.title, mdb.year, mdb.type, mdb.imdbid, mdb.traktid, mdb.tmdbid, mdb.score, mdb.imdb_rating,
+                    mdb.metacritic_rating, mdb.metacriticuser_rating, mdb.trakt_rating, mdb.tomatoes_rating,
+                    mdb.tomatoesaudience_rating, mdb.tmdb_rating, mdb.letterboxd_rating, mdb.commonsense,
+                    expiration_date.strftime("%Y-%m-%d"), key_id
+                ))
 
     def query_anime_map(self, anime_id, id_type):
         ids = None

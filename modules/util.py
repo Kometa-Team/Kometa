@@ -81,12 +81,12 @@ advance_tags_to_edit = {
              "metadata_language", "use_original_title"],
     "Artist": ["album_sorting"]
 }
-
 tags_to_edit = {
     "Movie": ["genre", "label", "collection", "country", "director", "producer", "writer"],
     "Show": ["genre", "label", "collection"],
     "Artist": ["genre", "style", "mood", "country", "collection", "similar_artist"]
 }
+mdb_types = ["mdb", "mdb_imdb", "mdb_metacritic", "mdb_metacriticuser", "mdb_trakt", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_letterboxd"]
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n      ") if "\n" in str(data) else str(data)
@@ -322,6 +322,12 @@ def time_window(tw):
         return f"{today.year - 1}"
     else:
         return tw
+
+def check_num(num, is_int=True):
+    try:
+        return int(str(num)) if is_int else float(str(num))
+    except (ValueError, TypeError):
+        return None
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
