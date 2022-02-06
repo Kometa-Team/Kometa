@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 logger = logging.getLogger("Plex Meta Manager")
 
 builders = ["mdblist_list"]
+list_sorts = ["score", "released", "updated", "imdbrating", "rogerebert", "imdbvotes", "budget", "revenue"]
 base_url = "https://mdblist.com/lists"
 
 headers = {"User-Agent": "Plex-Meta-Manager"}
@@ -43,18 +44,29 @@ class Mdblist:
                     logger.warning(f"Collection Warning: mdb_list limit attribute must be an integer 0 or greater using 0 as default")
             if list_count is None:
                 list_count = 0
-            valid_lists.append({"url": mdb_url, "limit": list_count})
+            sort_by = "score"
+            if "sort_by" in dict_methods:
+                if mdb_dict[dict_methods["sort_by"]] is None:
+                    logger.warning(f"Collection Warning: mdb_list sort_by attribute is blank using score as default")
+                elif mdb_dict[dict_methods["sort_by"]].lower() not in list_sorts:
+                    logger.warning(f"Collection Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} not valid score as default. Options: {', '.join(list_sorts)}")
+                else:
+                    sort_by = mdb_dict[dict_methods["sort_by"]].lower()
+            valid_lists.append({"url": mdb_url, "limit": list_count, "sort_by": sort_by})
         return valid_lists
         
     def get_mdblist_ids(self, method, data):
         if method == "mdblist_list":
-            limit_status = f" Limit at: {data['limit']} items" if data['limit'] > 0 else ''
-            logger.info(f"Processing Mdblist.com List: {data['url']}{limit_status}")
+            params = {"sort": data["sort_by"]}
+            logger.info(f"Processing Mdblist.com List: {data['url']}")
+            logger.info(f"Sort By: {data['sort_by']}")
+            if data["limit"] > 0:
+                logger.info(f"Limit: {data['limit']} items")
+                params["limit"] = data["limit"]
             parsed_url = urlparse(data["url"])
             url_base = parsed_url._replace(query=None).geturl()
             url_base = url_base if url_base.endswith("/") else f"{url_base}/"
             url_base = url_base if url_base.endswith("json/") else f"{url_base}json/"
-            params = {"limit": data["limit"]} if data["limit"] > 0 else None
             return [(i["imdb_id"], "imdb") for i in self.config.get_json(url_base, headers=headers, params=params)]
         else:
             raise Failed(f"Mdblist Error: Method {method} not supported")
