@@ -106,6 +106,7 @@ class Cache:
                     tmdb_rating INTEGER,
                     letterboxd_rating REAL,
                     commonsense TEXT,
+                    certification TEXT,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
@@ -327,6 +328,7 @@ class Cache:
                     mdb_dict["tmdbid"] = row["tmdbid"] if row["tmdbid"] else None
                     mdb_dict["score"] = row["score"] if row["score"] else None
                     mdb_dict["commonsense"] = row["commonsense"] if row["commonsense"] else None
+                    mdb_dict["certification"] = row["certification"] if row["certification"] else None
                     mdb_dict["ratings"] = [
                         {"source": "imdb", "value": row["imdb_rating"] if row["imdb_rating"] else None},
                         {"source": "metacritic", "value": row["metacritic_rating"] if row["metacritic_rating"] else None},
@@ -351,12 +353,12 @@ class Cache:
                 update_sql = "UPDATE mdb_data SET title = ?, year = ?, type = ?, imdbid = ?, traktid = ?, " \
                              "tmdbid = ?, score = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, " \
                              "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, " \
-                             "letterboxd_rating = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
+                             "letterboxd_rating = ?, certification = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
                 cursor.execute(update_sql, (
                     mdb.title, mdb.year, mdb.type, mdb.imdbid, mdb.traktid, mdb.tmdbid, mdb.score, mdb.imdb_rating,
                     mdb.metacritic_rating, mdb.metacriticuser_rating, mdb.trakt_rating, mdb.tomatoes_rating,
-                    mdb.tomatoesaudience_rating, mdb.tmdb_rating, mdb.letterboxd_rating, mdb.commonsense,
-                    expiration_date.strftime("%Y-%m-%d"), key_id
+                    mdb.tomatoesaudience_rating, mdb.tmdb_rating, mdb.letterboxd_rating, mdb.content_rating,
+                    mdb.commonsense, expiration_date.strftime("%Y-%m-%d"), key_id
                 ))
 
     def query_anime_map(self, anime_id, id_type):
