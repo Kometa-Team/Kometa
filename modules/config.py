@@ -32,6 +32,7 @@ logger = logging.getLogger("Plex Meta Manager")
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
+mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
 mass_rating_options = {
     "tmdb": "Use TMDb Rating",
     "omdb": "Use IMDb Rating through OMDb",
@@ -655,6 +656,8 @@ class ConfigFile:
                             params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
                         if "mass_critic_rating_update" in lib["operations"]:
                             params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
+                        if "mass_content_rating_update" in lib["operations"]:
+                            params["mass_content_rating_update"] = check_for_attribute(lib["operations"], "mass_content_rating_update", test_list=mass_content_options, default_is_none=True, save=False)
                         if "mass_trakt_rating_update" in lib["operations"]:
                             params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False)
                         if "split_duplicates" in lib["operations"]:
@@ -763,10 +766,14 @@ class ConfigFile:
                     error_check("mass_audience_rating_update", "OMDb")
                 if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
                     error_check("mass_critic_rating_update", "OMDb")
+                if self.OMDb is None and params["mass_content_rating_update"] == "omdb":
+                    error_check("mass_content_rating_update", "OMDb")
                 if not self.Mdblist.has_key and params["mass_audience_rating_update"] in util.mdb_types:
                     error_check("mass_audience_rating_update", "MdbList API")
                 if not self.Mdblist.has_key and params["mass_critic_rating_update"] in util.mdb_types:
                     error_check("mass_critic_rating_update", "MdbList API")
+                if not self.Mdblist.has_key and params["mass_content_rating_update"] in ["mdb", "mdb_commonsense"]:
+                    error_check("mass_content_rating_update", "MdbList API")
                 if self.Trakt is None and params["mass_trakt_rating_update"]:
                     error_check("mass_trakt_rating_update", "Trakt")
 

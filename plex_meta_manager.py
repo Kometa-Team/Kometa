@@ -436,6 +436,7 @@ def library_operations(config, library):
     logger.debug(f"Mass Genre Update: {library.mass_genre_update}")
     logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
     logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
+    logger.debug(f"Mass Content Rating Update: {library.mass_content_rating_update}")
     logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
     logger.debug(f"Mass Collection Mode Update: {library.mass_collection_mode}")
     logger.debug(f"Split Duplicates: {library.split_duplicates}")
@@ -509,7 +510,8 @@ def library_operations(config, library):
                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.is_movie)
 
             omdb_item = None
-            if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
+            if library.mass_genre_update == "omdb" or library.mass_audience_rating_update == "omdb" \
+                    or library.mass_critic_rating_update == "omdb" or library.mass_content_rating_update == "omdb":
                 if config.OMDb.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -537,7 +539,8 @@ def library_operations(config, library):
                     logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
 
             mdb_item = None
-            if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types:
+            if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types \
+                    or library.mass_content_rating_update in ["mdb", "mdb_commonsense"]:
                 if config.Mdblist.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -560,7 +563,7 @@ def library_operations(config, library):
             def get_rating(attribute):
                 if tmdb_item and attribute == "tmdb":
                     return tmdb_item.vote_average
-                elif omdb_item and attribute in ["omdb", "imdb"]:
+                elif omdb_item and attribute == "omdb":
                     return omdb_item.imdb_rating
                 elif mdb_item and attribute == "mdb":
                     return mdb_item.score / 10 if mdb_item.score else None
@@ -587,7 +590,7 @@ def library_operations(config, library):
                 try:
                     if tmdb_item and library.mass_genre_update == "tmdb":
                         new_genres = [genre.name for genre in tmdb_item.genres]
-                    elif omdb_item and library.mass_genre_update in ["omdb", "imdb"]:
+                    elif omdb_item and library.mass_genre_update == "omdb":
                         new_genres = omdb_item.genres
                     elif tvdb_item and library.mass_genre_update == "tvdb":
                         new_genres = tvdb_item.genres
@@ -616,6 +619,24 @@ def library_operations(config, library):
                         logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
                 except Failed:
                     pass
+            if library.mass_content_rating_update:
+                try:
+                    if omdb_item and library.mass_content_rating_update == "omdb":
+                        new_rating = omdb_item.content_rating
+                    elif mdb_item and library.mass_content_rating_update == "mdb":
+                        new_rating = mdb_item.certification if mdb_item.certification else None
+                    elif mdb_item and library.mass_content_rating_update == "mdb_commonsense":
+                        new_rating = mdb_item.commonsense if mdb_item.commonsense else None
+                    else:
+                        raise Failed
+                    if new_rating is None:
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Content Rating Found"))
+                    elif str(item.rating) != str(new_rating):
+                        library.edit_query(item, {"contentRating.value": new_rating, "contentRating.locked": 1})
+                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Content Rating | {new_rating}"))
+                except Failed:
+                    pass
+
             if library.genre_mapper:
                 try:
                     adds = []

@@ -47,6 +47,7 @@ class MDbObj:
                 self.tmdb_rating = util.check_num(rating["value"])
             elif rating["source"] == "letterboxd":
                 self.letterboxd_rating = util.check_num(rating["value"], is_int=False)
+        self.content_rating = data["certification"]
         self.commonsense = data["commonsense"]
 
 
