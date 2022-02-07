@@ -528,15 +528,14 @@ class MetadataFile(DataFile):
 
             item = self.library.search_item(title, year=year)
 
-            if item is None:
-                item = self.library.search_item(f"{title} (SUB)", year=year)
-
             if item is None and "alt_title" in methods:
                 if meta[methods["alt_title"]] is None:
                     logger.error("Metadata Error: alt_title attribute is blank")
                 else:
                     alt_title = meta["alt_title"]
                     item = self.library.search_item(alt_title, year=year)
+                    if item is None:
+                        item = self.library.search_item(alt_title)
 
             if item is None:
                 logger.error(f"Plex Error: Item {mapping_name} not found")
