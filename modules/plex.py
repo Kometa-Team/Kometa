@@ -902,7 +902,7 @@ class Plex(Library):
                         image = Image.open(file)
                         _w, _h = image.size
                         image.close()
-                        if not poster and _h > _w:
+                        if not poster and _h >= _w:
                             new_path = os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
                             os.rename(file, new_path)
                             poster = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_url=False)
