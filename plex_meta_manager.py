@@ -258,7 +258,7 @@ def update_libraries(config):
                 for collection in library.get_all_collections():
                     logger.info(f"Collection {collection.title} Deleted")
                     library.query(collection.delete)
-            if not library.is_other and not library.is_music and library.metadata_files and not library_only:
+            if not library.is_other and not library.is_music and (library.metadata_files or library.original_mapping_name in config.library_map) and not library_only:
                 logger.info("")
                 util.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
@@ -847,7 +847,7 @@ def run_collection(config, library, metadata, requested_collections):
 
             util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
-            builder = CollectionBuilder(config, library, metadata, mapping_name, no_missing, collection_attrs)
+            builder = CollectionBuilder(config, metadata, mapping_name, no_missing, collection_attrs, library=library)
             logger.info("")
 
             util.separator(f"Running {mapping_name} Collection", space=False, border=False)
@@ -873,7 +873,11 @@ def run_collection(config, library, metadata, requested_collections):
                     for filter_key, filter_value in builder.tmdb_filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
-                builder.find_rating_keys()
+                for method, value in builder.builders:
+                    logger.debug("")
+                    logger.debug(f"Builder: {method}: {value}")
+                    logger.info("")
+                    builder.filter_and_save_items(builder.gather_ids(method, value))
 
                 if len(builder.added_items) >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
@@ -980,7 +984,6 @@ def run_playlists(config):
     logger.info("")
     util.separator("Playlists")
     logger.info("")
-    library_map = {_l.original_mapping_name: _l for _l in config.libraries}
     for playlist_file in config.playlist_files:
         for mapping_name, playlist_attrs in playlist_file.playlists.items():
             playlist_start = datetime.now()
@@ -1022,46 +1025,10 @@ def run_playlists(config):
                 if output_str:
                     logger.info(output_str)
                     logger.info("")
-                if "libraries" not in playlist_attrs or not playlist_attrs["libraries"]:
-                    raise Failed("Playlist Error: libraries attribute is required and cannot be blank")
-                pl_libraries = []
-                for pl_library in util.get_list(playlist_attrs["libraries"]):
-                    if str(pl_library) in library_map:
-                        pl_libraries.append(library_map[pl_library])
-                    else:
-                        raise Failed(f"Playlist Error: Library: {pl_library} not defined")
-                server_check = None
-                for pl_library in pl_libraries:
-                    if server_check:
-                        if pl_library.PlexServer.machineIdentifier != server_check:
-                            raise Failed("Playlist Error: All defined libraries must be on the same server")
-                    else:
-                        server_check = pl_library.PlexServer.machineIdentifier
-
-                sync_to_users = config.general["playlist_sync_to_users"]
-                if "sync_to_users" in playlist_attrs:
-                    sync_to_users = playlist_attrs["sync_to_users"]
-                elif "sync_to_user" in playlist_attrs:
-                    sync_to_users = playlist_attrs["sync_to_user"]
-                else:
-                    logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_user: {sync_to_users}")
-
-                valid_users = []
-                plex_users = pl_libraries[0].users
-                if sync_to_users:
-                    if str(sync_to_users) == "all":
-                        valid_users = plex_users
-                    else:
-                        for user in util.get_list(sync_to_users):
-                            if user in plex_users:
-                                valid_users.append(user)
-                            else:
-                                raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
 
                 util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
-                builder = CollectionBuilder(config, pl_libraries[0], playlist_file, mapping_name, no_missing,
-                                            playlist_attrs, playlist=True, valid_users=valid_users)
+                builder = CollectionBuilder(config, playlist_file, mapping_name, no_missing, playlist_attrs)
                 logger.info("")
 
                 util.separator(f"Running {mapping_name} Playlist", space=False, border=False)
@@ -1086,142 +1053,18 @@ def run_playlists(config):
                 logger.debug("")
                 logger.debug(f"Builder: {method}: {value}")
                 logger.info("")
-                items = []
                 if "plex" in method:
                     ids = []
-                    for pl_library in pl_libraries:
+                    for pl_library in builder.libraries:
                         ids.extend(pl_library.get_rating_keys(method, value))
                 elif "tautulli" in method:
                     ids = []
-                    for pl_library in pl_libraries:
+                    for pl_library in builder.libraries:
                         ids.extend(pl_library.Tautulli.get_rating_keys(pl_library, value, True))
                 else:
                     ids = builder.gather_ids(method, value)
 
-                if len(ids) > 0:
-                    total_ids = len(ids)
-                    logger.debug("")
-                    logger.debug(f"{total_ids} IDs Found: {ids}")
-                    for i, input_data in enumerate(ids, 1):
-                        input_id, id_type = input_data
-                        util.print_return(f"Parsing ID {i}/{total_ids}")
-                        if id_type == "tvdb_season":
-                            show_id, season_num = input_id.split("_")
-                            show_id = int(show_id)
-                            found = False
-                            for pl_library in pl_libraries:
-                                if show_id in pl_library.show_map:
-                                    found = True
-                                    show_item = pl_library.fetchItem(pl_library.show_map[show_id][0])
-                                    try:
-                                        items.extend(show_item.season(season=int(season_num)).episodes())
-                                    except NotFound:
-                                        builder.missing_parts.append(f"{show_item.title} Season: {season_num} Missing")
-                                    break
-                            if not found and show_id not in builder.missing_shows:
-                                builder.missing_shows.append(show_id)
-                        elif id_type == "tvdb_episode":
-                            show_id, season_num, episode_num = input_id.split("_")
-                            show_id = int(show_id)
-                            found = False
-                            for pl_library in pl_libraries:
-                                if show_id in pl_library.show_map:
-                                    found = True
-                                    show_item = pl_library.fetchItem(pl_library.show_map[show_id][0])
-                                    try:
-                                        items.append(
-                                            show_item.episode(season=int(season_num), episode=int(episode_num)))
-                                    except NotFound:
-                                        builder.missing_parts.append(
-                                            f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
-                                    break
-                            if not found and show_id not in builder.missing_shows:
-                                builder.missing_shows.append(show_id)
-                        else:
-                            rating_keys = []
-                            if id_type == "ratingKey":
-                                rating_keys = input_id
-                            elif id_type == "tmdb":
-                                if input_id not in builder.ignore_ids:
-                                    found = False
-                                    for pl_library in pl_libraries:
-                                        if input_id in pl_library.movie_map:
-                                            found = True
-                                            rating_keys = pl_library.movie_map[input_id]
-                                            break
-                                    if not found and input_id not in builder.missing_movies:
-                                        builder.missing_movies.append(input_id)
-                            elif id_type in ["tvdb", "tmdb_show"]:
-                                if id_type == "tmdb_show":
-                                    try:
-                                        input_id = config.Convert.tmdb_to_tvdb(input_id, fail=True)
-                                    except Failed as e:
-                                        logger.warning(e)
-                                        continue
-                                if input_id not in builder.ignore_ids:
-                                    found = False
-                                    for pl_library in pl_libraries:
-                                        if input_id in pl_library.show_map:
-                                            found = True
-                                            rating_keys = pl_library.show_map[input_id]
-                                            break
-                                    if not found and input_id not in builder.missing_shows:
-                                        builder.missing_shows.append(input_id)
-                            elif id_type == "imdb":
-                                if input_id not in builder.ignore_imdb_ids:
-                                    found = False
-                                    for pl_library in pl_libraries:
-                                        if input_id in pl_library.imdb_map:
-                                            found = True
-                                            rating_keys = pl_library.imdb_map[input_id]
-                                            break
-                                    if not found:
-                                        try:
-                                            _id, tmdb_type = config.Convert.imdb_to_tmdb(input_id, fail=True)
-                                            if tmdb_type == "episode":
-                                                tmdb_id, season_num, episode_num = _id.split("_")
-                                                show_id = config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
-                                                show_id = int(show_id)
-                                                found = False
-                                                for pl_library in pl_libraries:
-                                                    if show_id in pl_library.show_map:
-                                                        found = True
-                                                        show_item = pl_library.fetchItem(
-                                                            pl_library.show_map[show_id][0])
-                                                        try:
-                                                            items.append(show_item.episode(season=int(season_num),
-                                                                                           episode=int(episode_num)))
-                                                        except NotFound:
-                                                            builder.missing_parts.append(
-                                                                f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
-                                                        break
-                                                if not found and show_id not in builder.missing_shows:
-                                                    builder.missing_shows.append(show_id)
-                                            elif tmdb_type == "movie" and builder.do_missing:
-                                                if _id not in builder.missing_movies:
-                                                    builder.missing_movies.append(_id)
-                                            elif tmdb_type == "show" and builder.do_missing:
-                                                tvdb_id = config.Convert.tmdb_to_tvdb(_id, fail=True)
-                                                if tvdb_id not in builder.missing_shows:
-                                                    builder.missing_shows.append(tvdb_id)
-                                        except Failed as e:
-                                            logger.warning(e)
-                                            continue
-                            if not isinstance(rating_keys, list):
-                                rating_keys = [rating_keys]
-                            for rk in rating_keys:
-                                try:
-                                    item = builder.fetch_item(rk)
-                                    if isinstance(item, (Show, Season)):
-                                        items.extend(item.episodes())
-                                    else:
-                                        items.append(item)
-                                except Failed as e:
-                                    logger.error(e)
-                    util.print_end()
-
-                if len(items) > 0:
-                    builder.filter_and_save_items(items)
+                builder.filter_and_save_items(ids)
 
                 if len(builder.added_items) >= builder.minimum:
                     items_added, items_unchanged = builder.add_to_collection()

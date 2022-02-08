@@ -931,6 +931,8 @@ class ConfigFile:
 
             util.separator()
 
+            self.library_map = {_l.original_mapping_name: _l for _l in self.libraries}
+
             if len(self.libraries) > 0:
                 logger.info(f"{len(self.libraries)} Plex Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
             else:
