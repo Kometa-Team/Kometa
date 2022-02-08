@@ -179,7 +179,7 @@ class ConfigFile:
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
             if not self.read_only:
-                yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
+                yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
             raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
@@ -207,7 +207,7 @@ class ConfigFile:
                     if parent not in loaded_config or not loaded_config[parent]:        loaded_config[parent] = {attribute: default}
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
                     else:                                                               endline = ""
-                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
+                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), block_seq_indent=2)
                 if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
             elif data[attribute] is None:
                 if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
