@@ -589,7 +589,8 @@ class ConfigFile:
                     "mass_collection_mode": None,
                     "metadata_backup": None,
                     "genre_collections": None,
-                    "update_blank_track_titles": None
+                    "update_blank_track_titles": None,
+                    "mass_content_rating_update": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
