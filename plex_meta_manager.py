@@ -764,20 +764,36 @@ def library_operations(config, library):
         logger.info("")
         logger.info(f"Metadata Backup Path: {library.metadata_backup['path']}")
         logger.info("")
-        meta = {}
+        try:
+            meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"]))
+        except yaml.scanner.ScannerError as e:
+            meta = {}
+            util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
+            filename, file_extension = os.path.splitext(library.metadata_backup["path"])
+            i = 1
+            while os.path.exists(f"{filename}{i}{file_extension}"):
+                i += 1
+            os.rename(library.metadata_backup["path"], f"{filename}{i}{file_extension}")
+            logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
+        if "metadata" not in meta:
+            meta["metadata"] = {}
         items = library.get_all(load=True)
         titles = [i.title for i in items]
         for i, item in enumerate(items, 1):
             util.print_return(f"Processing: {i}/{len(items)} {item.title}")
             map_key, attrs = library.get_locked_attributes(item, titles)
             if attrs or library.metadata_backup["add_blank_entries"]:
-                meta[map_key] = attrs
+                def run_dict(save_dict, the_dict):
+                    for kk, vv in the_dict.items():
+                        if isinstance(vv, dict):
+                            run_dict(save_dict[kk], vv)
+                        else:
+                            save_dict[kk] = vv
+                run_dict(meta["metadata"][map_key], attrs)
         util.print_end()
-        with open(library.metadata_backup["path"], "w"):
-            pass
         try:
-            yaml.round_trip_dump({"metadata": meta}, open(library.metadata_backup["path"], "w", encoding="utf-8"))
-            logger.info(f"{len(meta)} {library.type.capitalize()}{'s' if len(meta) > 1 else ''} Backed Up")
+            yaml.round_trip_dump(meta, open(library.metadata_backup["path"], "w", encoding="utf-8"), block_seq_indent=2)
+            logger.info(f"{len(meta['metadata'])} {library.type.capitalize()}{'s' if len(meta['metadata']) > 1 else ''} Backed Up")
         except yaml.scanner.ScannerError as e:
             util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
 
