@@ -461,9 +461,13 @@ def library_operations(config, library):
             logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
 
     if library.update_blank_track_titles:
-        for item in library.get_all(collection_level="track"):
+        tracks = library.get_all(collection_level="track")
+        for i, item in enumerate(tracks, 1):
+            util.print_return(f"Processing Track: {i}/{len(tracks)} {item.title}")
             if not item.title and item.sortTitle:
                 library.edit_query(item, {"title.locked": 1, "title.value": item.sortTitle})
+                logger.info(f"Track: {item.sortTitle} was updated with sort title")
+        util.print_end()
 
     tmdb_collections = {}
     if library.items_library_operation:
