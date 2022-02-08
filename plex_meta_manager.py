@@ -124,6 +124,8 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
             version = line
             break
 
+plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = "Plex-Meta-Manager"
+
 def start(attrs):
     file_logger = os.path.join(default_dir, "logs", "meta.log")
     should_roll_over = os.path.isfile(file_logger)
