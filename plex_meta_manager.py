@@ -256,7 +256,7 @@ def update_libraries(config):
                 for collection in library.get_all_collections():
                     logger.info(f"Collection {collection.title} Deleted")
                     library.query(collection.delete)
-            if not library.is_other and not library.is_music:
+            if not library.is_other and not library.is_music and library.metadata_files and not library_only:
                 logger.info("")
                 util.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
