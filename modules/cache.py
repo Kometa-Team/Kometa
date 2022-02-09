@@ -270,7 +270,7 @@ class Cache:
                     sql = f"UPDATE {map_name} SET {val2_name} = ?, expiration_date = ?{'' if media_type is None else ', media_type = ?'} WHERE {val1_name} = ?"
                     cursor.execute(sql, (val2, expiration_date.strftime("%Y-%m-%d"), media_type, val1))
 
-    def query_omdb(self, imdb_id):
+    def query_omdb(self, imdb_id, expiration):
         omdb_dict = {}
         expired = None
         with sqlite3.connect(self.cache_path) as connection:
@@ -294,11 +294,11 @@ class Cache:
                     omdb_dict["Response"] = "True"
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
-                    expired = time_between_insertion.days > self.expiration
+                    expired = time_between_insertion.days > expiration
         return omdb_dict, expired
 
-    def update_omdb(self, expired, omdb):
-        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+    def update_omdb(self, expired, omdb, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
@@ -311,7 +311,7 @@ class Cache:
                                             omdb.series_id, omdb.season_num, omdb.episode_num,
                                             expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
 
-    def query_mdb(self, key_id):
+    def query_mdb(self, key_id, expiration):
         mdb_dict = {}
         expired = None
         with sqlite3.connect(self.cache_path) as connection:
@@ -341,11 +341,11 @@ class Cache:
                     ]
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
-                    expired = time_between_insertion.days > self.expiration
+                    expired = time_between_insertion.days > expiration
         return mdb_dict, expired
 
-    def update_mdb(self, expired, key_id, mdb):
-        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+    def update_mdb(self, expired, key_id, mdb, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:

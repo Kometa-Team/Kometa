@@ -55,10 +55,12 @@ class Mdblist:
     def __init__(self, config):
         self.config = config
         self.apikey = None
+        self.expiration = 60
         self.limit = False
 
-    def add_key(self, apikey):
+    def add_key(self, apikey, expiration):
         self.apikey = apikey
+        self.expiration = expiration
         try:
             self._request(imdb_id="tt0080684", ignore_cache=True)
         except Failed:
@@ -82,7 +84,7 @@ class Mdblist:
             raise Failed("MdbList Error: Either IMDb ID or TMDb ID and TMDb Type Required")
         expired = None
         if self.config.Cache and not ignore_cache:
-            mdb_dict, expired = self.config.Cache.query_mdb(key)
+            mdb_dict, expired = self.config.Cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
                 return MDbObj(mdb_dict)
         if self.config.trace_mode:
@@ -95,7 +97,7 @@ class Mdblist:
         else:
             mdb = MDbObj(response)
             if self.config.Cache and not ignore_cache:
-                self.config.Cache.update_mdb(expired, key, mdb)
+                self.config.Cache.update_mdb(expired, key, mdb, self.expiration)
             return mdb
 
     def get_imdb(self, imdb_id):
