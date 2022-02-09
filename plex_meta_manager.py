@@ -879,7 +879,7 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.info("")
                     builder.filter_and_save_items(builder.gather_ids(method, value))
 
-                if len(builder.added_items) >= builder.minimum and builder.build_collection:
+                if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
                     library.status[mapping_name]["added"] = items_added
@@ -890,7 +890,7 @@ def run_collection(config, library, metadata, requested_collections):
                         items_removed = builder.sync_collection()
                         library.stats["removed"] += items_removed
                         library.status[mapping_name]["removed"] = items_removed
-                elif len(builder.added_items) < builder.minimum and builder.build_collection:
+                elif len(builder.added_items) + builder.beginning_count < builder.minimum and builder.build_collection:
                     logger.info("")
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
                     valid = False

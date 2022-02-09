@@ -288,10 +288,12 @@ class CollectionBuilder:
         self.notification_additions = []
         self.notification_removals = []
         self.items = []
+        self.remove_item_map = {}
         self.posters = {}
         self.backgrounds = {}
         self.summaries = {}
         self.schedule = ""
+        self.beginning_count = 0
         self.minimum = self.library.minimum_items
         self.ignore_ids = [i for i in self.library.ignore_ids]
         self.ignore_imdb_ids = [i for i in self.library.ignore_imdb_ids]
@@ -689,12 +691,11 @@ class CollectionBuilder:
             except Failed:
                 self.obj = None
 
-            self.plex_map = {}
-            if self.sync and self.obj:
-                for item in self.library.get_collection_items(self.obj, self.smart_label_collection):
-                    self.plex_map[item.ratingKey] = item
             if self.obj:
                 self.exists = True
+                self.beginning_count = self.obj.childCount
+                if self.sync:
+                    self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
         else:
             self.obj = None
             self.sync = False
@@ -1780,7 +1781,7 @@ class CollectionBuilder:
             number_text = f"{i}/{total}"
             logger.info(util.adjust_space(f"{number_text:>{spacing}} | {name} {self.Type} | {current_operation} | {util.item_title(item)}"))
             if item in collection_items:
-                self.plex_map[item.ratingKey] = None
+                self.remove_item_map[item.ratingKey] = None
                 amount_unchanged += 1
             else:
                 if self.playlist:
@@ -1810,7 +1811,7 @@ class CollectionBuilder:
     def sync_collection(self):
         amount_removed = 0
         playlist_removes = []
-        items = [item for _, item in self.plex_map.items() if item is not None]
+        items = [item for _, item in self.remove_item_map.items() if item is not None]
         if items:
             logger.info("")
             util.separator(f"Removed from {self.name} {self.Type}", space=False, border=False)
