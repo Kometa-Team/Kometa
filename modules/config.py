@@ -377,7 +377,10 @@ class ConfigFile:
             if "omdb" in self.data:
                 logger.info("Connecting to OMDb...")
                 try:
-                    self.OMDb = OMDb(self, {"apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True)})
+                    self.OMDb = OMDb(self, {
+                        "apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True),
+                        "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                    })
                 except Failed as e:
                     self.errors.append(e)
                     logger.error(e)
@@ -391,7 +394,10 @@ class ConfigFile:
             if "mdblist" in self.data:
                 logger.info("Connecting to Mdblist...")
                 try:
-                    self.Mdblist.add_key(check_for_attribute(self.data, "apikey", parent="mdblist", throw=True))
+                    self.Mdblist.add_key(
+                        check_for_attribute(self.data, "apikey", parent="mdblist", throw=True),
+                        check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                    )
                     logger.info("Mdblist Connection Successful")
                 except Failed as e:
                     self.errors.append(e)
