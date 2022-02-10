@@ -379,7 +379,7 @@ class ConfigFile:
                 try:
                     self.OMDb = OMDb(self, {
                         "apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True),
-                        "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                        "expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
                     })
                 except Failed as e:
                     self.errors.append(e)
