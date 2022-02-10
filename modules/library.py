@@ -4,6 +4,7 @@ from modules import util
 from modules.meta import MetadataFile
 from modules.util import Failed
 from PIL import Image
+from plexapi.exceptions import BadRequest
 from ruamel import yaml
 
 logger = logging.getLogger("Plex Meta Manager")
@@ -185,9 +186,9 @@ class Library(ABC):
                     self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
                     poster_uploaded = True
                     logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
-                except OSError as e:
+                except (OSError, BadRequest) as e:
                     util.print_stacktrace()
-                    logger.error(f"Overlay Error: {e}")
+                    raise Failed(f"Overlay Error: {e}")
 
         background_uploaded = False
         if background is not None:
