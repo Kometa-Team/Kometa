@@ -164,7 +164,7 @@ all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in date_filters for m in date_modifiers] + \
               [f"{f}{m}" for f in number_filters for m in number_modifiers]
 smart_invalid = ["collection_order", "collection_level"]
-smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
+smart_url_invalid = ["minimum_items", "filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
     "plex_search", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
