@@ -1,8 +1,7 @@
-import logging
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["icheckmovies_list", "icheckmovies_list_details"]
 base_url = "https://www.icheckmovies.com/lists/"

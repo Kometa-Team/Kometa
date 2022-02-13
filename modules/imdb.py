@@ -1,9 +1,9 @@
-import logging, math, re, time
+import math, re, time
 from modules import util
 from modules.util import Failed
 from urllib.parse import urlparse, parse_qs
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["imdb_list", "imdb_id", "imdb_chart"]
 movie_charts = ["box_office", "popular_movies", "top_movies", "top_english", "top_indian", "lowest_rated"]
@@ -110,7 +110,7 @@ class IMDb:
         num_of_pages = math.ceil(int(limit) / item_count)
         for i in range(1, num_of_pages + 1):
             start_num = (i - 1) * item_count + 1
-            util.print_return(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
+            logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
             if search_url:
                 params["count"] = remainder if i == num_of_pages else item_count # noqa
                 params["start"] = start_num # noqa
@@ -122,7 +122,7 @@ class IMDb:
                 ids_found = ids_found[:remainder]
             imdb_ids.extend(ids_found)
             time.sleep(2)
-        util.print_end()
+        logger.exorcise()
         if len(imdb_ids) > 0:
             logger.debug(f"{len(imdb_ids)} IMDb IDs Found: {imdb_ids}")
             return imdb_ids

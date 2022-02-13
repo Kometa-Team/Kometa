@@ -1,8 +1,7 @@
-import logging
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["flixpatrol_url", "flixpatrol_demographics", "flixpatrol_popular", "flixpatrol_top"]
 generations = ["all", "boomers", "x", "y", "z"]
@@ -138,7 +137,7 @@ class FlixPatrol:
         if total_items > 0:
             ids = []
             for i, item in enumerate(items, 1):
-                util.print_return(f"Finding TMDb ID {i}/{total_items}")
+                logger.ghost(f"Finding TMDb ID {i}/{total_items}")
                 tmdb_id = None
                 expired = None
                 if self.config.Cache:
@@ -152,7 +151,7 @@ class FlixPatrol:
                     if self.config.Cache:
                         self.config.Cache.update_flixpatrol_map(expired, item, tmdb_id, media_type)
                 ids.append((tmdb_id, "tmdb" if is_movie else "tmdb_show"))
-            logger.info(util.adjust_space(f"Processed {total_items} TMDb IDs"))
+            logger.info(f"Processed {total_items} TMDb IDs")
             return ids
         else:
             raise Failed(f"FlixPatrol Error: No List Items found in {data}")

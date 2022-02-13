@@ -1,8 +1,7 @@
-import logging
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 base_url = "http://www.omdbapi.com/"
 
@@ -54,6 +53,7 @@ class OMDb:
         self.apikey = params["apikey"]
         self.expiration = params["expiration"]
         self.limit = False
+        logger.secret(self.apikey)
         self.get_omdb("tt0080684", ignore_cache=True)
 
     def get_omdb(self, imdb_id, ignore_cache=False):

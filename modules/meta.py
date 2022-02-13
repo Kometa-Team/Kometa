@@ -1,11 +1,11 @@
-import logging, operator, os, re
+import operator, os, re
 from datetime import datetime
 from modules import plex, util
 from modules.util import Failed, ImageData
 from plexapi.exceptions import NotFound
 from ruamel import yaml
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
@@ -86,7 +86,7 @@ class DataFile:
         except yaml.scanner.ScannerError as ye:
             raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
         except Exception as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             raise Failed(f"YAML Error: {e}")
 
     def apply_template(self, name, data, template_call):
@@ -279,12 +279,12 @@ class MetadataFile(DataFile):
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
-                                util.print_return(f"Processing: {i}/{len(all_items)} {item.title}")
+                                logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
                                 if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
                                     auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
-                            util.print_end()
+                            logger.exorcise()
                         elif auto_type == "actor":
                             people = {}
                             if "data" in methods:
@@ -456,7 +456,7 @@ class MetadataFile(DataFile):
         if not self.metadata:
             return None
         logger.info("")
-        util.separator("Running Metadata")
+        logger.separator("Running Metadata")
         logger.info("")
         for mapping_name, meta in self.metadata.items():
             methods = {mm.lower(): mm for mm in meta}
@@ -503,7 +503,7 @@ class MetadataFile(DataFile):
                         logger.error(f"Metadata Error: {name} attribute is blank")
 
             logger.info("")
-            util.separator()
+            logger.separator()
             logger.info("")
             year = None
             if "year" in methods and not self.library.is_music:

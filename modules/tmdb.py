@@ -1,9 +1,8 @@
-import logging
 from modules import util
 from modules.util import Failed
 from tmdbapis import TMDbAPIs, TMDbException, NotFound
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = [
     "tmdb_actor", "tmdb_actor_details", "tmdb_collection", "tmdb_collection_details", "tmdb_company",
@@ -63,6 +62,7 @@ class TMDb:
         self.config = config
         self.apikey = params["apikey"]
         self.language = params["language"]
+        logger.secret(self.apikey)
         try:
             self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
         except TMDbException as e:
@@ -257,7 +257,7 @@ class TMDb:
             try:
                 tmdb_item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
             except Failed as e:
-                logger.error(util.adjust_space(str(e)))
+                logger.error(str(e))
         else:
-            logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
+            logger.info(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}")
         return tmdb_item

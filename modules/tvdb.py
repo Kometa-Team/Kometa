@@ -1,9 +1,9 @@
-import logging, requests, time
+import requests, time
 from lxml.etree import ParserError
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["tvdb_list", "tvdb_list_details", "tvdb_movie", "tvdb_movie_details", "tvdb_show", "tvdb_show_details"]
 base_url = "https://www.thetvdb.com"
@@ -175,7 +175,7 @@ class TVDb:
                     return ids
                 raise Failed(f"TVDb Error: No TVDb IDs found at {tvdb_url}")
             except requests.exceptions.MissingSchema:
-                util.print_stacktrace()
+                logger.stacktrace()
                 raise Failed(f"TVDb Error: URL Lookup Failed for {tvdb_url}")
         else:
             raise Failed(f"TVDb Error: {tvdb_url} must begin with {urls['list']}")

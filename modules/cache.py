@@ -1,9 +1,9 @@
-import logging, os, random, sqlite3
+import os, random, sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta
 from modules import util
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 class Cache:
     def __init__(self, config_path, expiration):

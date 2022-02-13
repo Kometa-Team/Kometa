@@ -1,4 +1,4 @@
-import logging, os, re, time
+import os, re, time
 from datetime import datetime, timedelta
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, ImageData, NotScheduled, NotScheduledRange
@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
 from urllib.parse import quote
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
@@ -367,7 +367,7 @@ class CollectionBuilder:
                     if self.details["delete_not_scheduled"]:
                         try:
                             self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name)
-                            util.print_multiline(self.delete())
+                            logger.info(self.delete())
                             self.deleted = True
                             suffix = f" and was deleted"
                         except Failed:
@@ -1318,7 +1318,7 @@ class CollectionBuilder:
             logger.debug("")
             for i, input_data in enumerate(ids, 1):
                 input_id, id_type = input_data
-                util.print_return(f"Parsing ID {i}/{total_ids}")
+                logger.ghost(f"Parsing ID {i}/{total_ids}")
                 rating_keys = []
                 if id_type == "ratingKey":
                     rating_keys = int(input_id)
@@ -1449,7 +1449,7 @@ class CollectionBuilder:
                             items.append(item)
                     except Failed as e:
                         logger.error(e)
-            util.print_end()
+            logger.exorcise()
         if not items:
             return None
         name = self.obj.title if self.obj else self.name
@@ -1665,7 +1665,7 @@ class CollectionBuilder:
                     re.compile(reg)
                     valid_regex.append(reg)
                 except re.error:
-                    util.print_stacktrace()
+                    logger.stacktrace()
                     err = f"{self.Type} Error: Regular Expression Invalid: {reg}"
                     if validate:
                         raise Failed(err)
@@ -1768,7 +1768,7 @@ class CollectionBuilder:
 
     def add_to_collection(self):
         logger.info("")
-        util.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
+        logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
         total = len(self.added_items)
@@ -1779,7 +1779,7 @@ class CollectionBuilder:
         for i, item in enumerate(self.added_items, 1):
             current_operation = "=" if item in collection_items else "+"
             number_text = f"{i}/{total}"
-            logger.info(util.adjust_space(f"{number_text:>{spacing}} | {name} {self.Type} | {current_operation} | {util.item_title(item)}"))
+            logger.info(f"{number_text:>{spacing}} | {name} {self.Type} | {current_operation} | {util.item_title(item)}")
             if item in collection_items:
                 self.remove_item_map[item.ratingKey] = None
                 amount_unchanged += 1
@@ -1803,7 +1803,7 @@ class CollectionBuilder:
             logger.info(f"Playlist: {self.name} created")
         elif self.playlist and playlist_adds:
             self.obj.addItems(playlist_adds)
-        util.print_end()
+        logger.exorcise()
         logger.info("")
         logger.info(f"{total} {self.collection_level.capitalize()}{'s' if total > 1 else ''} Processed")
         return amount_added, amount_unchanged
@@ -1814,7 +1814,7 @@ class CollectionBuilder:
         items = [item for _, item in self.remove_item_map.items() if item is not None]
         if items:
             logger.info("")
-            util.separator(f"Removed from {self.name} {self.Type}", space=False, border=False)
+            logger.separator(f"Removed from {self.name} {self.Type}", space=False, border=False)
             logger.info("")
             total = len(items)
             spacing = len(str(total)) * 2 + 1
@@ -1891,7 +1891,7 @@ class CollectionBuilder:
 
     def check_filters(self, item, display):
         if (self.filters or self.tmdb_filters) and not self.details["only_filter_missing"]:
-            util.print_return(f"Filtering {display} {item.title}")
+            logger.ghost(f"Filtering {display} {item.title}")
             if self.tmdb_filters and isinstance(item, (Movie, Show)):
                 if item.ratingKey not in self.library.movie_rating_key_map and item.ratingKey not in self.library.show_rating_key_map:
                     logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")
@@ -2003,7 +2003,7 @@ class CollectionBuilder:
                     if (not list(set(filter_data) & set(attrs)) and modifier == "") \
                             or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                         return False
-            util.print_return(f"Filtering {display} {item.title}")
+            logger.ghost(f"Filtering {display} {item.title}")
         return True
 
     def run_missing(self):
@@ -2012,7 +2012,7 @@ class CollectionBuilder:
         if len(self.missing_movies) > 0:
             if self.details["show_missing"] is True:
                 logger.info("")
-                util.separator(f"Missing Movies from Library: {self.name}", space=False, border=False)
+                logger.separator(f"Missing Movies from Library: {self.name}", space=False, border=False)
                 logger.info("")
             missing_movies_with_names = []
             for missing_id in self.missing_movies:
@@ -2054,7 +2054,7 @@ class CollectionBuilder:
         if len(self.missing_shows) > 0 and self.library.is_show:
             if self.details["show_missing"] is True:
                 logger.info("")
-                util.separator(f"Missing Shows from Library: {self.name}", space=False, border=False)
+                logger.separator(f"Missing Shows from Library: {self.name}", space=False, border=False)
                 logger.info("")
             missing_shows_with_names = []
             for missing_id in self.missing_shows:
@@ -2102,7 +2102,7 @@ class CollectionBuilder:
             self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
         elif not self.build_collection:
             logger.info("")
-            util.separator(f"Items Found for {self.name} {self.Type}", space=False, border=False)
+            logger.separator(f"Items Found for {self.name} {self.Type}", space=False, border=False)
             logger.info("")
             self.items = self.added_items
         if not self.items:
@@ -2110,7 +2110,7 @@ class CollectionBuilder:
 
     def update_item_details(self):
         logger.info("")
-        util.separator(f"Updating Details of the Items in {self.name} {self.Type}", space=False, border=False)
+        logger.separator(f"Updating Details of the Items in {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         overlay = None
         overlay_folder = None
@@ -2250,7 +2250,7 @@ class CollectionBuilder:
 
     def update_details(self):
         logger.info("")
-        util.separator(f"Updating Details of {self.name} {self.Type}", space=False, border=False)
+        logger.separator(f"Updating Details of {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         if self.smart_url and self.smart_url != self.library.smart_filter(self.obj):
             self.library.update_smart_collection(self.obj, self.smart_url)
@@ -2436,7 +2436,7 @@ class CollectionBuilder:
 
     def sort_collection(self):
         logger.info("")
-        util.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
+        logger.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         if self.custom_sort is True:
             items = self.added_items
@@ -2473,7 +2473,7 @@ class CollectionBuilder:
     def sync_playlist(self):
         if self.obj and self.valid_users:
             logger.info("")
-            util.separator(f"Syncing Playlist to Users", space=False, border=False)
+            logger.separator(f"Syncing Playlist to Users", space=False, border=False)
             logger.info("")
             for user in self.valid_users:
                 try:
@@ -2502,7 +2502,7 @@ class CollectionBuilder:
                     playlist=playlist
                 )
             except Failed as e:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Webhooks Error: {e}")
 
     def run_collections_again(self):

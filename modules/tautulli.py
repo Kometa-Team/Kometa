@@ -1,12 +1,9 @@
-import logging
-
-from plexapi.video import Movie, Show
-
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.video import Movie, Show
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["tautulli_popular", "tautulli_watched"]
 
@@ -16,10 +13,12 @@ class Tautulli:
         self.library = library
         self.url = params["url"]
         self.apikey = params["apikey"]
+        logger.secret(self.url)
+        logger.secret(self.token)
         try:
             response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_library_names")
         except Exception:
-            util.print_stacktrace()
+            logger.stacktrace()
             raise Failed("Tautulli Error: Invalid url")
         if response["response"]["result"] != "success":
             raise Failed(f"Tautulli Error: {response['response']['message']}")
@@ -71,5 +70,6 @@ class Tautulli:
         else:                       raise Failed(f"Tautulli Error: No Library named {library_name} in the response")
 
     def _request(self, url):
-        logger.debug(f"Tautulli URL: {url.replace(self.apikey, 'APIKEY').replace(self.url, 'URL')}")
+        if self.config.trace_mode:
+            logger.debug(f"Tautulli URL: {url}")
         return self.config.get_json(url)

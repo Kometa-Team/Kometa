@@ -1,8 +1,8 @@
-import logging, time
+import time
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["anidb_id", "anidb_relation", "anidb_popular", "anidb_tag"]
 base_url = "https://anidb.net"
@@ -15,11 +15,18 @@ urls = {
 }
 
 class AniDB:
-    def __init__(self, config, params):
+    def __init__(self, config):
         self.config = config
-        self.username = params["username"] if params else None
-        self.password = params["password"] if params else None
-        if params and not self._login(self.username, self.password).xpath("//li[@class='sub-menu my']/@title"):
+        self.username = None
+        self.password = None
+
+    def login(self, username, password):
+        self.username = username
+        self.password = password
+        logger.secret(self.username)
+        logger.secret(self.password)
+        data = {"show": "main", "xuser": self.username, "xpass": self.password, "xdoautologin": "on"}
+        if not self._request(urls["login"], data=data).xpath("//li[@class='sub-menu my']/@title"):
             raise Failed("AniDB Error: Login failed")
 
     def _request(self, url, language=None, data=None):
@@ -29,14 +36,6 @@ class AniDB:
             return self.config.post_html(url, data=data, headers=util.header(language))
         else:
             return self.config.get_html(url, headers=util.header(language))
-
-    def _login(self, username, password):
-        return self._request(urls["login"], data={
-            "show": "main",
-            "xuser": username,
-            "xpass": password,
-            "xdoautologin": "on"
-        })
 
     def _popular(self, language):
         response = self._request(urls["popular"], language=language)
