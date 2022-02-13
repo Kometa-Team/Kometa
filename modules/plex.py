@@ -613,13 +613,8 @@ class Plex(Library):
             key += f"?after={after}"
         self._query(key, put=True)
 
-    def smart_label_url(self, title, sort):
-        labels = {l.title: l.key for l in self.get_tags("label")}
-        if title not in labels:
-            raise Failed(f"Plex Error: Label: {title} does not exist")
-        smart_type = 1 if self.is_movie else 2
-        sort_type = movie_sorts[sort] if self.is_movie else show_sorts[sort]
-        return smart_type, f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
+    def smart_label_check(self, label):
+        return label in [la.title for la in self.get_tags("label")]
 
     def test_smart_filter(self, uri_args):
         logger.debug(f"Smart Collection Test: {uri_args}")
