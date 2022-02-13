@@ -495,3 +495,33 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
     else:
         logger.warning(f"{error} Warning: {message} using {default} as default")
         return translation[default] if translation is not None else default
+
+def replace_label(_label, _data):
+    replaced = False
+    if isinstance(_data, dict):
+        final_data = {}
+        for sm, sd in _data.items():
+            try:
+                _new_data, _new_replaced = replace_label(_label, sd)
+                final_data[sm] = _new_data
+                if _new_replaced:
+                    replaced = True
+            except Failed:
+                continue
+    elif isinstance(_data, list):
+        final_data = []
+        for li in _data:
+            try:
+                _new_data, _new_replaced = replace_label(_label, li)
+                final_data.append(_new_data)
+                if _new_replaced:
+                    replaced = True
+            except Failed:
+                continue
+    elif "<<smart_label>>" in str(_data):
+        final_data = str(_data).replace("<<smart_label>>", _label)
+        replaced = True
+    else:
+        final_data = _data
+
+    return final_data, replaced

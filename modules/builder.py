@@ -223,9 +223,9 @@ class CollectionBuilder:
             if not name:
                 raise Failed(f"{self.Type} Error: name attribute is blank")
             logger.debug(f"Value: {name}")
-            self.name = name
+            self.name = str(name)
         else:
-            self.name = self.mapping_name
+            self.name = str(self.mapping_name)
 
         if "template" in methods:
             logger.debug("")
@@ -461,7 +461,8 @@ class CollectionBuilder:
                 else:
                     raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
 
-        self.smart_sort = "random"
+        self.smart_filter_details = ""
+        self.smart_label = {"sort_by": "random", "all": {"label": self.name}}
         self.smart_label_collection = False
         if "smart_label" in methods and not self.playlist and not self.library.is_music:
             logger.debug("")
@@ -471,15 +472,21 @@ class CollectionBuilder:
                 logger.warning(f"{self.Type} Error: smart_label attribute is blank defaulting to random")
             else:
                 logger.debug(f"Value: {self.data[methods['smart_label']]}")
-                if (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_sorts) \
+                if isinstance(self.data[methods["smart_label"]], dict):
+                    _data, replaced = util.replace_label(self.name, self.data[methods["smart_label"]])
+                    if not replaced:
+                        raise Failed("Config Error: <<smart_label>> not found in the smart_label attribute data")
+                    self.smart_label = _data
+                elif (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_sorts) \
                         or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_sorts):
-                    self.smart_sort = str(self.data[methods["smart_label"]]).lower()
+                    self.smart_label["sort_by"] = str(self.data[methods["smart_label"]]).lower()
                 else:
                     logger.warning(f"{self.Type} Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
+        if self.smart_label_collection and self.library.smart_label_check(self.name):
+            _, self.smart_filter_details, _ = self.build_filter("smart_label", self.smart_label, default_sort="random")
 
         self.smart_url = None
         self.smart_type_key = None
-        self.smart_filter_details = ""
         if "smart_url" in methods and not self.playlist:
             logger.debug("")
             logger.debug("Validating Method: smart_url")
@@ -493,7 +500,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: smart_url is incorrectly formatted")
 
         if "smart_filter" in methods and not self.playlist:
-            self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], smart=True)
+            self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], display=True, default_sort="random")
 
         def cant_interact(attr1, attr2, fail=False):
             if getattr(self, attr1) and getattr(self, attr2):
@@ -1475,15 +1482,15 @@ class CollectionBuilder:
                         if self.details["show_filtered"] is True:
                             logger.info(f"{name} {self.Type} | X | {current_title}")
 
-    def build_filter(self, method, plex_filter, smart=False, type_override=None):
-        if smart:
+    def build_filter(self, method, plex_filter, display=False, default_sort="title.asc", type_override=None):
+        if display:
             logger.info("")
             logger.info(f"Validating Method: {method}")
         if plex_filter is None:
             raise Failed(f"{self.Type} Error: {method} attribute is blank")
         if not isinstance(plex_filter, dict):
             raise Failed(f"{self.Type} Error: {method} must be a dictionary: {plex_filter}")
-        if smart:
+        if display:
             logger.debug(f"Value: {plex_filter}")
 
         filter_alias = {m.lower(): m for m in plex_filter}
@@ -1511,7 +1518,7 @@ class CollectionBuilder:
         filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()[:-1]} {ms[1].capitalize()}\n"
         type_key, sorts = plex.sort_types[sort_type]
 
-        sort = "random" if smart else "title.asc"
+        sort = default_sort
         if "sort_by" in filter_alias:
             if plex_filter[filter_alias["sort_by"]] is None:
                 raise Failed(f"{self.Type} Error: sort_by attribute is blank")
@@ -1540,7 +1547,7 @@ class CollectionBuilder:
 
         def _filter(filter_dict, is_all=True, level=1):
             output = ""
-            display = f"\n{'  ' * level}Match {'all' if is_all else 'any'} of the following:"
+            display_out = f"\n{'  ' * level}Match {'all' if is_all else 'any'} of the following:"
             level += 1
             indent = f"\n{'  ' * level}"
             conjunction = f"{'and' if is_all else 'or'}=1&"
@@ -1610,7 +1617,7 @@ class CollectionBuilder:
                                 results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
                         else:
                             results, display_add = build_url_arg(validation)
-                    display += display_add
+                    display_out += display_add
                     output += f"{conjunction if len(output) > 0 else ''}{results}"
                 if error:
                     if validate:
@@ -1618,7 +1625,7 @@ class CollectionBuilder:
                     else:
                         logger.error(error)
                         continue
-            return output, display
+            return output, display_out
 
         if "any" not in filter_alias and "all" not in filter_alias:
             base_dict = {}
@@ -2239,7 +2246,9 @@ class CollectionBuilder:
             self.library.create_blank_collection(self.name)
         elif self.smart_label_collection:
             try:
-                smart_type, self.smart_url = self.library.smart_label_url(self.name, self.smart_sort)
+                if not self.library.smart_label_check(self.name):
+                    raise Failed
+                smart_type, _, self.smart_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
                 if not self.obj:
                     self.library.create_smart_collection(self.name, smart_type, self.smart_url)
             except Failed:
