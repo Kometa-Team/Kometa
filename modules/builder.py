@@ -913,7 +913,8 @@ class CollectionBuilder:
             for anidb_id in self.config.AniDB.validate_anidb_ids(method_data, self.language):
                 self.builders.append((method_name, anidb_id))
         elif method_name == "anidb_tag":
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
                 new_dictionary = {}
                 if "tag" not in dict_methods:
                     raise Failed(f"{self.Type} Error: anidb_tag tag attribute is required")
@@ -936,7 +937,8 @@ class CollectionBuilder:
             elif self.current_time.month in [6, 7, 8]:          current_season = "summer"
             else:                                               current_season = "fall"
             default_year = self.current_year + 1 if self.current_time.month == 12 else self.current_year
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
                 new_dictionary = {}
                 for search_method, search_data in dict_data.items():
                     search_attr, modifier = os.path.splitext(str(search_method).lower())
@@ -981,7 +983,8 @@ class CollectionBuilder:
             for flixpatrol_list in flixpatrol_lists:
                 self.builders.append(("flixpatrol_url", flixpatrol_list))
         elif method_name in flixpatrol.builders:
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
                 if method_name == "flixpatrol_demographics":
                     data = {
                         "generation": util.parse(self.Type, "generation", dict_data, methods=dict_methods, parent=method_name, options=flixpatrol.generations),
@@ -1051,7 +1054,8 @@ class CollectionBuilder:
         elif method_name in ["mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special", "mal_popular", "mal_favorite", "mal_suggested"]:
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100 if method_name == "mal_suggested" else 500)))
         elif method_name in ["mal_season", "mal_userlist"]:
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
                 if method_name == "mal_season":
                     if self.current_time.month in [1, 2, 3]:            default_season = "winter"
                     elif self.current_time.month in [4, 5, 6]:          default_season = "spring"
@@ -1075,7 +1079,8 @@ class CollectionBuilder:
             final_data = []
             for data in util.get_list(method_data):
                 final_data.append(data if isinstance(data, dict) else {id_name: data, "limit": 0})
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
                 self.builders.append((method_name, {
                     id_name: util.parse(self.Type, id_name, dict_data, datatype="int", methods=dict_methods, parent=method_name, maximum=999999),
                     "limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
@@ -1085,7 +1090,8 @@ class CollectionBuilder:
         if method_name in ["plex_all", "plex_pilots"]:
             self.builders.append((method_name, self.collection_level))
         elif method_name in ["plex_search", "plex_collectionless"]:
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
                 new_dictionary = {}
                 if method_name == "plex_search":
                     type_override = f"{self.collection_level}s" if self.collection_level in plex.collection_level_options else None
@@ -1110,7 +1116,8 @@ class CollectionBuilder:
             self.builders.append((method_name, mdb_dict))
 
     def _tautulli(self, method_name, method_data):
-        for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+        for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            dict_methods = {dm.lower(): dm for dm in dict_data}
             self.builders.append((method_name, {
                 "list_type": "popular" if method_name == "tautulli_popular" else "watched",
                 "list_days": util.parse(self.Type, "list_days", dict_data, datatype="int", methods=dict_methods, default=30, parent=method_name),
@@ -1121,7 +1128,8 @@ class CollectionBuilder:
 
     def _tmdb(self, method_name, method_data):
         if method_name == "tmdb_discover":
-            for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
                 new_dictionary = {"limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name)}
                 for discover_method, discover_data in dict_data.items():
                     discover_attr, modifier = os.path.splitext(str(discover_method).lower())
@@ -1240,32 +1248,33 @@ class CollectionBuilder:
             self.builders.append((method_name[:-8] if method_name.endswith("_details") else method_name, value))
 
     def _filters(self, method_name, method_data):
-        for dict_data, dict_methods in util.parse(self.Type, method_name, method_data, datatype="listdict"):
-            validate = True
-            if "validate" in dict_data:
-                if dict_data["validate"] is None:
-                    raise Failed(f"{self.Type} Error: validate filter attribute is blank")
-                if not isinstance(dict_data["validate"], bool):
-                    raise Failed(f"{self.Type} Error: validate filter attribute must be either true or false")
-                validate = dict_data.pop("validate")
-            for filter_method, filter_data in dict_data.items():
-                filter_attr, modifier, filter_final = self._split(filter_method)
-                message = None
-                if filter_final not in all_filters:
-                    message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
-                elif self.collection_level in filters and filter_attr not in filters[self.collection_level]:
-                    message = f"{self.Type} Error: {filter_final} is not a valid {self.collection_level} filter attribute"
-                elif filter_final is None:
-                    message = f"{self.Type} Error: {filter_final} filter attribute is blank"
-                elif filter_attr in tmdb_filters:
-                    self.tmdb_filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
+        dict_data = util.parse(self.Type, method_name, method_data, datatype="dict")
+        dict_methods = {dm.lower(): dm for dm in dict_data}
+        validate = True
+        if "validate" in dict_methods:
+            if dict_data[dict_methods["validate"]] is None:
+                raise Failed(f"{self.Type} Error: validate filter attribute is blank")
+            if not isinstance(dict_data[dict_methods["validate"]], bool):
+                raise Failed(f"{self.Type} Error: validate filter attribute must be either true or false")
+            validate = dict_data.pop(dict_methods["validate"])
+        for filter_method, filter_data in dict_data.items():
+            filter_attr, modifier, filter_final = self._split(filter_method)
+            message = None
+            if filter_final not in all_filters:
+                message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
+            elif self.collection_level in filters and filter_attr not in filters[self.collection_level]:
+                message = f"{self.Type} Error: {filter_final} is not a valid {self.collection_level} filter attribute"
+            elif filter_final is None:
+                message = f"{self.Type} Error: {filter_final} filter attribute is blank"
+            elif filter_attr in tmdb_filters:
+                self.tmdb_filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
+            else:
+                self.filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
+            if message:
+                if validate:
+                    raise Failed(message)
                 else:
-                    self.filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
-                if message:
-                    if validate:
-                        raise Failed(message)
-                    else:
-                        logger.error(message)
+                    logger.error(message)
 
     def gather_ids(self, method, value):
         expired = None
@@ -2140,8 +2149,7 @@ class CollectionBuilder:
             rating_keys = [int(item.ratingKey) for item in self.library.get_labeled_items(f"{overlay_name} Overlay")]
             overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
             overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png")).convert("RGBA")
-            temp_image = os.path.join(overlay_folder, f"temp.png")
-            overlay = (overlay_name, overlay_folder, overlay_image, temp_image)
+            overlay = (overlay_name, overlay_folder, overlay_image)
 
         revert = "revert_overlay" in self.item_details
         if revert:

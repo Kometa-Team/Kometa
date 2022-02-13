@@ -431,7 +431,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         final_list = []
         for dict_data in get_list(value):
             if isinstance(dict_data, dict):
-                final_list.append((dict_data, {dm.lower(): dm for dm in dict_data}))
+                final_list.append(dict_data)
             else:
                 raise Failed(f"{error} Error: {display} {dict_data} is not a dictionary")
         return final_list

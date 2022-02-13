@@ -159,7 +159,7 @@ class Library(ABC):
                 logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
 
         if overlay is not None:
-            overlay_name, overlay_folder, overlay_image, temp_image = overlay
+            overlay_name, overlay_folder, overlay_image = overlay
             self.reload(item)
             item_labels = {item_tag.tag.lower(): item_tag.tag for item_tag in item.labels}
             for item_label in item_labels:
@@ -172,9 +172,11 @@ class Library(ABC):
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
                 og_image = response.content
+                ext = "jpg" if response.headers["Content-Type"] == "image/jpeg" else "png"
+                temp_image = os.path.join(overlay_folder, f"temp.{ext}")
                 with open(temp_image, "wb") as handler:
                     handler.write(og_image)
-                shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
+                shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.{ext}"))
                 while util.is_locked(temp_image):
                     time.sleep(1)
                 try:

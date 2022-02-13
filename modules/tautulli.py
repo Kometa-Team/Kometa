@@ -14,7 +14,7 @@ class Tautulli:
         self.url = params["url"]
         self.apikey = params["apikey"]
         logger.secret(self.url)
-        logger.secret(self.token)
+        logger.secret(self.apikey)
         try:
             response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_library_names")
         except Exception:
