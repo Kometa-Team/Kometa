@@ -1,4 +1,4 @@
-import base64, logging, os, requests
+import base64, os, requests
 from datetime import datetime
 from lxml import html
 from modules import util, radarr, sonarr
@@ -28,7 +28,7 @@ from modules.webhooks import Webhooks
 from retrying import retry
 from ruamel import yaml
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
@@ -182,9 +182,10 @@ class ConfigFile:
                 yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
+            logger.stacktrace()
             raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
         except Exception as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             raise Failed(f"YAML Error: {e}")
 
         def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
@@ -239,7 +240,7 @@ class ConfigFile:
                             warning_message += "\n"
                         warning_message += f"Config Warning: Path does not exist: {os.path.abspath(p)}"
                 if do_print and warning_message:
-                    util.print_multiline(warning_message)
+                    logger.warning(warning_message)
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
             elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
@@ -269,9 +270,9 @@ class ConfigFile:
                     message = message + "\n" + options
                 raise Failed(f"Config Error: {message}")
             if do_print:
-                util.print_multiline(f"Config Warning: {message}")
+                logger.warning(f"Config Warning: {message}")
                 if data and attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
-                    util.print_multiline(options)
+                    logger.warning(options)
             return default
 
         self.general = {
@@ -325,12 +326,12 @@ class ConfigFile:
             "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True)
         }
         if self.general["cache"]:
-            util.separator()
+            logger.separator()
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
 
-        util.separator()
+        logger.separator()
 
         self.NotifiarrFactory = None
         if "notifiarr" in self.data:
@@ -342,7 +343,7 @@ class ConfigFile:
                     "test": check_for_attribute(self.data, "test", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False)
                 })
             except Failed as e:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(e)
             logger.info(f"Notifiarr Connection {'Failed' if self.NotifiarrFactory is None else 'Successful'}")
         else:
@@ -352,12 +353,12 @@ class ConfigFile:
         try:
             self.Webhooks.start_time_hooks(self.start_time)
         except Failed as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
 
         self.errors = []
 
-        util.separator()
+        logger.separator()
 
         try:
             self.TMDb = None
@@ -371,7 +372,7 @@ class ConfigFile:
             else:
                 raise Failed("Config Error: tmdb attribute not found")
 
-            util.separator()
+            logger.separator()
 
             self.OMDb = None
             if "omdb" in self.data:
@@ -388,7 +389,7 @@ class ConfigFile:
             else:
                 logger.warning("omdb attribute not found")
 
-            util.separator()
+            logger.separator()
 
             self.Mdblist = Mdblist(self)
             if "mdblist" in self.data:
@@ -406,7 +407,7 @@ class ConfigFile:
             else:
                 logger.warning("mdblist attribute not found")
 
-            util.separator()
+            logger.separator()
 
             self.Trakt = None
             if "trakt" in self.data:
@@ -425,7 +426,7 @@ class ConfigFile:
             else:
                 logger.warning("trakt attribute not found")
 
-            util.separator()
+            logger.separator()
 
             self.MyAnimeList = None
             if "mal" in self.data:
@@ -444,23 +445,21 @@ class ConfigFile:
             else:
                 logger.warning("mal attribute not found")
 
-            self.AniDB = None
+            self.AniDB = AniDB(self)
             if "anidb" in self.data:
-                util.separator()
+                logger.separator()
                 logger.info("Connecting to AniDB...")
                 try:
-                    self.AniDB = AniDB(self, {
-                        "username": check_for_attribute(self.data, "username", parent="anidb", throw=True),
-                        "password": check_for_attribute(self.data, "password", parent="anidb", throw=True)
-                    })
+                    self.AniDB.login(
+                        check_for_attribute(self.data, "username", parent="anidb", throw=True),
+                        check_for_attribute(self.data, "password", parent="anidb", throw=True)
+                    )
                 except Failed as e:
                     self.errors.append(e)
                     logger.error(e)
                 logger.info(f"AniDB Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
-            if self.AniDB is None:
-                self.AniDB = AniDB(self, None)
 
-            util.separator()
+            logger.separator()
 
             self.playlist_names = []
             self.playlist_files = []
@@ -518,7 +517,7 @@ class ConfigFile:
                     self.playlist_names.extend([p for p in playlist_obj.playlists])
                     self.playlist_files.append(playlist_obj)
                 except Failed as e:
-                    util.print_multiline(e, error=True)
+                    logger.error(e)
 
             self.TVDb = TVDb(self, self.general["tvdb_language"])
             self.IMDb = IMDb(self)
@@ -529,7 +528,7 @@ class ConfigFile:
             self.Letterboxd = Letterboxd(self)
             self.StevenLu = StevenLu(self)
 
-            util.separator()
+            logger.separator()
 
             logger.info("Connecting to Plex Libraries...")
 
@@ -600,7 +599,7 @@ class ConfigFile:
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
-                util.separator(f"{display_name} Configuration")
+                logger.separator(f"{display_name} Configuration")
                 logger.info("")
                 logger.info(f"Connecting to {display_name} Library...")
                 logger.info("")
@@ -823,7 +822,7 @@ class ConfigFile:
                                 params["skip_library"] = True
 
                     logger.info("")
-                    util.separator("Plex Configuration", space=False, border=False)
+                    logger.separator("Plex Configuration", space=False, border=False)
                     params["plex"] = {
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
@@ -836,26 +835,26 @@ class ConfigFile:
                     logger.info(f"{display_name} Library Connection Successful")
                 except Failed as e:
                     self.errors.append(e)
-                    util.print_stacktrace()
-                    util.print_multiline(e, error=True)
+                    logger.stacktrace()
+                    logger.error(e)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
                     continue
                 try:
                     logger.info("")
-                    util.separator("Scanning Metadata Files", space=False, border=False)
+                    logger.separator("Scanning Metadata Files", space=False, border=False)
                     library.scan_metadata_files()
                 except Failed as e:
                     self.errors.append(e)
-                    util.print_stacktrace()
-                    util.print_multiline(e, error=True)
+                    logger.stacktrace()
+                    logger.error(e)
                     logger.info("")
                     logger.info(f"{display_name} Metadata Failed to Load")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):
                     logger.info("")
-                    util.separator("Radarr Configuration", space=False, border=False)
+                    logger.separator("Radarr Configuration", space=False, border=False)
                     logger.info("")
                     logger.info(f"Connecting to {display_name} library's Radarr...")
                     logger.info("")
@@ -876,14 +875,14 @@ class ConfigFile:
                         })
                     except Failed as e:
                         self.errors.append(e)
-                        util.print_stacktrace()
-                        util.print_multiline(e, error=True)
+                        logger.stacktrace()
+                        logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
                 if self.general["sonarr"]["url"] or (lib and "sonarr" in lib):
                     logger.info("")
-                    util.separator("Sonarr Configuration", space=False, border=False)
+                    logger.separator("Sonarr Configuration", space=False, border=False)
                     logger.info("")
                     logger.info(f"Connecting to {display_name} library's Sonarr...")
                     logger.info("")
@@ -907,14 +906,14 @@ class ConfigFile:
                         })
                     except Failed as e:
                         self.errors.append(e)
-                        util.print_stacktrace()
-                        util.print_multiline(e, error=True)
+                        logger.stacktrace()
+                        logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
                 if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                     logger.info("")
-                    util.separator("Tautulli Configuration", space=False, border=False)
+                    logger.separator("Tautulli Configuration", space=False, border=False)
                     logger.info("")
                     logger.info(f"Connecting to {display_name} library's Tautulli...")
                     logger.info("")
@@ -925,8 +924,8 @@ class ConfigFile:
                         })
                     except Failed as e:
                         self.errors.append(e)
-                        util.print_stacktrace()
-                        util.print_multiline(e, error=True)
+                        logger.stacktrace()
+                        logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
@@ -935,7 +934,7 @@ class ConfigFile:
                 logger.info("")
                 self.libraries.append(library)
 
-            util.separator()
+            logger.separator()
 
             self.library_map = {_l.original_mapping_name: _l for _l in self.libraries}
 
@@ -944,11 +943,12 @@ class ConfigFile:
             else:
                 raise Failed("Plex Error: No Plex libraries were connected to")
 
-            util.separator()
+            logger.separator()
 
             if self.errors:
                 self.notify(self.errors)
         except Exception as e:
+            logger.stacktrace()
             self.notify(e)
             raise
 
@@ -957,7 +957,7 @@ class ConfigFile:
             try:
                 self.Webhooks.error_hooks(error, server=server, library=library, collection=collection, playlist=playlist, critical=critical)
             except Failed as e:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Webhooks Error: {e}")
 
     def get_html(self, url, headers=None, params=None):

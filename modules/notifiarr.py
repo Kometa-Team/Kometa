@@ -1,9 +1,8 @@
-import logging
 from json import JSONDecodeError
-
+from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 base_url = "https://notifiarr.com/api/v1/"
 dev_url = "https://dev.notifiarr.com/api/v1/"
@@ -15,6 +14,7 @@ class Notifiarr:
         self.apikey = params["apikey"]
         self.develop = params["develop"]
         self.test = params["test"]
+        logger.secret(self.apikey)
         logger.debug(f"Environment: {'Test' if self.test else 'Develop' if self.develop else 'Production'}")
         url, _ = self.get_url("user/validate/")
         response = self.config.get(url)
@@ -32,6 +32,6 @@ class Notifiarr:
     def get_url(self, path):
         url = f"{dev_url if self.develop else base_url}{'notification/test' if self.test else f'{path}{self.apikey}'}"
         if self.config.trace_mode:
-            logger.debug(url.replace(self.apikey, "APIKEY"))
+            logger.debug(url)
         params = {"event": "pmm"} if self.test else None
         return url, params

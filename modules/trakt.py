@@ -1,9 +1,9 @@
-import logging, requests, webbrowser
+import requests, webbrowser
 from modules import util
 from modules.util import Failed, TimeoutExpired
 from ruamel import yaml
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
 redirect_uri_encoded = redirect_uri.replace(":", "%3A")
@@ -35,6 +35,7 @@ class Trakt:
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
+        logger.secret(self.client_secret)
         if not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
@@ -61,12 +62,14 @@ class Trakt:
             raise Failed("Trakt Error: New Authorization Failed")
 
     def _check(self, authorization=None):
+        token = self.authorization['access_token'] if authorization is None else authorization['access_token']
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.authorization['access_token'] if authorization is None else authorization['access_token']}",
+            "Authorization": f"Bearer {token}",
             "trakt-api-version": "2",
             "trakt-api-key": self.client_id
         }
+        logger.secret(token)
         response = self.config.get(f"{base_url}/users/settings", headers=headers)
         return response.status_code == 200
 

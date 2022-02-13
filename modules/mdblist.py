@@ -1,9 +1,8 @@
-import logging
 from modules import util
 from modules.util import Failed
 from urllib.parse import urlparse
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["mdblist_list"]
 list_sorts = ["score", "released", "updated", "imdbrating", "rogerebert", "imdbvotes", "budget", "revenue"]
@@ -60,6 +59,7 @@ class Mdblist:
 
     def add_key(self, apikey, expiration):
         self.apikey = apikey
+        logger.secret(self.apikey)
         self.expiration = expiration
         try:
             self._request(imdb_id="tt0080684", ignore_cache=True)

@@ -1,4 +1,4 @@
-import logging, os, shutil, time
+import os, shutil, time
 from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile
@@ -7,7 +7,7 @@ from PIL import Image
 from plexapi.exceptions import BadRequest
 from ruamel import yaml
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 class Library(ABC):
     def __init__(self, config, params):
@@ -131,7 +131,7 @@ class Library(ABC):
                     self.metadatas.extend([c for c in meta_obj.metadata])
                 self.metadata_files.append(meta_obj)
             except Failed as e:
-                util.print_multiline(e, error=True)
+                logger.error(e)
 
         if len(self.metadata_files) == 0 and not self.library_operation and not self.config.playlist_files:
             logger.info("")
@@ -155,7 +155,7 @@ class Library(ABC):
                 elif self.show_asset_not_needed:
                     logger.info(f"Detail: {poster.prefix}poster update not needed")
             except Failed:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
 
         if overlay is not None:
@@ -187,7 +187,7 @@ class Library(ABC):
                     poster_uploaded = True
                     logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
                 except (OSError, BadRequest) as e:
-                    util.print_stacktrace()
+                    logger.stacktrace()
                     raise Failed(f"Overlay Error: {e}")
 
         background_uploaded = False
@@ -205,7 +205,7 @@ class Library(ABC):
                 elif self.show_asset_not_needed:
                     logger.info(f"Detail: {background.prefix}background update not needed")
             except Failed:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Detail: {background.attribute} failed to update {background.message}")
 
         if self.config.Cache:
@@ -250,14 +250,14 @@ class Library(ABC):
         try:
             yaml.round_trip_dump(self.missing, open(self.missing_path, "w", encoding="utf-8"))
         except yaml.scanner.ScannerError as e:
-            util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
+            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
 
     def map_guids(self):
         items = self.get_all()
         logger.info(f"Mapping {self.type} Library: {self.name}")
         logger.info("")
         for i, item in enumerate(items, 1):
-            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
             if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:
                 id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
                 if main_id:
@@ -270,5 +270,5 @@ class Library(ABC):
                 if imdb_id:
                     util.add_dict_list(imdb_id, item.ratingKey, self.imdb_map)
         logger.info("")
-        logger.info(util.adjust_space(f"Processed {len(items)} {self.type}s"))
+        logger.info(f"Processed {len(items)} {self.type}s")
         return items

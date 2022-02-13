@@ -1,9 +1,8 @@
-import logging
 from json import JSONDecodeError
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 class Webhooks:
     def __init__(self, config, system_webhooks, library=None, notifiarr=None):
@@ -16,7 +15,7 @@ class Webhooks:
 
     def _request(self, webhooks, json):
         if self.config.trace_mode:
-            util.separator("Webhooks", space=False, border=False)
+            logger.separator("Webhooks", space=False, border=False)
             logger.debug("")
             logger.debug(f"JSON: {json}")
         for webhook in list(set(webhooks)):

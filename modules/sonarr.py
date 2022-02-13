@@ -1,10 +1,9 @@
-import logging
 from modules import util
 from modules.util import Failed
 from arrapi import SonarrAPI
 from arrapi.exceptions import ArrException
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 series_types = ["standard", "daily", "anime"]
 monitor_translation = {
@@ -34,6 +33,8 @@ class Sonarr:
         self.library = library
         self.url = params["url"]
         self.token = params["token"]
+        logger.secret(self.url)
+        logger.secret(self.token)
         try:
             self.api = SonarrAPI(self.url, self.token, session=self.config.session)
             self.api.respect_list_exclusions_when_adding()
@@ -64,7 +65,7 @@ class Sonarr:
             else:
                 _ids.append(tvdb_id)
         logger.info("")
-        util.separator(f"Adding {'Missing' if _ids else 'Existing'} to Sonarr", space=False, border=False)
+        logger.separator(f"Adding {'Missing' if _ids else 'Existing'} to Sonarr", space=False, border=False)
         logger.debug("")
         logger.debug(f"Sonarr Adds: {_ids if _ids else ''}")
         for tvdb_id in _paths:
@@ -108,13 +109,13 @@ class Sonarr:
                 exists.extend(_e)
                 invalid.extend(_i)
             except ArrException as e:
-                util.print_stacktrace()
+                logger.stacktrace()
                 raise Failed(f"Radarr Error: {e}")
 
         for i, item in enumerate(tvdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tvdb_id = item[0] if isinstance(item, tuple) else item
-            util.print_return(f"Loading TVDb ID {i}/{len(tvdb_ids)} ({tvdb_id})")
+            logger.ghost(f"Loading TVDb ID {i}/{len(tvdb_ids)} ({tvdb_id})")
             if self.config.Cache:
                 _id = self.config.Cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
                 if _id:

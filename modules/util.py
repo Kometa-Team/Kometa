@@ -1,8 +1,7 @@
-import glob, logging, os, re, signal, sys, time, traceback
+import glob, logging, os, re, signal, sys, time
 from datetime import datetime, timedelta
-from logging.handlers import RotatingFileHandler
 from pathvalidate import is_valid_filename, sanitize_filename
-from plexapi.audio import Artist, Album, Track
+from plexapi.audio import Album, Track
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
 
@@ -45,10 +44,6 @@ def retry_if_not_failed(exception):
 
 def retry_if_not_plex(exception):
     return not isinstance(exception, (BadRequest, NotFound, Unauthorized))
-
-separating_character = "="
-screen_width = 100
-spacing = 0
 
 days_alias = {
     "monday": 0, "mon": 0, "m": 0,
@@ -165,24 +160,6 @@ def windows_input(prompt, timeout=5):
             print("")
             raise TimeoutExpired
 
-def print_multiline(lines, info=False, warning=False, error=False, critical=False):
-    for i, line in enumerate(str(lines).split("\n")):
-        if critical:        logger.critical(line)
-        elif error:         logger.error(line)
-        elif warning:       logger.warning(line)
-        elif info:          logger.info(line)
-        else:               logger.debug(line)
-        if i == 0:
-            logger.handlers[1].setFormatter(logging.Formatter(" " * 65 + "| %(message)s"))
-    logger.handlers[1].setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)s"))
-
-def print_stacktrace():
-    print_multiline(traceback.format_exc())
-
-def my_except_hook(exctype, value, tb):
-    for line in traceback.format_exception(etype=exctype, value=value, tb=tb):
-        print_multiline(line, critical=True)
-
 def get_id_from_imdb_url(imdb_url):
     match = re.search("(tt\\d+)", str(imdb_url))
     if match:           return match.group(1)
@@ -197,64 +174,6 @@ def regex_first_int(data, id_type, default=None):
         return int(default)
     else:
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
-
-def centered(text, sep=" ", side_space=True, left=False):
-    if len(text) > screen_width - 2:
-        return text
-    space = screen_width - len(text) - 2
-    text = f"{' ' if side_space else sep}{text}{' ' if side_space else sep}"
-    if space % 2 == 1:
-        text += sep
-        space -= 1
-    side = int(space / 2) - 1
-    final_text = f"{text}{sep * side}{sep * side}" if left else f"{sep * side}{text}{sep * side}"
-    return final_text
-
-def separator(text=None, space=True, border=True, debug=False, side_space=True, left=False):
-    sep = " " if space else separating_character
-    for handler in logger.handlers:
-        apply_formatter(handler, border=False)
-    border_text = f"|{separating_character * screen_width}|"
-    if border and debug:
-        logger.debug(border_text)
-    elif border:
-        logger.info(border_text)
-    if text:
-        text_list = text.split("\n")
-        for t in text_list:
-            if debug:
-                logger.debug(f"|{sep}{centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
-            else:
-                logger.info(f"|{sep}{centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
-        if border and debug:
-            logger.debug(border_text)
-        elif border:
-            logger.info(border_text)
-    for handler in logger.handlers:
-        apply_formatter(handler)
-
-def apply_formatter(handler, border=True):
-    text = f"| %(message)-{screen_width - 2}s |" if border else f"%(message)-{screen_width - 2}s"
-    if isinstance(handler, RotatingFileHandler):
-        text = f"[%(asctime)s] %(filename)-27s %(levelname)-10s {text}"
-    handler.setFormatter(logging.Formatter(text))
-
-def adjust_space(display_title):
-    display_title = str(display_title)
-    space_length = spacing - len(display_title)
-    if space_length > 0:
-        display_title += " " * space_length
-    return display_title
-
-def print_return(text):
-    print(adjust_space(f"| {text}"), end="\r")
-    global spacing
-    spacing = len(text) + 2
-
-def print_end():
-    print(adjust_space(" "), end="\r")
-    global spacing
-    spacing = 0
 
 def validate_filename(filename):
     if is_valid_filename(filename):

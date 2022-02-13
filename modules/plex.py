@@ -1,4 +1,4 @@
-import logging, os, plexapi, requests
+import os, plexapi, requests
 from datetime import datetime
 from modules import builder, util
 from modules.library import Library
@@ -15,7 +15,7 @@ from retrying import retry
 from urllib import parse
 from xml.etree.ElementTree import ParseError
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["plex_all", "plex_pilots", "plex_collectionless", "plex_search"]
 search_translation = {
@@ -383,6 +383,8 @@ class Plex(Library):
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
         self.timeout = params["plex"]["timeout"]
+        logger.secret(self.url)
+        logger.secret(self.token)
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
         except Unauthorized:
@@ -390,7 +392,7 @@ class Plex(Library):
         except ValueError as e:
             raise Failed(f"Plex Error: {e}")
         except (requests.exceptions.ConnectionError, ParseError):
-            util.print_stacktrace()
+            logger.stacktrace()
             raise Failed("Plex Error: Plex url is invalid")
         self.Plex = None
         library_names = []
@@ -468,9 +470,9 @@ class Plex(Library):
         results = []
         while self.Plex._totalViewSize is None or container_start <= self.Plex._totalViewSize:
             results.extend(self.fetchItems(key, container_start, container_size))
-            util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
+            logger.ghost(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
-        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {collection_level.capitalize()}s"))
+        logger.info(f"Loaded {self.Plex._totalViewSize} {collection_level.capitalize()}s")
         self._all_items = results
         return results
 
@@ -520,7 +522,7 @@ class Plex(Library):
                         includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
                         includeRelatedCount=0, includeReviews=False, includeStations=False)
         except (BadRequest, NotFound) as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -726,7 +728,7 @@ class Plex(Library):
                 except NotFound:
                     logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
-            util.print_multiline(data[1], info=True)
+            logger.info(data[1])
             items = self.get_filter_items(data[2])
         elif method == "plex_collectionless":
             good_collections = []
@@ -755,7 +757,7 @@ class Plex(Library):
             collection_indexes = [c.index for c in good_collections]
             all_items = self.get_all()
             for i, item in enumerate(all_items, 1):
-                util.print_return(f"Processing: {i}/{len(all_items)} {item.title}")
+                logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
                 self.reload(item)
                 for collection in item.collections:
@@ -764,7 +766,7 @@ class Plex(Library):
                         break
                 if add_item:
                     items.append(item)
-            logger.info(util.adjust_space(f"Processed {len(all_items)} {self.type}s"))
+            logger.info(f"Processed {len(all_items)} {self.type}s")
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
@@ -819,7 +821,7 @@ class Plex(Library):
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
                 return True
             except BadRequest:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
         return False
 
@@ -964,7 +966,7 @@ class Plex(Library):
                         output += missing_seasons
                     if found_episode:
                         output += missing_episodes
-                    util.print_multiline(output, info=True)
+                    logger.info(output)
             if isinstance(item, Artist):
                 missing_assets = ""
                 found_album = False
@@ -989,7 +991,7 @@ class Plex(Library):
                     if album_poster or album_background:
                         self.upload_images(album, poster=album_poster, background=album_background)
                 if self.show_missing_season_assets and found_album and missing_assets:
-                    util.print_multiline(f"Missing Album Posters for {item.title}{missing_assets}", info=True)
+                    logger.info(f"Missing Album Posters for {item.title}{missing_assets}")
 
         if isinstance(item, (Movie, Show)) and not poster and overlay:
             self.upload_images(item, overlay=overlay)

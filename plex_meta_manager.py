@@ -1,15 +1,9 @@
-import argparse, logging, os, sys, time
+import argparse, os, sys, time, traceback
 from datetime import datetime
-from logging.handlers import RotatingFileHandler
-
 
 try:
     import plexapi, schedule
-    from modules import util
-    from modules.builder import CollectionBuilder
-    from modules.config import ConfigFile
-    from modules.meta import MetadataFile
-    from modules.util import Failed, NotScheduled
+    from modules.logs import MyLogger
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
     from ruamel import yaml
@@ -29,6 +23,7 @@ parser.add_argument("-t", "--time", "--times", dest="times", help="Times to upda
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="Run ignoring collection schedules", action="store_true", default=False)
+parser.add_argument("-ig", "--ignore-ghost", dest="ignore_ghost", help="Run ignoring ghost logging", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
 parser.add_argument("-co", "--collection-only", "--collections-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
 parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
@@ -66,6 +61,7 @@ times = get_arg("PMM_TIME", args.times)
 run = get_arg("PMM_RUN", args.run, arg_bool=True)
 test = get_arg("PMM_TEST", args.test, arg_bool=True)
 ignore_schedules = get_arg("PMM_IGNORE_SCHEDULES", args.ignore_schedules, arg_bool=True)
+ignore_ghost = get_arg("PMM_IGNORE_GHOST", args.ignore_ghost, arg_bool=True)
 collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
 library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
 library_first = get_arg("PMM_LIBRARIES_FIRST", args.library_first, arg_bool=True)
@@ -82,12 +78,10 @@ screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 
-util.separating_character = divider[0]
 
 if screen_width < 90 or screen_width > 300:
     print(f"Argument Error: width argument invalid: {screen_width} must be an integer between 90 and 300 using the default 100")
     screen_width = 100
-util.screen_width = screen_width
 
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 if config_file and os.path.exists(config_file):
@@ -99,22 +93,20 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     print(f"Config Error: config not found at {os.path.abspath(default_dir)}")
     sys.exit(0)
 
-os.makedirs(os.path.join(default_dir, "logs"), exist_ok=True)
+logger = MyLogger("Plex Meta Manager", default_dir, screen_width, divider[0], ignore_ghost, test or debug or trace)
 
-logger = logging.getLogger("Plex Meta Manager")
-logger.setLevel(logging.DEBUG)
+from modules import util
+util.logger = logger
+from modules.builder import CollectionBuilder
+from modules.config import ConfigFile
+from modules.meta import MetadataFile
+from modules.util import Failed, NotScheduled
 
-def fmt_filter(record):
-    record.levelname = f"[{record.levelname}]"
-    record.filename = f"[{record.filename}:{record.lineno}]"
-    return True
+def my_except_hook(exctype, value, tb):
+    for _line in traceback.format_exception(etype=exctype, value=value, tb=tb):
+        logger.critical(_line)
 
-cmd_handler = logging.StreamHandler()
-cmd_handler.setLevel(logging.DEBUG if test or debug or trace else logging.INFO)
-
-logger.addHandler(cmd_handler)
-
-sys.excepthook = util.my_except_hook
+sys.excepthook = my_except_hook
 
 version = "Unknown"
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) as handle:
@@ -127,22 +119,15 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
 plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = "Plex-Meta-Manager"
 
 def start(attrs):
-    file_logger = os.path.join(default_dir, "logs", "meta.log")
-    should_roll_over = os.path.isfile(file_logger)
-    file_handler = RotatingFileHandler(file_logger, delay=True, mode="w", backupCount=10, encoding="utf-8")
-    util.apply_formatter(file_handler)
-    file_handler.addFilter(fmt_filter)
-    if should_roll_over:
-        file_handler.doRollover()
-    logger.addHandler(file_handler)
-    util.separator()
+    logger.add_main_handler()
+    logger.separator()
     logger.info("")
-    logger.info(util.centered(" ____  _             __  __      _          __  __                                   "))
-    logger.info(util.centered("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ "))
-    logger.info(util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|"))
-    logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
-    logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
-    logger.info(util.centered("                                                                     |___/           "))
+    logger.info_center(" ____  _             __  __      _          __  __                                   ")
+    logger.info_center("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ ")
+    logger.info_center("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|")
+    logger.info_center("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
+    logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
+    logger.info_center("                                                                     |___/           ")
     logger.info(f"    Version: {version}")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
     elif "test" in attrs and attrs["test"]:                 start_type = "Test "
@@ -153,7 +138,7 @@ def start(attrs):
     if "time" not in attrs:
         attrs["time"] = start_time.strftime("%H:%M")
     attrs["time_obj"] = start_time
-    util.separator(debug=True)
+    logger.separator(debug=True)
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
     logger.debug(f"--time (PMM_TIME): {times}")
     logger.debug(f"--run (PMM_RUN): {run}")
@@ -165,6 +150,7 @@ def start(attrs):
     logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
     logger.debug(f"--run-metadata-files (PMM_METADATA_FILES): {metadata_files}")
     logger.debug(f"--ignore-schedules (PMM_IGNORE_SCHEDULES): {ignore_schedules}")
+    logger.debug(f"--ignore-ghost (PMM_IGNORE_GHOST): {ignore_ghost}")
     logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete}")
     logger.debug(f"--resume (PMM_RESUME): {resume}")
     logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
@@ -175,21 +161,21 @@ def start(attrs):
     logger.debug(f"--debug (PMM_DEBUG): {debug}")
     logger.debug(f"--trace (PMM_TRACE): {trace}")
     logger.debug("")
-    util.separator(f"Starting {start_type}Run")
+    logger.separator(f"Starting {start_type}Run")
     config = None
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
     try:
         config = ConfigFile(default_dir, attrs, read_only_config)
     except Exception as e:
-        util.print_stacktrace()
-        util.print_multiline(e, critical=True)
+        logger.stacktrace()
+        logger.critical(e)
     else:
         try:
             stats = update_libraries(config)
         except Exception as e:
             config.notify(e)
-            util.print_stacktrace()
-            util.print_multiline(e, critical=True)
+            logger.stacktrace()
+            logger.critical(e)
     logger.info("")
     end_time = datetime.now()
     run_time = str(end_time - start_time).split('.')[0]
@@ -197,30 +183,22 @@ def start(attrs):
         try:
             config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
         except Failed as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
-    util.separator(f"Finished {start_type}Run\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
-    logger.removeHandler(file_handler)
+    logger.separator(f"Finished {start_type}Run\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
+    logger.remove_main_handler()
 
 def update_libraries(config):
     for library in config.libraries:
         if library.skip_library:
             logger.info("")
-            util.separator(f"Skipping {library.name} Library")
+            logger.separator(f"Skipping {library.name} Library")
             continue
         try:
-            os.makedirs(os.path.join(default_dir, "logs", library.mapping_name, "collections"), exist_ok=True)
-            col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, "library.log")
-            should_roll_over = os.path.isfile(col_file_logger)
-            library_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
-            util.apply_formatter(library_handler)
-            if should_roll_over:
-                library_handler.doRollover()
-            logger.addHandler(library_handler)
-
+            logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout
             logger.info("")
-            util.separator(f"{library.name} Library")
+            logger.separator(f"{library.name} Library")
 
             if config.library_first and library.library_operation and not config.test_mode and not collection_only:
                 library_operations(config, library)
@@ -253,14 +231,14 @@ def update_libraries(config):
 
             if config.delete_collections:
                 logger.info("")
-                util.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
+                logger.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
                 logger.info("")
                 for collection in library.get_all_collections():
                     logger.info(f"Collection {collection.title} Deleted")
                     library.query(collection.delete)
             if not library.is_other and not library.is_music and (library.metadata_files or library.original_mapping_name in config.library_map) and not library_only:
                 logger.info("")
-                util.separator(f"Mapping {library.name} Library", space=False, border=False)
+                logger.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
                 library.map_guids()
             for metadata in library.metadata_files:
@@ -268,7 +246,7 @@ def update_libraries(config):
                 if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
                     continue
                 logger.info("")
-                util.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
+                logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
                 if not config.test_mode and not config.resume_from and not collection_only:
                     try:
                         metadata.update_metadata()
@@ -282,42 +260,35 @@ def update_libraries(config):
                     continue
                 if collections_to_run and not library_only:
                     logger.info("")
-                    util.separator(f"{'Test ' if config.test_mode else ''}Collections")
-                    logger.removeHandler(library_handler)
+                    logger.separator(f"{'Test ' if config.test_mode else ''}Collections")
+                    logger.remove_library_handler(library.mapping_name)
                     run_collection(config, library, metadata, collections_to_run)
-                    logger.addHandler(library_handler)
+                    logger.re_add_library_handler(library.mapping_name)
             if library.run_sort:
                 logger.info("")
-                util.separator(f"Sorting {library.name} Library's Collections", space=False, border=False)
+                logger.separator(f"Sorting {library.name} Library's Collections", space=False, border=False)
                 logger.info("")
                 for builder in library.run_sort:
                     logger.info("")
-                    util.separator(f"Sorting {builder.name} Collection", space=False, border=False)
+                    logger.separator(f"Sorting {builder.name} Collection", space=False, border=False)
                     logger.info("")
                     builder.sort_collection()
 
             if not config.library_first and library.library_operation and not config.test_mode and not collection_only:
                 library_operations(config, library)
 
-            logger.removeHandler(library_handler)
+            logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(e)
-            util.print_stacktrace()
-            util.print_multiline(e, critical=True)
+            logger.stacktrace()
+            logger.critical(e)
 
     playlist_status = {}
     playlist_stats = {}
     if config.playlist_files:
-        os.makedirs(os.path.join(default_dir, "logs", "playlists"), exist_ok=True)
-        pf_file_logger = os.path.join(default_dir, "logs", "playlists", "playlists.log")
-        should_roll_over = os.path.isfile(pf_file_logger)
-        playlists_handler = RotatingFileHandler(pf_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
-        util.apply_formatter(playlists_handler)
-        if should_roll_over:
-            playlists_handler.doRollover()
-        logger.addHandler(playlists_handler)
+        logger.add_playlists_handler()
         playlist_status, playlist_stats = run_playlists(config)
-        logger.removeHandler(playlists_handler)
+        logger.remove_playlists_handler()
 
     has_run_again = False
     for library in config.libraries:
@@ -328,41 +299,37 @@ def update_libraries(config):
     amount_added = 0
     if has_run_again and not library_only:
         logger.info("")
-        util.separator("Run Again")
+        logger.separator("Run Again")
         logger.info("")
         for x in range(1, config.general["run_again_delay"] + 1):
-            util.print_return(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
+            logger.ghost(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
             for y in range(60):
                 time.sleep(1)
-        util.print_end()
+        logger.exorcise()
         for library in config.libraries:
             if library.run_again:
                 try:
-                    col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, f"library.log")
-                    library_handler = RotatingFileHandler(col_file_logger, mode="w", backupCount=3, encoding="utf-8")
-                    util.apply_formatter(library_handler)
-                    logger.addHandler(library_handler)
-                    library_handler.addFilter(fmt_filter)
+                    logger.re_add_library_handler(library.mapping_name)
                     os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
                     logger.info("")
-                    util.separator(f"{library.name} Library Run Again")
+                    logger.separator(f"{library.name} Library Run Again")
                     logger.info("")
                     library.map_guids()
                     for builder in library.run_again:
                         logger.info("")
-                        util.separator(f"{builder.name} Collection in {library.name}")
+                        logger.separator(f"{builder.name} Collection in {library.name}")
                         logger.info("")
                         try:
                             amount_added += builder.run_collections_again()
                         except Failed as e:
                             library.notify(e, collection=builder.name, critical=False)
-                            util.print_stacktrace()
-                            util.print_multiline(e, error=True)
-                    logger.removeHandler(library_handler)
+                            logger.stacktrace()
+                            logger.error(e)
+                    logger.remove_library_handler(library.mapping_name)
                 except Exception as e:
                     library.notify(e)
-                    util.print_stacktrace()
-                    util.print_multiline(e, critical=True)
+                    logger.stacktrace()
+                    logger.critical(e)
 
     used_url = []
     for library in config.libraries:
@@ -387,19 +354,19 @@ def update_libraries(config):
 
     def print_status(section, status):
         logger.info("")
-        util.separator(f"{section} Summary", space=False, border=False)
+        logger.separator(f"{section} Summary", space=False, border=False)
         logger.info("")
         logger.info(f"{'Title':^{longest}} |  +  |  =  |  -  | {'Status':^13}")
-        breaker = f"{util.separating_character * longest}|{util.separating_character * 5}|{util.separating_character * 5}|{util.separating_character * 5}|"
-        util.separator(breaker, space=False, border=False, side_space=False, left=True)
+        breaker = f"{logger.separating_character * longest}|{logger.separating_character * 5}|{logger.separating_character * 5}|{logger.separating_character * 5}|"
+        logger.separator(breaker, space=False, border=False, side_space=False, left=True)
         for name, data in status.items():
             logger.info(f"{name:<{longest}} | {data['added']:^3} | {data['unchanged']:^3} | {data['removed']:^3} | {data['status']}")
             if data["errors"]:
                 for error in data["errors"]:
-                    util.print_multiline(error, info=True)
+                    logger.info(error)
                 logger.info("")
 
-    util.separator("Summary")
+    logger.separator("Summary")
     for library in config.libraries:
         print_status(library.name, library.status)
     if playlist_status:
@@ -430,7 +397,7 @@ def update_libraries(config):
 
 def library_operations(config, library):
     logger.info("")
-    util.separator(f"{library.name} Library Operations")
+    logger.separator(f"{library.name} Library Operations")
     logger.info("")
     logger.debug(f"Assets For All: {library.assets_for_all}")
     logger.debug(f"Delete Collections With Less: {library.delete_collections_with_less}")
@@ -458,16 +425,16 @@ def library_operations(config, library):
         items = library.search(**{"duplicate": True})
         for item in items:
             item.split()
-            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
+            logger.info(f"{item.title[:25]:<25} | Splitting")
 
     if library.update_blank_track_titles:
         tracks = library.get_all(collection_level="track")
         for i, item in enumerate(tracks, 1):
-            util.print_return(f"Processing Track: {i}/{len(tracks)} {item.title}")
+            logger.ghost(f"Processing Track: {i}/{len(tracks)} {item.title}")
             if not item.title and item.sortTitle:
                 library.edit_query(item, {"title.locked": 1, "title.value": item.sortTitle})
                 logger.info(f"Track: {item.sortTitle} was updated with sort title")
-        util.print_end()
+        logger.exorcise()
 
     tmdb_collections = {}
     if library.items_library_operation:
@@ -482,7 +449,7 @@ def library_operations(config, library):
             except Failed as e:
                 logger.error(e)
                 continue
-            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
             if library.assets_for_all:
                 library.find_assets(item)
             tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
@@ -497,7 +464,7 @@ def library_operations(config, library):
                         raise Failed
                     if str(item.userRating) != str(new_rating):
                         library.edit_query(item, {"userRating.value": new_rating, "userRating.locked": 1})
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | User Rating | {new_rating}"))
+                        logger.info(f"{item.title[:25]:<25} | User Rating | {new_rating}")
                 except Failed:
                     pass
 
@@ -527,12 +494,12 @@ def library_operations(config, library):
                         try:
                             omdb_item = config.OMDb.get_omdb(imdb_id)
                         except Failed as e:
-                            logger.error(util.adjust_space(str(e)))
+                            logger.error(str(e))
                         except Exception:
                             logger.error(f"IMDb ID: {imdb_id}")
                             raise
                     else:
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
+                        logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
             tvdb_item = None
             if library.mass_genre_update == "tvdb":
@@ -540,9 +507,9 @@ def library_operations(config, library):
                     try:
                         tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
                     except Failed as e:
-                        logger.error(util.adjust_space(str(e)))
+                        logger.error(str(e))
                 else:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
+                    logger.info(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}")
 
             mdb_item = None
             if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types \
@@ -556,12 +523,12 @@ def library_operations(config, library):
                         try:
                             mdb_item = config.Mdblist.get_imdb(imdb_id)
                         except Failed as e:
-                            logger.error(util.adjust_space(str(e)))
+                            logger.error(str(e))
                         except Exception:
                             logger.error(f"IMDb ID: {imdb_id}")
                             raise
                     else:
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
+                        logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
             if library.tmdb_collections and tmdb_item and tmdb_item.collection:
                 tmdb_collections[tmdb_item.collection.id] = tmdb_item.collection.name
@@ -609,20 +576,20 @@ def library_operations(config, library):
                 try:
                     new_rating = get_rating(library.mass_audience_rating_update)
                     if new_rating is None:
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
                     elif str(item.audienceRating) != str(new_rating):
                         library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
+                        logger.info(f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
                 except Failed:
                     pass
             if library.mass_critic_rating_update:
                 try:
                     new_rating = get_rating(library.mass_critic_rating_update)
                     if new_rating is None:
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
                     elif str(item.rating) != str(new_rating):
                         library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
+                        logger.info(f"{item.title[:25]:<25} | Critic Rating | {new_rating}")
                 except Failed:
                     pass
             if library.mass_content_rating_update:
@@ -636,10 +603,10 @@ def library_operations(config, library):
                     else:
                         raise Failed
                     if new_rating is None:
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Content Rating Found"))
+                        logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
                     elif str(item.rating) != str(new_rating):
                         library.edit_query(item, {"contentRating.value": new_rating, "contentRating.locked": 1})
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | Content Rating | {new_rating}"))
+                        logger.info(f"{item.title[:25]:<25} | Content Rating | {new_rating}")
                 except Failed:
                     pass
 
@@ -671,7 +638,7 @@ def library_operations(config, library):
 
     if tmdb_collections or library.genre_collections:
         logger.info("")
-        util.separator(f"Starting Automated Collections")
+        logger.separator(f"Starting Automated Collections")
         logger.info("")
         new_collections = {}
         templates = {}
@@ -724,7 +691,7 @@ def library_operations(config, library):
                 unmanaged = "Unmanaged Collections "
             elif library.delete_collections_with_less > 0:
                 unmanaged = "Unmanaged Collections and "
-        util.separator(f"Deleting All {unmanaged}Collections{print_suffix}", space=False, border=False)
+        logger.separator(f"Deleting All {unmanaged}Collections{print_suffix}", space=False, border=False)
         logger.info("")
     unmanaged_collections = []
     for col in library.get_all_collections():
@@ -740,7 +707,7 @@ def library_operations(config, library):
 
     if library.show_unmanaged and len(unmanaged_collections) > 0:
         logger.info("")
-        util.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
+        logger.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
         logger.info("")
         for col in unmanaged_collections:
             logger.info(col.title)
@@ -748,19 +715,19 @@ def library_operations(config, library):
         logger.info(f"{len(unmanaged_collections)} Unmanaged Collection{'s' if len(unmanaged_collections) > 1 else ''}")
     elif library.show_unmanaged:
         logger.info("")
-        util.separator(f"No Unmanaged Collections in {library.name} Library", space=False, border=False)
+        logger.separator(f"No Unmanaged Collections in {library.name} Library", space=False, border=False)
         logger.info("")
 
     if library.assets_for_all and len(unmanaged_collections) > 0:
         logger.info("")
-        util.separator(f"Unmanaged Collection Assets Check for {library.name} Library", space=False, border=False)
+        logger.separator(f"Unmanaged Collection Assets Check for {library.name} Library", space=False, border=False)
         logger.info("")
         for col in unmanaged_collections:
             library.find_assets(col)
 
     if library.metadata_backup:
         logger.info("")
-        util.separator(f"Metadata Backup for {library.name} Library", space=False, border=False)
+        logger.separator(f"Metadata Backup for {library.name} Library", space=False, border=False)
         logger.info("")
         logger.info(f"Metadata Backup Path: {library.metadata_backup['path']}")
         logger.info("")
@@ -768,7 +735,7 @@ def library_operations(config, library):
             meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"]))
         except yaml.scanner.ScannerError as e:
             meta = {}
-            util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
+            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
             filename, file_extension = os.path.splitext(library.metadata_backup["path"])
             i = 1
             while os.path.exists(f"{filename}{i}{file_extension}"):
@@ -780,7 +747,7 @@ def library_operations(config, library):
         items = library.get_all(load=True)
         titles = [i.title for i in items]
         for i, item in enumerate(items, 1):
-            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
             map_key, attrs = library.get_locked_attributes(item, titles)
             if attrs or library.metadata_backup["add_blank_entries"]:
                 def run_dict(save_dict, the_dict):
@@ -790,12 +757,12 @@ def library_operations(config, library):
                         else:
                             save_dict[kk] = vv
                 run_dict(meta["metadata"][map_key], attrs)
-        util.print_end()
+        logger.exorcise()
         try:
             yaml.round_trip_dump(meta, open(library.metadata_backup["path"], "w", encoding="utf-8"), block_seq_indent=2)
             logger.info(f"{len(meta['metadata'])} {library.type.capitalize()}{'s' if len(meta['metadata']) > 1 else ''} Backed Up")
         except yaml.scanner.ScannerError as e:
-            util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
+            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
 
 def run_collection(config, library, metadata, requested_collections):
     logger.info("")
@@ -821,43 +788,35 @@ def run_collection(config, library, metadata, requested_collections):
         elif config.resume_from == mapping_name:
             config.resume_from = None
             logger.info("")
-            util.separator(f"Resuming Collections")
+            logger.separator(f"Resuming Collections")
 
         if "name_mapping" in collection_attrs and collection_attrs["name_mapping"]:
             collection_log_name, output_str = util.validate_filename(collection_attrs["name_mapping"])
         else:
             collection_log_name, output_str = util.validate_filename(mapping_name)
-        collection_log_folder = os.path.join(default_dir, "logs", library.mapping_name, "collections", collection_log_name)
-        os.makedirs(collection_log_folder, exist_ok=True)
-        col_file_logger = os.path.join(collection_log_folder, "collection.log")
-        should_roll_over = os.path.isfile(col_file_logger)
-        collection_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
-        util.apply_formatter(collection_handler)
-        if should_roll_over:
-            collection_handler.doRollover()
-        logger.addHandler(collection_handler)
+        logger.add_collection_handler(library.mapping_name, collection_log_name)
         library.status[mapping_name] = {"status": "", "errors": [], "created": False, "modified": False, "deleted": False, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
-            util.separator(f"{mapping_name} Collection in {library.name}")
+            logger.separator(f"{mapping_name} Collection in {library.name}")
             logger.info("")
             if output_str:
                 logger.info(output_str)
                 logger.info("")
 
-            util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
+            logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
             builder = CollectionBuilder(config, metadata, mapping_name, no_missing, collection_attrs, library=library)
             logger.info("")
 
-            util.separator(f"Running {mapping_name} Collection", space=False, border=False)
+            logger.separator(f"Running {mapping_name} Collection", space=False, border=False)
 
             if len(builder.schedule) > 0:
-                util.print_multiline(builder.schedule, info=True)
+                logger.info(builder.schedule)
 
             if len(builder.smart_filter_details) > 0:
                 logger.info("")
-                util.print_multiline(builder.smart_filter_details, info=True)
+                logger.info(builder.smart_filter_details)
 
             items_added = 0
             items_removed = 0
@@ -896,7 +855,7 @@ def run_collection(config, library, metadata, requested_collections):
                     valid = False
                     if builder.details["delete_below_minimum"] and builder.obj:
                         logger.info("")
-                        util.print_multiline(builder.delete(), info=True)
+                        logger.info(builder.delete())
                         builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
@@ -917,10 +876,10 @@ def run_collection(config, library, metadata, requested_collections):
                         library.stats["modified"] += 1
                         library.status[mapping_name]["modified"] = True
                 except Failed:
-                    util.print_stacktrace()
+                    logger.stacktrace()
                     run_item_details = False
                     logger.info("")
-                    util.separator("No Collection to Update", space=False, border=False)
+                    logger.separator("No Collection to Update", space=False, border=False)
                 else:
                     builder.update_details()
 
@@ -938,7 +897,7 @@ def run_collection(config, library, metadata, requested_collections):
                     builder.load_collection_items()
                 except Failed:
                     logger.info("")
-                    util.separator("No Items Found", space=False, border=False)
+                    logger.separator("No Items Found", space=False, border=False)
                 else:
                     if builder.item_details:
                         builder.update_item_details()
@@ -960,29 +919,29 @@ def run_collection(config, library, metadata, requested_collections):
             else:
                 library.status[mapping_name]["status"] = "Unchanged"
         except NotScheduled as e:
-            util.print_multiline(e, info=True)
+            logger.info(e)
             library.status[mapping_name]["status"] = "Not Scheduled"
         except Failed as e:
             library.notify(e, collection=mapping_name)
-            util.print_stacktrace()
-            util.print_multiline(e, error=True)
+            logger.stacktrace()
+            logger.error(e)
             library.status[mapping_name]["status"] = "PMM Failure"
             library.status[mapping_name]["errors"].append(e)
         except Exception as e:
             library.notify(f"Unknown Error: {e}", collection=mapping_name)
-            util.print_stacktrace()
+            logger.stacktrace()
             logger.error(f"Unknown Error: {e}")
             library.status[mapping_name]["status"] = "Unknown Error"
             library.status[mapping_name]["errors"].append(e)
         logger.info("")
-        util.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {str(datetime.now() - collection_start).split('.')[0]}")
-        logger.removeHandler(collection_handler)
+        logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {str(datetime.now() - collection_start).split('.')[0]}")
+        logger.remove_collection_handler(library.mapping_name, collection_log_name)
 
 def run_playlists(config):
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
     status = {}
     logger.info("")
-    util.separator("Playlists")
+    logger.separator("Playlists")
     logger.info("")
     for playlist_file in config.playlist_files:
         for mapping_name, playlist_attrs in playlist_file.playlists.items():
@@ -1006,35 +965,26 @@ def run_playlists(config):
                 playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"])
             else:
                 playlist_log_name, output_str = util.validate_filename(mapping_name)
-            playlist_log_folder = os.path.join(default_dir, "logs", "playlists", playlist_log_name)
-            os.makedirs(playlist_log_folder, exist_ok=True)
-            ply_file_logger = os.path.join(playlist_log_folder, "playlist.log")
-            should_roll_over = os.path.isfile(ply_file_logger)
-            playlist_handler = RotatingFileHandler(ply_file_logger, delay=True, mode="w", backupCount=3,
-                                                   encoding="utf-8")
-            util.apply_formatter(playlist_handler)
-            if should_roll_over:
-                playlist_handler.doRollover()
-            logger.addHandler(playlist_handler)
+            logger.add_playlist_handler(playlist_log_name)
             status[mapping_name] = {"status": "", "errors": [], "created": False, "modified": False, "deleted": False, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
             library_names = None
             try:
-                util.separator(f"{mapping_name} Playlist")
+                logger.separator(f"{mapping_name} Playlist")
                 logger.info("")
                 if output_str:
                     logger.info(output_str)
                     logger.info("")
 
-                util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
+                logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
                 builder = CollectionBuilder(config, playlist_file, mapping_name, no_missing, playlist_attrs)
                 logger.info("")
 
-                util.separator(f"Running {mapping_name} Playlist", space=False, border=False)
+                logger.separator(f"Running {mapping_name} Playlist", space=False, border=False)
 
                 if len(builder.schedule) > 0:
-                    util.print_multiline(builder.schedule, info=True)
+                    logger.info(builder.schedule)
 
                 items_added = 0
                 items_removed = 0
@@ -1083,7 +1033,7 @@ def run_playlists(config):
                     valid = False
                     if builder.details["delete_below_minimum"] and builder.obj:
                         logger.info("")
-                        util.print_multiline(builder.delete(), info=True)
+                        logger.info(builder.delete())
                         builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
@@ -1103,10 +1053,10 @@ def run_playlists(config):
                         stats["modified"] += 1
                         status[mapping_name]["modified"] = True
                 except Failed:
-                    util.print_stacktrace()
+                    logger.stacktrace()
                     run_item_details = False
                     logger.info("")
-                    util.separator("No Playlist to Update", space=False, border=False)
+                    logger.separator("No Playlist to Update", space=False, border=False)
                 else:
                     builder.update_details()
 
@@ -1119,7 +1069,7 @@ def run_playlists(config):
                         builder.load_collection_items()
                     except Failed:
                         logger.info("")
-                        util.separator("No Items Found", space=False, border=False)
+                        logger.separator("No Items Found", space=False, border=False)
                     else:
                         if builder.item_details:
                             builder.update_item_details()
@@ -1132,23 +1082,23 @@ def run_playlists(config):
                 builder.send_notifications(playlist=True)
 
             except NotScheduled as e:
-                util.print_multiline(e, info=True)
+                logger.info(e)
                 status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:
                 config.notify(e, server=server_name, library=library_names, playlist=mapping_name)
-                util.print_stacktrace()
-                util.print_multiline(e, error=True)
+                logger.stacktrace()
+                logger.error(e)
                 status[mapping_name]["status"] = "PMM Failure"
                 status[mapping_name]["errors"].append(e)
             except Exception as e:
                 config.notify(f"Unknown Error: {e}", server=server_name, library=library_names, playlist=mapping_name)
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Unknown Error: {e}")
                 status[mapping_name]["status"] = "Unknown Error"
                 status[mapping_name]["errors"].append(e)
             logger.info("")
-            util.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {str(datetime.now() - playlist_start).split('.')[0]}")
-            logger.removeHandler(playlist_handler)
+            logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {str(datetime.now() - playlist_start).split('.')[0]}")
+            logger.remove_playlist_handler(playlist_log_name)
     return status, stats
 
 try:
@@ -1196,9 +1146,9 @@ try:
                     minutes = int((seconds % 3600) // 60)
                     time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                     time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                    util.print_return(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
+                    logger.ghost(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
                 else:
                     logger.error(f"Time Error: {valid_times}")
             time.sleep(60)
 except KeyboardInterrupt:
-    util.separator("Exiting Plex Meta Manager")
+    logger.separator("Exiting Plex Meta Manager")
