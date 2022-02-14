@@ -120,7 +120,7 @@ discover_status = {
     "Ended": "ended", "Canceled": "canceled", "Pilot": "pilot"
 }
 filters_by_type = {
-    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
+    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "max_size"],
     "movie_show_season_episode_album_track": ["year"],
     "movie_show_episode_artist_track": ["filepath"],
     "movie_show_episode_album": ["release", "critic_rating", "history"],
@@ -157,7 +157,7 @@ date_filters = ["release", "added", "last_played", "first_episode_aired", "last_
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = ["year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration"]
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
-special_filters = ["history"]
+special_filters = ["history", "max_size"]
 all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in string_filters for m in string_modifiers] + \
               [f"{f}{m}" for f in tag_filters for m in tag_modifiers] + \
@@ -1745,7 +1745,7 @@ class CollectionBuilder:
             for value in values:
                 final_years.append(util.parse(self.Type, final, value, datatype="int"))
             return smart_pair(final_years)
-        elif (attribute in plex.number_attributes + plex.date_attributes + plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
+        elif (attribute in plex.number_attributes + plex.date_attributes + plex.year_attributes + ["tmdb_year", "max_size"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
                 or (attribute in plex.tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return util.parse(self.Type, final, data, datatype="int")
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
@@ -1969,6 +1969,9 @@ class CollectionBuilder:
                             if label.tag.lower().endswith(" overlay"):
                                 filter_check = True
                     if util.is_boolean_filter(filter_data, filter_check):
+                        return False
+                elif filter_attr == "max_size":
+                    if len(self.added_items) + self.beginning_count >= filter_data:
                         return False
                 elif filter_attr == "history":
                     item_date = item.originallyAvailableAt
