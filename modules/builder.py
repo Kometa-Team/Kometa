@@ -2275,7 +2275,7 @@ class CollectionBuilder:
 
         edits = {}
         def get_summary(summary_method, summaries):
-            logger.info(f"Detail: {summary_method} updated {self.Type} Summary")
+            logger.info(f"Detail: {summary_method} will update {self.Type} Summary")
             return summaries[summary_method]
         if "summary" in self.summaries:                     summary = get_summary("summary", self.summaries)
         elif "tmdb_description" in self.summaries:          summary = get_summary("tmdb_description", self.summaries)
@@ -2301,24 +2301,32 @@ class CollectionBuilder:
         else:                                               summary = None
         if summary:
             if str(summary) != str(self.obj.summary):
-                if self.playlist:
-                    self.obj.edit(summary=str(summary))
-                    logger.info("Details: have been updated")
-                else:
-                    edits["summary.value"] = summary
-                    edits["summary.locked"] = 1
+                edits["summary.value"] = summary
+                edits["summary.locked"] = 1
 
         if "sort_title" in self.details:
             if str(self.details["sort_title"]) != str(self.obj.titleSort):
                 edits["titleSort.value"] = self.details["sort_title"]
                 edits["titleSort.locked"] = 1
-                logger.info(f"Detail: sort_title updated Collection Sort Title to {self.details['sort_title']}")
+                logger.info(f"Detail: sort_title will update Collection Sort Title to {self.details['sort_title']}")
 
         if "content_rating" in self.details:
             if str(self.details["content_rating"]) != str(self.obj.contentRating):
                 edits["contentRating.value"] = self.details["content_rating"]
                 edits["contentRating.locked"] = 1
-                logger.info(f"Detail: content_rating updated Collection Content Rating to {self.details['content_rating']}")
+                logger.info(f"Detail: content_rating will update Collection Content Rating to {self.details['content_rating']}")
+
+        if len(edits) > 0:
+            logger.debug(edits)
+            try:
+                if self.playlist:
+                    self.obj.edit(summary=str(edits["summary.value"]))
+                else:
+                    self.library.edit_query(self.obj, edits)
+                logger.info("Details: have been updated")
+            except NotFound:
+                logger.error("Details: Failed to Update Please delete the collection and run again")
+            logger.infO("")
 
         if "collection_mode" in self.details:
             self.library.collection_mode_query(self.obj, self.details["collection_mode"])
@@ -2353,10 +2361,6 @@ class CollectionBuilder:
         sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
         self.library.edit_tags("label", self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
 
-        if len(edits) > 0:
-            logger.debug(edits)
-            self.library.edit_query(self.obj, edits)
-            logger.info("Details: have been updated")
 
         poster_image = None
         background_image = None
