@@ -2329,7 +2329,7 @@ class CollectionBuilder:
                 logger.info("Details: have been updated")
             except NotFound:
                 logger.error("Details: Failed to Update Please delete the collection and run again")
-            logger.infO("")
+            logger.info("")
 
         if "collection_mode" in self.details:
             self.library.collection_mode_query(self.obj, self.details["collection_mode"])
