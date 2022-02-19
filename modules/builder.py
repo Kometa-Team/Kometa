@@ -502,22 +502,25 @@ class CollectionBuilder:
         if "smart_filter" in methods and not self.playlist:
             self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], display=True, default_sort="random")
 
-        def cant_interact(attr1, attr2, fail=False):
-            if getattr(self, attr1) and getattr(self, attr2):
-                message = f"{self.Type} Error: {attr1} & {attr2} attributes cannot go together"
-                if fail:
-                    raise Failed(message)
-                else:
-                    setattr(self, attr2, False)
+        if self.collectionless:
+            for x in ["smart_label", "smart_filter", "smart_url"]:
+                if x in methods:
+                    self.collectionless = False
                     logger.info("")
-                    logger.warning(f"{message} removing {attr2}")
+                    logger.warning(f"{self.Type} Error: {x} is not compatible with plex_collectionless removing plex_collectionless")
 
-        cant_interact("smart_label_collection", "collectionless")
-        cant_interact("smart_url", "collectionless")
-        cant_interact("smart_url", "run_again")
-        cant_interact("smart_label_collection", "smart_url", fail=True)
-        cant_interact("smart_label_collection", "parts_collection", fail=True)
-        cant_interact("smart_url", "parts_collection", fail=True)
+        if self.run_again and self.smart_url:
+            self.run_again = False
+            logger.info("")
+            logger.warning(f"{self.Type} Error: smart_filter is not compatible with run_again removing run_again")
+
+        if self.smart_url and self.smart_label_collection:
+            raise Failed(f"{self.Type} Error: smart_filter is not compatible with smart_label")
+
+        if self.parts_collection:
+            for x in ["smart_label", "smart_filter", "smart_url"]:
+                if x in methods:
+                    raise Failed(f"{self.Type} Error: {x} is not compatible with collection_level: {self.collection_level}")
 
         self.smart = self.smart_url or self.smart_label_collection
 
