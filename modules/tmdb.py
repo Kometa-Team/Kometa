@@ -20,7 +20,7 @@ type_map = {
     "tmdb_show": "Show", "tmdb_show_details": "Show", "tmdb_writer": "Person", "tmdb_writer_details": "Person"
 }
 discover_all = [
-    "language", "with_original_language", "region", "sort_by", "with_cast", "with_crew", "with_people",
+    "with_overview_translation", "with_original_language", "region", "sort_by", "with_cast", "with_crew", "with_people",
     "certification_country", "certification", "certification.lte", "certification.gte",
     "year", "primary_release_year", "primary_release_date.gte", "primary_release_date.lte",
     "release_date.gte", "release_date.lte", "vote_count.gte", "vote_count.lte",
@@ -31,12 +31,12 @@ discover_all = [
     "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks", "with_release_type"
 ]
 discover_movie_only = [
-    "region", "with_cast", "with_crew", "with_people", "certification_country", "certification", "include_video",
-    "year", "primary_release_year", "primary_release_date", "release_date", "include_adult", "with_release_type"
+    "region", "with_cast", "with_crew", "with_people", "certification_country", "certification", "include_video", "year",
+    "primary_release_year", "primary_release_date", "release_date", "include_adult", "with_release_type", "with_title_translation"
 ]
 discover_tv_only = [
-    "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date",
-    "first_air_date", "first_air_date_year", "with_networks", "with_status", "with_type",
+    "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date", "first_air_date",
+    "first_air_date_year", "with_networks", "with_status", "with_type", "with_name_translation"
 ]
 discover_strings = [
     "with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_release_type",
