@@ -372,7 +372,7 @@ def update_libraries(config):
     if playlist_status:
         print_status("Playlists", playlist_status)
 
-    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     stats["added"] += amount_added
     for library in config.libraries:
         stats["created"] += library.stats["created"]
@@ -383,6 +383,7 @@ def update_libraries(config):
         stats["removed"] += library.stats["removed"]
         stats["radarr"] += library.stats["radarr"]
         stats["sonarr"] += library.stats["sonarr"]
+        stats["names"].extend([{"name": n, "library": library.name} for n in library.stats["names"]])
     if playlist_stats:
         stats["created"] += playlist_stats["created"]
         stats["modified"] += playlist_stats["modified"]
@@ -392,7 +393,7 @@ def update_libraries(config):
         stats["removed"] += playlist_stats["removed"]
         stats["radarr"] += playlist_stats["radarr"]
         stats["sonarr"] += playlist_stats["sonarr"]
-
+        stats["names"].extend([{"name": n, "library": "PLAYLIST"} for n in playlist_stats["names"]])
     return stats
 
 def library_operations(config, library):
@@ -807,6 +808,7 @@ def run_collection(config, library, metadata, requested_collections):
             logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
             builder = CollectionBuilder(config, metadata, mapping_name, no_missing, collection_attrs, library=library)
+            library.stats["names"].append(builder.name)
             logger.info("")
 
             logger.separator(f"Running {mapping_name} Collection", space=False, border=False)
@@ -938,7 +940,7 @@ def run_collection(config, library, metadata, requested_collections):
         logger.remove_collection_handler(library.mapping_name, collection_log_name)
 
 def run_playlists(config):
-    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     status = {}
     logger.info("")
     logger.separator("Playlists")
@@ -979,6 +981,7 @@ def run_playlists(config):
                 logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
                 builder = CollectionBuilder(config, playlist_file, mapping_name, no_missing, playlist_attrs)
+                stats["names"].append(builder.name)
                 logger.info("")
 
                 logger.separator(f"Running {mapping_name} Playlist", space=False, border=False)

@@ -61,6 +61,7 @@ class Webhooks:
                 "items_removed": stats["removed"],
                 "added_to_radarr": stats["radarr"],
                 "added_to_sonarr": stats["sonarr"],
+                "names": stats["names"]
             })
 
     def error_hooks(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
