@@ -703,9 +703,12 @@ class CollectionBuilder:
 
             if self.obj:
                 self.exists = True
-                self.beginning_count = self.obj.childCount
-                if self.sync:
+                if not self.playlist:
+                    self.beginning_count = self.obj.childCount
+                if self.sync or self.playlist:
                     self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+                    if self.playlist:
+                        self.beginning_count = len(self.remove_item_map)
         else:
             self.obj = None
             self.sync = False
@@ -2034,7 +2037,7 @@ class CollectionBuilder:
         if len(self.missing_movies) > 0:
             if self.details["show_missing"] is True:
                 logger.info("")
-                logger.separator(f"Missing Movies from Library: {self.name}", space=False, border=False)
+                logger.separator(f"Missing Movies from Library: {self.library.name}", space=False, border=False)
                 logger.info("")
             missing_movies_with_names = []
             for missing_id in self.missing_movies:
