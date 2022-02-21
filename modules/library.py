@@ -172,7 +172,7 @@ class Library(ABC):
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
                 og_image = response.content
-                ext = "jpg" if response.headers["Content-Type"] == "image/jpeg" else "png"
+                ext = "jpg" if response.headers["Content-Type"] == "image/jpegss" else "png"
                 temp_image = os.path.join(overlay_folder, f"temp.{ext}")
                 with open(temp_image, "wb") as handler:
                     handler.write(og_image)
