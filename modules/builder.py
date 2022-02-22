@@ -97,7 +97,7 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level",
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
-details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode",
+details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode", "limit",
            "minimum_items", "label", "album_sorting", "cache_builders"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
@@ -120,7 +120,7 @@ discover_status = {
     "Ended": "ended", "Canceled": "canceled", "Pilot": "pilot"
 }
 filters_by_type = {
-    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "max_size"],
+    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
     "movie_show_season_episode_album_track": ["year"],
     "movie_show_episode_artist_track": ["filepath"],
     "movie_show_episode_album": ["release", "critic_rating", "history"],
@@ -157,7 +157,7 @@ date_filters = ["release", "added", "last_played", "first_episode_aired", "last_
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = ["year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration"]
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
-special_filters = ["history", "max_size"]
+special_filters = ["history"]
 all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in string_filters for m in string_modifiers] + \
               [f"{f}{m}" for f in tag_filters for m in tag_modifiers] + \
@@ -181,7 +181,7 @@ custom_sort_builders = [
 ]
 episode_parts_only = ["plex_pilots"]
 parts_collection_valid = [
-     "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library",
+     "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "limit",
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll", "changes_webhooks",
      "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "cache_builders"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
@@ -293,6 +293,7 @@ class CollectionBuilder:
         self.backgrounds = {}
         self.summaries = {}
         self.schedule = ""
+        self.limit = 0
         self.beginning_count = 0
         self.minimum = self.library.minimum_items
         self.ignore_ids = [i for i in self.library.ignore_ids]
@@ -769,6 +770,8 @@ class CollectionBuilder:
             self.details[method_name] = util.check_collection_mode(method_data)
         elif method_name == "minimum_items":
             self.minimum = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
+        elif method_name == "limit":
+            self.limit = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
         elif method_name == "cache_builders":
             self.details[method_name] = util.parse(self.Type, method_name, method_data, datatype="int", minimum=0)
         elif method_name == "server_preroll":
@@ -1751,7 +1754,7 @@ class CollectionBuilder:
             for value in values:
                 final_years.append(util.parse(self.Type, final, value, datatype="int"))
             return smart_pair(final_years)
-        elif (attribute in plex.number_attributes + plex.date_attributes + plex.year_attributes + ["tmdb_year", "max_size"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
+        elif (attribute in plex.number_attributes + plex.date_attributes + plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
                 or (attribute in plex.tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return util.parse(self.Type, final, data, datatype="int")
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
@@ -1799,6 +1802,9 @@ class CollectionBuilder:
         amount_unchanged = 0
         playlist_adds = []
         for i, item in enumerate(self.added_items, 1):
+            if self.limit and amount_added + self.beginning_count - len([r for _, r in self.remove_item_map.items() if r is not None]) >= self.limit:
+                logger.info(f"{self.Type} Limit reached")
+                break
             current_operation = "=" if item in collection_items else "+"
             number_text = f"{i}/{total}"
             logger.info(f"{number_text:>{spacing}} | {name} {self.Type} | {current_operation} | {util.item_title(item)}")
@@ -1975,9 +1981,6 @@ class CollectionBuilder:
                             if label.tag.lower().endswith(" overlay"):
                                 filter_check = True
                     if util.is_boolean_filter(filter_data, filter_check):
-                        return False
-                elif filter_attr == "max_size":
-                    if len(self.added_items) + self.beginning_count >= filter_data:
                         return False
                 elif filter_attr == "history":
                     item_date = item.originallyAvailableAt
