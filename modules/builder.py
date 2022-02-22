@@ -1906,10 +1906,8 @@ class CollectionBuilder:
                         attr = None
                         if filter_attr == "tmdb_vote_count":
                             attr = item.vote_count
-                        elif filter_attr == "tmdb_year" and is_movie:
-                            attr = item.year
-                        elif filter_attr == "tmdb_year" and not is_movie and item.first_air_date:
-                            attr = item.first_air_date.year
+                        elif filter_attr == "tmdb_year":
+                            attr = item.release_date.year if is_movie else item.first_air_date.year
                         if util.is_number_filter(attr, modifier, filter_data):
                             return False
                     elif filter_attr == "tmdb_genre":
