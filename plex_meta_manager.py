@@ -550,7 +550,7 @@ def library_operations(config, library):
                 elif mdb_item and attribute == "mdb_trakt":
                     return mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
                 elif mdb_item and attribute == "mdb_tomatoes":
-                    return mdb_item.tmdb_rating / 10 if mdb_item.tomatoes_rating else None
+                    return mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
                 elif mdb_item and attribute == "mdb_tomatoesaudience":
                     return mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
                 elif mdb_item and attribute == "mdb_tmdb":
