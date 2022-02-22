@@ -1796,7 +1796,7 @@ class CollectionBuilder:
         logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
-        total = len(self.added_items)
+        total = self.limit if self.limit and len(self.added_items) > self.limit else len(self.added_items)
         spacing = len(str(total)) * 2 + 1
         amount_added = 0
         amount_unchanged = 0
@@ -1804,6 +1804,7 @@ class CollectionBuilder:
         for i, item in enumerate(self.added_items, 1):
             if self.limit and amount_added + self.beginning_count - len([r for _, r in self.remove_item_map.items() if r is not None]) >= self.limit:
                 logger.info(f"{self.Type} Limit reached")
+                self.added_items = self.added_items[:i-1]
                 break
             current_operation = "=" if item in collection_items else "+"
             number_text = f"{i}/{total}"
