@@ -129,7 +129,7 @@ filters_by_type = {
     "movie_show_episode": ["actor", "content_rating", "audience_rating"],
     "movie_show_album": ["label"],
     "movie_episode_track": ["audio_track_title"],
-    "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre"],
+    "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword"],
     "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language"],
     "movie_artist": ["country"],
     "show": ["tmdb_status", "tmdb_type", "network", "first_episode_aired", "last_episode_aired"],
@@ -144,12 +144,12 @@ filters = {
     "album": [item for check, sub in filters_by_type.items() for item in sub if "album" in check],
     "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
 }
-tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type"]
-string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title"]
+tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre", "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type", "tmdb_title"]
+string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title", "tmdb_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
-    "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_genre", "tmdb_status", "tmdb_type"
+    "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "tmdb_status", "tmdb_type"
 ]
 tag_modifiers = ["", ".not", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_overlay"]
@@ -1699,7 +1699,7 @@ class CollectionBuilder:
             return valid_regex
         elif attribute in plex.string_attributes + string_filters and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
-        elif attribute == "original_language":
+        elif attribute in ["original_language", "tmdb_keyword"]:
             return util.get_list(data, lower=True)
         elif attribute in ["filepath", "tmdb_genre"]:
             return util.get_list(data)
@@ -1875,7 +1875,10 @@ class CollectionBuilder:
         if self.tmdb_filters or check_released:
             try:
                 if item is None:
-                    item = self.config.TMDb.get_movie(item_id) if is_movie else self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
+                    if is_movie:
+                        item = self.config.TMDb.get_movie(item_id, partial="keywords")
+                    else:
+                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id), partial="keywords")
                 if check_released:
                     date_to_check = item.release_date if is_movie else item.first_air_date
                     if not date_to_check or date_to_check > self.current_time:
@@ -1913,6 +1916,14 @@ class CollectionBuilder:
                         attrs = [g.name for g in item.genres]
                         if (not list(set(filter_data) & set(attrs)) and modifier == "") \
                                 or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+                            return False
+                    elif filter_attr == "tmdb_keyword":
+                        attrs = [k.name for k in item.keywords]
+                        if (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                                or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+                            return False
+                    elif filter_attr == "tmdb_title":
+                        if util.is_string_filter([item.title], modifier, filter_data):
                             return False
             except Failed:
                 return False
