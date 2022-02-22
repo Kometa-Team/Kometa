@@ -703,7 +703,11 @@ def library_operations(config, library):
             logger.info(f"{col.title} Deleted")
         elif col.title not in library.collections:
             unmanaged_collections.append(col)
-        if library.mass_collection_mode:
+    if library.mass_collection_mode:
+        logger.info("")
+        logger.separator(f"Mass Collection Mode for {library.name} Library", space=False, border=False)
+        logger.info("")
+        for col in library.get_all_collections():
             library.collection_mode_query(col, library.mass_collection_mode)
 
     if library.show_unmanaged and len(unmanaged_collections) > 0:
