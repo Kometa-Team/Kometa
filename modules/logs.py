@@ -77,8 +77,7 @@ class MyLogger:
         self._logger.removeHandler(self.main_handler)
 
     def add_library_handler(self, library_key):
-        if not self.library_handlers:
-            os.makedirs(os.path.join(self.log_dir, library_key, COLLECTION_DIR), exist_ok=True)
+        os.makedirs(os.path.join(self.log_dir, library_key, COLLECTION_DIR), exist_ok=True)
         self.library_handlers[library_key] = self._get_handler(os.path.join(self.log_dir, library_key, LIBRARY_LOG))
         self._logger.addHandler(self.library_handlers[library_key])
 
@@ -100,8 +99,8 @@ class MyLogger:
 
     def add_collection_handler(self, library_key, collection_key):
         collection_dir = os.path.join(self.log_dir, library_key, COLLECTION_DIR, collection_key)
+        os.makedirs(collection_dir, exist_ok=True)
         if library_key not in self.collection_handlers:
-            os.makedirs(collection_dir, exist_ok=True)
             self.collection_handlers[library_key] = {}
         self.collection_handlers[library_key][collection_key] = self._get_handler(os.path.join(collection_dir, COLLECTION_LOG))
         self._logger.addHandler(self.collection_handlers[library_key][collection_key])
