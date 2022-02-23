@@ -130,7 +130,7 @@ filters_by_type = {
     "movie_show_album": ["label"],
     "movie_episode_track": ["audio_track_title"],
     "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword"],
-    "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language"],
+    "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language", "has_dolby_vision"],
     "movie_artist": ["country"],
     "show": ["tmdb_status", "tmdb_type", "network", "first_episode_aired", "last_episode_aired"],
     "album": ["record_label"]
@@ -152,7 +152,7 @@ tag_filters = [
     "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "tmdb_status", "tmdb_type"
 ]
 tag_modifiers = ["", ".not", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
-boolean_filters = ["has_collection", "has_overlay"]
+boolean_filters = ["has_collection", "has_overlay", "has_dolby_vision"]
 date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired"]
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = ["year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration"]
@@ -1990,6 +1990,14 @@ class CollectionBuilder:
                         for label in item.labels:
                             if label.tag.lower().endswith(" overlay"):
                                 filter_check = True
+                                break
+                    elif filter_attr == "has_dolby_vision":
+                        for media in item.media:
+                            for part in media.parts:
+                                for stream in part.videoStreams():
+                                    if stream.DOVIPresent:
+                                        filter_check = True
+                                        break
                     if util.is_boolean_filter(filter_data, filter_check):
                         return False
                 elif filter_attr == "history":
@@ -2025,7 +2033,7 @@ class CollectionBuilder:
                     if filter_attr in ["resolution", "audio_language", "subtitle_language"]:
                         for media in item.media:
                             if filter_attr == "resolution":
-                                attrs.extend([media.videoResolution])
+                                attrs.append(media.videoResolution)
                             for part in media.parts:
                                 if filter_attr == "audio_language":
                                     attrs.extend([a.language for a in part.audioStreams()])
