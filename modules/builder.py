@@ -2024,9 +2024,7 @@ class CollectionBuilder:
                     if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                         test_number = len(test_number) if test_number else 0
                         modifier = f".{modifier[7:]}"
-                    elif not test_number:
-                        return False
-                    if util.is_number_filter(test_number / divider, modifier, filter_data):
+                    if test_number is None or util.is_number_filter(test_number / divider, modifier, filter_data):
                         return False
                 else:
                     attrs = []
