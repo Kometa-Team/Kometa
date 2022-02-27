@@ -2038,7 +2038,7 @@ class CollectionBuilder:
                                 if filter_attr == "subtitle_language":
                                     attrs.extend([s.language for s in part.subtitleStreams()])
                     elif filter_attr in ["content_rating", "year", "rating"]:
-                        attrs = [str(getattr(item, filter_actual))]
+                        attrs = [getattr(item, filter_actual)]
                     elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection"]:
                         attrs = [attr.tag for attr in getattr(item, filter_actual)]
                     else:
