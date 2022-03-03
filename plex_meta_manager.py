@@ -433,7 +433,9 @@ def library_operations(config, library):
         num_edited = 0
         for i, item in enumerate(tracks, 1):
             logger.ghost(f"Processing Track: {i}/{len(tracks)} {item.title}")
-            if not item.title and item.sortTitle:
+            if not hasattr(item, "title") or not hasattr(item, "titleSort"):
+                item.refresh()
+            elif not item.title and item.sortTitle:
                 library.edit_query(item, {"title.locked": 1, "title.value": item.sortTitle})
                 num_edited += 1
                 logger.info(f"Track: {item.sortTitle} was updated with sort title")
