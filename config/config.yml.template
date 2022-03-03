@@ -10,7 +10,7 @@ libraries:                                      # This is called out once within
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - git: meisnate12/ShowCharts              # Unless otherwise stated, this points to the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - git: meisnate12/ShowCharts              # This points to the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   Anime:
     metadata_path:
       - file: config/Anime.yml
@@ -19,7 +19,7 @@ libraries:                                      # This is called out once within
       - file: config/Music.yml
 playlist_files:
   - file: config/playlists.yml       
-  - git: meisnate12/Playlists                   # You can change the custom_repo: setting to amend which GitHub Repository this points to
+  - git: meisnate12/Playlists
 settings:                                      
   cache: true
   cache_expiration: 60

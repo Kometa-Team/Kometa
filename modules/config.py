@@ -136,7 +136,7 @@ class ConfigFile:
                         hooks("collection_changes")
                         new_config["libraries"][library]["webhooks"]["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
             if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
-            if "playlists" in new_config:                   new_config["playlists"] = new_config.pop("playlists")
+            if "playlist_files" in new_config:              new_config["playlist_files"] = new_config.pop("playlist_files")
             if "settings" in new_config:
                 temp = new_config.pop("settings")
                 if "collection_minimum" in temp:
@@ -310,7 +310,7 @@ class ConfigFile:
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
-        self.custom_repo = self.general["custom_repo"]
+        self.custom_repo = self.general["custom_repo"].replace("https://github.com/", "https://raw.githubusercontent.com/") if self.general["custom_repo"] else None
 
         self.session = requests.Session()
         if not self.general["verify_ssl"]:
