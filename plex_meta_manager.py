@@ -434,7 +434,7 @@ def library_operations(config, library):
         for i, item in enumerate(tracks, 1):
             logger.ghost(f"Processing Track: {i}/{len(tracks)} {item.title}")
             try:
-                if not hasattr(item, "title") or not hasattr(item, "titleSort"):
+                if not hasattr(item, "title") or not hasattr(item, "sortTitle"):
                     item.refresh()
                     raise Failed(f"Track attributes not found refreshing metadata for {item.ratingKey}")
                 if not item.title and item.sortTitle:
