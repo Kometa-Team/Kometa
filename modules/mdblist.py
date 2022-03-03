@@ -5,7 +5,8 @@ from urllib.parse import urlparse
 logger = util.logger
 
 builders = ["mdblist_list"]
-list_sorts = ["score", "released", "updated", "imdbrating", "rogerebert", "imdbvotes", "budget", "revenue"]
+sort_names = ["score", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular", "rogerebert", "budget", "revenue", "added"]
+list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 base_url = "https://mdblist.com/lists"
 api_url = "https://mdblist.com/api/"
 
@@ -109,24 +110,24 @@ class Mdblist:
     def get_movie(self, tmdb_id):
         return self._request(tmdb_id=tmdb_id, is_movie=True)
 
-    def validate_mdblist_lists(self, mdb_lists):
+    def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []
         for mdb_dict in util.get_list(mdb_lists, split=False):
             if not isinstance(mdb_dict, dict):
                 mdb_dict = {"url": mdb_dict}
             dict_methods = {dm.lower(): dm for dm in mdb_dict}
             if "url" not in dict_methods:
-                raise Failed(f"Collection Error: mdb_list url attribute not found")
+                raise Failed(f"{error_type} Error: mdb_list url attribute not found")
             elif mdb_dict[dict_methods["url"]] is None:
-                raise Failed(f"Collection Error: mdb_list url attribute is blank")
+                raise Failed(f"{error_type} Error: mdb_list url attribute is blank")
             else:
                 mdb_url = mdb_dict[dict_methods["url"]].strip()
             if not mdb_url.startswith(base_url):
-                raise Failed(f"Mdblist Error: {mdb_url} must begin with: {base_url}")
+                raise Failed(f"{error_type} Error: {mdb_url} must begin with: {base_url}")
             list_count = None
             if "limit" in dict_methods:
                 if mdb_dict[dict_methods["limit"]] is None:
-                    logger.warning(f"Collection Warning: mdb_list limit attribute is blank using 0 as default")
+                    logger.warning(f"{error_type} Warning: mdb_list limit attribute is blank using 0 as default")
                 else:
                     try:
                         value = int(str(mdb_dict[dict_methods["limit"]]))
@@ -135,15 +136,18 @@ class Mdblist:
                     except ValueError:
                         pass
                 if list_count is None:
-                    logger.warning(f"Collection Warning: mdb_list limit attribute must be an integer 0 or greater using 0 as default")
+                    logger.warning(f"{error_type} Warning: mdb_list limit attribute must be an integer 0 or greater using 0 as default")
             if list_count is None:
                 list_count = 0
-            sort_by = "score"
+            sort_by = "score.desc"
             if "sort_by" in dict_methods:
                 if mdb_dict[dict_methods["sort_by"]] is None:
-                    logger.warning(f"Collection Warning: mdb_list sort_by attribute is blank using score as default")
+                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute is blank using score as default")
+                elif mdb_dict[dict_methods["sort_by"]].lower() in sort_names:
+                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} is missing .desc or .asc defaulting to .desc")
+                    sort_by = f"{mdb_dict[dict_methods['sort_by']].lower()}.desc"
                 elif mdb_dict[dict_methods["sort_by"]].lower() not in list_sorts:
-                    logger.warning(f"Collection Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} not valid score as default. Options: {', '.join(list_sorts)}")
+                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} not valid score as default. Options: {', '.join(list_sorts)}")
                 else:
                     sort_by = mdb_dict[dict_methods["sort_by"]].lower()
             valid_lists.append({"url": mdb_url, "limit": list_count, "sort_by": sort_by})
@@ -151,9 +155,10 @@ class Mdblist:
         
     def get_mdblist_ids(self, method, data):
         if method == "mdblist_list":
-            params = {"sort": data["sort_by"]}
             logger.info(f"Processing Mdblist.com List: {data['url']}")
             logger.info(f"Sort By: {data['sort_by']}")
+            sort, direction = data["sort_by"].split(".")
+            params = {"sort": sort, "sortorder": direction}
             if data["limit"] > 0:
                 logger.info(f"Limit: {data['limit']} items")
                 params["limit"] = data["limit"]

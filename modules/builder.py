@@ -955,6 +955,8 @@ class CollectionBuilder:
                         raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute not supported")
                     elif search_attr == "season":
                         new_dictionary[search_attr] = util.parse(self.Type, search_attr, search_data, parent=method_name, default=current_season, options=util.seasons)
+                        if new_dictionary[search_attr] == "current":
+                            new_dictionary[search_attr] = current_season
                         if "year" not in dict_methods:
                             logger.warning(f"Collection Warning: {method_name} year attribute not found using this year: {default_year} by default")
                             new_dictionary["year"] = default_year
@@ -1070,8 +1072,11 @@ class CollectionBuilder:
                     elif self.current_time.month in [4, 5, 6]:          default_season = "spring"
                     elif self.current_time.month in [7, 8, 9]:          default_season = "summer"
                     else:                                               default_season = "fall"
+                    season = util.parse(self.Type, "season", dict_data, methods=dict_methods, parent=method_name, default=default_season, options=util.seasons)
+                    if season == "current":
+                        season = default_season
                     self.builders.append((method_name, {
-                        "season": util.parse(self.Type, "season", dict_data, methods=dict_methods, parent=method_name, default=default_season, options=util.seasons),
+                        "season": season,
                         "sort_by": util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, default="members", options=mal.season_sort_options, translation=mal.season_sort_translation),
                         "year": util.parse(self.Type, "year", dict_data, datatype="int", methods=dict_methods, default=self.current_year, parent=method_name, minimum=1917, maximum=self.current_year + 1),
                         "limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=500)
@@ -1121,7 +1126,7 @@ class CollectionBuilder:
         self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
 
     def _mdblist(self, method_name, method_data):
-        for mdb_dict in self.config.Mdblist.validate_mdblist_lists(method_data):
+        for mdb_dict in self.config.Mdblist.validate_mdblist_lists(self.Type, method_data):
             self.builders.append((method_name, mdb_dict))
 
     def _tautulli(self, method_name, method_data):
@@ -2043,7 +2048,6 @@ class CollectionBuilder:
                         attrs = [attr.tag for attr in getattr(item, filter_actual)]
                     else:
                         raise Failed(f"Filter Error: filter: {filter_final} not supported")
-
                     if (not list(set(filter_data) & set(attrs)) and modifier == "") \
                             or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                         return False
