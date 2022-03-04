@@ -10,7 +10,7 @@ redirect_uri_encoded = redirect_uri.replace(":", "%3A")
 base_url = "https://api.trakt.tv"
 builders = [
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
-    "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
+    "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
     "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular", "trakt_trending", "trakt_watchlist", "trakt_boxoffice"
 ]
@@ -226,6 +226,16 @@ class Trakt:
             raise Failed(f"Trakt Error: {data}'s {list_type.capitalize()} is empty")
         return self._parse(items, item_type="movie" if is_movie else "show")
 
+    def _user_recommendations(self, amount, is_movie):
+        media_type = "Movie" if is_movie else "Show"
+        try:
+            items = self._request(f"/recommendations/{'movies' if is_movie else 'shows'}/?limit={amount}")
+        except Failed:
+            raise Failed(f"Trakt Error: failed to fetch {media_type} Recommendations")
+        if len(items) == 0:
+            raise Failed(f"Trakt Error: no {media_type} Recommendations were found")
+        return self._parse(items, item_type="movie" if is_movie else "show")
+
     def _pagenation(self, pagenation, amount, is_movie):
         items = self._request(f"/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
         return self._parse(items, typeless=pagenation == "popular", item_type="movie" if is_movie else "show")
@@ -265,6 +275,9 @@ class Trakt:
         elif method == "trakt_list":
             logger.info(f"Processing {pretty}: {data}")
             return self._user_list(data)
+        elif method == "trakt_recommended_personal":
+            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+            return self._user_recommendations(data, is_movie)
         elif method in builders:
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
             terms = method.split("_")
