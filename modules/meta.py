@@ -369,7 +369,6 @@ class MetadataFile(DataFile):
                                 template_call[k] = v[key]
                         if key in titles:
                             collection_title = titles[key]
-
                         else:
                             if key in keys:
                                 value = keys[key]
