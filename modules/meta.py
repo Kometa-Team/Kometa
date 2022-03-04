@@ -338,6 +338,7 @@ class MetadataFile(DataFile):
                         logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
                     titles = util.parse("Config", "titles", dynamic, parent=map_name, methods=methods, datatype="dict") if "titles" in methods else {}
+                    keys = util.parse("Config", "keys", dynamic, parent=map_name, methods=methods, datatype="dict") if "keys" in methods else {}
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
@@ -368,13 +369,17 @@ class MetadataFile(DataFile):
                                 template_call[k] = v[key]
                         if key in titles:
                             collection_title = titles[key]
+
                         else:
-                            for prefix in remove_prefix:
-                                if value.startswith(prefix):
-                                    value = value[len(prefix):].strip()
-                            for suffix in remove_suffix:
-                                if value.endswith(suffix):
-                                    value = value[:-len(suffix)].strip()
+                            if key in keys:
+                                value = keys[key]
+                            else:
+                                for prefix in remove_prefix:
+                                    if value.startswith(prefix):
+                                        value = value[len(prefix):].strip()
+                                for suffix in remove_suffix:
+                                    if value.endswith(suffix):
+                                        value = value[:-len(suffix)].strip()
                             collection_title = title_format.replace("<<title>>", value)
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
