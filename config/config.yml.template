@@ -73,6 +73,10 @@ tautulli:                                       # Can be individually specified 
   apikey: ################################
 omdb:
   apikey: ########
+  cache_expiration: 60
+mdblist:
+  apikey: #########################
+  cache_expiration: 60
 notifiarr:
   apikey: ####################################
 anidb:                                          # Not required for AniDB builders unless you want mature content
