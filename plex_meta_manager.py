@@ -433,13 +433,10 @@ def library_operations(config, library):
         num_edited = 0
         for i, item in enumerate(tracks, 1):
             logger.ghost(f"Processing Track: {i}/{len(tracks)} {item.title}")
-            try:
-                if not item.title and item.titleSort:
-                    library.edit_query(item, {"title.locked": 1, "title.value": item.titleSort})
-                    num_edited += 1
-                    logger.info(f"Track: {item.titleSort} was updated with sort title")
-            except Failed as e:
-                logger.error(e)
+            if not item.title and item.titleSort:
+                library.edit_query(item, {"title.locked": 1, "title.value": item.titleSort})
+                num_edited += 1
+                logger.info(f"Track: {item.titleSort} was updated with sort title")
         logger.info(f"{len(tracks)} Tracks Processed; {num_edited} Blank Track Titles Updated")
 
     tmdb_collections = {}
@@ -701,9 +698,8 @@ def library_operations(config, library):
         logger.info("")
     unmanaged_collections = []
     for col in library.get_all_collections():
-        if (library.delete_collections_with_less is not None
-            and (library.delete_collections_with_less == 0 or col.childCount < library.delete_collections_with_less)) \
-            or (col.title not in library.collections and library.delete_unmanaged_collections):
+        if (library.delete_collections_with_less and col.childCount < library.delete_collections_with_less) \
+            or (library.delete_unmanaged_collections and col.title not in library.collections):
             library.query(col.delete)
             logger.info(f"{col.title} Deleted")
         elif col.title not in library.collections:
