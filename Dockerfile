@@ -1,4 +1,7 @@
 FROM python:3.9-slim
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
 RUN echo "**** install system packages ****" \
  && apt-get update \
  && apt-get upgrade -y --no-install-recommends \
@@ -12,4 +15,5 @@ RUN echo "**** install python packages ****" \
  && rm -rf /requirements.txt /tmp/* /var/tmp/* /var/lib/apt/lists/*
 COPY . /
 VOLUME /config
-ENTRYPOINT ["python3", "plex_meta_manager.py"]
+ENTRYPOINT ["/tini", "-s", "--"]
+CMD ["python3", "plex_meta_manager.py"]
