@@ -111,7 +111,7 @@ class TVDbObj:
                 except Failed:
                     pass
             if tmdb_id is None and imdb_id is None:
-                raise Failed(f"TVDB Error: No TMDb ID or IMDb ID found for {self.title}")
+                raise Failed(f"TVDb Error: No TMDb ID or IMDb ID found for {self.title}")
         self.tmdb_id = tmdb_id
         self.imdb_id = imdb_id
 
