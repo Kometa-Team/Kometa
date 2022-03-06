@@ -356,7 +356,7 @@ class MetadataFile(DataFile):
                     remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
                     remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
-                    other_name = util.parse("Config", "other", dynamic, parent=map_name, methods=methods) if "other" in methods and include else None
+                    other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods) if "other_name" in methods and include else None
                     other_keys = []
                     for key, value in auto_list.items():
                         if include and key not in include:

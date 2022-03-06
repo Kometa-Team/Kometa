@@ -2122,7 +2122,7 @@ class CollectionBuilder:
                 if self.check_tmdb_filter(missing_id, False, check_released=self.details["missing_only_released"]):
                     missing_shows_with_names.append((show.title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {show.title} (TVDB: {missing_id})")
+                        logger.info(f"{self.name} {self.Type} | ? | {show.title} (TVDb: {missing_id})")
                 else:
                     if self.details["show_filtered"] is True and self.details["show_missing"] is True:
                         logger.info(f"{self.name} {self.Type} | X | {show.title} (TVDb: {missing_id})")
