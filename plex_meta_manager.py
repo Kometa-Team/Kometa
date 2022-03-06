@@ -698,9 +698,8 @@ def library_operations(config, library):
         logger.info("")
     unmanaged_collections = []
     for col in library.get_all_collections():
-        if (library.delete_collections_with_less is not None
-            and (library.delete_collections_with_less == 0 or col.childCount < library.delete_collections_with_less)) \
-            or (col.title not in library.collections and library.delete_unmanaged_collections):
+        if (library.delete_collections_with_less and col.childCount < library.delete_collections_with_less) \
+            or (library.delete_unmanaged_collections and col.title not in library.collections):
             library.query(col.delete)
             logger.info(f"{col.title} Deleted")
         elif col.title not in library.collections:
