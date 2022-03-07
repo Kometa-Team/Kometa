@@ -293,8 +293,8 @@ class MetadataFile(DataFile):
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
                             actor_methods = {am.lower(): am for am in actor_data}
                             actor_depth = util.parse("Config", "actor_depth", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
-                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1) if "actor_minimum" else None
-                            number_of_actors = util.parse("Config", "number_of_actors", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=25, minimum=1) if "number_of_actors" else None
+                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1) if "actor_minimum" in actor_methods else None
+                            number_of_actors = util.parse("Config", "number_of_actors", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=25, minimum=1) if "number_of_actors" in actor_methods else None
                             if not actor_minimum and not number_of_actors:
                                 actor_minimum = 3
                             if not all_items:
@@ -312,7 +312,9 @@ class MetadataFile(DataFile):
                             roles.sort(key=operator.itemgetter('count'), reverse=True)
                             actor_count = 0
                             for role in roles:
-                                if role["name"] not in exclude and ((number_of_actors and actor_count < number_of_actors) or (actor_minimum and role["count"] >= actor_minimum)):
+                                if (number_of_actors and actor_count >= number_of_actors) or (actor_minimum and role["count"] < actor_minimum):
+                                    break
+                                if role["name"] not in exclude:
                                     try:
                                         results = self.config.TMDb.search_people(role["name"])
                                         auto_list[results[0].id] = results[0].name
@@ -337,8 +339,8 @@ class MetadataFile(DataFile):
                     if "<<title>>" not in title_format:
                         logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
-                    titles = util.parse("Config", "titles", dynamic, parent=map_name, methods=methods, datatype="dict") if "titles" in methods else {}
-                    keys = util.parse("Config", "keys", dynamic, parent=map_name, methods=methods, datatype="dict") if "keys" in methods else {}
+                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "title_override" in methods else {}
+                    key_override = util.parse("Config", "key_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "key_override" in methods else {}
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
@@ -367,11 +369,11 @@ class MetadataFile(DataFile):
                         for k, v in dictionary_variables.items():
                             if key in v:
                                 template_call[k] = v[key]
-                        if key in titles:
-                            collection_title = titles[key]
+                        if key in title_override:
+                            collection_title = title_override[key]
                         else:
-                            if key in keys:
-                                value = keys[key]
+                            if key in key_override:
+                                value = key_override[key]
                             else:
                                 for prefix in remove_prefix:
                                     if value.startswith(prefix):
