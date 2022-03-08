@@ -1,0 +1,21 @@
+name: Release
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+
+  release:
+
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check Out Repo
+        uses: actions/checkout@v3
+
+      - name: Send Discord Release Notification
+        uses: bythope/discord-webhook-messages@v1.1.0
+        with:
+          webhookUrl: ${{ secrets.RELEASE_WEBHOOK }}
+          handler: 'release'
