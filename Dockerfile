@@ -15,5 +15,4 @@ RUN echo "**** install python packages ****" \
  && rm -rf /requirements.txt /tmp/* /var/tmp/* /var/lib/apt/lists/*
 COPY . /
 VOLUME /config
-ENTRYPOINT ["/tini", "-s", "--"]
-CMD ["python3", "plex_meta_manager.py"]
+ENTRYPOINT ["/tini", "-s", "python3", "plex_meta_manager.py", "--"]
