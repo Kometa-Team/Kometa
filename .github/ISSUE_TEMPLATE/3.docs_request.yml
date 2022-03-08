@@ -1,5 +1,5 @@
-name: Documentation Request
-description: A request to update or improve Plex Meta Manager's documentation
+name: Wiki Request
+description: A request to update or improve Plex Meta Manager's wiki
 title: '[Docs]: '
 labels: ['status:not-yet-viewed', 'documentation']
 assignees: 'meisnate12'
@@ -7,7 +7,7 @@ assignees: 'meisnate12'
 body:
   - type: textarea
     attributes:
-      label: What is the improvement or update to the Documentation you wish to see?
+      label: What is the improvement or update to the Wiki you wish to see?
     validations:
       required: true
   - type: input
