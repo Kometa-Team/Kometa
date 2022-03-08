@@ -1,7 +1,7 @@
-import logging
+from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["stevenlu_popular"]
 base_url = "https://s3.amazonaws.com/popular-movies/movies.json"

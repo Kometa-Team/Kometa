@@ -1,17 +1,12 @@
-import argparse, logging, os, sys, time
+import argparse, os, sys, time, traceback
 from datetime import datetime
-from logging.handlers import RotatingFileHandler
-
-from plexapi.exceptions import NotFound
-from plexapi.video import Show, Season
 
 try:
     import plexapi, schedule
-    from modules import util
-    from modules.builder import CollectionBuilder
-    from modules.config import ConfigFile
-    from modules.meta import MetadataFile
-    from modules.util import Failed, NotScheduled
+    from modules.logs import MyLogger
+    from plexapi.exceptions import NotFound
+    from plexapi.video import Show, Season
+    from ruamel import yaml
 except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
     sys.exit(0)
@@ -28,6 +23,7 @@ parser.add_argument("-t", "--time", "--times", dest="times", help="Times to upda
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="Run ignoring collection schedules", action="store_true", default=False)
+parser.add_argument("-ig", "--ignore-ghost", dest="ignore_ghost", help="Run ignoring ghost logging", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
 parser.add_argument("-co", "--collection-only", "--collections-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
 parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
@@ -65,6 +61,7 @@ times = get_arg("PMM_TIME", args.times)
 run = get_arg("PMM_RUN", args.run, arg_bool=True)
 test = get_arg("PMM_TEST", args.test, arg_bool=True)
 ignore_schedules = get_arg("PMM_IGNORE_SCHEDULES", args.ignore_schedules, arg_bool=True)
+ignore_ghost = get_arg("PMM_IGNORE_GHOST", args.ignore_ghost, arg_bool=True)
 collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
 library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
 library_first = get_arg("PMM_LIBRARIES_FIRST", args.library_first, arg_bool=True)
@@ -81,12 +78,10 @@ screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 
-util.separating_character = divider[0]
 
 if screen_width < 90 or screen_width > 300:
     print(f"Argument Error: width argument invalid: {screen_width} must be an integer between 90 and 300 using the default 100")
     screen_width = 100
-util.screen_width = screen_width
 
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 if config_file and os.path.exists(config_file):
@@ -98,22 +93,20 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     print(f"Config Error: config not found at {os.path.abspath(default_dir)}")
     sys.exit(0)
 
-os.makedirs(os.path.join(default_dir, "logs"), exist_ok=True)
+logger = MyLogger("Plex Meta Manager", default_dir, screen_width, divider[0], ignore_ghost, test or debug or trace)
 
-logger = logging.getLogger("Plex Meta Manager")
-logger.setLevel(logging.DEBUG)
+from modules import util
+util.logger = logger
+from modules.builder import CollectionBuilder
+from modules.config import ConfigFile
+from modules.meta import MetadataFile
+from modules.util import Failed, NotScheduled
 
-def fmt_filter(record):
-    record.levelname = f"[{record.levelname}]"
-    record.filename = f"[{record.filename}:{record.lineno}]"
-    return True
+def my_except_hook(exctype, value, tb):
+    for _line in traceback.format_exception(etype=exctype, value=value, tb=tb):
+        logger.critical(_line)
 
-cmd_handler = logging.StreamHandler()
-cmd_handler.setLevel(logging.DEBUG if test or debug or trace else logging.INFO)
-
-logger.addHandler(cmd_handler)
-
-sys.excepthook = util.my_except_hook
+sys.excepthook = my_except_hook
 
 version = "Unknown"
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) as handle:
@@ -123,23 +116,18 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
             version = line
             break
 
+plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = "Plex-Meta-Manager"
+
 def start(attrs):
-    file_logger = os.path.join(default_dir, "logs", "meta.log")
-    should_roll_over = os.path.isfile(file_logger)
-    file_handler = RotatingFileHandler(file_logger, delay=True, mode="w", backupCount=10, encoding="utf-8")
-    util.apply_formatter(file_handler)
-    file_handler.addFilter(fmt_filter)
-    if should_roll_over:
-        file_handler.doRollover()
-    logger.addHandler(file_handler)
-    util.separator()
+    logger.add_main_handler()
+    logger.separator()
     logger.info("")
-    logger.info(util.centered(" ____  _             __  __      _          __  __                                   "))
-    logger.info(util.centered("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ "))
-    logger.info(util.centered("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|"))
-    logger.info(util.centered("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   "))
-    logger.info(util.centered("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   "))
-    logger.info(util.centered("                                                                     |___/           "))
+    logger.info_center(" ____  _             __  __      _          __  __                                   ")
+    logger.info_center("|  _ \\| | _____  __ |  \\/  | ___| |_ __ _  |  \\/  | __ _ _ __   __ _  __ _  ___ _ __ ")
+    logger.info_center("| |_) | |/ _ \\ \\/ / | |\\/| |/ _ \\ __/ _` | | |\\/| |/ _` | '_ \\ / _` |/ _` |/ _ \\ '__|")
+    logger.info_center("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
+    logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
+    logger.info_center("                                                                     |___/           ")
     logger.info(f"    Version: {version}")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
     elif "test" in attrs and attrs["test"]:                 start_type = "Test "
@@ -150,7 +138,7 @@ def start(attrs):
     if "time" not in attrs:
         attrs["time"] = start_time.strftime("%H:%M")
     attrs["time_obj"] = start_time
-    util.separator(debug=True)
+    logger.separator(debug=True)
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
     logger.debug(f"--time (PMM_TIME): {times}")
     logger.debug(f"--run (PMM_RUN): {run}")
@@ -162,6 +150,7 @@ def start(attrs):
     logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
     logger.debug(f"--run-metadata-files (PMM_METADATA_FILES): {metadata_files}")
     logger.debug(f"--ignore-schedules (PMM_IGNORE_SCHEDULES): {ignore_schedules}")
+    logger.debug(f"--ignore-ghost (PMM_IGNORE_GHOST): {ignore_ghost}")
     logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete}")
     logger.debug(f"--resume (PMM_RESUME): {resume}")
     logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
@@ -172,21 +161,21 @@ def start(attrs):
     logger.debug(f"--debug (PMM_DEBUG): {debug}")
     logger.debug(f"--trace (PMM_TRACE): {trace}")
     logger.debug("")
-    util.separator(f"Starting {start_type}Run")
+    logger.separator(f"Starting {start_type}Run")
     config = None
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
     try:
         config = ConfigFile(default_dir, attrs, read_only_config)
     except Exception as e:
-        util.print_stacktrace()
-        util.print_multiline(e, critical=True)
+        logger.stacktrace()
+        logger.critical(e)
     else:
         try:
             stats = update_libraries(config)
         except Exception as e:
             config.notify(e)
-            util.print_stacktrace()
-            util.print_multiline(e, critical=True)
+            logger.stacktrace()
+            logger.critical(e)
     logger.info("")
     end_time = datetime.now()
     run_time = str(end_time - start_time).split('.')[0]
@@ -194,30 +183,22 @@ def start(attrs):
         try:
             config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
         except Failed as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
-    util.separator(f"Finished {start_type}Run\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
-    logger.removeHandler(file_handler)
+    logger.separator(f"Finished {start_type}Run\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
+    logger.remove_main_handler()
 
 def update_libraries(config):
     for library in config.libraries:
         if library.skip_library:
             logger.info("")
-            util.separator(f"Skipping {library.name} Library")
+            logger.separator(f"Skipping {library.name} Library")
             continue
         try:
-            os.makedirs(os.path.join(default_dir, "logs", library.mapping_name, "collections"), exist_ok=True)
-            col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, "library.log")
-            should_roll_over = os.path.isfile(col_file_logger)
-            library_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
-            util.apply_formatter(library_handler)
-            if should_roll_over:
-                library_handler.doRollover()
-            logger.addHandler(library_handler)
-
+            logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout
             logger.info("")
-            util.separator(f"{library.name} Library")
+            logger.separator(f"{library.name} Library")
 
             if config.library_first and library.library_operation and not config.test_mode and not collection_only:
                 library_operations(config, library)
@@ -250,14 +231,14 @@ def update_libraries(config):
 
             if config.delete_collections:
                 logger.info("")
-                util.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
+                logger.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
                 logger.info("")
                 for collection in library.get_all_collections():
                     logger.info(f"Collection {collection.title} Deleted")
                     library.query(collection.delete)
-            if not library.is_other and not library.is_music:
+            if not library.is_other and not library.is_music and (library.metadata_files or library.original_mapping_name in config.library_map) and not library_only:
                 logger.info("")
-                util.separator(f"Mapping {library.name} Library", space=False, border=False)
+                logger.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
                 library.map_guids()
             for metadata in library.metadata_files:
@@ -265,7 +246,7 @@ def update_libraries(config):
                 if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
                     continue
                 logger.info("")
-                util.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
+                logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
                 if not config.test_mode and not config.resume_from and not collection_only:
                     try:
                         metadata.update_metadata()
@@ -279,42 +260,35 @@ def update_libraries(config):
                     continue
                 if collections_to_run and not library_only:
                     logger.info("")
-                    util.separator(f"{'Test ' if config.test_mode else ''}Collections")
-                    logger.removeHandler(library_handler)
+                    logger.separator(f"{'Test ' if config.test_mode else ''}Collections")
+                    logger.remove_library_handler(library.mapping_name)
                     run_collection(config, library, metadata, collections_to_run)
-                    logger.addHandler(library_handler)
+                    logger.re_add_library_handler(library.mapping_name)
             if library.run_sort:
                 logger.info("")
-                util.separator(f"Sorting {library.name} Library's Collections", space=False, border=False)
+                logger.separator(f"Sorting {library.name} Library's Collections", space=False, border=False)
                 logger.info("")
                 for builder in library.run_sort:
                     logger.info("")
-                    util.separator(f"Sorting {builder.name} Collection", space=False, border=False)
+                    logger.separator(f"Sorting {builder.name} Collection", space=False, border=False)
                     logger.info("")
                     builder.sort_collection()
 
             if not config.library_first and library.library_operation and not config.test_mode and not collection_only:
                 library_operations(config, library)
 
-            logger.removeHandler(library_handler)
+            logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(e)
-            util.print_stacktrace()
-            util.print_multiline(e, critical=True)
+            logger.stacktrace()
+            logger.critical(e)
 
     playlist_status = {}
     playlist_stats = {}
     if config.playlist_files:
-        os.makedirs(os.path.join(default_dir, "logs", "playlists"), exist_ok=True)
-        pf_file_logger = os.path.join(default_dir, "logs", "playlists", "playlists.log")
-        should_roll_over = os.path.isfile(pf_file_logger)
-        playlists_handler = RotatingFileHandler(pf_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
-        util.apply_formatter(playlists_handler)
-        if should_roll_over:
-            playlists_handler.doRollover()
-        logger.addHandler(playlists_handler)
+        logger.add_playlists_handler()
         playlist_status, playlist_stats = run_playlists(config)
-        logger.removeHandler(playlists_handler)
+        logger.remove_playlists_handler()
 
     has_run_again = False
     for library in config.libraries:
@@ -325,41 +299,37 @@ def update_libraries(config):
     amount_added = 0
     if has_run_again and not library_only:
         logger.info("")
-        util.separator("Run Again")
+        logger.separator("Run Again")
         logger.info("")
         for x in range(1, config.general["run_again_delay"] + 1):
-            util.print_return(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
+            logger.ghost(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
             for y in range(60):
                 time.sleep(1)
-        util.print_end()
+        logger.exorcise()
         for library in config.libraries:
             if library.run_again:
                 try:
-                    col_file_logger = os.path.join(default_dir, "logs", library.mapping_name, f"library.log")
-                    library_handler = RotatingFileHandler(col_file_logger, mode="w", backupCount=3, encoding="utf-8")
-                    util.apply_formatter(library_handler)
-                    logger.addHandler(library_handler)
-                    library_handler.addFilter(fmt_filter)
+                    logger.re_add_library_handler(library.mapping_name)
                     os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
                     logger.info("")
-                    util.separator(f"{library.name} Library Run Again")
+                    logger.separator(f"{library.name} Library Run Again")
                     logger.info("")
                     library.map_guids()
                     for builder in library.run_again:
                         logger.info("")
-                        util.separator(f"{builder.name} Collection in {library.name}")
+                        logger.separator(f"{builder.name} Collection in {library.name}")
                         logger.info("")
                         try:
                             amount_added += builder.run_collections_again()
                         except Failed as e:
                             library.notify(e, collection=builder.name, critical=False)
-                            util.print_stacktrace()
-                            util.print_multiline(e, error=True)
-                    logger.removeHandler(library_handler)
+                            logger.stacktrace()
+                            logger.error(e)
+                    logger.remove_library_handler(library.mapping_name)
                 except Exception as e:
                     library.notify(e)
-                    util.print_stacktrace()
-                    util.print_multiline(e, critical=True)
+                    logger.stacktrace()
+                    logger.critical(e)
 
     used_url = []
     for library in config.libraries:
@@ -384,25 +354,25 @@ def update_libraries(config):
 
     def print_status(section, status):
         logger.info("")
-        util.separator(f"{section} Summary", space=False, border=False)
+        logger.separator(f"{section} Summary", space=False, border=False)
         logger.info("")
         logger.info(f"{'Title':^{longest}} |  +  |  =  |  -  | {'Status':^13}")
-        breaker = f"{util.separating_character * longest}|{util.separating_character * 5}|{util.separating_character * 5}|{util.separating_character * 5}|"
-        util.separator(breaker, space=False, border=False, side_space=False, left=True)
+        breaker = f"{logger.separating_character * longest}|{logger.separating_character * 5}|{logger.separating_character * 5}|{logger.separating_character * 5}|"
+        logger.separator(breaker, space=False, border=False, side_space=False, left=True)
         for name, data in status.items():
             logger.info(f"{name:<{longest}} | {data['added']:^3} | {data['unchanged']:^3} | {data['removed']:^3} | {data['status']}")
             if data["errors"]:
                 for error in data["errors"]:
-                    util.print_multiline(error, info=True)
+                    logger.info(error)
                 logger.info("")
 
-    util.separator("Summary")
+    logger.separator("Summary")
     for library in config.libraries:
         print_status(library.name, library.status)
     if playlist_status:
         print_status("Playlists", playlist_status)
 
-    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     stats["added"] += amount_added
     for library in config.libraries:
         stats["created"] += library.stats["created"]
@@ -413,6 +383,7 @@ def update_libraries(config):
         stats["removed"] += library.stats["removed"]
         stats["radarr"] += library.stats["radarr"]
         stats["sonarr"] += library.stats["sonarr"]
+        stats["names"].extend([{"name": n, "library": library.name} for n in library.stats["names"]])
     if playlist_stats:
         stats["created"] += playlist_stats["created"]
         stats["modified"] += playlist_stats["modified"]
@@ -422,12 +393,12 @@ def update_libraries(config):
         stats["removed"] += playlist_stats["removed"]
         stats["radarr"] += playlist_stats["radarr"]
         stats["sonarr"] += playlist_stats["sonarr"]
-
+        stats["names"].extend([{"name": n, "library": "PLAYLIST"} for n in playlist_stats["names"]])
     return stats
 
 def library_operations(config, library):
     logger.info("")
-    util.separator(f"{library.name} Library Operations")
+    logger.separator(f"{library.name} Library Operations")
     logger.info("")
     logger.debug(f"Assets For All: {library.assets_for_all}")
     logger.debug(f"Delete Collections With Less: {library.delete_collections_with_less}")
@@ -435,6 +406,7 @@ def library_operations(config, library):
     logger.debug(f"Mass Genre Update: {library.mass_genre_update}")
     logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
     logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
+    logger.debug(f"Mass Content Rating Update: {library.mass_content_rating_update}")
     logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
     logger.debug(f"Mass Collection Mode Update: {library.mass_collection_mode}")
     logger.debug(f"Split Duplicates: {library.split_duplicates}")
@@ -442,20 +414,34 @@ def library_operations(config, library):
     logger.debug(f"Radarr Remove by Tag: {library.radarr_remove_by_tag}")
     logger.debug(f"Sonarr Add All Existing: {library.sonarr_add_all_existing}")
     logger.debug(f"Sonarr Remove by Tag: {library.sonarr_remove_by_tag}")
+    logger.debug(f"Update Blank Track Titles: {library.update_blank_track_titles}")
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
-    logger.debug(f"TMDb Operation: {library.items_library_operation}")
+    logger.debug(f"Metadata Backup: {library.metadata_backup}")
+    logger.debug(f"Item Operation: {library.items_library_operation}")
+    logger.debug("")
 
     if library.split_duplicates:
         items = library.search(**{"duplicate": True})
         for item in items:
             item.split()
-            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Splitting"))
+            logger.info(f"{item.title[:25]:<25} | Splitting")
+
+    if library.update_blank_track_titles:
+        tracks = library.get_all(collection_level="track")
+        num_edited = 0
+        for i, item in enumerate(tracks, 1):
+            logger.ghost(f"Processing Track: {i}/{len(tracks)} {item.title}")
+            if not item.title and item.titleSort:
+                library.edit_query(item, {"title.locked": 1, "title.value": item.titleSort})
+                num_edited += 1
+                logger.info(f"Track: {item.titleSort} was updated with sort title")
+        logger.info(f"{len(tracks)} Tracks Processed; {num_edited} Blank Track Titles Updated")
 
     tmdb_collections = {}
     if library.items_library_operation:
-        items = library.get_all()
+        items = library.get_all(load=True)
         radarr_adds = []
         sonarr_adds = []
         trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
@@ -466,25 +452,10 @@ def library_operations(config, library):
             except Failed as e:
                 logger.error(e)
                 continue
-            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
             if library.assets_for_all:
                 library.find_assets(item)
-            tmdb_id = None
-            tvdb_id = None
-            imdb_id = None
-            if config.Cache:
-                t_id, i_id, guid_media_type, _ = config.Cache.query_guid_map(item.guid)
-                if t_id:
-                    if "movie" in guid_media_type:
-                        tmdb_id = t_id[0]
-                    else:
-                        tvdb_id = t_id[0]
-                if i_id:
-                    imdb_id = i_id[0]
-            if not tmdb_id and not tvdb_id:
-                tmdb_id = library.get_tmdb_from_map(item)
-            if not tmdb_id and not tvdb_id and library.is_show:
-                tvdb_id = library.get_tvdb_from_map(item)
+            tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
 
             if library.mass_trakt_rating_update:
                 try:
@@ -496,7 +467,7 @@ def library_operations(config, library):
                         raise Failed
                     if str(item.userRating) != str(new_rating):
                         library.edit_query(item, {"userRating.value": new_rating, "userRating.locked": 1})
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | User Rating | {new_rating}"))
+                        logger.info(f"{item.title[:25]:<25} | User Rating | {new_rating}")
                 except Failed:
                     pass
 
@@ -512,18 +483,11 @@ def library_operations(config, library):
 
             tmdb_item = None
             if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
-                if tvdb_id and not tmdb_id:
-                    tmdb_id = config.Convert.tvdb_to_tmdb(tvdb_id)
-                if tmdb_id:
-                    try:
-                        tmdb_item = config.TMDb.get_movie(tmdb_id) if library.is_movie else config.TMDb.get_show(tmdb_id)
-                    except Failed as e:
-                        logger.error(util.adjust_space(str(e)))
-                else:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}"))
+                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.is_movie)
 
             omdb_item = None
-            if library.mass_genre_update in ["omdb", "imdb"] or library.mass_audience_rating_update in ["omdb", "imdb"] or library.mass_critic_rating_update in ["omdb", "imdb"]:
+            if library.mass_genre_update == "omdb" or library.mass_audience_rating_update == "omdb" \
+                    or library.mass_critic_rating_update == "omdb" or library.mass_content_rating_update == "omdb":
                 if config.OMDb.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -533,12 +497,12 @@ def library_operations(config, library):
                         try:
                             omdb_item = config.OMDb.get_omdb(imdb_id)
                         except Failed as e:
-                            logger.error(util.adjust_space(str(e)))
+                            logger.error(str(e))
                         except Exception:
                             logger.error(f"IMDb ID: {imdb_id}")
                             raise
                     else:
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}"))
+                        logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
             tvdb_item = None
             if library.mass_genre_update == "tvdb":
@@ -546,18 +510,63 @@ def library_operations(config, library):
                     try:
                         tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
                     except Failed as e:
-                        logger.error(util.adjust_space(str(e)))
+                        logger.error(str(e))
                 else:
-                    logger.info(util.adjust_space(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}"))
+                    logger.info(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}")
+
+            mdb_item = None
+            if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types \
+                    or library.mass_content_rating_update in ["mdb", "mdb_commonsense"]:
+                if config.Mdblist.limit is False:
+                    if tmdb_id and not imdb_id:
+                        imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
+                    elif tvdb_id and not imdb_id:
+                        imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
+                    if imdb_id:
+                        try:
+                            mdb_item = config.Mdblist.get_imdb(imdb_id)
+                        except Failed as e:
+                            logger.error(str(e))
+                        except Exception:
+                            logger.error(f"IMDb ID: {imdb_id}")
+                            raise
+                    else:
+                        logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
             if library.tmdb_collections and tmdb_item and tmdb_item.collection:
                 tmdb_collections[tmdb_item.collection.id] = tmdb_item.collection.name
+
+            def get_rating(attribute):
+                if tmdb_item and attribute == "tmdb":
+                    return tmdb_item.vote_average
+                elif omdb_item and attribute == "omdb":
+                    return omdb_item.imdb_rating
+                elif mdb_item and attribute == "mdb":
+                    return mdb_item.score / 10 if mdb_item.score else None
+                elif mdb_item and attribute == "mdb_imdb":
+                    return mdb_item.imdb_rating if mdb_item.imdb_rating else None
+                elif mdb_item and attribute == "mdb_metacritic":
+                    return mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
+                elif mdb_item and attribute == "mdb_metacriticuser":
+                    return mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
+                elif mdb_item and attribute == "mdb_trakt":
+                    return mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
+                elif mdb_item and attribute == "mdb_tomatoes":
+                    return mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
+                elif mdb_item and attribute == "mdb_tomatoesaudience":
+                    return mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
+                elif mdb_item and attribute == "mdb_tmdb":
+                    return mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
+                elif mdb_item and attribute == "mdb_letterboxd":
+                    return mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                else:
+                    raise Failed
 
             if library.mass_genre_update:
                 try:
                     if tmdb_item and library.mass_genre_update == "tmdb":
                         new_genres = [genre.name for genre in tmdb_item.genres]
-                    elif omdb_item and library.mass_genre_update in ["omdb", "imdb"]:
+                    elif omdb_item and library.mass_genre_update == "omdb":
                         new_genres = omdb_item.genres
                     elif tvdb_item and library.mass_genre_update == "tvdb":
                         new_genres = tvdb_item.genres
@@ -568,36 +577,42 @@ def library_operations(config, library):
                     pass
             if library.mass_audience_rating_update:
                 try:
-                    if tmdb_item and library.mass_audience_rating_update == "tmdb":
-                        new_rating = tmdb_item.vote_average
-                    elif omdb_item and library.mass_audience_rating_update in ["omdb", "imdb"]:
-                        new_rating = omdb_item.imdb_rating
-                    else:
-                        raise Failed
+                    new_rating = get_rating(library.mass_audience_rating_update)
                     if new_rating is None:
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
-                    else:
-                        if library.mass_audience_rating_update and str(item.audienceRating) != str(new_rating):
-                            library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Audience Rating | {new_rating}"))
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
+                    elif str(item.audienceRating) != str(new_rating):
+                        library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
+                        logger.info(f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
                 except Failed:
                     pass
             if library.mass_critic_rating_update:
                 try:
-                    if tmdb_item and library.mass_critic_rating_update == "tmdb":
-                        new_rating = tmdb_item.vote_average
-                    elif omdb_item and library.mass_critic_rating_update in ["omdb", "imdb"]:
-                        new_rating = omdb_item.imdb_rating
+                    new_rating = get_rating(library.mass_critic_rating_update)
+                    if new_rating is None:
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
+                    elif str(item.rating) != str(new_rating):
+                        library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
+                        logger.info(f"{item.title[:25]:<25} | Critic Rating | {new_rating}")
+                except Failed:
+                    pass
+            if library.mass_content_rating_update:
+                try:
+                    if omdb_item and library.mass_content_rating_update == "omdb":
+                        new_rating = omdb_item.content_rating
+                    elif mdb_item and library.mass_content_rating_update == "mdb":
+                        new_rating = mdb_item.certification if mdb_item.certification else None
+                    elif mdb_item and library.mass_content_rating_update == "mdb_commonsense":
+                        new_rating = mdb_item.commonsense if mdb_item.commonsense else None
                     else:
                         raise Failed
                     if new_rating is None:
-                        logger.info(util.adjust_space(f"{item.title[:25]:<25} | No Rating Found"))
-                    else:
-                        if library.mass_critic_rating_update and str(item.rating) != str(new_rating):
-                            library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
-                            logger.info(util.adjust_space(f"{item.title[:25]:<25} | Critic Rating | {new_rating}"))
+                        logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
+                    elif str(item.rating) != str(new_rating):
+                        library.edit_query(item, {"contentRating.value": new_rating, "contentRating.locked": 1})
+                        logger.info(f"{item.title[:25]:<25} | Content Rating | {new_rating}")
                 except Failed:
                     pass
+
             if library.genre_mapper:
                 try:
                     adds = []
@@ -626,7 +641,7 @@ def library_operations(config, library):
 
     if tmdb_collections or library.genre_collections:
         logger.info("")
-        util.separator(f"Starting Automated Collections")
+        logger.separator(f"Starting Automated Collections")
         logger.info("")
         new_collections = {}
         templates = {}
@@ -646,14 +661,14 @@ def library_operations(config, library):
 
         if library.genre_collections:
             templates["Genre Collection"] = library.genre_collections["template"]
-            for genre in library.get_genres():
-                if genre not in library.genre_collections["exclude_genres"]:
-                    template = {"name": "Genre Collection", "genre": genre}
+            for genre in library.get_tags("genre"):
+                if genre.title not in library.genre_collections["exclude_genres"]:
+                    template = {"name": "Genre Collection", "genre": genre.title}
                     for k, v in library.genre_collections["dictionary_variables"].items():
-                        if genre in v:
-                            template[k] = v[genre]
+                        if genre.title in v:
+                            template[k] = v[genre.title]
                     title = library.genre_collections["title_format"]
-                    title = title.replace("<<genre>>", genre)
+                    title = title.replace("<<genre>>", genre.title)
                     if "<<library_type>>" in title:
                         title = title.replace("<<library_type>>", library.type)
                     new_collections[title] = {"template": template}
@@ -679,23 +694,26 @@ def library_operations(config, library):
                 unmanaged = "Unmanaged Collections "
             elif library.delete_collections_with_less > 0:
                 unmanaged = "Unmanaged Collections and "
-        util.separator(f"Deleting All {unmanaged}Collections{print_suffix}", space=False, border=False)
+        logger.separator(f"Deleting All {unmanaged}Collections{print_suffix}", space=False, border=False)
         logger.info("")
     unmanaged_collections = []
     for col in library.get_all_collections():
-        if (library.delete_collections_with_less is not None
-            and (library.delete_collections_with_less == 0 or col.childCount < library.delete_collections_with_less)) \
-            or (col.title not in library.collections and library.delete_unmanaged_collections):
+        if (library.delete_collections_with_less and col.childCount < library.delete_collections_with_less) \
+            or (library.delete_unmanaged_collections and col.title not in library.collections):
             library.query(col.delete)
             logger.info(f"{col.title} Deleted")
         elif col.title not in library.collections:
             unmanaged_collections.append(col)
-        if library.mass_collection_mode:
+    if library.mass_collection_mode:
+        logger.info("")
+        logger.separator(f"Mass Collection Mode for {library.name} Library", space=False, border=False)
+        logger.info("")
+        for col in library.get_all_collections():
             library.collection_mode_query(col, library.mass_collection_mode)
 
     if library.show_unmanaged and len(unmanaged_collections) > 0:
         logger.info("")
-        util.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
+        logger.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
         logger.info("")
         for col in unmanaged_collections:
             logger.info(col.title)
@@ -703,15 +721,54 @@ def library_operations(config, library):
         logger.info(f"{len(unmanaged_collections)} Unmanaged Collection{'s' if len(unmanaged_collections) > 1 else ''}")
     elif library.show_unmanaged:
         logger.info("")
-        util.separator(f"No Unmanaged Collections in {library.name} Library", space=False, border=False)
+        logger.separator(f"No Unmanaged Collections in {library.name} Library", space=False, border=False)
         logger.info("")
 
     if library.assets_for_all and len(unmanaged_collections) > 0:
         logger.info("")
-        util.separator(f"Unmanaged Collection Assets Check for {library.name} Library", space=False, border=False)
+        logger.separator(f"Unmanaged Collection Assets Check for {library.name} Library", space=False, border=False)
         logger.info("")
         for col in unmanaged_collections:
             library.find_assets(col)
+
+    if library.metadata_backup:
+        logger.info("")
+        logger.separator(f"Metadata Backup for {library.name} Library", space=False, border=False)
+        logger.info("")
+        logger.info(f"Metadata Backup Path: {library.metadata_backup['path']}")
+        logger.info("")
+        try:
+            meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"]))
+        except yaml.scanner.ScannerError as e:
+            meta = {}
+            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
+            filename, file_extension = os.path.splitext(library.metadata_backup["path"])
+            i = 1
+            while os.path.exists(f"{filename}{i}{file_extension}"):
+                i += 1
+            os.rename(library.metadata_backup["path"], f"{filename}{i}{file_extension}")
+            logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
+        if "metadata" not in meta:
+            meta["metadata"] = {}
+        items = library.get_all(load=True)
+        titles = [i.title for i in items]
+        for i, item in enumerate(items, 1):
+            logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
+            map_key, attrs = library.get_locked_attributes(item, titles)
+            if attrs or library.metadata_backup["add_blank_entries"]:
+                def run_dict(save_dict, the_dict):
+                    for kk, vv in the_dict.items():
+                        if isinstance(vv, dict):
+                            run_dict(save_dict[kk], vv)
+                        else:
+                            save_dict[kk] = vv
+                run_dict(meta["metadata"][map_key], attrs)
+        logger.exorcise()
+        try:
+            yaml.round_trip_dump(meta, open(library.metadata_backup["path"], "w", encoding="utf-8"), block_seq_indent=2)
+            logger.info(f"{len(meta['metadata'])} {library.type.capitalize()}{'s' if len(meta['metadata']) > 1 else ''} Backed Up")
+        except yaml.scanner.ScannerError as e:
+            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
 
 def run_collection(config, library, metadata, requested_collections):
     logger.info("")
@@ -737,48 +794,41 @@ def run_collection(config, library, metadata, requested_collections):
         elif config.resume_from == mapping_name:
             config.resume_from = None
             logger.info("")
-            util.separator(f"Resuming Collections")
+            logger.separator(f"Resuming Collections")
 
         if "name_mapping" in collection_attrs and collection_attrs["name_mapping"]:
             collection_log_name, output_str = util.validate_filename(collection_attrs["name_mapping"])
         else:
             collection_log_name, output_str = util.validate_filename(mapping_name)
-        collection_log_folder = os.path.join(default_dir, "logs", library.mapping_name, "collections", collection_log_name)
-        os.makedirs(collection_log_folder, exist_ok=True)
-        col_file_logger = os.path.join(collection_log_folder, "collection.log")
-        should_roll_over = os.path.isfile(col_file_logger)
-        collection_handler = RotatingFileHandler(col_file_logger, delay=True, mode="w", backupCount=3, encoding="utf-8")
-        util.apply_formatter(collection_handler)
-        if should_roll_over:
-            collection_handler.doRollover()
-        logger.addHandler(collection_handler)
+        logger.add_collection_handler(library.mapping_name, collection_log_name)
         library.status[mapping_name] = {"status": "", "errors": [], "created": False, "modified": False, "deleted": False, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
-            util.separator(f"{mapping_name} Collection in {library.name}")
+            logger.separator(f"{mapping_name} Collection in {library.name}")
             logger.info("")
             if output_str:
                 logger.info(output_str)
                 logger.info("")
 
-            util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
+            logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
-            builder = CollectionBuilder(config, library, metadata, mapping_name, no_missing, collection_attrs)
+            builder = CollectionBuilder(config, metadata, mapping_name, no_missing, collection_attrs, library=library)
+            library.stats["names"].append(builder.name)
             logger.info("")
 
-            util.separator(f"Running {mapping_name} Collection", space=False, border=False)
+            logger.separator(f"Running {mapping_name} Collection", space=False, border=False)
 
             if len(builder.schedule) > 0:
-                util.print_multiline(builder.schedule, info=True)
+                logger.info(builder.schedule)
 
             if len(builder.smart_filter_details) > 0:
                 logger.info("")
-                util.print_multiline(builder.smart_filter_details, info=True)
+                logger.info(builder.smart_filter_details)
 
             items_added = 0
             items_removed = 0
             valid = True
-            if not builder.smart_url and builder.builders:
+            if not builder.smart_url and builder.builders and not builder.blank_collection:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
@@ -789,9 +839,13 @@ def run_collection(config, library, metadata, requested_collections):
                     for filter_key, filter_value in builder.tmdb_filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
-                builder.find_rating_keys()
+                for method, value in builder.builders:
+                    logger.debug("")
+                    logger.debug(f"Builder: {method}: {value}")
+                    logger.info("")
+                    builder.filter_and_save_items(builder.gather_ids(method, value))
 
-                if len(builder.added_items) >= builder.minimum and builder.build_collection:
+                if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
                     library.status[mapping_name]["added"] = items_added
@@ -802,13 +856,13 @@ def run_collection(config, library, metadata, requested_collections):
                         items_removed = builder.sync_collection()
                         library.stats["removed"] += items_removed
                         library.status[mapping_name]["removed"] = items_removed
-                elif len(builder.added_items) < builder.minimum and builder.build_collection:
+                elif len(builder.added_items) + builder.beginning_count < builder.minimum and builder.build_collection:
                     logger.info("")
                     logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
                     valid = False
                     if builder.details["delete_below_minimum"] and builder.obj:
                         logger.info("")
-                        util.print_multiline(builder.delete(), info=True)
+                        logger.info(builder.delete())
                         builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
@@ -819,7 +873,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[mapping_name]["sonarr"] += sonarr_add
 
             run_item_details = True
-            if valid and builder.build_collection and (builder.builders or builder.smart_url):
+            if valid and builder.build_collection and (builder.builders or builder.smart_url or builder.blank_collection):
                 try:
                     builder.load_collection()
                     if builder.created:
@@ -829,10 +883,10 @@ def run_collection(config, library, metadata, requested_collections):
                         library.stats["modified"] += 1
                         library.status[mapping_name]["modified"] = True
                 except Failed:
-                    util.print_stacktrace()
+                    logger.stacktrace()
                     run_item_details = False
                     logger.info("")
-                    util.separator("No Collection to Update", space=False, border=False)
+                    logger.separator("No Collection to Update", space=False, border=False)
                 else:
                     builder.update_details()
 
@@ -850,7 +904,7 @@ def run_collection(config, library, metadata, requested_collections):
                     builder.load_collection_items()
                 except Failed:
                     logger.info("")
-                    util.separator("No Items Found", space=False, border=False)
+                    logger.separator("No Items Found", space=False, border=False)
                 else:
                     if builder.item_details:
                         builder.update_item_details()
@@ -872,31 +926,30 @@ def run_collection(config, library, metadata, requested_collections):
             else:
                 library.status[mapping_name]["status"] = "Unchanged"
         except NotScheduled as e:
-            util.print_multiline(e, info=True)
+            logger.info(e)
             library.status[mapping_name]["status"] = "Not Scheduled"
         except Failed as e:
             library.notify(e, collection=mapping_name)
-            util.print_stacktrace()
-            util.print_multiline(e, error=True)
+            logger.stacktrace()
+            logger.error(e)
             library.status[mapping_name]["status"] = "PMM Failure"
             library.status[mapping_name]["errors"].append(e)
         except Exception as e:
             library.notify(f"Unknown Error: {e}", collection=mapping_name)
-            util.print_stacktrace()
+            logger.stacktrace()
             logger.error(f"Unknown Error: {e}")
             library.status[mapping_name]["status"] = "Unknown Error"
             library.status[mapping_name]["errors"].append(e)
         logger.info("")
-        util.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {str(datetime.now() - collection_start).split('.')[0]}")
-        logger.removeHandler(collection_handler)
+        logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {str(datetime.now() - collection_start).split('.')[0]}")
+        logger.remove_collection_handler(library.mapping_name, collection_log_name)
 
 def run_playlists(config):
-    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     status = {}
     logger.info("")
-    util.separator("Playlists")
+    logger.separator("Playlists")
     logger.info("")
-    library_map = {_l.original_mapping_name: _l for _l in config.libraries}
     for playlist_file in config.playlist_files:
         for mapping_name, playlist_attrs in playlist_file.playlists.items():
             playlist_start = datetime.now()
@@ -919,71 +972,27 @@ def run_playlists(config):
                 playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"])
             else:
                 playlist_log_name, output_str = util.validate_filename(mapping_name)
-            playlist_log_folder = os.path.join(default_dir, "logs", "playlists", playlist_log_name)
-            os.makedirs(playlist_log_folder, exist_ok=True)
-            ply_file_logger = os.path.join(playlist_log_folder, "playlist.log")
-            should_roll_over = os.path.isfile(ply_file_logger)
-            playlist_handler = RotatingFileHandler(ply_file_logger, delay=True, mode="w", backupCount=3,
-                                                   encoding="utf-8")
-            util.apply_formatter(playlist_handler)
-            if should_roll_over:
-                playlist_handler.doRollover()
-            logger.addHandler(playlist_handler)
+            logger.add_playlist_handler(playlist_log_name)
             status[mapping_name] = {"status": "", "errors": [], "created": False, "modified": False, "deleted": False, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
             library_names = None
             try:
-                util.separator(f"{mapping_name} Playlist")
+                logger.separator(f"{mapping_name} Playlist")
                 logger.info("")
                 if output_str:
                     logger.info(output_str)
                     logger.info("")
-                if "libraries" not in playlist_attrs or not playlist_attrs["libraries"]:
-                    raise Failed("Playlist Error: libraries attribute is required and cannot be blank")
-                pl_libraries = []
-                for pl_library in util.get_list(playlist_attrs["libraries"]):
-                    if str(pl_library) in library_map:
-                        pl_libraries.append(library_map[pl_library])
-                    else:
-                        raise Failed(f"Playlist Error: Library: {pl_library} not defined")
-                server_check = None
-                for pl_library in pl_libraries:
-                    if server_check:
-                        if pl_library.PlexServer.machineIdentifier != server_check:
-                            raise Failed("Playlist Error: All defined libraries must be on the same server")
-                    else:
-                        server_check = pl_library.PlexServer.machineIdentifier
 
-                sync_to_users = config.general["playlist_sync_to_users"]
-                if "sync_to_users" in playlist_attrs:
-                    sync_to_users = playlist_attrs["sync_to_users"]
-                elif "sync_to_user" in playlist_attrs:
-                    sync_to_users = playlist_attrs["sync_to_user"]
-                else:
-                    logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_user: {sync_to_users}")
+                logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
-                valid_users = []
-                plex_users = pl_libraries[0].users
-                if sync_to_users:
-                    if str(sync_to_users) == "all":
-                        valid_users = plex_users
-                    else:
-                        for user in util.get_list(sync_to_users):
-                            if user in plex_users:
-                                valid_users.append(user)
-                            else:
-                                raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
-
-                util.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
-
-                builder = CollectionBuilder(config, pl_libraries[0], playlist_file, mapping_name, no_missing,
-                                            playlist_attrs, playlist=True, valid_users=valid_users)
+                builder = CollectionBuilder(config, playlist_file, mapping_name, no_missing, playlist_attrs)
+                stats["names"].append(builder.name)
                 logger.info("")
 
-                util.separator(f"Running {mapping_name} Playlist", space=False, border=False)
+                logger.separator(f"Running {mapping_name} Playlist", space=False, border=False)
 
                 if len(builder.schedule) > 0:
-                    util.print_multiline(builder.schedule, info=True)
+                    logger.info(builder.schedule)
 
                 items_added = 0
                 items_removed = 0
@@ -1002,142 +1011,18 @@ def run_playlists(config):
                 logger.debug("")
                 logger.debug(f"Builder: {method}: {value}")
                 logger.info("")
-                items = []
                 if "plex" in method:
                     ids = []
-                    for pl_library in pl_libraries:
+                    for pl_library in builder.libraries:
                         ids.extend(pl_library.get_rating_keys(method, value))
                 elif "tautulli" in method:
                     ids = []
-                    for pl_library in pl_libraries:
+                    for pl_library in builder.libraries:
                         ids.extend(pl_library.Tautulli.get_rating_keys(pl_library, value, True))
                 else:
                     ids = builder.gather_ids(method, value)
 
-                if len(ids) > 0:
-                    total_ids = len(ids)
-                    logger.debug("")
-                    logger.debug(f"{total_ids} IDs Found: {ids}")
-                    for i, input_data in enumerate(ids, 1):
-                        input_id, id_type = input_data
-                        util.print_return(f"Parsing ID {i}/{total_ids}")
-                        if id_type == "tvdb_season":
-                            show_id, season_num = input_id.split("_")
-                            show_id = int(show_id)
-                            found = False
-                            for pl_library in pl_libraries:
-                                if show_id in pl_library.show_map:
-                                    found = True
-                                    show_item = pl_library.fetchItem(pl_library.show_map[show_id][0])
-                                    try:
-                                        items.extend(show_item.season(season=int(season_num)).episodes())
-                                    except NotFound:
-                                        builder.missing_parts.append(f"{show_item.title} Season: {season_num} Missing")
-                                    break
-                            if not found and show_id not in builder.missing_shows:
-                                builder.missing_shows.append(show_id)
-                        elif id_type == "tvdb_episode":
-                            show_id, season_num, episode_num = input_id.split("_")
-                            show_id = int(show_id)
-                            found = False
-                            for pl_library in pl_libraries:
-                                if show_id in pl_library.show_map:
-                                    found = True
-                                    show_item = pl_library.fetchItem(pl_library.show_map[show_id][0])
-                                    try:
-                                        items.append(
-                                            show_item.episode(season=int(season_num), episode=int(episode_num)))
-                                    except NotFound:
-                                        builder.missing_parts.append(
-                                            f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
-                                    break
-                            if not found and show_id not in builder.missing_shows:
-                                builder.missing_shows.append(show_id)
-                        else:
-                            rating_keys = []
-                            if id_type == "ratingKey":
-                                rating_keys = input_id
-                            elif id_type == "tmdb":
-                                if input_id not in builder.ignore_ids:
-                                    found = False
-                                    for pl_library in pl_libraries:
-                                        if input_id in pl_library.movie_map:
-                                            found = True
-                                            rating_keys = pl_library.movie_map[input_id]
-                                            break
-                                    if not found and input_id not in builder.missing_movies:
-                                        builder.missing_movies.append(input_id)
-                            elif id_type in ["tvdb", "tmdb_show"]:
-                                if id_type == "tmdb_show":
-                                    try:
-                                        input_id = config.Convert.tmdb_to_tvdb(input_id, fail=True)
-                                    except Failed as e:
-                                        logger.warning(e)
-                                        continue
-                                if input_id not in builder.ignore_ids:
-                                    found = False
-                                    for pl_library in pl_libraries:
-                                        if input_id in pl_library.show_map:
-                                            found = True
-                                            rating_keys = pl_library.show_map[input_id]
-                                            break
-                                    if not found and input_id not in builder.missing_shows:
-                                        builder.missing_shows.append(input_id)
-                            elif id_type == "imdb":
-                                if input_id not in builder.ignore_imdb_ids:
-                                    found = False
-                                    for pl_library in pl_libraries:
-                                        if input_id in pl_library.imdb_map:
-                                            found = True
-                                            rating_keys = pl_library.imdb_map[input_id]
-                                            break
-                                    if not found:
-                                        try:
-                                            _id, tmdb_type = config.Convert.imdb_to_tmdb(input_id, fail=True)
-                                            if tmdb_type == "episode":
-                                                tmdb_id, season_num, episode_num = _id.split("_")
-                                                show_id = config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
-                                                show_id = int(show_id)
-                                                found = False
-                                                for pl_library in pl_libraries:
-                                                    if show_id in pl_library.show_map:
-                                                        found = True
-                                                        show_item = pl_library.fetchItem(
-                                                            pl_library.show_map[show_id][0])
-                                                        try:
-                                                            items.append(show_item.episode(season=int(season_num),
-                                                                                           episode=int(episode_num)))
-                                                        except NotFound:
-                                                            builder.missing_parts.append(
-                                                                f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
-                                                        break
-                                                if not found and show_id not in builder.missing_shows:
-                                                    builder.missing_shows.append(show_id)
-                                            elif tmdb_type == "movie" and builder.do_missing:
-                                                if _id not in builder.missing_movies:
-                                                    builder.missing_movies.append(_id)
-                                            elif tmdb_type == "show" and builder.do_missing:
-                                                tvdb_id = config.Convert.tmdb_to_tvdb(_id, fail=True)
-                                                if tvdb_id not in builder.missing_shows:
-                                                    builder.missing_shows.append(tvdb_id)
-                                        except Failed as e:
-                                            logger.warning(e)
-                                            continue
-                            if not isinstance(rating_keys, list):
-                                rating_keys = [rating_keys]
-                            for rk in rating_keys:
-                                try:
-                                    item = builder.fetch_item(rk)
-                                    if isinstance(item, (Show, Season)):
-                                        items.extend(item.episodes())
-                                    else:
-                                        items.append(item)
-                                except Failed as e:
-                                    logger.error(e)
-                    util.print_end()
-
-                if len(items) > 0:
-                    builder.filter_and_save_items(items)
+                builder.filter_and_save_items(ids)
 
                 if len(builder.added_items) >= builder.minimum:
                     items_added, items_unchanged = builder.add_to_collection()
@@ -1156,7 +1041,7 @@ def run_playlists(config):
                     valid = False
                     if builder.details["delete_below_minimum"] and builder.obj:
                         logger.info("")
-                        util.print_multiline(builder.delete(), info=True)
+                        logger.info(builder.delete())
                         builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
@@ -1176,10 +1061,10 @@ def run_playlists(config):
                         stats["modified"] += 1
                         status[mapping_name]["modified"] = True
                 except Failed:
-                    util.print_stacktrace()
+                    logger.stacktrace()
                     run_item_details = False
                     logger.info("")
-                    util.separator("No Playlist to Update", space=False, border=False)
+                    logger.separator("No Playlist to Update", space=False, border=False)
                 else:
                     builder.update_details()
 
@@ -1192,7 +1077,7 @@ def run_playlists(config):
                         builder.load_collection_items()
                     except Failed:
                         logger.info("")
-                        util.separator("No Items Found", space=False, border=False)
+                        logger.separator("No Items Found", space=False, border=False)
                     else:
                         if builder.item_details:
                             builder.update_item_details()
@@ -1205,23 +1090,23 @@ def run_playlists(config):
                 builder.send_notifications(playlist=True)
 
             except NotScheduled as e:
-                util.print_multiline(e, info=True)
+                logger.info(e)
                 status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:
                 config.notify(e, server=server_name, library=library_names, playlist=mapping_name)
-                util.print_stacktrace()
-                util.print_multiline(e, error=True)
+                logger.stacktrace()
+                logger.error(e)
                 status[mapping_name]["status"] = "PMM Failure"
                 status[mapping_name]["errors"].append(e)
             except Exception as e:
                 config.notify(f"Unknown Error: {e}", server=server_name, library=library_names, playlist=mapping_name)
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Unknown Error: {e}")
                 status[mapping_name]["status"] = "Unknown Error"
                 status[mapping_name]["errors"].append(e)
             logger.info("")
-            util.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {str(datetime.now() - playlist_start).split('.')[0]}")
-            logger.removeHandler(playlist_handler)
+            logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {str(datetime.now() - playlist_start).split('.')[0]}")
+            logger.remove_playlist_handler(playlist_log_name)
     return status, stats
 
 try:
@@ -1269,9 +1154,9 @@ try:
                     minutes = int((seconds % 3600) // 60)
                     time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                     time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                    util.print_return(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
+                    logger.ghost(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
                 else:
                     logger.error(f"Time Error: {valid_times}")
             time.sleep(60)
 except KeyboardInterrupt:
-    util.separator("Exiting Plex Meta Manager")
+    logger.separator("Exiting Plex Meta Manager")

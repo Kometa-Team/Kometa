@@ -1,0 +1,18 @@
+name: Wiki Request
+description: A request to update or improve Plex Meta Manager's wiki
+title: '[Docs]: '
+labels: ['status:not-yet-viewed', 'documentation']
+assignees: 'meisnate12'
+
+body:
+  - type: textarea
+    attributes:
+      label: What is the improvement or update to the Wiki you wish to see?
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Does the docs page already exist? Please link to it.
+      description: 'Example: https://metamanager.wiki/en/latest/config/operations.html'
+    validations:
+      required: false

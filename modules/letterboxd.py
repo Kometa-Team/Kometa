@@ -1,8 +1,8 @@
-import logging, time
+import time
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["letterboxd_list", "letterboxd_list_details"]
 base_url = "https://letterboxd.com"
@@ -33,7 +33,7 @@ class Letterboxd:
         ids = response.xpath("//a[@data-track-action='TMDb']/@href")
         if len(ids) > 0 and ids[0]:
             if "themoviedb.org/movie" in ids[0]:
-                return util.regex_first_int(ids[0], "TMDB Movie ID")
+                return util.regex_first_int(ids[0], "TMDb Movie ID")
             raise Failed(f"Letterboxd Error: TMDb Movie ID not found in {ids[0]}")
         raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {letterboxd_url}")
 
@@ -65,7 +65,7 @@ class Letterboxd:
                 ids = []
                 for i, item in enumerate(items, 1):
                     letterboxd_id, slug = item
-                    util.print_return(f"Finding TMDb ID {i}/{total_items}")
+                    logger.ghost(f"Finding TMDb ID {i}/{total_items}")
                     tmdb_id = None
                     expired = None
                     if self.config.Cache:
@@ -79,7 +79,7 @@ class Letterboxd:
                         if self.config.Cache:
                             self.config.Cache.update_letterboxd_map(expired, letterboxd_id, tmdb_id)
                     ids.append((tmdb_id, "tmdb"))
-                logger.info(util.adjust_space(f"Processed {total_items} TMDb IDs"))
+                logger.info(f"Processed {total_items} TMDb IDs")
                 return ids
             else:
                 raise Failed(f"Letterboxd Error: No List Items found in {data}")

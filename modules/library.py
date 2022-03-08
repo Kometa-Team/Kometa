@@ -1,12 +1,13 @@
-import logging, os, shutil, time
+import os, shutil, time
 from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile
 from modules.util import Failed
 from PIL import Image
+from plexapi.exceptions import BadRequest
 from ruamel import yaml
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 class Library(ABC):
     def __init__(self, config, params):
@@ -70,12 +71,15 @@ class Library(ABC):
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
+        self.mass_content_rating_update = params["mass_content_rating_update"]
         self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
         self.radarr_add_all_existing = params["radarr_add_all_existing"]
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
         self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
         self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
+        self.update_blank_track_titles = params["update_blank_track_titles"]
         self.mass_collection_mode = params["mass_collection_mode"]
+        self.metadata_backup = params["metadata_backup"]
         self.tmdb_collections = params["tmdb_collections"]
         self.genre_collections = params["genre_collections"]
         self.genre_mapper = params["genre_mapper"]
@@ -85,15 +89,26 @@ class Library(ABC):
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
         self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
         self.optimize = params["plex"]["optimize"] # TODO: Here or just in Plex?
-        self.stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+        self.stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
         self.status = {}
 
-        self.items_library_operation = self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
-                                      or self.mass_critic_rating_update or self.mass_trakt_rating_update or self.genre_mapper \
-                                      or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing
-        self.library_operation = self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
+        self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
+                                       or self.mass_critic_rating_update or self.mass_content_rating_update or self.mass_trakt_rating_update \
+                                       or self.genre_mapper or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
+        self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
-                                 or self.genre_collections or self.show_unmanaged
+                                 or self.genre_collections or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False
+
+        if self.asset_directory:
+            logger.info("")
+            for ad in self.asset_directory:
+                logger.info(f"Using Asset Directory: {ad}")
+
+        if output:
+            logger.info("")
+            logger.info(output)
+
+    def scan_metadata_files(self):
         metadata = []
         for file_type, metadata_file in self.metadata_path:
             if file_type == "Folder":
@@ -109,27 +124,18 @@ class Library(ABC):
                 metadata.append((file_type, metadata_file))
         for file_type, metadata_file in metadata:
             try:
-                meta_obj = MetadataFile(config, self, file_type, metadata_file)
+                meta_obj = MetadataFile(self.config, self, file_type, metadata_file)
                 if meta_obj.collections:
                     self.collections.extend([c for c in meta_obj.collections])
                 if meta_obj.metadata:
                     self.metadatas.extend([c for c in meta_obj.metadata])
                 self.metadata_files.append(meta_obj)
             except Failed as e:
-                util.print_multiline(e, error=True)
+                logger.error(e)
 
         if len(self.metadata_files) == 0 and not self.library_operation and not self.config.playlist_files:
             logger.info("")
             raise Failed("Config Error: No valid metadata files, playlist files, or library operations found")
-
-        if self.asset_directory:
-            logger.info("")
-            for ad in self.asset_directory:
-                logger.info(f"Using Asset Directory: {ad}")
-
-        if output:
-            logger.info("")
-            logger.info(output)
 
     def upload_images(self, item, poster=None, background=None, overlay=None):
         image = None
@@ -149,11 +155,11 @@ class Library(ABC):
                 elif self.show_asset_not_needed:
                     logger.info(f"Detail: {poster.prefix}poster update not needed")
             except Failed:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
 
         if overlay is not None:
-            overlay_name, overlay_folder, overlay_image, temp_image = overlay
+            overlay_name, overlay_folder, overlay_image = overlay
             self.reload(item)
             item_labels = {item_tag.tag.lower(): item_tag.tag for item_tag in item.labels}
             for item_label in item_labels:
@@ -166,9 +172,11 @@ class Library(ABC):
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
                 og_image = response.content
+                ext = "jpg" if response.headers["Content-Type"] == "image/jpegss" else "png"
+                temp_image = os.path.join(overlay_folder, f"temp.{ext}")
                 with open(temp_image, "wb") as handler:
                     handler.write(og_image)
-                shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.png"))
+                shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.{ext}"))
                 while util.is_locked(temp_image):
                     time.sleep(1)
                 try:
@@ -180,9 +188,9 @@ class Library(ABC):
                     self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
                     poster_uploaded = True
                     logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
-                except OSError as e:
-                    util.print_stacktrace()
-                    logger.error(f"Overlay Error: {e}")
+                except (OSError, BadRequest) as e:
+                    logger.stacktrace()
+                    raise Failed(f"Overlay Error: {e}")
 
         background_uploaded = False
         if background is not None:
@@ -199,7 +207,7 @@ class Library(ABC):
                 elif self.show_asset_not_needed:
                     logger.info(f"Detail: {background.prefix}background update not needed")
             except Failed:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Detail: {background.attribute} failed to update {background.message}")
 
         if self.config.Cache:
@@ -244,14 +252,14 @@ class Library(ABC):
         try:
             yaml.round_trip_dump(self.missing, open(self.missing_path, "w", encoding="utf-8"))
         except yaml.scanner.ScannerError as e:
-            util.print_multiline(f"YAML Error: {util.tab_new_lines(e)}", error=True)
+            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
 
     def map_guids(self):
         items = self.get_all()
         logger.info(f"Mapping {self.type} Library: {self.name}")
         logger.info("")
         for i, item in enumerate(items, 1):
-            util.print_return(f"Processing: {i}/{len(items)} {item.title}")
+            logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
             if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:
                 id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
                 if main_id:
@@ -264,5 +272,5 @@ class Library(ABC):
                 if imdb_id:
                     util.add_dict_list(imdb_id, item.ratingKey, self.imdb_map)
         logger.info("")
-        logger.info(util.adjust_space(f"Processed {len(items)} {self.type}s"))
+        logger.info(f"Processed {len(items)} {self.type}s")
         return items

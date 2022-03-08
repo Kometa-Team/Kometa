@@ -1,4 +1,4 @@
-import base64, logging, os, requests
+import base64, os, requests
 from datetime import datetime
 from lxml import html
 from modules import util, radarr, sonarr
@@ -28,10 +28,24 @@ from modules.webhooks import Webhooks
 from retrying import retry
 from ruamel import yaml
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
+mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
+mass_rating_options = {
+    "tmdb": "Use TMDb Rating",
+    "omdb": "Use IMDb Rating through OMDb",
+    "mdb": "Use MdbList Average Score",
+    "mdb_imdb": "Use IMDb Rating through MDbList",
+    "mdb_metacritic": "Use Metacritic Rating through MDbList",
+    "mdb_metacriticuser": "Use Metacritic User Rating through MDbList",
+    "mdb_trakt": "Use Trakt Rating through MDbList",
+    "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDbList",
+    "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDbList",
+    "mdb_tmdb": "Use TMDb Rating through MDbList",
+    "mdb_letterboxd": "Use Letterboxd Rating through MDbList"
+}
 
 class ConfigFile:
     def __init__(self, default_dir, attrs, read_only):
@@ -122,7 +136,7 @@ class ConfigFile:
                         hooks("collection_changes")
                         new_config["libraries"][library]["webhooks"]["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
             if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
-            if "playlists" in new_config:                   new_config["playlists"] = new_config.pop("playlists")
+            if "playlist_files" in new_config:              new_config["playlist_files"] = new_config.pop("playlist_files")
             if "settings" in new_config:
                 temp = new_config.pop("settings")
                 if "collection_minimum" in temp:
@@ -149,6 +163,7 @@ class ConfigFile:
             if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
             if "tautulli" in new_config:                    new_config["tautulli"] = new_config.pop("tautulli")
             if "omdb" in new_config:                        new_config["omdb"] = new_config.pop("omdb")
+            if "mdblist" in new_config:                     new_config["mdblist"] = new_config.pop("mdblist")
             if "notifiarr" in new_config:                   new_config["notifiarr"] = new_config.pop("notifiarr")
             if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
             if "radarr" in new_config:
@@ -164,12 +179,13 @@ class ConfigFile:
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
             if not self.read_only:
-                yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), indent=None, block_seq_indent=2)
+                yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
+            logger.stacktrace()
             raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
         except Exception as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             raise Failed(f"YAML Error: {e}")
 
         def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
@@ -192,7 +208,7 @@ class ConfigFile:
                     if parent not in loaded_config or not loaded_config[parent]:        loaded_config[parent] = {attribute: default}
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
                     else:                                                               endline = ""
-                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), indent=None, block_seq_indent=2)
+                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), block_seq_indent=2)
                 if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
             elif data[attribute] is None:
                 if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
@@ -224,7 +240,7 @@ class ConfigFile:
                             warning_message += "\n"
                         warning_message += f"Config Warning: Path does not exist: {os.path.abspath(p)}"
                 if do_print and warning_message:
-                    util.print_multiline(warning_message)
+                    logger.warning(warning_message)
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
             elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
@@ -254,9 +270,9 @@ class ConfigFile:
                     message = message + "\n" + options
                 raise Failed(f"Config Error: {message}")
             if do_print:
-                util.print_multiline(f"Config Warning: {message}")
+                logger.warning(f"Config Warning: {message}")
                 if data and attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
-                    util.print_multiline(options)
+                    logger.warning(options)
             return default
 
         self.general = {
@@ -294,7 +310,7 @@ class ConfigFile:
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
-        self.custom_repo = self.general["custom_repo"]
+        self.custom_repo = self.general["custom_repo"].replace("https://github.com/", "https://raw.githubusercontent.com/") if self.general["custom_repo"] else None
 
         self.session = requests.Session()
         if not self.general["verify_ssl"]:
@@ -310,12 +326,12 @@ class ConfigFile:
             "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True)
         }
         if self.general["cache"]:
-            util.separator()
+            logger.separator()
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
 
-        util.separator()
+        logger.separator()
 
         self.NotifiarrFactory = None
         if "notifiarr" in self.data:
@@ -327,7 +343,7 @@ class ConfigFile:
                     "test": check_for_attribute(self.data, "test", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False)
                 })
             except Failed as e:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(e)
             logger.info(f"Notifiarr Connection {'Failed' if self.NotifiarrFactory is None else 'Successful'}")
         else:
@@ -337,12 +353,12 @@ class ConfigFile:
         try:
             self.Webhooks.start_time_hooks(self.start_time)
         except Failed as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
 
         self.errors = []
 
-        util.separator()
+        logger.separator()
 
         try:
             self.TMDb = None
@@ -356,13 +372,16 @@ class ConfigFile:
             else:
                 raise Failed("Config Error: tmdb attribute not found")
 
-            util.separator()
+            logger.separator()
 
             self.OMDb = None
             if "omdb" in self.data:
                 logger.info("Connecting to OMDb...")
                 try:
-                    self.OMDb = OMDb(self, {"apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True)})
+                    self.OMDb = OMDb(self, {
+                        "apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True),
+                        "expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                    })
                 except Failed as e:
                     self.errors.append(e)
                     logger.error(e)
@@ -370,7 +389,25 @@ class ConfigFile:
             else:
                 logger.warning("omdb attribute not found")
 
-            util.separator()
+            logger.separator()
+
+            self.Mdblist = Mdblist(self)
+            if "mdblist" in self.data:
+                logger.info("Connecting to Mdblist...")
+                try:
+                    self.Mdblist.add_key(
+                        check_for_attribute(self.data, "apikey", parent="mdblist", throw=True),
+                        check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                    )
+                    logger.info("Mdblist Connection Successful")
+                except Failed as e:
+                    self.errors.append(e)
+                    logger.error(e)
+                    logger.info("Mdblist Connection Failed")
+            else:
+                logger.warning("mdblist attribute not found")
+
+            logger.separator()
 
             self.Trakt = None
             if "trakt" in self.data:
@@ -389,7 +426,7 @@ class ConfigFile:
             else:
                 logger.warning("trakt attribute not found")
 
-            util.separator()
+            logger.separator()
 
             self.MyAnimeList = None
             if "mal" in self.data:
@@ -408,23 +445,21 @@ class ConfigFile:
             else:
                 logger.warning("mal attribute not found")
 
-            self.AniDB = None
+            self.AniDB = AniDB(self)
             if "anidb" in self.data:
-                util.separator()
+                logger.separator()
                 logger.info("Connecting to AniDB...")
                 try:
-                    self.AniDB = AniDB(self, {
-                        "username": check_for_attribute(self.data, "username", parent="anidb", throw=True),
-                        "password": check_for_attribute(self.data, "password", parent="anidb", throw=True)
-                    })
+                    self.AniDB.login(
+                        check_for_attribute(self.data, "username", parent="anidb", throw=True),
+                        check_for_attribute(self.data, "password", parent="anidb", throw=True)
+                    )
                 except Failed as e:
                     self.errors.append(e)
                     logger.error(e)
                 logger.info(f"AniDB Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
-            if self.AniDB is None:
-                self.AniDB = AniDB(self, None)
 
-            util.separator()
+            logger.separator()
 
             self.playlist_names = []
             self.playlist_files = []
@@ -482,7 +517,7 @@ class ConfigFile:
                     self.playlist_names.extend([p for p in playlist_obj.playlists])
                     self.playlist_files.append(playlist_obj)
                 except Failed as e:
-                    util.print_multiline(e, error=True)
+                    logger.error(e)
 
             self.TVDb = TVDb(self, self.general["tvdb_language"])
             self.IMDb = IMDb(self)
@@ -492,9 +527,8 @@ class ConfigFile:
             self.ICheckMovies = ICheckMovies(self)
             self.Letterboxd = Letterboxd(self)
             self.StevenLu = StevenLu(self)
-            self.Mdblist = Mdblist(self)
 
-            util.separator()
+            logger.separator()
 
             logger.info("Connecting to Plex Libraries...")
 
@@ -558,13 +592,17 @@ class ConfigFile:
                     "radarr_remove_by_tag": None,
                     "sonarr_remove_by_tag": None,
                     "mass_collection_mode": None,
-                    "genre_collections": None
+                    "metadata_backup": None,
+                    "genre_collections": None,
+                    "update_blank_track_titles": None,
+                    "mass_content_rating_update": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
-                util.separator(f"{display_name} Configuration")
+                logger.separator(f"{display_name} Configuration")
                 logger.info("")
                 logger.info(f"Connecting to {display_name} Library...")
+                logger.info("")
 
                 params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
                 if params["asset_directory"] is None:
@@ -602,8 +640,8 @@ class ConfigFile:
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
                 params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
-                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
-                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
+                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
+                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
                 params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
                 params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
                 params["radarr_add_all_existing"] = check_for_attribute(lib, "radarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
@@ -621,9 +659,11 @@ class ConfigFile:
                         if "mass_genre_update" in lib["operations"]:
                             params["mass_genre_update"] = check_for_attribute(lib["operations"], "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
                         if "mass_audience_rating_update" in lib["operations"]:
-                            params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                            params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
                         if "mass_critic_rating_update" in lib["operations"]:
-                            params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_update_options, default_is_none=True, save=False)
+                            params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
+                        if "mass_content_rating_update" in lib["operations"]:
+                            params["mass_content_rating_update"] = check_for_attribute(lib["operations"], "mass_content_rating_update", test_list=mass_content_options, default_is_none=True, save=False)
                         if "mass_trakt_rating_update" in lib["operations"]:
                             params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False)
                         if "split_duplicates" in lib["operations"]:
@@ -636,11 +676,25 @@ class ConfigFile:
                             params["sonarr_add_all_existing"] = check_for_attribute(lib["operations"], "sonarr_add_all_existing", var_type="bool", default=False, save=False)
                         if "sonarr_remove_by_tag" in lib["operations"]:
                             params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
+                        if "update_blank_track_titles" in lib["operations"]:
+                            params["update_blank_track_titles"] = check_for_attribute(lib["operations"], "update_blank_track_titles", var_type="bool", default=False, save=False)
                         if "mass_collection_mode" in lib["operations"]:
                             try:
                                 params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
                             except Failed as e:
                                 logger.error(e)
+                        if "metadata_backup" in lib["operations"]:
+                            params["metadata_backup"] = {
+                                "path": os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml"),
+                                "exclude": [],
+                                "sync_tags": False,
+                                "add_blank_entries": True
+                            }
+                            if lib["operations"]["metadata_backup"] and isinstance(lib["operations"]["metadata_backup"], dict):
+                                params["metadata_backup"]["path"] = check_for_attribute(lib["operations"]["metadata_backup"], "path", var_type="path", default=params["metadata_backup"]["path"], save=False)
+                                params["metadata_backup"]["exclude"] = check_for_attribute(lib["operations"]["metadata_backup"], "exclude", var_type="comma_list", default_is_none=True, save=False)
+                                params["metadata_backup"]["sync_tags"] = check_for_attribute(lib["operations"]["metadata_backup"], "sync_tags", var_type="bool", default=False, save=False)
+                                params["metadata_backup"]["add_blank_entries"] = check_for_attribute(lib["operations"]["metadata_backup"], "add_blank_entries", var_type="bool", default=True, save=False)
                         if "tmdb_collections" in lib["operations"]:
                             params["tmdb_collections"] = {
                                 "exclude_ids": [],
@@ -707,8 +761,8 @@ class ConfigFile:
                         logger.error("Config Error: operations must be a dictionary")
 
                 def error_check(attr, service):
+                    err = f"Config Error: {attr} cannot be {params[attr]} without a successful {service} Connection"
                     params[attr] = None
-                    err = f"Config Error: {attr} cannot be omdb without a successful {service} Connection"
                     self.errors.append(err)
                     logger.error(err)
 
@@ -718,6 +772,14 @@ class ConfigFile:
                     error_check("mass_audience_rating_update", "OMDb")
                 if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
                     error_check("mass_critic_rating_update", "OMDb")
+                if self.OMDb is None and params["mass_content_rating_update"] == "omdb":
+                    error_check("mass_content_rating_update", "OMDb")
+                if not self.Mdblist.has_key and params["mass_audience_rating_update"] in util.mdb_types:
+                    error_check("mass_audience_rating_update", "MdbList API")
+                if not self.Mdblist.has_key and params["mass_critic_rating_update"] in util.mdb_types:
+                    error_check("mass_critic_rating_update", "MdbList API")
+                if not self.Mdblist.has_key and params["mass_content_rating_update"] in ["mdb", "mdb_commonsense"]:
+                    error_check("mass_content_rating_update", "MdbList API")
                 if self.Trakt is None and params["mass_trakt_rating_update"]:
                     error_check("mass_trakt_rating_update", "Trakt")
 
@@ -759,6 +821,8 @@ class ConfigFile:
                             except NotScheduled:
                                 params["skip_library"] = True
 
+                    logger.info("")
+                    logger.separator("Plex Configuration", space=False, border=False)
                     params["plex"] = {
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
@@ -771,15 +835,26 @@ class ConfigFile:
                     logger.info(f"{display_name} Library Connection Successful")
                 except Failed as e:
                     self.errors.append(e)
-                    util.print_stacktrace()
-                    util.print_multiline(e, error=True)
+                    logger.stacktrace()
+                    logger.error(e)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
+                    continue
+                try:
+                    logger.info("")
+                    logger.separator("Scanning Metadata Files", space=False, border=False)
+                    library.scan_metadata_files()
+                except Failed as e:
+                    self.errors.append(e)
+                    logger.stacktrace()
+                    logger.error(e)
+                    logger.info("")
+                    logger.info(f"{display_name} Metadata Failed to Load")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):
                     logger.info("")
-                    util.separator("Radarr Configuration", space=False, border=False)
+                    logger.separator("Radarr Configuration", space=False, border=False)
                     logger.info("")
                     logger.info(f"Connecting to {display_name} library's Radarr...")
                     logger.info("")
@@ -800,14 +875,14 @@ class ConfigFile:
                         })
                     except Failed as e:
                         self.errors.append(e)
-                        util.print_stacktrace()
-                        util.print_multiline(e, error=True)
+                        logger.stacktrace()
+                        logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Radarr Connection {'Failed' if library.Radarr is None else 'Successful'}")
 
                 if self.general["sonarr"]["url"] or (lib and "sonarr" in lib):
                     logger.info("")
-                    util.separator("Sonarr Configuration", space=False, border=False)
+                    logger.separator("Sonarr Configuration", space=False, border=False)
                     logger.info("")
                     logger.info(f"Connecting to {display_name} library's Sonarr...")
                     logger.info("")
@@ -831,14 +906,14 @@ class ConfigFile:
                         })
                     except Failed as e:
                         self.errors.append(e)
-                        util.print_stacktrace()
-                        util.print_multiline(e, error=True)
+                        logger.stacktrace()
+                        logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
 
                 if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                     logger.info("")
-                    util.separator("Tautulli Configuration", space=False, border=False)
+                    logger.separator("Tautulli Configuration", space=False, border=False)
                     logger.info("")
                     logger.info(f"Connecting to {display_name} library's Tautulli...")
                     logger.info("")
@@ -849,8 +924,8 @@ class ConfigFile:
                         })
                     except Failed as e:
                         self.errors.append(e)
-                        util.print_stacktrace()
-                        util.print_multiline(e, error=True)
+                        logger.stacktrace()
+                        logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
@@ -859,18 +934,21 @@ class ConfigFile:
                 logger.info("")
                 self.libraries.append(library)
 
-            util.separator()
+            logger.separator()
+
+            self.library_map = {_l.original_mapping_name: _l for _l in self.libraries}
 
             if len(self.libraries) > 0:
                 logger.info(f"{len(self.libraries)} Plex Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
             else:
                 raise Failed("Plex Error: No Plex libraries were connected to")
 
-            util.separator()
+            logger.separator()
 
             if self.errors:
                 self.notify(self.errors)
         except Exception as e:
+            logger.stacktrace()
             self.notify(e)
             raise
 
@@ -879,7 +957,7 @@ class ConfigFile:
             try:
                 self.Webhooks.error_hooks(error, server=server, library=library, collection=collection, playlist=playlist, critical=critical)
             except Failed as e:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"Webhooks Error: {e}")
 
     def get_html(self, url, headers=None, params=None):

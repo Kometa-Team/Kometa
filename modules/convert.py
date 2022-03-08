@@ -1,9 +1,9 @@
-import logging, re, requests
+import re, requests
 from modules import util
 from modules.util import Failed
 from plexapi.exceptions import BadRequest
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 anime_lists_url = "https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-list-full.json"
 
@@ -246,7 +246,7 @@ class Convert:
                         elif url_parsed.scheme == "tmdb":               tmdb_id.append(int(url_parsed.netloc))
                 except requests.exceptions.ConnectionError:
                     library.query(item.refresh)
-                    util.print_stacktrace()
+                    logger.stacktrace()
                     raise Failed("No External GUIDs found")
                 if not tvdb_id and not imdb_id and not tmdb_id:
                     library.query(item.refresh)
@@ -278,7 +278,7 @@ class Convert:
                 if int(check_id) in self.mal_to_anidb:
                     anidb_id = self.mal_to_anidb[int(check_id)]
                 else:
-                    raise Failed(f"Convert Error: AniDB ID not found for MyAnimeList ID: {check_id}")
+                    raise Failed(f"AniDB ID not found for MyAnimeList ID: {check_id}")
             elif item_type == "local":                      raise Failed("No match in Plex")
             else:                                           raise Failed(f"Agent {item_type} not supported")
 
@@ -329,7 +329,7 @@ class Convert:
                     cache_ids = ",".join([str(c) for c in cache_ids])
                     imdb_in = ",".join([str(i) for i in imdb_in]) if imdb_in else None
                     ids = f"{item.guid:<46} | {id_type} ID: {cache_ids:<7} | IMDb ID: {str(imdb_in):<10}"
-                    logger.info(util.adjust_space(f" Cache  |  {'^' if expired else '+'}  | {ids} | {item.title}"))
+                    logger.info(f" Cache  |  {'^' if expired else '+'}  | {ids} | {item.title}")
                     self.config.Cache.update_guid_map(item.guid, cache_ids, imdb_in, expired, guid_type)
 
             if (tmdb_id or imdb_id) and library.is_movie:
@@ -345,8 +345,8 @@ class Convert:
                 logger.debug(f"TMDb: {tmdb_id}, IMDb: {imdb_id}, TVDb: {tvdb_id}")
                 raise Failed(f"No ID to convert")
         except Failed as e:
-            logger.info(util.adjust_space(f'Mapping Error | {item.guid:<46} | {e} for "{item.title}"'))
+            logger.info(f'Mapping Error | {item.guid:<46} | {e} for "{item.title}"')
         except BadRequest:
-            util.print_stacktrace()
-            logger.info(util.adjust_space(f'Mapping Error | {item.guid:<46} | Bad Request for "{item.title}"'))
+            logger.stacktrace()
+            logger.info(f'Mapping Error | {item.guid:<46} | Bad Request for "{item.title}"')
         return None, None, None

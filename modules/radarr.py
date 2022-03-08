@@ -1,10 +1,9 @@
-import logging
 from modules import util
 from modules.util import Failed
 from arrapi import RadarrAPI
 from arrapi.exceptions import ArrException
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 availability_translation = {"announced": "announced", "cinemas": "inCinemas", "released": "released", "db": "preDB"}
 apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
@@ -16,6 +15,8 @@ class Radarr:
         self.library = library
         self.url = params["url"]
         self.token = params["token"]
+        logger.secret(self.url)
+        logger.secret(self.token)
         try:
             self.api = RadarrAPI(self.url, self.token, session=self.config.session)
             self.api.respect_list_exclusions_when_adding()
@@ -42,7 +43,7 @@ class Radarr:
             else:
                 _ids.append(tmdb_id)
         logger.info("")
-        util.separator(f"Adding {'Missing' if _ids else 'Existing'} to Radarr", space=False, border=False)
+        logger.separator(f"Adding {'Missing' if _ids else 'Existing'} to Radarr", space=False, border=False)
         logger.debug("")
         logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
         for tmdb_id in _paths:
@@ -82,13 +83,13 @@ class Radarr:
                 exists.extend(_e)
                 invalid.extend(_i)
             except ArrException as e:
-                util.print_stacktrace()
+                logger.stacktrace()
                 raise Failed(f"Radarr Error: {e}")
 
         for i, item in enumerate(tmdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tmdb_id = item[0] if isinstance(item, tuple) else item
-            util.print_return(f"Loading TMDb ID {i}/{len(tmdb_ids)} ({tmdb_id})")
+            logger.ghost(f"Loading TMDb ID {i}/{len(tmdb_ids)} ({tmdb_id})")
             if self.config.Cache:
                 _id = self.config.Cache.query_radarr_adds(tmdb_id, self.library.original_mapping_name)
                 if _id:

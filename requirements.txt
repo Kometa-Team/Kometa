@@ -1,10 +1,10 @@
-PlexAPI==4.9.1
-tmdbapis==0.1.8
-arrapi==1.3.0
-lxml==4.7.1
+PlexAPI==4.9.2
+tmdbapis==1.0.3
+arrapi==1.3.1
+lxml==4.8.0
 requests==2.27.1
-ruamel.yaml==0.17.20
+ruamel.yaml==0.17.21
 schedule==1.1.0
 retrying==1.3.3
 pathvalidate==2.5.0
-pillow==9.0.0
+pillow==9.0.1

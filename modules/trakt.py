@@ -1,16 +1,16 @@
-import logging, requests, webbrowser
+import requests, webbrowser
 from modules import util
 from modules.util import Failed, TimeoutExpired
 from ruamel import yaml
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
 redirect_uri_encoded = redirect_uri.replace(":", "%3A")
 base_url = "https://api.trakt.tv"
 builders = [
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
-    "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
+    "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
     "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular", "trakt_trending", "trakt_watchlist", "trakt_boxoffice"
 ]
@@ -18,7 +18,15 @@ sorts = [
     "rank", "added", "title", "released", "runtime", "popularity",
     "percentage", "votes", "random", "my_rating", "watched", "collected"
 ]
-id_translation = {"movie": "tmdb", "show": "tvdb", "season": "TVDb Season", "episode": "TVDb Episode"}
+id_translation = {"movie": "movie", "show": "show", "season": "show", "episode": "show", "person": "person", "list": "list"}
+id_types = {
+    "movie": ("tmdb", "TMDb ID"),
+    "person": ("tmdb", "TMDb ID"),
+    "show": ("tvdb", "TVDb ID"),
+    "season": ("tvdb", "TVDb ID"),
+    "episode": ("tvdb", "TVDb ID"),
+    "list": ("slug", "Trakt Slug")
+}
 
 class Trakt:
     def __init__(self, config, params):
@@ -27,6 +35,7 @@ class Trakt:
         self.client_secret = params["client_secret"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
+        logger.secret(self.client_secret)
         if not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
@@ -53,12 +62,14 @@ class Trakt:
             raise Failed("Trakt Error: New Authorization Failed")
 
     def _check(self, authorization=None):
+        token = self.authorization['access_token'] if authorization is None else authorization['access_token']
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.authorization['access_token'] if authorization is None else authorization['access_token']}",
+            "Authorization": f"Bearer {token}",
             "trakt-api-version": "2",
             "trakt-api-key": self.client_id
         }
+        logger.secret(token)
         response = self.config.get(f"{base_url}/users/settings", headers=headers)
         return response.status_code == 200
 
@@ -159,22 +170,43 @@ class Trakt:
                 data = item[item_type]
                 current_type = item_type
             elif "type" in item and item["type"] in id_translation:
-                data = item["movie" if item["type"] == "movie" else "show"]
+                data = item[id_translation[item["type"]]]
                 current_type = item["type"]
             else:
                 continue
-            id_type = "tmdb" if current_type == "movie" else "tvdb"
+            id_type, id_display = id_types[current_type]
             if id_type in data["ids"] and data["ids"][id_type]:
                 final_id = data["ids"][id_type]
                 if current_type == "episode":
                     final_id = f"{final_id}_{item[current_type]['season']}"
                 if current_type in ["episode", "season"]:
                     final_id = f"{final_id}_{item[current_type]['number']}"
-                final_type = f"{id_type}_{current_type}" if current_type in ["episode", "season"] else id_type
+                if current_type in ["person", "list"]:
+                    final_id = (final_id, data["name"])
+                final_type = f"{id_type}_{current_type}" if current_type in ["episode", "season", "person"] else id_type
                 ids.append((final_id, final_type))
             else:
-                logger.error(f"Trakt Error: No {id_type.upper().replace('B', 'b')} ID found for {data['title']} ({data['year']})")
+                name = data["name"] if current_type in ["person", "list"] else f"{data['title']} ({data['year']})"
+                logger.error(f"Trakt Error: No {id_display} found for {name}")
         return ids
+
+    def get_user_lists(self, data):
+        try:
+            items = self._request(f"/users/{data}/lists")
+        except Failed:
+            raise Failed(f"Trakt Error: User {data} not found")
+        if len(items) == 0:
+            raise Failed(f"Trakt Error: User {data} has no lists")
+        return {self.build_user_url(data, i["ids"]["slug"]): i["name"] for i in items}
+
+    def get_liked_lists(self):
+        items = self._request(f"/users/likes/lists")
+        if len(items) == 0:
+            raise Failed(f"Trakt Error: No Liked lists found")
+        return {self.build_user_url(i['list']['user']['ids']['slug'], i['list']['ids']['slug']): i["list"]["name"] for i in items}
+
+    def build_user_url(self, user, name):
+        return f"{base_url.replace('api.', '')}/users/{user}/lists/{name}"
 
     def _user_list(self, data):
         try:
@@ -194,9 +226,22 @@ class Trakt:
             raise Failed(f"Trakt Error: {data}'s {list_type.capitalize()} is empty")
         return self._parse(items, item_type="movie" if is_movie else "show")
 
+    def _user_recommendations(self, amount, is_movie):
+        media_type = "Movie" if is_movie else "Show"
+        try:
+            items = self._request(f"/recommendations/{'movies' if is_movie else 'shows'}/?limit={amount}")
+        except Failed:
+            raise Failed(f"Trakt Error: failed to fetch {media_type} Recommendations")
+        if len(items) == 0:
+            raise Failed(f"Trakt Error: no {media_type} Recommendations were found")
+        return self._parse(items, typeless=True, item_type="movie" if is_movie else "show")
+
     def _pagenation(self, pagenation, amount, is_movie):
         items = self._request(f"/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
         return self._parse(items, typeless=pagenation == "popular", item_type="movie" if is_movie else "show")
+
+    def get_people(self, data):
+        return {i[0][0]: i[0][1] for i in self._user_list(data) if i[1] == "tmdb_person"}
 
     def validate_trakt(self, trakt_lists, is_movie, trakt_type="list"):
         values = util.get_list(trakt_lists, split=False)
@@ -230,6 +275,9 @@ class Trakt:
         elif method == "trakt_list":
             logger.info(f"Processing {pretty}: {data}")
             return self._user_list(data)
+        elif method == "trakt_recommended_personal":
+            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+            return self._user_recommendations(data, is_movie)
         elif method in builders:
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
             terms = method.split("_")
