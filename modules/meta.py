@@ -286,7 +286,7 @@ class MetadataFile(DataFile):
                                 if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
                                     auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
                             logger.exorcise()
-                        elif auto == "original_language":
+                        elif auto_type == "original_language":
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
