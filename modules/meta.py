@@ -339,8 +339,8 @@ class MetadataFile(DataFile):
                     if "<<title>>" not in title_format:
                         logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
-                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "title_override" in methods else {}
-                    key_override = util.parse("Config", "key_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "key_override" in methods else {}
+                    post_format_override = util.parse("Config", "post_format_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "post_format_override" in methods else {}
+                    pre_format_override = util.parse("Config", "pre_format_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "pre_format_override" in methods else {}
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
@@ -369,11 +369,11 @@ class MetadataFile(DataFile):
                         for k, v in dictionary_variables.items():
                             if key in v:
                                 template_call[k] = v[key]
-                        if key in title_override:
-                            collection_title = title_override[key]
+                        if key in post_format_override:
+                            collection_title = post_format_override[key]
                         else:
-                            if key in key_override:
-                                value = key_override[key]
+                            if key in pre_format_override:
+                                value = pre_format_override[key]
                             else:
                                 for prefix in remove_prefix:
                                     if value.startswith(prefix):
