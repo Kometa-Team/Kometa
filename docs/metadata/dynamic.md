@@ -105,6 +105,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 |:----------------------------------------------|:------------------------------------------------------------------------------------------------------------|:--------------:|:--------:|:--------:|:--------:|:--------:|
 | [`tmdb_collection`](#tmdb-collection)         | Create a collection for each TMDb Collection associated with an item in the library                         |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`tmdb_popular_people`](#tmdb-popular-people) | Create a collection for each actor found on [TMDb's Popular People List](https://www.themoviedb.org/person) |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`original_language`](#original-language)     | Create a collection for each TMDb original language associated with an item in the library                  |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`trakt_user_lists`](#trakt-user-lists)       | Create a collection for each list from specific trakt users                                                 |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`trakt_liked_lists`](#trakt-liked-lists)     | Create a collection for each list the authenticated trakt user likes                                        |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`trakt_people_list`](#trakt-people-lists)    | Create a collection for each actor found in the trakt list                                                  |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
@@ -214,6 +215,55 @@ dynamic_collections:
     type: tmdb_popular_people
     data: 10
 ```
+
+### Original Language
+
+Create collections based on the TMDb original language associated with items in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>original_language</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td><a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1 Code</a></td>
+  </tr>
+  <tr>
+    <th>Titles</th>
+    <td>ISO Language Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  plex_all: true
+  filters:
+    original_language: <<original_language>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example: Create collection for every TMDb Original Language found in the library.
+
+```yaml
+dynamic_collections:
+  TMDb Languages:          # This name is the mapping name
+    type: original_language
+```
+
 
 ### Trakt User Lists
 
