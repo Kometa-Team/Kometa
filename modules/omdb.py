@@ -1,8 +1,7 @@
-import logging
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 base_url = "http://www.omdbapi.com/"
 
@@ -52,13 +51,15 @@ class OMDb:
     def __init__(self, config, params):
         self.config = config
         self.apikey = params["apikey"]
+        self.expiration = params["expiration"]
         self.limit = False
+        logger.secret(self.apikey)
         self.get_omdb("tt0080684", ignore_cache=True)
 
     def get_omdb(self, imdb_id, ignore_cache=False):
         expired = None
         if self.config.Cache and not ignore_cache:
-            omdb_dict, expired = self.config.Cache.query_omdb(imdb_id)
+            omdb_dict, expired = self.config.Cache.query_omdb(imdb_id, self.expiration)
             if omdb_dict and expired is False:
                 return OMDbObj(imdb_id, omdb_dict)
         if self.config.trace_mode:
@@ -67,7 +68,7 @@ class OMDb:
         if response.status_code < 400:
             omdb = OMDbObj(imdb_id, response.json())
             if self.config.Cache and not ignore_cache:
-                self.config.Cache.update_omdb(expired, omdb)
+                self.config.Cache.update_omdb(expired, omdb, self.expiration)
             return omdb
         else:
             error = response.json()['Error']

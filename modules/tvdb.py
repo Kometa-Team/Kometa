@@ -1,8 +1,9 @@
-import logging, requests, time
+import requests, time
+from lxml.etree import ParserError
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["tvdb_list", "tvdb_list_details", "tvdb_movie", "tvdb_movie_details", "tvdb_show", "tvdb_show_details"]
 base_url = "https://www.thetvdb.com"
@@ -51,7 +52,10 @@ class TVDbObj:
 
         if self.config.trace_mode:
             logger.debug(f"URL: {tvdb_url}")
-        response = self.config.get_html(self.tvdb_url, headers=util.header(self.language))
+        try:
+            response = self.config.get_html(self.tvdb_url, headers=util.header(self.language))
+        except ParserError:
+            raise Failed(f"TVDb Error: Could not parse {self.tvdb_url}")
         results = response.xpath(f"//*[text()='TheTVDB.com {self.media_type} ID']/parent::node()/span/text()")
         if len(results) > 0:
             self.id = int(results[0])
@@ -107,7 +111,7 @@ class TVDbObj:
                 except Failed:
                     pass
             if tmdb_id is None and imdb_id is None:
-                raise Failed(f"TVDB Error: No TMDb ID or IMDb ID found for {self.title}")
+                raise Failed(f"TVDb Error: No TMDb ID or IMDb ID found for {self.title}")
         self.tmdb_id = tmdb_id
         self.imdb_id = imdb_id
 
@@ -171,7 +175,7 @@ class TVDb:
                     return ids
                 raise Failed(f"TVDb Error: No TVDb IDs found at {tvdb_url}")
             except requests.exceptions.MissingSchema:
-                util.print_stacktrace()
+                logger.stacktrace()
                 raise Failed(f"TVDb Error: URL Lookup Failed for {tvdb_url}")
         else:
             raise Failed(f"TVDb Error: {tvdb_url} must begin with {urls['list']}")

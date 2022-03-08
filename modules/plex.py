@@ -1,20 +1,21 @@
-import logging, os, plexapi, requests
+import os, plexapi, requests
+from datetime import datetime
 from modules import builder, util
 from modules.library import Library
 from modules.util import Failed, ImageData
 from PIL import Image
 from plexapi import utils
-from plexapi.audio import Artist
+from plexapi.audio import Artist, Track, Album
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
 from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
-from plexapi.video import Movie, Show
+from plexapi.video import Movie, Show, Season, Episode
 from retrying import retry
 from urllib import parse
 from xml.etree.ElementTree import ParseError
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["plex_all", "plex_pilots", "plex_collectionless", "plex_search"]
 search_translation = {
@@ -111,8 +112,8 @@ modifier_translation = {
     "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E"
 }
-episode_sorting_options = {"default": "-1", "oldest": "0", "newest": "1"}
 album_sorting_options = {"default": -1, "newest": 0, "oldest": 1, "name": 2}
+episode_sorting_options = {"default": -1, "oldest": 0, "newest": 1}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
 delete_episodes_options = {"never": 0, "day": 1, "week": 7, "refresh": 100}
 season_display_options = {"default": -1, "show": 0, "hide": 1}
@@ -382,7 +383,8 @@ class Plex(Library):
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
         self.timeout = params["plex"]["timeout"]
-        logger.info("")
+        logger.secret(self.url)
+        logger.secret(self.token)
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
         except Unauthorized:
@@ -390,7 +392,7 @@ class Plex(Library):
         except ValueError as e:
             raise Failed(f"Plex Error: {e}")
         except (requests.exceptions.ConnectionError, ParseError):
-            util.print_stacktrace()
+            logger.stacktrace()
             raise Failed("Plex Error: Plex url is invalid")
         self.Plex = None
         library_names = []
@@ -407,6 +409,7 @@ class Plex(Library):
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
         self._users = []
+        self._all_items = []
         self.agent = self.Plex.agent
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
@@ -414,6 +417,10 @@ class Plex(Library):
         self.is_other = self.agent == "com.plexapp.agents.none"
         if self.is_other:
             self.type = "Video"
+        if not self.is_music and self.update_blank_track_titles:
+            self.update_blank_track_titles = False
+            logger.error(f"update_blank_track_titles library operation only works with music libraries")
+
         if self.tmdb_collections and self.is_show:
             self.tmdb_collections = None
             logger.error("Config Error: tmdb_collections only work with Movie Libraries.")
@@ -448,7 +455,11 @@ class Plex(Library):
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
-    def get_all(self, collection_level=None):
+    def get_all(self, collection_level=None, load=False):
+        if load and not collection_level:
+            self._all_items = []
+        if self._all_items and not collection_level:
+            return self._all_items
         collection_type = collection_level if collection_level else self.Plex.TYPE
         if not collection_level:
             collection_level = self.type
@@ -459,10 +470,18 @@ class Plex(Library):
         results = []
         while self.Plex._totalViewSize is None or container_start <= self.Plex._totalViewSize:
             results.extend(self.fetchItems(key, container_start, container_size))
-            util.print_return(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
+            logger.ghost(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
-        logger.info(util.adjust_space(f"Loaded {self.Plex._totalViewSize} {collection_level.capitalize()}s"))
+        logger.info(f"Loaded {self.Plex._totalViewSize} {collection_level.capitalize()}s")
+        self._all_items = results
         return results
+
+    def upload_theme(self, collection, url=None, filepath=None):
+        key = f"/library/metadata/{collection.ratingKey}/themes"
+        if url:
+            self.PlexServer.query(f"{key}?url={parse.quote_plus(url)}", method=self.PlexServer._session.post)
+        elif filepath:
+            self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, 'rb').read())
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def create_playlist(self, name, items):
@@ -510,7 +529,7 @@ class Plex(Library):
                         includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
                         includeRelatedCount=0, includeReviews=False, includeStations=False)
         except (BadRequest, NotFound) as e:
-            util.print_stacktrace()
+            logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -542,10 +561,6 @@ class Plex(Library):
         item.uploadPoster(filepath=image)
         self.reload(item)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def get_genres(self):
-        return [genre.title for genre in self.Plex.listFilterChoices("genre")]
-
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
@@ -569,8 +584,8 @@ class Plex(Library):
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def get_labels(self):
-        return {label.title: label.key for label in self.Plex.listFilterChoices(field="label")}
+    def get_tags(self, tag):
+        return self.Plex.listFilterChoices(field=tag)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _query(self, key, post=False, put=False):
@@ -605,13 +620,8 @@ class Plex(Library):
             key += f"?after={after}"
         self._query(key, put=True)
 
-    def smart_label_url(self, title, sort):
-        labels = self.get_labels()
-        if title not in labels:
-            raise Failed(f"Plex Error: Label: {title} does not exist")
-        smart_type = 1 if self.is_movie else 2
-        sort_type = movie_sorts[sort] if self.is_movie else show_sorts[sort]
-        return smart_type, f"?type={smart_type}&sort={sort_type}&label={labels[title]}"
+    def smart_label_check(self, label):
+        return label in [la.title for la in self.get_tags("label")]
 
     def test_smart_filter(self, uri_args):
         logger.debug(f"Smart Collection Test: {uri_args}")
@@ -630,13 +640,23 @@ class Plex(Library):
         }
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
+    def create_blank_collection(self, title):
+        args = {
+            "type": 1 if self.is_movie else 2 if self.is_show else 8,
+            "title": title,
+            "smart": 0,
+            "sectionId": self.Plex.key,
+            "uri": f"{self.PlexServer._uriRoot()}/library/metadata"
+        }
+        self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
+
     def get_smart_filter_from_uri(self, uri):
         smart_filter = parse.parse_qs(parse.urlparse(uri.replace("/#!/", "/")).query)["key"][0]
         args = smart_filter[smart_filter.index("?"):]
         return self.build_smart_filter(args), int(args[args.index("type=") + 5:args.index("type=") + 6])
 
     def build_smart_filter(self, uri_args):
-        return f"server://{self.PlexServer.machineIdentifier}/com.plexapp.plugins.library/library/sections/{self.Plex.key}/all{uri_args}"
+        return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
 
     def update_smart_collection(self, collection, uri_args):
         self.test_smart_filter(uri_args)
@@ -710,7 +730,7 @@ class Plex(Library):
                 except NotFound:
                     logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
-            util.print_multiline(data[1], info=True)
+            logger.info(data[1])
             items = self.get_filter_items(data[2])
         elif method == "plex_collectionless":
             good_collections = []
@@ -739,7 +759,7 @@ class Plex(Library):
             collection_indexes = [c.index for c in good_collections]
             all_items = self.get_all()
             for i, item in enumerate(all_items, 1):
-                util.print_return(f"Processing: {i}/{len(all_items)} {item.title}")
+                logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
                 self.reload(item)
                 for collection in item.collections:
@@ -748,7 +768,7 @@ class Plex(Library):
                         break
                 if add_item:
                     items.append(item)
-            logger.info(util.adjust_space(f"Processed {len(all_items)} {self.type}s"))
+            logger.info(f"Processed {len(all_items)} {self.type}s")
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if len(items) > 0:
@@ -803,7 +823,7 @@ class Plex(Library):
                 logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
                 return True
             except BadRequest:
-                util.print_stacktrace()
+                logger.stacktrace()
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
         return False
 
@@ -886,7 +906,7 @@ class Plex(Library):
                         image = Image.open(file)
                         _w, _h = image.size
                         image.close()
-                        if not poster and _h > _w:
+                        if not poster and _h >= _w:
                             new_path = os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
                             os.rename(file, new_path)
                             poster = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_url=False)
@@ -903,8 +923,10 @@ class Plex(Library):
                 else:
                     return poster, background, item_dir
             if isinstance(item, Show):
-                missing_assets = ""
-                found_image = False
+                missing_seasons = ""
+                missing_episodes = ""
+                found_season = False
+                found_episode = False
                 for season in self.query(item.seasons):
                     season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
                     if item_dir:
@@ -918,29 +940,35 @@ class Plex(Library):
                     matches = util.glob_filter(season_poster_filter)
                     if len(matches) > 0:
                         season_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_url=False)
-                        found_image = True
+                        found_season = True
                     elif self.show_missing_season_assets and season.seasonNumber > 0:
-                        missing_assets += f"\nMissing Season {season.seasonNumber} Poster"
+                        missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
                     matches = util.glob_filter(season_background_filter)
                     if len(matches) > 0:
                         season_background = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} Season {season.seasonNumber}'s ", is_poster=False, is_url=False)
                     if season_poster or season_background:
                         self.upload_images(season, poster=season_poster, background=season_background)
                     for episode in self.query(season.episodes):
-                        if item_dir:
-                            episode_filter = os.path.join(item_dir, f"{episode.seasonEpisode.upper()}.*")
-                        else:
-                            episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
-                        matches = util.glob_filter(episode_filter)
-                        if len(matches) > 0:
-                            episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
-                            found_image = True
-                            self.upload_images(episode, poster=episode_poster)
-                        elif self.show_missing_episode_assets:
-                            missing_assets += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
+                        if episode.seasonEpisode:
+                            if item_dir:
+                                episode_filter = os.path.join(item_dir, f"{episode.seasonEpisode.upper()}.*")
+                            else:
+                                episode_filter = os.path.join(ad, f"{name}_{episode.seasonEpisode.upper()}.*")
+                            matches = util.glob_filter(episode_filter)
+                            if len(matches) > 0:
+                                episode_poster = ImageData("asset_directory", os.path.abspath(matches[0]), prefix=f"{item.title} {episode.seasonEpisode.upper()}'s ", is_url=False)
+                                found_episode = True
+                                self.upload_images(episode, poster=episode_poster)
+                            elif self.show_missing_episode_assets:
+                                missing_episodes += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
 
-                if found_image and missing_assets:
-                    util.print_multiline(f"Missing Posters for {item.title}{missing_assets}", info=True)
+                if (found_season and missing_seasons) or (found_episode and missing_episodes):
+                    output = f"Missing Posters for {item.title}"
+                    if found_season:
+                        output += missing_seasons
+                    if found_episode:
+                        output += missing_episodes
+                    logger.info(output)
             if isinstance(item, Artist):
                 missing_assets = ""
                 found_album = False
@@ -965,7 +993,7 @@ class Plex(Library):
                     if album_poster or album_background:
                         self.upload_images(album, poster=album_poster, background=album_background)
                 if self.show_missing_season_assets and found_album and missing_assets:
-                    util.print_multiline(f"Missing Album Posters for {item.title}{missing_assets}", info=True)
+                    logger.info(f"Missing Album Posters for {item.title}{missing_assets}")
 
         if isinstance(item, (Movie, Show)) and not poster and overlay:
             self.upload_images(item, overlay=overlay)
@@ -978,3 +1006,108 @@ class Plex(Library):
         elif isinstance(item, (Movie, Show)) and not poster and not background and self.show_missing_assets:
             logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
         return None, None, found_folder
+
+    def get_ids(self, item):
+        tmdb_id = None
+        tvdb_id = None
+        imdb_id = None
+        if self.config.Cache:
+            t_id, i_id, guid_media_type, _ = self.config.Cache.query_guid_map(item.guid)
+            if t_id:
+                if "movie" in guid_media_type:
+                    tmdb_id = t_id[0]
+                else:
+                    tvdb_id = t_id[0]
+            if i_id:
+                imdb_id = i_id[0]
+        if not tmdb_id and not tvdb_id:
+            tmdb_id = self.get_tmdb_from_map(item)
+        if not tmdb_id and not tvdb_id and self.is_show:
+            tvdb_id = self.get_tvdb_from_map(item)
+        return tmdb_id, tvdb_id, imdb_id
+
+    def get_locked_attributes(self, item, titles=None):
+        attrs = {}
+        fields = {f.name: f for f in item.fields if f.locked}
+        if isinstance(item, (Movie, Show)) and titles and titles.count(item.title) > 1:
+            map_key = f"{item.title} ({item.year})"
+            attrs["title"] = item.title
+            attrs["year"] = item.year
+        elif isinstance(item, (Season, Episode, Track)) and item.index:
+            map_key = int(item.index)
+        else:
+            map_key = item.title
+
+        if "title" in fields:
+            if isinstance(item, (Movie, Show)):
+                tmdb_id, tvdb_id, imdb_id = self.get_ids(item)
+                tmdb_item = self.config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=isinstance(item, Movie))
+                if tmdb_item:
+                    attrs["alt_title"] = tmdb_item.title
+            elif isinstance(item, (Season, Episode, Track)):
+                attrs["title"] = item.title
+
+        def check_field(plex_key, pmm_key, var_key=None):
+            if plex_key in fields and pmm_key not in self.metadata_backup["exclude"]:
+                if not var_key:
+                    var_key = plex_key
+                if hasattr(item, var_key):
+                    plex_value = getattr(item, var_key)
+                    if isinstance(plex_value, list):
+                        plex_tags = [t.tag for t in plex_value]
+                        if len(plex_tags) > 0 or self.metadata_backup["sync_tags"]:
+                            attrs[f"{pmm_key}.sync" if self.metadata_backup["sync_tags"] else pmm_key] = None if not plex_tags else plex_tags[0] if len(plex_tags) == 1 else plex_tags
+                    elif isinstance(plex_value, datetime):
+                        attrs[pmm_key] = datetime.strftime(plex_value, "%Y-%m-%d")
+                    else:
+                        attrs[pmm_key] = plex_value
+
+        check_field("titleSort", "sort_title")
+        check_field("originalTitle", "original_artist" if self.is_music else "original_title")
+        check_field("originallyAvailableAt", "originally_available")
+        check_field("contentRating", "content_rating")
+        check_field("userRating", "user_rating")
+        check_field("audienceRating", "audience_rating")
+        check_field("rating", "critic_rating")
+        check_field("studio", "record_label" if self.is_music else "studio")
+        check_field("tagline", "tagline")
+        check_field("summary", "summary")
+        check_field("index", "track")
+        check_field("parentIndex", "disc")
+        check_field("director", "director", var_key="directors")
+        check_field("country", "country", var_key="countries")
+        check_field("genre", "genre", var_key="genres")
+        check_field("writer", "writer", var_key="writers")
+        check_field("producer", "producer", var_key="producers")
+        check_field("collection", "collection", var_key="collections")
+        check_field("label", "label", var_key="labels")
+        check_field("mood", "mood", var_key="moods")
+        check_field("style", "style", var_key="styles")
+        check_field("similar", "similar_artist")
+        for advance_edit in util.advance_tags_to_edit[self.type]:
+            key, options = item_advance_keys[f"item_{advance_edit}"]
+            if advance_edit in self.metadata_backup["exclude"] or not hasattr(item, key):
+                continue
+            keys = {v: k for k, v in options.items()}
+            if keys[getattr(item, key)] not in ["default", "all", "never"]:
+                attrs[advance_edit] = keys[getattr(item, key)]
+
+        def _recur(sub):
+            sub_items = {}
+            for sub_item in getattr(item, sub)():
+                sub_item_key, sub_item_attrs = self.get_locked_attributes(sub_item)
+                if sub_item_attrs:
+                    sub_items[sub_item_key] = sub_item_attrs
+            if sub_items:
+                attrs[sub] = sub_items
+
+        if isinstance(item, Show):
+            _recur("seasons")
+        elif isinstance(item, Season):
+            _recur("episodes")
+        elif isinstance(item, Artist):
+            _recur("albums")
+        elif isinstance(item, Album):
+            _recur("tracks")
+
+        return map_key, attrs if attrs else None

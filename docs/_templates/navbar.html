@@ -1,0 +1,71 @@
+  <div id="navbar" class="{{ theme_navbar_class }} navbar-default {% if theme_navbar_fixed_top|tobool -%} navbar-fixed-top{%- endif -%}">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{ pathto(master_doc) }}">
+          {%- block sidebarlogo %}
+            {%- if logo %}<span><img src="{{ pathto('_static/' + logo, 1) }}"></span>{%- endif %}
+          {%- endblock %}
+          {% if theme_navbar_title -%}{{ theme_navbar_title|e }}{%- else -%}{{ project|e }}{%- endif -%}
+        </a>
+        <span class="navbar-text navbar-version pull-left"><b>{{ version|e }}</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            {% if theme_navbar_links %}
+              {%- for link in theme_navbar_links %}
+                {% if link[0] == "_menu" %}
+                  <li class="dropdown">
+                    <a role="button" id="{{ link[1] }}Toc" data-toggle="dropdown" data-target="#" href="#" aria-expanded="false">{{ link[1] }} <b class="caret"></b></a>
+                    <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="{{ link[1] }}Toc">
+                    {%- for sublink in link[2] %}
+                      {% if sublink[0] == "_divider" %}
+                        <li class="divider"></li>
+                      {% elif sublink[0] == "_menu" %}
+                        <li class="dropdown-submenu">
+                          <a tabindex="-1" href="#">{{ sublink[1] }}</a>
+                          <ul class="dropdown-menu">
+                            {%- for subsublink in sublink[2] %}
+                              {% if subsublink[0] == "_divider" %}
+                                <li class="divider"></li>
+                              {% else %}
+                                <li><a href="{{ pathto(*subsublink[1:]) }}">{{ subsublink[0] }}</a></li>
+                              {% endif %}
+                            {%- endfor %}
+                          </ul>
+                        </li>
+                      {% else %}
+                        <li><a href="{{ pathto(*sublink[1:]) }}">{{ sublink[0] }}</a></li>
+                      {% endif %}
+                    {%- endfor %}
+                    </ul>
+                  </li>
+                {% else %}
+                  <li><a href="{{ pathto(*link[1:]) }}">{{ link[0] }}</a></li>
+                {% endif %}
+              {%- endfor %}
+            {% endif %}
+            {% if theme_navbar_sidebarrel %}
+              {% block sidebarrel %}
+                {% include "relations.html" %}
+              {% endblock %}
+            {% endif %}
+            {% block navbarextra %}
+            {% endblock %}
+            {% if theme_source_link_position == "nav" %}
+              <li class="hidden-sm">{% include "sourcelink.html" %}</li>
+            {% endif %}
+          </ul>
+
+          {% block navbarsearch %}
+            {% include "navbarsearchbox.html" %}
+          {% endblock %}
+        </div>
+    </div>
+  </div>

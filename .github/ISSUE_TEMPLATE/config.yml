@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Plex Meta Manager Wiki
-    url: https://github.com/meisnate12/Plex-Meta-Manager/wiki
+    url: https://metamanager.wiki
     about: Please check the wiki to see if your question has already been answered.
   - name: Discord
-    url: https://discord.gg/TsdpsFYqqm
-    about: Please use Discord to ask for support.
+    url: https://discord.gg/NfH6mGFuAB
+    about: Please use the Plex Meta Manager Discord to ask for support.

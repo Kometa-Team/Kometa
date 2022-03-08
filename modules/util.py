@@ -1,8 +1,7 @@
-import glob, logging, os, re, signal, sys, time, traceback
+import glob, logging, os, re, signal, sys, time
 from datetime import datetime, timedelta
-from logging.handlers import RotatingFileHandler
 from pathvalidate import is_valid_filename, sanitize_filename
-from plexapi.audio import Artist, Album, Track
+from plexapi.audio import Album, Track
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
 
@@ -46,10 +45,6 @@ def retry_if_not_failed(exception):
 def retry_if_not_plex(exception):
     return not isinstance(exception, (BadRequest, NotFound, Unauthorized))
 
-separating_character = "="
-screen_width = 100
-spacing = 0
-
 days_alias = {
     "monday": 0, "mon": 0, "m": 0,
     "tuesday": 1, "tues": 1, "tue": 1, "tu": 1, "t": 1,
@@ -68,16 +63,28 @@ pretty_months = {
     1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
     7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
 }
-seasons = ["winter", "spring", "summer", "fall"]
+seasons = ["current", "winter", "spring", "summer", "fall"]
 pretty_ids = {"anidbid": "AniDB", "imdbid": "IMDb", "mal_id": "MyAnimeList", "themoviedb_id": "TMDb", "thetvdb_id": "TVDb", "tvdbid": "TVDb"}
 collection_mode_options = {
     "default": "default", "hide": "hide",
     "hide_items": "hideItems", "hideitems": "hideItems",
     "show_items": "showItems", "showitems": "showItems"
 }
+advance_tags_to_edit = {
+    "Movie": ["metadata_language", "use_original_title"],
+    "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering",
+             "metadata_language", "use_original_title"],
+    "Artist": ["album_sorting"]
+}
+tags_to_edit = {
+    "Movie": ["genre", "label", "collection", "country", "director", "producer", "writer"],
+    "Show": ["genre", "label", "collection"],
+    "Artist": ["genre", "style", "mood", "country", "collection", "similar_artist"]
+}
+mdb_types = ["mdb", "mdb_imdb", "mdb_metacritic", "mdb_metacriticuser", "mdb_trakt", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_letterboxd"]
 
 def tab_new_lines(data):
-    return str(data).replace("\n", "\n|\t      ") if "\n" in str(data) else str(data)
+    return str(data).replace("\n", "\n      ") if "\n" in str(data) else str(data)
 
 def make_ordinal(n):
     return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
@@ -153,24 +160,6 @@ def windows_input(prompt, timeout=5):
             print("")
             raise TimeoutExpired
 
-def print_multiline(lines, info=False, warning=False, error=False, critical=False):
-    for i, line in enumerate(str(lines).split("\n")):
-        if critical:        logger.critical(line)
-        elif error:         logger.error(line)
-        elif warning:       logger.warning(line)
-        elif info:          logger.info(line)
-        else:               logger.debug(line)
-        if i == 0:
-            logger.handlers[1].setFormatter(logging.Formatter(" " * 65 + "| %(message)s"))
-    logger.handlers[1].setFormatter(logging.Formatter("[%(asctime)s] %(filename)-27s %(levelname)-10s | %(message)s"))
-
-def print_stacktrace():
-    print_multiline(traceback.format_exc())
-
-def my_except_hook(exctype, value, tb):
-    for line in traceback.format_exception(etype=exctype, value=value, tb=tb):
-        print_multiline(line, critical=True)
-
 def get_id_from_imdb_url(imdb_url):
     match = re.search("(tt\\d+)", str(imdb_url))
     if match:           return match.group(1)
@@ -185,64 +174,6 @@ def regex_first_int(data, id_type, default=None):
         return int(default)
     else:
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
-
-def centered(text, sep=" ", side_space=True, left=False):
-    if len(text) > screen_width - 2:
-        return text
-    space = screen_width - len(text) - 2
-    text = f"{' ' if side_space else sep}{text}{' ' if side_space else sep}"
-    if space % 2 == 1:
-        text += sep
-        space -= 1
-    side = int(space / 2) - 1
-    final_text = f"{text}{sep * side}{sep * side}" if left else f"{sep * side}{text}{sep * side}"
-    return final_text
-
-def separator(text=None, space=True, border=True, debug=False, side_space=True, left=False):
-    sep = " " if space else separating_character
-    for handler in logger.handlers:
-        apply_formatter(handler, border=False)
-    border_text = f"|{separating_character * screen_width}|"
-    if border and debug:
-        logger.debug(border_text)
-    elif border:
-        logger.info(border_text)
-    if text:
-        text_list = text.split("\n")
-        for t in text_list:
-            if debug:
-                logger.debug(f"|{sep}{centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
-            else:
-                logger.info(f"|{sep}{centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
-        if border and debug:
-            logger.debug(border_text)
-        elif border:
-            logger.info(border_text)
-    for handler in logger.handlers:
-        apply_formatter(handler)
-
-def apply_formatter(handler, border=True):
-    text = f"| %(message)-{screen_width - 2}s |" if border else f"%(message)-{screen_width - 2}s"
-    if isinstance(handler, RotatingFileHandler):
-        text = f"[%(asctime)s] %(filename)-27s %(levelname)-10s {text}"
-    handler.setFormatter(logging.Formatter(text))
-
-def adjust_space(display_title):
-    display_title = str(display_title)
-    space_length = spacing - len(display_title)
-    if space_length > 0:
-        display_title += " " * space_length
-    return display_title
-
-def print_return(text):
-    print(adjust_space(f"| {text}"), end="\r")
-    global spacing
-    spacing = len(text) + 2
-
-def print_end():
-    print(adjust_space(" "), end="\r")
-    global spacing
-    spacing = 0
 
 def validate_filename(filename):
     if is_valid_filename(filename):
@@ -310,6 +241,12 @@ def time_window(tw):
         return f"{today.year - 1}"
     else:
         return tw
+
+def check_num(num, is_int=True):
+    try:
+        return int(str(num)) if is_int else float(str(num))
+    except (ValueError, TypeError):
+        return None
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
@@ -462,3 +399,129 @@ def schedule_check(attribute, data, current_time, run_hour):
         raise NotScheduledRange(schedule_str)
     elif skip_collection:
         raise NotScheduled(schedule_str)
+
+def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None):
+    display = f"{parent + ' ' if parent else ''}{attribute} attribute"
+    if options is None and translation is not None:
+        options = [o for o in translation]
+    value = data[methods[attribute]] if methods and attribute in methods else data
+
+    if datatype in ["list", "commalist"]:
+        final_list = []
+        if value:
+            if datatype == "commalist":
+                value = get_list(value)
+            if not isinstance(value, list):
+                value = [value]
+            for v in value:
+                if v:
+                    if options is None or (options and v in options):
+                        final_list.append(v)
+                    elif options:
+                        raise Failed(f"{error} Error: {v} is invalid options are: {options}")
+        return final_list
+    elif datatype == "intlist":
+        if value:
+            try:
+                return [int(v) for v in value if v] if isinstance(value, list) else [int(value)]
+            except ValueError:
+                pass
+        return []
+    elif datatype == "listdict":
+        final_list = []
+        for dict_data in get_list(value):
+            if isinstance(dict_data, dict):
+                final_list.append(dict_data)
+            else:
+                raise Failed(f"{error} Error: {display} {dict_data} is not a dictionary")
+        return final_list
+    elif datatype in ["dict", "dictlist", "dictdict"]:
+        if isinstance(value, dict):
+            if datatype == "dict":
+                return value
+            elif datatype == "dictlist":
+                return {k: v if isinstance(v, list) else [v] for k, v in value.items()}
+            else:
+                final_dict = {}
+                for dict_key, dict_data in value.items():
+                    if isinstance(dict_data, dict) and dict_data:
+                        final_dict[dict_key] = dict_data
+                    else:
+                        raise Failed(f"{error} Warning: {display} {dict_key} is not a dictionary")
+                return final_dict
+        else:
+            raise Failed(f"{error} Error: {display} {value} is not a dictionary")
+    elif methods and attribute not in methods:
+        message = f"{display} not found"
+    elif value is None:
+        message = f"{display} is blank"
+    elif regex is not None:
+        regex_str, example = regex
+        if re.compile(regex_str).match(str(value)):
+            return str(value)
+        else:
+            message = f"{display}: {value} must match pattern {regex_str} e.g. {example}"
+    elif datatype == "bool":
+        if isinstance(value, bool):
+            return value
+        elif isinstance(value, (int, float)):
+            return value > 0
+        elif str(value).lower() in ["t", "true"]:
+            return True
+        elif str(value).lower() in ["f", "false"]:
+            return False
+        else:
+            message = f"{display} must be either true or false"
+    elif datatype in ["int", "float"]:
+        try:
+            value = int(str(value)) if datatype == "int" else float(str(value))
+            if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
+                return value
+        except ValueError:
+            pass
+        pre = f"{display} {value} must be {'an integer' if datatype == 'int' else 'a number'}"
+        if maximum is None:
+            message = f"{pre} {minimum} or greater"
+        else:
+            message = f"{pre} between {minimum} and {maximum}"
+    elif (translation is not None and str(value).lower() not in translation) or \
+            (options is not None and translation is None and str(value).lower() not in options):
+        message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
+    else:
+        return translation[value] if translation is not None else value
+
+    if default is None:
+        raise Failed(f"{error} Error: {message}")
+    else:
+        logger.warning(f"{error} Warning: {message} using {default} as default")
+        return translation[default] if translation is not None else default
+
+def replace_label(_label, _data):
+    replaced = False
+    if isinstance(_data, dict):
+        final_data = {}
+        for sm, sd in _data.items():
+            try:
+                _new_data, _new_replaced = replace_label(_label, sd)
+                final_data[sm] = _new_data
+                if _new_replaced:
+                    replaced = True
+            except Failed:
+                continue
+    elif isinstance(_data, list):
+        final_data = []
+        for li in _data:
+            try:
+                _new_data, _new_replaced = replace_label(_label, li)
+                final_data.append(_new_data)
+                if _new_replaced:
+                    replaced = True
+            except Failed:
+                continue
+    elif "<<smart_label>>" in str(_data):
+        final_data = str(_data).replace("<<smart_label>>", _label)
+        replaced = True
+    else:
+        final_data = _data
+
+    return final_data, replaced

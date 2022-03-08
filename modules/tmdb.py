@@ -1,9 +1,8 @@
-import logging
 from modules import util
 from modules.util import Failed
 from tmdbapis import TMDbAPIs, TMDbException, NotFound
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = [
     "tmdb_actor", "tmdb_actor_details", "tmdb_collection", "tmdb_collection_details", "tmdb_company",
@@ -21,7 +20,7 @@ type_map = {
     "tmdb_show": "Show", "tmdb_show_details": "Show", "tmdb_writer": "Person", "tmdb_writer_details": "Person"
 }
 discover_all = [
-    "language", "with_original_language", "region", "sort_by", "with_cast", "with_crew", "with_people",
+    "with_overview_translation", "with_original_language", "region", "sort_by", "with_cast", "with_crew", "with_people",
     "certification_country", "certification", "certification.lte", "certification.gte",
     "year", "primary_release_year", "primary_release_date.gte", "primary_release_date.lte",
     "release_date.gte", "release_date.lte", "vote_count.gte", "vote_count.lte",
@@ -32,12 +31,12 @@ discover_all = [
     "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks", "with_release_type"
 ]
 discover_movie_only = [
-    "region", "with_cast", "with_crew", "with_people", "certification_country", "certification", "include_video",
-    "year", "primary_release_year", "primary_release_date", "release_date", "include_adult", "with_release_type"
+    "region", "with_cast", "with_crew", "with_people", "certification_country", "certification", "include_video", "year",
+    "primary_release_year", "primary_release_date", "release_date", "include_adult", "with_release_type", "with_title_translation"
 ]
 discover_tv_only = [
-    "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date",
-    "first_air_date", "first_air_date_year", "with_networks", "with_status", "with_type",
+    "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date", "first_air_date",
+    "first_air_date_year", "with_networks", "with_status", "with_type", "with_name_translation"
 ]
 discover_strings = [
     "with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_release_type",
@@ -63,13 +62,14 @@ class TMDb:
         self.config = config
         self.apikey = params["apikey"]
         self.language = params["language"]
+        logger.secret(self.apikey)
         try:
             self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
 
     def convert_from(self, tmdb_id, convert_to, is_movie):
-        item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
+        item = self.get_movie(tmdb_id, partial="external_ids") if is_movie else self.get_show(tmdb_id, partial="external_ids")
         check_id = item.tvdb_id if convert_to == "tvdb_id" and not is_movie else item.imdb_id
         if not check_id:
             raise Failed(f"TMDb Error: No {convert_to.upper().replace('B_', 'b ')} found for TMDb ID {tmdb_id}")
@@ -106,28 +106,28 @@ class TMDb:
                 except Failed:                  raise Failed(f"TMDb Error: No Movie or Collection found for TMDb ID {tmdb_id}")
         else:                           return self.get_show(tmdb_id)
 
-    def get_movie(self, tmdb_id):
-        try:                            return self.TMDb.movie(tmdb_id)
+    def get_movie(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.movie(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Movie found for TMDb ID {tmdb_id}: {e}")
 
-    def get_show(self, tmdb_id):
-        try:                            return self.TMDb.tv_show(tmdb_id)
+    def get_show(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.tv_show(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Show found for TMDb ID {tmdb_id}: {e}")
 
-    def get_collection(self, tmdb_id):
-        try:                            return self.TMDb.collection(tmdb_id)
+    def get_collection(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.collection(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Collection found for TMDb ID {tmdb_id}: {e}")
 
-    def get_person(self, tmdb_id):
-        try:                            return self.TMDb.person(tmdb_id)
+    def get_person(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.person(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
 
-    def _company(self, tmdb_id):
-        try:                            return self.TMDb.company(tmdb_id)
+    def _company(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.company(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Company found for TMDb ID {tmdb_id}: {e}")
 
-    def _network(self, tmdb_id):
-        try:                            return self.TMDb.network(tmdb_id)
+    def _network(self, tmdb_id, partial=None):
+        try:                            return self.TMDb.network(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Network found for TMDb ID {tmdb_id}: {e}")
 
     def _keyword(self, tmdb_id):
@@ -137,6 +137,12 @@ class TMDb:
     def get_list(self, tmdb_id):
         try:                            return self.TMDb.list(tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
+
+    def get_popular_people(self, limit):
+        return {p.id: p.name for p in self.TMDb.popular_people().get_results(limit)}
+
+    def search_people(self, name):
+        return self.TMDb.people_search(name)
 
     def validate_tmdb_ids(self, tmdb_ids, tmdb_method):
         tmdb_list = util.get_int_list(tmdb_ids, f"TMDb {type_map[tmdb_method]} ID")
@@ -216,7 +222,7 @@ class TMDb:
                 tmdb_name = self.get_show(tmdb_id).name
                 ids.append((tmdb_id, "tmdb_show"))
             else:
-                person = self.get_person(tmdb_id)
+                person = self.get_person(tmdb_id, partial="movie_credits,tv_credits")
                 tmdb_name = person.name
                 if method == "tmdb_actor":
                     ids = [(i.movie.id, "tmdb") for i in person.movie_cast]
@@ -238,3 +244,20 @@ class TMDb:
             if len(ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(ids)} Item{'' if len(ids) == 1 else 's'})")
         return ids
+
+    def get_item(self, item, tmdb_id, tvdb_id, imdb_id, is_movie=True):
+        tmdb_item = None
+        if tvdb_id and not tmdb_id:
+            tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
+        if imdb_id and not tmdb_id:
+            _id, _type = self.config.Convert.imdb_to_tmdb(imdb_id)
+            if _id and ((_type == "movie" and is_movie) or (_type == "show" and not is_movie)):
+                tmdb_id = _id
+        if tmdb_id:
+            try:
+                tmdb_item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
+            except Failed as e:
+                logger.error(str(e))
+        else:
+            logger.info(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}")
+        return tmdb_item

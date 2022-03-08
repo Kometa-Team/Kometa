@@ -1,8 +1,8 @@
-import logging, time
+import time
 from modules import util
 from modules.util import Failed
 
-logger = logging.getLogger("Plex Meta Manager")
+logger = util.logger
 
 builders = ["anilist_id", "anilist_popular", "anilist_trending", "anilist_relations", "anilist_studio", "anilist_top_rated", "anilist_search"]
 pretty_names = {"score": "Average Score", "popular": "Popularity", "trending": "Trending"}
@@ -264,7 +264,7 @@ class AniList:
                         attr = key
                         mod = ""
                     message += f"\n\t{attr.replace('_', ' ').title()} {util.mod_displays[mod]} {value}"
-            util.print_multiline(message)
+            logger.info(message)
             anilist_ids = self._search(**data)
         logger.debug("")
         logger.debug(f"{len(anilist_ids)} AniList IDs Found: {anilist_ids}")

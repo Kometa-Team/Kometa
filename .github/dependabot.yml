@@ -10,3 +10,13 @@ updates:
     schedule:
       interval: "daily"
     target-branch: "develop"
+    assignees:
+      - "meisnate12"
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: daily
+    assignees:
+      - "meisnate12"
+    ignore:
+      - dependency-name: "salsify/action-detect-and-tag-new-version"
