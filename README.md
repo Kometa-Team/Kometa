@@ -36,68 +36,13 @@ If you find steps 1-3 above daunting, there are some walkthroughs available that
 
 The [develop](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop) branch has the most updated **documented** fixes and enhancements to Plex Meta Manager.  This version is tested and documented to some degree, but it is still an active development branch, so there may be rough edges.
 
-Switching to `develop`:
-
-````{tab} if running in Docker
-<br/>
-Add ":develop" to the image name in your run command or configuration:
-
-```
-meisnate12/plex-meta-manager:develop
-```
-<br/>
-````
-````{tab} if running on the host:
-
-In the directory where you cloned PMM:
-
-```bash
-git checkout develop
-```
-
-To switch back:
-
-```bash
-git checkout master
-```
-<br/>
-````
-
 If switching to the develop build, it is recommended to also use the [develop](https://metamanager.wiki/en/develop/) branch of the wiki, which documents any changes made from the Master build.
 
 ### Nightly
 
 There is also a [nightly](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly) build which will have the absolute latest version of the script, but it could easily break, there is no guarantee that it even works, and any new features will not be documented.
 
-Switching to `nightly`:
-
-````{tab} if running in Docker
-<br/>
-Add ":nightly" to the image name in your run command or configuration:
-
-```
-meisnate12/plex-meta-manager:nightly
-```
-<br/>
-````
-````{tab} if running on the host:
-
-In the directory where you cloned PMM:
-
-```bash
-git checkout nightly
-```
-
-To switch back:
-
-```bash
-git checkout master
-```
-<br/>
-````
-
-
-As this build is subject to extreme change, there is no nightly branch of the wiki and all discussions relating to changes made in the nightly build will be held within the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB).
+As this build is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly build will be held within the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB).
 
 ## Example Usage
 
