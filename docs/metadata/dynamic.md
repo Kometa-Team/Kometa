@@ -1021,7 +1021,7 @@ dynamic_collections:
   TMDb Collections:          # mapping name does not matter, just needs to be unique
     type: tmdb_collections
     remove_suffix: "Collection"
-    pre_format_override:
+    post_format_override:
       10: Star Wars Universe
 ```
 
