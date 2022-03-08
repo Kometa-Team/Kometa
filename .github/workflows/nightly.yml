@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  docker-develop:
+  docker-nightly:
     runs-on: ubuntu-latest
 
     steps:
