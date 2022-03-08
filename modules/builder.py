@@ -302,6 +302,8 @@ class CollectionBuilder:
         self.server_preroll = None
         self.current_time = datetime.now()
         self.current_year = self.current_time.year
+        self.url_theme = None
+        self.file_theme = None
         self.collection_poster = None
         self.collection_background = None
         self.exists = False
@@ -774,7 +776,7 @@ class CollectionBuilder:
                 self.file_theme = os.path.abspath(method_data)
             else:
                 logger.error(f"{self.Type} Error: Theme Path Does Not Exist: {os.path.abspath(method_data)}")
-        if method_name == "collection_mode":
+        elif method_name == "collection_mode":
             self.details[method_name] = util.check_collection_mode(method_data)
         elif method_name == "minimum_items":
             self.minimum = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
