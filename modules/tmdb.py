@@ -258,6 +258,10 @@ class TMDb:
                 tmdb_item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
             except Failed as e:
                 logger.error(str(e))
+        elif tvdb_id and not is_movie:
+            logger.info(f"{item.title[:25]:<25} | No TMDb ID for TVDb ID: {tvdb_id}")
+        elif imdb_id:
+            logger.info(f"{item.title[:25]:<25} | No TMDb ID for IMDb ID: {imdb_id}")
         else:
             logger.info(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}")
         return tmdb_item
