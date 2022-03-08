@@ -10,7 +10,6 @@ jobs:
 
   docker-nightly:
     runs-on: ubuntu-latest
-
     steps:
 
       - name: Check Out Repo
@@ -59,7 +58,7 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           nodetail: true
-          title: "Nightly Docker Build: **Failed**"
+          title: "Nightly Docker Build: **Failure**"
           color: 0xe30c43
           username: Docker
           avatar_url: https://www.docker.com/sites/default/files/d8/2019-07/Moby-logo.png

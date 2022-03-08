@@ -282,7 +282,7 @@ class MetadataFile(DataFile):
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
-                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
                                 if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
                                     auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
                             logger.exorcise()
@@ -292,7 +292,7 @@ class MetadataFile(DataFile):
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
-                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
                                 if tmdb_item and tmdb_item.original_language  and tmdb_item.original_language.iso_639_1  not in exclude and tmdb_item.original_language.english_name not in exclude:
                                     auto_list[tmdb_item.original_language.iso_639_1] = tmdb_item.original_language.english_name
                             logger.exorcise()
