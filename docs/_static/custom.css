@@ -1,0 +1,168 @@
+.text-left {
+  text-align: left !important;
+  padding-left: 15px !important;
+}
+.text-center {
+  text-align: center !important;
+}
+.text-right {
+  text-align: right !important;
+}
+.caption {
+  margin: 15px 0 5px 10px;
+}
+code {
+  color: #0ce3ac;
+  background-color: #030303 !important;
+}
+td hr, th hr {
+    visibility: hidden;
+    margin: 0;
+    border: 0;
+}
+hr {
+  border-top: 3px solid #bcbcbc;
+  margin-top: 50px;
+  margin-bottom: 30px;
+}
+pre code {
+  background-color: #bcbcbc;
+}
+a code {
+  color: #0cafe3;
+}
+a {
+  color: #0cafe3;
+}
+h1, h2, h3, .h1, .h2, .h3 {
+  margin-top: 50px;
+}
+h4, h5, h6, .h4, .h5, .h6 {
+  margin-top: 30px;
+}
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  color: #0ce3ac;
+  margin-bottom: 20px;
+}
+th {
+  color: #0ce3ac;
+}
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  -webkit-border-radius: 0 6px 6px 6px;
+  -moz-border-radius: 0 6px 6px;
+  border-radius: 0 6px 6px 6px;
+}
+
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #ccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+
+.dropdown-submenu:hover>a:after {
+  border-left-color: #fff;
+}
+
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  -webkit-border-radius: 6px 0 6px 6px;
+  -moz-border-radius: 6px 0 6px 6px;
+  border-radius: 6px 0 6px 6px;
+}
+table {
+  border-collapse: collapse;
+}
+table thead tr {
+  background: #111111;
+}
+table tbody tr:nth-child(even) {
+  background: #181818;
+}
+table tbody tr:nth-child(odd) {
+  background: #1D1D1D;
+}
+table.clearTable {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+table.clearTable td {
+  padding: 3px 3px 3px 15px;
+}
+table.clearTable, table.clearTable tbody, table.clearTable tr, table.clearTable td, table.clearTable th {
+  background-color: rgba(0, 0, 0, 0.0) !important;
+}
+table.dualTable td, table.dualTable th {
+  padding-left: 15px !important;
+}
+details {
+  margin-bottom: 5px;
+}
+summary {
+  padding: 6px 12px 6px 22px;
+  background: #111111;
+  position: relative;
+  cursor: pointer;
+}
+summary:before {
+  content: '';
+  border-width: .4rem;
+  border-style: solid;
+  border-color: transparent transparent transparent #fff;
+  position: absolute;
+  top: 1.3rem;
+  left: 1rem;
+  transform: rotate(0);
+  transform-origin: .2rem 50%;
+  transition: .25s transform ease;
+}
+details[open] > summary:before {
+  transform: rotate(90deg);
+}
+details summary::-webkit-details-marker {
+  display:none;
+}
+strong {
+  color: #0ce3ac;
+}
+td br {
+  margin-bottom: 15px;
+}
+td p {
+  margin-bottom: 0 !important;
+}
+p {
+  -moz-hyphens: none !important;
+  -ms-hyphens: none !important;
+  -webkit-hyphens: none !important;
+  hyphens: none !important;
+}
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+  background-color: #00a379 !important;
+}
+.navbar-inverse .navbar-brand:hover, .navbar-inverse .navbar-brand:focus, .navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus {
+  color: #222222 !important;
+}

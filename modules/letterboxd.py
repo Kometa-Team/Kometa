@@ -33,7 +33,7 @@ class Letterboxd:
         ids = response.xpath("//a[@data-track-action='TMDb']/@href")
         if len(ids) > 0 and ids[0]:
             if "themoviedb.org/movie" in ids[0]:
-                return util.regex_first_int(ids[0], "TMDB Movie ID")
+                return util.regex_first_int(ids[0], "TMDb Movie ID")
             raise Failed(f"Letterboxd Error: TMDb Movie ID not found in {ids[0]}")
         raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {letterboxd_url}")
 

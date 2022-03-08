@@ -476,6 +476,13 @@ class Plex(Library):
         self._all_items = results
         return results
 
+    def upload_theme(self, collection, url=None, filepath=None):
+        key = f"/library/metadata/{collection.ratingKey}/themes"
+        if url:
+            self.PlexServer.query(f"{key}?url={parse.quote_plus(url)}", method=self.PlexServer._session.post)
+        elif filepath:
+            self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, 'rb').read())
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def create_playlist(self, name, items):
         return self.PlexServer.createPlaylist(name, items=items)

@@ -234,7 +234,7 @@ class Trakt:
             raise Failed(f"Trakt Error: failed to fetch {media_type} Recommendations")
         if len(items) == 0:
             raise Failed(f"Trakt Error: no {media_type} Recommendations were found")
-        return self._parse(items, item_type="movie" if is_movie else "show")
+        return self._parse(items, typeless=True, item_type="movie" if is_movie else "show")
 
     def _pagenation(self, pagenation, amount, is_movie):
         items = self._request(f"/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")

@@ -97,7 +97,7 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level",
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
-details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode", "limit",
+details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode", "limit", "url_theme", "file_theme",
            "minimum_items", "label", "album_sorting", "cache_builders"] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
@@ -183,7 +183,8 @@ episode_parts_only = ["plex_pilots"]
 parts_collection_valid = [
      "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "limit",
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll", "changes_webhooks",
-     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "cache_builders"
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "cache_builders",
+     "url_theme", "file_theme"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_missing",
@@ -301,6 +302,8 @@ class CollectionBuilder:
         self.server_preroll = None
         self.current_time = datetime.now()
         self.current_year = self.current_time.year
+        self.url_theme = None
+        self.file_theme = None
         self.collection_poster = None
         self.collection_background = None
         self.exists = False
@@ -766,7 +769,14 @@ class CollectionBuilder:
                 logger.error(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
 
     def _details(self, method_name, method_data, method_final, methods):
-        if method_name == "collection_mode":
+        if method_name == "url_theme":
+            self.url_theme = method_data
+        elif method_name == "file_theme":
+            if os.path.exists(os.path.abspath(method_data)):
+                self.file_theme = os.path.abspath(method_data)
+            else:
+                logger.error(f"{self.Type} Error: Theme Path Does Not Exist: {os.path.abspath(method_data)}")
+        elif method_name == "collection_mode":
             self.details[method_name] = util.check_collection_mode(method_data)
         elif method_name == "minimum_items":
             self.minimum = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
@@ -2114,7 +2124,7 @@ class CollectionBuilder:
                 if self.check_tmdb_filter(missing_id, False, check_released=self.details["missing_only_released"]):
                     missing_shows_with_names.append((show.title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {show.title} (TVDB: {missing_id})")
+                        logger.info(f"{self.name} {self.Type} | ? | {show.title} (TVDb: {missing_id})")
                 else:
                     if self.details["show_filtered"] is True and self.details["show_missing"] is True:
                         logger.info(f"{self.name} {self.Type} | X | {show.title} (TVDb: {missing_id})")
@@ -2393,7 +2403,6 @@ class CollectionBuilder:
         sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
         self.library.edit_tags("label", self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
 
-
         poster_image = None
         background_image = None
         asset_location = None
@@ -2486,6 +2495,11 @@ class CollectionBuilder:
 
         if self.collection_poster or self.collection_background:
             self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
+
+        if self.url_theme:
+            self.library.upload_theme(url=self.url_theme)
+        elif self.file_theme:
+            self.library.upload_theme(filepath=self.file_theme)
 
     def sort_collection(self):
         logger.info("")
