@@ -10,7 +10,7 @@ logger = util.logger
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
 all_auto = ["genre"]
-ms_auto = ["actor", "year", "tmdb_popular_people", "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"]
+ms_auto = ["actor", "year", "original_language", "tmdb_popular_people", "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"]
 auto = {
     "Movie": ["tmdb_collection", "decade", "country"] + all_auto + ms_auto,
     "Show": ["network"] + all_auto + ms_auto,
@@ -19,6 +19,7 @@ auto = {
 }
 default_templates = {
     "actor": {"tmdb_person": f"<<actor>>", "plex_search": {"all": {"actor": "tmdb"}}},
+    "original_language": {"plex_all": True, "filters": {"original_language": "<<original_language>>"}},
     "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>"},
     "trakt_user_lists": {"trakt_list_details": "<<trakt_user_lists>>"},
     "trakt_liked_lists": {"trakt_list_details": "<<trakt_liked_lists>>"},
@@ -285,6 +286,17 @@ class MetadataFile(DataFile):
                                 if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
                                     auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
                             logger.exorcise()
+                        elif auto == "original_language":
+                            if not all_items:
+                                all_items = library.get_all()
+                            for i, item in enumerate(all_items, 1):
+                                logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
+                                tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
+                                if tmdb_item and tmdb_item.original_language  and tmdb_item.original_language.iso_639_1  not in exclude and tmdb_item.collection.english_name not in exclude:
+                                    auto_list[tmdb_item.collection.iso_639_1] = tmdb_item.collection.english_name
+                            logger.exorcise()
+                            default_title_format = "<<title>> <<library_type>>s"
                         elif auto_type == "actor":
                             people = {}
                             if "data" in methods:
