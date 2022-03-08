@@ -28,7 +28,7 @@ author = "Nathan Taggart"
 copyright = f"{datetime.datetime.now().year}"
 
 # The full version, including alpha/beta/rc tags
-with open("VERSION") as f:
+with open("../VERSION") as f:
     release = f.readline()
 
 
