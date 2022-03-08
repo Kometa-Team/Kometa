@@ -134,7 +134,6 @@ If you are unable to use the [Plex Meta Manager Discord Server](https://discord.
 
 ## Contributing
 * Pull Requests are greatly encouraged, please submit all Pull Requests to the nightly branch.
-* If you wish to contribute to the Wiki please fork and send a pull request on the [Plex Meta Manager Wiki Repository](https://github.com/meisnate12/Plex-Meta-Manager-Wiki).
 
 ## IBRACORP Video Walkthrough
 
