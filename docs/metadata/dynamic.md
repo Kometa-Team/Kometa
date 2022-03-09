@@ -1,7 +1,7 @@
 # Dynamic Collections
 
 Plex Meta Manager can dynamically create collections based on different criteria, such as
-* Collections based on the Collections from TMDb for every item in the library. ([Star Wars](https://www.themoviedb.org/collection/10-star-wars-collection), [The Lord of the Rings](https://www.themoviedb.org/collection/119), etc...)
+* Collections based on the Collections from TMDb for every item in the library. ([Star Wars](https://www.themoviedb.org/collection/10-star-wars-collection), [Harry Potter](https://www.themoviedb.org/collection/1241), etc...)
 * Collections based on each of a Users Trakt Lists
 * Collections for the top `X` popular people on TMDb (Bruce Willis, Tom Hanks, etc...)
 * Collections for each decade represented in the library (Best of 1990s, Best of 2000s, etc...)
@@ -48,7 +48,7 @@ dynamic_collections:
       - Horror
 ```
 
-* Using the `keys` attribute to change the formatting of "France" to "French" so that a collection can be named "French Cinema" instead of simply "France"
+* Using the `pre_format_override` attribute to change the formatting of "France" to "French" so that a collection can be named "French Cinema" instead of simply "France"
   * This particular example also uses the `title_format` attribute to manipulate the naming convention of the collections.
 
 ```yaml
@@ -632,7 +632,7 @@ dynamic_collections:
       - 2020
       - 2021
       - 2022
-    title_format: Best of &lt;&lt;title&gt;&gt;
+    title_format: Best of <<title>>
 ```
 
 ### Decade
@@ -738,7 +738,7 @@ default_template:
 
 * Create a collection for the top movies from each country found in the library
 * Name the collection Top [Country] Cinema
-* The `keys` attribute is used here in combination with the `title_format` to change the collection name from "France" which would be the default title, to "Top French Cinema"
+* The `pre_format_override` attribute is used here in combination with the `title_format` to change the collection name from "France" which would be the default title, to "Top French Cinema"
 
 ```yaml
 dynamic_collections:

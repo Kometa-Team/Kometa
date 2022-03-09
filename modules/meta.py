@@ -3,6 +3,7 @@ from datetime import datetime
 from modules import plex, util
 from modules.util import Failed, ImageData
 from plexapi.exceptions import NotFound
+from tmdbapis import NotFound as TMDbNotFound
 from ruamel import yaml
 
 logger = util.logger
@@ -236,9 +237,14 @@ class MetadataFile(DataFile):
             self.metadata = get_dict("metadata", data, library.metadata_files)
             self.templates = get_dict("templates", data)
             self.collections = get_dict("collections", data, library.collections)
+            self.dynamic_collections = get_dict("dynamic_collections", data)
             col_names = library.collections + [c for c in self.collections]
             all_items = None
-            for map_name, dynamic in get_dict("dynamic_collections", data).items():
+            if self.dynamic_collections:
+                logger.info("")
+                logger.separator(f"Dynamic Collections")
+                logger.info("")
+            for map_name, dynamic in self.dynamic_collections.items():
                 try:
                     methods = {dm.lower(): dm for dm in dynamic}
                     if "type" not in methods:
@@ -255,7 +261,6 @@ class MetadataFile(DataFile):
                         auto_type = dynamic[methods["type"]].lower()
                         exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
                         include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="list") if "include" in methods else []
-
                         if exclude and include:
                             raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "addons" in methods else {}
@@ -264,6 +269,7 @@ class MetadataFile(DataFile):
                         default_title_format = "<<title>>"
                         default_template = None
                         auto_list = {}
+                        dynamic_data = None
                         def _check_dict(check_dict):
                             for ck, cv in check_dict.items():
                                 if ck not in exclude and cv not in exclude:
@@ -300,13 +306,13 @@ class MetadataFile(DataFile):
                         elif auto_type == "actor":
                             people = {}
                             if "data" in methods:
-                                actor_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
                             else:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
-                            actor_methods = {am.lower(): am for am in actor_data}
-                            actor_depth = util.parse("Config", "actor_depth", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
-                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1) if "actor_minimum" in actor_methods else None
-                            number_of_actors = util.parse("Config", "number_of_actors", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=25, minimum=1) if "number_of_actors" in actor_methods else None
+                            actor_methods = {am.lower(): am for am in dynamic_data}
+                            actor_depth = util.parse("Config", "actor_depth", dynamic_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
+                            actor_minimum = util.parse("Config", "actor_minimum", dynamic_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1) if "actor_minimum" in actor_methods else None
+                            number_of_actors = util.parse("Config", "number_of_actors", dynamic_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=25, minimum=1) if "number_of_actors" in actor_methods else None
                             if not actor_minimum and not number_of_actors:
                                 actor_minimum = 3
                             if not all_items:
@@ -331,17 +337,20 @@ class MetadataFile(DataFile):
                                         results = self.config.TMDb.search_people(role["name"])
                                         auto_list[results[0].id] = results[0].name
                                         actor_count += 1
-                                    except NotFound:
+                                    except TMDbNotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
                         elif auto_type == "trakt_user_lists":
-                            for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
+                            for option in dynamic_data:
                                 _check_dict(self.config.Trakt.get_user_lists(option))
                         elif auto_type == "trakt_liked_lists":
                             _check_dict(self.config.Trakt.get_liked_lists())
                         elif auto_type == "tmdb_popular_people":
-                            _check_dict(self.config.TMDb.get_popular_people(util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)))
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)
+                            _check_dict(self.config.TMDb.get_popular_people(dynamic_data))
                         elif auto_type == "trakt_people_list":
-                            for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
+                            for option in dynamic_data:
                                 _check_dict(self.config.Trakt.get_people(option))
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
@@ -357,7 +366,7 @@ class MetadataFile(DataFile):
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
                         title_format = title_format.replace("<<library_type>>", library.type)
-                    dictionary_variables = util.parse("Config", "dictionary_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "dictionary_variables" in methods else {}
+                    template_variables = util.parse("Config", "template_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "template_variables" in methods else {}
                     if "template" in methods:
                         template_name = util.parse("Config", "template", dynamic, parent=map_name, methods=methods)
                         if template_name not in self.templates:
@@ -372,13 +381,30 @@ class MetadataFile(DataFile):
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
                     other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods) if "other_name" in methods and include else None
                     other_keys = []
+                    logger.debug(f"Mapping Name: {map_name}")
+                    logger.debug(f"Type: {auto_type}")
+                    logger.debug(f"Data: {dynamic_data}")
+                    logger.debug(f"Exclude: {exclude}")
+                    logger.debug(f"Addons: {addons}")
+                    logger.debug(f"Template: {template_name}")
+                    logger.debug(f"Template Variables: {template_variables}")
+                    logger.debug(f"Remove Prefix: {remove_prefix}")
+                    logger.debug(f"Remove Suffix: {remove_suffix}")
+                    logger.debug(f"Title Format: {title_format}")
+                    logger.debug(f"Pre Format Override: {pre_format_override}")
+                    logger.debug(f"Post Format Override: {post_format_override}")
+                    logger.debug(f"Test: {test}")
+                    logger.debug(f"Sync: {sync}")
+                    logger.debug(f"Include: {include}")
+                    logger.debug(f"Other Name: {other_name}")
+
                     for key, value in auto_list.items():
                         if include and key not in include:
                             if key not in exclude:
                                 other_keys.append(key)
                             continue
                         template_call = {"name": template_name, auto_type: [key] + addons[key] if key in addons else key}
-                        for k, v in dictionary_variables.items():
+                        for k, v in template_variables.items():
                             if key in v:
                                 template_call[k] = v[key]
                         if key in post_format_override:
