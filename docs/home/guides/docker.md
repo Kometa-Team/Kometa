@@ -27,7 +27,7 @@ I am assuming you do not have any of these tools already installed.  When writin
 
 The Docker install is discussed here: [Installing Docker](https://docs.docker.com/engine/install/)
 
-ONce you have Docker installed, test it at the command line with:
+Once you have Docker installed, test it at the command line with:
 
 ```
 docker run --rm hello-world
