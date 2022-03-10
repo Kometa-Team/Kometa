@@ -67,12 +67,12 @@ dynamic_collections:
 dynamic_collections:
   networks:
     type: network
-      addons:
-        MTV Worldwide:
-          - MTV
-          - MTV2
-          - MTV3
-          - MTV (UK)
+    addons:
+      MTV Worldwide:
+        - MTV
+        - MTV2
+        - MTV3
+        - MTV (UK)
 ```
 
 ## Attributes
@@ -110,6 +110,9 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`trakt_liked_lists`](#trakt-liked-lists)     | Create a collection for each list the authenticated trakt user likes                                        |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`trakt_people_list`](#trakt-people-lists)    | Create a collection for each actor found in the trakt list                                                  |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`actor`](#actor)                             | Create a collection for each actor found in the library                                                     |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`director`](#director)                       | Create a collection for each director found in the library                                                  |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`writer`](#writer)                           | Create a collection for each writer found in the library                                                    |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`producer`](#producer)                       | Create a collection for each producer found in the library                                                  |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`genre`](#genre)                             | Create a collection for each genre found in the library                                                     |    &#10060;    | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
@@ -434,17 +437,17 @@ Create a collection for each actor found in the library.
                 <th>Description & Values</th>
             </tr>
             <tr>
-                <td><code>actor_depth</code></td>
+                <td><code>depth</code></td>
                 <td><strong>Values:</strong> Number greater then 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
-                <td><code>actor_minimum</code></td>
+                <td><code>minimum</code></td>
                 <td><strong>Values:</strong> Number greater then 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
-                <td><code>number_of_actors</code></td>
+                <td><code>limit</code></td>
                 <td><strong>Values:</strong> Number greater then 0</td>
                 <td><strong>Default:</strong> None</td>
             </tr>
@@ -479,9 +482,210 @@ default_template:
   </tr>
 </table>
 
-* `actor_depth` determines how many top billed actor per item they are in. (i.e. if they play a cameo role, this is unlikely to be counted)
-* `actor_minimum` determines the minimum number of times the actor must appear within `actor_depth` for the collection to be created.
-* `number_of_actors` determines the number of actor collection to max out at. (i.e. if to make collections for the top 25 actors)
+* `depth` determines how many top billed actor per item they are in. (i.e. if they play a cameo role, this is unlikely to be counted)
+* `minimum` determines the minimum number of times the actor must appear within `depth` for the collection to be created.
+* `limit` determines the number of actor collection to max out at. (i.e. if to make collections for the top 25 actors)
+
+### Director
+
+Create a collection for each director found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>director</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Values</th>
+    <td>
+        <table class="clearTable">
+            <tr>
+                <th>Attribute</th>
+                <th>Description & Values</th>
+            </tr>
+            <tr>
+                <td><code>depth</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>minimum</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>limit</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> None</td>
+            </tr>
+        </table>
+    </td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>TMDb Person ID</td>
+  </tr>
+  <tr>
+    <th>Titles</th>
+    <td>TMDb Person Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  tmdb_person: <<director>>
+  plex_search:
+    all:
+      director: tmdb
+```
+
+</td>
+  </tr>
+</table>
+
+* `depth` determines how many directors are looked at per item.
+* `minimum` determines the minimum number of times the director must appear within `depth` for the collection to be created.
+* `limit` determines the number of director collection to max out at. (i.e. if to make collections for the top 25 directors)
+
+### Writer
+
+Create a collection for each writer found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>writer</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Values</th>
+    <td>
+        <table class="clearTable">
+            <tr>
+                <th>Attribute</th>
+                <th>Description & Values</th>
+            </tr>
+            <tr>
+                <td><code>depth</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>minimum</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>limit</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> None</td>
+            </tr>
+        </table>
+    </td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>TMDb Person ID</td>
+  </tr>
+  <tr>
+    <th>Titles</th>
+    <td>TMDb Person Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  tmdb_person: <<writer>>
+  plex_search:
+    all:
+      writer: tmdb
+```
+
+</td>
+  </tr>
+</table>
+
+* `depth` determines how many writers are looked at per item.
+* `minimum` determines the minimum number of times the writer must appear within `depth` for the collection to be created.
+* `limit` determines the number of writer collection to max out at. (i.e. if to make collections for the top 25 writers)
+
+### Producer
+
+Create a collection for each producer found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>producer</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Values</th>
+    <td>
+        <table class="clearTable">
+            <tr>
+                <th>Attribute</th>
+                <th>Description & Values</th>
+            </tr>
+            <tr>
+                <td><code>depth</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>minimum</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>limit</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> None</td>
+            </tr>
+        </table>
+    </td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>TMDb Person ID</td>
+  </tr>
+  <tr>
+    <th>Titles</th>
+    <td>TMDb Person Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  tmdb_person: <<producer>>
+  plex_search:
+    all:
+      producer: tmdb
+```
+
+</td>
+  </tr>
+</table>
+
+* `depth` determines how many producers are looked at per item.
+* `minimum` determines the minimum number of times the producer must appear within `depth` for the collection to be created.
+* `limit` determines the number of producer collection to max out at. (i.e. if to make collections for the top 25 producers)
 
 #### Example:
 
@@ -492,8 +696,8 @@ dynamic_collections:
   Top Actors:         # mapping name does not matter just needs to be unique
     type: actor
     data:
-      actor_depth: 5
-      number_of_actors: 25
+      depth: 5
+      limit: 25
 ```
 
 #### Example:
@@ -506,8 +710,8 @@ dynamic_collections:
   Actors:         # mapping name does not matter just needs to be unique
     type: actor
     data:
-      actor_depth: 5
-      actor_minimum: 20
+      depth: 5
+      minimum: 20
 ```
 
 ### Genre
@@ -571,7 +775,7 @@ dynamic_collections:
   Genres:         # mapping name does not matter just needs to be unique
     type: genre
     exclude:
-          - Talk Show
+      - Talk Show
     title_format: Top <<title>> <<library_type>>s
     template: genre collection
 ```
@@ -963,12 +1167,12 @@ For example, the `addons` attribute can be used to combine multiple `keys`, i.e.
 dynamic_collections:
   networks:
     type: network
-      addons:
-        MTV Worldwide: 
-          - MTV
-          - MTV2
-          - MTV3
-          - MTV (UK)
+    addons:
+      MTV Worldwide: 
+        - MTV
+        - MTV2
+        - MTV3
+        - MTV (UK)
 ```
 
 ## Template
