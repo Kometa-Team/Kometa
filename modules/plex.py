@@ -702,6 +702,7 @@ class Plex(Library):
             for d in cols:
                 if d.title == data:
                     return d
+            logger.debug("")
             for d in cols:
                 logger.debug(f"Found: {d.title}")
             logger.debug(f"Looking for: {data}")

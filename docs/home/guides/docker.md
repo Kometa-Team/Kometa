@@ -104,6 +104,7 @@ This will display a full path:
 <details>
   <summary>OS X</summary>
   <br />
+
   ```
   /Users/YOURUSERNAME/plex-meta-manager
   ```
@@ -112,6 +113,7 @@ This will display a full path:
 <details>
   <summary>Linux</summary>
   <br />
+
   ```
   /home/YOURUSERNAME/plex-meta-manager
   ```
@@ -120,6 +122,7 @@ This will display a full path:
 <details>
   <summary>Windows</summary>
   <br />
+
   ```
   C:\Users\YOURUSERNAME\plex-meta-manager
   ```

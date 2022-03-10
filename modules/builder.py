@@ -558,10 +558,12 @@ class CollectionBuilder:
             self.custom_sort = False
 
         for method_key, method_data in self.data.items():
+            if method_key.lower() in ignored_details:
+                continue
+            logger.debug("")
             method_name, method_mod, method_final = self._split(method_key)
             if method_name in ignored_details:
                 continue
-            logger.debug("")
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
