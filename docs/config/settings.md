@@ -36,7 +36,7 @@ The available setting attributes which can be set at each level are outlined bel
 | [`default_collection_order`](#default-collection-order)       |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`minimum_items`](#minimum-items)                             |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`delete_below_minimum`](#delete-below-minimum)               |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`delete_not_scheduled`d](#delete-not-scheduled)              |   &#9989;    |    &#9989;    |          &#9989;          |
+| [`delete_not_scheduled`](#delete-not-scheduled)               |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`run_again_delay`](#run-again-delay)                         |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`missing_only_released`](#missing-only-released)             |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`show_unmanaged`](#show-unmanaged-collections)               |   &#9989;    |    &#9989;    |         &#10060;          |

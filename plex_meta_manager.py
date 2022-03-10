@@ -213,7 +213,7 @@ def update_libraries(config):
             logger.debug(f"Create Asset Folders: {library.create_asset_folders}")
             logger.debug(f"Download URL Assets: {library.download_url_assets}")
             logger.debug(f"Sync Mode: {library.sync_mode}")
-            logger.debug(f"Collection Minimum: {library.minimum_items}")
+            logger.debug(f"Minimum Items: {library.minimum_items}")
             logger.debug(f"Delete Below Minimum: {library.delete_below_minimum}")
             logger.debug(f"Delete Not Scheduled: {library.delete_not_scheduled}")
             logger.debug(f"Default Collection Order: {library.default_collection_order}")

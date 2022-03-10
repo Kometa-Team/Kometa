@@ -13,13 +13,16 @@ github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Co
 all_auto = ["genre"]
 ms_auto = ["actor", "year", "original_language", "tmdb_popular_people", "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"]
 auto = {
-    "Movie": ["tmdb_collection", "decade", "country"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer"] + all_auto + ms_auto,
     "Show": ["network"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country"] + all_auto
 }
 default_templates = {
     "actor": {"tmdb_person": f"<<actor>>", "plex_search": {"all": {"actor": "tmdb"}}},
+    "director": {"tmdb_person": f"<<director>>", "plex_search": {"all": {"director": "tmdb"}}},
+    "producer": {"tmdb_person": f"<<producer>>", "plex_search": {"all": {"producer": "tmdb"}}},
+    "writer": {"tmdb_person": f"<<writer>>", "plex_search": {"all": {"writer": "tmdb"}}},
     "original_language": {"plex_all": True, "filters": {"original_language": "<<original_language>>"}},
     "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>"},
     "trakt_user_lists": {"trakt_list_details": "<<trakt_user_lists>>"},
@@ -265,7 +268,9 @@ class MetadataFile(DataFile):
                             raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "addons" in methods else {}
                         for k, v in addons.items():
-                            exclude.extend(v)
+                            if k in v:
+                                logger.warning(f"Config Warning: {k} cannot be an addon for itself")
+                            exclude.extend([vv for vv in v if vv != k])
                         default_title_format = "<<title>>"
                         default_template = None
                         auto_list = {}
@@ -303,40 +308,47 @@ class MetadataFile(DataFile):
                                     auto_list[tmdb_item.original_language.iso_639_1] = tmdb_item.original_language.english_name
                             logger.exorcise()
                             default_title_format = "<<title>> <<library_type>>s"
-                        elif auto_type == "actor":
+                        elif auto_type in ["actor", "director", "writer", "producer"]:
                             people = {}
                             if "data" in methods:
                                 dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
                             else:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
-                            actor_methods = {am.lower(): am for am in dynamic_data}
-                            actor_depth = util.parse("Config", "actor_depth", dynamic_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
-                            actor_minimum = util.parse("Config", "actor_minimum", dynamic_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1) if "actor_minimum" in actor_methods else None
-                            number_of_actors = util.parse("Config", "number_of_actors", dynamic_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=25, minimum=1) if "number_of_actors" in actor_methods else None
-                            if not actor_minimum and not number_of_actors:
-                                actor_minimum = 3
+                            person_methods = {am.lower(): am for am in dynamic_data}
+                            if "actor_depth" in person_methods:
+                                person_methods["depth"] = person_methods.pop("actor_depth")
+                            if "actor_minimum" in person_methods:
+                                person_methods["minimum"] = person_methods.pop("actor_minimum")
+                            if "number_of_actors" in person_methods:
+                                person_methods["limit"] = person_methods.pop("number_of_actors")
+                            person_depth = util.parse("Config", "depth", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1)
+                            person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
+                            person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
+                            if not person_minimum and not person_limit:
+                                person_minimum = 3
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
                                 try:
                                     self.library.reload(item)
-                                    for actor in item.actors[:actor_depth]:
-                                        if actor.id not in people:
-                                            people[actor.id] = {"name": actor.tag, "count": 0}
-                                        people[actor.id]["count"] += 1
+                                    for person in getattr(item, f"{auto_type}s")[:person_depth]:
+                                        if person.id not in people:
+                                            people[person.id] = {"name": person.tag, "count": 0}
+                                        people[person.id]["count"] += 1
                                 except Failed as e:
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
                             roles.sort(key=operator.itemgetter('count'), reverse=True)
-                            actor_count = 0
+                            person_count = 0
                             for role in roles:
-                                if (number_of_actors and actor_count >= number_of_actors) or (actor_minimum and role["count"] < actor_minimum):
+                                if (person_limit and person_count >= person_limit) or (person_minimum and role["count"] < person_minimum):
                                     break
                                 if role["name"] not in exclude:
                                     try:
                                         results = self.config.TMDb.search_people(role["name"])
-                                        auto_list[results[0].id] = results[0].name
-                                        actor_count += 1
+                                        if results[0].id not in exclude:
+                                            auto_list[results[0].id] = results[0].name
+                                            person_count += 1
                                     except TMDbNotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
                         elif auto_type == "trakt_user_lists":
@@ -397,6 +409,9 @@ class MetadataFile(DataFile):
                     logger.debug(f"Sync: {sync}")
                     logger.debug(f"Include: {include}")
                     logger.debug(f"Other Name: {other_name}")
+                    logger.debug(f"Keys (Title)")
+                    for key, value in auto_list.items():
+                        logger.debug(f"  - {key}{'' if key == value else f' ({value})'}")
 
                     for key, value in auto_list.items():
                         if include and key not in include:
