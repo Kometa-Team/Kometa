@@ -271,7 +271,7 @@ class MetadataFile(DataFile):
                             if k in v:
                                 logger.warning(f"Config Warning: {k} cannot be an addon for itself")
                             exclude.extend([vv for vv in v if vv != k])
-                        default_title_format = "<<title>>"
+                        default_title_format = "<<key_name>>"
                         default_template = None
                         auto_list = {}
                         dynamic_data = None
@@ -283,10 +283,10 @@ class MetadataFile(DataFile):
                             auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
                             if library.is_music:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
-                                default_title_format = "Most Played <<title>> <<library_type>>s"
+                                default_title_format = "Most Played <<key_name>> <<library_type>>s"
                             else:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<{auto_type}>>"}}}
-                                default_title_format = "Best <<library_type>>s of <<title>>" if auto_type in ["year", "decade"] else "Top <<title>> <<library_type>>s"
+                                default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade"] else "Top <<key_name>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
                             if not all_items:
                                 all_items = library.get_all()
@@ -307,7 +307,7 @@ class MetadataFile(DataFile):
                                 if tmdb_item and tmdb_item.original_language  and tmdb_item.original_language.iso_639_1  not in exclude and tmdb_item.original_language.english_name not in exclude:
                                     auto_list[tmdb_item.original_language.iso_639_1] = tmdb_item.original_language.english_name
                             logger.exorcise()
-                            default_title_format = "<<title>> <<library_type>>s"
+                            default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type in ["actor", "director", "writer", "producer"]:
                             people = {}
                             if "data" in methods:
@@ -369,8 +369,8 @@ class MetadataFile(DataFile):
                     title_format = default_title_format
                     if "title_format" in methods:
                         title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
-                    if "<<title>>" not in title_format:
-                        logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
+                    if "<<key_name>>" not in title_format and "<<title>>" not in title_format:
+                        logger.error(f"Config Error: <<key_name>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
                     post_format_override = util.parse("Config", "post_format_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "post_format_override" in methods else {}
                     pre_format_override = util.parse("Config", "pre_format_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "pre_format_override" in methods else {}
@@ -434,7 +434,7 @@ class MetadataFile(DataFile):
                                 for suffix in remove_suffix:
                                     if value.endswith(suffix):
                                         value = value[:-len(suffix)].strip()
-                            collection_title = title_format.replace("<<title>>", value)
+                            collection_title = title_format.replace("<<title>>", value).replace("<<key_name>>", value)
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                         else:

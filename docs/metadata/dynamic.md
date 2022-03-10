@@ -26,13 +26,17 @@ By default, the collections generated will be named for the thing being used to 
 
 There are many attributes that can change the titles, including `title_format`, `remove_suffix`, `remove_prefix`, `pre_format_override`, and `post_format_override` all detailed below.
 
-## Dynamic Keys & Titles
+## Dynamic Keys & Key Names
 
 A `dynamic key` or `key` for short is used to refer to a specific value/result from the dynamic collection criteria that will be used to create the collection.
 
-A `title` in this case is the name that replaces `<<title>>` in `title_format` to create the collection titles for each key.
+A `key_name` is the name that replaces `<<key_name>>` in `title_format` to create the collection titles for each key.
 
-An example of some keys that would be generated from a `genre` dynamic collection are; "Animation", "Horror" and "Comedy"
+An example of some keys and their names that would be generated from a `tmdb_collections` dynamic collection are
+* `key`: "10"
+  * `key_name`: Star Wars Collection
+* `key`: "1241"
+  * `key_name`: Harry Potter Collection
 
 ### Example Key Usage
 
@@ -776,7 +780,7 @@ dynamic_collections:
     type: genre
     exclude:
       - Talk Show
-    title_format: Top <<title>> <<library_type>>s
+    title_format: Top <<key_name>> <<library_type>>s
     template: genre collection
 ```
 
@@ -836,7 +840,7 @@ dynamic_collections:
       - 2020
       - 2021
       - 2022
-    title_format: Best of <<title>>
+    title_format: Best of <<key_name>>
 ```
 
 ### Decade
@@ -891,7 +895,7 @@ default_template:
 dynamic_collections:
   Decades:         # mapping name does not matter just needs to be unique
     type: decade
-    title_format: Top <<title>> <<library_type>>s
+    title_format: Top <<key_name>> <<library_type>>s
     post_format_override:
       2020: Top 2020 Movies (so far)
 ```
@@ -948,7 +952,7 @@ default_template:
 dynamic_collections:
   Countries:         # mapping name does not matter just needs to be unique
     type: country
-    title_format: Top <<country>> Cinema
+    title_format: Top <<key_name>> Cinema
     pre_format_override:
       France: French
       Germany: German
@@ -1012,7 +1016,7 @@ templates:
 dynamic_collections:
   Networks:         # mapping name does not matter just needs to be unique
     type: network
-    title_format: <<title>>
+    title_format: <<key_name>>
     template: network collection
 ```
 
@@ -1075,7 +1079,7 @@ templates:
 dynamic_collections:
   Moods:         # mapping name does not matter just needs to be unique
     type: mood
-    title_format: Top <<title>> Tracks
+    title_format: Top <<key_name>> Tracks
     template: mood collection
 ```
 
@@ -1138,7 +1142,7 @@ templates:
 dynamic_collections:
   Styles:         # mapping name does not matter just needs to be unique
     type: style
-    title_format: Top <<title>> Albums
+    title_format: Top <<key_name>> Albums
     template: style collection
 ```
 
@@ -1191,7 +1195,7 @@ templates:
 dynamic_collections:
   Networks:         # mapping name does not matter just needs to be unique
     type: network
-    title_format: <<title>>
+    title_format: <<key_name>>
     template: network collection
 ```
 
@@ -1236,7 +1240,7 @@ dynamic_collections:
 This is the format for the collection titles.
 
 there are two special tags you can include in the `title_format` 
-* `<<title>>` is required and is what will be replaced by the dynamic title
+* `<<key_name>>` is required and is what will be replaced by the dynamic key name.
 * `<<library_type>>` will be replaced with either Movie, Show, or Artist depending on your library type.
 
 Here's an example using `title_format`.
@@ -1245,7 +1249,7 @@ Here's an example using `title_format`.
 dynamic_collections:
   Genres:         # mapping name does not matter just needs to be unique
     type: genre
-    title_format: Top 50 <<title>> <<library_type>>s
+    title_format: Top 50 <<key_name>> <<library_type>>s
 ```
 
 ## Pre Format Override
@@ -1259,7 +1263,7 @@ This example uses the `pre_format_override` attribute to change the formatting o
 dynamic_collections:
   Countries:         # mapping name does not matter, just needs to be unique
     type: country
-    title_format: <<country>> Cinema
+    title_format: <<key_name>> Cinema
     pre_format_override:
       France: French
 ```
