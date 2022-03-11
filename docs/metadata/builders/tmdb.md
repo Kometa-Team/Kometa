@@ -1,7 +1,6 @@
 # TMDb Builders
 
 You can find items using the features of [TheMovieDb.org](https://www.themoviedb.org/) (TMDb).
-
 ## Standard TMDb Builders
 
 | Attribute                             | Description                                              | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
@@ -90,14 +89,14 @@ collections:
 
 ```yaml
 collections:
-  The Lord of the Rings:
-    tmdb_collection_details: https://www.themoviedb.org/collection/119
-  The Hobbit:
-    tmdb_collection_details: 121938
-  Middle Earth:
+  Harry Potter:
+    tmdb_collection_details: 1241   #https://www.themoviedb.org/collection/1241 also accepted
+  Fantastic Beasts:
+    tmdb_collection_details: 435259 #https://www.themoviedb.org/collection/435259 also accepted
+  Wizarding World:
     tmdb_collection_details:
-      - 119
-      - https://www.themoviedb.org/collection/121938
+      - 1241
+      - https://www.themoviedb.org/collection/435259
 ```
 
 ## TMDb List
@@ -109,14 +108,7 @@ The `sync_mode: sync` and `collection_order: custom` Details are recommended sin
 ```yaml
 collections:
   Top 50 Grossing Films of All Time (Worldwide):
-    tmdb_list: https://www.themoviedb.org/list/10
-    collection_order: custom
-    sync_mode: sync
-```
-```yaml
-collections:
-  Top 50 Grossing Films of All Time (Worldwide):
-    tmdb_list: 10
+    tmdb_list: 10     #https://www.themoviedb.org/list/10 also accepted
     collection_order: custom
     sync_mode: sync
 ```
@@ -126,8 +118,8 @@ collections:
 
 ```yaml
 collections:
-  Top 50 Grossing Films of All Time (Worldwide):
-    tmdb_list_details: 10
+  Rotten Tomatoes Top 100 Movies of All Time:
+    tmdb_list_details: 3697   #themoviedb.org/list/3697 also accepted
 ```
 
 ## TMDb Actor
@@ -137,12 +129,7 @@ Finds every item in the TMDb Person's Actor Credits.
 ```yaml
 collections:
   Robin Williams:
-    tmdb_actor: https://www.themoviedb.org/person/2157-robin-williams
-```
-```yaml
-collections:
-  Robin Williams:
-    tmdb_actor: 2157
+    tmdb_actor: 2157  #https://www.themoviedb.org/person/2157-robin-williams also accepted
 ```
 
 * You can update the collection details with the TMDb Person's biography and profile by using `tmdb_actor_details`.
@@ -150,8 +137,8 @@ collections:
 
 ```yaml
 collections:
-  Robin Williams:
-    tmdb_actor_details: 2157
+  Meryl Streep:
+    tmdb_actor_details: 5064
 ```
 
 ## TMDb Crew
@@ -161,12 +148,7 @@ Finds every item in the TMDb Person's Crew Credits.
 ```yaml
 collections:
   Quentin Tarantino:
-    tmdb_crew: https://www.themoviedb.org/person/138-quentin-tarantino
-```
-```yaml
-collections:
-  Quentin Tarantino:
-    tmdb_crew: 138
+    tmdb_crew: 138  #https://www.themoviedb.org/person/138-quentin-tarantino also accepted
 ```
 
 * You can update the collection details with the TMDb Person's biography and profile by using `tmdb_crew_details`.
@@ -174,8 +156,8 @@ collections:
 
 ```yaml
 collections:
-  Quentin Tarantino:
-    tmdb_crew_details: 138
+  James Cameron:
+    tmdb_crew_details: 2710
 ```
 
 ## TMDb Director
@@ -185,12 +167,7 @@ Finds every item in the TMDb Person's Director Credits.
 ```yaml
 collections:
   Steven Spielberg:
-    tmdb_director: https://www.themoviedb.org/person/488-steven-spielberg
-```
-```yaml
-collections:
-  Steven Spielberg:
-    tmdb_director: 488
+    tmdb_director: 488  #https://www.themoviedb.org/person/488-steven-spielberg also accepted
 ```
 
 * You can update the collection details with the TMDb Person's biography and profile by using `tmdb_director_details`.
@@ -198,8 +175,8 @@ collections:
 
 ```yaml
 collections:
-  Steven Spielberg:
-    tmdb_director_details: 488
+  Sofia Coppola:
+    tmdb_director_details: 1769
 ```
 
 ## TMDb Producer
@@ -209,12 +186,7 @@ Finds every item in the TMDb Person's Producer Credits.
 ```yaml
 collections:
   Adam Sandler:
-    tmdb_producer: https://www.themoviedb.org/person/19292-adam-sandler
-```
-```yaml
-collections:
-  Adam Sandler:
-    tmdb_producer: 19292
+    tmdb_producer: 19292  #https://www.themoviedb.org/person/19292-adam-sandler also accepted
 ```
 
 * You can update the collection details with the TMDb Person's biography and profile by using `tmdb_producer_details`.
@@ -222,8 +194,8 @@ collections:
 
 ```yaml
 collections:
-  Adam Sandler:
-    tmdb_producer_details: 19292
+  Kathleen Kennedy:
+    tmdb_producer_details: 489
 ```
 
 ## TMDb Writer
@@ -233,12 +205,7 @@ Finds every item in the TMDb Person's Writer Credits.
 ```yaml
 collections:
   Woody Allen:
-    tmdb_writer: https://www.themoviedb.org/person/1243-woody-allen
-```
-```yaml
-collections:
-  Woody Allen:
-    tmdb_writer: 1243
+    tmdb_writer: 1243 #https://www.themoviedb.org/person/1243-woody-allen also accepted
 ```
 
 * You can update the collection details with the TMDb Person's biography and profile by using `tmdb_writer_details`.
@@ -246,8 +213,8 @@ collections:
 
 ```yaml
 collections:
-  Woody Allen:
-    tmdb_writer_details: 1243
+  Tina Fey:
+    tmdb_writer_details: 56323
 ```
 
 ## TMDb Movie
@@ -257,14 +224,8 @@ Finds the movie specified.
 ```yaml
 collections:
   Anaconda:
-    tmdb_collection: https://www.themoviedb.org/collection/105995
-    tmdb_movie: https://www.themoviedb.org/movie/336560
-```
-```yaml
-collections:
-  Anaconda:
-    tmdb_collection: 105995
-    tmdb_movie: 336560
+    tmdb_collection: 105995 #https://www.themoviedb.org/collection/105995 also accepted
+    tmdb_movie: 336560      #https://www.themoviedb.org/movie/336560 also accepted
 ```
 
 * You can update the collection details with the TMDb movie's summary, poster, and background by using `tmdb_movie_details`.
@@ -273,9 +234,9 @@ collections:
 
 ```yaml
 collections:
-  Anaconda:
-    tmdb_collection: 105995
-    tmdb_movie_details: 336560
+  Deadpool Specials:
+    tmdb_collection: 567604
+    tmdb_movie_details: 558144
 ```
 
 ## TMDb Show
@@ -286,15 +247,8 @@ Finds the show specified.
 collections:
   Star Wars (Animated Shows):
     tmdb_show:
-      - https://www.themoviedb.org/tv/4194-star-wars-the-clone-wars
-      - https://www.themoviedb.org/tv/60554-star-wars-rebels
-```
-```yaml
-collections:
-  Star Wars (Animated Shows):
-    tmdb_show:
-      - 4194
-      - 60554
+      - 4194  #https://www.themoviedb.org/tv/4194-star-wars-the-clone-wars also accepted
+      - 60554 #https://www.themoviedb.org/tv/60554-star-wars-rebels also accepted
 ```
 
 * You can update the collection details with the TMDb show's summary, poster, and background by using `tmdb_show_details`.
@@ -303,10 +257,10 @@ collections:
 
 ```yaml
 collections:
-  Star Wars (Animated Shows):
+  Pokémon Evolutions & Chronicles:
     tmdb_show_details:
-      - 4194
-      - 60554
+      - 132636
+      - 13230
 ```
 
 ## TMDb Company
@@ -316,15 +270,8 @@ Finds every movie from the TMDb company's movie list.
 ```yaml
 collections:
   Studio Ghibli:
-    tmdb_company: 10342
+    tmdb_company: 10342 #https://www.themoviedb.org/company/10342 also accepted
 ```
-
-```yaml
-collections:
-  Studio Ghibli:
-    tmdb_company: https://www.themoviedb.org/company/10342
-```
-
 ## TMDb Network
 
 Finds every item from the TMDb network's movie/show list.
@@ -332,15 +279,8 @@ Finds every item from the TMDb network's movie/show list.
 ```yaml
 collections:
   CBS:
-    tmdb_network: 16
+    tmdb_network: 16  #https://www.themoviedb.org/network/16 also accepted
 ```
-
-```yaml
-collections:
-  CBS:
-    tmdb_network: https://www.themoviedb.org/network/16
-```
-
 ## TMDb Keyword
 
 Finds every item from the TMDb keyword's movie/show list.
@@ -348,13 +288,7 @@ Finds every item from the TMDb keyword's movie/show list.
 ```yaml
 collections:
   Marvel Cinematic Universe:
-    tmdb_keyword: 180547
-```
-
-```yaml
-collections:
-  Marvel Cinematic Universe:
-    tmdb_keyword: https://www.themoviedb.org/keyword/180547
+    tmdb_keyword: 180547  #https://www.themoviedb.org/keyword/180547 also accepted
 ```
 
 ## TMDb Popular
