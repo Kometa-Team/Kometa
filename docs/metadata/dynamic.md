@@ -882,8 +882,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        genre: <<genre>>
+    any:
+      genre: <<genre>>
 ```
 
 </td>
@@ -948,8 +948,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        content_rating: <<content_rating>>
+    any:
+      content_rating: <<content_rating>>
 ```
 
 </td>
@@ -1009,8 +1009,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        year: <<year>>
+    any:
+      year: <<year>>
 ```
 
 </td>
@@ -1068,8 +1068,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        decade: <<decade>>
+    any:
+      decade: <<decade>>
 ```
 
 </td>
@@ -1125,8 +1125,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        country: <<country>>
+    any:
+      country: <<country>>
 ```
 
 </td>
@@ -1184,8 +1184,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        network: <<network>>
+    any:
+      network: <<network>>
 ```
 
 </td>
@@ -1245,8 +1245,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: plays.desc
-      any:
-        artist_mood: <<mood>>
+    any:
+      artist_mood: <<mood>>
 ```
 
 </td>
@@ -1308,8 +1308,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: plays.desc
-      any:
-        artist_style: <<style>>
+    any:
+      artist_style: <<style>>
 ```
 
 </td>

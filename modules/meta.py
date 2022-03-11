@@ -16,11 +16,12 @@ ms_auto = [
     "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"
 ]
 auto = {
-    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer", "subtitle_language", "audio_language"] + all_auto + ms_auto,
     "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
 }
+auto_type_translation = {"content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage"}
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<original_language>>"}},
     "origin_country": {"plex_all": True, "filters": {"origin_country": "<<origin_country>>"}},
@@ -262,11 +263,12 @@ class MetadataFile(DataFile):
                         raise Failed(f"Config Error: {map_name} type attribute: {dynamic[methods['type']]} requires trakt to be configured")
                     else:
                         auto_type = dynamic[methods["type"]].lower()
-                        exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
+                        og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
                         include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="list") if "include" in methods else []
-                        if exclude and include:
+                        if og_exclude and include:
                             raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "addons" in methods else {}
+                        exclude = [e for e in og_exclude]
                         for k, v in addons.items():
                             if k in v:
                                 logger.warning(f"Config Warning: {k} cannot be an addon for itself")
@@ -279,9 +281,12 @@ class MetadataFile(DataFile):
                             for ck, cv in check_dict.items():
                                 if ck not in exclude and cv not in exclude:
                                     auto_list[ck] = cv
-                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating"]:
-                            search_tag = "contentRating" if auto_type == "content_rating" else auto_type
-                            auto_list = {i.title: i.title for i in library.get_tags(search_tag) if i.title not in exclude}
+                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language"]:
+                            search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
+                            if auto_type in ["subtitle_language", "audio_language"]:
+                                auto_list = {i.key: i.title for i in library.get_tags(search_tag) if i.title not in exclude and i.key not in exclude}
+                            else:
+                                auto_list = {i.title: i.title for i in library.get_tags(search_tag) if i.title not in exclude}
                             if library.is_music:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
                                 default_title_format = "Most Played <<key_name>> <<library_type>>s"
