@@ -11,18 +11,17 @@ logger = util.logger
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
 all_auto = ["genre"]
-ms_auto = ["actor", "year", "original_language", "tmdb_popular_people", "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"]
+ms_auto = [
+    "actor", "year", "content_rating", "original_language", "tmdb_popular_people",
+    "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"
+]
 auto = {
     "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer"] + all_auto + ms_auto,
     "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
-    "Video": ["country"] + all_auto
+    "Video": ["country", "content_rating"] + all_auto
 }
 default_templates = {
-    "actor": {"tmdb_person": f"<<actor>>", "plex_search": {"all": {"actor": "tmdb"}}},
-    "director": {"tmdb_person": f"<<director>>", "plex_search": {"all": {"director": "tmdb"}}},
-    "producer": {"tmdb_person": f"<<producer>>", "plex_search": {"all": {"producer": "tmdb"}}},
-    "writer": {"tmdb_person": f"<<writer>>", "plex_search": {"all": {"writer": "tmdb"}}},
     "original_language": {"plex_all": True, "filters": {"original_language": "<<original_language>>"}},
     "origin_country": {"plex_all": True, "filters": {"origin_country": "<<origin_country>>"}},
     "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>"},
@@ -280,8 +279,9 @@ class MetadataFile(DataFile):
                             for ck, cv in check_dict.items():
                                 if ck not in exclude and cv not in exclude:
                                     auto_list[ck] = cv
-                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade"]:
-                            auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
+                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating"]:
+                            search_tag = "contentRating" if auto_type == "content_rating" else auto_type
+                            auto_list = {i.title: i.title for i in library.get_tags(search_tag) if i.title not in exclude}
                             if library.is_music:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
                                 default_title_format = "Most Played <<key_name>> <<library_type>>s"
@@ -365,6 +365,7 @@ class MetadataFile(DataFile):
                                             person_count += 1
                                     except TMDbNotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
+                            default_template = {"tmdb_person": f"<<{auto_type}>>", "plex_search": {"all": {auto_type: "tmdb"}}},
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
