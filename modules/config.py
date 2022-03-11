@@ -467,8 +467,13 @@ class ConfigFile:
             if "playlist_files" in self.data:
                 logger.info("Reading in Playlist Files")
                 if self.data["playlist_files"] is None:
-                    raise Failed("Config Error: playlist_files attribute is blank")
-                paths_to_check = self.data["playlist_files"] if isinstance(self.data["playlist_files"], list) else [self.data["playlist_files"]]
+                    default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
+                    logger.warning(f"Config Warning: playlist_files attribute is blank using default: {default_playlist_file}")
+                    paths_to_check = [default_playlist_file]
+                elif isinstance(self.data["playlist_files"], list):
+                    paths_to_check = self.data["playlist_files"]
+                else:
+                    paths_to_check = [self.data["playlist_files"]]
                 for path in paths_to_check:
                     if isinstance(path, dict):
                         def check_dict(attr):
@@ -503,14 +508,12 @@ class ConfigFile:
                             else:
                                 logger.error(f"Config Error: Folder not found: {folder}")
                     else:
-                        playlists_pairs.append(("File", path))
+                        if os.path.exists(path):
+                            playlists_pairs.append(("File", path))
+                        else:
+                            logger.warning(f"Config Warning: Path not found: {path}")
             else:
-                default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
-                if os.path.exists(default_playlist_file):
-                    playlists_pairs.append(("File", default_playlist_file))
-                    logger.warning(f"playlist_files attribute not found using {default_playlist_file} as default")
-                else:
-                    logger.warning("playlist_files attribute not found")
+                logger.warning("playlist_files attribute not found")
             for file_type, playlist_file in playlists_pairs:
                 try:
                     playlist_obj = PlaylistFile(self, file_type, playlist_file)
