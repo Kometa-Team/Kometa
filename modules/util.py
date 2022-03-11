@@ -103,15 +103,15 @@ def get_list(data, lower=False, upper=False, split=True, int_list=False):
     if data is None:                return None
     elif isinstance(data, list):    list_data = data
     elif isinstance(data, dict):    return [data]
-    elif split is False:            return [str(data)]
+    elif split is False:            list_data = [str(data)]
     else:                           list_data = str(data).split(",")
 
-    if lower is True:               return [d.strip().lower() for d in list_data]
-    elif upper is True:             return [d.strip().upper() for d in list_data]
+    if lower is True:               return [str(d).strip().lower() for d in list_data]
+    elif upper is True:             return [str(d).strip().upper() for d in list_data]
     elif int_list is True:
-        try:                            return [int(d.strip()) for d in list_data]
+        try:                            return [int(str(d).strip()) for d in list_data]
         except ValueError:              return []
-    else:                           return [d.strip() for d in list_data]
+    else:                           return [str(d).strip() for d in list_data]
 
 def get_int_list(data, id_type):
     int_values = []
