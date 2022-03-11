@@ -123,6 +123,8 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`country`](#country)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
 | [`resolution`](#resolution)                   | Create a collection for each resolution found in the library                                                |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`subtitle_language`](#subtitle-language)     | Create a collection for each subtitle language found in the library                                         |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`audio_language`](#audio-language)           | Create a collection for each audio language found in the library                                            |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`network`](#network)                         | Create a collection for each network found in the library                                                   |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`style`](#style)                             | Create a collection for each style found in the library                                                     |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
@@ -1207,6 +1209,110 @@ dynamic_collections:
         - SD
     title_override:
       480p: SD Movies
+```
+
+### Subtitle Language
+
+Create a collection for each subtitle language found in the library
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>subtitle_language</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Subtitle Language</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Subtitle Language</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.asc
+    any:
+      subtitle_language: <<subtitle_language>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for each subtitle language found in the library
+
+```yaml
+dynamic_collections:
+  Subtitle Languages:         # mapping name does not matter just needs to be unique
+    type: subtitle_language
+```
+
+### Audio Language
+
+Create a collection for each audio language found in the library
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>audio_language</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Audio Language</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Subtitle Language</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.asc
+    any:
+      audio_language: <<audio_language>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for each audio language found in the library
+
+```yaml
+dynamic_collections:
+  Audio Languages:         # mapping name does not matter just needs to be unique
+    type: audio_language
 ```
 
 ### Network
