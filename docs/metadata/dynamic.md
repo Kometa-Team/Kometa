@@ -119,6 +119,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`writer`](#writer)                           | Create a collection for each writer found in the library                                                    |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`producer`](#producer)                       | Create a collection for each producer found in the library                                                  |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`genre`](#genre)                             | Create a collection for each genre found in the library                                                     |    &#10060;    | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| [`content_rating`](#content-rating)           | Create a collection for each content rating found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#9989;  |
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`country`](#country)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
@@ -911,6 +912,67 @@ dynamic_collections:
       - Talk Show
     title_format: Top <<key_name>> <<library_type>>s
     template: genre collection
+```
+
+### Content Rating 
+
+Create a collection for each content rating found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>content_rating</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Content Rating</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Content Rating</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.desc
+      any:
+        content_rating: <<content_rating>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create dynamic collections based on each content rating found in the library (TV and Movies)
+* Amend the template to increase the limit from 50 to 100
+
+```yaml
+templates:
+  content rating collection:
+    smart_filter:
+      limit: 100
+      sort_by: critic_rating.desc
+      all:
+        content_rating: <<content_rating>>
+dynamic_collections:
+  Content Ratings:         # mapping name does not matter just needs to be unique
+    type: content_rating
+    template: content rating collection
 ```
 
 ### Year
