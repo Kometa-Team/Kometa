@@ -16,7 +16,7 @@ ms_auto = [
     "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"
 ]
 auto = {
-    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer", "subtitle_language", "audio_language"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer", "subtitle_language", "audio_language", "resolution"] + all_auto + ms_auto,
     "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
@@ -281,7 +281,7 @@ class MetadataFile(DataFile):
                             for ck, cv in check_dict.items():
                                 if ck not in exclude and cv not in exclude:
                                     auto_list[ck] = cv
-                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language"]:
+                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                             if auto_type in ["subtitle_language", "audio_language"]:
                                 auto_list = {i.key: i.title for i in library.get_tags(search_tag) if i.title not in exclude and i.key not in exclude}
@@ -290,6 +290,9 @@ class MetadataFile(DataFile):
                             if library.is_music:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
                                 default_title_format = "Most Played <<key_name>> <<library_type>>s"
+                            elif auto_type == "resolution":
+                                default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<{auto_type}>>"}}}
+                                default_title_format = "<<key_name>> <<library_type>>s"
                             else:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<{auto_type}>>"}}}
                                 default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade"] else "Top <<key_name>> <<library_type>>s"
