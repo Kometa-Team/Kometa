@@ -1719,7 +1719,9 @@ class CollectionBuilder:
             return valid_regex
         elif attribute in plex.string_attributes + string_filters and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
-        elif attribute in ["original_language", "origin_country", "tmdb_keyword"]:
+        elif attribute == "origin_country":
+            return util.get_list(data, upper=True)
+        elif attribute in ["original_language", "tmdb_keyword"]:
             return util.get_list(data, lower=True)
         elif attribute in ["filepath", "tmdb_genre"]:
             return util.get_list(data)
