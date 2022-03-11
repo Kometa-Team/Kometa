@@ -64,16 +64,15 @@ dynamic_collections:
       France: French
 ```
 
-* Using the `addons` attribute to combine multiple `keys`, i.e. merging "MTV", "MTV2", "MTV3" and "MTV (UK)" into one "MTV Worldwide" collection.
-  * When doing this, individual collections will not be created for the individual MTV collections, instead they will be merged within the "MTV Worldwide" collection.
+* Using the `addons` attribute to combine multiple `keys`, i.e. merging "MTV2", "MTV3" and "MTV (UK)" into one "MTV" collection.
+  * When doing this, individual collections will not be created for the individual MTV collections, instead they will be merged within the "MTV" collection.
 
 ```yaml
 dynamic_collections:
   networks:
     type: network
     addons:
-      MTV Worldwide:
-        - MTV
+      MTV:
         - MTV2
         - MTV3
         - MTV (UK)
@@ -123,6 +122,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`country`](#country)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
+| [`resolution`](#resolution)                   | Create a collection for each resolution found in the library                                                |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`network`](#network)                         | Create a collection for each network found in the library                                                   |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`style`](#style)                             | Create a collection for each style found in the library                                                     |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
@@ -1150,6 +1150,65 @@ dynamic_collections:
       India: Indian
 ```
 
+### Resolution
+
+Create a collection for each resolution found in the library
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>resolution</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Resolution</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Resolution</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: title.asc
+    any:
+      resolution: <<resolution>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for each resolution found in the library
+* Name the collection "[Resolution] Movies"
+* Combine 480p, 576p and SD into a collection called "SD Movies"
+```yaml
+dynamic_collections:
+  Resolutions:         # mapping name does not matter just needs to be unique
+    type: resolution
+    addons:
+      480p: 
+        - 576p
+        - SD
+    title_override:
+      480p: SD Movies
+```
+
 ### Network
 
 Create a collection for each network found in the library.
@@ -1355,16 +1414,15 @@ dynamic_collections:
 
 Defines how multiple `keys` can be combined under a parent key.
 
-For example, the `addons` attribute can be used to combine multiple `keys`, i.e. merging "MTV", "MTV2", "MTV3" and "MTV (UK)" into one "MTV Worldwide" collection.
-  * When doing this, individual collections will not be created for the individual MTV collections, instead they will be merged within the "MTV Worldwide" collection.
+For example, the `addons` attribute can be used to combine multiple `keys`, i.e. merging "MTV2", "MTV3" and "MTV (UK)" into the  "MTV" collection.
+
 
 ```yaml
 dynamic_collections:
   networks:
     type: network
     addons:
-      MTV Worldwide: 
-        - MTV
+      MTV: 
         - MTV2
         - MTV3
         - MTV (UK)
