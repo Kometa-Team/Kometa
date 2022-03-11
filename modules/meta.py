@@ -14,7 +14,7 @@ all_auto = ["genre"]
 ms_auto = ["actor", "year", "original_language", "tmdb_popular_people", "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"]
 auto = {
     "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer"] + all_auto + ms_auto,
-    "Show": ["network"] + all_auto + ms_auto,
+    "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country"] + all_auto
 }
@@ -24,6 +24,7 @@ default_templates = {
     "producer": {"tmdb_person": f"<<producer>>", "plex_search": {"all": {"producer": "tmdb"}}},
     "writer": {"tmdb_person": f"<<writer>>", "plex_search": {"all": {"writer": "tmdb"}}},
     "original_language": {"plex_all": True, "filters": {"original_language": "<<original_language>>"}},
+    "origin_country": {"plex_all": True, "filters": {"origin_country": "<<origin_country>>"}},
     "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>"},
     "trakt_user_lists": {"trakt_list_details": "<<trakt_user_lists>>"},
     "trakt_liked_lists": {"trakt_list_details": "<<trakt_liked_lists>>"},
@@ -308,6 +309,19 @@ class MetadataFile(DataFile):
                                     auto_list[tmdb_item.original_language.iso_639_1] = tmdb_item.original_language.english_name
                             logger.exorcise()
                             default_title_format = "<<key_name>> <<library_type>>s"
+                        elif auto_type == "origin_country":
+                            if not all_items:
+                                all_items = library.get_all()
+                            for i, item in enumerate(all_items, 1):
+                                logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
+                                tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
+                                if tmdb_item and tmdb_item.origin_countries:
+                                    for country in tmdb_item.origin_countries:
+                                        if country.iso_3166_1 not in exclude and country.name not in exclude:
+                                            auto_list[country.iso_3166_1] = country.name
+                            logger.exorcise()
+                            default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type in ["actor", "director", "writer", "producer"]:
                             people = {}
                             if "data" in methods:
@@ -372,8 +386,12 @@ class MetadataFile(DataFile):
                     if "<<key_name>>" not in title_format and "<<title>>" not in title_format:
                         logger.error(f"Config Error: <<key_name>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
-                    post_format_override = util.parse("Config", "post_format_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "post_format_override" in methods else {}
-                    pre_format_override = util.parse("Config", "pre_format_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "pre_format_override" in methods else {}
+                    if "post_format_override" in methods:
+                        methods["title_override"] = methods.pop("post_format_override")
+                    if "pre_format_override" in methods:
+                        methods["key_name_override"] = methods.pop("pre_format_override")
+                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "title_override" in methods else {}
+                    key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "key_name_override" in methods else {}
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
@@ -403,8 +421,8 @@ class MetadataFile(DataFile):
                     logger.debug(f"Remove Prefix: {remove_prefix}")
                     logger.debug(f"Remove Suffix: {remove_suffix}")
                     logger.debug(f"Title Format: {title_format}")
-                    logger.debug(f"Pre Format Override: {pre_format_override}")
-                    logger.debug(f"Post Format Override: {post_format_override}")
+                    logger.debug(f"Key Name Override: {key_name_override}")
+                    logger.debug(f"Title Override: {title_override}")
                     logger.debug(f"Test: {test}")
                     logger.debug(f"Sync: {sync}")
                     logger.debug(f"Include: {include}")
@@ -422,11 +440,11 @@ class MetadataFile(DataFile):
                         for k, v in template_variables.items():
                             if key in v:
                                 template_call[k] = v[key]
-                        if key in post_format_override:
-                            collection_title = post_format_override[key]
+                        if key in title_override:
+                            collection_title = title_override[key]
                         else:
-                            if key in pre_format_override:
-                                value = pre_format_override[key]
+                            if key in key_name_override:
+                                value = key_name_override[key]
                             else:
                                 for prefix in remove_prefix:
                                     if value.startswith(prefix):

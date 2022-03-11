@@ -132,7 +132,7 @@ filters_by_type = {
     "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword"],
     "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language", "has_dolby_vision"],
     "movie_artist": ["country"],
-    "show": ["tmdb_status", "tmdb_type", "network", "first_episode_aired", "last_episode_aired"],
+    "show": ["tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired"],
     "album": ["record_label"]
 }
 filters = {
@@ -144,11 +144,14 @@ filters = {
     "album": [item for check, sub in filters_by_type.items() for item in sub if "album" in check],
     "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
 }
-tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre", "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type", "tmdb_title"]
+tmdb_filters = [
+    "original_language", "origin_country", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre",
+    "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type", "tmdb_title"
+]
 string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title", "tmdb_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
-    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
+    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year", "origin_country",
     "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "tmdb_status", "tmdb_type"
 ]
 tag_modifiers = ["", ".not", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
@@ -1716,7 +1719,7 @@ class CollectionBuilder:
             return valid_regex
         elif attribute in plex.string_attributes + string_filters and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
-        elif attribute in ["original_language", "tmdb_keyword"]:
+        elif attribute in ["original_language", "origin_country", "tmdb_keyword"]:
             return util.get_list(data, lower=True)
         elif attribute in ["filepath", "tmdb_genre"]:
             return util.get_list(data)
@@ -1909,6 +1912,8 @@ class CollectionBuilder:
                             check_value = discover_types[item.type]
                         elif filter_attr == "original_language":
                             check_value = item.original_language.iso_639_1
+                        else:
+                            raise Failed
                         if (modifier == ".not" and check_value in filter_data) or (modifier == "" and check_value not in filter_data):
                             return False
                     elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
@@ -1927,13 +1932,15 @@ class CollectionBuilder:
                             attr = item.release_date.year if is_movie else item.first_air_date.year
                         if util.is_number_filter(attr, modifier, filter_data):
                             return False
-                    elif filter_attr == "tmdb_genre":
-                        attrs = [g.name for g in item.genres]
-                        if (not list(set(filter_data) & set(attrs)) and modifier == "") \
-                                or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
-                            return False
-                    elif filter_attr == "tmdb_keyword":
-                        attrs = [k.name for k in item.keywords]
+                    elif filter_attr in ["tmdb_genre", "tmdb_keyword", "origin_country"]:
+                        if filter_attr == "tmdb_genre":
+                            attrs = [g.name for g in item.genres]
+                        elif filter_attr == "tmdb_keyword":
+                            attrs = [k.name for k in item.keywords]
+                        elif filter_attr == "origin_country":
+                            attrs = [c.iso_3166_1 for c in item.origin_countries]
+                        else:
+                            raise Failed
                         if (not list(set(filter_data) & set(attrs)) and modifier == "") \
                                 or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             return False
