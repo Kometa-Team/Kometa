@@ -52,7 +52,7 @@ jobs:
           nodetail: true
           title: "${{ steps.get_version.outputs.VERSION }} Docker Build: **Success**"
           username: Docker
-          avatar_url: https://www.docker.com/sites/default/files/d8/2019-07/Moby-logo.png
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
 
       - name: Discord Failure Notification
         uses: sarisia/actions-status-discord@v1
@@ -63,4 +63,4 @@ jobs:
           title: "${{ steps.get_version.outputs.VERSION }} Docker Build: **Failure**"
           color: 0xe30c43
           username: Docker
-          avatar_url: https://www.docker.com/sites/default/files/d8/2019-07/Moby-logo.png
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
