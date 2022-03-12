@@ -31,7 +31,7 @@ from ruamel import yaml
 logger = util.logger
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
-mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
+mass_genre_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata"}
 mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
 mass_rating_options = {
     "tmdb": "Use TMDb Rating",
@@ -642,7 +642,7 @@ class ConfigFile:
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
-                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
+                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_genre_options, default_is_none=True, save=False, do_print=False)
                 params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
                 params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
                 params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
@@ -660,7 +660,7 @@ class ConfigFile:
                         if "delete_collections_with_less" in lib["operations"]:
                             params["delete_collections_with_less"] = check_for_attribute(lib["operations"], "delete_collections_with_less", var_type="int", default_is_none=True, save=False)
                         if "mass_genre_update" in lib["operations"]:
-                            params["mass_genre_update"] = check_for_attribute(lib["operations"], "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
+                            params["mass_genre_update"] = check_for_attribute(lib["operations"], "mass_genre_update", test_list=mass_genre_options, default_is_none=True, save=False)
                         if "mass_audience_rating_update" in lib["operations"]:
                             params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
                         if "mass_critic_rating_update" in lib["operations"]:
