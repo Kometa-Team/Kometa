@@ -284,9 +284,9 @@ class MetadataFile(DataFile):
                         if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                             if auto_type in ["decade", "subtitle_language", "audio_language"]:
-                                auto_list = {i.key: i.title for i in library.get_tags(search_tag) if i.title not in exclude and i.key not in exclude}
+                                auto_list = {str(i.key): i.title for i in library.get_tags(search_tag) if str(i.title) not in exclude and str(i.key) not in exclude}
                             else:
-                                auto_list = {i.title: i.title for i in library.get_tags(search_tag) if i.title not in exclude}
+                                auto_list = {str(i.title): i.title for i in library.get_tags(search_tag) if str(i.title) not in exclude}
                             if library.is_music:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
                                 default_title_format = "Most Played <<key_name>> <<library_type>>s"
@@ -304,7 +304,7 @@ class MetadataFile(DataFile):
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
                                 if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
-                                    auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
+                                    auto_list[str(tmdb_item.collection.id)] = tmdb_item.collection.name
                             logger.exorcise()
                         elif auto_type == "original_language":
                             if not all_items:
@@ -369,7 +369,7 @@ class MetadataFile(DataFile):
                                     try:
                                         results = self.config.TMDb.search_people(role["name"])
                                         if results[0].id not in exclude:
-                                            auto_list[results[0].id] = results[0].name
+                                            auto_list[str(results[0].id)] = results[0].name
                                             person_count += 1
                                     except TMDbNotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
@@ -399,8 +399,8 @@ class MetadataFile(DataFile):
                         methods["title_override"] = methods.pop("post_format_override")
                     if "pre_format_override" in methods:
                         methods["key_name_override"] = methods.pop("pre_format_override")
-                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "title_override" in methods else {}
-                    key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "key_name_override" in methods else {}
+                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "title_override" in methods else {}
+                    key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "key_name_override" in methods else {}
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
