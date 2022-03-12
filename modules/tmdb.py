@@ -139,7 +139,7 @@ class TMDb:
         except TMDbException as e:      raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
 
     def get_popular_people(self, limit):
-        return {p.id: p.name for p in self.TMDb.popular_people().get_results(limit)}
+        return {str(p.id): p.name for p in self.TMDb.popular_people().get_results(limit)}
 
     def search_people(self, name):
         return self.TMDb.people_search(name)
