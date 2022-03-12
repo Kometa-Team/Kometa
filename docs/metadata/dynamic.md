@@ -1226,11 +1226,11 @@ Create a collection for each subtitle language found in the library
   </tr>
   <tr>
     <th>Keys</th>
-    <td>Subtitle Language</td>
+    <td><a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1 Code</a></td>
   </tr>
   <tr>
     <th>Key Names</th>
-    <td>Subtitle Language</td>
+    <td>Subtitle Language Name</td>
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
@@ -1278,11 +1278,11 @@ Create a collection for each audio language found in the library
   </tr>
   <tr>
     <th>Keys</th>
-    <td>Audio Language</td>
+    <td><a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1 Code</a></td>
   </tr>
   <tr>
     <th>Key Names</th>
-    <td>Subtitle Language</td>
+    <td>Audio Language Name</td>
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
