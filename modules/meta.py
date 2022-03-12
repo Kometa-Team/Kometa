@@ -268,11 +268,11 @@ class MetadataFile(DataFile):
                         if og_exclude and include:
                             raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "addons" in methods else {}
-                        exclude = [e for e in og_exclude]
+                        exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
                             if k in v:
                                 logger.warning(f"Config Warning: {k} cannot be an addon for itself")
-                            exclude.extend([vv for vv in v if vv != k])
+                            exclude.extend([str(vv) for vv in v if str(vv) != str(k)])
                         default_title_format = "<<key_name>>"
                         default_template = None
                         auto_list = {}
@@ -283,7 +283,7 @@ class MetadataFile(DataFile):
                                     auto_list[ck] = cv
                         if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
-                            if auto_type in ["subtitle_language", "audio_language"]:
+                            if auto_type in ["decade", "subtitle_language", "audio_language"]:
                                 auto_list = {i.key: i.title for i in library.get_tags(search_tag) if i.title not in exclude and i.key not in exclude}
                             else:
                                 auto_list = {i.title: i.title for i in library.get_tags(search_tag) if i.title not in exclude}
