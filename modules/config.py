@@ -593,6 +593,7 @@ class ConfigFile:
                     "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name),
                     "tmdb_collections": None,
                     "genre_mapper": None,
+                    "content_rating_mapper": None,
                     "radarr_remove_by_tag": None,
                     "sonarr_remove_by_tag": None,
                     "mass_collection_mode": None,
@@ -735,6 +736,20 @@ class ConfigFile:
                                                 params["genre_mapper"][old_genre] = new_genre
                             else:
                                 logger.error("Config Error: genre_mapper is blank")
+                        if "content_rating_mapper" in lib["operations"]:
+                            if lib["operations"]["content_rating_mapper"] and isinstance(lib["operations"]["content_rating_mapper"], dict):
+                                params["content_rating_mapper"] = {}
+                                for new_rating, old_ratings in lib["operations"]["content_rating_mapper"].items():
+                                    if old_ratings is None:
+                                        params["content_rating_mapper"][new_rating] = old_ratings
+                                    else:
+                                        for old_rating in util.get_list(old_ratings):
+                                            if old_rating == new_rating:
+                                                logger.error("Config Error: Content Ratings cannot be mapped to themselves")
+                                            else:
+                                                params["content_rating_mapper"][old_rating] = new_rating
+                            else:
+                                logger.error("Config Error: content_rating_mapper is blank")
                         if "genre_collections" in lib["operations"]:
                             params["genre_collections"] = {
                                 "exclude_genres": [],

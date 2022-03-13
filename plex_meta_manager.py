@@ -418,6 +418,7 @@ def library_operations(config, library):
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
+    logger.debug(f"Content Rating Mapper: {library.content_rating_mapper}")
     logger.debug(f"Metadata Backup: {library.metadata_backup}")
     logger.debug(f"Item Operation: {library.items_library_operation}")
     logger.debug("")
@@ -613,17 +614,22 @@ def library_operations(config, library):
                 except Failed:
                     pass
 
-            if library.genre_mapper:
+            if library.genre_mapper or library.content_rating_mapper:
                 try:
-                    adds = []
-                    deletes = []
                     library.reload(item)
-                    for genre in item.genres:
-                        if genre.tag in library.genre_mapper:
-                            deletes.append(genre.tag)
-                            if library.genre_mapper[genre.tag]:
-                                adds.append(library.genre_mapper[genre.tag])
-                    library.edit_tags("genre", item, add_tags=adds, remove_tags=deletes)
+                    if library.genre_mapper:
+                        adds = []
+                        deletes = []
+                        for genre in item.genres:
+                            if genre.tag in library.genre_mapper:
+                                deletes.append(genre.tag)
+                                if library.genre_mapper[genre.tag]:
+                                    adds.append(library.genre_mapper[genre.tag])
+                        library.edit_tags("genre", item, add_tags=adds, remove_tags=deletes)
+                    if library.content_rating_mapper:
+                        if item.contentRating in library.content_rating_mapper:
+                            library.edit_query(item, {"contentRating.value": library.content_rating_mapper[item.contentRating], "contentRating.locked": 1})
+                            logger.info(f"{item.title[:25]:<25} | Content Rating | {library.content_rating_mapper[item.contentRating]}")
                 except Failed:
                     pass
 
