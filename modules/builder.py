@@ -178,7 +178,7 @@ custom_sort_builders = [
     "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
     "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list",
-    "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search",
+    "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search", "anilist_userlist",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
@@ -955,6 +955,14 @@ class CollectionBuilder:
                 self.builders.append((method_name, anilist_id))
         elif method_name in ["anilist_popular", "anilist_trending", "anilist_top_rated"]:
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10)))
+        elif method_name == "anilist_userlist":
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
+                self.builders.append((method_name, {
+                    "username": util.parse(self.Type, "username", dict_data, methods=dict_methods, parent=method_name),
+                    "status": util.parse(self.Type, "status", dict_data, methods=dict_methods, parent=method_name, default="watching", options=anilist.userlist_status, translation=anilist.userlist_status_translation),
+                    "sort_by": util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.userlist_sort_options, translation=anilist.userlist_sort_translation),
+                }))
         elif method_name == "anilist_search":
             if self.current_time.month in [12, 1, 2]:           current_season = "winter"
             elif self.current_time.month in [3, 4, 5]:          current_season = "spring"
