@@ -2399,10 +2399,10 @@ class CollectionBuilder:
             if "visible_library" in self.details and self.details["visible_library"] != visibility["library"]:
                 visible_library = self.details["visible_library"]
 
-            if "visible_home" in self.details and self.details["visible_home"] != visibility["library"]:
+            if "visible_home" in self.details and self.details["visible_home"] != visibility["home"]:
                 visible_home = self.details["visible_home"]
 
-            if "visible_shared" in self.details and self.details["visible_shared"] != visibility["library"]:
+            if "visible_shared" in self.details and self.details["visible_shared"] != visibility["shared"]:
                 visible_shared = self.details["visible_shared"]
 
             if visible_library is not None or visible_home is not None or visible_shared is not None:

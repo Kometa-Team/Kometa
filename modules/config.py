@@ -381,7 +381,7 @@ class ConfigFile:
                 try:
                     self.OMDb = OMDb(self, {
                         "apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True),
-                        "expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                        "expiration": check_for_attribute(self.data, "cache_expiration", parent="omdb", var_type="int", default=60)
                     })
                 except Failed as e:
                     self.errors.append(e)
@@ -398,7 +398,7 @@ class ConfigFile:
                 try:
                     self.Mdblist.add_key(
                         check_for_attribute(self.data, "apikey", parent="mdblist", throw=True),
-                        check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                        check_for_attribute(self.data, "cache_expiration", parent="mdblist", var_type="int", default=60)
                     )
                     logger.info("Mdblist Connection Successful")
                 except Failed as e:
