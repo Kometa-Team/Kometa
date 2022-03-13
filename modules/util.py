@@ -111,7 +111,7 @@ def get_list(data, lower=False, upper=False, split=True, int_list=False):
     elif int_list is True:
         try:                            return [int(str(d).strip()) for d in list_data]
         except ValueError:              return []
-    else:                           return [str(d).strip() for d in list_data]
+    else:                           return [d if isinstance(d, dict) else str(d).strip() for d in list_data]
 
 def get_int_list(data, id_type):
     int_values = []
