@@ -13,6 +13,7 @@ No configuration is required for these builders.
 | [`anilist_studio`](#anilist-studio)             | Finds all anime specified by the AniList Studio ID                                                                       |      &#9989;      |     &#9989;      |               &#10060;               |
 | [`anilist_id`](#anilist-id)                     | Finds the anime specified by the AniList ID                                                                              |      &#9989;      |     &#9989;      |               &#10060;               |
 | [`anilist_search`](#anilist-search)             | Finds the anime specified by the AniList search parameters provided                                                      |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`anilist_userlist`](#anilist-userlist)         | Finds anime in AniList User's Anime list the options are detailed below                                                      |      &#9989;      |     &#9989;      |               &#9989;                |
 
 ## AniList Top Rated Anime
 
@@ -226,6 +227,30 @@ collections:
       genre: Sports
       limit: 20
       sort_by: popular
+    collection_order: custom
+    sync_mode: sync
+```
+
+## AniList UserList
+
+Gets anime in AniList User's Anime list. The different sub-attributes are detailed below. The only required attribute is `username`
+
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
+
+| Attribute  | Description                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `username` | **Description:** A user's AniList Username |
+| `status`   | **Description:** Status to search for<br>**Default:** `watching`<br>**Values:**<table class="clearTable"><tr><td>`watching`</td><td>Currently Watching List</td></tr><tr><td>`completed`</td><td>Completed List</td></tr><tr><td>`paused`</td><td>Paused List</td></tr><tr><td>`dropped`</td><td>Dropped List</td></tr><tr><td>`planning`</td><td>Planning</td></tr></table> |
+| `sort_by`  | **Description:** Sort Order to return<br>**Default:** `score`<br>**Values:**<table class="clearTable"><tr><td>`score`</td><td>Sort by Score</td></tr><tr><td>`last_updated`</td><td>Sort by Last Updated</td></tr><tr><td>`title`</td><td>Sort by Anime Title</td></tr><tr><td>`start_date`</td><td>Sort by Start Date</td></tr></table>                                                                                          |
+
+
+```yaml
+collections:
+  Currently Watching Anime:
+    anilist_userlist:
+      username: "Username"
+      status: watching
+      sort_by: score
     collection_order: custom
     sync_mode: sync
 ```
