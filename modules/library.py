@@ -83,6 +83,7 @@ class Library(ABC):
         self.tmdb_collections = params["tmdb_collections"]
         self.genre_collections = params["genre_collections"]
         self.genre_mapper = params["genre_mapper"]
+        self.content_rating_mapper = params["content_rating_mapper"]
         self.error_webhooks = params["error_webhooks"]
         self.changes_webhooks = params["changes_webhooks"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
@@ -94,7 +95,7 @@ class Library(ABC):
 
         self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
                                        or self.mass_critic_rating_update or self.mass_content_rating_update or self.mass_trakt_rating_update \
-                                       or self.genre_mapper or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
+                                       or self.genre_mapper or self.content_rating_mapper or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
         self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
                                  or self.genre_collections or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False
