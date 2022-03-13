@@ -57,11 +57,100 @@ discover_movie_sort = [
 discover_tv_sort = ["vote_average.desc", "vote_average.asc", "first_air_date.desc", "first_air_date.asc", "popularity.desc", "popularity.asc"]
 discover_monetization_types = ["flatrate", "free", "ads", "rent", "buy"]
 
+
+class TMDbCountry:
+    def __init__(self, data):
+        self.iso_3166_1 = data.split(":")[0] if isinstance(data, str) else data.iso_3166_1
+        self.name = data.split(":")[1] if isinstance(data, str) else data.name
+
+    def __repr__(self):
+        return f"{self.iso_3166_1}:{self.name}"
+
+
+class TMDbSeason:
+    def __init__(self, data):
+        self.season_number = data.split(":")[0] if isinstance(data, str) else data.season_number
+        self.name = data.split(":")[1] if isinstance(data, str) else data.name
+
+    def __repr__(self):
+        return f"{self.season_number}:{self.name}"
+
+
+class TMDBObj:
+    def __init__(self, tmdb, tmdb_id, ignore_cache=False):
+        self._tmdb = tmdb
+        self.tmdb_id = tmdb_id
+        self.ignore_cache = ignore_cache
+
+    def _load(self, data):
+        self.title = data["title"] if isinstance(data, dict) else data.title
+        self.tagline = data["tagline"] if isinstance(data, dict) else data.tagline
+        self.overview = data["overview"] if isinstance(data, dict) else data.overview
+        self.imdb_id = data["imdb_id"] if isinstance(data, dict) else data.imdb_id
+        self.poster_url = data["poster_url"] if isinstance(data, dict) else data.poster_url
+        self.backdrop_url = data["backdrop_url"] if isinstance(data, dict) else data.backdrop_url
+        self.vote_count = data["vote_count"] if isinstance(data, dict) else data.vote_count
+        self.vote_average = data["vote_average"] if isinstance(data, dict) else data.vote_average
+        self.language_iso = data["language_iso"] if isinstance(data, dict) else data.original_language.iso_639_1 if data.original_language else None
+        self.language_name = data["language_name"] if isinstance(data, dict) else data.original_language.english_name if data.original_language else None
+        self.genres = data["genres"].split("|") if isinstance(data, dict) else [g.name for g in data.genres]
+        self.keywords = data["keywords"].split("|") if isinstance(data, dict) else [g.name for g in data.keywords]
+
+
+class TMDbMovie(TMDBObj):
+    def __init__(self, tmdb, tmdb_id, ignore_cache=False):
+        super().__init__(tmdb, tmdb_id, ignore_cache=ignore_cache)
+        expired = None
+        data = None
+        if self._tmdb.config.Cache and not ignore_cache:
+            data, expired = self._tmdb.config.Cache.query_tmdb_movie(tmdb_id, self._tmdb.expiration)
+        if expired or not data:
+            data = self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
+        super()._load(data)
+
+        self.original_title = data["original_title"] if isinstance(data, dict) else data.original_title
+        self.release_date = data["release_date"] if isinstance(data, dict) else data.release_date
+        self.studio = data["studio"] if isinstance(data, dict) else data.companies[0].name
+        self.collection_id = data["collection_id"] if isinstance(data, dict) else data.collection.id if data.collection else None
+        self.collection_name = data["collection_name"] if isinstance(data, dict) else data.collection.name if data.collection else None
+
+        if self._tmdb.config.Cache and not ignore_cache:
+            self._tmdb.config.Cache.update_tmdb_movie(expired, self, self._tmdb.expiration)
+
+
+class TMDbShow(TMDBObj):
+    def __init__(self, tmdb, tmdb_id, ignore_cache=False):
+        super().__init__(tmdb, tmdb_id, ignore_cache=ignore_cache)
+        expired = None
+        data = None
+        if self._tmdb.config.Cache and not ignore_cache:
+            data, expired = self._tmdb.config.Cache.query_tmdb_show(tmdb_id, self._tmdb.expiration)
+        if expired or not data:
+            data = self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
+        super()._load(data)
+
+        self.original_title = data["original_title"] if isinstance(data, dict) else data.original_name
+        self.first_air_date = data["first_air_date"] if isinstance(data, dict) else data.first_air_date
+        self.last_air_date = data["last_air_date"] if isinstance(data, dict) else data.last_air_date
+        self.status = data["status"] if isinstance(data, dict) else data.status
+        self.type = data["type"] if isinstance(data, dict) else data.type
+        self.studio = data["studio"] if isinstance(data, dict) else data.networks[0].name
+        self.tvdb_id = data["tvdb_id"] if isinstance(data, dict) else data.tvdb_id
+        loop = data["countries"].split("|") if isinstance(data, dict) else data.origin_countries
+        self.countries = [TMDbCountry(c) for c in loop]
+        loop = data["seasons"].split("|") if isinstance(data, dict) else data.seasons
+        self.seasons = [TMDbSeason(s) for s in loop]
+
+        if self._tmdb.config.Cache and not ignore_cache:
+            self._tmdb.config.Cache.update_tmdb_show(expired, self, self._tmdb.expiration)
+
+
 class TMDb:
     def __init__(self, config, params):
         self.config = config
         self.apikey = params["apikey"]
         self.language = params["language"]
+        self.expiration = params["expiration"]
         logger.secret(self.apikey)
         try:
             self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
@@ -69,7 +158,7 @@ class TMDb:
             raise Failed(f"TMDb Error: {e}")
 
     def convert_from(self, tmdb_id, convert_to, is_movie):
-        item = self.get_movie(tmdb_id, partial="external_ids") if is_movie else self.get_show(tmdb_id, partial="external_ids")
+        item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
         check_id = item.tvdb_id if convert_to == "tvdb_id" and not is_movie else item.imdb_id
         if not check_id:
             raise Failed(f"TMDb Error: No {convert_to.upper().replace('B_', 'b ')} found for TMDb ID {tmdb_id}")
@@ -106,12 +195,12 @@ class TMDb:
                 except Failed:                  raise Failed(f"TMDb Error: No Movie or Collection found for TMDb ID {tmdb_id}")
         else:                           return self.get_show(tmdb_id)
 
-    def get_movie(self, tmdb_id, partial=None):
-        try:                            return self.TMDb.movie(tmdb_id, partial=partial)
+    def get_movie(self, tmdb_id):
+        try:                            return TMDbMovie(self, tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Movie found for TMDb ID {tmdb_id}: {e}")
 
-    def get_show(self, tmdb_id, partial=None):
-        try:                            return self.TMDb.tv_show(tmdb_id, partial=partial)
+    def get_show(self, tmdb_id):
+        try:                            return TMDbShow(self, tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Show found for TMDb ID {tmdb_id}: {e}")
 
     def get_collection(self, tmdb_id, partial=None):
@@ -219,7 +308,7 @@ class TMDb:
                 tmdb_name = collection.name
                 ids = [(t.id, "tmdb") for t in collection.movies]
             elif method == "tmdb_show":
-                tmdb_name = self.get_show(tmdb_id).name
+                tmdb_name = self.get_show(tmdb_id).title
                 ids.append((tmdb_id, "tmdb_show"))
             else:
                 person = self.get_person(tmdb_id, partial="movie_credits,tv_credits")

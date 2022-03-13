@@ -533,8 +533,8 @@ def library_operations(config, library):
                     else:
                         logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
-            if library.tmdb_collections and tmdb_item and tmdb_item.collection:
-                tmdb_collections[tmdb_item.collection.id] = tmdb_item.collection.name
+            if library.tmdb_collections and tmdb_item and tmdb_item.collection_id:
+                tmdb_collections[tmdb_item.collection_id] = tmdb_item.collection_name
 
             def get_rating(attribute):
                 if tmdb_item and attribute == "tmdb":
@@ -565,7 +565,7 @@ def library_operations(config, library):
             if library.mass_genre_update:
                 try:
                     if tmdb_item and library.mass_genre_update == "tmdb":
-                        new_genres = [genre.name for genre in tmdb_item.genres]
+                        new_genres = tmdb_item.genres
                     elif omdb_item and library.mass_genre_update == "omdb":
                         new_genres = omdb_item.genres
                     elif tvdb_item and library.mass_genre_update == "tvdb":

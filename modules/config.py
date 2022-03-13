@@ -366,7 +366,8 @@ class ConfigFile:
                 logger.info("Connecting to TMDb...")
                 self.TMDb = TMDb(self, {
                     "apikey": check_for_attribute(self.data, "apikey", parent="tmdb", throw=True),
-                    "language": check_for_attribute(self.data, "language", parent="tmdb", default="en")
+                    "language": check_for_attribute(self.data, "language", parent="tmdb", default="en"),
+                    "expiration": check_for_attribute(self.data, "cache_expiration", parent="tmdb", var_type="int", default=60)
                 })
                 logger.info(f"TMDb Connection {'Failed' if self.TMDb is None else 'Successful'}")
             else:
