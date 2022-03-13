@@ -743,7 +743,7 @@ def library_operations(config, library):
         logger.info("")
         logger.info(f"Metadata Backup Path: {library.metadata_backup['path']}")
         logger.info("")
-        meta = {}
+        meta = None
         if os.path.exists(library.metadata_backup["path"]):
             try:
                 meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"]))
@@ -755,6 +755,8 @@ def library_operations(config, library):
                     i += 1
                 os.rename(library.metadata_backup["path"], f"{filename}{i}{file_extension}")
                 logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
+        if not meta:
+            meta = {}
         if "metadata" not in meta:
             meta["metadata"] = {}
         items = library.get_all(load=True)
