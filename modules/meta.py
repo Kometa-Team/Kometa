@@ -303,8 +303,8 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
-                                if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
-                                    auto_list[str(tmdb_item.collection.id)] = tmdb_item.collection.name
+                                if tmdb_item and tmdb_item.collection_id and tmdb_item.collection_id not in exclude and tmdb_item.collection_name not in exclude:
+                                    auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
                             logger.exorcise()
                         elif auto_type == "original_language":
                             if not all_items:
@@ -313,8 +313,8 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
-                                if tmdb_item and tmdb_item.original_language  and tmdb_item.original_language.iso_639_1  not in exclude and tmdb_item.original_language.english_name not in exclude:
-                                    auto_list[tmdb_item.original_language.iso_639_1] = tmdb_item.original_language.english_name
+                                if tmdb_item and tmdb_item.language_iso  and tmdb_item.language_iso  not in exclude and tmdb_item.language_name not in exclude:
+                                    auto_list[tmdb_item.language_iso] = tmdb_item.language_name
                             logger.exorcise()
                             default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type == "origin_country":
@@ -324,8 +324,8 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
-                                if tmdb_item and tmdb_item.origin_countries:
-                                    for country in tmdb_item.origin_countries:
+                                if tmdb_item and tmdb_item.countries:
+                                    for country in tmdb_item.countries:
                                         if country.iso_3166_1 not in exclude and country.name not in exclude:
                                             auto_list[country.iso_3166_1] = country.name
                             logger.exorcise()
@@ -662,18 +662,14 @@ class MetadataFile(DataFile):
             genres = []
             if tmdb_item:
                 originally_available = datetime.strftime(tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date, "%Y-%m-%d")
-                if tmdb_is_movie and tmdb_item.original_title != tmdb_item.title:
+
+                if tmdb_item.original_title != tmdb_item.title:
                     original_title = tmdb_item.original_title
-                elif not tmdb_is_movie and tmdb_item.original_name != tmdb_item.name:
-                    original_title = tmdb_item.original_name
                 rating = tmdb_item.vote_average
-                if tmdb_is_movie and tmdb_item.companies:
-                    studio = tmdb_item.companies[0].name
-                elif not tmdb_is_movie and tmdb_item.networks:
-                    studio = tmdb_item.networks[0].name
+                studio = tmdb_item.studio
                 tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
                 summary = tmdb_item.overview
-                genres = [genre.name for genre in tmdb_item.genres]
+                genres = tmdb_item.genres
 
             edits = {}
             add_edit("title", item, meta, methods, value=title)

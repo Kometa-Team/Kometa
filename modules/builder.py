@@ -1898,9 +1898,9 @@ class CollectionBuilder:
             try:
                 if item is None:
                     if is_movie:
-                        item = self.config.TMDb.get_movie(item_id, partial="keywords")
+                        item = self.config.TMDb.get_movie(item_id)
                     else:
-                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id), partial="keywords")
+                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
                 if check_released:
                     date_to_check = item.release_date if is_movie else item.first_air_date
                     if not date_to_check or date_to_check > self.current_time:
@@ -1913,7 +1913,7 @@ class CollectionBuilder:
                         elif filter_attr == "tmdb_type":
                             check_value = discover_types[item.type]
                         elif filter_attr == "original_language":
-                            check_value = item.original_language.iso_639_1
+                            check_value = item.language_iso
                         else:
                             raise Failed
                         if (modifier == ".not" and check_value in filter_data) or (modifier == "" and check_value not in filter_data):
@@ -1936,11 +1936,11 @@ class CollectionBuilder:
                             return False
                     elif filter_attr in ["tmdb_genre", "tmdb_keyword", "origin_country"]:
                         if filter_attr == "tmdb_genre":
-                            attrs = [g.name for g in item.genres]
+                            attrs = item.genres
                         elif filter_attr == "tmdb_keyword":
-                            attrs = [k.name for k in item.keywords]
+                            attrs = item.keywords
                         elif filter_attr == "origin_country":
-                            attrs = [c.iso_3166_1 for c in item.origin_countries]
+                            attrs = [c.iso_3166_1 for c in item.countries]
                         else:
                             raise Failed
                         if (not list(set(filter_data) & set(attrs)) and modifier == "") \
