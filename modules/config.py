@@ -792,7 +792,7 @@ class ConfigFile:
                 for mass_key in ["mass_genre_update", "mass_audience_rating_update", "mass_critic_rating_update", "mass_content_rating_update", "mass_originally_available_update"]:
                     if params[mass_key] == "omdb" and self.OMDb is None:
                         error_check(mass_key, "OMDb")
-                    if params[mass_key].startswith("mdb") and not self.Mdblist.has_key:
+                    if params[mass_key] and params[mass_key].startswith("mdb") and not self.Mdblist.has_key:
                         error_check(mass_key, "MdbList API")
 
                 if self.Trakt is None and params["mass_trakt_rating_update"]:
