@@ -793,6 +793,7 @@ class Plex(Library):
 
     def get_filter_items(self, uri_args):
         key = f"/library/sections/{self.Plex.key}/all{uri_args}"
+        logger.debug(key)
         return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
 
     def get_collection_name_and_items(self, collection, smart_label_collection):
