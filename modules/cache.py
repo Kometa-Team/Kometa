@@ -493,6 +493,8 @@ class Cache:
                     tmdb_dict["status"] = row["status"] if row["status"] else None
                     tmdb_dict["type"] = row["type"] if row["type"] else None
                     tmdb_dict["tvdb_id"] = row["tvdb_id"] if row["tvdb_id"] else None
+                    tmdb_dict["countries"] = row["countries"] if row["countries"] else None
+                    tmdb_dict["seasons"] = row["seasons"] if row["seasons"] else None
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     expired = time_between_insertion.days > expiration
