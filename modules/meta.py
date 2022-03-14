@@ -246,9 +246,11 @@ class MetadataFile(DataFile):
             all_items = None
             if self.dynamic_collections:
                 logger.info("")
-                logger.separator(f"Dynamic Collections")
-                logger.info("")
+                logger.separator("Dynamic Collections")
             for map_name, dynamic in self.dynamic_collections.items():
+                logger.info("")
+                logger.separator(f"Building {map_name} Dynamic Collections", space=False, border=False)
+                logger.info("")
                 try:
                     methods = {dm.lower(): dm for dm in dynamic}
                     if "type" not in methods:
@@ -445,23 +447,28 @@ class MetadataFile(DataFile):
                             if key not in exclude:
                                 other_keys.append(key)
                             continue
-                        template_call = {"name": template_name, auto_type: [key] + addons[key] if key in addons else key}
+                        if key in key_name_override:
+                            key_name = key_name_override[key]
+                        else:
+                            key_name = value
+                            for prefix in remove_prefix:
+                                if key_name.startswith(prefix):
+                                    key_name = key_name[len(prefix):].strip()
+                            for suffix in remove_suffix:
+                                if key_name.endswith(suffix):
+                                    key_name = key_name[:-len(suffix)].strip()
+                        template_call = {
+                            "name": template_name,
+                            auto_type: [key] + addons[key] if key in addons else key,
+                            "key_name": key_name, "key": key
+                        }
                         for k, v in template_variables.items():
                             if key in v:
                                 template_call[k] = v[key]
                         if key in title_override:
                             collection_title = title_override[key]
                         else:
-                            if key in key_name_override:
-                                value = key_name_override[key]
-                            else:
-                                for prefix in remove_prefix:
-                                    if value.startswith(prefix):
-                                        value = value[len(prefix):].strip()
-                                for suffix in remove_suffix:
-                                    if value.endswith(suffix):
-                                        value = value[:-len(suffix)].strip()
-                            collection_title = title_format.replace("<<title>>", value).replace("<<key_name>>", value)
+                            collection_title = title_format.replace("<<title>>", key_name).replace("<<key_name>>", key_name)
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                         else:
