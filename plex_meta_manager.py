@@ -854,7 +854,6 @@ def run_collection(config, library, metadata, requested_collections):
 
             items_added = 0
             items_removed = 0
-            valid = True
             if not builder.smart_url and builder.builders and not builder.blank_collection:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
@@ -883,14 +882,6 @@ def run_collection(config, library, metadata, requested_collections):
                         items_removed = builder.sync_collection()
                         library.stats["removed"] += items_removed
                         library.status[mapping_name]["removed"] = items_removed
-                elif len(builder.added_items) + builder.beginning_count < builder.minimum and builder.build_collection:
-                    logger.info("")
-                    logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
-                    valid = False
-                    if builder.details["delete_below_minimum"] and builder.obj:
-                        logger.info("")
-                        logger.info(builder.delete())
-                        builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     radarr_add, sonarr_add = builder.run_missing()
@@ -898,6 +889,19 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[mapping_name]["radarr"] += radarr_add
                     library.stats["sonarr"] += sonarr_add
                     library.status[mapping_name]["sonarr"] += sonarr_add
+
+            valid = True
+            if builder.build_collection and (
+                    (builder.smart_url and len(library.get_filter_items(builder.smart_url)) < builder.minimum)
+                    or (len(builder.added_items) + builder.beginning_count < builder.minimum)
+            ):
+                logger.info("")
+                logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
+                valid = False
+                if builder.details["delete_below_minimum"] and builder.obj:
+                    logger.info("")
+                    logger.info(builder.delete())
+                    builder.deleted = True
 
             run_item_details = True
             if valid and builder.build_collection and (builder.builders or builder.smart_url or builder.blank_collection):
