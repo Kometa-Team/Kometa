@@ -110,7 +110,7 @@ class TMDbMovie(TMDBObj):
 
         self.original_title = data["original_title"] if isinstance(data, dict) else data.original_title
         self.release_date = data["release_date"] if isinstance(data, dict) else data.release_date
-        self.studio = data["studio"] if isinstance(data, dict) else data.companies[0].name
+        self.studio = data["studio"] if isinstance(data, dict) else data.companies[0].name if data.companies else None
         self.collection_id = data["collection_id"] if isinstance(data, dict) else data.collection.id if data.collection else None
         self.collection_name = data["collection_name"] if isinstance(data, dict) else data.collection.name if data.collection else None
 
@@ -134,7 +134,7 @@ class TMDbShow(TMDBObj):
         self.last_air_date = data["last_air_date"] if isinstance(data, dict) else data.last_air_date
         self.status = data["status"] if isinstance(data, dict) else data.status
         self.type = data["type"] if isinstance(data, dict) else data.type
-        self.studio = data["studio"] if isinstance(data, dict) else data.networks[0].name
+        self.studio = data["studio"] if isinstance(data, dict) else data.networks[0].name if data.networks else None
         self.tvdb_id = data["tvdb_id"] if isinstance(data, dict) else data.tvdb_id
         loop = data["countries"].split("|") if isinstance(data, dict) else data.origin_countries
         self.countries = [TMDbCountry(c) for c in loop]
