@@ -1,3 +1,4 @@
+from datetime import datetime
 from modules import util
 from modules.util import Failed
 
@@ -11,40 +12,33 @@ class OMDbObj:
         self._data = data
         if data["Response"] == "False":
             raise Failed(f"OMDb Error: {data['Error']} IMDb ID: {imdb_id}")
-        self.title = data["Title"]
-        try:
-            self.year = int(data["Year"])
-        except (ValueError, TypeError):
-            self.year = None
-        self.content_rating = data["Rated"]
-        self.genres = util.get_list(data["Genre"])
-        self.genres_str = data["Genre"]
-        try:
-            self.imdb_rating = float(data["imdbRating"])
-        except (ValueError, TypeError):
-            self.imdb_rating = None
-        try:
-            self.imdb_votes = int(str(data["imdbVotes"]).replace(',', ''))
-        except (ValueError, TypeError):
-            self.imdb_votes = None
-        try:
-            self.metacritic_rating = int(data["Metascore"])
-        except (ValueError, TypeError):
-            self.metacritic_rating = None
-        self.imdb_id = data["imdbID"]
-        self.type = data["Type"]
-        try:
-            self.series_id = data["seriesID"]
-        except (ValueError, TypeError, KeyError):
-            self.series_id = None
-        try:
-            self.season_num = int(data["Season"])
-        except (ValueError, TypeError, KeyError):
-            self.season_num = None
-        try:
-            self.episode_num = int(data["Episode"])
-        except (ValueError, TypeError, KeyError):
-            self.episode_num = None
+        def _parse(key, is_int=False, is_float=False, is_date=False, replace=None):
+            try:
+                value = str(data[key]).replace(replace, '') if replace else data[key]
+                if is_int:
+                    return int(value)
+                elif is_float:
+                    return float(value)
+                elif is_date:
+                    return datetime.strptime(value, "%d %b %Y")
+                else:
+                    return value
+            except (ValueError, TypeError, KeyError):
+                return None
+        self.title = _parse("Title")
+        self.year = _parse("Year", is_int=True)
+        self.released = _parse("Released", is_date=True)
+        self.content_rating = _parse("Rated")
+        self.genres_str = _parse("Genre")
+        self.genres = util.get_list(self.genres_str)
+        self.imdb_rating = _parse("imdbRating", is_float=True)
+        self.imdb_votes = _parse("imdbVotes", is_int=True, replace=",")
+        self.metacritic_rating = _parse("Metascore", is_int=True)
+        self.imdb_id = _parse("imdbID")
+        self.type = _parse("Type")
+        self.series_id = _parse("seriesID")
+        self.season_num = _parse("Season", is_int=True)
+        self.episode_num = _parse("Episode", is_int=True)
 
 
 class OMDb:

@@ -22,7 +22,9 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS imdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS tmdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS imdb_map")
+                cursor.execute("DROP TABLE IF EXISTS mdb_data")
                 cursor.execute("DROP TABLE IF EXISTS omdb_data")
+                cursor.execute("DROP TABLE IF EXISTS omdb_data2")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guids_map (
                     key INTEGER PRIMARY KEY,
@@ -70,11 +72,12 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS omdb_data2 (
+                    """CREATE TABLE IF NOT EXISTS omdb_data3 (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     title TEXT,
                     year INTEGER,
+                    released TEXT,
                     content_rating TEXT,
                     genres TEXT,
                     imdb_rating REAL,
@@ -87,11 +90,12 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mdb_data (
+                    """CREATE TABLE IF NOT EXISTS mdb_data2 (
                     key INTEGER PRIMARY KEY,
                     key_id TEXT UNIQUE,
                     title TEXT,
                     year INTEGER,
+                    released TEXT,
                     type TEXT,
                     imdbid TEXT,
                     traktid INTEGER,
@@ -326,12 +330,13 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM omdb_data2 WHERE imdb_id = ?", (imdb_id,))
+                cursor.execute("SELECT * FROM omdb_data3 WHERE imdb_id = ?", (imdb_id,))
                 row = cursor.fetchone()
                 if row:
                     omdb_dict["imdbID"] = row["imdb_id"] if row["imdb_id"] else None
                     omdb_dict["Title"] = row["title"] if row["title"] else None
                     omdb_dict["Year"] = row["year"] if row["year"] else None
+                    omdb_dict["Released"] = row["released"] if row["released"] else None
                     omdb_dict["Rated"] = row["content_rating"] if row["content_rating"] else None
                     omdb_dict["Genre"] = row["genres"] if row["genres"] else None
                     omdb_dict["imdbRating"] = row["imdb_rating"] if row["imdb_rating"] else None
@@ -352,14 +357,14 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO omdb_data2(imdb_id) VALUES(?)", (omdb.imdb_id,))
-                update_sql = "UPDATE omdb_data2 SET title = ?, year = ?, content_rating = ?, genres = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO omdb_data3(imdb_id) VALUES(?)", (omdb.imdb_id,))
+                update_sql = "UPDATE omdb_data3 SET title = ?, year = ?, released = ?, content_rating = ?, genres = ?, " \
                              "imdb_rating = ?, imdb_votes = ?, metacritic_rating = ?, type = ?, series_id = ?, " \
                              "season_num = ?, episode_num = ?, expiration_date = ? WHERE imdb_id = ?"
-                cursor.execute(update_sql, (omdb.title, omdb.year, omdb.content_rating, omdb.genres_str,
-                                            omdb.imdb_rating, omdb.imdb_votes, omdb.metacritic_rating, omdb.type,
-                                            omdb.series_id, omdb.season_num, omdb.episode_num,
-                                            expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
+                cursor.execute(update_sql, (
+                    omdb.title, omdb.year, omdb.released.strftime("%d %b %Y"), omdb.content_rating, omdb.genres_str,
+                    omdb.imdb_rating, omdb.imdb_votes, omdb.metacritic_rating, omdb.type, omdb.series_id, omdb.season_num,
+                    omdb.episode_num, expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
 
     def query_mdb(self, key_id, expiration):
         mdb_dict = {}
@@ -367,11 +372,12 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM mdb_data WHERE key_id = ?", (key_id,))
+                cursor.execute("SELECT * FROM mdb_data2 WHERE key_id = ?", (key_id,))
                 row = cursor.fetchone()
                 if row:
                     mdb_dict["title"] = row["title"] if row["title"] else None
                     mdb_dict["year"] = row["year"] if row["year"] else None
+                    mdb_dict["released"] = row["released"] if row["released"] else None
                     mdb_dict["type"] = row["type"] if row["type"] else None
                     mdb_dict["imdbid"] = row["imdbid"] if row["imdbid"] else None
                     mdb_dict["traktid"] = row["traktid"] if row["traktid"] else None
@@ -399,16 +405,16 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO mdb_data(key_id) VALUES(?)", (key_id,))
-                update_sql = "UPDATE mdb_data SET title = ?, year = ?, type = ?, imdbid = ?, traktid = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO mdb_data2(key_id) VALUES(?)", (key_id,))
+                update_sql = "UPDATE mdb_data2 SET title = ?, year = ?, released = ?, type = ?, imdbid = ?, traktid = ?, " \
                              "tmdbid = ?, score = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, " \
                              "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, " \
                              "letterboxd_rating = ?, certification = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
                 cursor.execute(update_sql, (
-                    mdb.title, mdb.year, mdb.type, mdb.imdbid, mdb.traktid, mdb.tmdbid, mdb.score, mdb.imdb_rating,
-                    mdb.metacritic_rating, mdb.metacriticuser_rating, mdb.trakt_rating, mdb.tomatoes_rating,
-                    mdb.tomatoesaudience_rating, mdb.tmdb_rating, mdb.letterboxd_rating, mdb.content_rating,
-                    mdb.commonsense, expiration_date.strftime("%Y-%m-%d"), key_id
+                    mdb.title, mdb.year, mdb.released.strftime("%Y-%m-%d"), mdb.type, mdb.imdbid, mdb.traktid, mdb.tmdbid,
+                    mdb.score, mdb.imdb_rating, mdb.metacritic_rating, mdb.metacriticuser_rating, mdb.trakt_rating,
+                    mdb.tomatoes_rating, mdb.tomatoesaudience_rating, mdb.tmdb_rating, mdb.letterboxd_rating,
+                    mdb.content_rating, mdb.commonsense, expiration_date.strftime("%Y-%m-%d"), key_id
                 ))
 
     def query_tmdb_movie(self, tmdb_id, expiration):
