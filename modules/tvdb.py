@@ -1,4 +1,5 @@
 import requests, time
+from datetime import datetime
 from lxml.etree import ParserError
 from modules import util
 from modules.util import Failed
@@ -91,8 +92,10 @@ class TVDbObj:
             self.directors = parse_page("//strong[text()='Directors']/parent::li/span/a/text()[normalize-space()]", is_list=True)
             self.writers = parse_page("//strong[text()='Writers']/parent::li/span/a/text()[normalize-space()]", is_list=True)
             self.studios = parse_page("//strong[text()='Studio']/parent::li/span/a/text()[normalize-space()]", is_list=True)
+            self.released = datetime.strptime(parse_page("//strong[text()='Released']/parent::li/span/text()[normalize-space()]"), "%B %d, %Y")
         else:
             self.networks = parse_page("//strong[text()='Networks']/parent::li/span/a/text()[normalize-space()]", is_list=True)
+            self.released = datetime.strptime(parse_page("//strong[text()='First Aired']/parent::li/span/text()[normalize-space()]"), "%B %d, %Y")
         self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]", is_list=True)
 
         tmdb_id = None

@@ -407,6 +407,7 @@ def library_operations(config, library):
     logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
     logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
     logger.debug(f"Mass Content Rating Update: {library.mass_content_rating_update}")
+    logger.debug(f"Mass Originally Available Update: {library.mass_originally_available_update}")
     logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
     logger.debug(f"Mass Collection Mode Update: {library.mass_collection_mode}")
     logger.debug(f"Split Duplicates: {library.split_duplicates}")
@@ -483,12 +484,14 @@ def library_operations(config, library):
                 sonarr_adds.append((tvdb_id, path))
 
             tmdb_item = None
-            if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
+            if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" \
+                    or library.mass_critic_rating_update == "tmdb" or library.mass_originally_available_update == "tmdb":
                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.is_movie)
 
             omdb_item = None
             if library.mass_genre_update == "omdb" or library.mass_audience_rating_update == "omdb" \
-                    or library.mass_critic_rating_update == "omdb" or library.mass_content_rating_update == "omdb":
+                    or library.mass_critic_rating_update == "omdb" or library.mass_content_rating_update == "omdb" \
+                    or library.mass_originally_available_update == "omdb":
                 if config.OMDb.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -506,7 +509,7 @@ def library_operations(config, library):
                         logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
             tvdb_item = None
-            if library.mass_genre_update == "tvdb":
+            if library.mass_genre_update == "tvdb" or library.mass_originally_available_update == "tvdb":
                 if tvdb_id:
                     try:
                         tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
@@ -517,7 +520,7 @@ def library_operations(config, library):
 
             mdb_item = None
             if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types \
-                    or library.mass_content_rating_update in ["mdb", "mdb_commonsense"]:
+                    or library.mass_content_rating_update in ["mdb", "mdb_commonsense"] or library.mass_originally_available_update == "mdb":
                 if config.Mdblist.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -611,6 +614,25 @@ def library_operations(config, library):
                     elif str(item.rating) != str(new_rating):
                         library.edit_query(item, {"contentRating.value": new_rating, "contentRating.locked": 1})
                         logger.info(f"{item.title[:25]:<25} | Content Rating | {new_rating}")
+                except Failed:
+                    pass
+            if library.mass_originally_available_update:
+                try:
+                    if omdb_item and library.mass_originally_available_update == "omdb":
+                        new_date = omdb_item.released
+                    elif mdb_item and library.mass_originally_available_update == "mdb":
+                        new_date = mdb_item.released
+                    elif tvdb_item and library.mass_content_rating_update == "tvdb":
+                        new_date = tvdb_item.released
+                    elif tmdb_item and library.mass_content_rating_update == "tvdb":
+                        new_date = tmdb_item.release_date if library.is_movie else tmdb_item.first_air_date
+                    else:
+                        raise Failed
+                    if new_date is None:
+                        logger.info(f"{item.title[:25]:<25} | No Originally Available Date Found")
+                    elif str(item.rating) != str(new_date):
+                        library.edit_query(item, {"originallyAvailableAt.value": new_date.strftime("%Y-%m-%d"), "originallyAvailableAt.locked": 1})
+                        logger.info(f"{item.title[:25]:<25} | Originally Available Date | {new_date.strftime('%Y-%m-%d')}")
                 except Failed:
                     pass
 

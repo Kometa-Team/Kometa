@@ -72,6 +72,7 @@ class Library(ABC):
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
         self.mass_content_rating_update = params["mass_content_rating_update"]
+        self.mass_originally_available_update = params["mass_originally_available_update"]
         self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
         self.radarr_add_all_existing = params["radarr_add_all_existing"]
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
@@ -94,7 +95,7 @@ class Library(ABC):
         self.status = {}
 
         self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
-                                       or self.mass_critic_rating_update or self.mass_content_rating_update or self.mass_trakt_rating_update \
+                                       or self.mass_critic_rating_update or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_trakt_rating_update \
                                        or self.genre_mapper or self.content_rating_mapper or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
         self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
