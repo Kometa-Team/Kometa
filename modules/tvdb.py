@@ -66,11 +66,11 @@ class TVDbObj:
         else:
             raise Failed(f"TVDb Error: Could not find a TVDb {self.media_type} ID at the URL {self.tvdb_url}")
 
-        def parse_page(xpath):
+        def parse_page(xpath, is_list=False):
             parse_results = response.xpath(xpath)
             if len(parse_results) > 0:
                 parse_results = [r.strip() for r in parse_results if len(r) > 0]
-            return parse_results[0] if len(parse_results) > 0 else None
+            return parse_results if is_list else parse_results[0] if len(parse_results) > 0 else None
 
         def parse_title_summary(lang=None):
             place = "//div[@class='change_translation_text' and "
@@ -85,15 +85,15 @@ class TVDbObj:
         if not self.title:
             raise Failed(f"TVDb Error: Name not found from TVDb URL: {self.tvdb_url}")
 
-        self.poster_path = parse_page("//div[@class='row hidden-xs hidden-sm']/div/img/@src")
+        self.poster_path = parse_page("(//h2[@class='mt-4' and text()='Posters']/following::div/a/@href)[1]")
         self.background_path = parse_page("(//h2[@class='mt-4' and text()='Backgrounds']/following::div/a/@href)[1]")
         if self.is_movie:
-            self.directors = parse_page("//strong[text()='Directors']/parent::li/span/a/text()[normalize-space()]")
-            self.writers = parse_page("//strong[text()='Writers']/parent::li/span/a/text()[normalize-space()]")
-            self.studios = parse_page("//strong[text()='Studio']/parent::li/span/a/text()[normalize-space()]")
+            self.directors = parse_page("//strong[text()='Directors']/parent::li/span/a/text()[normalize-space()]", is_list=True)
+            self.writers = parse_page("//strong[text()='Writers']/parent::li/span/a/text()[normalize-space()]", is_list=True)
+            self.studios = parse_page("//strong[text()='Studio']/parent::li/span/a/text()[normalize-space()]", is_list=True)
         else:
-            self.networks = parse_page("//strong[text()='Networks']/parent::li/span/a/text()[normalize-space()]")
-        self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]")
+            self.networks = parse_page("//strong[text()='Networks']/parent::li/span/a/text()[normalize-space()]", is_list=True)
+        self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]", is_list=True)
 
         tmdb_id = None
         imdb_id = None
