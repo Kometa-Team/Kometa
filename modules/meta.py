@@ -459,7 +459,7 @@ class MetadataFile(DataFile):
                                     key_name = key_name[:-len(suffix)].strip()
                         template_call = {
                             "name": template_name,
-                            auto_type: [key] + addons[key] if key in addons else key,
+                            auto_type: [key] + addons[key] if key in addons else [key],
                             "key_name": key_name, "key": key
                         }
                         for k, v in template_variables.items():
