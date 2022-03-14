@@ -513,7 +513,7 @@ class Cache:
                     obj.vote_count, obj.vote_average, obj.language_iso, obj.language_name, "|".join(obj.genres), "|".join(obj.keywords),
                     obj.first_air_date.strftime("%Y-%m-%d") if obj.first_air_date else None,
                     obj.last_air_date.strftime("%Y-%m-%d") if obj.last_air_date else None,
-                    obj.status, obj.type, obj.tvdb_id, "|".join(obj.countries), "|".join(obj.seasons),
+                    obj.status, obj.type, obj.tvdb_id, "|".join([str(c) for c in obj.countries]), "|".join([str(s) for s in obj.seasons]),
                     expiration_date.strftime("%Y-%m-%d"), obj.tmdb_id
                 ))
 
