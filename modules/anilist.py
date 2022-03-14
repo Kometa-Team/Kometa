@@ -5,11 +5,11 @@ from modules.util import Failed
 logger = util.logger
 
 builders = ["anilist_id", "anilist_popular", "anilist_trending", "anilist_relations", "anilist_studio", "anilist_top_rated", "anilist_search", "anilist_userlist"]
-pretty_names = {
-    "score": "Average Score", "popular": "Popularity", "trending": "Trending", "CURRENT": "Currently Watching",
-    "COMPLETED": "Completed", "PAUSED": "Paused", "DROPPED": "Dropped", "PLANNING": "Planning", "SCORE": "Score",
-    "UPDATED_TIME": "Updated Time", "STARTED_ON": "Start Date", "MEDIA_TITLE_NATIVE": "Title"
-    }
+pretty_names = {"score": "Average Score", "popular": "Popularity", "trending": "Trending"}
+pretty_user = {
+    "status": "Status", "score": "User Score", "progress": "Progress", "last_updated": "Last Updated",
+    "last_added": "Last Added", "start_date": "Start Date", "completed_date": "Completed Date", "popularity": "Popularity"
+}
 attr_translation = {
     "year": "seasonYear", "adult": "isAdult", "start": "startDate", "end": "endDate", "tag_category": "tagCategory",
     "score": "averageScore", "min_tag_percent": "minimumTagRank", "country": "countryOfOrigin",
@@ -24,16 +24,10 @@ mod_searches = [
 no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent", "limit", "sort_by", "source", "country"]
 searches = mod_searches + no_mod_searches
 sort_options = {"score": "SCORE_DESC", "popular": "POPULARITY_DESC", "trending": "TRENDING_DESC"}
-userlist_sort_options = ["score", "last_updated", "title", "start_date"]
-userlist_sort_translation = {
-    "score": "SCORE", "last_updated": "UPDATED_TIME",
-    "title": "MEDIA_TITLE_NATIVE", "start_date": "STARTED_ON"
-}
-userlist_status = ["watching", "completed", "paused", "dropped", "planning"]
-userlist_status_translation = {
-    "watching": "CURRENT", "completed": "COMPLETED",
-    "paused": "PAUSED", "dropped" :"DROPPED",
-    "planning": "PLANNING"
+userlist_sort_options = {
+    "score": "SCORE_DESC", "status": "STATUS_DESC", "progress": "PROGRESS_DESC",
+    "last_updated": "UPDATED_TIME_DESC", "last_added": "ADDED_TIME_DESC", "start_date": "STARTED_ON_DESC",
+    "completed_date": "FINISHED_ON_DESC", "popularity": "MEDIA_POPULARITY_DESC"
 }
 media_season = {"winter": "WINTER", "spring": "SPRING", "summer": "SUMMER", "fall": "FALL"}
 media_format = {"tv": "TV", "short": "TV_SHORT", "movie": "MOVIE", "special": "SPECIAL", "ova": "OVA", "ona": "ONA", "music": "MUSIC"}
@@ -225,16 +219,43 @@ class AniList:
 
         return anilist_ids, ignore_ids, name
 
-    def _userlist(self, username, status, sort_by):
-        query = "query ($userName: String, $status: MediaListStatus) {MediaListCollection (userName: $userName, status: $status, type: ANIME) {lists {status entries {media{id title{romaji english}}}}}}"
-        variables = {"userName": username, "status": status, "sort": sort_by}
+    def _userlist(self, username, list_name, sort_by):
+        query = """
+            query ($user: String, $sort: MediaListStatus) {
+              MediaListCollection (userName: $user, sort: $sort, type: ANIME) {
+                lists {
+                  name 
+                  entries {
+                    media{id}
+                  }
+                }
+              }
+            }
+        """
+        variables = {"user": username, "sort": userlist_sort_options[sort_by]}
+        for alist in self._request(query, variables)["data"]["MediaListCollection"]["lists"]:
+            if alist["name"] == list_name:
+                return [m["media"]["id"] for m in alist["entries"]]
+        return []
+
+    def validate_userlist(self, data):
+        query = """
+            query ($user: String) {
+              MediaListCollection (userName: $user, type: ANIME) {
+                lists {name}
+              }
+            }
+        """
+        variables = {"user": data["username"]}
         json_obj = self._request(query, variables)
-        lists = json_obj['data']['MediaListCollection']['lists']
-        anilist_ids = []
-        for list in lists:
-            for media in list['entries']:
-                anilist_ids.append(media['media']['id'])
-        return anilist_ids
+        if not json_obj["data"]["MediaListCollection"]:
+            raise Failed(f"AniList Error: User: {data['username']} not found")
+        list_names = [n["name"] for n in json_obj["data"]["MediaListCollection"]["lists"]]
+        if not list_names:
+            raise Failed(f"AniList Error: User: {data['username']} has no Lists")
+        if data["list_name"] in list_names:
+            return data
+        raise Failed(f"AniList Error: List: {data['list_name']} not found\nOptions: {', '.join(list_names)}")
 
     def validate(self, name, data):
         valid = []
@@ -270,8 +291,8 @@ class AniList:
             anilist_ids, _, name = self._relations(data)
             logger.info(f"Processing AniList Relations: ({data}) {name} ({len(anilist_ids)} Anime)")
         elif method == "anilist_userlist":
-            anilist_ids = self._userlist(data["username"], data["status"], data['sort_by'])
-            logger.info(f"Processing AniList Userlist: Anime from {data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
+            anilist_ids = self._userlist(data["username"], data["list_name"], data["sort_by"])
+            logger.info(f"Processing AniList Userlist: {data['list_name']} from {data['username']} sorted by {pretty_user[data['sort_by']]}")
         else:
             if method == "anilist_popular":
                 data = {"limit": data, "popularity.gt": 3, "sort_by": "popular"}
