@@ -958,11 +958,11 @@ class CollectionBuilder:
         elif method_name == "anilist_userlist":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
-                self.builders.append((method_name, {
+                self.builders.append((method_name, self.config.AniList.validate_userlist({
                     "username": util.parse(self.Type, "username", dict_data, methods=dict_methods, parent=method_name),
-                    "status": util.parse(self.Type, "status", dict_data, methods=dict_methods, parent=method_name, default="watching", options=anilist.userlist_status, translation=anilist.userlist_status_translation),
-                    "sort_by": util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.userlist_sort_options, translation=anilist.userlist_sort_translation),
-                }))
+                    "list_name": util.parse(self.Type, "list_name", dict_data, methods=dict_methods, parent=method_name),
+                    "sort_by": util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.userlist_sort_options),
+                })))
         elif method_name == "anilist_search":
             if self.current_time.month in [12, 1, 2]:           current_season = "winter"
             elif self.current_time.month in [3, 4, 5]:          current_season = "spring"
