@@ -34,6 +34,7 @@ The available attributes for the operations attribute are as follows
 | `sonarr_add_all`                                              | Adds every item in the library to Sonarr. The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Sonarr paths you can use the `plex_path` and `sonarr_path` [Sonarr](sonarr) details to convert the paths.<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `sonarr_remove_by_tag`                                        | Removes every item from Sonarr with the Tags given<br>**Values:** List or comma separated string of tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `genre_mapper`                                                | Allows genres to be changed to other genres or be removed from every item in your library.<br>**Values:** [see below for usage](#genre-mapper)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `content_rating_mapper`                                       | Allows content ratings to be changed to other content ratings or be removed from every item in your library.<br>**Values:** [see below for usage](#content-rating-mapper)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `metadata_backup`                                             | Creates/Maintains a PMM [Metadata File](../metadata/metadata) with a full `metadata` mapping based on the library's items locked attributes.<br>**Values:** [see below for usage](#metadata-backup)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Genre Mapper
@@ -41,8 +42,8 @@ The available attributes for the operations attribute are as follows
 You can use the `genre_mapper` operation to map genres in your library.
 
 Each attribute under `genre_mapper` is a separate mapping and has two parts.
-* The key (`Action` in the example below) is what the genres will end up as.
-* The value(`Action/Adventure, Action & Adventure` in the example below) is what genres you want mapped to the key.
+* The key (`Action/Adventure, Action & Adventure` in the example below) is what genres you want mapped to the value.
+* The value (`Action` in the example below) is what the genres will end up as.
 
 So this example will change go through every item in your library and change the genre `Action/Adventure` or `Action & Adventure` to `Action` and `Romantic Comedy` to `Comedy`.
 
@@ -51,21 +52,9 @@ library:
   Movies:
     operations:
       genre_mapper:
-        Action: Action/Adventure, Action & Adventure
-        Comedy: Romantic Comedy
-```
-
-you can also use a list:
-
-```yaml
-library:
-  Movies:
-    operations:
-      genre_mapper:
-        Action:
-         - Action/Adventure
-         - Action & Adventure
-        Comedy: Romantic Comedy
+        "Action/Adventure": Action 
+        "Action & Adventure": Action
+        Romantic Comedy: Comedy
 ```
 
 To just Remove a Genre without replacing it just set the Genre to nothing like this.
@@ -75,12 +64,46 @@ library:
   Movies:
     operations:
       genre_mapper:
-        Action: Action/Adventure, Action & Adventure
+        "Action/Adventure": Action 
+        "Action & Adventure": Action
         Romantic Comedy:
 ```
 
 This example will change go through every item in your library and change the genre `Action/Adventure` or `Action & Adventure` to `Action` and remove every instance of the Genre `Romantic Comedy`.
 
+## Content Rating Mapper
+
+You can use the `content_rating_mapper` operation to map content ratings in your library.
+
+Each attribute under `content_rating_mapper` is a separate mapping and has two parts.
+* The key (`PG`, `PG-13` in the example below) is what content ratings you want mapped to the value.
+* The value (`Y-10` in the example below) is what the content ratings will end up as.
+
+So this example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and `R` to `Y-17`.
+
+```yaml
+library:
+  Movies:
+    operations:
+      content_rating_mapper:
+        PG: Y-10 
+        "PG-13": Y-10
+        R: Y-17
+```
+
+To just Remove a content rating without replacing it just set the content rating to nothing like this.
+
+```yaml
+library:
+  Movies:
+    operations:
+      content_rating_mapper:
+        PG: Y-10 
+        "PG-13": Y-10
+        R:
+```
+
+This example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and remove every instance of the content rating `R`.
 
 ## Metadata Backup 
 

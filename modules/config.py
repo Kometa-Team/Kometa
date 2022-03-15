@@ -730,30 +730,22 @@ class ConfigFile:
                                 logger.error("Config Error: tmdb_collections blank using default settings")
                         if "genre_mapper" in lib["operations"]:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
-                                params["genre_mapper"] = {}
-                                for new_genre, old_genres in lib["operations"]["genre_mapper"].items():
-                                    if old_genres is None:
-                                        params["genre_mapper"][new_genre] = old_genres
+                                params["genre_mapper"] = lib["operations"]["genre_mapper"]
+                                for old_genre, new_genre in lib["operations"]["genre_mapper"].items():
+                                    if old_genre == new_genre:
+                                        logger.error("Config Error: genres cannot be mapped to themselves")
                                     else:
-                                        for old_genre in util.get_list(old_genres):
-                                            if old_genre == new_genre:
-                                                logger.error("Config Error: genres cannot be mapped to themselves")
-                                            else:
-                                                params["genre_mapper"][old_genre] = new_genre
+                                        params["genre_mapper"][old_genre] = new_genre if new_genre else None
                             else:
                                 logger.error("Config Error: genre_mapper is blank")
                         if "content_rating_mapper" in lib["operations"]:
                             if lib["operations"]["content_rating_mapper"] and isinstance(lib["operations"]["content_rating_mapper"], dict):
-                                params["content_rating_mapper"] = {}
-                                for new_rating, old_ratings in lib["operations"]["content_rating_mapper"].items():
-                                    if old_ratings is None:
-                                        params["content_rating_mapper"][new_rating] = old_ratings
+                                params["content_rating_mapper"] = lib["operations"]["content_rating_mapper"]
+                                for old_content, new_content in lib["operations"]["content_rating_mapper"].items():
+                                    if old_content == new_content:
+                                        logger.error("Config Error: content rating cannot be mapped to themselves")
                                     else:
-                                        for old_rating in util.get_list(old_ratings):
-                                            if old_rating == new_rating:
-                                                logger.error("Config Error: Content Ratings cannot be mapped to themselves")
-                                            else:
-                                                params["content_rating_mapper"][old_rating] = new_rating
+                                        params["content_rating_mapper"][old_content] = new_content if new_content else None
                             else:
                                 logger.error("Config Error: content_rating_mapper is blank")
                         if "genre_collections" in lib["operations"]:
