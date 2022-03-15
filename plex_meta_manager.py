@@ -935,7 +935,7 @@ def run_collection(config, library, metadata, requested_collections):
             valid = True
             if builder.build_collection and (
                     (builder.smart_url and len(library.get_filter_items(builder.smart_url)) < builder.minimum)
-                    or (len(builder.added_items) + builder.beginning_count < builder.minimum)
+                    or (not builder.smart_url and len(builder.added_items) + builder.beginning_count < builder.minimum)
             ):
                 logger.info("")
                 logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
