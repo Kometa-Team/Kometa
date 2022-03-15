@@ -203,6 +203,17 @@ class Cache:
                     media_id TEXT,
                     media_type TEXT)"""
                 )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS imdb_parental (
+                    key INTEGER PRIMARY KEY,
+                    imdb_id TEXT,
+                    nudity TEXT,
+                    violence TEXT,
+                    profanity TEXT,
+                    alcohol TEXT,
+                    frightening TEXT,
+                    expiration_date TEXT)"""
+                )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute(f"SELECT DISTINCT library FROM image_map")
@@ -695,3 +706,33 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"DELETE FROM list_ids WHERE list_key = ?", (list_key,))
+
+    def query_imdb_parental(self, imdb_id, expiration):
+        imdb_dict = {}
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM imdb_parental WHERE imdb_id = ?", (imdb_id,))
+                row = cursor.fetchone()
+                if row:
+                    imdb_dict["nudity"] = row["nudity"] if row["nudity"] else "None"
+                    imdb_dict["violence"] = row["violence"] if row["violence"] else "None"
+                    imdb_dict["profanity"] = row["profanity"] if row["profanity"] else "None"
+                    imdb_dict["alcohol"] = row["alcohol"] if row["alcohol"] else "None"
+                    imdb_dict["frightening"] = row["frightening"] if row["frightening"] else "None"
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    expired = time_between_insertion.days > expiration
+        return imdb_dict, expired
+
+    def update_imdb_parental(self, expired, imdb_id, parental, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO imdb_parental(imdb_id) VALUES(?)", (imdb_id,))
+                update_sql = "UPDATE imdb_parental SET nudity = ?, violence = ?, profanity = ?, alcohol = ?, " \
+                             "frightening = ?, expiration_date = ? WHERE imdb_id = ?"
+                cursor.execute(update_sql, (parental["nudity"], parental["violence"], parental["profanity"], parental["alcohol"],
+                                            parental["frightening"], expiration_date.strftime("%Y-%m-%d"), imdb_id))

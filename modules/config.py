@@ -34,6 +34,7 @@ sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": 
 mass_genre_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Tag Metadata"}
 mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
 mass_available_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Metadata"}
+imdb_label_options = {"with_none": "Add IMDb Parental Labels including None", "without_none": "Add IMDb Parental Labels including None"}
 mass_rating_options = {
     "tmdb": "Use TMDb Rating",
     "omdb": "Use IMDb Rating through OMDb",
@@ -604,7 +605,8 @@ class ConfigFile:
                     "genre_collections": None,
                     "update_blank_track_titles": None,
                     "mass_content_rating_update": None,
-                    "mass_originally_available_update": None
+                    "mass_originally_available_update": None,
+                    "mass_imdb_parental_labels": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -675,6 +677,8 @@ class ConfigFile:
                             params["mass_content_rating_update"] = check_for_attribute(lib["operations"], "mass_content_rating_update", test_list=mass_content_options, default_is_none=True, save=False)
                         if "mass_originally_available_update" in lib["operations"]:
                             params["mass_originally_available_update"] = check_for_attribute(lib["operations"], "mass_originally_available_update", test_list=mass_available_options, default_is_none=True, save=False)
+                        if "mass_imdb_parental_labels" in lib["operations"]:
+                            params["mass_imdb_parental_labels"] = check_for_attribute(lib["operations"], "mass_imdb_parental_labels", test_list=imdb_label_options, default_is_none=True, save=False)
                         if "mass_trakt_rating_update" in lib["operations"]:
                             params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False)
                         if "split_duplicates" in lib["operations"]:

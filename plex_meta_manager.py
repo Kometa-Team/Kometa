@@ -417,6 +417,7 @@ def library_operations(config, library):
     logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
     logger.debug(f"Mass Content Rating Update: {library.mass_content_rating_update}")
     logger.debug(f"Mass Originally Available Update: {library.mass_originally_available_update}")
+    logger.debug(f"Mass IMDb Parental Labels: {library.mass_imdb_parental_labels}")
     logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
     logger.debug(f"Mass Collection Mode Update: {library.mass_collection_mode}")
     logger.debug(f"Split Duplicates: {library.split_duplicates}")
@@ -486,6 +487,13 @@ def library_operations(config, library):
                 except Failed:
                     pass
 
+            if library.mass_imdb_parental_labels:
+                try:
+                    parental_guide = config.IMDb.parental_guide(imdb_id)
+                    labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if library.mass_imdb_parental_labels == "with_none" or v != "None"]
+                    library.edit_tags("label", item, append_tags=labels)
+                except Failed:
+                    pass
             path = os.path.dirname(str(item.locations[0])) if library.is_movie else str(item.locations[0])
             if library.Radarr and library.radarr_add_all_existing and tmdb_id:
                 path = path.replace(library.Radarr.plex_path, library.Radarr.radarr_path)
