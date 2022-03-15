@@ -584,18 +584,33 @@ def library_operations(config, library):
                 else:
                     raise Failed
 
-            if library.mass_genre_update:
+            if library.mass_genre_update or library.genre_mapper:
                 try:
-                    if tmdb_item and library.mass_genre_update == "tmdb":
-                        new_genres = tmdb_item.genres
-                    elif omdb_item and library.mass_genre_update == "omdb":
-                        new_genres = omdb_item.genres
-                    elif tvdb_item and library.mass_genre_update == "tvdb":
-                        new_genres = tvdb_item.genres
-                    elif anidb_item and library.mass_genre_update == "anidb":
-                        new_genres = anidb_item.genres
-                    else:
-                        raise Failed
+                    new_genres = []
+                    if library.mass_genre_update:
+                        if tmdb_item and library.mass_genre_update == "tmdb":
+                            new_genres = tmdb_item.genres
+                        elif omdb_item and library.mass_genre_update == "omdb":
+                            new_genres = omdb_item.genres
+                        elif tvdb_item and library.mass_genre_update == "tvdb":
+                            new_genres = tvdb_item.genres
+                        elif anidb_item and library.mass_genre_update == "anidb":
+                            new_genres = anidb_item.genres
+                        else:
+                            raise Failed
+                        if not new_genres:
+                            logger.info(f"{item.title[:25]:<25} | No Genres Found")
+                    if library.genre_mapper:
+                        if not new_genres:
+                            new_genres = [g.tag for g in item.genres]
+                        mapped_genres = []
+                        for genre in new_genres:
+                            if genre in library.genre_mapper:
+                                if library.genre_mapper[genre]:
+                                    mapped_genres.append(library.genre_mapper[genre])
+                            else:
+                                mapped_genres.append(genre)
+                        new_genres = mapped_genres
                     library.edit_tags("genre", item, sync_tags=new_genres)
                 except Failed:
                     pass
@@ -619,19 +634,26 @@ def library_operations(config, library):
                         logger.info(f"{item.title[:25]:<25} | Critic Rating | {new_rating}")
                 except Failed:
                     pass
-            if library.mass_content_rating_update:
+            if library.mass_content_rating_update or library.content_rating_mapper:
                 try:
-                    if omdb_item and library.mass_content_rating_update == "omdb":
-                        new_rating = omdb_item.content_rating
-                    elif mdb_item and library.mass_content_rating_update == "mdb":
-                        new_rating = mdb_item.certification if mdb_item.certification else None
-                    elif mdb_item and library.mass_content_rating_update == "mdb_commonsense":
-                        new_rating = mdb_item.commonsense if mdb_item.commonsense else None
-                    else:
-                        raise Failed
-                    if new_rating is None:
-                        logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
-                    elif str(item.rating) != str(new_rating):
+                    new_rating = None
+                    if library.mass_content_rating_update:
+                        if omdb_item and library.mass_content_rating_update == "omdb":
+                            new_rating = omdb_item.content_rating
+                        elif mdb_item and library.mass_content_rating_update == "mdb":
+                            new_rating = mdb_item.certification if mdb_item.certification else None
+                        elif mdb_item and library.mass_content_rating_update == "mdb_commonsense":
+                            new_rating = mdb_item.commonsense if mdb_item.commonsense else None
+                        else:
+                            raise Failed
+                        if new_rating is None:
+                            logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
+                    if library.content_rating_mapper:
+                        if new_rating is None:
+                            new_rating = item.contentRating
+                        if new_rating in library.content_rating_mapper:
+                            new_rating = library.content_rating_mapper[new_rating]
+                    if str(item.contentRating) != str(new_rating):
                         library.edit_query(item, {"contentRating.value": new_rating, "contentRating.locked": 1})
                         logger.info(f"{item.title[:25]:<25} | Content Rating | {new_rating}")
                 except Failed:
@@ -655,25 +677,6 @@ def library_operations(config, library):
                     elif str(item.rating) != str(new_date):
                         library.edit_query(item, {"originallyAvailableAt.value": new_date.strftime("%Y-%m-%d"), "originallyAvailableAt.locked": 1})
                         logger.info(f"{item.title[:25]:<25} | Originally Available Date | {new_date.strftime('%Y-%m-%d')}")
-                except Failed:
-                    pass
-
-            if library.genre_mapper or library.content_rating_mapper:
-                try:
-                    library.reload(item)
-                    if library.genre_mapper:
-                        adds = []
-                        deletes = []
-                        for genre in item.genres:
-                            if genre.tag in library.genre_mapper:
-                                deletes.append(genre.tag)
-                                if library.genre_mapper[genre.tag]:
-                                    adds.append(library.genre_mapper[genre.tag])
-                        library.edit_tags("genre", item, add_tags=adds, remove_tags=deletes)
-                    if library.content_rating_mapper:
-                        if item.contentRating in library.content_rating_mapper:
-                            library.edit_query(item, {"contentRating.value": library.content_rating_mapper[item.contentRating], "contentRating.locked": 1})
-                            logger.info(f"{item.title[:25]:<25} | Content Rating | {library.content_rating_mapper[item.contentRating]}")
                 except Failed:
                     pass
 
