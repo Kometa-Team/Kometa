@@ -2,7 +2,7 @@ import argparse, os, sys, time, traceback
 from datetime import datetime
 
 try:
-    import plexapi, schedule
+    import plexapi, requests, schedule
     from modules.logs import MyLogger
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
@@ -116,6 +116,10 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
             version = line
             break
 
+is_develop = "develop" in version
+version_url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{'develop' if is_develop else 'master'}/VERSION"
+newest_version = requests.get(version_url).content.decode().strip()
+
 plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = "Plex-Meta-Manager"
 
 def start(attrs):
@@ -129,6 +133,8 @@ def start(attrs):
     logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
     logger.info_center("                                                                     |___/           ")
     logger.info(f"    Version: {version}")
+    if version != newest_version and ((is_develop and int(version[version.index("develop") + 7:]) < int(newest_version[newest_version.index("develop") + 7:])) or not is_develop):
+        logger.info(f"    Newest Version: {newest_version}")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
     elif "test" in attrs and attrs["test"]:                 start_type = "Test "
     elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
@@ -185,7 +191,10 @@ def start(attrs):
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
-    logger.separator(f"Finished {start_type}Run\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
+    version_line = f"Version: {version}"
+    if version != newest_version and ((is_develop and int(version[version.index("develop") + 7:]) < int(newest_version[newest_version.index("develop") + 7:])) or not is_develop):
+        version_line = f"{version_line}        Newest Version: {newest_version}"
+    logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
     logger.remove_main_handler()
 
 def update_libraries(config):
