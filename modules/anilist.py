@@ -221,7 +221,7 @@ class AniList:
 
     def _userlist(self, username, list_name, sort_by):
         query = """
-            query ($user: String, $sort: MediaListStatus) {
+            query ($user: String, $sort: [MediaListSort]) {
               MediaListCollection (userName: $user, sort: $sort, type: ANIME) {
                 lists {
                   name 
