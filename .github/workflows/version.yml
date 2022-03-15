@@ -43,3 +43,24 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:${{ steps.get_version.outputs.VERSION }}
+
+      - name: Discord Success Notification
+        uses: sarisia/actions-status-discord@v1
+        if: success()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
+          title: "${{ steps.get_version.outputs.VERSION }} Docker Build: **Success**"
+          username: Docker
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
+
+      - name: Discord Failure Notification
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
+          title: "${{ steps.get_version.outputs.VERSION }} Docker Build: **Failure**"
+          color: 0xe30c43
+          username: Docker
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png

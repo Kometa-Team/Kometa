@@ -1,5 +1,15 @@
 # Acknowledgements
 
+## Plex Meta Manager Team
+
+| Github                                       | Discord    | Role                                                                                                                                        |
+|:---------------------------------------------|:-----------|:--------------------------------------------------------------------------------------------------------------------------------------------|
+| [meisnate12](https://github.com/meisnate12/) | Sohjiro    | Main PMM Developer                                                                                                                          |
+| [YozoraXCII](https://github.com/YozoraXCII)  | Yozora     | PMM Discord Moderator, PMM Contributor, Wiki Contributor, [PMM Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Maintainer |
+| [chazlarson](https://github.com/chazlarson/) | chazlarson | PMM Master Discord Support and Wiki Contributor who created the [Local](guides/local) and [Docker](guides/docker) guides                    |
+| [cpt-kuesel](https://github.com/cpt-kuesel)  | Cpt Kuesel | PMM Master Discord Support and [PMM Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Maintainer                            |
+| [mikenobbs](https://github.com/mikenobbs)    | mikenobbs  | PMM Discord Moderator                                                                                                                       |
+
 The team at Plex Meta Manager would like to recognize and thank those who have helped the project become what it is today.
 
 **We extend our gratitude to everyone who has contributed in any way towards any of the projects mentioned below.**
@@ -46,3 +56,5 @@ These are the developers and creators of the technologies that are required to m
 | [dbader](https://github.com/dbader)         | Creator of [schedule](https://github.com/dbader/schedule)                                                                                                             |                       &#10060;                       |
 | [rholder](https://github.com/rholder)       | Creator of [retrying](https://github.com/rholder/retrying)                                                                                                            |                       &#10060;                       |
 
+<br>
+<br>

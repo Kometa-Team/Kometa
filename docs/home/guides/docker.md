@@ -27,7 +27,7 @@ I am assuming you do not have any of these tools already installed.  When writin
 
 The Docker install is discussed here: [Installing Docker](https://docs.docker.com/engine/install/)
 
-ONce you have Docker installed, test it at the command line with:
+Once you have Docker installed, test it at the command line with:
 
 ```
 docker run --rm hello-world
@@ -104,6 +104,7 @@ This will display a full path:
 <details>
   <summary>OS X</summary>
   <br />
+
   ```
   /Users/YOURUSERNAME/plex-meta-manager
   ```
@@ -112,6 +113,7 @@ This will display a full path:
 <details>
   <summary>Linux</summary>
   <br />
+
   ```
   /home/YOURUSERNAME/plex-meta-manager
   ```
@@ -120,6 +122,7 @@ This will display a full path:
 <details>
   <summary>Windows</summary>
   <br />
+
   ```
   C:\Users\YOURUSERNAME\plex-meta-manager
   ```

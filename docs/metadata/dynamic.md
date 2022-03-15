@@ -1,7 +1,7 @@
 # Dynamic Collections
 
 Plex Meta Manager can dynamically create collections based on different criteria, such as
-* Collections based on the Collections from TMDb for every item in the library. ([Star Wars](https://www.themoviedb.org/collection/10-star-wars-collection), [The Lord of the Rings](https://www.themoviedb.org/collection/119), etc...)
+* Collections based on the Collections from TMDb for every item in the library. ([Star Wars](https://www.themoviedb.org/collection/10-star-wars-collection), [Harry Potter](https://www.themoviedb.org/collection/1241), etc...)
 * Collections based on each of a Users Trakt Lists
 * Collections for the top `X` popular people on TMDb (Bruce Willis, Tom Hanks, etc...)
 * Collections for each decade represented in the library (Best of 1990s, Best of 2000s, etc...)
@@ -24,15 +24,19 @@ dynamic_collections:
 
 By default, the collections generated will be named for the thing being used to create them; things like genres, countries, actors or even Trakt List Names.
 
-There are many attributes that can change the titles, including `title_format`, `remove_suffix`, `remove_prefix`, `pre_format_override`, and `post_format_override` all detailed below.
+There are many attributes that can change the titles, including `title_format`, `remove_suffix`, `remove_prefix`, `key_name_override`, and `title_override` all detailed below.
 
-## Dynamic Keys & Titles
+## Dynamic Keys & Key Names
 
 A `dynamic key` or `key` for short is used to refer to a specific value/result from the dynamic collection criteria that will be used to create the collection.
 
-A `title` in this case is the name that replaces `<<title>>` in `title_format` to create the collection titles for each key.
+A `key_name` is the name that replaces `<<key_name>>` in `title_format` to create the collection titles for each key.
 
-An example of some keys that would be generated from a `genre` dynamic collection are; "Animation", "Horror" and "Comedy"
+An example of some keys and their names that would be generated from a `tmdb_collections` dynamic collection are
+* `key`: "10"
+  * `key_name`: Star Wars Collection
+* `key`: "1241"
+  * `key_name`: Harry Potter Collection
 
 ### Example Key Usage
 
@@ -48,7 +52,7 @@ dynamic_collections:
       - Horror
 ```
 
-* Using the `keys` attribute to change the formatting of "France" to "French" so that a collection can be named "French Cinema" instead of simply "France"
+* Using the `key_name_override` attribute to change the formatting of "France" to "French" so that a collection can be named "French Cinema" instead of simply "France"
   * This particular example also uses the `title_format` attribute to manipulate the naming convention of the collections.
 
 ```yaml
@@ -56,44 +60,43 @@ dynamic_collections:
   Countries:         # mapping name does not matter, just needs to be unique
     type: country
     title_format: <<country>> Cinema
-    pre_format_override:
+    key_name_override:
       France: French
 ```
 
-* Using the `addons` attribute to combine multiple `keys`, i.e. merging "MTV", "MTV2", "MTV3" and "MTV (UK)" into one "MTV Worldwide" collection.
-  * When doing this, individual collections will not be created for the individual MTV collections, instead they will be merged within the "MTV Worldwide" collection.
+* Using the `addons` attribute to combine multiple `keys`, i.e. merging "MTV2", "MTV3" and "MTV (UK)" into one "MTV" collection.
+  * When doing this, individual collections will not be created for the individual MTV collections, instead they will be merged within the "MTV" collection.
 
 ```yaml
 dynamic_collections:
   networks:
     type: network
-      addons:
-        MTV Worldwide:
-          - MTV
-          - MTV2
-          - MTV3
-          - MTV (UK)
+    addons:
+      MTV:
+        - MTV2
+        - MTV3
+        - MTV (UK)
 ```
 
 ## Attributes
 
-| Attribute                                       | Description                                                                                                                    |     Required      |
-|:------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|:-----------------:|
-| [`type`](#type--data)                           | Type of Dynamic Collection to be created.                                                                                      |      &#9989;      |
-| [`data`](#type--data)                           | Data to determine how dynamic collections with a certain `type` are created.                                                   | Depends on `type` |
-| [`exclude`](#exclude)                           | Exclude this list of keys from being created into collections.                                                                 |     &#10060;      |
-| [`addons`](#addons)                             | Defines how multiple keys can be combined under a parent key.                                                                  |     &#10060;      |
-| [`template`](#template)                         | Name of the template to use for these dynamic collections.                                                                     |     &#10060;      |
-| [`template_variables`](#template-variables)     | Defines how template variables can be defined by key.                                                                          |     &#10060;      |
-| [`remove_suffix`](#remove-prefixsuffix)         | Removes the defined suffixes from the key before it's used in the collection title.                                            |     &#10060;      |
-| [`remove_prefix`](#remove-prefixsuffix)         | Removes the defined prefixes from the key before it's used in the collection title.                                            |     &#10060;      |
-| [`title_format`](#title-format)                 | This is the format for the collection titles.                                                                                  |     &#10060;      |
-| [`pre_format_override`](#pre-format-override)   | Defines how titles can be overridden before they are formatted into collection titles.                                         |     &#10060;      |
-| [`post_format_override`](#post-format-override) | Defines how collection titles can be overridden ignoring title formatting.                                                     |     &#10060;      |
-| [`test`](#test)                                 | Will add `test: true` to all collections for test runs.                                                                        |     &#10060;      |
-| [`sync`](#sync)                                 | Will remove dynamic collections that are no longer in the creation list.                                                       |     &#10060;      |
-| [`include`](#include)                           | Define a list of keys to be made into collections.                                                                             |     &#10060;      |
-| [`other_name`](#other-name)                     | Used in combination with `include`. When defined, all keys not in `include` or `addons` will be combined into this collection. |     &#10060;      |
+| Attribute                                   | Description                                                                                                                    |     Required      |
+|:--------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|:-----------------:|
+| [`type`](#type--data)                       | Type of Dynamic Collection to be created.                                                                                      |      &#9989;      |
+| [`data`](#type--data)                       | Data to determine how dynamic collections with a certain `type` are created.                                                   | Depends on `type` |
+| [`exclude`](#exclude)                       | Exclude this list of keys from being created into collections.                                                                 |     &#10060;      |
+| [`addons`](#addons)                         | Defines how multiple keys can be combined under a parent key.                                                                  |     &#10060;      |
+| [`template`](#template)                     | Name of the template to use for these dynamic collections.                                                                     |     &#10060;      |
+| [`template_variables`](#template-variables) | Defines how template variables can be defined by key.                                                                          |     &#10060;      |
+| [`remove_suffix`](#remove-prefixsuffix)     | Removes the defined suffixes from the key before it's used in the collection title.                                            |     &#10060;      |
+| [`remove_prefix`](#remove-prefixsuffix)     | Removes the defined prefixes from the key before it's used in the collection title.                                            |     &#10060;      |
+| [`title_format`](#title-format)             | This is the format for the collection titles.                                                                                  |     &#10060;      |
+| [`key_name_override`](#key-name-override)   | Defines how key names can be overridden before they are formatted into collection titles.                                      |     &#10060;      |
+| [`title_override`](#title-override)         | Defines how collection titles can be overridden ignoring title formatting.                                                     |     &#10060;      |
+| [`test`](#test)                             | Will add `test: true` to all collections for test runs.                                                                        |     &#10060;      |
+| [`sync`](#sync)                             | Will remove dynamic collections that are no longer in the creation list.                                                       |     &#10060;      |
+| [`include`](#include)                       | Define a list of keys to be made into collections.                                                                             |     &#10060;      |
+| [`other_name`](#other-name)                 | Used in combination with `include`. When defined, all keys not in `include` or `addons` will be combined into this collection. |     &#10060;      |
 
 ## Type & Data
 
@@ -105,14 +108,23 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 |:----------------------------------------------|:------------------------------------------------------------------------------------------------------------|:--------------:|:--------:|:--------:|:--------:|:--------:|
 | [`tmdb_collection`](#tmdb-collection)         | Create a collection for each TMDb Collection associated with an item in the library                         |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`tmdb_popular_people`](#tmdb-popular-people) | Create a collection for each actor found on [TMDb's Popular People List](https://www.themoviedb.org/person) |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`original_language`](#original-language)     | Create a collection for each TMDb original language associated with an item in the library                  |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`origin_country`](#origin-country)           | Create a collection for each TMDb origin country associated with an item in the library                     |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`trakt_user_lists`](#trakt-user-lists)       | Create a collection for each list from specific trakt users                                                 |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`trakt_liked_lists`](#trakt-liked-lists)     | Create a collection for each list the authenticated trakt user likes                                        |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`trakt_people_list`](#trakt-people-lists)    | Create a collection for each actor found in the trakt list                                                  |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`actor`](#actor)                             | Create a collection for each actor found in the library                                                     |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`director`](#director)                       | Create a collection for each director found in the library                                                  |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`writer`](#writer)                           | Create a collection for each writer found in the library                                                    |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`producer`](#producer)                       | Create a collection for each producer found in the library                                                  |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`genre`](#genre)                             | Create a collection for each genre found in the library                                                     |    &#10060;    | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| [`content_rating`](#content-rating)           | Create a collection for each content rating found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#9989;  |
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`country`](#country)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
+| [`resolution`](#resolution)                   | Create a collection for each resolution found in the library                                                |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`subtitle_language`](#subtitle-language)     | Create a collection for each subtitle language found in the library                                         |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`audio_language`](#audio-language)           | Create a collection for each audio language found in the library                                            |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`network`](#network)                         | Create a collection for each network found in the library                                                   |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`style`](#style)                             | Create a collection for each style found in the library                                                     |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
@@ -135,7 +147,7 @@ Create collections based on the TMDb Collections associated with items in the li
     <td>TMDb Collection ID</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>TMDb Collection Title</td>
   </tr>
   <tr>
@@ -183,7 +195,7 @@ Create collections based on each actor found on [TMDb's Popular People List](htt
     <td>TMDb Person ID</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>TMDb Person Name</td>
   </tr>
   <tr>
@@ -215,6 +227,102 @@ dynamic_collections:
     data: 10
 ```
 
+### Original Language
+
+Create collections based on the TMDb original language associated with items in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>original_language</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td><a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1 Code</a></td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>ISO Language Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  plex_all: true
+  filters:
+    original_language: <<original_language>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example: Create collection for every TMDb Original Language found in the library.
+
+```yaml
+dynamic_collections:
+  TMDb Languages:          # This name is the mapping name
+    type: original_language
+```
+
+### Origin Country
+
+Create collections based on the TMDb origin country associated with items in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>origin_country</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td><a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2">ISO 3166-1 alpha-2 country code</a></td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>ISO Country Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  plex_all: true
+  filters:
+    origin_country: <<origin_country>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example: Create collection for every TMDb Origin Country found in the library.
+
+```yaml
+dynamic_collections:
+  TMDb Countries:          # This name is the mapping name
+    type: origin_country
+```
+
 ### Trakt User Lists
 
 Create collections for each of the Trakt lists for the specified users. Use `me` to reference the authenticated user.
@@ -235,7 +343,7 @@ Create collections for each of the Trakt lists for the specified users. Use `me`
     <td>Trakt List URL</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Trakt List Title</td>
   </tr>
   <tr>
@@ -286,7 +394,7 @@ Create collections for each of the Trakt lists that the authenticated user has l
     <td>Trakt List URL</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Trakt List Title</td>
   </tr>
   <tr>
@@ -334,7 +442,7 @@ Create collections for each of the people found within Trakt lists that the user
     <td>TMDb Person ID</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>TMDb Person Name</td>
   </tr>
   <tr>
@@ -384,17 +492,17 @@ Create a collection for each actor found in the library.
                 <th>Description & Values</th>
             </tr>
             <tr>
-                <td><code>actor_depth</code></td>
+                <td><code>depth</code></td>
                 <td><strong>Values:</strong> Number greater then 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
-                <td><code>actor_minimum</code></td>
+                <td><code>minimum</code></td>
                 <td><strong>Values:</strong> Number greater then 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
-                <td><code>number_of_actors</code></td>
+                <td><code>limit</code></td>
                 <td><strong>Values:</strong> Number greater then 0</td>
                 <td><strong>Default:</strong> None</td>
             </tr>
@@ -406,7 +514,7 @@ Create a collection for each actor found in the library.
     <td>TMDb Person ID</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>TMDb Person Name</td>
   </tr>
   <tr>
@@ -429,9 +537,9 @@ default_template:
   </tr>
 </table>
 
-* `actor_depth` determines how many top billed actor per item they are in. (i.e. if they play a cameo role, this is unlikely to be counted)
-* `actor_minimum` determines the minimum number of times the actor must appear within `actor_depth` for the collection to be created.
-* `number_of_actors` determines the number of actor collection to max out at. (i.e. if to make collections for the top 25 actors)
+* `depth` determines how many top billed actor per item they are in. (i.e. if they play a cameo role, this is unlikely to be counted)
+* `minimum` determines the minimum number of times the actor must appear within `depth` for the collection to be created.
+* `limit` determines the number of actor collection to max out at. (i.e. if to make collections for the top 25 actors)
 
 #### Example:
 
@@ -442,8 +550,8 @@ dynamic_collections:
   Top Actors:         # mapping name does not matter just needs to be unique
     type: actor
     data:
-      actor_depth: 5
-      number_of_actors: 25
+      depth: 5
+      limit: 25
 ```
 
 #### Example:
@@ -456,8 +564,290 @@ dynamic_collections:
   Actors:         # mapping name does not matter just needs to be unique
     type: actor
     data:
-      actor_depth: 5
-      actor_minimum: 20
+      depth: 5
+      minimum: 20
+```
+
+### Director
+
+Create a collection for each director found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>director</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Values</th>
+    <td>
+        <table class="clearTable">
+            <tr>
+                <th>Attribute</th>
+                <th>Description & Values</th>
+            </tr>
+            <tr>
+                <td><code>depth</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>minimum</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>limit</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> None</td>
+            </tr>
+        </table>
+    </td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>TMDb Person ID</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>TMDb Person Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  tmdb_person: <<director>>
+  plex_search:
+    all:
+      director: tmdb
+```
+
+</td>
+  </tr>
+</table>
+
+* `depth` determines how many directors are looked at per item.
+* `minimum` determines the minimum number of times the director must appear within `depth` for the collection to be created.
+* `limit` determines the number of director collection to max out at. (i.e. if to make collections for the top 25 directors)
+
+#### Example:
+
+* Create a collection for the top 5 directors who appear in the top director credit of movies
+
+```yaml
+dynamic_collections:
+  Top Directors:         # mapping name does not matter just needs to be unique
+    type: director
+    data:
+      depth: 1
+      limit: 5
+```
+
+#### Example:
+
+* Create a collection for directors who appear in the top director credits of movies
+* Only create the collection if they are in the top director credits of at least 10 movies
+
+```yaml
+dynamic_collections:
+  Directors:         # mapping name does not matter just needs to be unique
+    type: director
+    data:
+      depth: 1
+      minimum: 10
+```
+
+### Writer
+
+Create a collection for each writer found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>writer</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Values</th>
+    <td>
+        <table class="clearTable">
+            <tr>
+                <th>Attribute</th>
+                <th>Description & Values</th>
+            </tr>
+            <tr>
+                <td><code>depth</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>minimum</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>limit</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> None</td>
+            </tr>
+        </table>
+    </td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>TMDb Person ID</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>TMDb Person Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  tmdb_person: <<writer>>
+  plex_search:
+    all:
+      writer: tmdb
+```
+
+</td>
+  </tr>
+</table>
+
+* `depth` determines how many writers are looked at per item.
+* `minimum` determines the minimum number of times the writer must appear within `depth` for the collection to be created.
+* `limit` determines the number of writer collection to max out at. (i.e. if to make collections for the top 25 writers)
+
+#### Example:
+
+* Create a collection for the top 5 writers who appear in the top writer credit of movies
+
+```yaml
+dynamic_collections:
+  Top Writers:         # mapping name does not matter just needs to be unique
+    type: writer
+    data:
+      depth: 1
+      limit: 5
+```
+
+#### Example:
+
+* Create a collection for writers who appear in the top writer credits of movies
+* Only create the collection if they are in the top writer credits of at least 10 movies
+
+```yaml
+dynamic_collections:
+  Writers:         # mapping name does not matter just needs to be unique
+    type: writer
+    data:
+      depth: 1
+      minimum: 10
+```
+
+### Producer
+
+Create a collection for each producer found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>producer</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Values</th>
+    <td>
+        <table class="clearTable">
+            <tr>
+                <th>Attribute</th>
+                <th>Description & Values</th>
+            </tr>
+            <tr>
+                <td><code>depth</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>minimum</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 3</td>
+            </tr>
+            <tr>
+                <td><code>limit</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> None</td>
+            </tr>
+        </table>
+    </td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>TMDb Person ID</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>TMDb Person Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  tmdb_person: <<producer>>
+  plex_search:
+    all:
+      producer: tmdb
+```
+
+</td>
+  </tr>
+</table>
+
+* `depth` determines how many producers are looked at per item.
+* `minimum` determines the minimum number of times the producer must appear within `depth` for the collection to be created.
+* `limit` determines the number of producer collection to max out at. (i.e. if to make collections for the top 25 producers)
+
+#### Example:
+
+* Create a collection for the top 5 producers who appear in the top producer credit of movies
+
+```yaml
+dynamic_collections:
+  Top Producers:         # mapping name does not matter just needs to be unique
+    type: producer
+    data:
+      depth: 1
+      limit: 5
+```
+
+#### Example:
+
+* Create a collection for producers who appear in the top producer credits of movies
+* Only create the collection if they are in the top producer credits of at least 10 movies
+
+```yaml
+dynamic_collections:
+  Producers:         # mapping name does not matter just needs to be unique
+    type: producers
+    data:
+      depth: 1
+      minimum: 10
 ```
 
 ### Genre
@@ -478,7 +868,7 @@ Create a collection for each genre found in the library.
     <td>Genre</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Genre</td>
   </tr>
   <tr>
@@ -494,8 +884,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        genre: <<genre>>
+    any:
+      genre: <<genre>>
 ```
 
 </td>
@@ -521,9 +911,70 @@ dynamic_collections:
   Genres:         # mapping name does not matter just needs to be unique
     type: genre
     exclude:
-          - Talk Show
-    title_format: Top <<title>> <<library_type>>s
+      - Talk Show
+    title_format: Top <<key_name>> <<library_type>>s
     template: genre collection
+```
+
+### Content Rating 
+
+Create a collection for each content rating found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>content_rating</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Content Rating</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Content Rating</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.desc
+    any:
+      content_rating: <<content_rating>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create dynamic collections based on each content rating found in the library (TV and Movies)
+* Amend the template to increase the limit from 50 to 100
+
+```yaml
+templates:
+  content rating collection:
+    smart_filter:
+      limit: 100
+      sort_by: critic_rating.desc
+      all:
+        content_rating: <<content_rating>>
+dynamic_collections:
+  Content Ratings:         # mapping name does not matter just needs to be unique
+    type: content_rating
+    template: content rating collection
 ```
 
 ### Year
@@ -544,7 +995,7 @@ Create a collection for each year found in the library.
     <td>Year</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Year</td>
   </tr>
   <tr>
@@ -560,8 +1011,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        year: <<year>>
+    any:
+      year: <<year>>
 ```
 
 </td>
@@ -582,7 +1033,7 @@ dynamic_collections:
       - 2020
       - 2021
       - 2022
-    title_format: Best of &lt;&lt;title&gt;&gt;
+    title_format: Best of <<key_name>>
 ```
 
 ### Decade
@@ -603,7 +1054,7 @@ Create a collection for each decade found in the library
     <td>Decade</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Decade</td>
   </tr>
   <tr>
@@ -619,8 +1070,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        decade: <<decade>>
+    any:
+      decade: <<decade>>
 ```
 
 </td>
@@ -637,8 +1088,8 @@ default_template:
 dynamic_collections:
   Decades:         # mapping name does not matter just needs to be unique
     type: decade
-    title_format: Top <<title>> <<library_type>>s
-    post_format_override:
+    title_format: Top <<key_name>> <<library_type>>s
+    title_override:
       2020: Top 2020 Movies (so far)
 ```
 
@@ -660,7 +1111,7 @@ Create a collection for each country found in the library
     <td>Country</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Country</td>
   </tr>
   <tr>
@@ -676,8 +1127,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        country: <<country>>
+    any:
+      country: <<country>>
 ```
 
 </td>
@@ -688,17 +1139,180 @@ default_template:
 
 * Create a collection for the top movies from each country found in the library
 * Name the collection Top [Country] Cinema
-* The `keys` attribute is used here in combination with the `title_format` to change the collection name from "France" which would be the default title, to "Top French Cinema"
+* The `key_name_override` attribute is used here in combination with the `title_format` to change the collection name from "France" which would be the default title, to "Top French Cinema"
 
 ```yaml
 dynamic_collections:
   Countries:         # mapping name does not matter just needs to be unique
     type: country
-    title_format: Top <<country>> Cinema
-    pre_format_override:
+    title_format: Top <<key_name>> Cinema
+    key_name_override:
       France: French
       Germany: German
       India: Indian
+```
+
+### Resolution
+
+Create a collection for each resolution found in the library
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>resolution</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Resolution</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Resolution</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: title.asc
+    any:
+      resolution: <<resolution>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for each resolution found in the library
+* Name the collection "[Resolution] Movies"
+* Combine 480p, 576p and SD into a collection called "SD Movies"
+```yaml
+dynamic_collections:
+  Resolutions:         # mapping name does not matter just needs to be unique
+    type: resolution
+    addons:
+      480p: 
+        - 576p
+        - SD
+    title_override:
+      480p: SD Movies
+```
+
+### Subtitle Language
+
+Create a collection for each subtitle language found in the library
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>subtitle_language</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td><a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1 Code</a></td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Subtitle Language Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.asc
+    any:
+      subtitle_language: <<subtitle_language>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for each subtitle language found in the library
+
+```yaml
+dynamic_collections:
+  Subtitle Languages:         # mapping name does not matter just needs to be unique
+    type: subtitle_language
+```
+
+### Audio Language
+
+Create a collection for each audio language found in the library
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>audio_language</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td><a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1 Code</a></td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Audio Language Name</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.asc
+    any:
+      audio_language: <<audio_language>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for each audio language found in the library
+
+```yaml
+dynamic_collections:
+  Audio Languages:         # mapping name does not matter just needs to be unique
+    type: audio_language
 ```
 
 ### Network
@@ -719,7 +1333,7 @@ Create a collection for each network found in the library.
     <td>Network</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Network</td>
   </tr>
   <tr>
@@ -735,8 +1349,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: critic_rating.desc
-      any:
-        network: <<network>>
+    any:
+      network: <<network>>
 ```
 
 </td>
@@ -758,7 +1372,7 @@ templates:
 dynamic_collections:
   Networks:         # mapping name does not matter just needs to be unique
     type: network
-    title_format: <<title>>
+    title_format: <<key_name>>
     template: network collection
 ```
 
@@ -780,7 +1394,7 @@ Create a collection for each mood found in the library.
     <td>Mood</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Mood</td>
   </tr>
   <tr>
@@ -796,8 +1410,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: plays.desc
-      any:
-        artist_mood: <<mood>>
+    any:
+      artist_mood: <<mood>>
 ```
 
 </td>
@@ -821,7 +1435,7 @@ templates:
 dynamic_collections:
   Moods:         # mapping name does not matter just needs to be unique
     type: mood
-    title_format: Top <<title>> Tracks
+    title_format: Top <<key_name>> Tracks
     template: mood collection
 ```
 
@@ -843,7 +1457,7 @@ Create a collection for each style found in the library.
     <td>Style</td>
   </tr>
   <tr>
-    <th>Titles</th>
+    <th>Key Names</th>
     <td>Style</td>
   </tr>
   <tr>
@@ -859,8 +1473,8 @@ default_template:
   smart_filter:
     limit: 50
     sort_by: plays.desc
-      any:
-        artist_style: <<style>>
+    any:
+      artist_style: <<style>>
 ```
 
 </td>
@@ -884,7 +1498,7 @@ templates:
 dynamic_collections:
   Styles:         # mapping name does not matter just needs to be unique
     type: style
-    title_format: Top <<title>> Albums
+    title_format: Top <<key_name>> Albums
     template: style collection
 ```
 
@@ -906,24 +1520,27 @@ dynamic_collections:
 
 Defines how multiple `keys` can be combined under a parent key.
 
-For example, the `addons` attribute can be used to combine multiple `keys`, i.e. merging "MTV", "MTV2", "MTV3" and "MTV (UK)" into one "MTV Worldwide" collection.
-  * When doing this, individual collections will not be created for the individual MTV collections, instead they will be merged within the "MTV Worldwide" collection.
+For example, the `addons` attribute can be used to combine multiple `keys`, i.e. merging "MTV2", "MTV3" and "MTV (UK)" into the  "MTV" collection.
+
 
 ```yaml
 dynamic_collections:
   networks:
     type: network
-      addons:
-        MTV Worldwide: 
-          - MTV
-          - MTV2
-          - MTV3
-          - MTV (UK)
+    addons:
+      MTV: 
+        - MTV2
+        - MTV3
+        - MTV (UK)
 ```
 
 ## Template
 
 Name of the template to use for these dynamic collections. Each `type` has its own default template, but if you want to define and use your own template you can.
+
+Each template is passed a template variable whose name matches the dynamic collection `type`. i.e. in the example below `<<network>>` is the template variable.
+
+`key` and `key_name` are both passed along and can be used as template variables.
 
 For example, the template below removes the limit on the `smart_filter` so it shows all items in each network
 
@@ -937,7 +1554,7 @@ templates:
 dynamic_collections:
   Networks:         # mapping name does not matter just needs to be unique
     type: network
-    title_format: <<title>>
+    title_format: <<key_name>>
     template: network collection
 ```
 
@@ -982,7 +1599,7 @@ dynamic_collections:
 This is the format for the collection titles.
 
 there are two special tags you can include in the `title_format` 
-* `<<title>>` is required and is what will be replaced by the dynamic title
+* `<<key_name>>` is required and is what will be replaced by the dynamic key name.
 * `<<library_type>>` will be replaced with either Movie, Show, or Artist depending on your library type.
 
 Here's an example using `title_format`.
@@ -991,37 +1608,37 @@ Here's an example using `title_format`.
 dynamic_collections:
   Genres:         # mapping name does not matter just needs to be unique
     type: genre
-    title_format: Top 50 <<title>> <<library_type>>s
+    title_format: Top 50 <<key_name>> <<library_type>>s
 ```
 
-## Pre Format Override
+## Key Name Override
 
-Defines how titles can be overridden before they are formatted into collection titles.
+Defines how key names can be overridden before they are formatted into collection titles.
 
-This example uses the `pre_format_override` attribute to change the formatting of "France" to "French" so that a collection can be named "French Cinema" instead of simply "France"
+This example uses the `key_name_override` attribute to change the formatting of "France" to "French" so that a collection can be named "French Cinema" instead of simply "France"
   * This particular example also uses the `title_format` attribute to manipulate the naming convention of the collections.
 
 ```yaml
 dynamic_collections:
   Countries:         # mapping name does not matter, just needs to be unique
     type: country
-    title_format: <<country>> Cinema
-    pre_format_override:
+    title_format: <<key_name>> Cinema
+    key_name_override:
       France: French
 ```
 
-## Post Format Override
+## Title Override
 
 Defines how collection titles can be overridden ignoring title formatting.
 
-Here's an example using `post_format_override` that will override the TMDb Star Wars collection which has an TMDb ID of `10` with `Star Wars Universe.
+Here's an example using `title_override` that will override the TMDb Star Wars collection which has an TMDb ID of `10` with `Star Wars Universe.
 
 ```yaml
 dynamic_collections:
   TMDb Collections:          # mapping name does not matter, just needs to be unique
     type: tmdb_collections
     remove_suffix: "Collection"
-    post_format_override:
+    title_override:
       10: Star Wars Universe
 ```
 

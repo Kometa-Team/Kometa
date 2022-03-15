@@ -110,7 +110,7 @@ class Sonarr:
                 invalid.extend(_i)
             except ArrException as e:
                 logger.stacktrace()
-                raise Failed(f"Radarr Error: {e}")
+                raise Failed(f"Sonarr Error: {e}")
 
         for i, item in enumerate(tvdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None

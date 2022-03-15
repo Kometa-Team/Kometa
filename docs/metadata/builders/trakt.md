@@ -34,7 +34,7 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
 
 Finds every item in the Trakt List.
 
-The expected input is a Trakt List URL. Multiple values are supported as either a list or a comma-separated string.
+The expected input is a Trakt List URL. Multiple values are supported only as a list.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 

@@ -3,6 +3,7 @@ from datetime import datetime
 from modules import plex, util
 from modules.util import Failed, ImageData
 from plexapi.exceptions import NotFound
+from tmdbapis import NotFound as TMDbNotFound
 from ruamel import yaml
 
 logger = util.logger
@@ -10,15 +11,20 @@ logger = util.logger
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
 all_auto = ["genre"]
-ms_auto = ["actor", "year", "tmdb_popular_people", "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"]
+ms_auto = [
+    "actor", "year", "content_rating", "original_language", "tmdb_popular_people",
+    "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"
+]
 auto = {
-    "Movie": ["tmdb_collection", "decade", "country"] + all_auto + ms_auto,
-    "Show": ["network"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer", "subtitle_language", "audio_language", "resolution"] + all_auto + ms_auto,
+    "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
-    "Video": ["country"] + all_auto
+    "Video": ["country", "content_rating"] + all_auto
 }
+auto_type_translation = {"content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage"}
 default_templates = {
-    "actor": {"tmdb_person": f"<<actor>>", "plex_search": {"all": {"actor": "tmdb"}}},
+    "original_language": {"plex_all": True, "filters": {"original_language": "<<original_language>>"}},
+    "origin_country": {"plex_all": True, "filters": {"origin_country": "<<origin_country>>"}},
     "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>"},
     "trakt_user_lists": {"trakt_list_details": "<<trakt_user_lists>>"},
     "trakt_liked_lists": {"trakt_list_details": "<<trakt_liked_lists>>"},
@@ -235,9 +241,16 @@ class MetadataFile(DataFile):
             self.metadata = get_dict("metadata", data, library.metadata_files)
             self.templates = get_dict("templates", data)
             self.collections = get_dict("collections", data, library.collections)
+            self.dynamic_collections = get_dict("dynamic_collections", data)
             col_names = library.collections + [c for c in self.collections]
             all_items = None
-            for map_name, dynamic in get_dict("dynamic_collections", data).items():
+            if self.dynamic_collections:
+                logger.info("")
+                logger.separator("Dynamic Collections")
+            for map_name, dynamic in self.dynamic_collections.items():
+                logger.info("")
+                logger.separator(f"Building {map_name} Dynamic Collections", space=False, border=False)
+                logger.info("")
                 try:
                     methods = {dm.lower(): dm for dm in dynamic}
                     if "type" not in methods:
@@ -252,29 +265,39 @@ class MetadataFile(DataFile):
                         raise Failed(f"Config Error: {map_name} type attribute: {dynamic[methods['type']]} requires trakt to be configured")
                     else:
                         auto_type = dynamic[methods["type"]].lower()
-                        exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
+                        og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
                         include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="list") if "include" in methods else []
-
-                        if exclude and include:
+                        if og_exclude and include:
                             raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "addons" in methods else {}
+                        exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
-                            exclude.extend(v)
-                        default_title_format = "<<title>>"
+                            if k in v:
+                                logger.warning(f"Config Warning: {k} cannot be an addon for itself")
+                            exclude.extend([str(vv) for vv in v if str(vv) != str(k)])
+                        default_title_format = "<<key_name>>"
                         default_template = None
                         auto_list = {}
+                        dynamic_data = None
                         def _check_dict(check_dict):
                             for ck, cv in check_dict.items():
                                 if ck not in exclude and cv not in exclude:
                                     auto_list[ck] = cv
-                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade"]:
-                            auto_list = {i.title: i.title for i in library.get_tags(auto_type) if i.title not in exclude}
+                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                            search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
+                            if auto_type in ["decade", "subtitle_language", "audio_language"]:
+                                auto_list = {str(i.key): i.title for i in library.get_tags(search_tag) if str(i.title) not in exclude and str(i.key) not in exclude}
+                            else:
+                                auto_list = {str(i.title): i.title for i in library.get_tags(search_tag) if str(i.title) not in exclude}
                             if library.is_music:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
-                                default_title_format = "Most Played <<title>> <<library_type>>s"
+                                default_title_format = "Most Played <<key_name>> <<library_type>>s"
+                            elif auto_type == "resolution":
+                                default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<{auto_type}>>"}}}
+                                default_title_format = "<<key_name>> <<library_type>>s"
                             else:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<{auto_type}>>"}}}
-                                default_title_format = "Best <<library_type>>s of <<title>>" if auto_type in ["year", "decade"] else "Top <<title>> <<library_type>>s"
+                                default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade"] else "Top <<key_name>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
                             if not all_items:
                                 all_items = library.get_all()
@@ -282,70 +305,109 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
-                                if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
-                                    auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
+                                if tmdb_item and tmdb_item.collection_id and tmdb_item.collection_id not in exclude and tmdb_item.collection_name not in exclude:
+                                    auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
                             logger.exorcise()
-                        elif auto_type == "actor":
+                        elif auto_type == "original_language":
+                            if not all_items:
+                                all_items = library.get_all()
+                            for i, item in enumerate(all_items, 1):
+                                logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
+                                tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
+                                if tmdb_item and tmdb_item.language_iso  and tmdb_item.language_iso  not in exclude and tmdb_item.language_name not in exclude:
+                                    auto_list[tmdb_item.language_iso] = tmdb_item.language_name
+                            logger.exorcise()
+                            default_title_format = "<<key_name>> <<library_type>>s"
+                        elif auto_type == "origin_country":
+                            if not all_items:
+                                all_items = library.get_all()
+                            for i, item in enumerate(all_items, 1):
+                                logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
+                                tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
+                                if tmdb_item and tmdb_item.countries:
+                                    for country in tmdb_item.countries:
+                                        if country.iso_3166_1 not in exclude and country.name not in exclude:
+                                            auto_list[country.iso_3166_1] = country.name
+                            logger.exorcise()
+                            default_title_format = "<<key_name>> <<library_type>>s"
+                        elif auto_type in ["actor", "director", "writer", "producer"]:
                             people = {}
                             if "data" in methods:
-                                actor_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
                             else:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
-                            actor_methods = {am.lower(): am for am in actor_data}
-                            actor_depth = util.parse("Config", "actor_depth", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1)
-                            actor_minimum = util.parse("Config", "actor_minimum", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=3, minimum=1) if "actor_minimum" in actor_methods else None
-                            number_of_actors = util.parse("Config", "number_of_actors", actor_data, parent=f"{map_name} data", methods=actor_methods, datatype="int", default=25, minimum=1) if "number_of_actors" in actor_methods else None
-                            if not actor_minimum and not number_of_actors:
-                                actor_minimum = 3
+                            person_methods = {am.lower(): am for am in dynamic_data}
+                            if "actor_depth" in person_methods:
+                                person_methods["depth"] = person_methods.pop("actor_depth")
+                            if "actor_minimum" in person_methods:
+                                person_methods["minimum"] = person_methods.pop("actor_minimum")
+                            if "number_of_actors" in person_methods:
+                                person_methods["limit"] = person_methods.pop("number_of_actors")
+                            person_depth = util.parse("Config", "depth", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1)
+                            person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
+                            person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
+                            if not person_minimum and not person_limit:
+                                person_minimum = 3
                             if not all_items:
                                 all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
                                 try:
                                     self.library.reload(item)
-                                    for actor in item.actors[:actor_depth]:
-                                        if actor.id not in people:
-                                            people[actor.id] = {"name": actor.tag, "count": 0}
-                                        people[actor.id]["count"] += 1
+                                    for person in getattr(item, f"{auto_type}s")[:person_depth]:
+                                        if person.id not in people:
+                                            people[person.id] = {"name": person.tag, "count": 0}
+                                        people[person.id]["count"] += 1
                                 except Failed as e:
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
                             roles.sort(key=operator.itemgetter('count'), reverse=True)
-                            actor_count = 0
+                            person_count = 0
                             for role in roles:
-                                if (number_of_actors and actor_count >= number_of_actors) or (actor_minimum and role["count"] < actor_minimum):
+                                if (person_limit and person_count >= person_limit) or (person_minimum and role["count"] < person_minimum):
                                     break
                                 if role["name"] not in exclude:
                                     try:
                                         results = self.config.TMDb.search_people(role["name"])
-                                        auto_list[results[0].id] = results[0].name
-                                        actor_count += 1
-                                    except NotFound:
+                                        if results[0].id not in exclude:
+                                            auto_list[str(results[0].id)] = results[0].name
+                                            person_count += 1
+                                    except TMDbNotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
+                            default_template = {"tmdb_person": f"<<{auto_type}>>", "plex_search": {"all": {auto_type: "tmdb"}}},
                         elif auto_type == "trakt_user_lists":
-                            for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
+                            for option in dynamic_data:
                                 _check_dict(self.config.Trakt.get_user_lists(option))
                         elif auto_type == "trakt_liked_lists":
                             _check_dict(self.config.Trakt.get_liked_lists())
                         elif auto_type == "tmdb_popular_people":
-                            _check_dict(self.config.TMDb.get_popular_people(util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)))
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)
+                            _check_dict(self.config.TMDb.get_popular_people(dynamic_data))
                         elif auto_type == "trakt_people_list":
-                            for option in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list"):
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
+                            for option in dynamic_data:
                                 _check_dict(self.config.Trakt.get_people(option))
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
                     title_format = default_title_format
                     if "title_format" in methods:
                         title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
-                    if "<<title>>" not in title_format:
-                        logger.error(f"Config Error: <<title>> not in title_format: {title_format} using default: {default_title_format}")
+                    if "<<key_name>>" not in title_format and "<<title>>" not in title_format:
+                        logger.error(f"Config Error: <<key_name>> not in title_format: {title_format} using default: {default_title_format}")
                         title_format = default_title_format
-                    post_format_override = util.parse("Config", "post_format_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "post_format_override" in methods else {}
-                    pre_format_override = util.parse("Config", "pre_format_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "pre_format_override" in methods else {}
+                    if "post_format_override" in methods:
+                        methods["title_override"] = methods.pop("post_format_override")
+                    if "pre_format_override" in methods:
+                        methods["key_name_override"] = methods.pop("pre_format_override")
+                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "title_override" in methods else {}
+                    key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "key_name_override" in methods else {}
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
                         title_format = title_format.replace("<<library_type>>", library.type)
-                    dictionary_variables = util.parse("Config", "dictionary_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "dictionary_variables" in methods else {}
+                    template_variables = util.parse("Config", "template_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "template_variables" in methods else {}
                     if "template" in methods:
                         template_name = util.parse("Config", "template", dynamic, parent=map_name, methods=methods)
                         if template_name not in self.templates:
@@ -360,28 +422,53 @@ class MetadataFile(DataFile):
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
                     other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods) if "other_name" in methods and include else None
                     other_keys = []
+                    logger.debug(f"Mapping Name: {map_name}")
+                    logger.debug(f"Type: {auto_type}")
+                    logger.debug(f"Data: {dynamic_data}")
+                    logger.debug(f"Exclude: {exclude}")
+                    logger.debug(f"Addons: {addons}")
+                    logger.debug(f"Template: {template_name}")
+                    logger.debug(f"Template Variables: {template_variables}")
+                    logger.debug(f"Remove Prefix: {remove_prefix}")
+                    logger.debug(f"Remove Suffix: {remove_suffix}")
+                    logger.debug(f"Title Format: {title_format}")
+                    logger.debug(f"Key Name Override: {key_name_override}")
+                    logger.debug(f"Title Override: {title_override}")
+                    logger.debug(f"Test: {test}")
+                    logger.debug(f"Sync: {sync}")
+                    logger.debug(f"Include: {include}")
+                    logger.debug(f"Other Name: {other_name}")
+                    logger.debug(f"Keys (Title)")
+                    for key, value in auto_list.items():
+                        logger.debug(f"  - {key}{'' if key == value else f' ({value})'}")
+
                     for key, value in auto_list.items():
                         if include and key not in include:
                             if key not in exclude:
                                 other_keys.append(key)
                             continue
-                        template_call = {"name": template_name, auto_type: [key] + addons[key] if key in addons else key}
-                        for k, v in dictionary_variables.items():
+                        if key in key_name_override:
+                            key_name = key_name_override[key]
+                        else:
+                            key_name = value
+                            for prefix in remove_prefix:
+                                if key_name.startswith(prefix):
+                                    key_name = key_name[len(prefix):].strip()
+                            for suffix in remove_suffix:
+                                if key_name.endswith(suffix):
+                                    key_name = key_name[:-len(suffix)].strip()
+                        template_call = {
+                            "name": template_name,
+                            auto_type: [key] + addons[key] if key in addons else [key],
+                            "key_name": key_name, "key": key
+                        }
+                        for k, v in template_variables.items():
                             if key in v:
                                 template_call[k] = v[key]
-                        if key in post_format_override:
-                            collection_title = post_format_override[key]
+                        if key in title_override:
+                            collection_title = title_override[key]
                         else:
-                            if key in pre_format_override:
-                                value = pre_format_override[key]
-                            else:
-                                for prefix in remove_prefix:
-                                    if value.startswith(prefix):
-                                        value = value[len(prefix):].strip()
-                                for suffix in remove_suffix:
-                                    if value.endswith(suffix):
-                                        value = value[:-len(suffix)].strip()
-                            collection_title = title_format.replace("<<title>>", value)
+                            collection_title = title_format.replace("<<title>>", key_name).replace("<<key_name>>", key_name)
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                         else:
@@ -582,18 +669,14 @@ class MetadataFile(DataFile):
             genres = []
             if tmdb_item:
                 originally_available = datetime.strftime(tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date, "%Y-%m-%d")
-                if tmdb_is_movie and tmdb_item.original_title != tmdb_item.title:
+
+                if tmdb_item.original_title != tmdb_item.title:
                     original_title = tmdb_item.original_title
-                elif not tmdb_is_movie and tmdb_item.original_name != tmdb_item.name:
-                    original_title = tmdb_item.original_name
                 rating = tmdb_item.vote_average
-                if tmdb_is_movie and tmdb_item.companies:
-                    studio = tmdb_item.companies[0].name
-                elif not tmdb_is_movie and tmdb_item.networks:
-                    studio = tmdb_item.networks[0].name
+                studio = tmdb_item.studio
                 tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
                 summary = tmdb_item.overview
-                genres = [genre.name for genre in tmdb_item.genres]
+                genres = tmdb_item.genres
 
             edits = {}
             add_edit("title", item, meta, methods, value=title)

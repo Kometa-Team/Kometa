@@ -132,7 +132,7 @@ filters_by_type = {
     "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword"],
     "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language", "has_dolby_vision"],
     "movie_artist": ["country"],
-    "show": ["tmdb_status", "tmdb_type", "network", "first_episode_aired", "last_episode_aired"],
+    "show": ["tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired"],
     "album": ["record_label"]
 }
 filters = {
@@ -144,11 +144,14 @@ filters = {
     "album": [item for check, sub in filters_by_type.items() for item in sub if "album" in check],
     "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
 }
-tmdb_filters = ["original_language", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre", "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type", "tmdb_title"]
+tmdb_filters = [
+    "original_language", "origin_country", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre",
+    "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type", "tmdb_title"
+]
 string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title", "tmdb_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
-    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
+    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year", "origin_country",
     "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "tmdb_status", "tmdb_type"
 ]
 tag_modifiers = ["", ".not", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
@@ -166,7 +169,7 @@ all_filters = boolean_filters + special_filters + \
 smart_invalid = ["collection_order", "collection_level"]
 smart_url_invalid = ["minimum_items", "filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
-    "plex_search", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
+    "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
     "tvdb_list", "imdb_chart", "imdb_list", "stevenlu_popular", "anidb_popular",
     "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
@@ -175,7 +178,7 @@ custom_sort_builders = [
     "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
     "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list",
-    "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search",
+    "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search", "anilist_userlist",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
@@ -558,10 +561,12 @@ class CollectionBuilder:
             self.custom_sort = False
 
         for method_key, method_data in self.data.items():
+            if method_key.lower() in ignored_details:
+                continue
+            logger.debug("")
             method_name, method_mod, method_final = self._split(method_key)
             if method_name in ignored_details:
                 continue
-            logger.debug("")
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
@@ -929,7 +934,7 @@ class CollectionBuilder:
         if method_name == "anidb_popular":
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=30, maximum=30)))
         elif method_name in ["anidb_id", "anidb_relation"]:
-            for anidb_id in self.config.AniDB.validate_anidb_ids(method_data, self.language):
+            for anidb_id in self.config.AniDB.validate_anidb_ids(method_data):
                 self.builders.append((method_name, anidb_id))
         elif method_name == "anidb_tag":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
@@ -950,6 +955,14 @@ class CollectionBuilder:
                 self.builders.append((method_name, anilist_id))
         elif method_name in ["anilist_popular", "anilist_trending", "anilist_top_rated"]:
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10)))
+        elif method_name == "anilist_userlist":
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
+                self.builders.append((method_name, self.config.AniList.validate_userlist({
+                    "username": util.parse(self.Type, "username", dict_data, methods=dict_methods, parent=method_name),
+                    "list_name": util.parse(self.Type, "list_name", dict_data, methods=dict_methods, parent=method_name),
+                    "sort_by": util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.userlist_sort_options),
+                })))
         elif method_name == "anilist_search":
             if self.current_time.month in [12, 1, 2]:           current_season = "winter"
             elif self.current_time.month in [3, 4, 5]:          current_season = "spring"
@@ -1313,7 +1326,7 @@ class CollectionBuilder:
         elif "tautulli" in method:
             ids = self.library.Tautulli.get_rating_keys(self.library, value, self.playlist)
         elif "anidb" in method:
-            anidb_ids = self.config.AniDB.get_anidb_ids(method, value, self.language)
+            anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
             ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
         elif "anilist" in method:
             anilist_ids = self.config.AniList.get_anilist_ids(method, value)
@@ -1609,7 +1622,7 @@ class CollectionBuilder:
                     error = f"{self.Type} Error: {final_attr} {method} attribute only works for movie libraries"
                 elif self.library.is_movie and final_attr in plex.show_only_searches:
                     error = f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries"
-                elif self.library.is_music and final_attr not in plex.music_searches:
+                elif self.library.is_music and final_attr not in plex.music_searches + ["all", "any"]:
                     error = f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
                     error = f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries"
@@ -1714,6 +1727,8 @@ class CollectionBuilder:
             return valid_regex
         elif attribute in plex.string_attributes + string_filters and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
+        elif attribute == "origin_country":
+            return util.get_list(data, upper=True)
         elif attribute in ["original_language", "tmdb_keyword"]:
             return util.get_list(data, lower=True)
         elif attribute in ["filepath", "tmdb_genre"]:
@@ -1891,9 +1906,9 @@ class CollectionBuilder:
             try:
                 if item is None:
                     if is_movie:
-                        item = self.config.TMDb.get_movie(item_id, partial="keywords")
+                        item = self.config.TMDb.get_movie(item_id)
                     else:
-                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id), partial="keywords")
+                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
                 if check_released:
                     date_to_check = item.release_date if is_movie else item.first_air_date
                     if not date_to_check or date_to_check > self.current_time:
@@ -1906,7 +1921,9 @@ class CollectionBuilder:
                         elif filter_attr == "tmdb_type":
                             check_value = discover_types[item.type]
                         elif filter_attr == "original_language":
-                            check_value = item.original_language.iso_639_1
+                            check_value = item.language_iso
+                        else:
+                            raise Failed
                         if (modifier == ".not" and check_value in filter_data) or (modifier == "" and check_value not in filter_data):
                             return False
                     elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
@@ -1925,13 +1942,15 @@ class CollectionBuilder:
                             attr = item.release_date.year if is_movie else item.first_air_date.year
                         if util.is_number_filter(attr, modifier, filter_data):
                             return False
-                    elif filter_attr == "tmdb_genre":
-                        attrs = [g.name for g in item.genres]
-                        if (not list(set(filter_data) & set(attrs)) and modifier == "") \
-                                or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
-                            return False
-                    elif filter_attr == "tmdb_keyword":
-                        attrs = [k.name for k in item.keywords]
+                    elif filter_attr in ["tmdb_genre", "tmdb_keyword", "origin_country"]:
+                        if filter_attr == "tmdb_genre":
+                            attrs = item.genres
+                        elif filter_attr == "tmdb_keyword":
+                            attrs = item.keywords
+                        elif filter_attr == "origin_country":
+                            attrs = [c.iso_3166_1 for c in item.countries]
+                        else:
+                            raise Failed
                         if (not list(set(filter_data) & set(attrs)) and modifier == "") \
                                 or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             return False
@@ -2388,10 +2407,10 @@ class CollectionBuilder:
             if "visible_library" in self.details and self.details["visible_library"] != visibility["library"]:
                 visible_library = self.details["visible_library"]
 
-            if "visible_home" in self.details and self.details["visible_home"] != visibility["library"]:
+            if "visible_home" in self.details and self.details["visible_home"] != visibility["home"]:
                 visible_home = self.details["visible_home"]
 
-            if "visible_shared" in self.details and self.details["visible_shared"] != visibility["library"]:
+            if "visible_shared" in self.details and self.details["visible_shared"] != visibility["shared"]:
                 visible_shared = self.details["visible_shared"]
 
             if visible_library is not None or visible_home is not None or visible_shared is not None:

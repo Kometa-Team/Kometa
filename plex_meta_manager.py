@@ -2,7 +2,7 @@ import argparse, os, sys, time, traceback
 from datetime import datetime
 
 try:
-    import plexapi, schedule
+    import plexapi, requests, schedule
     from modules.logs import MyLogger
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
@@ -116,6 +116,10 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
             version = line
             break
 
+is_develop = "develop" in version
+version_url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{'develop' if is_develop else 'master'}/VERSION"
+newest_version = requests.get(version_url).content.decode().strip()
+
 plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = "Plex-Meta-Manager"
 
 def start(attrs):
@@ -129,6 +133,8 @@ def start(attrs):
     logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
     logger.info_center("                                                                     |___/           ")
     logger.info(f"    Version: {version}")
+    if version != newest_version and ((is_develop and int(version[version.index("develop") + 7:]) < int(newest_version[newest_version.index("develop") + 7:])) or not is_develop):
+        logger.info(f"    Newest Version: {newest_version}")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
     elif "test" in attrs and attrs["test"]:                 start_type = "Test "
     elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
@@ -185,7 +191,10 @@ def start(attrs):
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
-    logger.separator(f"Finished {start_type}Run\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
+    version_line = f"Version: {version}"
+    if version != newest_version and ((is_develop and int(version[version.index("develop") + 7:]) < int(newest_version[newest_version.index("develop") + 7:])) or not is_develop):
+        version_line = f"{version_line}        Newest Version: {newest_version}"
+    logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
     logger.remove_main_handler()
 
 def update_libraries(config):
@@ -213,7 +222,7 @@ def update_libraries(config):
             logger.debug(f"Create Asset Folders: {library.create_asset_folders}")
             logger.debug(f"Download URL Assets: {library.download_url_assets}")
             logger.debug(f"Sync Mode: {library.sync_mode}")
-            logger.debug(f"Collection Minimum: {library.minimum_items}")
+            logger.debug(f"Minimum Items: {library.minimum_items}")
             logger.debug(f"Delete Below Minimum: {library.delete_below_minimum}")
             logger.debug(f"Delete Not Scheduled: {library.delete_not_scheduled}")
             logger.debug(f"Default Collection Order: {library.default_collection_order}")
@@ -407,6 +416,8 @@ def library_operations(config, library):
     logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
     logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
     logger.debug(f"Mass Content Rating Update: {library.mass_content_rating_update}")
+    logger.debug(f"Mass Originally Available Update: {library.mass_originally_available_update}")
+    logger.debug(f"Mass IMDb Parental Labels: {library.mass_imdb_parental_labels}")
     logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
     logger.debug(f"Mass Collection Mode Update: {library.mass_collection_mode}")
     logger.debug(f"Split Duplicates: {library.split_duplicates}")
@@ -418,6 +429,7 @@ def library_operations(config, library):
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
+    logger.debug(f"Content Rating Mapper: {library.content_rating_mapper}")
     logger.debug(f"Metadata Backup: {library.metadata_backup}")
     logger.debug(f"Item Operation: {library.items_library_operation}")
     logger.debug("")
@@ -446,6 +458,10 @@ def library_operations(config, library):
         sonarr_adds = []
         trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
+        reverse_anidb = {}
+        for k, v in library.anidb_map.values():
+            reverse_anidb[v] = k
+
         for i, item in enumerate(items, 1):
             try:
                 library.reload(item)
@@ -471,6 +487,13 @@ def library_operations(config, library):
                 except Failed:
                     pass
 
+            if library.mass_imdb_parental_labels:
+                try:
+                    parental_guide = config.IMDb.parental_guide(imdb_id)
+                    labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if library.mass_imdb_parental_labels == "with_none" or v != "None"]
+                    library.edit_tags("label", item, append_tags=labels)
+                except Failed:
+                    pass
             path = os.path.dirname(str(item.locations[0])) if library.is_movie else str(item.locations[0])
             if library.Radarr and library.radarr_add_all_existing and tmdb_id:
                 path = path.replace(library.Radarr.plex_path, library.Radarr.radarr_path)
@@ -482,12 +505,14 @@ def library_operations(config, library):
                 sonarr_adds.append((tvdb_id, path))
 
             tmdb_item = None
-            if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" or library.mass_critic_rating_update == "tmdb":
+            if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" \
+                    or library.mass_critic_rating_update == "tmdb" or library.mass_originally_available_update == "tmdb":
                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.is_movie)
 
             omdb_item = None
             if library.mass_genre_update == "omdb" or library.mass_audience_rating_update == "omdb" \
-                    or library.mass_critic_rating_update == "omdb" or library.mass_content_rating_update == "omdb":
+                    or library.mass_critic_rating_update == "omdb" or library.mass_content_rating_update == "omdb" \
+                    or library.mass_originally_available_update == "omdb":
                 if config.OMDb.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -505,7 +530,7 @@ def library_operations(config, library):
                         logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
             tvdb_item = None
-            if library.mass_genre_update == "tvdb":
+            if library.mass_genre_update == "tvdb" or library.mass_originally_available_update == "tvdb":
                 if tvdb_id:
                     try:
                         tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
@@ -514,9 +539,19 @@ def library_operations(config, library):
                 else:
                     logger.info(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}")
 
+            anidb_item = None
+            if library.mass_genre_update == "anidb":
+                if item.ratingKey in reverse_anidb:
+                    try:
+                        anidb_item = config.AniDB.get_anime(reverse_anidb[item.ratingKey])
+                    except Failed as e:
+                        logger.error(str(e))
+                else:
+                    logger.info(f"{item.title[:25]:<25} | No AniDB ID for Guid: {item.guid}")
+
             mdb_item = None
             if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types \
-                    or library.mass_content_rating_update in ["mdb", "mdb_commonsense"]:
+                    or library.mass_content_rating_update in ["mdb", "mdb_commonsense"] or library.mass_originally_available_update == "mdb":
                 if config.Mdblist.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -533,8 +568,8 @@ def library_operations(config, library):
                     else:
                         logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
-            if library.tmdb_collections and tmdb_item and tmdb_item.collection:
-                tmdb_collections[tmdb_item.collection.id] = tmdb_item.collection.name
+            if library.tmdb_collections and tmdb_item and tmdb_item.collection_id:
+                tmdb_collections[tmdb_item.collection_id] = tmdb_item.collection_name
 
             def get_rating(attribute):
                 if tmdb_item and attribute == "tmdb":
@@ -559,19 +594,40 @@ def library_operations(config, library):
                     return mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
                 elif mdb_item and attribute == "mdb_letterboxd":
                     return mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                elif anidb_item and attribute == "anidb_rating":
+                    return anidb_item.rating
+                elif anidb_item and attribute == "anidb_average":
+                    return anidb_item.average
                 else:
                     raise Failed
 
-            if library.mass_genre_update:
+            if library.mass_genre_update or library.genre_mapper:
                 try:
-                    if tmdb_item and library.mass_genre_update == "tmdb":
-                        new_genres = [genre.name for genre in tmdb_item.genres]
-                    elif omdb_item and library.mass_genre_update == "omdb":
-                        new_genres = omdb_item.genres
-                    elif tvdb_item and library.mass_genre_update == "tvdb":
-                        new_genres = tvdb_item.genres
-                    else:
-                        raise Failed
+                    new_genres = []
+                    if library.mass_genre_update:
+                        if tmdb_item and library.mass_genre_update == "tmdb":
+                            new_genres = tmdb_item.genres
+                        elif omdb_item and library.mass_genre_update == "omdb":
+                            new_genres = omdb_item.genres
+                        elif tvdb_item and library.mass_genre_update == "tvdb":
+                            new_genres = tvdb_item.genres
+                        elif anidb_item and library.mass_genre_update == "anidb":
+                            new_genres = anidb_item.genres
+                        else:
+                            raise Failed
+                        if not new_genres:
+                            logger.info(f"{item.title[:25]:<25} | No Genres Found")
+                    if library.genre_mapper:
+                        if not new_genres:
+                            new_genres = [g.tag for g in item.genres]
+                        mapped_genres = []
+                        for genre in new_genres:
+                            if genre in library.genre_mapper:
+                                if library.genre_mapper[genre]:
+                                    mapped_genres.append(library.genre_mapper[genre])
+                            else:
+                                mapped_genres.append(genre)
+                        new_genres = mapped_genres
                     library.edit_tags("genre", item, sync_tags=new_genres)
                 except Failed:
                     pass
@@ -595,35 +651,49 @@ def library_operations(config, library):
                         logger.info(f"{item.title[:25]:<25} | Critic Rating | {new_rating}")
                 except Failed:
                     pass
-            if library.mass_content_rating_update:
+            if library.mass_content_rating_update or library.content_rating_mapper:
                 try:
-                    if omdb_item and library.mass_content_rating_update == "omdb":
-                        new_rating = omdb_item.content_rating
-                    elif mdb_item and library.mass_content_rating_update == "mdb":
-                        new_rating = mdb_item.certification if mdb_item.certification else None
-                    elif mdb_item and library.mass_content_rating_update == "mdb_commonsense":
-                        new_rating = mdb_item.commonsense if mdb_item.commonsense else None
-                    else:
-                        raise Failed
-                    if new_rating is None:
-                        logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
-                    elif str(item.rating) != str(new_rating):
+                    new_rating = None
+                    if library.mass_content_rating_update:
+                        if omdb_item and library.mass_content_rating_update == "omdb":
+                            new_rating = omdb_item.content_rating
+                        elif mdb_item and library.mass_content_rating_update == "mdb":
+                            new_rating = mdb_item.certification if mdb_item.certification else None
+                        elif mdb_item and library.mass_content_rating_update == "mdb_commonsense":
+                            new_rating = mdb_item.commonsense if mdb_item.commonsense else None
+                        else:
+                            raise Failed
+                        if new_rating is None:
+                            logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
+                    if library.content_rating_mapper:
+                        if new_rating is None:
+                            new_rating = item.contentRating
+                        if new_rating in library.content_rating_mapper:
+                            new_rating = library.content_rating_mapper[new_rating]
+                    if str(item.contentRating) != str(new_rating):
                         library.edit_query(item, {"contentRating.value": new_rating, "contentRating.locked": 1})
                         logger.info(f"{item.title[:25]:<25} | Content Rating | {new_rating}")
                 except Failed:
                     pass
-
-            if library.genre_mapper:
+            if library.mass_originally_available_update:
                 try:
-                    adds = []
-                    deletes = []
-                    library.reload(item)
-                    for genre in item.genres:
-                        if genre.tag in library.genre_mapper:
-                            deletes.append(genre.tag)
-                            if library.genre_mapper[genre.tag]:
-                                adds.append(library.genre_mapper[genre.tag])
-                    library.edit_tags("genre", item, add_tags=adds, remove_tags=deletes)
+                    if omdb_item and library.mass_originally_available_update == "omdb":
+                        new_date = omdb_item.released
+                    elif mdb_item and library.mass_originally_available_update == "mdb":
+                        new_date = mdb_item.released
+                    elif tvdb_item and library.mass_originally_available_update == "tvdb":
+                        new_date = tvdb_item.released
+                    elif tmdb_item and library.mass_originally_available_update == "tmdb":
+                        new_date = tmdb_item.release_date if library.is_movie else tmdb_item.first_air_date
+                    elif anidb_item and library.mass_originally_available_update == "anidb":
+                        new_date = anidb_item.released
+                    else:
+                        raise Failed
+                    if new_date is None:
+                        logger.info(f"{item.title[:25]:<25} | No Originally Available Date Found")
+                    elif str(item.rating) != str(new_date):
+                        library.edit_query(item, {"originallyAvailableAt.value": new_date.strftime("%Y-%m-%d"), "originallyAvailableAt.locked": 1})
+                        logger.info(f"{item.title[:25]:<25} | Originally Available Date | {new_date.strftime('%Y-%m-%d')}")
                 except Failed:
                     pass
 
@@ -737,17 +807,20 @@ def library_operations(config, library):
         logger.info("")
         logger.info(f"Metadata Backup Path: {library.metadata_backup['path']}")
         logger.info("")
-        try:
-            meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"]))
-        except yaml.scanner.ScannerError as e:
+        meta = None
+        if os.path.exists(library.metadata_backup["path"]):
+            try:
+                meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"]))
+            except yaml.scanner.ScannerError as e:
+                logger.error(f"YAML Error: {util.tab_new_lines(e)}")
+                filename, file_extension = os.path.splitext(library.metadata_backup["path"])
+                i = 1
+                while os.path.exists(f"{filename}{i}{file_extension}"):
+                    i += 1
+                os.rename(library.metadata_backup["path"], f"{filename}{i}{file_extension}")
+                logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
+        if not meta:
             meta = {}
-            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
-            filename, file_extension = os.path.splitext(library.metadata_backup["path"])
-            i = 1
-            while os.path.exists(f"{filename}{i}{file_extension}"):
-                i += 1
-            os.rename(library.metadata_backup["path"], f"{filename}{i}{file_extension}")
-            logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
         if "metadata" not in meta:
             meta["metadata"] = {}
         items = library.get_all(load=True)
@@ -756,13 +829,9 @@ def library_operations(config, library):
             logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
             map_key, attrs = library.get_locked_attributes(item, titles)
             if attrs or library.metadata_backup["add_blank_entries"]:
-                def run_dict(save_dict, the_dict):
-                    for kk, vv in the_dict.items():
-                        if isinstance(vv, dict):
-                            run_dict(save_dict[kk], vv)
-                        else:
-                            save_dict[kk] = vv
-                run_dict(meta["metadata"][map_key], attrs)
+                def get_dict(attrs_dict):
+                    return {ak: get_dict(av) if isinstance(av, dict) else av for ak, av in attrs_dict.items()} if isinstance(attrs_dict, dict) else attrs_dict
+                meta["metadata"][map_key] = get_dict(attrs)
         logger.exorcise()
         try:
             yaml.round_trip_dump(meta, open(library.metadata_backup["path"], "w", encoding="utf-8"), block_seq_indent=2)
@@ -827,7 +896,6 @@ def run_collection(config, library, metadata, requested_collections):
 
             items_added = 0
             items_removed = 0
-            valid = True
             if not builder.smart_url and builder.builders and not builder.blank_collection:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
@@ -856,14 +924,6 @@ def run_collection(config, library, metadata, requested_collections):
                         items_removed = builder.sync_collection()
                         library.stats["removed"] += items_removed
                         library.status[mapping_name]["removed"] = items_removed
-                elif len(builder.added_items) + builder.beginning_count < builder.minimum and builder.build_collection:
-                    logger.info("")
-                    logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
-                    valid = False
-                    if builder.details["delete_below_minimum"] and builder.obj:
-                        logger.info("")
-                        logger.info(builder.delete())
-                        builder.deleted = True
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     radarr_add, sonarr_add = builder.run_missing()
@@ -871,6 +931,19 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[mapping_name]["radarr"] += radarr_add
                     library.stats["sonarr"] += sonarr_add
                     library.status[mapping_name]["sonarr"] += sonarr_add
+
+            valid = True
+            if builder.build_collection and (
+                    (builder.smart_url and len(library.get_filter_items(builder.smart_url)) < builder.minimum)
+                    or (not builder.smart_url and len(builder.added_items) + builder.beginning_count < builder.minimum)
+            ):
+                logger.info("")
+                logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
+                valid = False
+                if builder.details["delete_below_minimum"] and builder.obj:
+                    logger.info("")
+                    logger.info(builder.delete())
+                    builder.deleted = True
 
             run_item_details = True
             if valid and builder.build_collection and (builder.builders or builder.smart_url or builder.blank_collection):

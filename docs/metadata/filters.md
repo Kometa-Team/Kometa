@@ -11,6 +11,7 @@ You can use the `plex_all: true` builder to filter from your entire library.
 **Filters can be very slow. Try to build or narrow your items using [Plex Search](builders/plex.md#plex-search) if possible.** 
 
 ## String Filters
+
 String filters can be used with either no modifier or with `.not`, `.is`, `.isnot`, `.begins`, `.ends`, or `.regex`.
 
 String filters can take multiple values **only as a list**.
@@ -39,11 +40,10 @@ String filters can take multiple values **only as a list**.
 | `audio_track_title` | Uses the audio track titles to match     | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#9989;  |
 
 ## Tag Filters
+
 Tag filters can be used with either no modifier or with `.not`.
 
 Tag filters can take multiple values as a **list or a comma-separated string**.
-
-The `original_language` and `tmdb_genre` filters will also filter out movies/shows from being added to Radarr/Sonarr.
 
 ### Modifier
 
@@ -58,28 +58,33 @@ The `original_language` and `tmdb_genre` filters will also filter out movies/sho
 
 ### Attribute
 
-| Tag Filters         | Description                                                                                                                                           |  Movies  |  Shows   | Seasons  | Episodes | Artists  |  Albums  |  Track   |
-|:--------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `actor`             | Uses the actor tags to match                                                                                                                          | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `collection`        | Uses the collection tags to match                                                                                                                     | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `content_rating`    | Uses the content rating tags to match                                                                                                                 | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `network`           | Uses the network tags to match                                                                                                                        | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `country`           | Uses the country tags to match                                                                                                                        | &#9989;  | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; |
-| `director`          | Uses the director tags to match                                                                                                                       | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `genre`             | Uses the genre tags to match                                                                                                                          | &#9989;  | &#9989;  | &#10060; | &#10060; | &#9989;  | &#9989;  | &#10060; |
-| `tmdb_genre`        | Uses the genre from TMDb to match                                                                                                                     | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `label`             | Uses the label tags to match                                                                                                                          | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; |
-| `producer`          | Uses the actor tags to match                                                                                                                          | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `year`              | Uses the year tag to match                                                                                                                            | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#9989;  |
-| `writer`            | Uses the writer tags to match                                                                                                                         | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `resolution`        | Uses the resolution tag to match                                                                                                                      | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `audio_language`    | Uses the audio language tags to match                                                                                                                 | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `subtitle_language` | Uses the subtitle language tags to match                                                                                                              | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `original_language` | Uses TMDb original language [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) to match<br>Example: `original_language: en, ko` | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `tmdb_status`       | Uses TMDb Status to match<br>**Values:** `returning`, `planned`, `production`, `ended`, `canceled`, `pilot`                                           | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `tmdb_type`         | Uses TMDb Type to match<br>**Values:** `documentary`, `news`, `production`, `miniseries`, `reality`, `scripted`, `talk_show`, `video`                 | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| Tag Filters                     | Description                                                                                                                                           |  Movies  |  Shows   | Seasons  | Episodes | Artists  |  Albums  |  Track   |
+|:--------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| `actor`                         | Uses the actor tags to match                                                                                                                          | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `collection`                    | Uses the collection tags to match                                                                                                                     | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `content_rating`                | Uses the content rating tags to match                                                                                                                 | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `network`                       | Uses the network tags to match                                                                                                                        | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `country`                       | Uses the country tags to match                                                                                                                        | &#9989;  | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; |
+| `director`                      | Uses the director tags to match                                                                                                                       | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `genre`                         | Uses the genre tags to match                                                                                                                          | &#9989;  | &#9989;  | &#10060; | &#10060; | &#9989;  | &#9989;  | &#10060; |
+| `tmdb_genre`<sup>1</sup>        | Uses the genre from TMDb to match                                                                                                                     | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `tmdb_keyword`<sup>1</sup>      | Uses the keyword from TMDb to match                                                                                                                   | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `label`                         | Uses the label tags to match                                                                                                                          | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; |
+| `producer`                      | Uses the actor tags to match                                                                                                                          | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `year`                          | Uses the year tag to match                                                                                                                            | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#9989;  |
+| `writer`                        | Uses the writer tags to match                                                                                                                         | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `resolution`                    | Uses the resolution tag to match                                                                                                                      | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `audio_language`                | Uses the audio language tags to match                                                                                                                 | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `subtitle_language`             | Uses the subtitle language tags to match                                                                                                              | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `original_language`<sup>1</sup> | Uses TMDb original language [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) to match<br>Example: `original_language: en, ko` | &#10060; | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; |
+| `origin_country`<sup>1</sup>    | Uses TMDb origin country [ISO 3166-1 alpha-2 codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) to match<br>Example: `origin_country: us`       | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `tmdb_status`<sup>1</sup>       | Uses TMDb Status to match<br>**Values:** `returning`, `planned`, `production`, `ended`, `canceled`, `pilot`                                           | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `tmdb_type`<sup>1</sup>         | Uses TMDb Type to match<br>**Values:** `documentary`, `news`, `production`, `miniseries`, `reality`, `scripted`, `talk_show`, `video`                 | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+
+<sup>1</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
 
 ## Boolean Filters
+
 Boolean Filters have no modifiers.
 
 ### Attribute
@@ -90,11 +95,10 @@ Boolean Filters have no modifiers.
 | `has_overlay`    | Matches every item that has or does not have an overlay   | &#9989; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
 
 ## Date Filters
+
 Date filters can be used with either no modifier or with `.not`, `.before`, `.after`, or `.regex`.
 
 Date filters can **NOT** take multiple values.
-
-The `first_episode_aired` and `last_episode_aired` filters will also filter out movies/shows from being added to Radarr/Sonarr.
 
 ### Modifier
 
@@ -108,20 +112,21 @@ The `first_episode_aired` and `last_episode_aired` filters will also filter out 
 
 ### Attribute
 
-| Date Filters          | Description                                                     |  Movies  |  Shows  | Seasons  | Episodes | Artists  |  Albums  |  Track   |
-|:----------------------|:----------------------------------------------------------------|:--------:|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `release`             | Uses the release date attribute (originally available) to match | &#9989;  | &#9989; | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
-| `added`               | Uses the date added attribute to match                          | &#9989;  | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `last_played`         | Uses the date last played attribute to match                    | &#9989;  | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `first_episode_aired` | Uses the first episode aired date to match                      | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `last_episode_aired`  | Uses the last episode aired date to match                       | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| Date Filters                      | Description                                                     |  Movies  |  Shows  | Seasons  | Episodes | Artists  |  Albums  |  Track   |
+|:----------------------------------|:----------------------------------------------------------------|:--------:|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| `release`                         | Uses the release date attribute (originally available) to match | &#9989;  | &#9989; | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
+| `added`                           | Uses the date added attribute to match                          | &#9989;  | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `last_played`                     | Uses the date last played attribute to match                    | &#9989;  | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `first_episode_aired`<sup>1</sup> | Uses the first episode aired date to match                      | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `last_episode_aired`<sup>1</sup>  | Uses the last episode aired date to match                       | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+
+<sup>1</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr.
 
 ## Number Filters
+
 Number filters must use `.gt`, `.gte`, `.lt`, or `.lte` as a modifier.
 
 Number filters can **NOT** take multiple values.
-
-The `tmdb_vote_count` and `tmdb_year` filters will also filter out movies/shows from being added to Radarr/Sonarr.
 
 ### Modifier
 
@@ -134,18 +139,21 @@ The `tmdb_vote_count` and `tmdb_year` filters will also filter out movies/shows 
 
 ### Attribute
 
-| Number Filters    | Description                                                          | Movies  |  Shows  | Seasons  | Episodes | Artists  |  Albums  |  Track   |
-|:------------------|:---------------------------------------------------------------------|:-------:|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `year`            | Uses the year attribute to match<br>minimum: `1`                     | &#9989; | &#9989; | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#9989;  |
-| `tmdb_year`       | Uses the year on TMDb to match<br>minimum: `1`                       | &#9989; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `critic_rating`   | Uses the critic rating attribute to match<br>`0.0` - `10.0`          | &#9989; | &#9989; | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
-| `audience_rating` | Uses the audience rating attribute to match<br> `0.0` - `10.0`       | &#9989; | &#9989; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `user_rating`     | Uses the user rating attribute to match<br>`0.0` - `10.0`            | &#9989; | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `tmdb_vote_count` | Uses the tmdb vote count to match<br>minimum: `1`                    | &#9989; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `plays`           | Uses the plays attribute to match<br>minimum: `1`                    | &#9989; | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `duration`        | Uses the duration attribute to match using minutes<br>minimum: `0.0` | &#9989; | &#9989; | &#10060; | &#9989;  | &#10060; | &#10060; | &#9989;  |
+| Number Filters                | Description                                                          | Movies  |  Shows  | Seasons  | Episodes | Artists  |  Albums  |  Track   |
+|:------------------------------|:---------------------------------------------------------------------|:-------:|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| `year`                        | Uses the year attribute to match<br>minimum: `1`                     | &#9989; | &#9989; | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#9989;  |
+| `tmdb_year`<sup>1</sup>       | Uses the year on TMDb to match<br>minimum: `1`                       | &#9989; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `critic_rating`               | Uses the critic rating attribute to match<br>`0.0` - `10.0`          | &#9989; | &#9989; | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
+| `audience_rating`             | Uses the audience rating attribute to match<br> `0.0` - `10.0`       | &#9989; | &#9989; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `user_rating`                 | Uses the user rating attribute to match<br>`0.0` - `10.0`            | &#9989; | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `tmdb_vote_count`<sup>1</sup> | Uses the tmdb vote count to match<br>minimum: `1`                    | &#9989; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `plays`                       | Uses the plays attribute to match<br>minimum: `1`                    | &#9989; | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `duration`                    | Uses the duration attribute to match using minutes<br>minimum: `0.0` | &#9989; | &#9989; | &#10060; | &#9989;  | &#10060; | &#10060; | &#9989;  |
+
+<sup>1</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr.
 
 ## Special Filters
+
 Special Filters each have their own set of rules for how they're used.
 
 ### Attribute

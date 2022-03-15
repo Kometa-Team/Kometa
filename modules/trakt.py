@@ -241,7 +241,7 @@ class Trakt:
         return self._parse(items, typeless=pagenation == "popular", item_type="movie" if is_movie else "show")
 
     def get_people(self, data):
-        return {i[0][0]: i[0][1] for i in self._user_list(data) if i[1] == "tmdb_person"}
+        return {str(i[0][0]): i[0][1] for i in self._user_list(data) if i[1] == "tmdb_person"}
 
     def validate_trakt(self, trakt_lists, is_movie, trakt_type="list"):
         values = util.get_list(trakt_lists, split=False)

@@ -456,9 +456,9 @@ class Plex(Library):
         return self.PlexServer.fetchItem(data)
 
     def get_all(self, collection_level=None, load=False):
-        if load and not collection_level:
+        if load and collection_level in [None, "show", "artist", "movie"]:
             self._all_items = []
-        if self._all_items and not collection_level:
+        if self._all_items and collection_level in [None, "show", "artist", "movie"]:
             return self._all_items
         collection_type = collection_level if collection_level else self.Plex.TYPE
         if not collection_level:
@@ -702,6 +702,7 @@ class Plex(Library):
             for d in cols:
                 if d.title == data:
                     return d
+            logger.debug("")
             for d in cols:
                 logger.debug(f"Found: {d.title}")
             logger.debug(f"Looking for: {data}")
@@ -792,6 +793,7 @@ class Plex(Library):
 
     def get_filter_items(self, uri_args):
         key = f"/library/sections/{self.Plex.key}/all{uri_args}"
+        logger.debug(key)
         return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
 
     def get_collection_name_and_items(self, collection, smart_label_collection):
