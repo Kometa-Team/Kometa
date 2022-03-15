@@ -1538,6 +1538,10 @@ dynamic_collections:
 
 Name of the template to use for these dynamic collections. Each `type` has its own default template, but if you want to define and use your own template you can.
 
+Each template is passed a template variable whose name matches the dynamic collection `type`. i.e. in the example below `<<network>>` is the template variable.
+
+`key` and `key_name` are both passed along and can be used as template variables.
+
 For example, the template below removes the limit on the `smart_filter` so it shows all items in each network
 
 ```yaml

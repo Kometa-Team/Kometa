@@ -934,7 +934,7 @@ class CollectionBuilder:
         if method_name == "anidb_popular":
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=30, maximum=30)))
         elif method_name in ["anidb_id", "anidb_relation"]:
-            for anidb_id in self.config.AniDB.validate_anidb_ids(method_data, self.language):
+            for anidb_id in self.config.AniDB.validate_anidb_ids(method_data):
                 self.builders.append((method_name, anidb_id))
         elif method_name == "anidb_tag":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
@@ -1326,7 +1326,7 @@ class CollectionBuilder:
         elif "tautulli" in method:
             ids = self.library.Tautulli.get_rating_keys(self.library, value, self.playlist)
         elif "anidb" in method:
-            anidb_ids = self.config.AniDB.get_anidb_ids(method, value, self.language)
+            anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
             ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
         elif "anilist" in method:
             anilist_ids = self.config.AniList.get_anilist_ids(method, value)

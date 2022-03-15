@@ -448,6 +448,10 @@ def library_operations(config, library):
         sonarr_adds = []
         trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
+        reverse_anidb = {}
+        for k, v in library.anidb_map.values():
+            reverse_anidb[v] = k
+
         for i, item in enumerate(items, 1):
             try:
                 library.reload(item)
@@ -518,6 +522,16 @@ def library_operations(config, library):
                 else:
                     logger.info(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}")
 
+            anidb_item = None
+            if library.mass_genre_update == "anidb":
+                if item.ratingKey in reverse_anidb:
+                    try:
+                        anidb_item = config.AniDB.get_anime(reverse_anidb[item.ratingKey])
+                    except Failed as e:
+                        logger.error(str(e))
+                else:
+                    logger.info(f"{item.title[:25]:<25} | No AniDB ID for Guid: {item.guid}")
+
             mdb_item = None
             if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types \
                     or library.mass_content_rating_update in ["mdb", "mdb_commonsense"] or library.mass_originally_available_update == "mdb":
@@ -563,6 +577,10 @@ def library_operations(config, library):
                     return mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
                 elif mdb_item and attribute == "mdb_letterboxd":
                     return mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                elif anidb_item and attribute == "anidb_rating":
+                    return anidb_item.rating
+                elif anidb_item and attribute == "anidb_average":
+                    return anidb_item.average
                 else:
                     raise Failed
 
@@ -574,6 +592,8 @@ def library_operations(config, library):
                         new_genres = omdb_item.genres
                     elif tvdb_item and library.mass_genre_update == "tvdb":
                         new_genres = tvdb_item.genres
+                    elif anidb_item and library.mass_genre_update == "anidb":
+                        new_genres = anidb_item.genres
                     else:
                         raise Failed
                     library.edit_tags("genre", item, sync_tags=new_genres)
@@ -622,10 +642,12 @@ def library_operations(config, library):
                         new_date = omdb_item.released
                     elif mdb_item and library.mass_originally_available_update == "mdb":
                         new_date = mdb_item.released
-                    elif tvdb_item and library.mass_content_rating_update == "tvdb":
+                    elif tvdb_item and library.mass_originally_available_update == "tvdb":
                         new_date = tvdb_item.released
-                    elif tmdb_item and library.mass_content_rating_update == "tvdb":
+                    elif tmdb_item and library.mass_originally_available_update == "tmdb":
                         new_date = tmdb_item.release_date if library.is_movie else tmdb_item.first_air_date
+                    elif anidb_item and library.mass_originally_available_update == "anidb":
+                        new_date = anidb_item.released
                     else:
                         raise Failed
                     if new_date is None:

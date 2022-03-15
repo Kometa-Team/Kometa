@@ -31,9 +31,9 @@ from ruamel import yaml
 logger = util.logger
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
-mass_genre_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata"}
+mass_genre_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Tag Metadata"}
 mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
-mass_available_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "tvdb": "Use TVDb Metadata"}
+mass_available_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Metadata"}
 mass_rating_options = {
     "tmdb": "Use TMDb Rating",
     "omdb": "Use IMDb Rating through OMDb",
@@ -45,7 +45,9 @@ mass_rating_options = {
     "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDbList",
     "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDbList",
     "mdb_tmdb": "Use TMDb Rating through MDbList",
-    "mdb_letterboxd": "Use Letterboxd Rating through MDbList"
+    "mdb_letterboxd": "Use Letterboxd Rating through MDbList",
+    "anidb_rating": "Use AniDB Rating",
+    "anidb_average": "Use AniDB Average"
 }
 
 class ConfigFile:
@@ -447,7 +449,7 @@ class ConfigFile:
             else:
                 logger.warning("mal attribute not found")
 
-            self.AniDB = AniDB(self)
+            self.AniDB = AniDB(self, check_for_attribute(self.data, "language", parent="anidb", default="en"))
             if "anidb" in self.data:
                 logger.separator()
                 logger.info("Connecting to AniDB...")
