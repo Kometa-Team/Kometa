@@ -63,6 +63,7 @@ class ConfigFile:
 
         self.default_dir = default_dir
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
+        self.new_version = attrs["new_version"] if "new_version" in attrs else None
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.delete_collections = attrs["delete"] if "delete" in attrs else False
@@ -355,7 +356,7 @@ class ConfigFile:
 
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
         try:
-            self.Webhooks.start_time_hooks(self.start_time)
+            self.Webhooks.start_time_hooks(self.start_time, self.new_version)
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")

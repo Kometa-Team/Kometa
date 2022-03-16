@@ -81,6 +81,7 @@ The Run Start notification will be sent at the beginning of every run.
 ```yaml
 {
   "start_time": str,            // Time Run is started Format "YY-mm-dd HH:MM:SS"
+  "new_version": str            // New Version or null if version is current
 }
 ```
 
@@ -95,6 +96,7 @@ The Run End notification will be sent at the end of every run with statistics.
   "start_time": str,            // Time Run started Format "YY-mm-dd HH:MM:SS"
   "end_time": str,              // Time Run ended Format "YY-mm-dd HH:MM:SS"
   "run_time": str,              // Time Run took to complete Format "HH:MM"
+  "new_version": str,           // New Version or null if version is current
   "collections_created": int,   // Number of Collections/Playlists Created
   "collections_modified": int,  // Number of Collections/Playlists Modified
   "collections_deleted": int,   // Number of Collections/Playlists Removed

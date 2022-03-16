@@ -44,16 +44,20 @@ class Webhooks:
                     if response.status_code >= 400:
                         raise Failed(f"({response.status_code} [{response.reason}])")
 
-    def start_time_hooks(self, start_time):
+    def start_time_hooks(self, start_time, version):
         if self.run_start_webhooks:
-            self._request(self.run_start_webhooks, {"start_time": start_time.strftime("%Y-%m-%d %H:%M:%S")})
+            self._request(self.run_start_webhooks, {
+                "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "new_version": version
+            })
 
-    def end_time_hooks(self, start_time, end_time, run_time, stats):
+    def end_time_hooks(self, start_time, end_time, run_time, stats, version):
         if self.run_end_webhooks:
             self._request(self.run_end_webhooks, {
                 "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
                 "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
                 "run_time": run_time,
+                "new_version": version,
                 "collections_created": stats["created"],
                 "collections_modified": stats["modified"],
                 "collections_deleted": stats["deleted"],
