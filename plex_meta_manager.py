@@ -108,17 +108,21 @@ def my_except_hook(exctype, value, tb):
 
 sys.excepthook = my_except_hook
 
-version = "Unknown"
+def get_versions(presplit_version):
+    split_version = presplit_version.split("-develop")
+    return presplit_version, split_version[0], int(split_version[1]) if len(split_version) > 1 else 0
+
+version = ("Unknown", "Unknown", 0)
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) as handle:
     for line in handle.readlines():
         line = line.strip()
         if len(line) > 0:
-            version = line
+            version = get_versions(line)
             break
 
-is_develop = "develop" in version
-version_url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{'develop' if is_develop else 'master'}/VERSION"
-newest_version = requests.get(version_url).content.decode().strip()
+version_url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{'develop' if version[1] else 'master'}/VERSION"
+latest_version = get_versions(requests.get(version_url).content.decode().strip())
+new_version = latest_version[0] if version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2]) else None
 
 plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = "Plex-Meta-Manager"
 
@@ -132,9 +136,9 @@ def start(attrs):
     logger.info_center("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
     logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
     logger.info_center("                                                                     |___/           ")
-    logger.info(f"    Version: {version}")
-    if version != newest_version and ((is_develop and int(version[version.index("develop") + 7:]) < int(newest_version[newest_version.index("develop") + 7:])) or not is_develop):
-        logger.info(f"    Newest Version: {newest_version}")
+    logger.info(f"    Version: {version[0]}")
+    if new_version:
+        logger.info(f"    Newest Version: {new_version}")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
     elif "test" in attrs and attrs["test"]:                 start_type = "Test "
     elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
@@ -144,6 +148,7 @@ def start(attrs):
     if "time" not in attrs:
         attrs["time"] = start_time.strftime("%H:%M")
     attrs["time_obj"] = start_time
+    attrs["read_only"] = read_only_config
     logger.separator(debug=True)
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
     logger.debug(f"--time (PMM_TIME): {times}")
@@ -171,7 +176,7 @@ def start(attrs):
     config = None
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
     try:
-        config = ConfigFile(default_dir, attrs, read_only_config)
+        config = ConfigFile(default_dir, attrs)
     except Exception as e:
         logger.stacktrace()
         logger.critical(e)
@@ -191,9 +196,9 @@ def start(attrs):
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
-    version_line = f"Version: {version}"
-    if version != newest_version and ((is_develop and int(version[version.index("develop") + 7:]) < int(newest_version[newest_version.index("develop") + 7:])) or not is_develop):
-        version_line = f"{version_line}        Newest Version: {newest_version}"
+    version_line = f"Version: {version[0]}"
+    if new_version:
+        version_line = f"{version_line}        Newest Version: {new_version}"
     logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
     logger.remove_main_handler()
 
@@ -460,7 +465,7 @@ def library_operations(config, library):
 
         reverse_anidb = {}
         if library.mass_genre_update == "anidb":
-            for k, v in library.anidb_map.values():
+            for k, v in library.anidb_map.items():
                 reverse_anidb[v] = k
 
         for i, item in enumerate(items, 1):
