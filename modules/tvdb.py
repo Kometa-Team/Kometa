@@ -92,10 +92,12 @@ class TVDbObj:
             self.directors = parse_page("//strong[text()='Directors']/parent::li/span/a/text()[normalize-space()]", is_list=True)
             self.writers = parse_page("//strong[text()='Writers']/parent::li/span/a/text()[normalize-space()]", is_list=True)
             self.studios = parse_page("//strong[text()='Studio']/parent::li/span/a/text()[normalize-space()]", is_list=True)
-            self.released = datetime.strptime(parse_page("//strong[text()='Released']/parent::li/span/text()[normalize-space()]"), "%B %d, %Y")
+            released = parse_page("//strong[text()='Released']/parent::li/span/text()[normalize-space()]")
+            self.released = datetime.strptime(released, "%B %d, %Y") if released else released
         else:
             self.networks = parse_page("//strong[text()='Networks']/parent::li/span/a/text()[normalize-space()]", is_list=True)
-            self.released = datetime.strptime(parse_page("//strong[text()='First Aired']/parent::li/span/text()[normalize-space()]"), "%B %d, %Y")
+            released = parse_page("//strong[text()='First Aired']/parent::li/span/text()[normalize-space()]")
+            self.released = datetime.strptime(released, "%B %d, %Y") if released else released
         self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]", is_list=True)
 
         tmdb_id = None

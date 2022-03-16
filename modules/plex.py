@@ -856,10 +856,11 @@ class Plex(Library):
         return len(display) > 0
 
     def find_assets(self, item, name=None, upload=True, overlay=None, folders=None, create=None):
-        if isinstance(item, Movie):
-            name = os.path.basename(os.path.dirname(str(item.locations[0])))
-        elif isinstance(item, (Artist, Show)):
-            name = os.path.basename(str(item.locations[0]))
+        if isinstance(item, (Movie, Artist, Show)):
+            path_test = str(item.locations[0])
+            if not os.path.dirname(path_test):
+                path_test = path_test.replace("\\", "/")
+            name = os.path.basename(os.path.dirname(path_test) if isinstance(item, Movie) else path_test)
         elif isinstance(item, (Collection, Playlist)):
             name = name if name else item.title
         else:

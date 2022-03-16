@@ -52,7 +52,7 @@ mass_rating_options = {
 }
 
 class ConfigFile:
-    def __init__(self, default_dir, attrs, read_only):
+    def __init__(self, default_dir, attrs):
         logger.info("Locating config...")
         config_file = attrs["config_file"]
         if config_file and os.path.exists(config_file):                     self.config_path = os.path.abspath(config_file)
@@ -62,7 +62,7 @@ class ConfigFile:
         logger.info(f"Using {self.config_path} as config")
 
         self.default_dir = default_dir
-        self.read_only = read_only
+        self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.delete_collections = attrs["delete"] if "delete" in attrs else False
