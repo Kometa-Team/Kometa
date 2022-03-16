@@ -600,7 +600,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for album collections")
                 elif not self.library.is_music and method_name in music_only_builders:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for music libraries")
-                elif self.collection_level != "episode" and method_name in episode_parts_only:
+                elif not self.playlist and self.collection_level != "episode" and method_name in episode_parts_only:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with Collection Level: episode")
                 elif self.parts_collection and method_name not in parts_collection_valid:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed with Collection Level: {self.collection_level.capitalize()}")
