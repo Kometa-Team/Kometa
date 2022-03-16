@@ -44,7 +44,7 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           nodetail: true
-          title: "Latest Docker Build: **Success**"
+          title: "Docker latest build: **Success**"
           username: Docker
           avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
 
@@ -54,7 +54,7 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           nodetail: true
-          title: "Latest Docker Build: **Failure**"
+          title: "Docker latest build: **Failure**"
           color: 0xe30c43
           username: Docker
           avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png

@@ -93,8 +93,8 @@ class TMDBObj:
         self.vote_average = data["vote_average"] if isinstance(data, dict) else data.vote_average
         self.language_iso = data["language_iso"] if isinstance(data, dict) else data.original_language.iso_639_1 if data.original_language else None
         self.language_name = data["language_name"] if isinstance(data, dict) else data.original_language.english_name if data.original_language else None
-        self.genres = data["genres"].split("|") if isinstance(data, dict) else [g.name for g in data.genres]
-        self.keywords = data["keywords"].split("|") if isinstance(data, dict) else [g.name for g in data.keywords]
+        self.genres = data["genres"].split("|") if isinstance(data, dict) else [g.name for g in data.genres if g]
+        self.keywords = data["keywords"].split("|") if isinstance(data, dict) else [k.name for k in data.keywords if k]
 
 
 class TMDbMovie(TMDBObj):
@@ -136,9 +136,9 @@ class TMDbShow(TMDBObj):
         self.type = data["type"] if isinstance(data, dict) else data.type
         self.studio = data["studio"] if isinstance(data, dict) else data.networks[0].name if data.networks else None
         self.tvdb_id = data["tvdb_id"] if isinstance(data, dict) else data.tvdb_id
-        loop = data["countries"].split("|") if isinstance(data, dict) else data.origin_countries
+        loop = data.origin_countries if not isinstance(data, dict) else data["countries"].split("|") if data["countries"] else []
         self.countries = [TMDbCountry(c) for c in loop]
-        loop = data["seasons"].split("|") if isinstance(data, dict) else data.seasons
+        loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("|") if data["seasons"] else []
         self.seasons = [TMDbSeason(s) for s in loop]
 
         if self._tmdb.config.Cache and not ignore_cache:
