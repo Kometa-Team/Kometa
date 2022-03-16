@@ -149,6 +149,7 @@ def start(attrs):
         attrs["time"] = start_time.strftime("%H:%M")
     attrs["time_obj"] = start_time
     attrs["read_only"] = read_only_config
+    attrs["new_version"] = new_version
     logger.separator(debug=True)
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
     logger.debug(f"--time (PMM_TIME): {times}")
@@ -192,7 +193,7 @@ def start(attrs):
     run_time = str(end_time - start_time).split('.')[0]
     if config:
         try:
-            config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
+            config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats, new_version)
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
