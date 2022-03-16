@@ -10,7 +10,7 @@
 | [cpt-kuesel](https://github.com/cpt-kuesel)  | Cpt Kuesel | PMM Master Discord Support and [PMM Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Maintainer                            |
 | [mikenobbs](https://github.com/mikenobbs)    | mikenobbs  | PMM Discord Moderator                                                                                                                       |
 
-The team at Plex Meta Manager would like to recognize and thank those who have helped the project become what it is today.
+The team at Plex Meta Manager would like to recognize and thank those who have helped the project become what it is today. 
 
 **We extend our gratitude to everyone who has contributed in any way towards any of the projects mentioned below.**
 <br>
@@ -55,6 +55,7 @@ These are the developers and creators of the technologies that are required to m
 | [meisnate12](https://github.com/meisnate12) | Creator of [ArrAPI](https://github.com/meisnate12/ArrAPI) and [TMDbAPIs](https://github.com/meisnate12/TMDbAPIs)                                                      | [Click Here](https://github.com/sponsors/meisnate12) |
 | [dbader](https://github.com/dbader)         | Creator of [schedule](https://github.com/dbader/schedule)                                                                                                             |                       &#10060;                       |
 | [rholder](https://github.com/rholder)       | Creator of [retrying](https://github.com/rholder/retrying)                                                                                                            |                       &#10060;                       |
+
 
 <br>
 <br>
