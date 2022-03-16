@@ -128,6 +128,24 @@ class IMDb:
             return imdb_ids
         raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
+    def parental_guide(self, imdb_id, ignore_cache=False):
+        parental_dict = {}
+        expired = None
+        if self.config.Cache and not ignore_cache:
+            parental_dict, expired = self.config.Cache.query_imdb_parental(imdb_id, self.config.expiration)
+            if parental_dict and expired is False:
+                return parental_dict
+        response = self.config.get_html(f"https://www.imdb.com/title/{imdb_id}/parentalguide")
+        for ptype in ["nudity", "violence", "profanity", "alcohol", "frightening"]:
+            results = response.xpath(f"//section[@id='advisory-{ptype}']//span[contains(@class,'ipl-status-pill')]/text()")
+            if results:
+                parental_dict[ptype] = results[0].strip()
+            else:
+                raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
+        if self.config.Cache and not ignore_cache:
+            self.config.Cache.update_imdb_parental(expired, imdb_id, parental_dict, self.config.expiration)
+        return parental_dict
+
     def _ids_from_chart(self, chart):
         if chart == "box_office":
             url = "chart/boxoffice"

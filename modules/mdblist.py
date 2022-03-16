@@ -1,3 +1,4 @@
+from datetime import datetime
 from modules import util
 from modules.util import Failed
 from urllib.parse import urlparse
@@ -17,6 +18,10 @@ class MDbObj:
         self._data = data
         self.title = data["title"]
         self.year = util.check_num(data["year"])
+        try:
+            self.released = datetime.strptime(data["released"], "%Y-%m-%d")
+        except ValueError:
+            self.released = None
         self.type = data["type"]
         self.imdbid = data["imdbid"]
         self.traktid = util.check_num(data["traktid"])
