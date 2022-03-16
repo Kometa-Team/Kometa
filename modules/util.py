@@ -111,7 +111,7 @@ def get_list(data, lower=False, upper=False, split=True, int_list=False):
     elif int_list is True:
         try:                            return [int(str(d).strip()) for d in list_data]
         except ValueError:              return []
-    else:                           return [str(d).strip() for d in list_data]
+    else:                           return [d if isinstance(d, dict) else str(d).strip() for d in list_data]
 
 def get_int_list(data, id_type):
     int_values = []
@@ -438,12 +438,14 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             else:
                 raise Failed(f"{error} Error: {display} {dict_data} is not a dictionary")
         return final_list
-    elif datatype in ["dict", "dictlist", "dictdict"]:
+    elif datatype in ["dict", "dictlist", "dictdict", "strdict"]:
         if isinstance(value, dict):
             if datatype == "dict":
                 return value
             elif datatype == "dictlist":
                 return {k: v if isinstance(v, list) else [v] for k, v in value.items()}
+            elif datatype == "strdict":
+                return {str(k): str(v) for k, v in value.items()}
             else:
                 final_dict = {}
                 for dict_key, dict_data in value.items():

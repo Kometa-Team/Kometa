@@ -10,52 +10,39 @@ anime_lists_url = "https://raw.githubusercontent.com/Fribb/anime-lists/master/an
 class Convert:
     def __init__(self, config):
         self.config = config
-        self._loaded = False
         self._anidb_ids = {}
         self._mal_to_anidb = {}
         self._anilist_to_anidb = {}
         self._anidb_to_imdb = {}
         self._anidb_to_tvdb = {}
+        self._imdb_to_anidb = {}
+        self._tvdb_to_anidb = {}
+        for anime_id in self.config.get_json(anime_lists_url):
+            if "anidb_id" in anime_id:
+                self._anidb_ids[anime_id["anidb_id"]] = anime_id
+                if "mal_id" in anime_id:
+                    self._mal_to_anidb[int(anime_id["mal_id"])] = int(anime_id["anidb_id"])
+                if "anilist_id" in anime_id:
+                    self._anilist_to_anidb[int(anime_id["anilist_id"])] = int(anime_id["anidb_id"])
+                if "imdb_id" in anime_id and str(anime_id["imdb_id"]).startswith("tt"):
+                    self._anidb_to_imdb[int(anime_id["anidb_id"])] = util.get_list(anime_id["imdb_id"])
+                    for im_id in util.get_list(anime_id["imdb_id"]):
+                        self._imdb_to_anidb[im_id] = int(anime_id["anidb_id"])
+                if "thetvdb_id" in anime_id:
+                    self._anidb_to_tvdb[int(anime_id["anidb_id"])] = int(anime_id["thetvdb_id"])
+                    self._tvdb_to_anidb[int(anime_id["thetvdb_id"])] = int(anime_id["anidb_id"])
 
-    @property
-    def anidb_ids(self):
-        self._load_anime_conversion()
-        return self._anidb_ids
+    def imdb_to_anidb(self, imdb_id):
+        if imdb_id in self._imdb_to_anidb:
+            return self._imdb_to_anidb[imdb_id]
+        else:
+            raise Failed(f"AniDB ID not found for IMDb ID: {imdb_id}")
 
-    @property
-    def mal_to_anidb(self):
-        self._load_anime_conversion()
-        return self._mal_to_anidb
-
-    @property
-    def anilist_to_anidb(self):
-        self._load_anime_conversion()
-        return self._anilist_to_anidb
-
-    @property
-    def anidb_to_imdb(self):
-        self._load_anime_conversion()
-        return self._anidb_to_imdb
-
-    @property
-    def anidb_to_tvdb(self):
-        self._load_anime_conversion()
-        return self._anidb_to_tvdb
-
-    def _load_anime_conversion(self):
-        if not self._loaded:
-            for anime_id in self.config.get_json(anime_lists_url):
-                if "anidb_id" in anime_id:
-                    self._anidb_ids[anime_id["anidb_id"]] = anime_id
-                    if "mal_id" in anime_id:
-                        self._mal_to_anidb[int(anime_id["mal_id"])] = int(anime_id["anidb_id"])
-                    if "anilist_id" in anime_id:
-                        self._anilist_to_anidb[int(anime_id["anilist_id"])] = int(anime_id["anidb_id"])
-                    if "imdb_id" in anime_id and str(anime_id["imdb_id"]).startswith("tt"):
-                        self._anidb_to_imdb[int(anime_id["anidb_id"])] = util.get_list(anime_id["imdb_id"])
-                    if "thetvdb_id" in anime_id:
-                        self._anidb_to_tvdb[int(anime_id["anidb_id"])] = int(anime_id["thetvdb_id"])
-            self._loaded = True
+    def tvdb_to_anidb(self, tvdb_id):
+        if int(tvdb_id) in self._tvdb_to_anidb:
+            return self._tvdb_to_anidb[int(tvdb_id)]
+        else:
+            raise Failed(f"AniDB ID not found for TVDb ID: {tvdb_id}")
 
     def anidb_to_ids(self, anidb_ids, library):
         ids = []
@@ -63,18 +50,18 @@ class Convert:
         for anidb_id in anidb_list:
             if anidb_id in library.anidb_map:
                 ids.append((library.anidb_map[anidb_id], "ratingKey"))
-            elif anidb_id in self.anidb_to_imdb:
+            elif anidb_id in self._anidb_to_imdb:
                 added = False
-                for imdb in self.anidb_to_imdb[anidb_id]:
+                for imdb in self._anidb_to_imdb[anidb_id]:
                     tmdb, tmdb_type = self.imdb_to_tmdb(imdb)
                     if tmdb and tmdb_type == "movie":
                         ids.append((tmdb, "tmdb"))
                         added = True
-                if added is False and anidb_id in self.anidb_to_tvdb:
-                    ids.append((self.anidb_to_tvdb[anidb_id], "tvdb"))
-            elif anidb_id in self.anidb_to_tvdb:
-                ids.append((self.anidb_to_tvdb[anidb_id], "tvdb"))
-            elif anidb_id in self.anidb_ids:
+                if added is False and anidb_id in self._anidb_to_tvdb:
+                    ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
+            elif anidb_id in self._anidb_to_tvdb:
+                ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
+            elif anidb_id in self._anidb_ids:
                 logger.warning(f"Convert Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
             else:
                 logger.warning(f"Convert Error: AniDB ID: {anidb_id} not found")
@@ -83,8 +70,8 @@ class Convert:
     def anilist_to_ids(self, anilist_ids, library):
         anidb_ids = []
         for anilist_id in anilist_ids:
-            if anilist_id in self.anilist_to_anidb:
-                anidb_ids.append(self.anilist_to_anidb[anilist_id])
+            if anilist_id in self._anilist_to_anidb:
+                anidb_ids.append(self._anilist_to_anidb[anilist_id])
             else:
                 logger.warning(f"Convert Error: AniDB ID not found for AniList ID: {anilist_id}")
         return self.anidb_to_ids(anidb_ids, library)
@@ -94,8 +81,8 @@ class Convert:
         for mal_id in mal_ids:
             if int(mal_id) in library.mal_map:
                 ids.append((library.mal_map[int(mal_id)], "ratingKey"))
-            elif int(mal_id) in self.mal_to_anidb:
-                ids.extend(self.anidb_to_ids(self.mal_to_anidb[int(mal_id)], library))
+            elif int(mal_id) in self._mal_to_anidb:
+                ids.extend(self.anidb_to_ids(self._mal_to_anidb[int(mal_id)], library))
             else:
                 logger.warning(f"Convert Error: AniDB ID not found for MyAnimeList ID: {mal_id}")
         return ids
@@ -275,26 +262,26 @@ class Convert:
                     raise Failed(f"Hama Agent ID: {check_id} not supported")
             elif item_type == "myanimelist":
                 library.mal_map[int(check_id)] = item.ratingKey
-                if int(check_id) in self.mal_to_anidb:
-                    anidb_id = self.mal_to_anidb[int(check_id)]
+                if int(check_id) in self._mal_to_anidb:
+                    anidb_id = self._mal_to_anidb[int(check_id)]
                 else:
                     raise Failed(f"AniDB ID not found for MyAnimeList ID: {check_id}")
             elif item_type == "local":                      raise Failed("No match in Plex")
             else:                                           raise Failed(f"Agent {item_type} not supported")
 
             if anidb_id:
-                if anidb_id in self.anidb_to_imdb:
+                if anidb_id in self._anidb_to_imdb:
                     added = False
-                    for imdb in self.anidb_to_imdb[anidb_id]:
+                    for imdb in self._anidb_to_imdb[anidb_id]:
                         tmdb, tmdb_type = self.imdb_to_tmdb(imdb)
                         if tmdb and tmdb_type == "movie":
                             imdb_id.append(imdb)
                             tmdb_id.append(tmdb)
                             added = True
-                    if added is False and anidb_id in self.anidb_to_tvdb:
-                        tvdb_id.append(self.anidb_to_tvdb[anidb_id])
-                elif anidb_id in self.anidb_to_tvdb:
-                    tvdb_id.append(self.anidb_to_tvdb[anidb_id])
+                    if added is False and anidb_id in self._anidb_to_tvdb:
+                        tvdb_id.append(self._anidb_to_tvdb[anidb_id])
+                elif anidb_id in self._anidb_to_tvdb:
+                    tvdb_id.append(self._anidb_to_tvdb[anidb_id])
                 else:
                     raise Failed(f"AniDB: {anidb_id} not found")
             else:

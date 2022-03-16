@@ -169,3 +169,7 @@ p {
 .tab-set {
   width: auto !important;
 }
+.highlighted {
+  background-color: #ac0ce3 !important;
+  color: #FFFFFF !important;
+}

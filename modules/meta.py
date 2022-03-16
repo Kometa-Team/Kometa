@@ -246,9 +246,11 @@ class MetadataFile(DataFile):
             all_items = None
             if self.dynamic_collections:
                 logger.info("")
-                logger.separator(f"Dynamic Collections")
-                logger.info("")
+                logger.separator("Dynamic Collections")
             for map_name, dynamic in self.dynamic_collections.items():
+                logger.info("")
+                logger.separator(f"Building {map_name} Dynamic Collections", space=False, border=False)
+                logger.info("")
                 try:
                     methods = {dm.lower(): dm for dm in dynamic}
                     if "type" not in methods:
@@ -268,11 +270,11 @@ class MetadataFile(DataFile):
                         if og_exclude and include:
                             raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictlist") if "addons" in methods else {}
-                        exclude = [e for e in og_exclude]
+                        exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
                             if k in v:
                                 logger.warning(f"Config Warning: {k} cannot be an addon for itself")
-                            exclude.extend([vv for vv in v if vv != k])
+                            exclude.extend([str(vv) for vv in v if str(vv) != str(k)])
                         default_title_format = "<<key_name>>"
                         default_template = None
                         auto_list = {}
@@ -283,10 +285,10 @@ class MetadataFile(DataFile):
                                     auto_list[ck] = cv
                         if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
-                            if auto_type in ["subtitle_language", "audio_language"]:
-                                auto_list = {i.key: i.title for i in library.get_tags(search_tag) if i.title not in exclude and i.key not in exclude}
+                            if auto_type in ["decade", "subtitle_language", "audio_language"]:
+                                auto_list = {str(i.key): i.title for i in library.get_tags(search_tag) if str(i.title) not in exclude and str(i.key) not in exclude}
                             else:
-                                auto_list = {i.title: i.title for i in library.get_tags(search_tag) if i.title not in exclude}
+                                auto_list = {str(i.title): i.title for i in library.get_tags(search_tag) if str(i.title) not in exclude}
                             if library.is_music:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
                                 default_title_format = "Most Played <<key_name>> <<library_type>>s"
@@ -303,8 +305,8 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
-                                if tmdb_item and tmdb_item.collection and tmdb_item.collection.id not in exclude and tmdb_item.collection.name not in exclude:
-                                    auto_list[tmdb_item.collection.id] = tmdb_item.collection.name
+                                if tmdb_item and tmdb_item.collection_id and tmdb_item.collection_id not in exclude and tmdb_item.collection_name not in exclude:
+                                    auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
                             logger.exorcise()
                         elif auto_type == "original_language":
                             if not all_items:
@@ -313,8 +315,8 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
-                                if tmdb_item and tmdb_item.original_language  and tmdb_item.original_language.iso_639_1  not in exclude and tmdb_item.original_language.english_name not in exclude:
-                                    auto_list[tmdb_item.original_language.iso_639_1] = tmdb_item.original_language.english_name
+                                if tmdb_item and tmdb_item.language_iso  and tmdb_item.language_iso  not in exclude and tmdb_item.language_name not in exclude:
+                                    auto_list[tmdb_item.language_iso] = tmdb_item.language_name
                             logger.exorcise()
                             default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type == "origin_country":
@@ -324,8 +326,8 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
-                                if tmdb_item and tmdb_item.origin_countries:
-                                    for country in tmdb_item.origin_countries:
+                                if tmdb_item and tmdb_item.countries:
+                                    for country in tmdb_item.countries:
                                         if country.iso_3166_1 not in exclude and country.name not in exclude:
                                             auto_list[country.iso_3166_1] = country.name
                             logger.exorcise()
@@ -369,7 +371,7 @@ class MetadataFile(DataFile):
                                     try:
                                         results = self.config.TMDb.search_people(role["name"])
                                         if results[0].id not in exclude:
-                                            auto_list[results[0].id] = results[0].name
+                                            auto_list[str(results[0].id)] = results[0].name
                                             person_count += 1
                                     except TMDbNotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
@@ -399,8 +401,8 @@ class MetadataFile(DataFile):
                         methods["title_override"] = methods.pop("post_format_override")
                     if "pre_format_override" in methods:
                         methods["key_name_override"] = methods.pop("pre_format_override")
-                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "title_override" in methods else {}
-                    key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="dict") if "key_name_override" in methods else {}
+                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "title_override" in methods else {}
+                    key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "key_name_override" in methods else {}
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
@@ -445,23 +447,28 @@ class MetadataFile(DataFile):
                             if key not in exclude:
                                 other_keys.append(key)
                             continue
-                        template_call = {"name": template_name, auto_type: [key] + addons[key] if key in addons else key}
+                        if key in key_name_override:
+                            key_name = key_name_override[key]
+                        else:
+                            key_name = value
+                            for prefix in remove_prefix:
+                                if key_name.startswith(prefix):
+                                    key_name = key_name[len(prefix):].strip()
+                            for suffix in remove_suffix:
+                                if key_name.endswith(suffix):
+                                    key_name = key_name[:-len(suffix)].strip()
+                        template_call = {
+                            "name": template_name,
+                            auto_type: [key] + addons[key] if key in addons else [key],
+                            "key_name": key_name, "key": key
+                        }
                         for k, v in template_variables.items():
                             if key in v:
                                 template_call[k] = v[key]
                         if key in title_override:
                             collection_title = title_override[key]
                         else:
-                            if key in key_name_override:
-                                value = key_name_override[key]
-                            else:
-                                for prefix in remove_prefix:
-                                    if value.startswith(prefix):
-                                        value = value[len(prefix):].strip()
-                                for suffix in remove_suffix:
-                                    if value.endswith(suffix):
-                                        value = value[:-len(suffix)].strip()
-                            collection_title = title_format.replace("<<title>>", value).replace("<<key_name>>", value)
+                            collection_title = title_format.replace("<<title>>", key_name).replace("<<key_name>>", key_name)
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                         else:
@@ -662,18 +669,14 @@ class MetadataFile(DataFile):
             genres = []
             if tmdb_item:
                 originally_available = datetime.strftime(tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date, "%Y-%m-%d")
-                if tmdb_is_movie and tmdb_item.original_title != tmdb_item.title:
+
+                if tmdb_item.original_title != tmdb_item.title:
                     original_title = tmdb_item.original_title
-                elif not tmdb_is_movie and tmdb_item.original_name != tmdb_item.name:
-                    original_title = tmdb_item.original_name
                 rating = tmdb_item.vote_average
-                if tmdb_is_movie and tmdb_item.companies:
-                    studio = tmdb_item.companies[0].name
-                elif not tmdb_is_movie and tmdb_item.networks:
-                    studio = tmdb_item.networks[0].name
+                studio = tmdb_item.studio
                 tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
                 summary = tmdb_item.overview
-                genres = [genre.name for genre in tmdb_item.genres]
+                genres = tmdb_item.genres
 
             edits = {}
             add_edit("title", item, meta, methods, value=title)

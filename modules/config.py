@@ -31,8 +31,10 @@ from ruamel import yaml
 logger = util.logger
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
-mass_update_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb"}
+mass_genre_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Tag Metadata"}
 mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
+mass_available_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Metadata"}
+imdb_label_options = {"with_none": "Add IMDb Parental Labels including None", "without_none": "Add IMDb Parental Labels including None"}
 mass_rating_options = {
     "tmdb": "Use TMDb Rating",
     "omdb": "Use IMDb Rating through OMDb",
@@ -44,7 +46,9 @@ mass_rating_options = {
     "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDbList",
     "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDbList",
     "mdb_tmdb": "Use TMDb Rating through MDbList",
-    "mdb_letterboxd": "Use Letterboxd Rating through MDbList"
+    "mdb_letterboxd": "Use Letterboxd Rating through MDbList",
+    "anidb_rating": "Use AniDB Rating",
+    "anidb_average": "Use AniDB Average"
 }
 
 class ConfigFile:
@@ -366,7 +370,8 @@ class ConfigFile:
                 logger.info("Connecting to TMDb...")
                 self.TMDb = TMDb(self, {
                     "apikey": check_for_attribute(self.data, "apikey", parent="tmdb", throw=True),
-                    "language": check_for_attribute(self.data, "language", parent="tmdb", default="en")
+                    "language": check_for_attribute(self.data, "language", parent="tmdb", default="en"),
+                    "expiration": check_for_attribute(self.data, "cache_expiration", parent="tmdb", var_type="int", default=60)
                 })
                 logger.info(f"TMDb Connection {'Failed' if self.TMDb is None else 'Successful'}")
             else:
@@ -380,7 +385,7 @@ class ConfigFile:
                 try:
                     self.OMDb = OMDb(self, {
                         "apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True),
-                        "expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                        "expiration": check_for_attribute(self.data, "cache_expiration", parent="omdb", var_type="int", default=60)
                     })
                 except Failed as e:
                     self.errors.append(e)
@@ -397,7 +402,7 @@ class ConfigFile:
                 try:
                     self.Mdblist.add_key(
                         check_for_attribute(self.data, "apikey", parent="mdblist", throw=True),
-                        check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60)
+                        check_for_attribute(self.data, "cache_expiration", parent="mdblist", var_type="int", default=60)
                     )
                     logger.info("Mdblist Connection Successful")
                 except Failed as e:
@@ -445,7 +450,7 @@ class ConfigFile:
             else:
                 logger.warning("mal attribute not found")
 
-            self.AniDB = AniDB(self)
+            self.AniDB = AniDB(self, check_for_attribute(self.data, "language", parent="anidb", default="en"))
             if "anidb" in self.data:
                 logger.separator()
                 logger.info("Connecting to AniDB...")
@@ -592,13 +597,16 @@ class ConfigFile:
                     "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name),
                     "tmdb_collections": None,
                     "genre_mapper": None,
+                    "content_rating_mapper": None,
                     "radarr_remove_by_tag": None,
                     "sonarr_remove_by_tag": None,
                     "mass_collection_mode": None,
                     "metadata_backup": None,
                     "genre_collections": None,
                     "update_blank_track_titles": None,
-                    "mass_content_rating_update": None
+                    "mass_content_rating_update": None,
+                    "mass_originally_available_update": None,
+                    "mass_imdb_parental_labels": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -642,7 +650,7 @@ class ConfigFile:
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
-                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False, do_print=False)
+                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_genre_options, default_is_none=True, save=False, do_print=False)
                 params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
                 params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
                 params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
@@ -660,13 +668,17 @@ class ConfigFile:
                         if "delete_collections_with_less" in lib["operations"]:
                             params["delete_collections_with_less"] = check_for_attribute(lib["operations"], "delete_collections_with_less", var_type="int", default_is_none=True, save=False)
                         if "mass_genre_update" in lib["operations"]:
-                            params["mass_genre_update"] = check_for_attribute(lib["operations"], "mass_genre_update", test_list=mass_update_options, default_is_none=True, save=False)
+                            params["mass_genre_update"] = check_for_attribute(lib["operations"], "mass_genre_update", test_list=mass_genre_options, default_is_none=True, save=False)
                         if "mass_audience_rating_update" in lib["operations"]:
                             params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
                         if "mass_critic_rating_update" in lib["operations"]:
                             params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
                         if "mass_content_rating_update" in lib["operations"]:
                             params["mass_content_rating_update"] = check_for_attribute(lib["operations"], "mass_content_rating_update", test_list=mass_content_options, default_is_none=True, save=False)
+                        if "mass_originally_available_update" in lib["operations"]:
+                            params["mass_originally_available_update"] = check_for_attribute(lib["operations"], "mass_originally_available_update", test_list=mass_available_options, default_is_none=True, save=False)
+                        if "mass_imdb_parental_labels" in lib["operations"]:
+                            params["mass_imdb_parental_labels"] = check_for_attribute(lib["operations"], "mass_imdb_parental_labels", test_list=imdb_label_options, default_is_none=True, save=False)
                         if "mass_trakt_rating_update" in lib["operations"]:
                             params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False)
                         if "split_duplicates" in lib["operations"]:
@@ -722,18 +734,24 @@ class ConfigFile:
                                 logger.error("Config Error: tmdb_collections blank using default settings")
                         if "genre_mapper" in lib["operations"]:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
-                                params["genre_mapper"] = {}
-                                for new_genre, old_genres in lib["operations"]["genre_mapper"].items():
-                                    if old_genres is None:
-                                        params["genre_mapper"][new_genre] = old_genres
+                                params["genre_mapper"] = lib["operations"]["genre_mapper"]
+                                for old_genre, new_genre in lib["operations"]["genre_mapper"].items():
+                                    if old_genre == new_genre:
+                                        logger.error("Config Error: genres cannot be mapped to themselves")
                                     else:
-                                        for old_genre in util.get_list(old_genres):
-                                            if old_genre == new_genre:
-                                                logger.error("Config Error: genres cannot be mapped to themselves")
-                                            else:
-                                                params["genre_mapper"][old_genre] = new_genre
+                                        params["genre_mapper"][old_genre] = new_genre if new_genre else None
                             else:
                                 logger.error("Config Error: genre_mapper is blank")
+                        if "content_rating_mapper" in lib["operations"]:
+                            if lib["operations"]["content_rating_mapper"] and isinstance(lib["operations"]["content_rating_mapper"], dict):
+                                params["content_rating_mapper"] = lib["operations"]["content_rating_mapper"]
+                                for old_content, new_content in lib["operations"]["content_rating_mapper"].items():
+                                    if old_content == new_content:
+                                        logger.error("Config Error: content rating cannot be mapped to themselves")
+                                    else:
+                                        params["content_rating_mapper"][old_content] = new_content if new_content else None
+                            else:
+                                logger.error("Config Error: content_rating_mapper is blank")
                         if "genre_collections" in lib["operations"]:
                             params["genre_collections"] = {
                                 "exclude_genres": [],
@@ -769,20 +787,12 @@ class ConfigFile:
                     self.errors.append(err)
                     logger.error(err)
 
-                if self.OMDb is None and params["mass_genre_update"] == "omdb":
-                    error_check("mass_genre_update", "OMDb")
-                if self.OMDb is None and params["mass_audience_rating_update"] == "omdb":
-                    error_check("mass_audience_rating_update", "OMDb")
-                if self.OMDb is None and params["mass_critic_rating_update"] == "omdb":
-                    error_check("mass_critic_rating_update", "OMDb")
-                if self.OMDb is None and params["mass_content_rating_update"] == "omdb":
-                    error_check("mass_content_rating_update", "OMDb")
-                if not self.Mdblist.has_key and params["mass_audience_rating_update"] in util.mdb_types:
-                    error_check("mass_audience_rating_update", "MdbList API")
-                if not self.Mdblist.has_key and params["mass_critic_rating_update"] in util.mdb_types:
-                    error_check("mass_critic_rating_update", "MdbList API")
-                if not self.Mdblist.has_key and params["mass_content_rating_update"] in ["mdb", "mdb_commonsense"]:
-                    error_check("mass_content_rating_update", "MdbList API")
+                for mass_key in ["mass_genre_update", "mass_audience_rating_update", "mass_critic_rating_update", "mass_content_rating_update", "mass_originally_available_update"]:
+                    if params[mass_key] == "omdb" and self.OMDb is None:
+                        error_check(mass_key, "OMDb")
+                    if params[mass_key] and params[mass_key].startswith("mdb") and not self.Mdblist.has_key:
+                        error_check(mass_key, "MdbList API")
+
                 if self.Trakt is None and params["mass_trakt_rating_update"]:
                     error_check("mass_trakt_rating_update", "Trakt")
 
