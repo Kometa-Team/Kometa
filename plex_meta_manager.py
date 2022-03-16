@@ -459,8 +459,9 @@ def library_operations(config, library):
         trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
 
         reverse_anidb = {}
-        for k, v in library.anidb_map.values():
-            reverse_anidb[v] = k
+        if library.mass_genre_update == "anidb":
+            for k, v in library.anidb_map.values():
+                reverse_anidb[v] = k
 
         for i, item in enumerate(items, 1):
             try:
@@ -494,6 +495,7 @@ def library_operations(config, library):
                     library.edit_tags("label", item, append_tags=labels)
                 except Failed:
                     pass
+
             path = os.path.dirname(str(item.locations[0])) if library.is_movie else str(item.locations[0])
             if library.Radarr and library.radarr_add_all_existing and tmdb_id:
                 path = path.replace(library.Radarr.plex_path, library.Radarr.radarr_path)
@@ -542,12 +544,19 @@ def library_operations(config, library):
             anidb_item = None
             if library.mass_genre_update == "anidb":
                 if item.ratingKey in reverse_anidb:
+                    anidb_id = reverse_anidb[item.ratingKey]
+                elif tvdb_id in config.Convert._tvdb_to_anidb:
+                    anidb_id = config.Convert._tvdb_to_anidb[tvdb_id]
+                elif imdb_id in config.Convert._imdb_to_anidb:
+                    anidb_id = config.Convert._imdb_to_anidb[imdb_id]
+                else:
+                    anidb_id = None
+                    logger.info(f"{item.title[:25]:<25} | No AniDB ID for Guid: {item.guid}")
+                if anidb_id:
                     try:
-                        anidb_item = config.AniDB.get_anime(reverse_anidb[item.ratingKey])
+                        anidb_item = config.AniDB.get_anime(anidb_id)
                     except Failed as e:
                         logger.error(str(e))
-                else:
-                    logger.info(f"{item.title[:25]:<25} | No AniDB ID for Guid: {item.guid}")
 
             mdb_item = None
             if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types \

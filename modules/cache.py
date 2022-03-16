@@ -332,7 +332,7 @@ class Cache:
                     sql = f"UPDATE {map_name} SET {val2_name} = ?, expiration_date = ? WHERE {val1_name} = ?"
                     cursor.execute(sql, (val2, expiration_date.strftime("%Y-%m-%d"), val1))
                 else:
-                    sql = f"UPDATE {map_name} SET {val2_name} = ?, expiration_date = ?{'' if media_type is None else ', media_type = ?'} WHERE {val1_name} = ?"
+                    sql = f"UPDATE {map_name} SET {val2_name} = ?, expiration_date = ?, media_type = ? WHERE {val1_name} = ?"
                     cursor.execute(sql, (val2, expiration_date.strftime("%Y-%m-%d"), media_type, val1))
 
     def query_omdb(self, imdb_id, expiration):
@@ -504,8 +504,8 @@ class Cache:
                     tmdb_dict["status"] = row["status"] if row["status"] else None
                     tmdb_dict["type"] = row["type"] if row["type"] else None
                     tmdb_dict["tvdb_id"] = row["tvdb_id"] if row["tvdb_id"] else None
-                    tmdb_dict["countries"] = row["countries"] if row["countries"] else None
-                    tmdb_dict["seasons"] = row["seasons"] if row["seasons"] else None
+                    tmdb_dict["countries"] = row["countries"] if row["countries"] else ""
+                    tmdb_dict["seasons"] = row["seasons"] if row["seasons"] else ""
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     expired = time_between_insertion.days > expiration
