@@ -11,9 +11,10 @@ tmdb:
   language: en
 ```
 
-| Attribute  | Allowed Values       | Default | Required |
-|:-----------|:---------------------|:-------:|:--------:|
-| `apikey`   | User TMDb V3 API Key |   N/A   | &#9989;  |
-| `language` | User Language        |   en    | &#10060; |
+| Attribute          | Allowed Values                                                            | Default | Required |
+|:-------------------|:--------------------------------------------------------------------------|:-------:|:--------:|
+| `apikey`           | User TMDb V3 API Key                                                      |   N/A   | &#9989;  |
+| `language`         | User Language                                                             |   en    | &#10060; |
+| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached. |   60    | &#10060; |
 
 If you do not have a TMDb V3 API key please refer to this [guide](https://developers.themoviedb.org/3/getting-started/introduction).
