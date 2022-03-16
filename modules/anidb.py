@@ -20,7 +20,7 @@ class AniDBObj:
         self.anidb = anidb
         self.anidb_id = anidb_id
         self.language = language
-        response = self.anidb._request(f"{urls['anime']}/{anidb_id}", language=self.language)
+        response = self.anidb._request(f"{urls['anime']}/{anidb_id}")
 
         def parse_page(xpath, is_list=False, is_float=False, is_date=False, fail=False):
             parse_results = response.xpath(xpath)
