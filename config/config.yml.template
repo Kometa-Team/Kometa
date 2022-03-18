@@ -55,6 +55,7 @@ settings:
   custom_repo:
 webhooks:                                       # Can be individually specified per library as well
   error:
+  version:
   run_start:
   run_end:
   changes:
