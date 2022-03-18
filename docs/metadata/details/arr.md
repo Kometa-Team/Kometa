@@ -6,7 +6,7 @@ All the following attributes can override the global/library [Radarr](../../conf
 
 | Attribute                | Description & Values                                                                                                                                                            |
 |:-------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `radarr_add_missing`     | **Description:** Override Radarr `add` attribute<hr>**Values:** `true` or `false`                                                                                               |
+| `radarr_add_missing`     | **Description:** Override Radarr `add_missing` attribute<hr>**Values:** `true` or `false`                                                                                       |
 | `radarr_add_existing`    | **Description:** Override Radarr `add_existing` attribute<hr>**Values:** `true` or `false`                                                                                      |
 | `radarr_folder`          | **Description:** Override Radarr `root_folder_path` attribute<hr>**Values:** Folder Path                                                                                        |
 | `radarr_monitor`         | **Description:** Override Radarr `monitor` attribute<hr>**Values:** `true` or `false`                                                                                           |
@@ -24,7 +24,7 @@ All the following attributes can override the global/library [Sonarr](../../conf
 
 | Attribute                | Description & Values                                                                                                                                                             |
 |:-------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `sonarr_add_missing`     | **Description:** Override Sonarr `add` attribute<hr>**Values:** `true` or `false`                                                                                                |
+| `sonarr_add_missing`     | **Description:** Override Sonarr `add_missing` attribute<hr>**Values:** `true` or `false`                                                                                        |
 | `sonarr_add_existing`    | **Description:** Override Sonarr `add_existing` attribute<hr>**Values:** `true` or `false`                                                                                       |
 | `sonarr_folder`          | **Description:** Override Sonarr `root_folder_path` attribute<hr>**Values:** Folder Path                                                                                         |
 | `sonarr_monitor`         | **Description:** Override Sonarr `monitor` attribute<hr>**Values:** `all`, `future`, `missing`, `existing`, `pilot`, `first`, `latest`, `none`                                   |

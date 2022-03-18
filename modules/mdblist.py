@@ -20,7 +20,7 @@ class MDbObj:
         self.year = util.check_num(data["year"])
         try:
             self.released = datetime.strptime(data["released"], "%Y-%m-%d")
-        except ValueError:
+        except (ValueError, TypeError):
             self.released = None
         self.type = data["type"]
         self.imdbid = data["imdbid"]
