@@ -9,6 +9,7 @@ from modules.convert import Convert
 from modules.flixpatrol import FlixPatrol
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
+from modules.github import GitHub
 from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
 from modules.meta import PlaylistFile
@@ -63,7 +64,8 @@ class ConfigFile:
 
         self.default_dir = default_dir
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
-        self.new_version = attrs["new_version"] if "new_version" in attrs else None
+        self.version = attrs["version"] if "version" in attrs else None
+        self.latest_version = attrs["latest_version"] if "latest_version" in attrs else None
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.delete_collections = attrs["delete"] if "delete" in attrs else False
@@ -324,17 +326,12 @@ class ConfigFile:
                 import urllib3
                 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-        self.webhooks = {
-            "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
-            "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
-            "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
-            "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True)
-        }
         if self.general["cache"]:
             logger.separator()
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
+        self.GitHub = GitHub(self)
 
         logger.separator()
 
@@ -354,9 +351,18 @@ class ConfigFile:
         else:
             logger.warning("notifiarr attribute not found")
 
+        self.webhooks = {
+            "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
+            "version": check_for_attribute(self.data, "version", parent="webhooks", var_type="list", default_is_none=True),
+            "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
+            "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
+            "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True)
+        }
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
         try:
-            self.Webhooks.start_time_hooks(self.start_time, self.new_version)
+            self.Webhooks.start_time_hooks(self.start_time)
+            if self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2]):
+                self.Webhooks.version_hooks(self.version, self.latest_version)
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")

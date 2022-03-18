@@ -1,4 +1,4 @@
-import glob, logging, os, re, signal, sys, time
+import glob, logging, os, re, requests, signal, sys, time
 from datetime import datetime, timedelta
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
@@ -91,6 +91,18 @@ def make_ordinal(n):
 
 def add_zero(number):
     return str(number) if len(str(number)) > 1 else f"0{number}"
+
+def current_version(develop=False):
+    url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{'develop' if develop else 'master'}/VERSION"
+    try:
+        return parse_version(requests.get(url).content.decode().strip())
+    except requests.exceptions.ConnectionError:
+        return None
+
+
+def parse_version(version):
+    split_version = version.split("-develop")
+    return version, split_version[0], int(split_version[1]) if len(split_version) > 1 else 0
 
 def add_dict_list(keys, value, dict_map):
     for key in keys:

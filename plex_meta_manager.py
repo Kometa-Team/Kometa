@@ -108,21 +108,13 @@ def my_except_hook(exctype, value, tb):
 
 sys.excepthook = my_except_hook
 
-def get_versions(presplit_version):
-    split_version = presplit_version.split("-develop")
-    return presplit_version, split_version[0], int(split_version[1]) if len(split_version) > 1 else 0
-
 version = ("Unknown", "Unknown", 0)
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) as handle:
     for line in handle.readlines():
         line = line.strip()
         if len(line) > 0:
-            version = get_versions(line)
+            version = util.parse_version(line)
             break
-
-version_url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{'develop' if version[1] else 'master'}/VERSION"
-latest_version = get_versions(requests.get(version_url).content.decode().strip())
-new_version = latest_version[0] if version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2]) else None
 
 plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = "Plex-Meta-Manager"
 
@@ -137,6 +129,9 @@ def start(attrs):
     logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
     logger.info_center("                                                                     |___/           ")
     logger.info(f"    Version: {version[0]}")
+
+    latest_version = util.current_version()
+    new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
         logger.info(f"    Newest Version: {new_version}")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
@@ -149,7 +144,8 @@ def start(attrs):
         attrs["time"] = start_time.strftime("%H:%M")
     attrs["time_obj"] = start_time
     attrs["read_only"] = read_only_config
-    attrs["new_version"] = new_version
+    attrs["version"] = version
+    attrs["latest_version"] = latest_version
     logger.separator(debug=True)
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
     logger.debug(f"--time (PMM_TIME): {times}")
@@ -193,7 +189,7 @@ def start(attrs):
     run_time = str(end_time - start_time).split('.')[0]
     if config:
         try:
-            config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats, new_version)
+            config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
