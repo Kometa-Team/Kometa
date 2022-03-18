@@ -39,22 +39,24 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:latest
 
       - name: Discord Success Notification
-        uses: sarisia/actions-status-discord@v1
+        uses: meisnate12/discord-notifications@master
         if: success()
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          nodetail: true
+          webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
           title: "Docker latest build: **Success**"
+          url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
           username: Docker
           avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
 
       - name: Discord Failure Notification
-        uses: sarisia/actions-status-discord@v1
+        uses: meisnate12/discord-notifications@master
         if: failure()
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          nodetail: true
+          webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
           title: "Docker latest build: **Failure**"
           color: 0xe30c43
+          url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
           username: Docker
           avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
