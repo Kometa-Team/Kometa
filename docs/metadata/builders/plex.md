@@ -298,6 +298,7 @@ Boolean Searches take no modifier and can only be either `true` or `false`.
 | `episode_duplicate` | Has Duplicate Episodes |      &#10060;      |      &#9989;      |      &#10060;      |
 | `episode_progress`  | Has Episode Progress   |      &#10060;      |      &#9989;      |      &#10060;      |
 | `episode_unmatched` | Has Episodes Unmatched |      &#10060;      |      &#9989;      |      &#10060;      |
+| `show_unmatched`    | Has Shows Unmatched    |      &#10060;      |      &#9989;      |      &#10060;      |
 | `artist_unmatched`  | Is Artist's Unmatched  |      &#10060;      |     &#10060;      |      &#9989;       |
 | `album_unmatched`   | Is Album's Unmatched   |      &#10060;      |     &#10060;      |      &#9989;       |
 | `track_trash`       | Is Track Trashed       |      &#10060;      |     &#10060;      |      &#9989;       |

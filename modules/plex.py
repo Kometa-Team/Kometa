@@ -28,6 +28,7 @@ search_translation = {
     "content_rating": "contentRating",
     "episode_year": "episode.year",
     "release": "originallyAvailableAt",
+    "show_unmatched": "show.unmatched",
     "episode_unmatched": "episode.unmatched",
     "episode_duplicate": "episode.duplicate",
     "added": "addedAt",
@@ -209,7 +210,7 @@ searches = [
     "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
     "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
     "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte",
-    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
+    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
     "episode_title", "episode_title.not", "episode_title.is", "episode_title.isnot", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not", "episode_air_date.before", "episode_air_date.after",
@@ -243,7 +244,7 @@ show_only_searches = [
     "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
-    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched",
+    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
 ]
 string_attributes = ["title", "studio", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
 float_attributes = [
@@ -252,7 +253,7 @@ float_attributes = [
 ]
 boolean_attributes = [
     "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash", "unplayed_episodes", "episode_unplayed",
-    "episode_duplicate", "episode_progress", "episode_unmatched", "artist_unmatched", "album_unmatched", "track_trash"
+    "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched", "artist_unmatched", "album_unmatched", "track_trash"
 ]
 tmdb_attributes = ["actor", "director", "producer", "writer"]
 date_attributes = [
