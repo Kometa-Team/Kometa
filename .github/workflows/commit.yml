@@ -1,0 +1,21 @@
+name: Commit Notification
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+
+  release:
+
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Send Discord Release Notification
+        uses: meisnate12/discord-notifications@master
+        with:
+          webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
+          title: Plex Meta Manager Develop Commit
+          username: PMM Develop
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/pmm.png
