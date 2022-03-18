@@ -415,7 +415,7 @@ class Plex(Library):
         self.is_show = self.type == "Show"
         self.is_music = self.type == "Artist"
         self.is_other = self.agent == "com.plexapp.agents.none"
-        if self.is_other:
+        if self.is_other and self.type == "Movie":
             self.type = "Video"
         if not self.is_music and self.update_blank_track_titles:
             self.update_blank_track_titles = False
@@ -1087,13 +1087,14 @@ class Plex(Library):
         check_field("mood", "mood", var_key="moods")
         check_field("style", "style", var_key="styles")
         check_field("similar", "similar_artist")
-        for advance_edit in util.advance_tags_to_edit[self.type]:
-            key, options = item_advance_keys[f"item_{advance_edit}"]
-            if advance_edit in self.metadata_backup["exclude"] or not hasattr(item, key):
-                continue
-            keys = {v: k for k, v in options.items()}
-            if keys[getattr(item, key)] not in ["default", "all", "never"]:
-                attrs[advance_edit] = keys[getattr(item, key)]
+        if self.type in util.advance_tags_to_edit:
+            for advance_edit in util.advance_tags_to_edit[self.type]:
+                key, options = item_advance_keys[f"item_{advance_edit}"]
+                if advance_edit in self.metadata_backup["exclude"] or not hasattr(item, key):
+                    continue
+                keys = {v: k for k, v in options.items()}
+                if keys[getattr(item, key)] not in ["default", "all", "never"]:
+                    attrs[advance_edit] = keys[getattr(item, key)]
 
         def _recur(sub):
             sub_items = {}

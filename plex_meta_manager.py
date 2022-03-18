@@ -255,6 +255,8 @@ def update_libraries(config):
             for metadata in library.metadata_files:
                 metadata_name = metadata.get_file_name()
                 if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
+                    logger.info("")
+                    logger.separator(f"Skipping {metadata_name} Metadata File")
                     continue
                 logger.info("")
                 logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
@@ -623,7 +625,7 @@ def library_operations(config, library):
                         elif tvdb_item and library.mass_genre_update == "tvdb":
                             new_genres = tvdb_item.genres
                         elif anidb_item and library.mass_genre_update == "anidb":
-                            new_genres = anidb_item.genres
+                            new_genres = anidb_item.tags
                         else:
                             raise Failed
                         if not new_genres:
