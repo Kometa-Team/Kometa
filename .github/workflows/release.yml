@@ -12,7 +12,11 @@ jobs:
     steps:
 
       - name: Send Discord Release Notification
-        uses: nhevia/discord-styled-releases@main
+        uses: meisnate12/discord-notifications@master
         with:
           webhook_id: ${{ secrets.RELEASE_WEBHOOK_ID }}
           webhook_token: ${{ secrets.RELEASE_WEBHOOK_TOKEN }}
+          release: true
+          title: Plex Meta Manager Release VERSION
+          username: PMM Releases
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/pmm.png
