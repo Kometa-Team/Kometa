@@ -8,6 +8,7 @@ class Webhooks:
     def __init__(self, config, system_webhooks, library=None, notifiarr=None):
         self.config = config
         self.error_webhooks = system_webhooks["error"] if "error" in system_webhooks else []
+        self.version_webhooks = system_webhooks["version"] if "version" in system_webhooks else []
         self.run_start_webhooks = system_webhooks["run_start"] if "run_start" in system_webhooks else []
         self.run_end_webhooks = system_webhooks["run_end"] if "run_end" in system_webhooks else []
         self.library = library
@@ -44,20 +45,25 @@ class Webhooks:
                     if response.status_code >= 400:
                         raise Failed(f"({response.status_code} [{response.reason}])")
 
-    def start_time_hooks(self, start_time, version):
+    def start_time_hooks(self, start_time):
         if self.run_start_webhooks:
-            self._request(self.run_start_webhooks, {
-                "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "new_version": version
-            })
+            self._request(self.run_start_webhooks, {"start_time": start_time.strftime("%Y-%m-%d %H:%M:%S")})
 
-    def end_time_hooks(self, start_time, end_time, run_time, stats, version):
+    def version_hooks(self, version, latest_version):
+        if self.version_webhooks:
+            notes = None
+            if version[1] != latest_version[1]:
+                notes = self.config.GitHub.latest_release_notes()
+            elif version[2] and version[2] < latest_version[2]:
+                notes = self.config.GitHub.get_develop_commits(version[2])
+            self._request(self.version_webhooks, {"current": version[0], "latest": latest_version[0], "notes": notes})
+
+    def end_time_hooks(self, start_time, end_time, run_time, stats):
         if self.run_end_webhooks:
             self._request(self.run_end_webhooks, {
                 "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
                 "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
                 "run_time": run_time,
-                "new_version": version,
                 "collections_created": stats["created"],
                 "collections_modified": stats["modified"],
                 "collections_deleted": stats["deleted"],

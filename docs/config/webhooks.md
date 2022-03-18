@@ -9,6 +9,7 @@ Below is a `webhooks` mapping example and the full set of attributes:
 ```yaml
 webhooks:
   error: https://www.myspecialdomain.com/pmm
+  version:
   run_start:
   run_end:
   changes:
@@ -17,6 +18,7 @@ webhooks:
 | Attribute                               | Global  | Library  | Collection |
 |:----------------------------------------|:-------:|:--------:|:----------:|
 | [`error`](#error-notifications)         | &#9989; | &#9989;  |  &#10060;  |
+| [`version`](#version-notifications)     | &#9989; | &#10060; |  &#10060;  |
 | [`run_start`](#run-start-notifications) | &#9989; | &#10060; |  &#10060;  |
 | [`run_end`](#run-end-notifications)     | &#9989; | &#10060; |  &#10060;  |
 | [`changes`](#changes-notifications)     | &#9989; | &#9989;  |  &#9989;   |
@@ -72,6 +74,20 @@ The Error notification will be sent whenever an error occurs. The payload that i
 }
 ```
 
+## Version Notifications
+
+The Version notification will be sent at the beginning of a run if there is a newer version available.
+
+### JSON Payload
+
+```yaml
+{
+  "current": str,               // Current Version
+  "latest": str,                // Latest Version 
+  "notes": str                  // Sends the lateset release notes or new commits to develop since your version
+}
+```
+
 ## Run Start Notifications
 
 The Run Start notification will be sent at the beginning of every run.
@@ -81,7 +97,6 @@ The Run Start notification will be sent at the beginning of every run.
 ```yaml
 {
   "start_time": str,            // Time Run is started Format "YY-mm-dd HH:MM:SS"
-  "new_version": str            // New Version or null if version is current
 }
 ```
 
@@ -96,7 +111,6 @@ The Run End notification will be sent at the end of every run with statistics.
   "start_time": str,            // Time Run started Format "YY-mm-dd HH:MM:SS"
   "end_time": str,              // Time Run ended Format "YY-mm-dd HH:MM:SS"
   "run_time": str,              // Time Run took to complete Format "HH:MM"
-  "new_version": str,           // New Version or null if version is current
   "collections_created": int,   // Number of Collections/Playlists Created
   "collections_modified": int,  // Number of Collections/Playlists Modified
   "collections_deleted": int,   // Number of Collections/Playlists Removed

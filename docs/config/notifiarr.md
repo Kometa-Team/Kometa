@@ -19,6 +19,7 @@ Once you have added the apikey your config.yml you have to add `notifiarr` to an
 ```yaml
 webhooks:
   error: notifiarr
+  version: notifiarr
   run_start: notifiarr
   run_end: notifiarr
   collection_changes: notifiarr
