@@ -59,7 +59,7 @@ dynamic_collections:
 dynamic_collections:
   Countries:         # mapping name does not matter, just needs to be unique
     type: country
-    title_format: <<country>> Cinema
+    title_format: <<key_name>> Cinema
     key_name_override:
       France: French
 ```
@@ -152,7 +152,7 @@ Create collections based on the TMDb Collections associated with items in the li
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -160,7 +160,7 @@ Create collections based on the TMDb Collections associated with items in the li
 
 ```yaml
 default_template:
-  tmdb_collection_details: <<tmdb_collection>>
+  tmdb_collection_details: <<value>>
 ```
 
 </td>
@@ -200,7 +200,7 @@ Create collections based on each actor found on [TMDb's Popular People List](htt
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -208,7 +208,7 @@ Create collections based on each actor found on [TMDb's Popular People List](htt
 
 ```yaml
 default_template:
-  tmdb_person: <<tmdb_popular_people>>
+  tmdb_person: <<value>>
   plex_search:
     all:
       actor: tmdb
@@ -250,7 +250,7 @@ Create collections based on the TMDb original language associated with items in 
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -260,7 +260,7 @@ Create collections based on the TMDb original language associated with items in 
 default_template:
   plex_all: true
   filters:
-    original_language: <<original_language>>
+    original_language: <<value>>
 ```
 
 </td>
@@ -298,7 +298,7 @@ Create collections based on the TMDb origin country associated with items in the
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -308,7 +308,7 @@ Create collections based on the TMDb origin country associated with items in the
 default_template:
   plex_all: true
   filters:
-    origin_country: <<origin_country>>
+    origin_country: <<value>>
 ```
 
 </td>
@@ -348,7 +348,7 @@ Create collections for each of the Trakt lists for the specified users. Use `me`
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -356,7 +356,7 @@ Create collections for each of the Trakt lists for the specified users. Use `me`
 
 ```yaml
 default_template:
-  trakt_list_details: <<trakt_user_lists>>
+  trakt_list_details: <<value>>
 ```
 
 </td>
@@ -399,7 +399,7 @@ Create collections for each of the Trakt lists that the authenticated user has l
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -407,7 +407,7 @@ Create collections for each of the Trakt lists that the authenticated user has l
 
 ```yaml
 default_template:
-  trakt_list_details: <<trakt_liked_lists>>
+  trakt_list_details: <<value>>
 ```
 
 </td>
@@ -447,7 +447,7 @@ Create collections for each of the people found within Trakt lists that the user
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -455,7 +455,7 @@ Create collections for each of the people found within Trakt lists that the user
 
 ```yaml
 default_template:
-  tmdb_person: <<trakt_people_list>>
+  tmdb_person: <<value>>
   plex_search:
     all:
       actor: tmdb
@@ -519,7 +519,7 @@ Create a collection for each actor found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -527,7 +527,7 @@ Create a collection for each actor found in the library.
 
 ```yaml
 default_template:
-  tmdb_person: <<actor>>
+  tmdb_person: <<value>>
   plex_search:
     all:
       actor: tmdb
@@ -613,7 +613,7 @@ Create a collection for each director found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -621,7 +621,7 @@ Create a collection for each director found in the library.
 
 ```yaml
 default_template:
-  tmdb_person: <<director>>
+  tmdb_person: <<value>>
   plex_search:
     all:
       director: tmdb
@@ -707,7 +707,7 @@ Create a collection for each writer found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -715,7 +715,7 @@ Create a collection for each writer found in the library.
 
 ```yaml
 default_template:
-  tmdb_person: <<writer>>
+  tmdb_person: <<value>>
   plex_search:
     all:
       writer: tmdb
@@ -801,7 +801,7 @@ Create a collection for each producer found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>&lt;&lt;title&gt;&gt;</code></td>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -809,7 +809,7 @@ Create a collection for each producer found in the library.
 
 ```yaml
 default_template:
-  tmdb_person: <<producer>>
+  tmdb_person: <<value>>
   plex_search:
     all:
       producer: tmdb
@@ -873,7 +873,7 @@ Create a collection for each genre found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>Top &lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -885,7 +885,7 @@ default_template:
     limit: 50
     sort_by: critic_rating.desc
     any:
-      genre: <<genre>>
+      genre: <<value>>
 ```
 
 </td>
@@ -906,7 +906,7 @@ templates:
       limit: 100
       sort_by: critic_rating.desc
       all:
-        genre: <<genre>>
+        genre: <<value>>
 dynamic_collections:
   Genres:         # mapping name does not matter just needs to be unique
     type: genre
@@ -939,7 +939,7 @@ Create a collection for each content rating found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>Top &lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -951,7 +951,7 @@ default_template:
     limit: 50
     sort_by: critic_rating.desc
     any:
-      content_rating: <<content_rating>>
+      content_rating: <<value>>
 ```
 
 </td>
@@ -970,7 +970,7 @@ templates:
       limit: 100
       sort_by: critic_rating.desc
       all:
-        content_rating: <<content_rating>>
+        content_rating: <<value>>
 dynamic_collections:
   Content Ratings:         # mapping name does not matter just needs to be unique
     type: content_rating
@@ -1000,7 +1000,7 @@ Create a collection for each year found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>Best &lt;&lt;library_type&gt;&gt;s of &lt;&lt;title&gt;&gt;</code></td>
+    <td><code>Best &lt;&lt;library_type&gt;&gt;s of &lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -1012,7 +1012,7 @@ default_template:
     limit: 50
     sort_by: critic_rating.desc
     any:
-      year: <<year>>
+      year: <<value>>
 ```
 
 </td>
@@ -1059,7 +1059,7 @@ Create a collection for each decade found in the library
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>Best &lt;&lt;library_type&gt;&gt;s of &lt;&lt;title&gt;&gt;</code></td>
+    <td><code>Best &lt;&lt;library_type&gt;&gt;s of &lt;&lt;key_name&gt;&gt;</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -1071,7 +1071,7 @@ default_template:
     limit: 50
     sort_by: critic_rating.desc
     any:
-      decade: <<decade>>
+      decade: <<value>>
 ```
 
 </td>
@@ -1116,7 +1116,7 @@ Create a collection for each country found in the library
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>Top &lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -1128,7 +1128,7 @@ default_template:
     limit: 50
     sort_by: critic_rating.desc
     any:
-      country: <<country>>
+      country: <<value>>
 ```
 
 </td>
@@ -1187,7 +1187,7 @@ default_template:
     limit: 50
     sort_by: title.asc
     any:
-      resolution: <<resolution>>
+      resolution: <<value>>
 ```
 
 </td>
@@ -1246,7 +1246,7 @@ default_template:
     limit: 50
     sort_by: critic_rating.asc
     any:
-      subtitle_language: <<subtitle_language>>
+      subtitle_language: <<value>>
 ```
 
 </td>
@@ -1298,7 +1298,7 @@ default_template:
     limit: 50
     sort_by: critic_rating.asc
     any:
-      audio_language: <<audio_language>>
+      audio_language: <<value>>
 ```
 
 </td>
@@ -1338,7 +1338,7 @@ Create a collection for each network found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>Top &lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -1350,7 +1350,7 @@ default_template:
     limit: 50
     sort_by: critic_rating.desc
     any:
-      network: <<network>>
+      network: <<value>>
 ```
 
 </td>
@@ -1368,7 +1368,7 @@ templates:
     smart_filter: 
       sort_by: critic_rating.desc
       all: 
-        network: <<network>>
+        network: <<value>>
 dynamic_collections:
   Networks:         # mapping name does not matter just needs to be unique
     type: network
@@ -1399,7 +1399,7 @@ Create a collection for each mood found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>Most Played &lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+    <td><code>Most Played &lt;&lt;value&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -1411,7 +1411,7 @@ default_template:
     limit: 50
     sort_by: plays.desc
     any:
-      artist_mood: <<mood>>
+      artist_mood: <<value>>
 ```
 
 </td>
@@ -1431,7 +1431,7 @@ templates:
       sort_by: plays.desc
       type: tracks
       all:
-        track_mood: <<mood>>
+        track_mood: <<value>>
 dynamic_collections:
   Moods:         # mapping name does not matter just needs to be unique
     type: mood
@@ -1462,7 +1462,7 @@ Create a collection for each style found in the library.
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
-    <td><code>Most Played &lt;&lt;title&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+    <td><code>Most Played &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
   </tr>
   <tr>
     <th>Default Template</th>
@@ -1474,7 +1474,7 @@ default_template:
     limit: 50
     sort_by: plays.desc
     any:
-      artist_style: <<style>>
+      artist_style: <<value>>
 ```
 
 </td>
@@ -1494,7 +1494,7 @@ templates:
       sort_by: plays.desc
       type: albums
       all:
-        album_style: <<style>>
+        album_style: <<value>>
 dynamic_collections:
   Styles:         # mapping name does not matter just needs to be unique
     type: style
@@ -1538,9 +1538,10 @@ dynamic_collections:
 
 Name of the template to use for these dynamic collections. Each `type` has its own default template, but if you want to define and use your own template you can.
 
-Each template is passed a template variable whose name matches the dynamic collection `type`. i.e. in the example below `<<network>>` is the template variable.
-
-`key` and `key_name` are both passed along and can be used as template variables.
+Each template is passed a few template variables you can use.
+* `value`: The list of keys and addons
+* `key`: The dynamic key
+* `key_name`: The key after `key_name_override`, `remove_prefix`, or `remove_suffix` are run on it.
 
 For example, the template below removes the limit on the `smart_filter` so it shows all items in each network
 
@@ -1550,7 +1551,7 @@ templates:
     smart_filter: 
       sort_by: critic_rating.desc
       all: 
-        network: <<network>>
+        network: <<value>>
 dynamic_collections:
   Networks:         # mapping name does not matter just needs to be unique
     type: network
@@ -1568,7 +1569,7 @@ For example, when using `type: tmdb_collections` and you want to define a poster
 templates:
   optional:
     - my_collection_poster
-  tmdb_collection_details: <<collection_id>>
+  tmdb_collection_details: <<value>>
   collection_order: release
   url_poster: <<my_collection_poster>>
 dynamic_collections:

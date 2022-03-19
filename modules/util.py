@@ -450,12 +450,14 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             else:
                 raise Failed(f"{error} Error: {display} {dict_data} is not a dictionary")
         return final_list
-    elif datatype in ["dict", "dictlist", "dictdict", "strdict"]:
+    elif datatype in ["dict", "dictlist", "dictdict", "strdict", "dictliststr"]:
         if isinstance(value, dict):
             if datatype == "dict":
                 return value
             elif datatype == "dictlist":
                 return {k: v if isinstance(v, list) else [v] for k, v in value.items()}
+            elif datatype == "dictliststr":
+                return {str(k): [str(y) for y in v] if isinstance(v, list) else [str(v)] for k, v in value.items()}
             elif datatype == "strdict":
                 return {str(k): str(v) for k, v in value.items()}
             else:
