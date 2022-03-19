@@ -373,9 +373,9 @@ class Cache:
                              "imdb_rating = ?, imdb_votes = ?, metacritic_rating = ?, type = ?, series_id = ?, " \
                              "season_num = ?, episode_num = ?, expiration_date = ? WHERE imdb_id = ?"
                 cursor.execute(update_sql, (
-                    omdb.title, omdb.year, omdb.released.strftime("%d %b %Y"), omdb.content_rating, omdb.genres_str,
-                    omdb.imdb_rating, omdb.imdb_votes, omdb.metacritic_rating, omdb.type, omdb.series_id, omdb.season_num,
-                    omdb.episode_num, expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
+                    omdb.title, omdb.year, omdb.released.strftime("%d %b %Y") if omdb.released else None, omdb.content_rating,
+                    omdb.genres_str, omdb.imdb_rating, omdb.imdb_votes, omdb.metacritic_rating, omdb.type, omdb.series_id,
+                    omdb.season_num, omdb.episode_num, expiration_date.strftime("%Y-%m-%d"), omdb.imdb_id))
 
     def query_mdb(self, key_id, expiration):
         mdb_dict = {}
@@ -422,10 +422,11 @@ class Cache:
                              "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, " \
                              "letterboxd_rating = ?, certification = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
                 cursor.execute(update_sql, (
-                    mdb.title, mdb.year, mdb.released.strftime("%Y-%m-%d"), mdb.type, mdb.imdbid, mdb.traktid, mdb.tmdbid,
-                    mdb.score, mdb.imdb_rating, mdb.metacritic_rating, mdb.metacriticuser_rating, mdb.trakt_rating,
-                    mdb.tomatoes_rating, mdb.tomatoesaudience_rating, mdb.tmdb_rating, mdb.letterboxd_rating,
-                    mdb.content_rating, mdb.commonsense, expiration_date.strftime("%Y-%m-%d"), key_id
+                    mdb.title, mdb.year, mdb.released.strftime("%Y-%m-%d") if mdb.released else None, mdb.type,
+                    mdb.imdbid, mdb.traktid, mdb.tmdbid, mdb.score, mdb.imdb_rating, mdb.metacritic_rating,
+                    mdb.metacriticuser_rating, mdb.trakt_rating, mdb.tomatoes_rating, mdb.tomatoesaudience_rating,
+                    mdb.tmdb_rating, mdb.letterboxd_rating, mdb.content_rating, mdb.commonsense,
+                    expiration_date.strftime("%Y-%m-%d"), key_id
                 ))
 
     def query_tmdb_movie(self, tmdb_id, expiration):
