@@ -277,15 +277,6 @@ def update_libraries(config):
                     logger.remove_library_handler(library.mapping_name)
                     run_collection(config, library, metadata, collections_to_run)
                     logger.re_add_library_handler(library.mapping_name)
-            if library.run_sort:
-                logger.info("")
-                logger.separator(f"Sorting {library.name} Library's Collections", space=False, border=False)
-                logger.info("")
-                for builder in library.run_sort:
-                    logger.info("")
-                    logger.separator(f"Sorting {builder.name} Collection", space=False, border=False)
-                    logger.info("")
-                    builder.sort_collection()
 
             if not config.library_first and library.library_operation and not config.test_mode and not collection_only:
                 library_operations(config, library)
@@ -671,7 +662,7 @@ def library_operations(config, library):
                         if omdb_item and library.mass_content_rating_update == "omdb":
                             new_rating = omdb_item.content_rating
                         elif mdb_item and library.mass_content_rating_update == "mdb":
-                            new_rating = mdb_item.certification if mdb_item.certification else None
+                            new_rating = mdb_item.content_rating if mdb_item.content_rating else None
                         elif mdb_item and library.mass_content_rating_update == "mdb_commonsense":
                             new_rating = mdb_item.commonsense if mdb_item.commonsense else None
                         else:
@@ -995,8 +986,7 @@ def run_collection(config, library, metadata, requested_collections):
                     if builder.item_details:
                         builder.update_item_details()
                     if builder.custom_sort:
-                        library.run_sort.append(builder)
-                        # builder.sort_collection()
+                        builder.sort_collection()
 
             builder.send_notifications()
 
