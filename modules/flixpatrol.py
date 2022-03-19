@@ -109,7 +109,7 @@ class FlixPatrol:
         else:
             raise Failed(f"FlixPatrol Error: Method {method} not supported")
 
-    def get_flixpatrol_ids(self, method, data, language, is_movie):
+    def get_tmdb_ids(self, method, data, language, is_movie):
         if method == "flixpatrol_demographics":
             logger.info("Processing FlixPatrol Demographics:")
             logger.info(f"\tGeneration: {generations_pretty[data['generation']]}")

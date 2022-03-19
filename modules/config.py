@@ -18,7 +18,7 @@ from modules.omdb import OMDb
 from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
-from modules.stevenlu import StevenLu
+from modules.reciperr import Reciperr
 from modules.mdblist import Mdblist
 from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
@@ -541,7 +541,7 @@ class ConfigFile:
             self.FlixPatrol = FlixPatrol(self)
             self.ICheckMovies = ICheckMovies(self)
             self.Letterboxd = Letterboxd(self)
-            self.StevenLu = StevenLu(self)
+            self.Reciperr = Reciperr(self)
 
             logger.separator()
 
