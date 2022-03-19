@@ -1,6 +1,6 @@
 import os, re, time
 from datetime import datetime, timedelta
-from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, sonarr, stevenlu, tautulli, tmdb, trakt, tvdb, mdblist, util
+from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, ImageData, NotScheduled, NotScheduledRange
 from PIL import Image
 from plexapi.audio import Artist, Album, Track
@@ -71,13 +71,13 @@ filter_translation = {
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
-               letterboxd.builders + mal.builders + plex.builders + stevenlu.builders + tautulli.builders + \
+               letterboxd.builders + mal.builders + plex.builders + reciperr.builders + tautulli.builders + \
                tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders
 show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level", "item_tmdb_season_titles"]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
-    "tvdb_movie", "tvdb_movie_details", "trakt_boxoffice"
+    "tvdb_movie", "tvdb_movie_details", "trakt_boxoffice", "reciperr_list"
 ]
 music_only_builders = ["item_album_sorting"]
 summary_details = [
@@ -170,7 +170,7 @@ smart_invalid = ["collection_order", "collection_level"]
 smart_url_invalid = ["minimum_items", "filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
     "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
-    "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover",
+    "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list",
     "tvdb_list", "imdb_chart", "imdb_list", "stevenlu_popular", "anidb_popular",
     "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
@@ -640,8 +640,8 @@ class CollectionBuilder:
                     self._mal(method_name, method_data)
                 elif method_name in plex.builders or method_final in plex.searches:
                     self._plex(method_name, method_data)
-                elif method_name in stevenlu.builders:
-                    self._stevenlu(method_name, method_data)
+                elif method_name in reciperr.builders:
+                    self._reciperr(method_name, method_data)
                 elif method_name in tautulli.builders:
                     self._tautulli(method_name, method_data)
                 elif method_name in tmdb.builders:
@@ -1145,8 +1145,12 @@ class CollectionBuilder:
         else:
             self.builders.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
 
-    def _stevenlu(self, method_name, method_data):
-        self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
+    def _reciperr(self, method_name, method_data):
+        if method_name == "reciperr_list":
+            for reciperr_list in self.config.Reciperr.validate_list(method_data):
+                self.builders.append((method_name, reciperr_list))
+        elif method_name == "stevenlu_popular":
+            self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
 
     def _mdblist(self, method_name, method_data):
         for mdb_dict in self.config.Mdblist.validate_mdblist_lists(self.Type, method_data):
@@ -1339,15 +1343,15 @@ class CollectionBuilder:
         elif "imdb" in method:
             ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
         elif "flixpatrol" in method:
-            ids = self.config.FlixPatrol.get_flixpatrol_ids(method, value, self.language, self.library.is_movie)
+            ids = self.config.FlixPatrol.get_tmdb_ids(method, value, self.language, self.library.is_movie)
         elif "icheckmovies" in method:
-            ids = self.config.ICheckMovies.get_icheckmovies_ids(method, value, self.language)
+            ids = self.config.ICheckMovies.get_imdb_ids(method, value, self.language)
         elif "letterboxd" in method:
             ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
-        elif "stevenlu" in method:
-            ids = self.config.StevenLu.get_stevenlu_ids(method)
+        elif "reciperr" in method or "stevenlu" in method:
+            ids = self.config.Reciperr.get_imdb_ids(method, value)
         elif "mdblist" in method:
-            ids = self.config.Mdblist.get_mdblist_ids(method, value)
+            ids = self.config.Mdblist.get_imdb_ids(method, value)
         elif "tmdb" in method:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie)
         elif "trakt" in method:

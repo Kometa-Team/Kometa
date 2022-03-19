@@ -182,6 +182,7 @@ html_theme_options = {
                 ("Letterboxd Builders", "metadata/builders/letterboxd"),
                 ("ICheckMovies Builders", "metadata/builders/icheckmovies"),
                 ("FlixPatrol Builders", "metadata/builders/flixpatrol"),
+                ("Reciperr Builders", "metadata/builders/reciperr"),
                 ("StevenLu Builders", "metadata/builders/stevenlu"),
                 ("AniDB Builders", "metadata/builders/anidb"),
                 ("AniList Builders", "metadata/builders/anilist"),

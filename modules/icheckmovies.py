@@ -35,7 +35,7 @@ class ICheckMovies:
                 raise Failed(f"ICheckMovies Error: {list_url} failed to parse")
         return valid_lists
 
-    def get_icheckmovies_ids(self, method, data, language):
+    def get_imdb_ids(self, method, data, language):
         if method == "icheckmovies_list":
             logger.info(f"Processing ICheckMovies List: {data}")
             return self._parse_list(data, language)

@@ -158,7 +158,7 @@ class Mdblist:
             valid_lists.append({"url": mdb_url, "limit": list_count, "sort_by": sort_by})
         return valid_lists
         
-    def get_mdblist_ids(self, method, data):
+    def get_imdb_ids(self, method, data):
         if method == "mdblist_list":
             logger.info(f"Processing Mdblist.com List: {data['url']}")
             logger.info(f"Sort By: {data['sort_by']}")
