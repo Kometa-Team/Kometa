@@ -2520,9 +2520,9 @@ class CollectionBuilder:
             self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
 
         if self.url_theme:
-            self.library.upload_theme(url=self.url_theme)
+            self.library.upload_theme(self.obj, url=self.url_theme)
         elif self.file_theme:
-            self.library.upload_theme(filepath=self.file_theme)
+            self.library.upload_theme(self.obj, filepath=self.file_theme)
 
     def sort_collection(self):
         logger.info("")
