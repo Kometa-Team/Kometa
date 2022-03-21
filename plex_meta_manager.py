@@ -487,7 +487,7 @@ def library_operations(config, library):
                 try:
                     parental_guide = config.IMDb.parental_guide(imdb_id)
                     labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if library.mass_imdb_parental_labels == "with_none" or v != "None"]
-                    library.edit_tags("label", item, append_tags=labels)
+                    library.edit_tags("label", item, add_tags=labels)
                 except Failed:
                     pass
 
