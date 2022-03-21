@@ -214,6 +214,15 @@ class Cache:
                     frightening TEXT,
                     expiration_date TEXT)"""
                 )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS ergast_race (
+                    key INTEGER PRIMARY KEY,
+                    season INTEGER,
+                    round INTEGER,
+                    name TEXT,
+                    date TEXT,
+                    expiration_date TEXT)"""
+                )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute(f"SELECT DISTINCT library FROM image_map")
@@ -737,3 +746,35 @@ class Cache:
                              "frightening = ?, expiration_date = ? WHERE imdb_id = ?"
                 cursor.execute(update_sql, (parental["nudity"], parental["violence"], parental["profanity"], parental["alcohol"],
                                             parental["frightening"], expiration_date.strftime("%Y-%m-%d"), imdb_id))
+
+    def query_ergast(self, year, expiration):
+        ergast_list = []
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM ergast_race WHERE season = ?", (year,))
+                for row in cursor.fetchall():
+                    if row:
+                        ergast_list.append({
+                            "season": row["season"] if row["season"] else None,
+                            "round": row["round"] if row["round"] else None,
+                            "raceName": row["name"] if row["name"] else None,
+                            "date": row["date"] if row["date"] else None
+                        })
+                        if not expired:
+                            datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                            time_between_insertion = datetime.now() - datetime_object
+                            expired = time_between_insertion.days > expiration
+        return ergast_list, expired
+
+    def update_ergast(self, expired, season, races, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.excute("DELETE FROM ergast_race WHERE season = ?", (season,))
+                cursor.executemany("INSERT OR IGNORE INTO ergast_race(season, round) VALUES(?, ?)", [(r.season, r.round) for r in races])
+                cursor.executemany("UPDATE ergast_race SET name = ?, date = ?, expiration_date = ? WHERE season = ? AND round = ?",
+                                   [(r.name, r.date.strftime("%Y-%m-%d") if r.date else None,
+                                     expiration_date.strftime("%Y-%m-%d"), r.season, r.round) for r in races])
