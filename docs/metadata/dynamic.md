@@ -16,7 +16,7 @@ This example will create a collection for every TMDb Collection associated with 
 ```yaml
 dynamic_collections:
   TMDb Collections:          # This name is the mapping name
-    type: tmdb_collections
+    type: tmdb_collection
     remove_suffix: "Collection"
 ```
 
@@ -32,7 +32,7 @@ A `dynamic key` or `key` for short is used to refer to a specific value/result f
 
 A `key_name` is the name that replaces `<<key_name>>` in `title_format` to create the collection titles for each key.
 
-An example of some keys and their names that would be generated from a `tmdb_collections` dynamic collection are
+An example of some keys and their names that would be generated from a `tmdb_collection` dynamic collection are
 * `key`: "10"
   * `key_name`: Star Wars Collection
 * `key`: "1241"
@@ -172,7 +172,7 @@ default_template:
 ```yaml
 dynamic_collections:
   TMDb Collections:          # This name is the mapping name
-    type: tmdb_collections
+    type: tmdb_collection
     remove_suffix: Collection
     remove_prefix: The
 ```
@@ -916,7 +916,7 @@ dynamic_collections:
     template: genre collection
 ```
 
-### Content Rating 
+### Content Rating
 
 Create a collection for each content rating found in the library.
 
@@ -1204,7 +1204,7 @@ dynamic_collections:
   Resolutions:         # mapping name does not matter just needs to be unique
     type: resolution
     addons:
-      480p: 
+      480p:
         - 576p
         - SD
     title_override:
@@ -1365,9 +1365,9 @@ default_template:
 ```yaml
 templates:
   network collection:
-    smart_filter: 
+    smart_filter:
       sort_by: critic_rating.desc
-      all: 
+      all:
         network: <<value>>
 dynamic_collections:
   Networks:         # mapping name does not matter just needs to be unique
@@ -1528,7 +1528,7 @@ dynamic_collections:
   networks:
     type: network
     addons:
-      MTV: 
+      MTV:
         - MTV2
         - MTV3
         - MTV (UK)
@@ -1548,9 +1548,9 @@ For example, the template below removes the limit on the `smart_filter` so it sh
 ```yaml
 templates:
   network collection:
-    smart_filter: 
+    smart_filter:
       sort_by: critic_rating.desc
-      all: 
+      all:
         network: <<value>>
 dynamic_collections:
   Networks:         # mapping name does not matter just needs to be unique
@@ -1563,7 +1563,7 @@ dynamic_collections:
 
 Defines how template variables can be defined by key.
 
-For example, when using `type: tmdb_collections` and you want to define a poster url for some collections
+For example, when using `type: tmdb_collection` and you want to define a poster url for some collections
 
 ```yaml
 templates:
@@ -1574,7 +1574,7 @@ templates:
   url_poster: <<my_collection_poster>>
 dynamic_collections:
   TMDb Collections:          # This name is the mapping name
-    type: tmdb_collections
+    type: tmdb_collection
     remove_suffix: "Collection"
     template_variables:
       my_collection_poster:
@@ -1586,12 +1586,12 @@ dynamic_collections:
 
 Removes the defined prefixes/suffixes from the key before it’s used in the collection title.
 
-For example, when using `type: tmdb_collections` you may not want every collection title to end with `Collection`
+For example, when using `type: tmdb_collection` you may not want every collection title to end with `Collection`
 
 ```yaml
 dynamic_collections:
   TMDb Collections:          # This name is the mapping name
-    type: tmdb_collections
+    type: tmdb_collection
     remove_suffix: "Collection"
 ```
 
@@ -1599,7 +1599,7 @@ dynamic_collections:
 
 This is the format for the collection titles.
 
-there are two special tags you can include in the `title_format` 
+there are two special tags you can include in the `title_format`
 * `<<key_name>>` is required and is what will be replaced by the dynamic key name.
 * `<<library_type>>` will be replaced with either Movie, Show, or Artist depending on your library type.
 
@@ -1637,7 +1637,7 @@ Here's an example using `title_override` that will override the TMDb Star Wars c
 ```yaml
 dynamic_collections:
   TMDb Collections:          # mapping name does not matter, just needs to be unique
-    type: tmdb_collections
+    type: tmdb_collection
     remove_suffix: "Collection"
     title_override:
       10: Star Wars Universe
@@ -1683,7 +1683,7 @@ Here's an example using `include`.
 dynamic_collections:
   Genres:         # mapping name does not matter just needs to be unique
     type: genre
-    include: 
+    include:
       - Action
       - Adventure
       - Animation

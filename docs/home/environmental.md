@@ -4,6 +4,7 @@ This table outlines the run commands and environment variables that can be utili
 
 If you run into a race condition where you have set an Environment Variable within your system and also use a Shell Command for the same attribute, then the Environment Variable will take priority.
 
+These docs are assuming you have a basic understanding of Docker concepts.  One place to get familiar with Docker would be the [official tutorial](https://www.docker.com/101-tutorial/).
 
 | Attribute                                             | Shell Command                      | Environment Variable     |
 |:------------------------------------------------------|:-----------------------------------|:-------------------------|
@@ -31,6 +32,8 @@ Further explanation and examples of each command can be found below.
 
 ## Run Command Attribute Examples
 
+Environment variables are expressed as `KEY=VALUE`  Depending on the context where you are specifying them, you may enter those two things in two different fields, or some other way.  The examples below show how you would specify the environment variable in a script or a `docker run` command.  Things like Portainer or a NAS Docker UI will have different ways to specify these things.
+
 ### Config
 
 Specify the location of the configuration YAML file.
@@ -39,7 +42,7 @@ Specify the location of the configuration YAML file.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -86,7 +89,7 @@ Specify the time of day that Plex Meta Manager will run.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -133,7 +136,7 @@ Perform a run immediately, bypassing the time to run flag.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -172,7 +175,7 @@ Run Plex Meta Manager in test/debug mode
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -213,7 +216,7 @@ Only run collection metadata/YAML files, skip library operations.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -252,7 +255,7 @@ Only run library operations, skip collections.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -291,7 +294,7 @@ Run only the pre-defined collections
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -334,7 +337,7 @@ Run only the pre-defined libraries
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -377,7 +380,7 @@ Run only the pre-defined metadata files
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -421,7 +424,7 @@ Run library operations prior to running collections.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -460,7 +463,7 @@ Ignore all schedules for the run.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -500,7 +503,7 @@ Ignore all ghost logging for the run. A ghost log is what's printed to the conso
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -539,7 +542,7 @@ Delete all collections in a Library prior to running collections/operations.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -577,7 +580,7 @@ Resume a run from a specific collection use the `--resume` option.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -620,7 +623,7 @@ Run without displaying a countdown to the next scheduled run.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -659,7 +662,7 @@ Run without utilizing the missing movie/show functions.
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -698,7 +701,7 @@ Run without writing to the configuration file
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -739,7 +742,7 @@ Change the terminal output divider character or width
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
@@ -767,7 +770,7 @@ Change the terminal output divider character or width
   <tr>
     <th style="background-color: #222;"></th>
     <th>Shell</th>
-    <th>Environmental</th>
+    <th>Environment</th>
   </tr>
   <tr>
     <th>Flags</th>
