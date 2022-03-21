@@ -23,6 +23,10 @@ This walkthrough is going to be pretty pedantic.  I’m assuming you’re readin
 
 I am assuming you do not have any of these tools already installed.  When writing this up I started with a brand new Windows 10 install.
 
+I'm also assuming you are doing this on a computer, not through a NAS interface or the like.  You can do all this through something like the Synology NAS UI or Portainer or the like, but those aren't documented here.  This uses the docker command line because it works the same on all platforms.
+
+You may want to take an hour to get familiar with Docker fundamentals with the [official tutorial](https://www.docker.com/101-tutorial/).
+
 ### Installing Docker.
 
 The Docker install is discussed here: [Installing Docker](https://docs.docker.com/engine/install/)
