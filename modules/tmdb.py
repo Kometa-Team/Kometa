@@ -19,17 +19,6 @@ type_map = {
     "tmdb_network": "Network", "tmdb_person": "Person", "tmdb_producer": "Person", "tmdb_producer_details": "Person",
     "tmdb_show": "Show", "tmdb_show_details": "Show", "tmdb_writer": "Person", "tmdb_writer_details": "Person"
 }
-discover_all = [
-    "with_overview_translation", "with_original_language", "region", "sort_by", "with_cast", "with_crew", "with_people",
-    "certification_country", "certification", "certification.lte", "certification.gte",
-    "year", "primary_release_year", "primary_release_date.gte", "primary_release_date.lte",
-    "release_date.gte", "release_date.lte", "vote_count.gte", "vote_count.lte",
-    "vote_average.gte", "vote_average.lte", "with_runtime.gte", "with_runtime.lte",
-    "with_companies", "without_companies ", "with_genres", "without_genres", "with_keywords", "without_keywords",
-    "with_watch_providers", "without_watch_providers", "watch_region", "with_watch_monetization_types", "with_status",
-    "include_adult", "include_video", "timezone", "screened_theatrically", "include_null_first_air_dates", "limit", "with_type",
-    "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte", "first_air_date_year", "with_networks", "with_release_type"
-]
 discover_movie_only = [
     "region", "with_cast", "with_crew", "with_people", "certification_country", "certification", "include_video", "year",
     "primary_release_year", "primary_release_date", "release_date", "include_adult", "with_release_type", "with_title_translation"
@@ -39,16 +28,24 @@ discover_tv_only = [
     "first_air_date_year", "with_networks", "with_status", "with_type", "with_name_translation"
 ]
 discover_strings = [
-    "with_cast", "with_crew", "with_people", "with_companies", "with_networks", "with_genres", "without_genres", "with_release_type",
-    "with_keywords", "without_keywords", "with_original_language", "timezone", "with_watch_providers", "without_watch_providers"
+    "with_cast", "with_crew", "with_people", "with_companies", "without_companies", "with_networks", "with_genres",
+    "without_genres", "with_release_type", "with_keywords", "without_keywords", "with_original_language", "timezone",
+    "with_watch_providers", "without_watch_providers", "with_overview_translation", "with_title_translation", "with_name_translation"
 ]
 discover_ints = ["vote_count", "with_runtime"]
+modifiers = [".gte", ".lte"]
 discover_years = ["primary_release_year", "year", "first_air_date_year"]
 discover_booleans = ["include_adult", "include_video", "include_null_first_air_dates", "screened_theatrically"]
-discover_dates = [
-    "primary_release_date.gte", "primary_release_date.lte", "release_date.gte", "release_date.lte",
-    "air_date.gte", "air_date.lte", "first_air_date.gte", "first_air_date.lte"
+discover_dates = ["primary_release_date", "release_date", "air_date", "first_air_date"]
+date_methods = [f"{f}{m}" for f in discover_dates for m in modifiers]
+discover_numbers = ["vote_average"]
+discover_special = [
+    "region", "sort_by", "certification_country", "certification", "certification.lte", "certification.gte",
+    "watch_region", "with_watch_monetization_types", "with_status", "limit", "with_type"
 ]
+discover_all = discover_special + discover_strings + discover_years + discover_booleans + date_methods + \
+      [f"{f}{m}" for f in discover_ints for m in modifiers] + \
+      [f"{f}{m}" for f in discover_numbers for m in modifiers]
 discover_movie_sort = [
     "popularity.asc", "popularity.desc", "release_date.asc", "release_date.desc", "revenue.asc", "revenue.desc",
     "primary_release_date.asc", "primary_release_date.desc", "original_title.asc", "original_title.desc",
@@ -272,7 +269,7 @@ class TMDb:
         elif method == "tmdb_discover":
             attrs = data.copy()
             limit = int(attrs.pop("limit"))
-            for date_attr in discover_dates:
+            for date_attr in date_methods:
                 if date_attr in attrs:
                     attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
             if self.config.trace_mode:
