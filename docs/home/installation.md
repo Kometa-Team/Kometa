@@ -54,6 +54,8 @@ docker run -it -v <PATH_TO_CONFIG>:/config:rw meisnate12/plex-meta-manager
 
 Example Docker Run command:
 
+These docs are assuming you have a basic understanding of Docker concepts.  One place to get familiar with Docker would be the [official tutorial](https://www.docker.com/101-tutorial/).
+
 ```shell
 docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager
 ```
