@@ -18,5 +18,5 @@ jobs:
           webhook_token: ${{ secrets.DEVELOP_WEBHOOK_TOKEN }}
           title: Plex Meta Manager Develop Push
           commits: "true"
-          username: PMM Develop
+          username: Metabot
           avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/develop/.github/pmm.png

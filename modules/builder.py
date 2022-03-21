@@ -45,7 +45,7 @@ method_alias = {
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
     "mal_producer": "mal_studio", "mal_licensor": "mal_studio",
     "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
-    "collection_changes_webhooks": "changes_webhooks", "sort_by": "collection_order",
+    "collection_changes_webhooks": "changes_webhooks",
     "radarr_add": "radarr_add_missing", "sonarr_add": "sonarr_add_missing",
 }
 filter_translation = {
@@ -1182,9 +1182,8 @@ class CollectionBuilder:
                         raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute only works for show libraries")
                     elif self.library.is_show and discover_attr in tmdb.discover_movie_only:
                         raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute only works for movie libraries")
-                    elif discover_attr in ["language", "region"]:
-                        regex = ("([a-z]{2})-([A-Z]{2})", "en-US") if discover_attr == "language" else ("^[A-Z]{2}$", "US")
-                        new_dictionary[discover_attr] = util.parse(self.Type, discover_attr, discover_data, parent=method_name, regex=regex)
+                    elif discover_attr == "region":
+                        new_dictionary[discover_attr] = util.parse(self.Type, discover_attr, discover_data, parent=method_name, regex=("^[A-Z]{2}$", "US"))
                     elif discover_attr == "sort_by":
                         options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
                         new_dictionary[discover_method] = util.parse(self.Type, discover_attr, discover_data, parent=method_name, options=options)
@@ -1209,20 +1208,20 @@ class CollectionBuilder:
                         else:
                             raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with watch_region")
                     elif discover_attr in tmdb.discover_booleans:
-                        new_dictionary[discover_attr] = util.parse(self.Type, discover_attr, discover_data, datatype="bool", parent=method_name)
+                        new_dictionary[discover_method] = util.parse(self.Type, discover_attr, discover_data, datatype="bool", parent=method_name)
                     elif discover_attr == "vote_average":
                         new_dictionary[discover_method] = util.parse(self.Type, discover_method, discover_data, datatype="float", parent=method_name)
                     elif discover_attr == "with_status":
-                        new_dictionary[discover_attr] = util.parse(self.Type, discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
+                        new_dictionary[discover_method] = util.parse(self.Type, discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=5)
                     elif discover_attr == "with_type":
-                        new_dictionary[discover_attr] = util.parse(self.Type, discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
-                    elif discover_method in tmdb.discover_dates:
+                        new_dictionary[discover_method] = util.parse(self.Type, discover_attr, discover_data, datatype="int", parent=method_name, minimum=0, maximum=6)
+                    elif discover_attr in tmdb.discover_dates:
                         new_dictionary[discover_method] = util.validate_date(discover_data, f"{method_name} {discover_method} attribute", return_as="%m/%d/%Y")
                     elif discover_attr in tmdb.discover_years:
-                        new_dictionary[discover_attr] = util.parse(self.Type, discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
+                        new_dictionary[discover_method] = util.parse(self.Type, discover_attr, discover_data, datatype="int", parent=method_name, minimum=1800, maximum=self.current_year + 1)
                     elif discover_attr in tmdb.discover_ints:
                         new_dictionary[discover_method] = util.parse(self.Type, discover_method, discover_data, datatype="int", parent=method_name)
-                    elif discover_method in tmdb.discover_strings:
+                    elif discover_attr in tmdb.discover_strings:
                         new_dictionary[discover_method] = discover_data
                     elif discover_attr != "limit":
                         raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute not supported")
