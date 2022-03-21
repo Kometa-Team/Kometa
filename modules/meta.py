@@ -571,7 +571,7 @@ class MetadataFile(DataFile):
             updated = False
             edits = {}
 
-            def add_edit(name, current_item, group, alias, key=None, value=None, var_type="str"):
+            def add_edit(name, current_item, group=None, alias=None, key=None, value=None, var_type="str"):
                 if value or name in alias:
                     if value or group[alias[name]]:
                         if key is None:         key = name
@@ -917,6 +917,63 @@ class MetadataFile(DataFile):
                                     if self.edit_tags("mood", track, track_dict, track_methods):
                                         updated = True
                                     logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+            if "f1_season" in methods and self.library.is_show:
+                f1_season = None
+                current_year = datetime.now().year
+                if meta[methods["f1_season"]] is None:
+                    raise Failed("Metadata Error: f1_season attribute is blank")
+                try:
+                    year_value = int(str(meta[methods["f1_season"]]))
+                    if 1950 <= year_value <= current_year:
+                        f1_season = year_value
+                except ValueError:
+                    pass
+                if f1_season is None:
+                    raise Failed(f"Metadata Error: f1_season attribute must be an integer between 1950 and {current_year}")
+                round_prefix = False
+                if "round_prefix" in methods:
+                    if meta[methods["round_prefix"]] is True:
+                        round_prefix = True
+                    else:
+                        logger.error("Metadata Error: round_prefix must be true to do anything")
+                shorten_gp = False
+                if "shorten_gp" in methods:
+                    if meta[methods["shorten_gp"]] is True:
+                        shorten_gp = True
+                    else:
+                        logger.error("Metadata Error: shorten_gp must be true to do anything")
+
+                logger.info(f"Setting Metadata of {item.title} to F1 Season {f1_season}")
+                races = self.config.Ergast.get_races(f1_season)
+                race_lookup = {r.round: r for r in races}
+                for season in item.seasons():
+                    if season.seasonNumber is 0:
+                        continue
+                    sprint_weekend = False
+                    for episode in season.episodes():
+                        if "sprint" in episode.locations[0].lower():
+                            sprint_weekend = True
+                            break
+                    if season.seasonNumber in race_lookup:
+                        race = race_lookup[season.seasonNumber]
+                        title = race.format_name(round_prefix, shorten_gp)
+                        updated = False
+                        edits = {}
+                        add_edit("title", season, value=title)
+                        if self.library.edit_item(season, title, "Season", edits):
+                            updated = True
+                        logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Details Update {'Complete' if updated else 'Not Needed'}")
+                        for episode in season.episodes():
+                            if len(episode.locations) > 0:
+                                ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
+                                add_edit("title", episode, value=ep_title)
+                                add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
+                                if self.library.edit_item(episode, f"{season.seasonNumber} Episode: {episode.episodeNumber}", "Season", edits):
+                                    updated = True
+                                logger.info(f"Session {episode.title}: Details Update {'Complete' if updated else 'Not Needed'}")
+                    else:
+                        logger.warning(f"Ergast Error: No Round: {season.seasonNumber} for Season {f1_season}")
 
 
 class PlaylistFile(DataFile):

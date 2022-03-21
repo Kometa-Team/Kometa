@@ -6,6 +6,7 @@ from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
+from modules.ergast import Ergast
 from modules.flixpatrol import FlixPatrol
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
@@ -542,6 +543,7 @@ class ConfigFile:
             self.ICheckMovies = ICheckMovies(self)
             self.Letterboxd = Letterboxd(self)
             self.Reciperr = Reciperr(self)
+            self.Ergast = Ergast(self)
 
             logger.separator()
 
