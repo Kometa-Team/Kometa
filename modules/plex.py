@@ -1002,7 +1002,8 @@ class Plex(Library):
         if isinstance(item, (Movie, Show)) and not poster and overlay:
             self.upload_images(item, overlay=overlay)
         if create and folders and not found_folder:
-            found_folder = os.path.join(self.asset_directory[0], name)
+            filename, _ = util.validate_filename(name)
+            found_folder = os.path.join(self.asset_directory[0], filename)
             os.makedirs(found_folder, exist_ok=True)
             logger.info(f"Asset Directory Created: {found_folder}")
         elif isinstance(item, (Movie, Show)) and not overlay and folders and not found_folder:
