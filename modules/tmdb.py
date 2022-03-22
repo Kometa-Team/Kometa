@@ -4,13 +4,17 @@ from tmdbapis import TMDbAPIs, TMDbException, NotFound
 
 logger = util.logger
 
-builders = [
-    "tmdb_actor", "tmdb_actor_details", "tmdb_collection", "tmdb_collection_details", "tmdb_company",
-    "tmdb_crew", "tmdb_crew_details", "tmdb_director", "tmdb_director_details", "tmdb_discover",
-    "tmdb_keyword", "tmdb_list", "tmdb_list_details", "tmdb_movie", "tmdb_movie_details", "tmdb_network",
-    "tmdb_now_playing", "tmdb_popular", "tmdb_producer", "tmdb_producer_details", "tmdb_show", "tmdb_show_details",
-    "tmdb_top_rated", "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_writer", "tmdb_writer_details"
+int_builders = [
+    "tmdb_airing_today", "tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_on_the_air",
+    "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_upcoming"
 ]
+info_builders = [
+    "tmdb_actor", "tmdb_collection", "tmdb_crew", "tmdb_director", "tmdb_list",
+    "tmdb_movie", "tmdb_producer", "tmdb_show", "tmdb_writer"
+]
+details_builders = [f"{d}_details" for d in info_builders]
+builders = ["tmdb_company", "tmdb_discover", "tmdb_keyword", "tmdb_network"] \
+           + int_builders + info_builders + details_builders
 type_map = {
     "tmdb_actor": "Person", "tmdb_actor_details": "Person", "tmdb_crew": "Person", "tmdb_crew_details": "Person",
     "tmdb_collection": "Collection", "tmdb_collection_details": "Collection", "tmdb_company": "Company",
@@ -280,13 +284,19 @@ class TMDb:
             logger.info(f"Processing {pretty}: {amount} {media_type}{'' if amount == 1 else 's'}")
             for attr, value in attrs.items():
                 logger.info(f"           {attr}: {value}")
-        elif method in ["tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_trending_daily", "tmdb_trending_weekly"]:
+        elif method in int_builders:
             if method == "tmdb_popular":
                 results = self.TMDb.popular_movies() if is_movie else self.TMDb.popular_tv()
             elif method == "tmdb_top_rated":
                 results = self.TMDb.top_rated_movies() if is_movie else self.TMDb.top_rated_tv()
             elif method == "tmdb_now_playing":
                 results = self.TMDb.now_playing_movies()
+            elif method == "tmdb_upcoming":
+                results = self.TMDb.upcoming_movies()
+            elif method == "tmdb_airing_today":
+                results = self.TMDb.tv_airing_today()
+            elif method == "tmdb_on_the_air":
+                results = self.TMDb.tv_on_the_air()
             else:
                 results = self.TMDb.trending("movie" if is_movie else "tv", "day" if method == "tmdb_trending_daily" else "week")
             ids = [(i.id, result_type) for i in results.get_results(data)]
