@@ -1,6 +1,6 @@
 import operator, os, re
 from datetime import datetime
-from modules import plex, util
+from modules import plex, ergast, util
 from modules.util import Failed, ImageData
 from plexapi.exceptions import NotFound
 from tmdbapis import NotFound as TMDbNotFound
@@ -943,9 +943,14 @@ class MetadataFile(DataFile):
                         shorten_gp = True
                     else:
                         logger.error("Metadata Error: shorten_gp must be true to do anything")
-
+                f1_language = None
+                if "f1_language" in methods:
+                    if str(meta[methods["f1_language"]]).lower() in ergast.translations:
+                        f1_language = str(meta[methods["f1_language"]]).lower()
+                    else:
+                        logger.error(f"Metadata Error: f1_language must be a language code PMM has a translation for. Options: {ergast.translations}")
                 logger.info(f"Setting Metadata of {item.title} to F1 Season {f1_season}")
-                races = self.config.Ergast.get_races(f1_season)
+                races = self.config.Ergast.get_races(f1_season, f1_language)
                 race_lookup = {r.round: r for r in races}
                 for season in item.seasons():
                     if season.seasonNumber is 0:

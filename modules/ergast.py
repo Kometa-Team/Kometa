@@ -6,9 +6,59 @@ logger = util.logger
 
 base_url = "http://ergast.com/api/f1/"
 
+translations = {
+    "nl": {
+        "70th Anniversary": "70th Anniversary", "Abu Dhabi": "Abu Dhabi", "Argentine": "Argentinië", "Australian": "Australië",
+        "Austrian": "Oostenrijk", "Azerbaijan": "Azerbeidzjan", "Bahrain": "Bahrein", "Belgian": "België", "Brazilian": "Brazilië",
+        "British": "Groot-Brittannië", "Caesars Palace": "Caesars Palace", "Canadian": "Canada", "Chinese": "China", "Dallas": "Dallas",
+        "Detroit": "Detroit", "Dutch": "Nederland", "Eifel": "Eifel", "Emilia Romagna": "Emilia Romagna", "European": "Europa",
+        "French": "Frankrijk", "German": "Duitsland", "Hungarian": "Hongarije", "Indian": "India", "Indianapolis 500": "Indianapolis 500",
+        "Italian": "Italië", "Japanese": "Japan", "Korean": "Zuid-Korea", "Luxembourg": "Luxemburg", "Malaysian": "Maleisië",
+        "Mexican": "Mexico", "Mexico City": "Mexico City", "Miami": "Miami", "Monaco": "Monaco", "Moroccan": "Marroko",
+        "Pacific": "Pacific", "Pescara": "Pescara", "Portuguese": "Portugal", "Qatar": "Qatar", "Russian": "Rusland",
+        "Sakhir": "Sakhir", "San Marino": "San Marino", "Saudi Arabian": "Saudi Arabië", "Singapore": "Singapore",
+        "South African": "Zuid-Afrika", "Spanish": "Spanje", "Styrian": "Stiermarken", "Swedish": "Zweden", "Swiss": "Zwitserland",
+        "São Paulo": "São Paulo", "Turkish": "Turkije", "Tuscan": "Toscane", "United States": "Verenigde Staten"
+    }
+}
+
+terms = {
+    "free practice 1": ["free practice 1", "vrije training 1", "fp1", "vt1"],
+    "free practice 2": ["free practice 2", "vrije training 2", "fp2", "vt2"],
+    "free practice 3": ["free practice 3", "vrije training 3", "fp3", "vt3"],
+    "pre": ["pre", "voorbeschouwing"],
+    "post": ["post", "nabeschouwing"],
+    "quali": ["quali", "kwalificatie"],
+    "preview": ["preview", "seizoensvoorbeschouwing"],
+    "summary": ["summary", "samenvatting"],
+    "highlight": ["highlight", "hoogtepunten"],
+}
+
+names = {
+    "nl": {
+        "Formula 1 Cafe": "Formule 1 Cafe",
+        "Free Practice 1": "Vrije Training 1",
+        "Free Practice 2": "Vrije Training 2",
+        "Free Practice 3": "Vrije Training 3",
+        "Pre-Sprint Build-up": "Sprint Voorbeschouwing",
+        "Post-Sprint Analysis": "Sprint Nabeschouwing",
+        "Sprint Qualifying": "Sprint Kwalificatie",
+        "Pre-Qualifying Build-up": "Kwalificatie Voorbeschouwing",
+        "Post-Qualifying Analysis": "Kwalificatie Nabeschouwing",
+        "Qualifying Session": "Kwalificatie",
+        "Season Preview": "Seizoensvoorbeschouwing",
+        "Pre-Race Buildup": "Voorbeschouwing",
+        "Post-Race Analysis": "Nabeschouwing",
+        "Live from the Grid": "Vanaf de grid",
+        "Highlights": "Samenvatting",
+        "Race Session": "Race",
+    }
+}
+
 class Race:
-    def __init__(self, data):
+    def __init__(self, data, language):
         self._data = data
+        self._language = language
         self.season = util.check_num(self._data["season"], is_int=True)
         self.round = util.check_num(self._data["round"], is_int=True)
         self.name = self._data["raceName"]
@@ -18,58 +68,82 @@ class Race:
             self.date = None
 
     def format_name(self, round_prefix, shorten_gp):
-        output = f"{self.round:02} - {self.name}" if round_prefix else self.name
-        return output.replace("Grand Prix", "GP") if shorten_gp else output
+        if self._language:
+            output = f"GP {self.name.replace(' Grand Prix', '')}" if shorten_gp else self.name
+            for eng_value, trans_value in translations[self._language]:
+                output = output.replace(eng_value, trans_value)
+        else:
+            output = self.name.replace("Grand Prix", "GP") if shorten_gp else self.name
+        if round_prefix:
+            output = f"{self.round:02} - {output}"
+        return output
 
     def session_info(self, title, sprint_weekend):
         title = title.lower()
-        if "fp1" in title or "free practice 1" in title:
+        if "cafe" in title:
+            output = "Formula 1 Cafe"
+        elif any([x in title for x in terms["free practice 1"]]):
             output = "Free Practice 1"
-        elif "fp2" in title or "free practice 2" in title:
+        elif any([x in title for x in terms["free practice 2"]]):
             output = "Free Practice 2"
-        elif "fp3" in title or "free practice 3" in title:
+        elif any([x in title for x in terms["free practice 3"]]):
             output = "Free Practice 3"
-        elif "sprint" in title and "pre" in title:
-            output = "Pre-Sprint Build-up"
-        elif "sprint" in title and "post" in title:
-            output = "Post-Sprint Analysis"
         elif "sprint" in title:
-            output = "Sprint Qualifying"
-        elif "quali" in title and "pre" in title:
-            output = "Pre-Qualifying Build-up"
-        elif "quali" in title and "post" in title:
-            output = "Post-Qualifying Analysis"
-        elif "quali" in title:
-            output = "Qualifying Session"
-        elif "summary" in title or "highlight" in title:
+            if any([x in title for x in terms["pre"]]):
+                output = "Pre-Sprint Build-up"
+            elif any([x in title for x in terms["post"]]):
+                output = "Post-Sprint Analysis"
+            else:
+                output = "Sprint Qualifying"
+        elif any([x in title for x in terms["quali"]]):
+            if any([x in title for x in terms["pre"]]):
+                output = "Pre-Qualifying Build-up"
+            elif any([x in title for x in terms["post"]]):
+                output = "Post-Qualifying Analysis"
+            else:
+                output = "Qualifying Session"
+        elif any([x in title for x in terms["preview"]]):
+            output = "Season Preview"
+        elif any([x in title for x in terms["pre"]]):
+            output = "Pre-Race Buildup"
+        elif any([x in title for x in terms["post"]]):
+            output = "Post-Race Analysis"
+        elif "grid" in title:
+            output = "Live from the Grid"
+        elif any([x in title for x in terms["summary"] + terms["highlight"]]):
             output = "Highlights"
         else:
             output = "Race Session"
         if "2160" in title or "4K" in title:
             output = f"{output} (4K)"
 
-        if (sprint_weekend and ("Sprint" in output or "Free Practice 2" in output)) or \
-                (not sprint_weekend and ("Qualifying" in output or "Free Practice 3" in output)):
-            return output, self.date - timedelta(days=1)
-        elif (sprint_weekend and ("Qualifying" in output or "Free Practice 1" in output)) or \
-                (not sprint_weekend and ("Free Practice 1" in output or "Free Practice 2" in output)):
-            return output, self.date - timedelta(days=2)
+        if (sprint_weekend and any([x in output for x in ["Sprint", "Free Practice 2"]])) or \
+                (not sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 3"]])):
+            video_date = self.date - timedelta(days=1)
+        elif (sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 1", "Formula 1 Cafe"]])) or \
+                (not sprint_weekend and any([x in output for x in ["Free Practice 1", "Free Practice 2", "Formula 1 Cafe"]])):
+            video_date = self.date - timedelta(days=2)
         else:
-            return output, self.date
+            video_date = self.date
+
+        if self._language and self._language in names and output in names[self._language]:
+            output = names[self._language][output]
+        return output, video_date
+
 
 class Ergast:
     def __init__(self, config):
         self.config = config
 
-    def get_races(self, year, ignore_cache=False):
+    def get_races(self, year, language, ignore_cache=False):
         expired = None
         if self.config.Cache and not ignore_cache:
             race_list, expired = self.config.Cache.query_ergast(year, self.config.Cache.expiration)
             if race_list and expired is False:
-                return [Race(r) for r in race_list]
+                return [Race(r, language) for r in race_list]
         response = self.config.get(f"{base_url}{year}.json")
         if response.status_code < 400:
-            races = [Race(r) for r in response.json()["MRData"]["RaceTable"]["Races"]]
+            races = [Race(r, language) for r in response.json()["MRData"]["RaceTable"]["Races"]]
             if self.config.Cache and not ignore_cache:
                 self.config.Cache.update_ergast(expired, year, races, self.config.Cache.expiration)
             return races
