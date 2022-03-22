@@ -464,7 +464,10 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
                 final_dict = {}
                 for dict_key, dict_data in value.items():
                     if isinstance(dict_data, dict) and dict_data:
-                        final_dict[dict_key] = dict_data
+                        new_data = {}
+                        for dict_data_key, dict_data_data in dict_data.items():
+                            new_data[str(dict_data_key)] = dict_data_data
+                        final_dict[dict_key] = new_data
                     else:
                         raise Failed(f"{error} Warning: {display} {dict_key} is not a dictionary")
                 return final_dict
