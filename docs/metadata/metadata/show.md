@@ -79,15 +79,18 @@ The available attributes for editing shows, seasons, and episodes are as follows
 
 ### Special Attributes
 
-| Attribute    | Values                                                                                           |  Shows   | Seasons  | Episodes |
-|:-------------|:-------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|
-| `title`      | Title if different from the mapping value useful when you have multiple shows with the same name | &#9989;  | &#9989;  | &#9989;  |
-| `alt_title`  | Alternative title to look for                                                                    | &#9989;  | &#10060; | &#10060; |
-| `year`       | Year of show for better identification                                                           | &#9989;  | &#10060; | &#10060; |
-| `tmdb_show`  | TMDb Show ID to use for metadata useful for miniseries that have been compiled into a movie      | &#9989;  | &#10060; | &#10060; |
-| `tmdb_movie` | TMDb Movie ID to use for metadata useful for movies that have been split into segments           | &#9989;  | &#10060; | &#10060; |
-| `seasons`    | Mapping to define Seasons                                                                        | &#9989;  | &#10060; | &#10060; |
-| `episodes`   | Mapping to define Episodes                                                                       | &#10060; | &#9989;  | &#10060; |
+| Attribute      | Values                                                                                                                                            |  Shows   | Seasons  | Episodes |
+|:---------------|:--------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|
+| `title`        | Title if different from the mapping value useful when you have multiple shows with the same name                                                  | &#9989;  | &#9989;  | &#9989;  |
+| `alt_title`    | Alternative title to look for                                                                                                                     | &#9989;  | &#10060; | &#10060; |
+| `year`         | Year of show for better identification                                                                                                            | &#9989;  | &#10060; | &#10060; |
+| `tmdb_show`    | TMDb Show ID to use for metadata useful for miniseries that have been compiled into a movie                                                       | &#9989;  | &#10060; | &#10060; |
+| `tmdb_movie`   | TMDb Movie ID to use for metadata useful for movies that have been split into segments                                                            | &#9989;  | &#10060; | &#10060; |
+| `f1_season`    | F1 Season Year to make the Show represent a Season of F1 Races                                                                                    | &#9989;  | &#10060; | &#10060; |
+| `round_prefix` | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix` | &#9989;  | &#10060; | &#10060; |
+| `shorten_gp`   | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`           | &#9989;  | &#10060; | &#10060; |
+| `seasons`      | Mapping to define Seasons                                                                                                                         | &#9989;  | &#10060; | &#10060; |
+| `episodes`     | Mapping to define Episodes                                                                                                                        | &#10060; | &#9989;  | &#10060; |
 
 * YAML files cannot have two items with the same mapping name so if you have two shows with the same name you would change the mapping values to whatever you want. Then use the `title` attribute to specify the real title and use the `year` attribute to specify which of the multiple shows to choose.
     ```yaml
