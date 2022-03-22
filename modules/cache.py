@@ -773,7 +773,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.excute("DELETE FROM ergast_race WHERE season = ?", (season,))
+                cursor.execute("DELETE FROM ergast_race WHERE season = ?", (season,))
                 cursor.executemany("INSERT OR IGNORE INTO ergast_race(season, round) VALUES(?, ?)", [(r.season, r.round) for r in races])
                 cursor.executemany("UPDATE ergast_race SET name = ?, date = ?, expiration_date = ? WHERE season = ? AND round = ?",
                                    [(r.name, r.date.strftime("%Y-%m-%d") if r.date else None,
