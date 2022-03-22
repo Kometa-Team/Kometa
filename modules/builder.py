@@ -73,11 +73,14 @@ modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
                letterboxd.builders + mal.builders + plex.builders + reciperr.builders + tautulli.builders + \
                tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders
-show_only_builders = ["tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "collection_level", "item_tmdb_season_titles"]
+show_only_builders = [
+    "tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "tmdb_airing_today",
+    "tmdb_on_the_air", "collection_level", "item_tmdb_season_titles"
+]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
-    "tvdb_movie", "tvdb_movie_details", "trakt_boxoffice", "reciperr_list"
+    "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list"
 ]
 music_only_builders = ["item_album_sorting"]
 summary_details = [
@@ -171,8 +174,8 @@ smart_url_invalid = ["minimum_items", "filters", "run_again", "sync_mode", "show
 custom_sort_builders = [
     "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list",
-    "tvdb_list", "imdb_chart", "imdb_list", "stevenlu_popular", "anidb_popular",
-    "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
+    "tvdb_list", "imdb_chart", "imdb_list", "stevenlu_popular", "anidb_popular", "tmdb_upcoming", "tmdb_airing_today",
+    "tmdb_on_the_air", "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
     "flixpatrol_url", "flixpatrol_demographics", "flixpatrol_popular", "flixpatrol_top",
     "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
@@ -1229,11 +1232,11 @@ class CollectionBuilder:
                     self.builders.append((method_name, new_dictionary))
                 else:
                     raise Failed(f"{self.Type} Error: {method_name} had no valid fields")
-        elif method_name in ["tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_trending_daily", "tmdb_trending_weekly"]:
+        elif method_name in tmdb.int_builders:
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10)))
         else:
             values = self.config.TMDb.validate_tmdb_ids(method_data, method_name)
-            if method_name.endswith("_details"):
+            if method_name in tmdb.details_builders:
                 if method_name.startswith(("tmdb_collection", "tmdb_movie", "tmdb_show")):
                     item = self.config.TMDb.get_movie_show_or_collection(values[0], self.library.is_movie)
                     if item.overview:
@@ -1253,7 +1256,7 @@ class CollectionBuilder:
                     if item.description:
                         self.summaries[method_name] = item.description
             for value in values:
-                self.builders.append((method_name[:-8] if method_name.endswith("_details") else method_name, value))
+                self.builders.append((method_name[:-8] if method_name in tmdb.details_builders else method_name, value))
 
     def _trakt(self, method_name, method_data):
         if method_name.startswith("trakt_list"):
