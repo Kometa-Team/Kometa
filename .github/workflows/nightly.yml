@@ -15,7 +15,7 @@ jobs:
       - name: Send Discord Commit Notification
         uses: meisnate12/discord-notifications@master
         with:
-          webhook_id: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
+          webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
           title: Plex Meta Manager Nightly Push
           commits: "true"
