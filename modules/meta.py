@@ -422,8 +422,8 @@ class MetadataFile(DataFile):
                         template_name = util.parse("Config", "template", dynamic, parent=map_name, methods=methods)
                         if template_name not in self.templates:
                             raise Failed(f"Config Error: {map_name} template: {template_name} not found")
-                        if f"<<{auto_type}>>" not in str(self.templates[template_name]):
-                            raise Failed(f"Config Error: {map_name} template: {template_name} is required to have the template variable <<{auto_type}>>")
+                        if "<<value>>" not in str(self.templates[template_name]) and f"<<{auto_type}>>" not in str(self.templates[template_name]):
+                            raise Failed(f"Config Error: {map_name} template: {template_name} is required to have the template variable <<value>>")
                     else:
                         self.templates[map_name] = default_template if default_template else default_templates[auto_type]
                         template_name = map_name
