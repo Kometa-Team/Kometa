@@ -1,4 +1,5 @@
 from datetime import datetime
+from json import JSONDecodeError
 from modules import util
 from modules.util import Failed
 from urllib.parse import urlparse
@@ -171,6 +172,9 @@ class Mdblist:
             url_base = parsed_url._replace(query=None).geturl()
             url_base = url_base if url_base.endswith("/") else f"{url_base}/"
             url_base = url_base if url_base.endswith("json/") else f"{url_base}json/"
-            return [(i["imdb_id"], "imdb") for i in self.config.get_json(url_base, headers=headers, params=params)]
+            try:
+                return [(i["imdb_id"], "imdb") for i in self.config.get_json(url_base, headers=headers, params=params)]
+            except JSONDecodeError:
+                raise Failed(f"Mdblist Error: Invalid Response")
         else:
             raise Failed(f"Mdblist Error: Method {method} not supported")
