@@ -17,11 +17,12 @@ jobs:
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
-          title: Plex Meta Manager Nightly Commits
+          title: Nightly Commits
           commits: "true"
           username: Metabot
           avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
-          author: Github Nightly
+          author: Github
+          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/git.png
 
       - name: Check Out Repo
         uses: actions/checkout@v3
