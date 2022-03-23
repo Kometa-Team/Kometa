@@ -50,10 +50,12 @@ jobs:
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
-          title: "Docker ${{ steps.get_version.outputs.VERSION }} build: **Success**"
+          title: "${{ steps.get_version.outputs.VERSION }} build: **Success**"
           url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Docker
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
+          username: Metabot
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/pmm.png
+          author: Docker
+          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
 
       - name: Discord Failure Notification
         uses: meisnate12/discord-notifications@master
@@ -61,8 +63,10 @@ jobs:
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
-          title: "Docker ${{ steps.get_version.outputs.VERSION }} build: **Failure**"
+          title: "${{ steps.get_version.outputs.VERSION }} build: **Failure**"
           color: 0xe30c43
           url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Docker
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
+          username: Metabot
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/pmm.png
+          author: Docker
+          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png

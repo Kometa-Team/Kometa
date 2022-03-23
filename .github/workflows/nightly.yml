@@ -17,10 +17,11 @@ jobs:
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
-          title: Plex Meta Manager Nightly Push
+          title: Plex Meta Manager Nightly Commits
           commits: "true"
           username: Metabot
           avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
+          author: Github Nightly
 
       - name: Check Out Repo
         uses: actions/checkout@v3
@@ -58,10 +59,12 @@ jobs:
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
-          title: "Docker nightly build: **Success**"
+          title: "nightly build: **Success**"
           url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Docker
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/docker.png
+          username: Metabot
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
+          author: Docker
+          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/docker.png
 
       - name: Discord Failure Notification
         uses: meisnate12/discord-notifications@master
@@ -69,8 +72,10 @@ jobs:
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
-          title: "Docker nightly build: **Failure**"
+          title: "nightly build: **Failure**"
           color: 0xe30c43
           url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Docker
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/docker.png
+          username: Metabot
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
+          author: Docker
+          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/docker.png
