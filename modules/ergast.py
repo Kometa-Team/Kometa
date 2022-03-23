@@ -70,7 +70,7 @@ class Race:
     def format_name(self, round_prefix, shorten_gp):
         if self._language:
             output = f"GP {self.name.replace(' Grand Prix', '')}" if shorten_gp else self.name
-            for eng_value, trans_value in translations[self._language]:
+            for eng_value, trans_value in translations[self._language].items():
                 output = output.replace(eng_value, trans_value)
         else:
             output = self.name.replace("Grand Prix", "GP") if shorten_gp else self.name
