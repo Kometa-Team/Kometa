@@ -100,8 +100,10 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level",
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
-details = ["ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode", "limit", "url_theme", "file_theme",
-           "minimum_items", "label", "album_sorting", "cache_builders"] + boolean_details + scheduled_boolean + string_details
+details = [
+    "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode", "limit", "url_theme",
+    "file_theme", "minimum_items", "label", "album_sorting", "cache_builders", "tmdb_region"
+] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
@@ -303,6 +305,7 @@ class CollectionBuilder:
         self.limit = 0
         self.beginning_count = 0
         self.minimum = self.library.minimum_items
+        self.tmdb_region = None
         self.ignore_ids = [i for i in self.library.ignore_ids]
         self.ignore_imdb_ids = [i for i in self.library.ignore_imdb_ids]
         self.server_preroll = None
@@ -784,6 +787,8 @@ class CollectionBuilder:
                 self.file_theme = os.path.abspath(method_data)
             else:
                 logger.error(f"{self.Type} Error: Theme Path Does Not Exist: {os.path.abspath(method_data)}")
+        elif method_name == "tmdb_region":
+            self.tmdb_region = util.parse(self.Type, method_name, str(method_data).upper(), options=self.config.TMDb.iso_3166_1)
         elif method_name == "collection_mode":
             self.details[method_name] = util.check_collection_mode(method_data)
         elif method_name == "minimum_items":
@@ -1355,7 +1360,7 @@ class CollectionBuilder:
         elif "mdblist" in method:
             ids = self.config.Mdblist.get_imdb_ids(method, value)
         elif "tmdb" in method:
-            ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie)
+            ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
         elif "trakt" in method:
             ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
         else:

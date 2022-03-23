@@ -151,12 +151,14 @@ class TMDb:
         self.config = config
         self.apikey = params["apikey"]
         self.language = params["language"]
+        self.region = None
         self.expiration = params["expiration"]
         logger.secret(self.apikey)
         try:
             self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
+        self.iso_3166_1 = [i.upper() for i in self.TMDb._iso_3166_1]
 
     def convert_from(self, tmdb_id, convert_to, is_movie):
         item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
@@ -255,7 +257,9 @@ class TMDb:
         elif tmdb_type == "List":                   self.get_list(tmdb_id)
         return tmdb_id
 
-    def get_tmdb_ids(self, method, data, is_movie):
+    def get_tmdb_ids(self, method, data, is_movie, region):
+        if not region and self.region:
+            region = self.region
         pretty = method.replace("_", " ").title().replace("Tmdb", "TMDb")
         media_type = "Movie" if is_movie else "Show"
         result_type = "tmdb" if is_movie else "tmdb_show"
@@ -286,13 +290,13 @@ class TMDb:
                 logger.info(f"           {attr}: {value}")
         elif method in int_builders:
             if method == "tmdb_popular":
-                results = self.TMDb.popular_movies() if is_movie else self.TMDb.popular_tv()
+                results = self.TMDb.popular_movies(region=region) if is_movie else self.TMDb.popular_tv()
             elif method == "tmdb_top_rated":
-                results = self.TMDb.top_rated_movies() if is_movie else self.TMDb.top_rated_tv()
+                results = self.TMDb.top_rated_movies(region=region) if is_movie else self.TMDb.top_rated_tv()
             elif method == "tmdb_now_playing":
-                results = self.TMDb.now_playing_movies()
+                results = self.TMDb.now_playing_movies(region=region)
             elif method == "tmdb_upcoming":
-                results = self.TMDb.upcoming_movies()
+                results = self.TMDb.upcoming_movies(region=region)
             elif method == "tmdb_airing_today":
                 results = self.TMDb.tv_airing_today()
             elif method == "tmdb_on_the_air":

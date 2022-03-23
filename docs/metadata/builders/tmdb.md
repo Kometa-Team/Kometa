@@ -39,6 +39,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 | [`tmdb_popular`](#tmdb-popular)                 | Finds the movies/shows in TMDb's [Popular Movies](https://www.themoviedb.org/movie)/[Popular Shows](https://www.themoviedb.org/tv) list                                                                                                                                                                          |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`tmdb_now_playing`](#tmdb-now-playing)         | Finds the movies in TMDb's [Now Playing](https://www.themoviedb.org/movie/now-playing) list                                                                                                                                                                                                                      |      &#9989;      |     &#10060;     |               &#9989;                |
 | [`tmdb_top_rated`](#tmdb-top-rated)             | Finds the movies/shows in TMDb's [Top Rated Movies](https://www.themoviedb.org/movie/top-rated)/[Top Rated Shows](https://www.themoviedb.org/tv/top-rated) list                                                                                                                                                  |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`tmdb_upcoming`](#tmdb-upcoming)               | Finds the movies in TMDb's [Upcoming Movies](https://www.themoviedb.org/movie/upcoming) list                                                                                                                                                                                                                     |      &#9989;      |     &#10060;     |               &#9989;                |
+| [`tmdb_airing_today`](#tmdb-airing-today)       | Finds the shows in TMDb's [Airing Today Shows](https://www.themoviedb.org/tv/airing-today) list                                                                                                                                                                                                                  |     &#10060;      |     &#9989;      |               &#9989;                |
+| [`tmdb_on_the_air`](#tmdb-on-the-air)           | Finds the shows in TMDb's [On TV Shows](https://www.themoviedb.org/tv/on-the-air) list                                                                                                                                                                                                                           |     &#10060;      |     &#9989;      |               &#9989;                |
 | [`tmdb_trending_daily`](#tmdb-trending-daily)   | Finds the movies/shows in TMDb's Trending Daily list                                                                                                                                                                                                                                                             |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`tmdb_trending_weekly`](#tmdb-trending-weekly) | Finds the movies/shows in TMDb's Trending Weekly list                                                                                                                                                                                                                                                            |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`tmdb_discover`](#tmdb-discover)               | Uses [TMDb's Discover Search](https://www.themoviedb.org/documentation/api/discover) to find every movie/show based on the [movie search parameters](https://developers.themoviedb.org/3/discover/movie-discover) or [show search parameters](https://developers.themoviedb.org/3/discover/tv-discover) provided |      &#9989;      |     &#9989;      |               &#9989;                |
@@ -295,6 +298,8 @@ collections:
 
 Finds the movies/shows in TMDb's [Popular Movies](https://www.themoviedb.org/movie)/[Popular Shows](https://www.themoviedb.org/tv) list.
 
+Use `tmdb_region` with this builder to set the region.
+
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
 ```yaml
@@ -308,6 +313,8 @@ collections:
 ## TMDb Now Playing
 
 Finds the movies in TMDb's [Now Playing](https://www.themoviedb.org/movie/now-playing) list.
+
+Use `tmdb_region` with this builder to set the region.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
@@ -323,12 +330,58 @@ collections:
 
 Finds the movies/shows in TMDb's [Top Rated Movies](https://www.themoviedb.org/movie/top-rated)/[Top Rated Shows](https://www.themoviedb.org/tv/top-rated) list.
 
+Use `tmdb_region` with this builder to set the region.
+
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
 ```yaml
 collections:
   TMDb Top Rated:
     tmdb_top_rated: 30
+    collection_order: custom
+    sync_mode: sync
+```
+
+## TMDb Upcoming
+
+Finds the movies in TMDb's [Upcoming Movies](https://www.themoviedb.org/movie/upcoming) list.
+
+Use `tmdb_region` with this builder to set the region.
+
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
+
+```yaml
+collections:
+  TMDb Upcoming:
+    tmdb_upcoming: 30
+    collection_order: custom
+    sync_mode: sync
+```
+
+## TMDb Airing Today
+
+Finds the shows in TMDb's [Airing Today Shows](https://www.themoviedb.org/tv/airing-today) list.
+
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
+
+```yaml
+collections:
+  TMDb Airing Today:
+    tmdb_airing_today: 30
+    collection_order: custom
+    sync_mode: sync
+```
+
+## TMDb On the Air
+
+Finds the shows in TMDb's [On TV Shows](https://www.themoviedb.org/tv/on-the-air) list.
+
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
+
+```yaml
+collections:
+  TMDb On the Air:
+    tmdb_on_the_air: 30
     collection_order: custom
     sync_mode: sync
 ```
