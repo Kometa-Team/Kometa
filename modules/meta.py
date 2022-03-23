@@ -972,6 +972,7 @@ class MetadataFile(DataFile):
                         for episode in season.episodes():
                             if len(episode.locations) > 0:
                                 ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
+                                edits = {}
                                 add_edit("title", episode, value=ep_title)
                                 add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
                                 if self.library.edit_item(episode, f"{season.seasonNumber} Episode: {episode.episodeNumber}", "Season", edits):
