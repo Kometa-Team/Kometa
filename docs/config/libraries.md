@@ -161,7 +161,7 @@ The default and recommended path is `/config/<<MAPPING_NAME>>_missing.yml` where
 ```yaml
 libraries:
   Movies:
-    missing_path: /config/Movies_movies.yml
+    missing_path: /config/Movies_missing.yml
 ```
 
 Alternatively, "missing items" YAML files can be placed in their own directory, as below:
