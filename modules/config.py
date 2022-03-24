@@ -381,7 +381,8 @@ class ConfigFile:
                     "language": check_for_attribute(self.data, "language", parent="tmdb", default="en"),
                     "expiration": check_for_attribute(self.data, "cache_expiration", parent="tmdb", var_type="int", default=60)
                 })
-                self.TMDb.region = check_for_attribute(self.data, "region", parent="tmdb", test_list=self.TMDb.iso_3166_1, default_is_none=True)
+                region = check_for_attribute(self.data, "region", parent="tmdb", test_list=self.TMDb.iso_3166_1, default_is_none=True)
+                self.TMDb.region = str(region).upper() if region else region
                 logger.info(f"TMDb Connection {'Failed' if self.TMDb is None else 'Successful'}")
             else:
                 raise Failed("Config Error: tmdb attribute not found")
