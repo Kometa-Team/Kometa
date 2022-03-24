@@ -6,7 +6,6 @@ from ruamel import yaml
 logger = util.logger
 
 redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
-redirect_uri_encoded = redirect_uri.replace(":", "%3A")
 base_url = "https://api.trakt.tv"
 builders = [
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
@@ -33,6 +32,7 @@ class Trakt:
         self.config = config
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
+        self.pin = params["pin"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
         logger.secret(self.client_secret)
@@ -41,13 +41,16 @@ class Trakt:
                 self._authorization()
 
     def _authorization(self):
-        url = f"https://trakt.tv/oauth/authorize?response_type=code&client_id={self.client_id}&redirect_uri={redirect_uri_encoded}"
-        logger.info(f"Navigate to: {url}")
-        logger.info("If you get an OAuth error your client_id or client_secret is invalid")
-        webbrowser.open(url, new=2)
-        try:                                pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
-        except TimeoutExpired:              raise Failed("Input Timeout: Trakt pin required.")
-        if not pin:                         raise Failed("Trakt Error: No input Trakt pin required.")
+        if self.pin:
+            pin = self.pin
+        else:
+            url = f"https://trakt.tv/oauth/authorize?response_type=code&redirect_uri={redirect_uri}&client_id={self.client_id}"
+            logger.info(f"Navigate to: {url}")
+            logger.info("If you get an OAuth error your client_id or client_secret is invalid")
+            webbrowser.open(url, new=2)
+            try:                                pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
+            except TimeoutExpired:              raise Failed("Input Timeout: Trakt pin required.")
+        if not pin:                         raise Failed("Trakt Error: Trakt pin required.")
         json = {
             "code": pin,
             "client_id": self.client_id,
@@ -94,6 +97,7 @@ class Trakt:
             if self.authorization != authorization and not self.config.read_only:
                 yaml.YAML().allow_duplicate_keys = True
                 config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
+                config["trakt"]["pin"] = None
                 config["trakt"]["authorization"] = {
                     "access_token": authorization["access_token"],
                     "token_type": authorization["token_type"],
