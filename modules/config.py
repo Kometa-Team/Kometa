@@ -430,6 +430,7 @@ class ConfigFile:
                     self.Trakt = Trakt(self, {
                         "client_id": check_for_attribute(self.data, "client_id", parent="trakt", throw=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", throw=True),
+                        "pin":  check_for_attribute(self.data, "pin", parent="trakt", default_is_none=True),
                         "config_path": self.config_path,
                         "authorization": self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] else None
                     })

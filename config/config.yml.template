@@ -115,6 +115,7 @@ sonarr:                                         # Can be individually specified 
 trakt:
   client_id: ################################################################
   client_secret: ################################################################
+  pin:
   authorization:
     # everything below is autofilled by the script
     access_token:
