@@ -788,7 +788,7 @@ class CollectionBuilder:
             else:
                 logger.error(f"{self.Type} Error: Theme Path Does Not Exist: {os.path.abspath(method_data)}")
         elif method_name == "tmdb_region":
-            self.tmdb_region = util.parse(self.Type, method_name, str(method_data).upper(), options=self.config.TMDb.iso_3166_1)
+            self.tmdb_region = util.parse(self.Type, method_name, method_data, options=self.config.TMDb.iso_3166_1)
         elif method_name == "collection_mode":
             self.details[method_name] = util.check_collection_mode(method_data)
         elif method_name == "minimum_items":

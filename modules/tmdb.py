@@ -158,7 +158,7 @@ class TMDb:
             self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
-        self.iso_3166_1 = [i.upper() for i in self.TMDb._iso_3166_1]
+        self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()}
 
     def convert_from(self, tmdb_id, convert_to, is_movie):
         item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
