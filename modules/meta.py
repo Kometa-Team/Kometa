@@ -12,11 +12,11 @@ github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Co
 
 all_auto = ["genre"]
 ms_auto = [
-    "actor", "year", "content_rating", "original_language", "tmdb_popular_people",
-    "trakt_user_lists", "trakt_liked_lists", "trakt_people_list"
+    "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists",
+    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution"
 ]
 auto = {
-    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer", "subtitle_language", "audio_language", "resolution"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer"] + all_auto + ms_auto,
     "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
@@ -25,7 +25,7 @@ auto_type_translation = {"content_rating": "contentRating", "subtitle_language":
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<original_language>>"}},
     "origin_country": {"plex_all": True, "filters": {"origin_country": "<<origin_country>>"}},
-    "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>"},
+    "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>", "minimum_items": 2},
     "trakt_user_lists": {"trakt_list_details": "<<trakt_user_lists>>"},
     "trakt_liked_lists": {"trakt_list_details": "<<trakt_liked_lists>>"},
     "tmdb_popular_people": {"tmdb_person": f"<<tmdb_popular_people>>", "plex_search": {"all": {"actor": "tmdb"}}},
@@ -285,9 +285,12 @@ class MetadataFile(DataFile):
                                 all_keys.append(ck)
                                 if ck not in exclude and cv not in exclude:
                                     auto_list[ck] = cv
-                        if auto_type in ["genre", "mood", "style", "country", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                        if auto_type in ["genre", "mood", "style", "country", "studio", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
-                            tags = library.get_tags(search_tag)
+                            if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
+                                tags = library.get_tags(f"episode.{search_tag}")
+                            else:
+                                tags = library.get_tags(search_tag)
                             if auto_type in ["decade", "subtitle_language", "audio_language"]:
                                 all_keys = [str(i.key) for i in tags]
                                 auto_list = {str(i.key): i.title for i in tags if str(i.title) not in exclude and str(i.key) not in exclude}
