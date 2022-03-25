@@ -122,9 +122,10 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`country`](#country)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
-| [`resolution`](#resolution)                   | Create a collection for each resolution found in the library                                                |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
-| [`subtitle_language`](#subtitle-language)     | Create a collection for each subtitle language found in the library                                         |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
-| [`audio_language`](#audio-language)           | Create a collection for each audio language found in the library                                            |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`resolution`](#resolution)                   | Create a collection for each resolution found in the library                                                |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`subtitle_language`](#subtitle-language)     | Create a collection for each subtitle language found in the library                                         |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`audio_language`](#audio-language)           | Create a collection for each audio language found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`studio`](#studio)                           | Create a collection for each studio found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`network`](#network)                         | Create a collection for each network found in the library                                                   |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`style`](#style)                             | Create a collection for each style found in the library                                                     |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
@@ -161,6 +162,7 @@ Create collections based on the TMDb Collections associated with items in the li
 ```yaml
 default_template:
   tmdb_collection_details: <<value>>
+  minimum_items: 2
 ```
 
 </td>
@@ -1313,6 +1315,67 @@ default_template:
 dynamic_collections:
   Audio Languages:         # mapping name does not matter just needs to be unique
     type: audio_language
+```
+
+### Studio
+
+Create a collection for each studio found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>studio</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Studio</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Studio</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.desc
+    any:
+      studio: <<value>>
+```
+
+</td>
+  </tr>
+</table>
+
+
+#### Example:
+
+* Create a collection for each studio found in a Movies library
+
+```yaml
+templates:
+  studio collection:
+    smart_filter:
+      sort_by: critic_rating.desc
+      all:
+        studio: <<value>>
+dynamic_collections:
+  Studios:         # mapping name does not matter just needs to be unique
+    type: studio
+    title_format: <<key_name>>
+    template: studio collection
 ```
 
 ### Network
