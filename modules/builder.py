@@ -2276,8 +2276,8 @@ class CollectionBuilder:
                     tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey])
                     names = {s.season_number: s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
                     for season in self.library.query(item.seasons):
-                        if season.index in names:
-                            self.library.edit_query(season, {"title.locked": 1, "title.value": names[season.index]})
+                        if season.index in names and season.title != names[season.index]:
+                            season.editTitle(names[season.index])
                 except Failed as e:
                     logger.error(e)
 
@@ -2348,7 +2348,6 @@ class CollectionBuilder:
             self.library.update_smart_collection(self.obj, self.smart_url)
             logger.info(f"Detail: Smart Filter updated to {self.smart_url}")
 
-        edits = {}
         def get_summary(summary_method, summaries):
             logger.info(f"Detail: {summary_method} will update {self.Type} Summary")
             return summaries[summary_method]
@@ -2374,67 +2373,73 @@ class CollectionBuilder:
         elif "tvdb_show_details" in self.summaries:         summary = get_summary("tvdb_show_details", self.summaries)
         elif "tmdb_show_details" in self.summaries:         summary = get_summary("tmdb_show_details", self.summaries)
         else:                                               summary = None
-        if summary:
-            if str(summary) != str(self.obj.summary):
-                edits["summary.value"] = summary
-                edits["summary.locked"] = 1
 
-        if "sort_title" in self.details:
-            if str(self.details["sort_title"]) != str(self.obj.titleSort):
-                edits["titleSort.value"] = self.details["sort_title"]
-                edits["titleSort.locked"] = 1
-                logger.info(f"Detail: sort_title will update Collection Sort Title to {self.details['sort_title']}")
+        if self.playlist:
+            if summary and str(summary) != str(self.obj.summary):
+                try:
+                    self.obj.edit(summary=str(summary))
+                    logger.info(f"Summary | {summary:<25}")
+                    logger.info("Details: have been updated")
+                except NotFound:
+                    logger.error("Details: Failed to Update Please delete the collection and run again")
+                logger.info("")
+        else:
+            self.obj.batchEdits()
 
-        if "content_rating" in self.details:
-            if str(self.details["content_rating"]) != str(self.obj.contentRating):
-                edits["contentRating.value"] = self.details["content_rating"]
-                edits["contentRating.locked"] = 1
-                logger.info(f"Detail: content_rating will update Collection Content Rating to {self.details['content_rating']}")
+            batch_display = "Collection Metadata Edits"
+            if summary and str(summary) != str(self.obj.summary):
+                self.obj.editSummary(summary)
+                batch_display += f"\nSummary | {summary:<25}"
 
-        if len(edits) > 0:
-            logger.debug(edits)
-            try:
-                if self.playlist:
-                    self.obj.edit(summary=str(edits["summary.value"]))
-                else:
-                    self.library.edit_query(self.obj, edits)
-                logger.info("Details: have been updated")
-            except NotFound:
-                logger.error("Details: Failed to Update Please delete the collection and run again")
-            logger.info("")
+            if "sort_title" in self.details and str(self.details["sort_title"]) != str(self.obj.titleSort):
+                self.obj.editSortTitle(self.details["sort_title"])
+                batch_display += f"\nSort Title | {self.details['sort_title']}"
 
-        if "collection_mode" in self.details:
-            self.library.collection_mode_query(self.obj, self.details["collection_mode"])
+            if "content_rating" in self.details and str(self.details["content_rating"]) != str(self.obj.contentRating):
+                self.obj.editContentRating(self.details["content_rating"])
+                batch_display += f"\nContent Rating | {self.details['content_rating']}"
 
-        if "collection_order" in self.details:
-            if int(self.obj.collectionSort) not in plex.collection_order_keys\
-                    or plex.collection_order_keys[int(self.obj.collectionSort)] != self.details["collection_order"]:
-                self.library.collection_order_query(self.obj, self.details["collection_order"])
-                logger.info(f"Detail: collection_order updated Collection Order to {self.details['collection_order']}")
+            add_tags = self.details["label"] if "label" in self.details else None
+            remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
+            sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
+            batch_display += f"\n{self.library.edit_tags('label', self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, do_print=False)[28:]}"
 
-        if "visible_library" in self.details or "visible_home" in self.details or "visible_shared" in self.details:
-            visibility = self.library.collection_visibility(self.obj)
-            visible_library = None
-            visible_home = None
-            visible_shared = None
+            logger.info(batch_display)
+            if len(batch_display) > 25:
+                try:
+                    self.obj.saveEdits()
+                    logger.info("Details: have been updated")
+                except NotFound:
+                    logger.error("Details: Failed to Update Please delete the collection and run again")
+                logger.info("")
 
-            if "visible_library" in self.details and self.details["visible_library"] != visibility["library"]:
-                visible_library = self.details["visible_library"]
+            if "collection_mode" in self.details:
+                self.library.collection_mode_query(self.obj, self.details["collection_mode"])
 
-            if "visible_home" in self.details and self.details["visible_home"] != visibility["home"]:
-                visible_home = self.details["visible_home"]
+            if "collection_order" in self.details:
+                if int(self.obj.collectionSort) not in plex.collection_order_keys\
+                        or plex.collection_order_keys[int(self.obj.collectionSort)] != self.details["collection_order"]:
+                    self.library.collection_order_query(self.obj, self.details["collection_order"])
+                    logger.info(f"Collection Order | {self.details['collection_order']}")
 
-            if "visible_shared" in self.details and self.details["visible_shared"] != visibility["shared"]:
-                visible_shared = self.details["visible_shared"]
+            if "visible_library" in self.details or "visible_home" in self.details or "visible_shared" in self.details:
+                visibility = self.library.collection_visibility(self.obj)
+                visible_library = None
+                visible_home = None
+                visible_shared = None
 
-            if visible_library is not None or visible_home is not None or visible_shared is not None:
-                self.library.collection_visibility_update(self.obj, visibility=visibility, library=visible_library, home=visible_home, shared=visible_shared)
-                logger.info("Detail: Collection visibility updated")
+                if "visible_library" in self.details and self.details["visible_library"] != visibility["library"]:
+                    visible_library = self.details["visible_library"]
 
-        add_tags = self.details["label"] if "label" in self.details else None
-        remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
-        sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
-        self.library.edit_tags("label", self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+                if "visible_home" in self.details and self.details["visible_home"] != visibility["home"]:
+                    visible_home = self.details["visible_home"]
+
+                if "visible_shared" in self.details and self.details["visible_shared"] != visibility["shared"]:
+                    visible_shared = self.details["visible_shared"]
+
+                if visible_library is not None or visible_home is not None or visible_shared is not None:
+                    self.library.collection_visibility_update(self.obj, visibility=visibility, library=visible_library, home=visible_home, shared=visible_shared)
+                    logger.info("Collection Visibility Updated")
 
         poster_image = None
         background_image = None

@@ -116,7 +116,7 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
             version = util.parse_version(line)
             break
 
-plexapi.BASE_HEADERS['X-Plex-Client-Identifier'] = "Plex-Meta-Manager"
+plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = "Plex-Meta-Manager"
 
 def start(attrs):
     logger.add_main_handler()
@@ -186,7 +186,7 @@ def start(attrs):
             logger.critical(e)
     logger.info("")
     end_time = datetime.now()
-    run_time = str(end_time - start_time).split('.')[0]
+    run_time = str(end_time - start_time).split(".")[0]
     if config:
         try:
             config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
@@ -438,12 +438,12 @@ def library_operations(config, library):
     if library.update_blank_track_titles:
         tracks = library.get_all(collection_level="track")
         num_edited = 0
-        for i, item in enumerate(tracks, 1):
-            logger.ghost(f"Processing Track: {i}/{len(tracks)} {item.title}")
-            if not item.title and item.titleSort:
-                library.edit_query(item, {"title.locked": 1, "title.value": item.titleSort})
+        for i, track in enumerate(tracks, 1):
+            logger.ghost(f"Processing Track: {i}/{len(tracks)} {track.title}")
+            if not track.title and track.titleSort:
+                track.editTitle(track.titleSort)
                 num_edited += 1
-                logger.info(f"Track: {item.titleSort} was updated with sort title")
+                logger.info(f"Track: {track.titleSort} was updated with sort title")
         logger.info(f"{len(tracks)} Tracks Processed; {num_edited} Blank Track Titles Updated")
 
     tmdb_collections = {}
@@ -469,6 +469,9 @@ def library_operations(config, library):
                 library.find_assets(item)
             tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
 
+            item.batchEdits()
+            batch_display = "Batch Edits"
+
             if library.mass_trakt_rating_update:
                 try:
                     if library.is_movie and tmdb_id in trakt_ratings:
@@ -478,7 +481,7 @@ def library_operations(config, library):
                     else:
                         raise Failed
                     if str(item.userRating) != str(new_rating):
-                        library.edit_query(item, {"userRating.value": new_rating, "userRating.locked": 1})
+                        library.query_data(item.rate, new_rating)
                         logger.info(f"{item.title[:25]:<25} | User Rating | {new_rating}")
                 except Failed:
                     pass
@@ -487,7 +490,7 @@ def library_operations(config, library):
                 try:
                     parental_guide = config.IMDb.parental_guide(imdb_id)
                     labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if library.mass_imdb_parental_labels == "with_none" or v != "None"]
-                    library.edit_tags("label", item, add_tags=labels)
+                    batch_display += f"\n{library.edit_tags('label', item, add_tags=labels)}"
                 except Failed:
                     pass
 
@@ -498,19 +501,15 @@ def library_operations(config, library):
                 radarr_adds.append((tmdb_id, path))
             if library.Sonarr and library.sonarr_add_all_existing and tvdb_id:
                 path = path.replace(library.Sonarr.plex_path, library.Sonarr.sonarr_path)
-                path = path[:-1] if path.endswith(('/', '\\')) else path
+                path = path[:-1] if path.endswith(("/", "\\")) else path
                 sonarr_adds.append((tvdb_id, path))
 
             tmdb_item = None
-            if library.tmdb_collections or library.mass_genre_update == "tmdb" or library.mass_audience_rating_update == "tmdb" \
-                    or library.mass_critic_rating_update == "tmdb" or library.mass_originally_available_update == "tmdb" \
-                    or library.mass_content_rating_update == "tmdb":
+            if library.tmdb_collections or any([o == "tmdb" for o in library.meta_operations]):
                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.is_movie)
 
             omdb_item = None
-            if library.mass_genre_update == "omdb" or library.mass_audience_rating_update == "omdb" \
-                    or library.mass_critic_rating_update == "omdb" or library.mass_content_rating_update == "omdb" \
-                    or library.mass_originally_available_update == "omdb":
+            if any([o == "omdb" for o in library.meta_operations]):
                 if config.OMDb.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -528,7 +527,7 @@ def library_operations(config, library):
                         logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
 
             tvdb_item = None
-            if library.mass_genre_update == "tvdb" or library.mass_originally_available_update == "tvdb":
+            if any([o == "tvdb" for o in library.meta_operations]):
                 if tvdb_id:
                     try:
                         tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
@@ -538,7 +537,7 @@ def library_operations(config, library):
                     logger.info(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}")
 
             anidb_item = None
-            if library.mass_genre_update == "anidb":
+            if any([o == "anidb" for o in library.meta_operations]):
                 if item.ratingKey in reverse_anidb:
                     anidb_id = reverse_anidb[item.ratingKey]
                 elif tvdb_id in config.Convert._tvdb_to_anidb:
@@ -555,8 +554,7 @@ def library_operations(config, library):
                         logger.error(str(e))
 
             mdb_item = None
-            if library.mass_audience_rating_update in util.mdb_types or library.mass_critic_rating_update in util.mdb_types \
-                    or library.mass_content_rating_update in ["mdb", "mdb_commonsense"] or library.mass_originally_available_update == "mdb":
+            if any([o and o.startswith("mdb") for o in library.meta_operations]):
                 if config.Mdblist.limit is False:
                     if tmdb_id and not imdb_id:
                         imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
@@ -607,55 +605,48 @@ def library_operations(config, library):
                     raise Failed
 
             if library.mass_genre_update or library.genre_mapper:
-                try:
-                    new_genres = []
-                    if library.mass_genre_update:
-                        if tmdb_item and library.mass_genre_update == "tmdb":
-                            new_genres = tmdb_item.genres
-                        elif omdb_item and library.mass_genre_update == "omdb":
-                            new_genres = omdb_item.genres
-                        elif tvdb_item and library.mass_genre_update == "tvdb":
-                            new_genres = tvdb_item.genres
-                        elif anidb_item and library.mass_genre_update == "anidb":
-                            new_genres = anidb_item.tags
+                new_genres = []
+                if library.mass_genre_update:
+                    if tmdb_item and library.mass_genre_update == "tmdb":
+                        new_genres = tmdb_item.genres
+                    elif omdb_item and library.mass_genre_update == "omdb":
+                        new_genres = omdb_item.genres
+                    elif tvdb_item and library.mass_genre_update == "tvdb":
+                        new_genres = tvdb_item.genres
+                    elif anidb_item and library.mass_genre_update == "anidb":
+                        new_genres = anidb_item.tags
+                    else:
+                        raise Failed
+                    if not new_genres:
+                        logger.info(f"{item.title[:25]:<25} | No Genres Found")
+                if library.genre_mapper:
+                    if not new_genres:
+                        new_genres = [g.tag for g in item.genres]
+                    mapped_genres = []
+                    for genre in new_genres:
+                        if genre in library.genre_mapper:
+                            if library.genre_mapper[genre]:
+                                mapped_genres.append(library.genre_mapper[genre])
                         else:
-                            raise Failed
-                        if not new_genres:
-                            logger.info(f"{item.title[:25]:<25} | No Genres Found")
-                    if library.genre_mapper:
-                        if not new_genres:
-                            new_genres = [g.tag for g in item.genres]
-                        mapped_genres = []
-                        for genre in new_genres:
-                            if genre in library.genre_mapper:
-                                if library.genre_mapper[genre]:
-                                    mapped_genres.append(library.genre_mapper[genre])
-                            else:
-                                mapped_genres.append(genre)
-                        new_genres = mapped_genres
-                    library.edit_tags("genre", item, sync_tags=new_genres)
-                except Failed:
-                    pass
+                            mapped_genres.append(genre)
+                    new_genres = mapped_genres
+                batch_display += f"\n{library.edit_tags('genre', item, sync_tags=new_genres)}"
+
             if library.mass_audience_rating_update:
-                try:
-                    new_rating = get_rating(library.mass_audience_rating_update)
-                    if new_rating is None:
-                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                    elif str(item.audienceRating) != str(new_rating):
-                        library.edit_query(item, {"audienceRating.value": new_rating, "audienceRating.locked": 1})
-                        logger.info(f"{item.title[:25]:<25} | Audience Rating | {new_rating}")
-                except Failed:
-                    pass
+                new_rating = get_rating(library.mass_audience_rating_update)
+                if new_rating is None:
+                    logger.info(f"{item.title[:25]:<25} | No Rating Found")
+                elif str(item.audienceRating) != str(new_rating):
+                    item.editField("audienceRating", new_rating)
+                    batch_display += f"\n{item.title[:25]:<25} | Audience Rating | {new_rating}"
+
             if library.mass_critic_rating_update:
-                try:
-                    new_rating = get_rating(library.mass_critic_rating_update)
-                    if new_rating is None:
-                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                    elif str(item.rating) != str(new_rating):
-                        library.edit_query(item, {"rating.value": new_rating, "rating.locked": 1})
-                        logger.info(f"{item.title[:25]:<25} | Critic Rating | {new_rating}")
-                except Failed:
-                    pass
+                new_rating = get_rating(library.mass_critic_rating_update)
+                if new_rating is None:
+                    logger.info(f"{item.title[:25]:<25} | No Rating Found")
+                elif str(item.rating) != str(new_rating):
+                    item.editField("rating", new_rating)
+                    batch_display += f"{item.title[:25]:<25} | Critic Rating | {new_rating}"
             if library.mass_content_rating_update or library.content_rating_mapper:
                 try:
                     new_rating = None
@@ -678,8 +669,8 @@ def library_operations(config, library):
                         if new_rating in library.content_rating_mapper:
                             new_rating = library.content_rating_mapper[new_rating]
                     if str(item.contentRating) != str(new_rating):
-                        library.edit_query(item, {"contentRating.value": new_rating, "contentRating.locked": 1})
-                        logger.info(f"{item.title[:25]:<25} | Content Rating | {new_rating}")
+                        item.editContentRating(new_rating)
+                        batch_display += f"\n{item.title[:25]:<25} | Content Rating | {new_rating}"
                 except Failed:
                     pass
             if library.mass_originally_available_update:
@@ -698,11 +689,13 @@ def library_operations(config, library):
                         raise Failed
                     if new_date is None:
                         logger.info(f"{item.title[:25]:<25} | No Originally Available Date Found")
-                    elif str(item.rating) != str(new_date):
-                        library.edit_query(item, {"originallyAvailableAt.value": new_date.strftime("%Y-%m-%d"), "originallyAvailableAt.locked": 1})
-                        logger.info(f"{item.title[:25]:<25} | Originally Available Date | {new_date.strftime('%Y-%m-%d')}")
+                    elif str(item.originallyAvailableAt) != str(new_date):
+                        item.editOriginallyAvailable(new_date)
+                        batch_display += f"\n{item.title[:25]:<25} | Originally Available Date | {new_date.strftime('%Y-%m-%d')}"
                 except Failed:
                     pass
+
+            item.saveEdits()
 
         if library.Radarr and library.radarr_add_all_existing:
             try:

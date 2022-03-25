@@ -2,7 +2,7 @@ import operator, os, re
 from datetime import datetime
 from modules import plex, ergast, util
 from modules.util import Failed, ImageData
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import NotFound, BadRequest
 from tmdbapis import NotFound as TMDbNotFound
 from ruamel import yaml
 
@@ -265,8 +265,8 @@ class MetadataFile(DataFile):
                         raise Failed(f"Config Error: {map_name} type attribute: {dynamic[methods['type']]} requires trakt to be configured")
                     else:
                         auto_type = dynamic[methods["type"]].lower()
-                        og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="list") if "exclude" in methods else []
-                        include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="list") if "include" in methods else []
+                        og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist") if "exclude" in methods else []
+                        include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if "include" in methods else []
                         if og_exclude and include:
                             raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "addons" in methods else {}
@@ -534,7 +534,7 @@ class MetadataFile(DataFile):
                 add_tags.extend(extra)
             remove_tags = util.get_list(group[alias[f"{attr}.remove"]]) if f"{attr}.remove" in alias else None
             sync_tags = util.get_list(group[alias[f"{attr}.sync"]] if group[alias[f"{attr}.sync"]] else []) if f"{attr}.sync" in alias else None
-            return self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+            return len(self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)) > 0
         return False
 
     def set_images(self, obj, group, alias):
@@ -569,7 +569,6 @@ class MetadataFile(DataFile):
             methods = {mm.lower(): mm for mm in meta}
 
             updated = False
-            edits = {}
 
             def add_edit(name, current_item, group=None, alias=None, key=None, value=None, var_type="str"):
                 if value or name in alias:
@@ -601,13 +600,24 @@ class MetadataFile(DataFile):
                             else:
                                 final_value = value
                             if current != str(final_value):
-                                edits[f"{key}.value"] = final_value
-                                edits[f"{key}.locked"] = 1
+                                if key == "title":
+                                    current_item.editTitle(final_value)
+                                else:
+                                    current_item.editField(key, final_value)
                                 logger.info(f"Detail: {name} updated to {final_value}")
+                                updated = True
                         except Failed as ee:
                             logger.error(ee)
                     else:
                         logger.error(f"Metadata Error: {name} attribute is blank")
+
+            def finish_edit(current_item, description):
+                if updated:
+                    try:
+                        current_item.saveEdits()
+                        logger.info(f"{description} Details Update Successful")
+                    except BadRequest:
+                        logger.error(f"{description} Details Update Failed")
 
             logger.info("")
             logger.separator()
@@ -692,7 +702,7 @@ class MetadataFile(DataFile):
                 summary = tmdb_item.overview
                 genres = tmdb_item.genres
 
-            edits = {}
+            item.batchEdits()
             add_edit("title", item, meta, methods, value=title)
             add_edit("sort_title", item, meta, methods, key="titleSort")
             add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
@@ -705,8 +715,10 @@ class MetadataFile(DataFile):
                 add_edit("studio", item, meta, methods, value=studio)
                 add_edit("tagline", item, meta, methods, value=tagline)
             add_edit("summary", item, meta, methods, value=summary)
-            if self.library.edit_item(item, mapping_name, self.library.type, edits):
-                updated = True
+            for tag_edit in util.tags_to_edit[self.library.type]:
+                if self.edit_tags(tag_edit, item, meta, methods, extra=genres if tag_edit == "genre" else None):
+                    updated = True
+            finish_edit(item, f"{self.library.type}: {mapping_name}")
 
             if self.library.type in util.advance_tags_to_edit:
                 advance_edits = {}
@@ -716,20 +728,16 @@ class MetadataFile(DataFile):
                         if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
                             logger.error(f"Metadata Error: {advance_edit} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
                         elif meta[methods[advance_edit]]:
-                            key, options = plex.item_advance_keys[f"item_{advance_edit}"]
+                            ad_key, options = plex.item_advance_keys[f"item_{advance_edit}"]
                             method_data = str(meta[methods[advance_edit]]).lower()
                             if method_data not in options:
                                 logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
-                            elif key in prefs and getattr(item, key) != options[method_data]:
-                                advance_edits[key] = options[method_data]
+                            elif ad_key in prefs and getattr(item, ad_key) != options[method_data]:
+                                advance_edits[ad_key] = options[method_data]
                                 logger.info(f"Detail: {advance_edit} updated to {method_data}")
                         else:
                             logger.error(f"Metadata Error: {advance_edit} attribute is blank")
                 if self.library.edit_item(item, mapping_name, self.library.type, advance_edits, advanced=True):
-                    updated = True
-
-            for tag_edit in util.tags_to_edit[self.library.type]:
-                if self.edit_tags(tag_edit, item, meta, methods, extra=genres if tag_edit == "genre" else None):
                     updated = True
 
             logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -756,12 +764,11 @@ class MetadataFile(DataFile):
                             logger.error(f"Metadata Error: Season: {season_id} not found")
                             continue
                         season_methods = {sm.lower(): sm for sm in season_dict}
-                        edits = {}
+                        season.batchEdits()
                         add_edit("title", season, season_dict, season_methods)
                         add_edit("summary", season, season_dict, season_methods)
                         add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
-                        if self.library.edit_item(season, season_id, "Season", edits):
-                            updated = True
+                        finish_edit(season, f"Season: {season_id}")
                         self.set_images(season, season_dict, season_methods)
                         logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
@@ -785,7 +792,7 @@ class MetadataFile(DataFile):
                                         logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
                                         continue
                                     episode_methods = {em.lower(): em for em in episode_dict}
-                                    edits = {}
+                                    episode.batchEdits()
                                     add_edit("title", episode, episode_dict, episode_methods)
                                     add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
                                     add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
@@ -793,11 +800,10 @@ class MetadataFile(DataFile):
                                     add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
                                     add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
                                     add_edit("summary", episode, episode_dict, episode_methods)
-                                    if self.library.edit_item(episode, f"{episode_str} in Season: {season_id}", "Episode", edits):
-                                        updated = True
                                     for tag_edit in ["director", "writer"]:
                                         if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                             updated = True
+                                    finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
                                     self.set_images(episode, episode_dict, episode_methods)
                                     logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
@@ -824,7 +830,7 @@ class MetadataFile(DataFile):
                             logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
                             continue
                         episode_methods = {em.lower(): em for em in episode_dict}
-                        edits = {}
+                        episode.batchEdits()
                         add_edit("title", episode, episode_dict, episode_methods)
                         add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
                         add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
@@ -832,11 +838,10 @@ class MetadataFile(DataFile):
                         add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
                         add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
                         add_edit("summary", episode, episode_dict, episode_methods)
-                        if self.library.edit_item(episode, f"{season_id} Episode: {episode_id}", "Season", edits):
-                            updated = True
                         for tag_edit in ["director", "writer"]:
                             if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                 updated = True
+                        finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
                         self.set_images(episode, episode_dict, episode_methods)
                         logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
@@ -863,7 +868,7 @@ class MetadataFile(DataFile):
                             continue
                         if not title:
                             title = album.title
-                        edits = {}
+                        album.batchEdits()
                         add_edit("title", album, album_dict, album_methods, value=title)
                         add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
                         add_edit("critic_rating", album, album_dict, album_methods, key="rating", var_type="float")
@@ -871,11 +876,10 @@ class MetadataFile(DataFile):
                         add_edit("originally_available", album, album_dict, album_methods, key="originallyAvailableAt", var_type="date")
                         add_edit("record_label", album, album_dict, album_methods, key="studio")
                         add_edit("summary", album, album_dict, album_methods)
-                        if self.library.edit_item(album, title, "Album", edits):
-                            updated = True
                         for tag_edit in ["genre", "style", "mood", "collection", "label"]:
                             if self.edit_tags(tag_edit, album, album_dict, album_methods):
                                 updated = True
+                        finish_edit(album, f"Album: {title}")
                         self.set_images(album, album_dict, album_methods)
                         logger.info(f"Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
@@ -906,16 +910,15 @@ class MetadataFile(DataFile):
 
                                     if not title:
                                         title = track.title
-                                    edits = {}
+                                    track.batchEdits()
                                     add_edit("title", track, track_dict, track_methods, value=title)
                                     add_edit("user_rating", track, track_dict, track_methods, key="userRating", var_type="float")
                                     add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
                                     add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
                                     add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")
-                                    if self.library.edit_item(track, title, "Track", edits):
-                                        updated = True
                                     if self.edit_tags("mood", track, track_dict, track_methods):
                                         updated = True
+                                    finish_edit(track, f"Track: {title}")
                                     logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
             if "f1_season" in methods and self.library.is_show:
@@ -964,19 +967,17 @@ class MetadataFile(DataFile):
                         race = race_lookup[season.seasonNumber]
                         title = race.format_name(round_prefix, shorten_gp)
                         updated = False
-                        edits = {}
+                        season.batchEdits()
                         add_edit("title", season, value=title)
-                        if self.library.edit_item(season, title, "Season", edits):
-                            updated = True
+                        finish_edit(season, f"Season: {title}")
                         logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Details Update {'Complete' if updated else 'Not Needed'}")
                         for episode in season.episodes():
                             if len(episode.locations) > 0:
                                 ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
-                                edits = {}
+                                episode.batchEdits()
                                 add_edit("title", episode, value=ep_title)
                                 add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
-                                if self.library.edit_item(episode, f"{season.seasonNumber} Episode: {episode.episodeNumber}", "Season", edits):
-                                    updated = True
+                                finish_edit(episode, f"Season: {season.seasonNumber} Episode: {episode.episodeNumber}")
                                 logger.info(f"Session {episode.title}: Details Update {'Complete' if updated else 'Not Needed'}")
                     else:
                         logger.warning(f"Ergast Error: No Round: {season.seasonNumber} for Season {f1_season}")

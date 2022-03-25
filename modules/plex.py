@@ -515,7 +515,7 @@ class Plex(Library):
     def collection_mode_query(self, collection, data):
         if int(collection.collectionMode) not in collection_mode_keys or collection_mode_keys[int(collection.collectionMode)] != data:
             collection.modeUpdate(mode=data)
-            logger.info(f"Detail: collection_order updated Collection Order to {data}")
+            logger.info(f"Collection Mode | data")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_order_query(self, collection, data):
@@ -830,8 +830,9 @@ class Plex(Library):
                 logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
         return False
 
-    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
+    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True):
         display = ""
+        final = ""
         key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
         attr_display = attr.replace("_", " ").title()
         attr_call = attr_display.replace(" ", "")
@@ -852,9 +853,10 @@ class Plex(Library):
             if _remove:
                 self.query_data(getattr(obj, f"remove{attr_call}"), _remove)
                 display += f"-{', -'.join(_remove)}"
-            if len(display) > 0:
-                logger.info(f"{obj.title[:25]:<25} | {attr_display} | {display}")
-        return len(display) > 0
+            final = f"{obj.title[:25]:<25} | {attr_display} | {display}" if display else display
+            if do_print:
+                logger.info(final)
+        return final
 
     def find_assets(self, item, name=None, upload=True, overlay=None, folders=None, create=None):
         if isinstance(item, (Movie, Artist, Show)):

@@ -100,6 +100,7 @@ class Library(ABC):
         self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
                                  or self.genre_collections or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False
+        self.meta_operations = [self.mass_genre_update, self.mass_audience_rating_update, self.mass_critic_rating_update, self.mass_content_rating_update, self.mass_originally_available_update]
 
         if self.asset_directory:
             logger.info("")
@@ -235,7 +236,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None):
+    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True):
         pass
 
     @abstractmethod

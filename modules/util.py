@@ -426,7 +426,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         options = [o for o in translation]
     value = data[methods[attribute]] if methods and attribute in methods else data
 
-    if datatype in ["list", "commalist"]:
+    if datatype in ["list", "commalist", "strlist"]:
         final_list = []
         if value:
             if datatype == "commalist":
@@ -435,8 +435,8 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
                 value = [value]
             for v in value:
                 if v:
-                    if options is None or (options and v in options):
-                        final_list.append(v)
+                    if options is None or (options and (v in options or (datatype == "strlist" and str(v) in options))):
+                        final_list.append(str(v) if datatype == "strlist" else v)
                     elif options:
                         raise Failed(f"{error} Error: {v} is invalid options are: {options}")
         return final_list
