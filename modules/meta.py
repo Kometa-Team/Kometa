@@ -23,13 +23,13 @@ auto = {
 }
 auto_type_translation = {"content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage"}
 default_templates = {
-    "original_language": {"plex_all": True, "filters": {"original_language": "<<original_language>>"}},
-    "origin_country": {"plex_all": True, "filters": {"origin_country": "<<origin_country>>"}},
-    "tmdb_collection": {"tmdb_collection_details": "<<tmdb_collection>>", "minimum_items": 2},
-    "trakt_user_lists": {"trakt_list_details": "<<trakt_user_lists>>"},
-    "trakt_liked_lists": {"trakt_list_details": "<<trakt_liked_lists>>"},
-    "tmdb_popular_people": {"tmdb_person": f"<<tmdb_popular_people>>", "plex_search": {"all": {"actor": "tmdb"}}},
-    "trakt_people_list": {"tmdb_person": f"<<trakt_people_list>>", "plex_search": {"all": {"actor": "tmdb"}}}
+    "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
+    "origin_country": {"plex_all": True, "filters": {"origin_country": "<<value>>"}},
+    "tmdb_collection": {"tmdb_collection_details": "<<value>>", "minimum_items": 2},
+    "trakt_user_lists": {"trakt_list_details": "<<value>>"},
+    "trakt_liked_lists": {"trakt_list_details": "<<value>>"},
+    "tmdb_popular_people": {"tmdb_person": f"<<value>>", "plex_search": {"all": {"actor": "tmdb"}}},
+    "trakt_people_list": {"tmdb_person": f"<<value>>", "plex_search": {"all": {"actor": "tmdb"}}}
 }
 
 def get_dict(attribute, attr_data, check_list=None):
@@ -285,7 +285,25 @@ class MetadataFile(DataFile):
                                 all_keys.append(ck)
                                 if ck not in exclude and cv not in exclude:
                                     auto_list[ck] = cv
-                        if auto_type in ["genre", "mood", "style", "country", "studio", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                        if auto_type == "decade" and library.is_show:
+                            all_items = library.get_all()
+                            if addons:
+                                raise Failed(f"Config Error: addons cannot be used with show decades")
+                            addons = {}
+                            all_keys = []
+                            for i, item in enumerate(all_items, 1):
+                                logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
+                                if item.year:
+                                    decade = str(int(math.floor(item.year / 10) * 10))
+                                    if decade not in addons:
+                                        addons[decade] = []
+                                    if item.year not in addons[decade]:
+                                        addons[decade].append(item.year)
+                                        all_keys.append(item.year)
+                            auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
+                            default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": f"<<value>>"}}}
+                            default_title_format = "Best <<library_type>>s of <<key_name>>"
+                        elif auto_type in ["genre", "mood", "style", "country", "studio", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                             if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
                                 tags = library.get_tags(f"episode.{search_tag}")
@@ -298,17 +316,16 @@ class MetadataFile(DataFile):
                                 all_keys = [str(i.title) for i in tags]
                                 auto_list = {str(i.title): i.title for i in tags if str(i.title) not in exclude}
                             if library.is_music:
-                                default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<{auto_type}>>"}}}
+                                default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<value>>"}}}
                                 default_title_format = "Most Played <<key_name>> <<library_type>>s"
                             elif auto_type == "resolution":
-                                default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<{auto_type}>>"}}}
+                                default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}
                                 default_title_format = "<<key_name>> <<library_type>>s"
                             else:
-                                default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<{auto_type}>>"}}}
+                                default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<value>>"}}}
                                 default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade"] else "Top <<key_name>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
-                            if not all_items:
-                                all_items = library.get_all()
+                            all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
@@ -319,8 +336,7 @@ class MetadataFile(DataFile):
                                         auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
                             logger.exorcise()
                         elif auto_type == "original_language":
-                            if not all_items:
-                                all_items = library.get_all()
+                            all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
@@ -332,8 +348,7 @@ class MetadataFile(DataFile):
                             logger.exorcise()
                             default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type == "origin_country":
-                            if not all_items:
-                                all_items = library.get_all()
+                            all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
@@ -363,9 +378,7 @@ class MetadataFile(DataFile):
                             person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
                             if not person_minimum and not person_limit:
                                 person_minimum = 3
-                            if not all_items:
-                                all_items = library.get_all()
-                            for i, item in enumerate(all_items, 1):
+                            for i, item in enumerate(library.get_all(), 1):
                                 try:
                                     self.library.reload(item)
                                     for person in getattr(item, f"{auto_type}s")[:person_depth]:
@@ -388,7 +401,7 @@ class MetadataFile(DataFile):
                                             person_count += 1
                                     except TMDbNotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
-                            default_template = {"tmdb_person": f"<<{auto_type}>>", "plex_search": {"all": {auto_type: "tmdb"}}},
+                            default_template = {"tmdb_person": "<<value>>", "plex_search": {"all": {auto_type: "tmdb"}}},
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
@@ -470,9 +483,9 @@ class MetadataFile(DataFile):
                             for suffix in remove_suffix:
                                 if key_name.endswith(suffix):
                                     key_name = key_name[:-len(suffix)].strip()
-                        key_value = [key]
+                        key_value = [key] if key in all_keys else []
                         if key in addons:
-                            key_value.extend([a for a in addons[key] if a in all_keys])
+                            key_value.extend([a for a in addons[key] if a in all_keys and a != key])
                         template_call = {
                             "name": template_name,
                             "value": key_value,
