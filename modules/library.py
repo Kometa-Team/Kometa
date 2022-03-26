@@ -240,7 +240,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, collection_level=None):
+    def get_all(self, collection_level=None, load=False):
         pass
 
     def add_missing(self, collection, items, is_movie):
