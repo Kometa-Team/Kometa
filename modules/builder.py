@@ -2563,8 +2563,13 @@ class CollectionBuilder:
         if self.custom_sort is True:
             items = self.added_items
         else:
-            collection_type = f"{self.collection_level}_collection" if self.collection_level in ["season", "episode"] else "collection"
-            search_data = self.build_filter("plex_search", {"sort_by": self.custom_sort, "any": {collection_type: self.name}})
+            plex_search = {"sort_by": self.custom_sort}
+            if self.collection_level in ["season", "episode"]:
+                plex_search["type"] = f"{self.collection_level}s"
+                plex_search["any"] = {f"{self.collection_level}_collection": self.name}
+            else:
+                plex_search["any"] = {"collection": self.name}
+            search_data = self.build_filter("plex_search", plex_search)
             items = self.library.get_filter_items(search_data[2])
         previous = None
         for item in items:
