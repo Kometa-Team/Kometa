@@ -266,19 +266,14 @@ class MetadataFile(DataFile):
                         auto_type = dynamic[methods["type"]].lower()
                         og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist") if "exclude" in methods else []
                         include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if "include" in methods else []
-                        custom_keys = util.parse("Config", "custom_keys", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "custom_keys" in methods else {}
                         if og_exclude and include:
                             raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "addons" in methods else {}
                         exclude = [str(e) for e in og_exclude]
-                        for custom_key, combined_keys in custom_keys.items():
-                            for combined_key in combined_keys:
-                                if combined_key not in exclude:
-                                    exclude.append(combined_key)
                         for k, v in addons.items():
                             if k in v:
-                                logger.warning(f"Config Warning: {k} cannot be an addon for itself")
-                            exclude.extend([y for y in v if y != k])
+                                raise Failed(f"Config Warning: {k} cannot be an addon for itself")
+                            exclude.extend([y for y in v if y != k and y not in exclude])
                         default_title_format = "<<key_name>>"
                         default_template = None
                         auto_list = {}
@@ -409,9 +404,9 @@ class MetadataFile(DataFile):
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
-                                _check_dict(self.config.Trakt.get_user_lists(option))
+                                _check_dict(self.config.Trakt.all_user_lists(option))
                         elif auto_type == "trakt_liked_lists":
-                            _check_dict(self.config.Trakt.get_liked_lists())
+                            _check_dict(self.config.Trakt.all_liked_lists())
                         elif auto_type == "tmdb_popular_people":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)
                             _check_dict(self.config.TMDb.get_popular_people(dynamic_data))
@@ -421,15 +416,16 @@ class MetadataFile(DataFile):
                                 _check_dict(self.config.Trakt.get_people(option))
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
-                    for custom_key, combined_keys in custom_keys.items():
-                        if custom_key in all_keys:
-                            raise Failed(f"Config Error: Custom key: {custom_key} cannot be an actual key")
-                        final_keys = [ck for ck in combined_keys if ck in all_keys]
-                        if final_keys:
-                            if include:
-                                include.append(custom_key)
-                            auto_list[custom_key] = custom_key
-                            addons[custom_key] = final_keys
+                    for add_key, combined_keys in addons.items():
+                        if add_key not in all_keys:
+                            final_keys = [ck for ck in combined_keys if ck in all_keys]
+                            if final_keys:
+                                if include:
+                                    include.append(add_key)
+                                auto_list[add_key] = add_key
+                                addons[add_key] = final_keys
+                            else:
+                                logger.warning(f"Config Error: {add_key} Custom Key must have at least one Key")
                     title_format = default_title_format
                     if "title_format" in methods:
                         title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
@@ -466,7 +462,6 @@ class MetadataFile(DataFile):
                     logger.debug(f"Data: {dynamic_data}")
                     logger.debug(f"Exclude: {exclude}")
                     logger.debug(f"Addons: {addons}")
-                    logger.debug(f"Custom Keys: {custom_keys}")
                     logger.debug(f"Template: {template_name}")
                     logger.debug(f"Template Variables: {template_variables}")
                     logger.debug(f"Remove Prefix: {remove_prefix}")

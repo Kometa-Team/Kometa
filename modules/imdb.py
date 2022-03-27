@@ -31,16 +31,16 @@ class IMDb:
     def __init__(self, config):
         self.config = config
 
-    def validate_imdb_lists(self, imdb_lists, language):
+    def validate_imdb_lists(self, err_type, imdb_lists, language):
         valid_lists = []
         for imdb_dict in util.get_list(imdb_lists, split=False):
             if not isinstance(imdb_dict, dict):
                 imdb_dict = {"url": imdb_dict}
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
             if "url" not in dict_methods:
-                raise Failed(f"Collection Error: imdb_list url attribute not found")
+                raise Failed(f"{err_type} Error: imdb_list url attribute not found")
             elif imdb_dict[dict_methods["url"]] is None:
-                raise Failed(f"Collection Error: imdb_list url attribute is blank")
+                raise Failed(f"{err_type} Error: imdb_list url attribute is blank")
             else:
                 imdb_url = imdb_dict[dict_methods["url"]].strip()
             if not imdb_url.startswith(tuple([v for k, v in urls.items()])):
@@ -50,7 +50,7 @@ class IMDb:
             list_count = None
             if "limit" in dict_methods:
                 if imdb_dict[dict_methods["limit"]] is None:
-                    logger.warning(f"Collection Warning: imdb_list limit attribute is blank using 0 as default")
+                    logger.warning(f"{err_type} Warning: imdb_list limit attribute is blank using 0 as default")
                 else:
                     try:
                         value = int(str(imdb_dict[dict_methods["limit"]]))
@@ -59,7 +59,7 @@ class IMDb:
                     except ValueError:
                         pass
                 if list_count is None:
-                    logger.warning(f"Collection Warning: imdb_list limit attribute must be an integer 0 or greater using 0 as default")
+                    logger.warning(f"{err_type} Warning: imdb_list limit attribute must be an integer 0 or greater using 0 as default")
             if list_count is None:
                 list_count = 0
             valid_lists.append({"url": imdb_url, "limit": list_count})

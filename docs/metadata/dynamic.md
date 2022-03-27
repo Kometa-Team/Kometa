@@ -120,7 +120,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`genre`](#genre)                             | Create a collection for each genre found in the library                                                     |    &#10060;    | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
 | [`content_rating`](#content-rating)           | Create a collection for each content rating found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#9989;  |
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
-| [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
+| [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`country`](#country)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
 | [`resolution`](#resolution)                   | Create a collection for each resolution found in the library                                                |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`subtitle_language`](#subtitle-language)     | Create a collection for each subtitle language found in the library                                         |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
@@ -1585,7 +1585,6 @@ Defines how multiple `keys` can be combined under a parent key.
 
 For example, the `addons` attribute can be used to combine multiple `keys`, i.e. merging "MTV2", "MTV3" and "MTV (UK)" into the  "MTV" collection.
 
-
 ```yaml
 dynamic_collections:
   networks:
@@ -1596,6 +1595,8 @@ dynamic_collections:
         - MTV3
         - MTV (UK)
 ```
+
+You can also define custom keys under addons if the main key doesn't exist as a key it will be considered a custom key combining all keys into one key.
 
 ## Template
 

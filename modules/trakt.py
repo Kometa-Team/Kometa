@@ -8,15 +8,17 @@ logger = util.logger
 redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
 base_url = "https://api.trakt.tv"
 builders = [
+    "trakt_list", "trakt_list_details", "trakt_chart", "trakt_userlist", "trakt_boxoffice", "trakt_recommendations",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
-    "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
+    "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
-    "trakt_collection", "trakt_list", "trakt_list_details", "trakt_popular", "trakt_trending", "trakt_watchlist", "trakt_boxoffice"
+    "trakt_collection", "trakt_popular", "trakt_trending", "trakt_watchlist"
 ]
 sorts = [
     "rank", "added", "title", "released", "runtime", "popularity",
     "percentage", "votes", "random", "my_rating", "watched", "collected"
 ]
+periods = ["daily", "weekly", "monthly", "yearly", "all"]
 id_translation = {"movie": "movie", "show": "show", "season": "show", "episode": "show", "person": "person", "list": "list"}
 id_types = {
     "movie": ("tmdb", "TMDb ID"),
@@ -194,16 +196,16 @@ class Trakt:
                 logger.error(f"Trakt Error: No {id_display} found for {name}")
         return ids
 
-    def get_user_lists(self, data):
+    def all_user_lists(self, user):
         try:
-            items = self._request(f"/users/{data}/lists")
+            items = self._request(f"/users/{user}/lists")
         except Failed:
-            raise Failed(f"Trakt Error: User {data} not found")
+            raise Failed(f"Trakt Error: User {user} not found")
         if len(items) == 0:
-            raise Failed(f"Trakt Error: User {data} has no lists")
-        return {self.build_user_url(data, i["ids"]["slug"]): i["name"] for i in items}
+            raise Failed(f"Trakt Error: User {user} has no lists")
+        return {self.build_user_url(user, i["ids"]["slug"]): i["name"] for i in items}
 
-    def get_liked_lists(self):
+    def all_liked_lists(self):
         items = self._request(f"/users/likes/lists")
         if len(items) == 0:
             raise Failed(f"Trakt Error: No Liked lists found")
@@ -212,7 +214,7 @@ class Trakt:
     def build_user_url(self, user, name):
         return f"{base_url.replace('api.', '')}/users/{user}/lists/{name}"
 
-    def _user_list(self, data):
+    def _list(self, data):
         try:
             items = self._request(f"{requests.utils.urlparse(data).path}/items")
         except Failed:
@@ -221,70 +223,94 @@ class Trakt:
             raise Failed(f"Trakt Error: List {data} is empty")
         return self._parse(items)
 
-    def _user_items(self, list_type, data, is_movie):
+    def _userlist(self, list_type, user, is_movie, sort_by=None):
         try:
-            items = self._request(f"/users/{data}/{list_type}/{'movies' if is_movie else 'shows'}")
+            url_end = "movies" if is_movie else "shows"
+            if sort_by:
+                url_end = f"{url_end}/{sort_by}"
+            items = self._request(f"/users/{user}/{list_type}/{url_end}")
         except Failed:
-            raise Failed(f"Trakt Error: User {data} not found")
+            raise Failed(f"Trakt Error: User {user} not found")
         if len(items) == 0:
-            raise Failed(f"Trakt Error: {data}'s {list_type.capitalize()} is empty")
+            raise Failed(f"Trakt Error: {user}'s {list_type.capitalize()} is empty")
         return self._parse(items, item_type="movie" if is_movie else "show")
 
-    def _user_recommendations(self, amount, is_movie):
+    def _recommendations(self, limit, is_movie):
         media_type = "Movie" if is_movie else "Show"
         try:
-            items = self._request(f"/recommendations/{'movies' if is_movie else 'shows'}/?limit={amount}")
+            items = self._request(f"/recommendations/{'movies' if is_movie else 'shows'}/?limit={limit}")
         except Failed:
             raise Failed(f"Trakt Error: failed to fetch {media_type} Recommendations")
         if len(items) == 0:
             raise Failed(f"Trakt Error: no {media_type} Recommendations were found")
         return self._parse(items, typeless=True, item_type="movie" if is_movie else "show")
 
-    def _pagenation(self, pagenation, amount, is_movie):
-        items = self._request(f"/{'movies' if is_movie else 'shows'}/{pagenation}?limit={amount}")
-        return self._parse(items, typeless=pagenation == "popular", item_type="movie" if is_movie else "show")
+    def _charts(self, chart_type, limit, is_movie, time_period=None):
+        chart_url = f"{chart_type}/{time_period}" if time_period else chart_type
+        items = self._request(f"/{'movies' if is_movie else 'shows'}/{chart_url}?limit={limit}")
+        return self._parse(items, typeless=chart_type == "popular", item_type="movie" if is_movie else "show")
 
     def get_people(self, data):
-        return {str(i[0][0]): i[0][1] for i in self._user_list(data) if i[1] == "tmdb_person"}
+        return {str(i[0][0]): i[0][1] for i in self._list(data) if i[1] == "tmdb_person"}
 
-    def validate_trakt(self, trakt_lists, is_movie, trakt_type="list"):
+    def validate_list(self, trakt_lists):
         values = util.get_list(trakt_lists, split=False)
         trakt_values = []
         for value in values:
             if isinstance(value, dict):
                 raise Failed("Trakt Error: List cannot be a dictionary")
             try:
-                if trakt_type == "list":
-                    self._user_list(value)
-                else:
-                    self._user_items(trakt_type, value, is_movie)
+                self._list(value)
                 trakt_values.append(value)
             except Failed as e:
                 logger.error(e)
         if len(trakt_values) == 0:
-            if trakt_type == "watchlist":
-                raise Failed(f"Trakt Error: No valid Trakt Watchlists in {values}")
-            elif trakt_type == "collection":
-                raise Failed(f"Trakt Error: No valid Trakt Collections in {values}")
-            else:
-                raise Failed(f"Trakt Error: No valid Trakt Lists in {values}")
+            raise Failed(f"Trakt Error: No valid Trakt Lists in {values}")
         return trakt_values
+
+    def validate_chart(self, method_name, err_type, data, is_movie):
+        valid_dicts = []
+        for trakt_dict in util.get_list(data, split=False):
+            if not isinstance(trakt_dict, dict):
+                raise Failed(f"{err_type} Error: {method_name} must be a dictionary")
+            dict_methods = {dm.lower(): dm for dm in trakt_dict}
+            try:
+                if method_name == "trakt_chart":
+                    chart = util.parse(err_type, "chart", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "collected", "trending", "popular"])
+                    limit = util.parse(err_type, "limit", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", default=10)
+                    time_period = None
+                    if chart in ["recommended", "watched", "collected"] and "time_period" in dict_methods:
+                        time_period = util.parse(err_type, "time_period", trakt_dict, methods=dict_methods, parent=method_name, default="weekly", options=periods)
+                    valid_dicts.append({"chart": chart, "limit": limit, "time_period": time_period})
+                else:
+                    userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "collected", "watchlist"])
+                    user = util.parse(err_type, "user", trakt_dict, methods=dict_methods, parent=method_name, default="me")
+                    sort_by = None
+                    if userlist in ["recommended", "watchlist"] and "sort" in dict_methods:
+                        sort_by = util.parse(err_type, "sort_by", trakt_dict, methods=dict_methods, parent=method_name, default="rank", options=["rank", "added", "released", "title"])
+                    self._userlist("collection" if userlist == "collected" else userlist, user, is_movie, sort_by=sort_by)
+                    valid_dicts.append({"userlist": userlist, "user": user, "sort_by": sort_by})
+            except Failed as e:
+                logger.error(e)
+        if len(valid_dicts) == 0:
+            raise Failed(f"Trakt Error: No valid Trakt {method_name[6:].capitalize()}")
+        return valid_dicts
 
     def get_trakt_ids(self, method, data, is_movie):
         pretty = method.replace("_", " ").title()
         media_type = "Movie" if is_movie else "Show"
-        if method in ["trakt_collection", "trakt_watchlist"]:
-            logger.info(f"Processing {pretty} {media_type}s for {data}")
-            return self._user_items(method[6:], data, is_movie)
-        elif method == "trakt_list":
+        if method == "trakt_list":
             logger.info(f"Processing {pretty}: {data}")
-            return self._user_list(data)
-        elif method == "trakt_recommended_personal":
+            return self._list(data)
+        elif method == "trakt_recommendations":
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
-            return self._user_recommendations(data, is_movie)
-        elif method in builders:
-            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
-            terms = method.split("_")
-            return self._pagenation(f"{terms[1]}{f'/{terms[2]}' if len(terms) > 2 else ''}", data, is_movie)
+            return self._recommendations(data, is_movie)
+        elif method == "trakt_chart":
+            chart_title = data["chart"] if data["time_period"] else f"{data['chart']} {data['time_period'].capitalize()}"
+            logger.info(f"Processing {pretty}: {chart_title} {data['chart'].capitalize()} {media_type}{'' if data == 1 else 's'}")
+            return self._charts(data["chart"], data["limit"], is_movie, time_period=data["time_period"])
+        elif method == "trakt_userlist":
+            logger.info(f"Processing {pretty} {media_type}s from {data['user']}'s {data['userlist'].capitalize()}")
+            return self._userlist(data["userlist"], data["user"], is_movie, sort_by=data["sort_by"])
         else:
             raise Failed(f"Trakt Error: Method {method} not supported")
