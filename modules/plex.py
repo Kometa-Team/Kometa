@@ -45,6 +45,8 @@ search_translation = {
     "progress": "inProgress",
     "episode_progress": "episode.inProgress",
     "unplayed_episodes": "show.unwatchedLeaves",
+    "season_collection": "season.collection",
+    "episode_collection": "episode.collection",
     "artist_title": "artist.title",
     "artist_user_rating": "artist.userRating",
     "artist_genre": "artist.genre",
@@ -191,6 +193,8 @@ searches = [
     "actor", "actor.not",
     "audio_language", "audio_language.not",
     "collection", "collection.not",
+    "season_collection", "season_collection.not",
+    "episode_collection", "episode_collection.not",
     "content_rating", "content_rating.not",
     "country", "country.not",
     "director", "director.not",
@@ -236,6 +240,8 @@ movie_only_searches = [
 ]
 show_only_searches = [
     "network", "network.not",
+    "season_collection", "season_collection.not",
+    "episode_collection", "episode_collection.not",
     "episode_title", "episode_title.not", "episode_title.is", "episode_title.isnot", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not",
@@ -266,9 +272,9 @@ number_attributes = ["plays", "episode_plays", "tmdb_vote_count", "album_plays",
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
-    "producer", "resolution", "studio", "subtitle_language", "writer", "artist_genre", "artist_collection",
-    "artist_country", "artist_mood", "artist_style", "album_genre", "album_mood", "album_style", "album_format",
-    "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source"
+    "producer", "resolution", "studio", "subtitle_language", "writer", "season_collection", "episode_collection",
+    "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_style", "album_genre", "album_mood",
+    "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source"
 ]
 movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
