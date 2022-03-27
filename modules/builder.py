@@ -47,6 +47,7 @@ method_alias = {
     "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
     "collection_changes_webhooks": "changes_webhooks",
     "radarr_add": "radarr_add_missing", "sonarr_add": "sonarr_add_missing",
+    "trakt_recommended_personal": "trakt_recommendations"
 }
 filter_translation = {
     "record_label": "studio",
@@ -745,7 +746,7 @@ class CollectionBuilder:
         elif method_name == "tvdb_description":
             self.summaries[method_name] = self.config.TVDb.get_list_description(method_data)
         elif method_name == "trakt_description":
-            self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_trakt(method_data, self.library.is_movie)[0])
+            self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data, self.library.is_movie)[0])
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
@@ -1068,7 +1069,7 @@ class CollectionBuilder:
                 else:
                     raise Failed(f"{self.Type} Error: imdb_id {value} must begin with tt")
         elif method_name == "imdb_list":
-            for imdb_dict in self.config.IMDb.validate_imdb_lists(method_data, self.language):
+            for imdb_dict in self.config.IMDb.validate_imdb_lists(self.Type, method_data, self.language):
                 self.builders.append((method_name, imdb_dict))
         elif method_name == "imdb_chart":
             for value in util.get_list(method_data):
@@ -1265,21 +1266,37 @@ class CollectionBuilder:
 
     def _trakt(self, method_name, method_data):
         if method_name.startswith("trakt_list"):
-            trakt_lists = self.config.Trakt.validate_trakt(method_data, self.library.is_movie)
+            trakt_lists = self.config.Trakt.validate_list(method_data)
             for trakt_list in trakt_lists:
                 self.builders.append(("trakt_list", trakt_list))
             if method_name.endswith("_details"):
                 self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
-        elif method_name in ["trakt_watchlist", "trakt_collection"]:
-            for trakt_list in self.config.Trakt.validate_trakt(method_data, self.library.is_movie, trakt_type=method_name[6:]):
-                self.builders.append((method_name, trakt_list))
         elif method_name == "trakt_boxoffice":
             if util.parse(self.Type, method_name, method_data, datatype="bool", default=False):
                 self.builders.append((method_name, 10))
             else:
                 raise Failed(f"{self.Type} Error: {method_name} must be set to true")
+        elif method_name == "trakt_recommendations":
+            self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100)))
         elif method_name in trakt.builders:
-            self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10)))
+            if method_name in ["trakt_chart", "trakt_userlist"]:
+                trakt_dicts = method_data
+                final_method = method_name
+            elif method_name in ["trakt_watchlist", "trakt_collection"]:
+                trakt_dicts = []
+                for trakt_user in util.get_list(method_data, split=False):
+                    trakt_dicts.append({"userlist": "watchlist" if "trakt_watchlist" else "collected", "user": trakt_user})
+                final_method = "trakt_userlist"
+            else:
+                terms = method_name.split("_")
+                trakt_dicts = {
+                    "chart": terms[1],
+                    "amount": util.parse(self.Type, method_name, method_data, datatype="int", default=10),
+                    "time_period": terms[2] if len(terms) > 2 else None
+                }
+                final_method = "trakt_chart"
+            for trakt_dict in self.config.Trakt.validate_chart(final_method, trakt_dicts, self.language):
+                self.builders.append((method_name, trakt_dict))
 
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data)

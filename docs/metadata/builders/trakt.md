@@ -4,31 +4,14 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
 
 [Configuring Trakt](../../config/trakt) in the config is required for any of these builders.
 
-| Attribute                                          | Description                                                                                                                                                                                                                                                                 | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
-|:---------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
-| [`trakt_list`](#trakt-list)                        | Finds every item in the Trakt List                                                                                                                                                                                                                                          |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_list_details`](#trakt-list)                | Finds every item in the Trakt List and updates the collection summary with the list description                                                                                                                                                                             |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_watchlist`](#trakt-user-watchlist)         | Finds every item in a Users Watchlist                                                                                                                                                                                                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_collection`](#trakt-user-collection)       | Finds every item in a Users Collection                                                                                                                                                                                                                                      |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_trending`](#trakt-trending)                | Finds the movies/shows in Trakt's Trending [Movies](https://trakt.tv/movies/trending)/[Shows](https://trakt.tv/shows/trending) list                                                                                                                                         |      &#9989;      |     &#9989;      |               &#9989;                | 
-| [`trakt_popular`](#trakt-popular)                  | Finds the movies/shows in Trakt's Popular [Movies](https://trakt.tv/movies/popular)/[Shows](https://trakt.tv/shows/popular) list                                                                                                                                            |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_recommended_personal`](#trakt-recommended) | Finds the movies/shows in Trakt's Personal Recommendations for your User [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations) |      &#9989;      |     &#9989;      |               &#9989;                | 
-| [`trakt_recommended_daily`](#trakt-recommended)    | Finds the movies/shows in Trakt's Daily Recommended [Movies](https://trakt.tv/movies/recommended/daily)/[Shows](https://trakt.tv/shows/recommended/daily) list                                                                                                              |      &#9989;      |     &#9989;      |               &#9989;                | 
-| [`trakt_recommended_weekly`](#trakt-recommended)   | Finds the movies/shows in Trakt's Weekly Recommended [Movies](https://trakt.tv/movies/recommended/weekly)/[Shows](https://trakt.tv/shows/recommended/weekly) list                                                                                                           |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_recommended_monthly`](#trakt-recommended)  | Finds the movies/shows in Trakt's Monthly Recommended [Movies](https://trakt.tv/movies/recommended/monthly)/[Shows](https://trakt.tv/shows/recommended/monthly) list                                                                                                        |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_recommended_yearly`](#trakt-recommended)   | Finds the movies/shows in Trakt's Yearly Recommended [Movies](https://trakt.tv/movies/recommended/yearly)/[Shows](https://trakt.tv/shows/recommended/yearly) list                                                                                                           |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_recommended_all`](#trakt-recommended)      | Finds the movies/shows in Trakt's All-Time Recommended [Movies](https://trakt.tv/movies/recommended/all)/[Shows](https://trakt.tv/shows/recommended/all) list                                                                                                               |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_watched_daily`](#trakt-watched)            | Finds the movies/shows in Trakt's Daily Watched [Movies](https://trakt.tv/movies/watched/daily)/[Shows](https://trakt.tv/shows/watched/daily) list                                                                                                                          |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_watched_weekly`](#trakt-watched)           | Finds the movies/shows in Trakt's Weekly Watched [Movies](https://trakt.tv/movies/watched/weekly)/[Shows](https://trakt.tv/shows/watched/weekly) list                                                                                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_watched_monthly`](#trakt-watched)          | Finds the movies/shows in Trakt's Monthly Watched [Movies](https://trakt.tv/movies/watched/monthly)/[Shows](https://trakt.tv/shows/watched/monthly) list                                                                                                                    |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_watched_yearly`](#trakt-watched)           | Finds the movies/shows in Trakt's Yearly Watched [Movies](https://trakt.tv/movies/watched/yearly)/[Shows](https://trakt.tv/shows/watched/yearly) list                                                                                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_watched_all`](#trakt-watched)              | Finds the movies/shows in Trakt's All-Time Watched [Movies](https://trakt.tv/movies/watched/all)/[Shows](https://trakt.tv/shows/watched/all) list                                                                                                                           |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_collected_daily`](#trakt-collected)        | Finds the movies/shows in Trakt's Daily Collected [Movies](https://trakt.tv/movies/collected/daily)/[Shows](https://trakt.tv/shows/collected/daily) list                                                                                                                    |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_collected_weekly`](#trakt-collected)       | Finds the movies/shows in Trakt's Weekly Collected [Movies](https://trakt.tv/movies/collected/weekly)/[Shows](https://trakt.tv/shows/collected/weekly) list                                                                                                                 |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_collected_monthly`](#trakt-collected)      | Finds the movies/shows in Trakt's Monthly Collected [Movies](https://trakt.tv/movies/collected/monthly)/[Shows](https://trakt.tv/shows/collected/monthly) list                                                                                                              |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_collected_yearly`](#trakt-collected)       | Finds the movies/shows in Trakt's Yearly Collected [Movies](https://trakt.tv/movies/collected/yearly)/[Shows](https://trakt.tv/shows/collected/yearly) list                                                                                                                 |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_collected_all`](#trakt-collected)          | Finds the movies/shows in Trakt's All-Time Collected [Movies](https://trakt.tv/movies/collected/all)/[Shows](https://trakt.tv/shows/collected/all) list                                                                                                                     |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_boxoffice`](#trakt-box-office)             | Finds the 10 movies in Trakt's Top Box Office [Movies](https://trakt.tv/movies/boxoffice) list                                                                                                                                                                              |      &#9989;      |     &#10060;     |               &#9989;                |
+| Attribute                                         | Description                                                                                                                                                                                                                                                                 | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
+|:--------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
+| [`trakt_list`](#trakt-list)                       | Finds every movie/show in the Trakt List                                                                                                                                                                                                                                    |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`trakt_list_details`](#trakt-list)               | Finds every movie/show in the Trakt List and updates the collection summary with the list description                                                                                                                                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`trakt_chart`](#trakt-chart)                     | Finds the movies/shows in the Trakt Chart                                                                                                                                                                                                                                   |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`trakt_userlist`](#trakt-userlist)               | Finds every movie/show in the Trakt Userlist                                                                                                                                                                                                                                |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`trakt_recommendations`](#trakt-recommendations) | Finds the movies/shows in Trakt's Personal Recommendations for your User [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations) |      &#9989;      |     &#9989;      |               &#9989;                | 
+| [`trakt_boxoffice`](#trakt-box-office)            | Finds the 10 movies in Trakt's Top Box Office [Movies](https://trakt.tv/movies/boxoffice) list                                                                                                                                                                              |      &#9989;      |     &#10060;     |               &#9989;                |
 
 ## Trakt List
 
@@ -37,6 +20,8 @@ Finds every item in the Trakt List.
 The expected input is a Trakt List URL. Multiple values are supported only as a list.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
+
+**Trakt Lists cannot be sorted through the API, but the list is always returned to the default list order if you own the list.**
 
 ```yaml
 collections:
@@ -65,58 +50,92 @@ collections:
     sync_mode: sync
 ```
 
-## Trakt User Watchlist
+## Trakt Chart
 
-Finds every item in a Users Watchlist.
+Finds the movies/shows in the Trakt Chart. The options are detailed below.
 
-The expected input is a user's Trakt Username or `me`. Multiple values are supported as either a list or a comma-separated string.
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
+| Attribute     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `chart`       | **Description:** Which Trakt chart to query<br>**Values:**<table class="clearTable"><tr><td>`trending`</td><td>Trakt's Trending [Movies](https://trakt.tv/movies/trending)/[Shows](https://trakt.tv/shows/trending) list</td></tr><tr><td>`popular`</td><td>Trakt's Popular [Movies](https://trakt.tv/movies/popular)/[Shows](https://trakt.tv/shows/popular) list</td></tr><tr><td>`recommended`</td><td>Trakt's Recommended [Movies](https://trakt.tv/movies/recommended)/[Shows](https://trakt.tv/shows/recommended) list</td></tr><tr><td>`watched`</td><td>Trakt's Watched [Movies](https://trakt.tv/movies/watched)/[Shows](https://trakt.tv/shows/watched) list</td></tr><tr><td>`collected`</td><td>Trakt's Collected [Movies](https://trakt.tv/movies/collected)/[Shows](https://trakt.tv/shows/collected) list</td></tr></table> |
+| `time_period` | **Description:** Time Period for the chart. Does not work with `trending` or `popular` chart types.<br>**Default:** `weekly`<br>**Values:** `daily`, `weekly`, `monthly`, `yearly`, or `all`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `limit`       | **Description:** Don't return more then this number<br>**Default:** `10`<br>**Values:** Number of Items to query.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
-```yaml
-collections:
-  Trakt Watchlist:
-    trakt_watchlist: me
-    collection_order: custom
-    sync_mode: sync
-```
+These are the links to the trakt charts that is looked at by time period.
 
-## Trakt User Collection
-
-Finds every item in a Users Collection.
-
-The expected input is a user's Trakt Username or `me`. Multiple values are supported as either a list or a comma-separated string.
-
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
-
-```yaml
-collections:
-  Trakt Collection:
-    trakt_collection:
-      - me
-      - traktbuddy
-    sync_mode: sync
-```
-
-## Trakt Trending
-
-Finds the movies/shows in Trakt's Trending [Movies](https://trakt.tv/movies/trending)/[Shows](https://trakt.tv/shows/trending) list.
-
-The expected input is a single integer value of how many movies/shows to query. 
-
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
+| Period   |                                               Collected                                               |                                                Recommended                                                |                                              Watched                                              |
+|:---------|:-----------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------:|
+| Daily    |   [Movies](https://trakt.tv/movies/collected/daily)/[Shows](https://trakt.tv/shows/collected/daily)   |   [Movies](https://trakt.tv/movies/recommended/daily)/[Shows](https://trakt.tv/shows/recommended/daily)   |   [Movies](https://trakt.tv/movies/watched/daily)/[Shows](https://trakt.tv/shows/watched/daily)   |
+| Weekly   |  [Movies](https://trakt.tv/movies/collected/weekly)/[Shows](https://trakt.tv/shows/collected/weekly)  |  [Movies](https://trakt.tv/movies/recommended/weekly)/[Shows](https://trakt.tv/shows/recommended/weekly)  |  [Movies](https://trakt.tv/movies/watched/weekly)/[Shows](https://trakt.tv/shows/watched/weekly)  |
+| Monthly  | [Movies](https://trakt.tv/movies/collected/monthly)/[Shows](https://trakt.tv/shows/collected/monthly) | [Movies](https://trakt.tv/movies/recommended/monthly)/[Shows](https://trakt.tv/shows/recommended/monthly) | [Movies](https://trakt.tv/movies/watched/monthly)/[Shows](https://trakt.tv/shows/watched/monthly) |
+| Yearly   |  [Movies](https://trakt.tv/movies/collected/yearly)/[Shows](https://trakt.tv/shows/collected/yearly)  |  [Movies](https://trakt.tv/movies/recommended/yearly)/[Shows](https://trakt.tv/shows/recommended/yearly)  |  [Movies](https://trakt.tv/movies/watched/yearly)/[Shows](https://trakt.tv/shows/watched/yearly)  |
+| All-Time |     [Movies](https://trakt.tv/movies/collected/all)/[Shows](https://trakt.tv/shows/collected/all)     |     [Movies](https://trakt.tv/movies/recommended/all)/[Shows](https://trakt.tv/shows/recommended/all)     |     [Movies](https://trakt.tv/movies/watched/all)/[Shows](https://trakt.tv/shows/watched/all)     |
 
 ```yaml
 collections:
   Trakt Trending:
-    trakt_trending: 30
+    trakt_chart:
+      chart: trending
+      limit: 30
     collection_order: custom
     sync_mode: sync
 ```
 
-## Trakt Popular
+You can use multiple charts in one builder using a list.
 
-Finds the movies/shows in Trakt's Popular [Movies](https://trakt.tv/movies/popular)/[Shows](https://trakt.tv/shows/popular) list.
+```yaml
+collections:
+  Trakt Trending & Popular:
+    trakt_chart:
+      - chart: trending
+        limit: 30
+      - chart: popular
+        limit: 30
+    collection_order: custom
+    sync_mode: sync
+```
+
+## Trakt Userlist
+
+Finds every movie/show in the Trakt Userlist.
+
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
+
+| Attribute  | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `userlist` | **Description:** Which Trakt userlist to query<br>**Values:**<table class="clearTable"><tr><td>`trending`</td><td>Trakt's Trending [Movies](https://trakt.tv/movies/trending)/[Shows](https://trakt.tv/shows/trending) list</td></tr><tr><td>`popular`</td><td>Trakt's Popular [Movies](https://trakt.tv/movies/popular)/[Shows](https://trakt.tv/shows/popular) list</td></tr><tr><td>`recommended`</td><td>Trakt's Recommended [Movies](https://trakt.tv/movies/recommended)/[Shows](https://trakt.tv/shows/recommended) list</td></tr><tr><td>`watched`</td><td>Trakt's Watched [Movies](https://trakt.tv/movies/watched)/[Shows](https://trakt.tv/shows/watched) list</td></tr><tr><td>`collected`</td><td>Trakt's Collected [Movies](https://trakt.tv/movies/collected)/[Shows](https://trakt.tv/shows/collected) list</td></tr></table> |
+| `user`     | **Description:** The User who's user lists you want to query.<br>**Default:** `me`<br>**Values:** Username of User or `me` for the authenticated user.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `sort_by`  | **Description:** How to sort the results<br>**Default:** `rank`<br>**Values:** `rank`, `added`, `released`, `title`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+
+```yaml
+collections:
+  Trakt Watchlist:
+    trakt_userlist: 
+      userlist: watchlist
+      user: me
+      sort_by: released
+    collection_order: custom
+    sync_mode: sync
+```
+
+You can use multiple charts in one builder using a list.
+
+```yaml
+collections:
+  Trakt Watchlist:
+    trakt_userlist:
+      - userlist: watched
+        user: me
+      - userlist: collected
+        user: me
+    collection_order: custom
+    sync_mode: sync
+```
+
+## Trakt Recommendations
+
+Finds the movies/shows in Trakt's Recommendations for [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations)
 
 The expected input is a single integer value of how many movies/shows to query. 
 
@@ -124,81 +143,8 @@ The `sync_mode: sync` and `collection_order: custom` Details are recommended sin
 
 ```yaml
 collections:
-  Trakt Popular:
-    trakt_popular: 30
-    collection_order: custom
-    sync_mode: sync
-```
-
-## Trakt Recommended
-
-Finds the movies/shows in Trakt's Recommended lists.
-
-| Builder                      |  Period  |                                             Movie List                                             |                                            Show List                                            |
-|:-----------------------------|:--------:|:--------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-| `trakt_recommended_personal` |  Custom  | [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations) | [Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations) |
-| `trakt_recommended_daily`    |  Daily   |                     [Daily Movies](https://trakt.tv/movies/recommended/daily)                      |                     [Daily Shows](https://trakt.tv/shows/recommended/daily)                     |
-| `trakt_recommended_weekly`   |  Weekly  |                    [Weekly Movies](https://trakt.tv/movies/recommended/weekly)                     |                    [Weekly Shows](https://trakt.tv/shows/recommended/weekly)                    |
-| `trakt_recommended_monthly`  | Monthly  |                   [Monthly Movies](https://trakt.tv/movies/recommended/monthly)                    |                   [Monthly Shows](https://trakt.tv/shows/recommended/monthly)                   |
-| `trakt_recommended_yearly`   |  Yearly  |                    [Yearly Movies](https://trakt.tv/movies/recommended/yearly)                     |                    [Yearly Shows](https://trakt.tv/shows/recommended/yearly)                    |
-| `trakt_recommended_all`      | All-Time |                     [All-Time Movies](https://trakt.tv/movies/recommended/all)                     |                    [All-Time Shows](https://trakt.tv/shows/recommended/all)                     | 
-
-The expected input is a single integer value of how many movies/shows to query. 
-
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
-
-```yaml
-collections:
-  Trakt Recommended:
-    trakt_recommended_weekly: 30
-    collection_order: custom
-    sync_mode: sync
-```
-
-## Trakt Watched
-
-Finds the movies/shows in Trakt's Watched lists.
-
-| Builder                 |  Period  |                        Movie List                         |                        Show List                        |
-|:------------------------|:--------:|:---------------------------------------------------------:|:-------------------------------------------------------:|
-| `trakt_watched_daily`   |  Daily   |   [Daily Movies](https://trakt.tv/movies/watched/daily)   |   [Daily Shows](https://trakt.tv/shows/watched/daily)   |
-| `trakt_watched_weekly`  |  Weekly  |  [Weekly Movies](https://trakt.tv/movies/watched/weekly)  |  [Weekly Shows](https://trakt.tv/shows/watched/weekly)  |
-| `trakt_watched_monthly` | Monthly  | [Monthly Movies](https://trakt.tv/movies/watched/monthly) | [Monthly Shows](https://trakt.tv/shows/watched/monthly) |
-| `trakt_watched_yearly`  |  Yearly  |  [Yearly Movies](https://trakt.tv/movies/watched/yearly)  |  [Yearly Shows](https://trakt.tv/shows/watched/yearly)  |
-| `trakt_watched_all`     | All-Time |  [All-Time Movies](https://trakt.tv/movies/watched/all)   |  [All-Time Shows](https://trakt.tv/shows/watched/all)   | 
-
-The expected input is a single integer value of how many movies/shows to query. 
-
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
-
-```yaml
-collections:
-  Trakt Watched:
-    trakt_watched_weekly: 30
-    collection_order: custom
-    sync_mode: sync
-```
-
-## Trakt Collected
-
-Finds the movies/shows in Trakt's Collected [Movies](https://trakt.tv/movies/collected/weekly)/[Shows](https://trakt.tv/shows/collected/weekly) list.
-
-| Builder                   |  Period  |                         Movie List                          |                         Show List                         |
-|:--------------------------|:--------:|:-----------------------------------------------------------:|:---------------------------------------------------------:|
-| `trakt_collected_daily`   |  Daily   |   [Daily Movies](https://trakt.tv/movies/collected/daily)   |   [Daily Shows](https://trakt.tv/shows/collected/daily)   |
-| `trakt_collected_weekly`  |  Weekly  |  [Weekly Movies](https://trakt.tv/movies/collected/weekly)  |  [Weekly Shows](https://trakt.tv/shows/collected/weekly)  |
-| `trakt_collected_monthly` | Monthly  | [Monthly Movies](https://trakt.tv/movies/collected/monthly) | [Monthly Shows](https://trakt.tv/shows/collected/monthly) |
-| `trakt_collected_yearly`  |  Yearly  |  [Yearly Movies](https://trakt.tv/movies/collected/yearly)  |  [Yearly Shows](https://trakt.tv/shows/collected/yearly)  |
-| `trakt_collected_all`     | All-Time |  [All-Time Movies](https://trakt.tv/movies/collected/all)   |  [All-Time Shows](https://trakt.tv/shows/collected/all)   |
-
-The expected input is a single integer value of how many movies/shows to query. 
-
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
-
-```yaml
-collections:
-  Trakt Collected:
-    trakt_collected_weekly: 30
+  Trakt Recommendations:
+    trakt_recommendations: 30
     collection_order: custom
     sync_mode: sync
 ```
