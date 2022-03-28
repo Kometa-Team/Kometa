@@ -1295,7 +1295,7 @@ class CollectionBuilder:
                     "time_period": terms[2] if len(terms) > 2 else None
                 }
                 final_method = "trakt_chart"
-            for trakt_dict in self.config.Trakt.validate_chart(final_method, trakt_dicts, self.language):
+            for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts,  self.library.is_movie):
                 self.builders.append((method_name, trakt_dict))
 
     def _tvdb(self, method_name, method_data):
