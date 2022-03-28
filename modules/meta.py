@@ -518,7 +518,13 @@ class MetadataFile(DataFile):
                                 sync.pop(collection_title)
                             self.collections[collection_title] = col
                     if other_name:
-                        col = {"template": {"name": template_name, auto_type: other_keys}, "label": str(map_name)}
+                        template_call = {
+                            "name": template_name,
+                            "value": other_keys,
+                            auto_type: other_keys,
+                            "key_name": str(map_name), "key": str(map_name)
+                        }
+                        col = {"template": template_call, "label": str(map_name)}
                         if test:
                             col["test"] = True
                         if other_name in sync:
