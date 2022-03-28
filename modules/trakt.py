@@ -18,6 +18,11 @@ sorts = [
     "rank", "added", "title", "released", "runtime", "popularity",
     "percentage", "votes", "random", "my_rating", "watched", "collected"
 ]
+status = ["returning", "production", "planned", "canceled", "ended"]
+status_translation = {
+    "returning": "returning series", "production": "in production",
+    "planned": "planned", "canceled": "canceled", "ended": "ended"
+}
 periods = ["daily", "weekly", "monthly", "yearly", "all"]
 id_translation = {"movie": "movie", "show": "show", "season": "show", "episode": "show", "person": "person", "list": "list"}
 id_types = {
@@ -41,6 +46,62 @@ class Trakt:
         if not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
+        self._movie_genres = None
+        self._show_genres = None
+        self._movie_languages = None
+        self._show_languages = None
+        self._movie_countries = None
+        self._show_countries = None
+        self._movie_certifications = None
+        self._show_certifications = None
+
+    @property
+    def movie_genres(self):
+        if not self._movie_genres:
+            self._movie_genres = [g["slug"] for g in self._request("/genres/movies")]
+        return self._movie_genres
+
+    @property
+    def show_genres(self):
+        if not self._show_genres:
+            self._show_genres = [g["slug"] for g in self._request("/genres/shows")]
+        return self._show_genres
+
+    @property
+    def movie_languages(self):
+        if not self._movie_languages:
+            self._movie_languages = [g["code"] for g in self._request("/languages/movies")]
+        return self._movie_languages
+
+    @property
+    def show_languages(self):
+        if not self._show_languages:
+            self._show_languages = [g["code"] for g in self._request("/languages/shows")]
+        return self._show_languages
+
+    @property
+    def movie_countries(self):
+        if not self._movie_countries:
+            self._movie_countries = [g["code"] for g in self._request("/countries/movies")]
+        return self._movie_countries
+
+    @property
+    def show_countries(self):
+        if not self._show_countries:
+            self._show_countries = [g["code"] for g in self._request("/countries/shows")]
+        return self._show_countries
+
+    @property
+    def movie_certifications(self):
+        if not self._movie_certifications:
+            self._movie_certifications = [g["slug"] for g in self._request("/certifications/movies")["us"]]
+        return self._movie_certifications
+
+    @property
+    def show_certifications(self):
+        if not self._show_certifications:
+            self._show_certifications = [g["slug"] for g in self._request("/certifications/shows")["us"]]
+        return self._show_certifications
 
     def _authorization(self):
         if self.pin:
@@ -114,7 +175,7 @@ class Trakt:
             return True
         return False
 
-    def _request(self, url):
+    def _request(self, url, params=None):
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.authorization['access_token']}",
@@ -122,17 +183,20 @@ class Trakt:
             "trakt-api-key": self.client_id
         }
         output_json = []
+        if params is None:
+            params = {}
         pages = 1
         current = 1
         if self.config.trace_mode:
             logger.debug(f"URL: {base_url}{url}")
         while current <= pages:
             if pages == 1:
-                response = self.config.get(f"{base_url}{url}", headers=headers)
-                if "X-Pagination-Page-Count" in response.headers and "?" not in url:
+                response = self.config.get(f"{base_url}{url}", headers=headers, params=params)
+                if "X-Pagination-Page-Count" in response.headers and not params:
                     pages = int(response.headers["X-Pagination-Page-Count"])
             else:
-                response = self.config.get(f"{base_url}{url}?page={current}", headers=headers)
+                params["page"] = current
+                response = self.config.get(f"{base_url}{url}", headers=headers, params=params)
             if response.status_code == 200:
                 json_data = response.json()
                 if self.config.trace_mode:
@@ -153,9 +217,8 @@ class Trakt:
 
     def convert(self, external_id, from_source, to_source, media_type):
         path = f"/search/{from_source}/{external_id}"
-        if from_source in ["tmdb", "tvdb"]:
-            path = f"{path}?type={media_type}"
-        lookup = self._request(path)
+        params = {"type": media_type} if from_source in ["tmdb", "tvdb"] else None
+        lookup = self._request(path, params=params)
         if lookup and media_type in lookup[0] and to_source in lookup[0][media_type]["ids"]:
             return lookup[0][media_type]["ids"][to_source]
         raise Failed(f"Trakt Error: No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
@@ -238,16 +301,16 @@ class Trakt:
     def _recommendations(self, limit, is_movie):
         media_type = "Movie" if is_movie else "Show"
         try:
-            items = self._request(f"/recommendations/{'movies' if is_movie else 'shows'}/?limit={limit}")
+            items = self._request(f"/recommendations/{'movies' if is_movie else 'shows'}", params={"limit": limit})
         except Failed:
             raise Failed(f"Trakt Error: failed to fetch {media_type} Recommendations")
         if len(items) == 0:
             raise Failed(f"Trakt Error: no {media_type} Recommendations were found")
         return self._parse(items, typeless=True, item_type="movie" if is_movie else "show")
 
-    def _charts(self, chart_type, limit, is_movie, time_period=None):
+    def _charts(self, chart_type, is_movie, params, time_period=None):
         chart_url = f"{chart_type}/{time_period}" if time_period else chart_type
-        items = self._request(f"/{'movies' if is_movie else 'shows'}/{chart_url}?limit={limit}")
+        items = self._request(f"/{'movies' if is_movie else 'shows'}/{chart_url}", params=params)
         return self._parse(items, typeless=chart_type == "popular", item_type="movie" if is_movie else "show")
 
     def get_people(self, data):
@@ -268,7 +331,7 @@ class Trakt:
             raise Failed(f"Trakt Error: No valid Trakt Lists in {values}")
         return trakt_values
 
-    def validate_chart(self, method_name, err_type, data, is_movie):
+    def validate_chart(self, err_type, method_name, data, is_movie):
         valid_dicts = []
         for trakt_dict in util.get_list(data, split=False):
             if not isinstance(trakt_dict, dict):
@@ -276,12 +339,39 @@ class Trakt:
             dict_methods = {dm.lower(): dm for dm in trakt_dict}
             try:
                 if method_name == "trakt_chart":
-                    chart = util.parse(err_type, "chart", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "collected", "trending", "popular"])
-                    limit = util.parse(err_type, "limit", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", default=10)
-                    time_period = None
-                    if chart in ["recommended", "watched", "collected"] and "time_period" in dict_methods:
-                        time_period = util.parse(err_type, "time_period", trakt_dict, methods=dict_methods, parent=method_name, default="weekly", options=periods)
-                    valid_dicts.append({"chart": chart, "limit": limit, "time_period": time_period})
+                    final_dict = {}
+                    final_dict["chart"] = util.parse(err_type, "chart", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "collected", "trending", "popular"])
+                    final_dict["limit"] = util.parse(err_type, "limit", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", default=10)
+                    final_dict["time_period"] = None
+                    if final_dict["chart"] in ["recommended", "watched", "collected"] and "time_period" in dict_methods:
+                        final_dict["time_period"] = util.parse(err_type, "time_period", trakt_dict, methods=dict_methods, parent=method_name, default="weekly", options=periods)
+                    if "query" in dict_methods:
+                        final_dict["query"] = util.parse(err_type, "query", trakt_dict, methods=dict_methods, parent=method_name)
+                    if "year" in dict_methods:
+                        try:
+                            if trakt_dict[dict_methods["year"]] and len(str(trakt_dict[dict_methods["year"]])) == 4:
+                                final_dict["year"] = util.parse(err_type, "year", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=1000, maximum=3000)
+                            else:
+                                final_dict["year"] = util.parse(err_type, "year", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=1000, maximum=3000, range_split="-")
+                        except Failed:
+                            raise Failed(f"{err_type} Error: trakt_chart year attribute must be either a 4 digit year or a range of two 4 digit year with a '-' i.e. 1950 or 1950-1959")
+                    if "runtimes" in dict_methods:
+                        final_dict["runtimes"] = util.parse(err_type, "runtimes", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", range_split="-")
+                    if "ratings" in dict_methods:
+                        final_dict["ratings"] = util.parse(err_type, "ratings", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=100, range_split="-")
+                    if "genres" in dict_methods:
+                        final_dict["genres"] = util.parse(err_type, "genres", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=self.movie_genres if is_movie else self.show_genres)
+                    if "languages" in dict_methods:
+                        final_dict["languages"] = util.parse(err_type, "languages", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=self.movie_languages if is_movie else self.show_languages)
+                    if "countries" in dict_methods:
+                        final_dict["countries"] = util.parse(err_type, "countries", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=self.movie_countries if is_movie else self.show_countries)
+                    if "certifications" in dict_methods:
+                        final_dict["certifications"] = util.parse(err_type, "certifications", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=self.movie_certifications if is_movie else self.show_certifications)
+                    if "networks" in dict_methods and not is_movie:
+                        final_dict["networks"] = util.parse(err_type, "networks", trakt_dict, methods=dict_methods, parent=method_name, datatype="list")
+                    if "status" in dict_methods and not is_movie:
+                        final_dict["status"] = util.parse(err_type, "status", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=status)
+                    valid_dicts.append(final_dict)
                 else:
                     userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "collected", "watchlist"])
                     user = util.parse(err_type, "user", trakt_dict, methods=dict_methods, parent=method_name, default="me")
@@ -306,9 +396,15 @@ class Trakt:
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
             return self._recommendations(data, is_movie)
         elif method == "trakt_chart":
-            chart_title = data["chart"] if data["time_period"] else f"{data['chart']} {data['time_period'].capitalize()}"
-            logger.info(f"Processing {pretty}: {chart_title} {data['chart'].capitalize()} {media_type}{'' if data == 1 else 's'}")
-            return self._charts(data["chart"], data["limit"], is_movie, time_period=data["time_period"])
+            params = {"limit": data["limit"]}
+            chart_limit = f"{data['limit']} {data['time_period'].capitalize()}" if data["time_period"] else data["limit"]
+            logger.info(f"Processing {pretty}: {chart_limit} {data['chart'].capitalize()} {media_type}{'' if data == 1 else 's'}")
+            for attr in ["query", "year", "runtimes", "ratings", "genres", "languages", "countries", "certifications", "networks", "status"]:
+                if attr in data:
+                    logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")
+                    values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]
+                    params[attr] = ",".join(values) if isinstance(values, list) else values
+            return self._charts(data["chart"], is_movie, params, time_period=data["time_period"])
         elif method == "trakt_userlist":
             logger.info(f"Processing {pretty} {media_type}s from {data['user']}'s {data['userlist'].capitalize()}")
             return self._userlist(data["userlist"], data["user"], is_movie, sort_by=data["sort_by"])

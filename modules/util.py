@@ -420,7 +420,15 @@ def schedule_check(attribute, data, current_time, run_hour):
     elif skip_collection:
         raise NotScheduled(schedule_str)
 
-def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None):
+def check_int(value, datatype="int", minimum=1, maximum=None):
+    try:
+        value = int(str(value)) if datatype == "int" else float(str(value))
+        if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
+            return value
+    except ValueError:
+        pass
+
+def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None, range_split=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"
     if options is None and translation is not None:
         options = [o for o in translation]
@@ -500,17 +508,21 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         else:
             message = f"{display} must be either true or false"
     elif datatype in ["int", "float"]:
-        try:
-            value = int(str(value)) if datatype == "int" else float(str(value))
-            if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
-                return value
-        except ValueError:
-            pass
-        pre = f"{display} {value} must be {'an integer' if datatype == 'int' else 'a number'}"
-        if maximum is None:
-            message = f"{pre} {minimum} or greater"
+        if range_split:
+            range_values = str(value).split(range_split)
+            if len(range_values) == 2:
+                start = check_int(range_values[0])
+                end = check_int(range_values[1])
+                if start and end and start < end:
+                    return f"{start}{range_split}{end}"
         else:
-            message = f"{pre} between {minimum} and {maximum}"
+            value = check_int(value, datatype=datatype, minimum=minimum, maximum=maximum)
+            if value:
+                return value
+        message = f"{display} {value} must {'each ' if range_split else ''}be {'an integer' if datatype == 'int' else 'a number'}"
+        message = f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}"
+        if range_split:
+            message = f"{message} separated by a {range_split}"
     elif (translation is not None and str(value).lower() not in translation) or \
             (options is not None and translation is None and str(value).lower() not in options):
         message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"

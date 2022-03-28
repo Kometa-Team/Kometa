@@ -89,10 +89,11 @@ Boolean Filters have no modifiers.
 
 ### Attribute
 
-| Boolean Filters  | Description                                               | Movies  |  Shows  | Seasons  | Episodes | Artists  |  Albums  |  Track   |
-|:-----------------|:----------------------------------------------------------|:-------:|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `has_collection` | Matches every item that has or does not have a collection | &#9989; | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `has_overlay`    | Matches every item that has or does not have an overlay   | &#9989; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| Boolean Filters     | Description                                                 | Movies  |  Shows   | Seasons  | Episodes | Artists  |  Albums  |  Track   |
+|:--------------------|:------------------------------------------------------------|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| `has_collection`    | Matches every item that has or does not have a collection   | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `has_dolby_vision`  | Matches every item that has or does not have a dolby vision | &#9989; | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `has_overlay`       | Matches every item that has or does not have an overlay     | &#9989; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
 
 ## Date Filters
 
