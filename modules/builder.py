@@ -1295,6 +1295,8 @@ class CollectionBuilder:
                     "time_period": terms[2] if len(terms) > 2 else None
                 }
                 final_method = "trakt_chart"
+            if method_name != final_method:
+                logger.warning(f"{self.Type} Warning: {method_name} will run as {final_method}")
             for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts,  self.library.is_movie):
                 self.builders.append((method_name, trakt_dict))
 
@@ -2572,10 +2574,11 @@ class CollectionBuilder:
             search_data = self.build_filter("plex_search", plex_search)
             items = self.library.get_filter_items(search_data[2])
         previous = None
-        for item in items:
-            text = f"after {util.item_title(previous)}" if previous else "to the beginning"
-            logger.info(f"Moving {util.item_title(item)} {text}")
-            self.library.moveItem(self.obj, item, previous)
+        for i, item in enumerate(items, 0):
+            if len(self.items) <= i or item.ratingKey != self.items[i]:
+                text = f"after {util.item_title(previous)}" if previous else "to the beginning"
+                logger.info(f"Moving {util.item_title(item)} {text}")
+                self.library.moveItem(self.obj, item, previous)
             previous = item
 
     def delete_user_playlist(self, title, user):
