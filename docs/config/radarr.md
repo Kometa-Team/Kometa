@@ -1,6 +1,6 @@
 # Radarr Attributes
 
-Configuring [Radarr](https://radarr.video/) is optional but will allow you to send movies to a Radarr instance when they're found missing while updating a library's collections. 
+Configuring [Radarr](https://radarr.video/) is optional but will allow you to send movies to a Radarr instance when they're found missing while updating a library's collections.
 
 Radarr V2 may work, but it is not supported please upgrade to V3 if you can.
 
@@ -47,3 +47,39 @@ radarr:
 * You can set most attributes per collection by using the [Radarr Details](../metadata/details/arr.md#radarr-details) in the collection definition.
 
 ![Radarr Details](radarr.png)
+
+# Other examples:
+
+Specifying a second Radarr instance for a specific library:
+
+In this example we have two Radarr instances, standard and 4K.  We want to add 4K movies to the 4K Radarr instance with a different root folder and availbility.
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - file: config/Movies.yml
+  Movies - 4K:
+    metadata_path:
+      - file: config/Movies.yml
+    radarr:
+      url: https://radarr-4K.bing.bang
+      token: SOME_TOKEN
+      root_folder_path: /movies-4K
+      availability: cinemas
+...
+radarr:
+  url: https://radarr.bing.bang
+  token: SOME_TOKEN
+  root_folder_path: /movies
+  monitor: true
+  availability: released
+  quality_profile: Any
+  tag:
+  search: false
+  add_existing: false
+  radarr_path:
+  plex_path:
+  add_missing: true
+...
+```
