@@ -1298,7 +1298,7 @@ class CollectionBuilder:
             if method_name != final_method:
                 logger.warning(f"{self.Type} Warning: {method_name} will run as {final_method}")
             for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts,  self.library.is_movie):
-                self.builders.append((method_name, trakt_dict))
+                self.builders.append((final_method, trakt_dict))
 
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data)
