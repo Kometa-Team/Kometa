@@ -159,7 +159,7 @@ class Trakt:
         if authorization and self._check(authorization):
             if self.authorization != authorization and not self.config.read_only:
                 yaml.YAML().allow_duplicate_keys = True
-                config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
+                config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
                 config["trakt"]["pin"] = None
                 config["trakt"]["authorization"] = {
                     "access_token": authorization["access_token"],
