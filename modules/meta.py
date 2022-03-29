@@ -139,10 +139,9 @@ class DataFile:
                                     if str(dv) not in optional:
                                         if template["default"][dv] is not None:
                                             final_value = str(template["default"][dv])
-                                            if "<<collection_name>>" in final_value:
-                                                final_value = final_value.replace("<<collection_name>>", str(name))
-                                            if "<<playlist_name>>" in final_value:
-                                                final_value = final_value.replace("<<playlist_name>>", str(name))
+                                            for key in variables:
+                                                if f"<<{key}>>" in final_value:
+                                                    final_value = final_value.replace(f"<<{key}>>", str(name))
                                             default[dv] = final_value
                                         else:
                                             raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
