@@ -51,5 +51,47 @@ sonarr:
 * The `quality_profile` and `language_profile` must be the exact name of the desired quality profile, including all spaces and capitalization.
 
 * You can set most attributes per collection by using the [Sonarr Details](../metadata/details/arr.md#sonarr-details) in the collection definition.
- 
+
 ![Sonarr Details](sonarr.png)
+
+# Other examples:
+
+Specifying a second Sonarr instance for a specific library:
+
+In this example we have two Sonarr instances, standard and 4K.  We want to add 4K shows to the 4K Sonarr instance with a different root folder and quality profile.  Also, shows are being added to the "TV Shows - 4K" library outside Sonarr via a custom script and I want those new shows added to Sonarr for tracking.
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_path:
+      - file: config/TV.yml
+  TV Shows - 4K:
+    metadata_path:
+      - file: config/TV.yml
+    sonarr:
+      url: https://sonarr-4K.bing.bang
+      token: SOME_TOKEN
+      root_folder_path: /shows-4K
+      quality_profile: 4K
+      add_existing: true
+      sonarr_path: /shows-4K
+      plex_path: /mnt/unionfs/Media/TV
+...
+sonarr:
+  url: https://sonarr.bing.bang
+  token: SOME_TOKEN
+  add_missing: false
+  add_existing: false
+  root_folder_path: /shows
+  monitor: all
+  quality_profile: HD-1080p
+  language_profile: English
+  series_type: standard
+  season_folder: true
+  tag:
+  search: false
+  cutoff_search: false
+  sonarr_path:
+  plex_path:
+...
+```
