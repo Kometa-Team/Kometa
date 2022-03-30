@@ -421,6 +421,7 @@ def library_operations(config, library):
     logger.debug(f"Sonarr Add All Existing: {library.sonarr_add_all_existing}")
     logger.debug(f"Sonarr Remove by Tag: {library.sonarr_remove_by_tag}")
     logger.debug(f"Update Blank Track Titles: {library.update_blank_track_titles}")
+    logger.debug(f"Update Remove Title Parentheses: {library.remove_title_parentheses}")
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
