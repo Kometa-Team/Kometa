@@ -139,10 +139,9 @@ class DataFile:
                                     if str(dv) not in optional:
                                         if template["default"][dv] is not None:
                                             final_value = str(template["default"][dv])
-                                            if "<<collection_name>>" in final_value:
-                                                final_value = final_value.replace("<<collection_name>>", str(name))
-                                            if "<<playlist_name>>" in final_value:
-                                                final_value = final_value.replace("<<playlist_name>>", str(name))
+                                            for key in variables:
+                                                if f"<<{key}>>" in final_value:
+                                                    final_value = final_value.replace(f"<<{key}>>", str(name))
                                             default[dv] = final_value
                                         else:
                                             raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
@@ -518,7 +517,13 @@ class MetadataFile(DataFile):
                                 sync.pop(collection_title)
                             self.collections[collection_title] = col
                     if other_name:
-                        col = {"template": {"name": template_name, auto_type: other_keys}, "label": str(map_name)}
+                        template_call = {
+                            "name": template_name,
+                            "value": other_keys,
+                            auto_type: other_keys,
+                            "key_name": str(map_name), "key": str(map_name)
+                        }
+                        col = {"template": template_call, "label": str(map_name)}
                         if test:
                             col["test"] = True
                         if other_name in sync:
@@ -596,6 +601,7 @@ class MetadataFile(DataFile):
             updated = False
 
             def add_edit(name, current_item, group=None, alias=None, key=None, value=None, var_type="str"):
+                nonlocal updated
                 if value or name in alias:
                     if value or group[alias[name]]:
                         if key is None:         key = name
@@ -637,6 +643,7 @@ class MetadataFile(DataFile):
                         logger.error(f"Metadata Error: {name} attribute is blank")
 
             def finish_edit(current_item, description):
+                nonlocal updated
                 if updated:
                     try:
                         current_item.saveEdits()

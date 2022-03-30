@@ -111,7 +111,7 @@ class MyAnimeList:
         if authorization is not None and "access_token" in authorization and authorization["access_token"] and self._check(authorization):
             if self.authorization != authorization and not self.config.read_only:
                 yaml.YAML().allow_duplicate_keys = True
-                config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path))
+                config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
                 config["mal"]["authorization"] = {
                     "access_token": authorization["access_token"],
                     "token_type": authorization["token_type"],

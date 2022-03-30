@@ -1,4 +1,4 @@
-import argparse, os, sys, time, traceback
+import argparse, os, re, sys, time, traceback
 from datetime import datetime
 
 try:
@@ -421,6 +421,7 @@ def library_operations(config, library):
     logger.debug(f"Sonarr Add All Existing: {library.sonarr_add_all_existing}")
     logger.debug(f"Sonarr Remove by Tag: {library.sonarr_remove_by_tag}")
     logger.debug(f"Update Blank Track Titles: {library.update_blank_track_titles}")
+    logger.debug(f"Update Remove Title Parentheses: {library.remove_title_parentheses}")
     logger.debug(f"TMDb Collections: {library.tmdb_collections}")
     logger.debug(f"Genre Collections: {library.genre_collections}")
     logger.debug(f"Genre Mapper: {library.genre_mapper}")
@@ -471,6 +472,12 @@ def library_operations(config, library):
 
             item.batchEdits()
             batch_display = "Batch Edits"
+
+            if library.remove_title_parentheses:
+                if not any([f.name == "title" and f.locked for f in item.fields]) and item.title.endswith(")"):
+                    new_title = re.sub(" \(\w+\)$", "", item.title)
+                    item.editTitle(new_title)
+                    batch_display += f"\n{item.title[:25]:<25} | Title | {new_title}"
 
             if library.mass_trakt_rating_update:
                 try:
@@ -810,7 +817,7 @@ def library_operations(config, library):
         meta = None
         if os.path.exists(library.metadata_backup["path"]):
             try:
-                meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"]))
+                meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"], encoding="utf-8"))
             except yaml.scanner.ScannerError as e:
                 logger.error(f"YAML Error: {util.tab_new_lines(e)}")
                 filename, file_extension = os.path.splitext(library.metadata_backup["path"])

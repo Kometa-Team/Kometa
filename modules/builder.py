@@ -176,7 +176,7 @@ smart_invalid = ["collection_order", "collection_level"]
 smart_url_invalid = ["minimum_items", "filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
     "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
-    "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list",
+    "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list", "trakt_chart", "trakt_userlist",
     "tvdb_list", "imdb_chart", "imdb_list", "stevenlu_popular", "anidb_popular", "tmdb_upcoming", "tmdb_airing_today",
     "tmdb_on_the_air", "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
@@ -1298,7 +1298,7 @@ class CollectionBuilder:
             if method_name != final_method:
                 logger.warning(f"{self.Type} Warning: {method_name} will run as {final_method}")
             for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts,  self.library.is_movie):
-                self.builders.append((method_name, trakt_dict))
+                self.builders.append((final_method, trakt_dict))
 
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data)

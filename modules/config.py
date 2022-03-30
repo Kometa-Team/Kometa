@@ -211,7 +211,7 @@ class ConfigFile:
             if data is None or attribute not in data:
                 message = f"{text} not found"
                 if parent and save is True:
-                    loaded_config, _, _ = yaml.util.load_yaml_guess_indent(open(self.config_path))
+                    loaded_config, _, _ = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
                     endline = f"\n{parent} sub-attribute {attribute} added to config"
                     if parent not in loaded_config or not loaded_config[parent]:        loaded_config[parent] = {attribute: default}
                     elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
@@ -618,7 +618,8 @@ class ConfigFile:
                     "update_blank_track_titles": None,
                     "mass_content_rating_update": None,
                     "mass_originally_available_update": None,
-                    "mass_imdb_parental_labels": None
+                    "mass_imdb_parental_labels": None,
+                    "remove_title_parentheses": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -669,7 +670,12 @@ class ConfigFile:
                 params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
                 params["radarr_add_all_existing"] = check_for_attribute(lib, "radarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
                 params["sonarr_add_all_existing"] = check_for_attribute(lib, "sonarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
-                params["missing_path"] = check_for_attribute(lib, "missing_path", var_type="path", default_is_none=True, save=False)
+                params["missing_path"] = None
+                if "missing_path" in lib and lib["missing_path"]:
+                    if os.path.exists(os.path.dirname(os.path.abspath(lib["missing_path"]))):
+                        params["missing_path"] = lib["missing_path"]
+                    else:
+                        logger.error(f"Config Error: Folder {os.path.dirname(os.path.abspath(lib['missing_path']))} does not exist")
 
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
@@ -705,6 +711,8 @@ class ConfigFile:
                             params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
                         if "update_blank_track_titles" in lib["operations"]:
                             params["update_blank_track_titles"] = check_for_attribute(lib["operations"], "update_blank_track_titles", var_type="bool", default=False, save=False)
+                        if "remove_title_parentheses" in lib["operations"]:
+                            params["remove_title_parentheses"] = check_for_attribute(lib["operations"], "remove_title_parentheses", var_type="bool", default=False, save=False)
                         if "mass_collection_mode" in lib["operations"]:
                             try:
                                 params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
