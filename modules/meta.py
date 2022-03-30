@@ -601,6 +601,7 @@ class MetadataFile(DataFile):
             updated = False
 
             def add_edit(name, current_item, group=None, alias=None, key=None, value=None, var_type="str"):
+                nonlocal updated
                 if value or name in alias:
                     if value or group[alias[name]]:
                         if key is None:         key = name
@@ -642,6 +643,7 @@ class MetadataFile(DataFile):
                         logger.error(f"Metadata Error: {name} attribute is blank")
 
             def finish_edit(current_item, description):
+                nonlocal updated
                 if updated:
                     try:
                         current_item.saveEdits()

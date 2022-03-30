@@ -95,12 +95,12 @@ class Library(ABC):
         self.stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
         self.status = {}
 
-        self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update \
+        self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update or self.remove_title_parentheses \
                                        or self.mass_critic_rating_update or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_imdb_parental_labels or self.mass_trakt_rating_update \
                                        or self.genre_mapper or self.content_rating_mapper or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
         self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode or self.genre_collections \
-                                 or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles or self.remove_title_parentheses else False
+                                 or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False
         self.meta_operations = [self.mass_genre_update, self.mass_audience_rating_update, self.mass_critic_rating_update, self.mass_content_rating_update, self.mass_originally_available_update]
 
         if self.asset_directory:
