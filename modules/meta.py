@@ -12,11 +12,11 @@ github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Co
 
 all_auto = ["genre"]
 ms_auto = [
-    "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists",
-    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution"
+    "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio",
+    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade"
 ]
 auto = {
-    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "country", "director", "producer", "writer"] + all_auto + ms_auto,
     "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
