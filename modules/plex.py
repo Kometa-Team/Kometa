@@ -860,7 +860,7 @@ class Plex(Library):
                 self.query_data(getattr(obj, f"remove{attr_call}"), _remove)
                 display += f"-{', -'.join(_remove)}"
             final = f"{obj.title[:25]:<25} | {attr_display} | {display}" if display else display
-            if do_print:
+            if do_print and final:
                 logger.info(final)
         return final
 
