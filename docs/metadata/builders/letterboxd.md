@@ -35,3 +35,21 @@ collections:
     collection_order: custom
     sync_mode: sync
 ```
+
+You can add 3 different filters directly to this builder.
+
+| Filter Attribute | Description                                                                                        |
+|:-----------------|:---------------------------------------------------------------------------------------------------|
+| `rating`         | **Description:** Search for the specified rating range<br>**Values:**  range of int i.e. `80-100`  |
+| `year`           | **Description:** Search for the specified year range<br>**Values:**  range of int i.e. `1990-1999` |
+| `note`           | **Description:** Search for the specified value in the note<br>**Values:**  Any String             |
+
+```yaml
+collections:
+  Vulture’s 101 Best Movie Endings From the 90s:
+    letterboxd_list_details: 
+      url: https://letterboxd.com/brianformo/list/vultures-101-best-movie-endings/
+      year: 1990-1999
+    collection_order: custom
+    sync_mode: sync
+```

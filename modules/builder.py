@@ -1084,11 +1084,11 @@ class CollectionBuilder:
 
     def _letterboxd(self, method_name, method_data):
         if method_name.startswith("letterboxd_list"):
-            letterboxd_lists = self.config.Letterboxd.validate_letterboxd_lists(method_data, self.language)
+            letterboxd_lists = self.config.Letterboxd.validate_letterboxd_lists(self.Type, method_data, self.language)
             for letterboxd_list in letterboxd_lists:
                 self.builders.append(("letterboxd_list", letterboxd_list))
             if method_name.endswith("_details"):
-                self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0], self.language)
+                self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0]["url"], self.language)
 
     def _mal(self, method_name, method_data):
         if method_name == "mal_id":
@@ -2575,7 +2575,7 @@ class CollectionBuilder:
             items = self.library.get_filter_items(search_data[2])
         previous = None
         for i, item in enumerate(items, 0):
-            if len(self.items) <= i or item.ratingKey != self.items[i]:
+            if len(self.items) <= i or item.ratingKey != self.items[i].ratingKey:
                 text = f"after {util.item_title(previous)}" if previous else "to the beginning"
                 logger.info(f"Moving {util.item_title(item)} {text}")
                 self.library.moveItem(self.obj, item, previous)
