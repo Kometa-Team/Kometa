@@ -521,8 +521,11 @@ class MetadataFile(DataFile):
                             "name": template_name,
                             "value": other_keys,
                             auto_type: other_keys,
-                            "key_name": str(map_name), "key": str(map_name)
+                            "key_name": other_name, "key": "other"
                         }
+                        for k, v in template_variables.items():
+                            if "other" in v:
+                                template_call[k] = v["other"]
                         col = {"template": template_call, "label": str(map_name)}
                         if test:
                             col["test"] = True
