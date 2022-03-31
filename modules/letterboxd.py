@@ -15,13 +15,11 @@ class Letterboxd:
         if self.config.trace_mode:
             logger.debug(f"URL: {list_url}")
         response = self.config.get_html(list_url, headers=util.header(language))
-        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container')]/div/@data-film-id")
+        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
             slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-film-slug")
-            items.append((letterboxd_id, slugs[0]))
-            slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-film-slug")
-            notes = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()")
+            notes = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()") if list_url.endswith(("/detail", "/detail/"))
             ratings = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']//span[contains(@class, 'rating')]/@class")
             years = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/h2/small/a/text()")
             rating = None
