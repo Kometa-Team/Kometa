@@ -399,7 +399,7 @@ class MetadataFile(DataFile):
                                             person_count += 1
                                     except TMDbNotFound:
                                         logger.error(f"TMDb Error: Actor {role['name']} Not Found")
-                            default_template = {"tmdb_person": "<<value>>", "plex_search": {"all": {auto_type: "tmdb"}}},
+                            default_template = {"tmdb_person": "<<value>>", "plex_search": {"all": {auto_type: "tmdb"}}}
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
