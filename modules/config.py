@@ -671,7 +671,7 @@ class ConfigFile:
                 params["radarr_add_all_existing"] = check_for_attribute(lib, "radarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
                 params["sonarr_add_all_existing"] = check_for_attribute(lib, "sonarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
                 params["missing_path"] = None
-                if "missing_path" in lib and lib["missing_path"]:
+                if lib and "missing_path" in lib and lib["missing_path"]:
                     if os.path.exists(os.path.dirname(os.path.abspath(lib["missing_path"]))):
                         params["missing_path"] = lib["missing_path"]
                     else:
