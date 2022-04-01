@@ -130,6 +130,7 @@ html_theme_options = {
             ("_divider", ),
             ("Scheduling Guide", "home/guides/scheduling"),
             ("Image Asset Directory Guide", "home/guides/assets"),
+            ("Formula 1 Metadata Guide", "home/guides/formula"),
             ("_divider", ),
             ("Discord Server", "https://discord.gg/NfH6mGFuAB", True),
             ("Sponsor", "https://github.com/sponsors/meisnate12", True),

@@ -86,7 +86,7 @@ The available attributes for editing shows, seasons, and episodes are as follows
 | `year`         | Year of show for better identification                                                                                                            | &#9989;  | &#10060; | &#10060; |
 | `tmdb_show`    | TMDb Show ID to use for metadata useful for miniseries that have been compiled into a movie                                                       | &#9989;  | &#10060; | &#10060; |
 | `tmdb_movie`   | TMDb Movie ID to use for metadata useful for movies that have been split into segments                                                            | &#9989;  | &#10060; | &#10060; |
-| `f1_season`    | F1 Season Year to make the Show represent a Season of F1 Races                                                                                    | &#9989;  | &#10060; | &#10060; |
+| `f1_season`    | F1 Season Year to make the Show represent a Season of F1 Races. See [Formula 1 Metadata Guide](../../home/guides/formula) for more information.   | &#9989;  | &#10060; | &#10060; |
 | `round_prefix` | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix` | &#9989;  | &#10060; | &#10060; |
 | `shorten_gp`   | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`           | &#9989;  | &#10060; | &#10060; |
 | `seasons`      | Mapping to define Seasons                                                                                                                         | &#9989;  | &#10060; | &#10060; |
