@@ -940,7 +940,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[mapping_name]["sonarr"] += sonarr_add
 
             valid = True
-            if builder.build_collection and (
+            if builder.build_collection and not builder.blank_collection and (
                     (builder.smart_url and len(library.get_filter_items(builder.smart_url)) < builder.minimum)
                     or (not builder.smart_url and len(builder.added_items) + builder.beginning_count < builder.minimum)
             ):
