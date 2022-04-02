@@ -271,7 +271,7 @@ class MetadataFile(DataFile):
                         exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
                             if k in v:
-                                raise Failed(f"Config Warning: {k} cannot be an addon for itself")
+                                logger.warning(f"Config Warning: {k} cannot be an addon for itself")
                             exclude.extend([y for y in v if y != k and y not in exclude])
                         default_title_format = "<<key_name>>"
                         default_template = None
@@ -320,7 +320,7 @@ class MetadataFile(DataFile):
                                 default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}
                                 default_title_format = "<<key_name>> <<library_type>>s"
                             else:
-                                default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<value>>"}}}
+                                default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {f"{auto_type}.is" if auto_type == "studio" else auto_type: "<<value>>"}}}
                                 default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade"] else "Top <<key_name>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
                             all_items = library.get_all()
@@ -455,6 +455,11 @@ class MetadataFile(DataFile):
                     remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
                     other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods) if "other_name" in methods and include else None
+                    other_template = util.parse("Config", "other_template", dynamic, parent=map_name, methods=methods) if "other_template" in methods and include else None
+                    if other_template and other_template not in self.templates:
+                        raise Failed(f"Config Error: {map_name} other template: {other_template} not found")
+                    else:
+                        other_template = template_name
                     other_keys = []
                     logger.debug(f"Mapping Name: {map_name}")
                     logger.debug(f"Type: {auto_type}")
@@ -462,6 +467,7 @@ class MetadataFile(DataFile):
                     logger.debug(f"Exclude: {exclude}")
                     logger.debug(f"Addons: {addons}")
                     logger.debug(f"Template: {template_name}")
+                    logger.debug(f"Other Template: {other_template}")
                     logger.debug(f"Template Variables: {template_variables}")
                     logger.debug(f"Remove Prefix: {remove_prefix}")
                     logger.debug(f"Remove Suffix: {remove_suffix}")
@@ -518,8 +524,9 @@ class MetadataFile(DataFile):
                             self.collections[collection_title] = col
                     if other_name:
                         template_call = {
-                            "name": template_name,
+                            "name": other_template,
                             "value": other_keys,
+                            "included_keys": include,
                             auto_type: other_keys,
                             "key_name": other_name, "key": "other"
                         }
@@ -991,7 +998,7 @@ class MetadataFile(DataFile):
                 races = self.config.Ergast.get_races(f1_season, f1_language)
                 race_lookup = {r.round: r for r in races}
                 for season in item.seasons():
-                    if season.seasonNumber is 0:
+                    if not season.seasonNumber:
                         continue
                     sprint_weekend = False
                     for episode in season.episodes():

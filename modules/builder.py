@@ -476,7 +476,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
 
         self.smart_filter_details = ""
-        self.smart_label = {"sort_by": "random", "all": {"label": self.name}}
+        self.smart_label = {"sort_by": "random", "all": {"label": [self.name]}}
         self.smart_label_collection = False
         if "smart_label" in methods and not self.playlist and not self.library.is_music:
             logger.debug("")
@@ -1291,7 +1291,7 @@ class CollectionBuilder:
                 terms = method_name.split("_")
                 trakt_dicts = {
                     "chart": terms[1],
-                    "amount": util.parse(self.Type, method_name, method_data, datatype="int", default=10),
+                    "limit": util.parse(self.Type, method_name, method_data, datatype="int", default=10),
                     "time_period": terms[2] if len(terms) > 2 else None
                 }
                 final_method = "trakt_chart"
