@@ -335,14 +335,14 @@ class CollectionBuilder:
             if "sync_to_users" in methods or "sync_to_user" in methods:
                 s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
                 logger.debug("")
-                logger.debug("Validating Method: sync_to_users")
+                logger.debug(f"Validating Method: {s_attr}")
                 if self.data[methods[s_attr]]:
-                    logger.warning(f"Playlist Error: sync_to_users attribute is blank defaulting to playlist_sync_to_user: {self.sync_to_users}")
-                else:
                     logger.debug(f"Value: {self.data[methods[s_attr]]}")
                     self.sync_to_users = self.data[methods[s_attr]]
+                else:
+                    logger.warning(f"Playlist Error: sync_to_users attribute is blank defaulting to playlist_sync_to_users: {self.sync_to_users}")
             else:
-                logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_user: {self.sync_to_users}")
+                logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
 
             plex_users = self.library.users
             if self.sync_to_users:

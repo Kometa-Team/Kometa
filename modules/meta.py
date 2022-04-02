@@ -1,4 +1,4 @@
-import math, operator, os, re
+import math, operator, os, re, requests
 from datetime import datetime
 from modules import plex, ergast, util
 from modules.util import Failed, ImageData
@@ -131,6 +131,9 @@ class DataFile:
                     template_name = variables["name"]
                     template = self.templates[template_name]
 
+                    for key, value in variables.items():
+                        variables[f"{key}_encoded"] = requests.utils.quote(str(value))
+
                     default = {}
                     if "default" in template:
                         if template["default"]:
@@ -138,11 +141,12 @@ class DataFile:
                                 for dv in template["default"]:
                                     if str(dv) not in optional:
                                         if template["default"][dv] is not None:
-                                            final_value = str(template["default"][dv])
-                                            for key in variables:
-                                                if f"<<{key}>>" in final_value:
-                                                    final_value = final_value.replace(f"<<{key}>>", str(name))
+                                            final_value = template["default"][dv]
+                                            for key, value in variables.items():
+                                                if f"<<{key}>>" in str(final_value):
+                                                    final_value = str(final_value).replace(f"<<{key}>>", str(value))
                                             default[dv] = final_value
+                                            default[f"{dv}_encoded"] = requests.utils.quote(str(final_value))
                                         else:
                                             raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
                             else:
@@ -155,6 +159,7 @@ class DataFile:
                             for op in util.get_list(template["optional"]):
                                 if op not in default:
                                     optional.append(str(op))
+                                    optional.append(f"{op}_encoded")
                                 else:
                                     logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
                         else:
