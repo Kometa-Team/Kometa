@@ -131,7 +131,7 @@ class DataFile:
                     template_name = variables["name"]
                     template = self.templates[template_name]
 
-                    for key, value in variables.items():
+                    for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 
                     default = {}
