@@ -448,31 +448,37 @@ class MetadataFile(DataFile):
                         title_format = title_format.replace("<<library_type>>", library.type)
                     template_variables = util.parse("Config", "template_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "template_variables" in methods else {}
                     if "template" in methods:
-                        template_name = util.parse("Config", "template", dynamic, parent=map_name, methods=methods)
-                        if template_name not in self.templates:
-                            raise Failed(f"Config Error: {map_name} template: {template_name} not found")
-                        if "<<value>>" not in str(self.templates[template_name]) and f"<<{auto_type}>>" not in str(self.templates[template_name]):
-                            raise Failed(f"Config Error: {map_name} template: {template_name} is required to have the template variable <<value>>")
+                        template_names = util.parse("Config", "template", dynamic, parent=map_name, methods=methods, datatype="strlist")
+                        has_var = False
+                        for template_name in template_names:
+                            if template_name not in self.templates:
+                                raise Failed(f"Config Error: {map_name} template: {template_name} not found")
+                            if "<<value>>" in str(self.templates[template_name]) or f"<<{auto_type}>>" in str(self.templates[template_name]):
+                                has_var = True
+                        if not has_var:
+                            raise Failed(f"Config Error: One {map_name} template: {template_names} is required to have the template variable <<value>>")
                     else:
                         self.templates[map_name] = default_template if default_template else default_templates[auto_type]
-                        template_name = map_name
+                        template_names = [map_name]
                     remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
                     remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
                     other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods) if "other_name" in methods and include else None
-                    other_template = util.parse("Config", "other_template", dynamic, parent=map_name, methods=methods) if "other_template" in methods and include else None
-                    if other_template and other_template not in self.templates:
-                        raise Failed(f"Config Error: {map_name} other template: {other_template} not found")
+                    other_templates = util.parse("Config", "other_template", dynamic, parent=map_name, methods=methods, datatype="strlist") if "other_template" in methods and include else None
+                    if other_templates:
+                        for other_template in other_templates:
+                            if other_template not in self.templates:
+                                raise Failed(f"Config Error: {map_name} other template: {other_template} not found")
                     else:
-                        other_template = template_name
+                        other_templates = template_names
                     other_keys = []
                     logger.debug(f"Mapping Name: {map_name}")
                     logger.debug(f"Type: {auto_type}")
                     logger.debug(f"Data: {dynamic_data}")
                     logger.debug(f"Exclude: {exclude}")
                     logger.debug(f"Addons: {addons}")
-                    logger.debug(f"Template: {template_name}")
-                    logger.debug(f"Other Template: {other_template}")
+                    logger.debug(f"Template: {template_names}")
+                    logger.debug(f"Other Template: {other_templates}")
                     logger.debug(f"Template Variables: {template_variables}")
                     logger.debug(f"Remove Prefix: {remove_prefix}")
                     logger.debug(f"Remove Suffix: {remove_suffix}")
@@ -506,7 +512,7 @@ class MetadataFile(DataFile):
                         if key in addons:
                             key_value.extend([a for a in addons[key] if a in all_keys and a != key])
                         template_call = {
-                            "name": template_name,
+                            "name": template_names,
                             "value": key_value,
                             auto_type: key_value,
                             "key_name": key_name, "key": key
@@ -529,7 +535,7 @@ class MetadataFile(DataFile):
                             self.collections[collection_title] = col
                     if other_name:
                         template_call = {
-                            "name": other_template,
+                            "name": other_templates,
                             "value": other_keys,
                             "included_keys": include,
                             auto_type: other_keys,
