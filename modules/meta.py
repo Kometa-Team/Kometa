@@ -59,6 +59,7 @@ def get_dict(attribute, attr_data, check_list=None):
 class DataFile:
     def __init__(self, config, file_type, path):
         self.config = config
+        self.library = None
         self.type = file_type
         self.path = path
         self.data_type = ""
@@ -102,6 +103,7 @@ class DataFile:
             raise Failed(f"{self.data_type} Error: template attribute is blank")
         else:
             logger.debug(f"Value: {template_call}")
+            new_attributes = {}
             for variables in util.get_list(template_call, split=False):
                 if not isinstance(variables, dict):
                     raise Failed(f"{self.data_type} Error: template attribute is not a dictionary")
@@ -127,6 +129,7 @@ class DataFile:
                         variables["collection_name"] = str(name)
                     if self.data_type == "Playlist" and "playlist_name" not in variables:
                         variables["playlist_name"] = str(name)
+                    variables["library_type"] = self.library.type.lower()
 
                     template_name = variables["name"]
                     template = self.templates[template_name]
@@ -215,17 +218,19 @@ class DataFile:
                                 final_data = scan_text(final_data, dm, dd)
                         return final_data
 
-                    new_attributes = {}
                     for method_name, attr_data in template.items():
                         if method_name not in data and method_name not in ["default", "optional", "move_collection_prefix", "move_prefix"]:
                             if attr_data is None:
                                 logger.error(f"Template Error: template attribute {method_name} is blank")
                                 continue
-                            try:
-                                new_attributes[method_name] = check_data(method_name, attr_data)
-                            except Failed:
-                                continue
-                    return new_attributes
+                            if method_name in new_attributes:
+                                logger.warning(f"Template Warning: template attribute: {method_name} from {variables['name']} skipped")
+                            else:
+                                try:
+                                    new_attributes[method_name] = check_data(method_name, attr_data)
+                                except Failed:
+                                    continue
+            return new_attributes
 
 
 class MetadataFile(DataFile):
@@ -270,8 +275,6 @@ class MetadataFile(DataFile):
                         auto_type = dynamic[methods["type"]].lower()
                         og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist") if "exclude" in methods else []
                         include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if "include" in methods else []
-                        if og_exclude and include:
-                            raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "addons" in methods else {}
                         exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
@@ -312,7 +315,7 @@ class MetadataFile(DataFile):
                                 tags = library.get_tags(f"episode.{search_tag}")
                             else:
                                 tags = library.get_tags(search_tag)
-                            if auto_type in ["decade", "subtitle_language", "audio_language"]:
+                            if auto_type in ["resolution", "decade", "subtitle_language", "audio_language"]:
                                 all_keys = [str(i.key) for i in tags]
                                 auto_list = {str(i.key): i.title for i in tags if str(i.title) not in exclude and str(i.key) not in exclude}
                             else:
@@ -358,9 +361,9 @@ class MetadataFile(DataFile):
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
                                 if tmdb_item and tmdb_item.countries:
                                     for country in tmdb_item.countries:
-                                        all_keys.append(country.iso_3166_1)
-                                        if country.iso_3166_1 not in exclude and country.name not in exclude:
-                                            auto_list[country.iso_3166_1] = country.name
+                                        all_keys.append(country.iso_3166_1.lower())
+                                        if country.iso_3166_1.lower() not in exclude and country.name not in exclude:
+                                            auto_list[country.iso_3166_1.lower()] = country.name
                             logger.exorcise()
                             default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type in ["actor", "director", "writer", "producer"]:
@@ -493,6 +496,7 @@ class MetadataFile(DataFile):
                     for key, value in auto_list.items():
                         logger.debug(f"  - {key}{'' if key == value else f' ({value})'}")
 
+                    used_keys = []
                     for key, value in auto_list.items():
                         if include and key not in include:
                             if key not in exclude:
@@ -511,15 +515,16 @@ class MetadataFile(DataFile):
                         key_value = [key] if key in all_keys else []
                         if key in addons:
                             key_value.extend([a for a in addons[key] if a in all_keys and a != key])
-                        template_call = {
-                            "name": template_names,
-                            "value": key_value,
-                            auto_type: key_value,
-                            "key_name": key_name, "key": key
-                        }
+                        used_keys.extend(key_value)
+                        og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
                             if key in v:
-                                template_call[k] = v[key]
+                                og_call[k] = v[key]
+                        template_call = []
+                        for template_name in template_names:
+                            new_call = og_call.copy()
+                            new_call["name"] = template_name
+                            template_call.append(new_call)
                         if key in title_override:
                             collection_title = title_override[key]
                         else:
@@ -534,17 +539,19 @@ class MetadataFile(DataFile):
                                 sync.pop(collection_title)
                             self.collections[collection_title] = col
                     if other_name:
-                        template_call = {
-                            "name": other_templates,
-                            "value": other_keys,
-                            "included_keys": include,
-                            auto_type: other_keys,
-                            "key_name": other_name, "key": "other"
+                        og_other = {
+                            "value": other_keys, "included_keys": include, "used_keys": used_keys,
+                            auto_type: other_keys, "key_name": other_name, "key": "other"
                         }
                         for k, v in template_variables.items():
                             if "other" in v:
-                                template_call[k] = v["other"]
-                        col = {"template": template_call, "label": str(map_name)}
+                                og_other[k] = v["other"]
+                        other_call = []
+                        for other_template in other_templates:
+                            new_call = og_other.copy()
+                            new_call["name"] = other_template
+                            other_call.append(new_call)
+                        col = {"template": other_call, "label": str(map_name)}
                         if test:
                             col["test"] = True
                         if other_name in sync:

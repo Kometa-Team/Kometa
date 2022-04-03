@@ -360,17 +360,17 @@ class Trakt:
                     if "ratings" in dict_methods:
                         final_dict["ratings"] = util.parse(err_type, "ratings", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=100, range_split="-")
                     if "genres" in dict_methods:
-                        final_dict["genres"] = util.parse(err_type, "genres", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=self.movie_genres if is_movie else self.show_genres)
+                        final_dict["genres"] = util.parse(err_type, "genres", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=self.movie_genres if is_movie else self.show_genres)
                     if "languages" in dict_methods:
-                        final_dict["languages"] = util.parse(err_type, "languages", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=self.movie_languages if is_movie else self.show_languages)
+                        final_dict["languages"] = util.parse(err_type, "languages", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=self.movie_languages if is_movie else self.show_languages)
                     if "countries" in dict_methods:
-                        final_dict["countries"] = util.parse(err_type, "countries", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=self.movie_countries if is_movie else self.show_countries)
+                        final_dict["countries"] = util.parse(err_type, "countries", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=self.movie_countries if is_movie else self.show_countries)
                     if "certifications" in dict_methods:
-                        final_dict["certifications"] = util.parse(err_type, "certifications", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=self.movie_certifications if is_movie else self.show_certifications)
+                        final_dict["certifications"] = util.parse(err_type, "certifications", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=self.movie_certifications if is_movie else self.show_certifications)
                     if "networks" in dict_methods and not is_movie:
-                        final_dict["networks"] = util.parse(err_type, "networks", trakt_dict, methods=dict_methods, parent=method_name, datatype="list")
+                        final_dict["networks"] = util.parse(err_type, "networks", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist")
                     if "status" in dict_methods and not is_movie:
-                        final_dict["status"] = util.parse(err_type, "status", trakt_dict, methods=dict_methods, parent=method_name, datatype="list", options=status)
+                        final_dict["status"] = util.parse(err_type, "status", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=status)
                     valid_dicts.append(final_dict)
                 else:
                     userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "collected", "watchlist"])

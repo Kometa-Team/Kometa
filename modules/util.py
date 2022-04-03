@@ -446,7 +446,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
                     if options is None or (options and (v in options or (datatype == "strlist" and str(v) in options))):
                         final_list.append(str(v) if datatype == "strlist" else v)
                     elif options:
-                        raise Failed(f"{error} Error: {v} is invalid options are: {options}")
+                        raise Failed(f"{error} Error: {v} is invalid; Options include: {options}")
         return final_list
     elif datatype == "intlist":
         if value:
