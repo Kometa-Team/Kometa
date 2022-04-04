@@ -1,4 +1,4 @@
-import io, logging, os, sys, traceback
+import io, logging, os, re, sys, traceback
 from logging.handlers import RotatingFileHandler
 
 LOG_DIR = "logs"
@@ -218,6 +218,8 @@ class MyLogger:
             for secret in self.secrets:
                 if secret in msg:
                     msg = msg.replace(secret, "(redacted)")
+            if "HTTPConnectionPool" in msg:
+                msg = re.sub("HTTPConnectionPool\\((.*?)\\)", "HTTPConnectionPool(redacted)", msg)
             try:
                 if not _srcfile:
                     raise ValueError

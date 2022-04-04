@@ -315,7 +315,15 @@ class MetadataFile(DataFile):
                                 tags = library.get_tags(f"episode.{search_tag}")
                             else:
                                 tags = library.get_tags(search_tag)
-                            if auto_type in ["resolution", "decade", "subtitle_language", "audio_language"]:
+                            if auto_type in ["subtitle_language", "audio_language"]:
+                                all_keys = []
+                                auto_list = {}
+                                for i in tags:
+                                    all_keys.append(str(i.key))
+                                    final_title = self.config.TMDb.TMDb._iso_639_1[str(i.key)].english_name if str(i.key) in self.config.TMDb.TMDb._iso_639_1 else str(i.title)
+                                    if all([x not in exclude for x in [final_title, str(i.title), str(i.key)]]):
+                                        auto_list[str(i.key)] = final_title
+                            elif auto_type in ["resolution", "decade"]:
                                 all_keys = [str(i.key) for i in tags]
                                 auto_list = {str(i.key): i.title for i in tags if str(i.title) not in exclude and str(i.key) not in exclude}
                             else:
