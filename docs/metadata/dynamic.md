@@ -88,6 +88,7 @@ dynamic_collections:
 | [`addons`](#addons)                         | Defines how multiple keys can be combined under a parent key.                                                                  |     &#10060;      |
 | [`template`](#template)                     | Name of the template to use for these dynamic collections.                                                                     |     &#10060;      |
 | [`template_variables`](#template-variables) | Defines how template variables can be defined by key.                                                                          |     &#10060;      |
+| [`other_template`](#other-template)         | Name of the template to use for the other collection.                                                                          |     &#10060;      |
 | [`remove_suffix`](#remove-prefixsuffix)     | Removes the defined suffixes from the key before it's used in the collection title.                                            |     &#10060;      |
 | [`remove_prefix`](#remove-prefixsuffix)     | Removes the defined prefixes from the key before it's used in the collection title.                                            |     &#10060;      |
 | [`title_format`](#title-format)             | This is the format for the collection titles.                                                                                  |     &#10060;      |
@@ -513,11 +514,11 @@ Create a collection for each actor found in the library.
   </tr>
   <tr>
     <th>Keys</th>
-    <td>TMDb Person ID</td>
+    <td>Person Name</td>
   </tr>
   <tr>
     <th>Key Names</th>
-    <td>TMDb Person Name</td>
+    <td>Person Name</td>
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
@@ -529,10 +530,9 @@ Create a collection for each actor found in the library.
 
 ```yaml
 default_template:
-  tmdb_person: <<value>>
   plex_search:
-    all:
-      actor: tmdb
+    any:
+      actor: <<value>>
 ```
 
 </td>
@@ -607,11 +607,11 @@ Create a collection for each director found in the library.
   </tr>
   <tr>
     <th>Keys</th>
-    <td>TMDb Person ID</td>
+    <td>Person Name</td>
   </tr>
   <tr>
     <th>Key Names</th>
-    <td>TMDb Person Name</td>
+    <td>Person Name</td>
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
@@ -623,10 +623,9 @@ Create a collection for each director found in the library.
 
 ```yaml
 default_template:
-  tmdb_person: <<value>>
   plex_search:
-    all:
-      director: tmdb
+    any:
+      director: <<value>>
 ```
 
 </td>
@@ -701,11 +700,11 @@ Create a collection for each writer found in the library.
   </tr>
   <tr>
     <th>Keys</th>
-    <td>TMDb Person ID</td>
+    <td>Person Name</td>
   </tr>
   <tr>
     <th>Key Names</th>
-    <td>TMDb Person Name</td>
+    <td>Person Name</td>
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
@@ -717,10 +716,9 @@ Create a collection for each writer found in the library.
 
 ```yaml
 default_template:
-  tmdb_person: <<value>>
   plex_search:
-    all:
-      writer: tmdb
+    any:
+      writer: <<value>>
 ```
 
 </td>
@@ -795,11 +793,11 @@ Create a collection for each producer found in the library.
   </tr>
   <tr>
     <th>Keys</th>
-    <td>TMDb Person ID</td>
+    <td>Person Name</td>
   </tr>
   <tr>
     <th>Key Names</th>
-    <td>TMDb Person Name</td>
+    <td>Person Name</td>
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
@@ -811,10 +809,9 @@ Create a collection for each producer found in the library.
 
 ```yaml
 default_template:
-  tmdb_person: <<value>>
   plex_search:
     all:
-      producer: tmdb
+      producer: <<value>>
 ```
 
 </td>
@@ -1645,6 +1642,17 @@ dynamic_collections:
         119: https://www.themoviedb.org/t/p/original/oENY593nKRVL2PnxXsMtlh8izb4.jpg
         531241: https://www.themoviedb.org/t/p/original/nogV4th2P5QWYvQIMiWHj4CFLU9.jpg
 ```
+
+## Other Template
+
+Name of the template to use for the other collection. Will use the same template as the rest of the dynamic collections unless specified.
+
+Each template is passed a few template variables you can use.
+* `value`: The list of keys and addons
+* `key`: The dynamic key
+* `key_name`: The key after `key_name_override`, `remove_prefix`, or `remove_suffix` are run on it.
+* `included_keys`: The list of included keys
+* `used_keys`: The list of all keys used (included_keys and their addon keys)
 
 ## Remove Prefix/Suffix
 
