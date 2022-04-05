@@ -408,6 +408,7 @@ class MetadataFile(DataFile):
                             for role in roles:
                                 if person_count < person_limit and role["count"] > person_minimum and role["name"] not in exclude:
                                     auto_list[role["name"]] = role["name"]
+                                    all_keys.append(role["name"])
                                     person_count += 1
                             default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
                         elif auto_type == "trakt_user_lists":
