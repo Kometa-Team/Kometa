@@ -75,17 +75,18 @@ radarr:
 
 The available attributes for each library are as follows:
 
-| Attribute                         | Values                                                                                |                Default                 |            Required             |
-|:----------------------------------|:--------------------------------------------------------------------------------------|:--------------------------------------:|:-------------------------------:|
-| [`library_name`](#library-name)   | Library name (required only when trying to use multiple libraries with the same name) |          Base Attribute Name           |            &#10060;             |
-| [`metadata_path`](#metadata-path) | Location of Metadata YAML files                                                       |     `/config/<<MAPPING_NAME>>.yml`     |            &#10060;             |
-| [`missing_path`](#missing-path)   | Location to create the YAML file listing missing items for this library               | `/config/<<MAPPING_NAME>>_missing.yml` |            &#10060;             |
-| [`operations`](operations)        | Library Operations to run                                                             |                  N/A                   |            &#10060;             |
-| [`settings`](settings)            | Any `setting` attribute that overrides a global value                                 |                 global                 |            &#10060;             |
-| [`plex`](plex)                    | Any `plex` attribute that overrides a global value                                    |                 global                 | &#9989; Either here or globally |
-| [`radarr`](radarr)                | Any `radarr` attribute that overrides a global value                                  |                 global                 |            &#10060;             |
-| [`sonarr`](sonarr)                | Any `sonarr` attribute that overrides a global value                                  |                 global                 |            &#10060;             |
-| [`tautulli`](tautulli)            | Any `tautulli` attribute that overrides a global value                                |                 global                 |            &#10060;             |
+| Attribute                                  | Values                                                                                       |                Default                 |            Required             |
+|:-------------------------------------------|:---------------------------------------------------------------------------------------------|:--------------------------------------:|:-------------------------------:|
+| [`library_name`](#library-name)            | Library name (required only when trying to use multiple libraries with the same name)        |          Base Attribute Name           |            &#10060;             |
+| [`metadata_path`](#metadata-path)          | Location of Metadata YAML files                                                              |     `/config/<<MAPPING_NAME>>.yml`     |            &#10060;             |
+| [`missing_path`](#missing-path)            | Location to create the YAML file listing missing items for this library                      | `/config/<<MAPPING_NAME>>_missing.yml` |            &#10060;             |
+| [`schedule`](../metadata/details/schedule) | Use any [schedule option](../metadata/details/schedule) to control when this library is run. |                 daily                  |            &#10060;             |
+| [`operations`](operations)                 | Library Operations to run                                                                    |                  N/A                   |            &#10060;             |
+| [`settings`](settings)                     | Any `setting` attribute that overrides a global value                                        |                 global                 |            &#10060;             |
+| [`plex`](plex)                             | Any `plex` attribute that overrides a global value                                           |                 global                 | &#9989; Either here or globally |
+| [`radarr`](radarr)                         | Any `radarr` attribute that overrides a global value                                         |                 global                 |            &#10060;             |
+| [`sonarr`](sonarr)                         | Any `sonarr` attribute that overrides a global value                                         |                 global                 |            &#10060;             |
+| [`tautulli`](tautulli)                     | Any `tautulli` attribute that overrides a global value                                       |                 global                 |            &#10060;             |
 
 ## Library Name
 

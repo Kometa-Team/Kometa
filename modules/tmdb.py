@@ -234,7 +234,10 @@ class TMDb:
         return {str(p.id): p.name for p in self.TMDb.popular_people().get_results(limit)}
 
     def search_people(self, name):
-        return self.TMDb.people_search(name)
+        try:
+            return self.TMDb.people_search(name)
+        except NotFound:
+            raise Failed(f"TMDb Error: Actor {name} Not Found")
 
     def validate_tmdb_ids(self, tmdb_ids, tmdb_method):
         tmdb_list = util.get_int_list(tmdb_ids, f"TMDb {type_map[tmdb_method]} ID")

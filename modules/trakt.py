@@ -408,5 +408,8 @@ class Trakt:
         elif method == "trakt_userlist":
             logger.info(f"Processing {pretty} {media_type}s from {data['user']}'s {data['userlist'].capitalize()}")
             return self._userlist(data["userlist"], data["user"], is_movie, sort_by=data["sort_by"])
+        elif method == "trakt_boxoffice":
+            logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
+            return self._charts("boxoffice", is_movie, {"limit": data})
         else:
             raise Failed(f"Trakt Error: Method {method} not supported")

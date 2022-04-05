@@ -173,7 +173,7 @@ all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in date_filters for m in date_modifiers] + \
               [f"{f}{m}" for f in number_filters for m in number_modifiers]
 smart_invalid = ["collection_order", "collection_level"]
-smart_url_invalid = ["minimum_items", "filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
+smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
     "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list", "trakt_chart", "trakt_userlist",
@@ -463,13 +463,28 @@ class CollectionBuilder:
             else:
                 logger.debug(f"Value: {self.data[methods['tmdb_person']]}")
                 valid_names = []
-                for tmdb_id in util.get_int_list(self.data[methods["tmdb_person"]], "TMDb Person ID"):
-                    person = self.config.TMDb.get_person(tmdb_id)
-                    valid_names.append(person.name)
-                    if person.biography:
-                        self.summaries["tmdb_person"] = person.biography
-                    if person.profile_url:
-                        self.posters["tmdb_person"] = person.profile_url
+                for tmdb_person in util.get_list(self.data[methods["tmdb_person"]]):
+                    try:
+                        person = self.config.TMDb.get_person(util.regex_first_int(tmdb_person, "TMDb Person ID"))
+                        valid_names.append(person.name)
+                        if person.biography:
+                            self.summaries["tmdb_person"] = person.biography
+                        if person.profile_url:
+                            self.posters["tmdb_person"] = person.profile_url
+                    except Failed as e:
+                        if str(e).startswith("TMDb Error"):
+                            logger.error(e)
+                        else:
+                            try:
+                                results = self.config.TMDb.search_people(tmdb_person)
+                                if results:
+                                    valid_names.append(results[0].name)
+                                    if results[0].biography:
+                                        self.summaries["tmdb_person"] = results[0].biography
+                                    if results[0].profile_url:
+                                        self.posters["tmdb_person"] = results[0].profile_url
+                            except Failed as ee:
+                                logger.error(ee)
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
