@@ -3,7 +3,6 @@ from datetime import datetime
 from modules import plex, ergast, util
 from modules.util import Failed, ImageData
 from plexapi.exceptions import NotFound, BadRequest
-from tmdbapis import NotFound as TMDbNotFound
 from ruamel import yaml
 
 logger = util.logger
@@ -390,8 +389,6 @@ class MetadataFile(DataFile):
                             person_depth = util.parse("Config", "depth", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1)
                             person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
                             person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
-                            if not person_minimum and not person_limit:
-                                person_minimum = 3
                             for i, item in enumerate(library.get_all(), 1):
                                 try:
                                     self.library.reload(item)
@@ -403,19 +400,16 @@ class MetadataFile(DataFile):
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
                             roles.sort(key=operator.itemgetter('count'), reverse=True)
+                            if not person_minimum:
+                                person_minimum = 0 if person_limit else 3
+                            if not person_limit:
+                                person_limit = len(roles)
                             person_count = 0
                             for role in roles:
-                                if (person_limit and person_count >= person_limit) or (person_minimum and role["count"] < person_minimum):
-                                    break
-                                if role["name"] not in exclude:
-                                    try:
-                                        results = self.config.TMDb.search_people(role["name"])
-                                        if results[0].id not in exclude:
-                                            auto_list[str(results[0].id)] = results[0].name
-                                            person_count += 1
-                                    except TMDbNotFound:
-                                        logger.error(f"TMDb Error: Actor {role['name']} Not Found")
-                            default_template = {"tmdb_person": "<<value>>", "plex_search": {"all": {auto_type: "tmdb"}}}
+                                if person_count < person_limit and role["count"] > person_minimum and role["name"] not in exclude:
+                                    auto_list[role["name"]] = role["name"]
+                                    person_count += 1
+                            default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
