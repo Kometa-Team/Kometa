@@ -173,7 +173,7 @@ all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in date_filters for m in date_modifiers] + \
               [f"{f}{m}" for f in number_filters for m in number_modifiers]
 smart_invalid = ["collection_order", "collection_level"]
-smart_url_invalid = ["minimum_items", "filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
+smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
     "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list", "trakt_chart", "trakt_userlist",
@@ -335,14 +335,14 @@ class CollectionBuilder:
             if "sync_to_users" in methods or "sync_to_user" in methods:
                 s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
                 logger.debug("")
-                logger.debug("Validating Method: sync_to_users")
+                logger.debug(f"Validating Method: {s_attr}")
                 if self.data[methods[s_attr]]:
-                    logger.warning(f"Playlist Error: sync_to_users attribute is blank defaulting to playlist_sync_to_user: {self.sync_to_users}")
-                else:
                     logger.debug(f"Value: {self.data[methods[s_attr]]}")
                     self.sync_to_users = self.data[methods[s_attr]]
+                else:
+                    logger.warning(f"Playlist Error: sync_to_users attribute is blank defaulting to playlist_sync_to_users: {self.sync_to_users}")
             else:
-                logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_user: {self.sync_to_users}")
+                logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
 
             plex_users = self.library.users
             if self.sync_to_users:
@@ -463,20 +463,35 @@ class CollectionBuilder:
             else:
                 logger.debug(f"Value: {self.data[methods['tmdb_person']]}")
                 valid_names = []
-                for tmdb_id in util.get_int_list(self.data[methods["tmdb_person"]], "TMDb Person ID"):
-                    person = self.config.TMDb.get_person(tmdb_id)
-                    valid_names.append(person.name)
-                    if person.biography:
-                        self.summaries["tmdb_person"] = person.biography
-                    if person.profile_url:
-                        self.posters["tmdb_person"] = person.profile_url
+                for tmdb_person in util.get_list(self.data[methods["tmdb_person"]]):
+                    try:
+                        person = self.config.TMDb.get_person(util.regex_first_int(tmdb_person, "TMDb Person ID"))
+                        valid_names.append(person.name)
+                        if person.biography:
+                            self.summaries["tmdb_person"] = person.biography
+                        if person.profile_url:
+                            self.posters["tmdb_person"] = person.profile_url
+                    except Failed as e:
+                        if str(e).startswith("TMDb Error"):
+                            logger.error(e)
+                        else:
+                            try:
+                                results = self.config.TMDb.search_people(tmdb_person)
+                                if results:
+                                    valid_names.append(results[0].name)
+                                    if results[0].biography:
+                                        self.summaries["tmdb_person"] = results[0].biography
+                                    if results[0].profile_url:
+                                        self.posters["tmdb_person"] = results[0].profile_url
+                            except Failed as ee:
+                                logger.error(ee)
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
                     raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
 
         self.smart_filter_details = ""
-        self.smart_label = {"sort_by": "random", "all": {"label": self.name}}
+        self.smart_label = {"sort_by": "random", "all": {"label": [self.name]}}
         self.smart_label_collection = False
         if "smart_label" in methods and not self.playlist and not self.library.is_music:
             logger.debug("")
@@ -688,7 +703,7 @@ class CollectionBuilder:
             self.sonarr_details["add_missing"] = self.library.Sonarr.add_missing if self.library.Sonarr else False
         if "add_existing" not in self.sonarr_details:
             self.sonarr_details["add_existing"] = self.library.Sonarr.add_existing if self.library.Sonarr else False
-            
+
         if self.smart_url or self.collectionless or self.library.is_music:
             self.radarr_details["add_missing"] = False
             self.radarr_details["add_existing"] = False
@@ -1084,11 +1099,11 @@ class CollectionBuilder:
 
     def _letterboxd(self, method_name, method_data):
         if method_name.startswith("letterboxd_list"):
-            letterboxd_lists = self.config.Letterboxd.validate_letterboxd_lists(method_data, self.language)
+            letterboxd_lists = self.config.Letterboxd.validate_letterboxd_lists(self.Type, method_data, self.language)
             for letterboxd_list in letterboxd_lists:
                 self.builders.append(("letterboxd_list", letterboxd_list))
             if method_name.endswith("_details"):
-                self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0], self.language)
+                self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0]["url"], self.language)
 
     def _mal(self, method_name, method_data):
         if method_name == "mal_id":
@@ -1291,7 +1306,7 @@ class CollectionBuilder:
                 terms = method_name.split("_")
                 trakt_dicts = {
                     "chart": terms[1],
-                    "amount": util.parse(self.Type, method_name, method_data, datatype="int", default=10),
+                    "limit": util.parse(self.Type, method_name, method_data, datatype="int", default=10),
                     "time_period": terms[2] if len(terms) > 2 else None
                 }
                 final_method = "trakt_chart"
@@ -1798,13 +1813,22 @@ class CollectionBuilder:
                     else:
                         valid_list.append(search_choices[str(value).lower()])
                 else:
-                    error = f"Plex Error: {attribute}: {value} not found"
-                    if self.details["show_options"]:
-                        error += f"\nOptions: {names}"
-                    if validate:
-                        raise Failed(error)
-                    else:
-                        logger.error(error)
+                    actor_id = None
+                    if attribute in ["actor", "director", "producer", "writer"]:
+                        actor_id = self.library.get_actor_id(value)
+                        if actor_id:
+                            if pairs:
+                                valid_list.append((value, actor_id))
+                            else:
+                                valid_list.append(actor_id)
+                    if not actor_id:
+                        error = f"Plex Error: {attribute}: {value} not found"
+                        if self.details["show_options"]:
+                            error += f"\nOptions: {names}"
+                        if validate:
+                            raise Failed(error)
+                        else:
+                            logger.error(error)
             return valid_list
         elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
             if data == "today":
@@ -2575,7 +2599,7 @@ class CollectionBuilder:
             items = self.library.get_filter_items(search_data[2])
         previous = None
         for i, item in enumerate(items, 0):
-            if len(self.items) <= i or item.ratingKey != self.items[i]:
+            if len(self.items) <= i or item.ratingKey != self.items[i].ratingKey:
                 text = f"after {util.item_title(previous)}" if previous else "to the beginning"
                 logger.info(f"Moving {util.item_title(item)} {text}")
                 self.library.moveItem(self.obj, item, previous)

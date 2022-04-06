@@ -16,7 +16,7 @@ collections:
 
 Then you add another:
 
-```
+```yaml
 collections:
   Bruce Lee:
     actor: tmdb
@@ -54,21 +54,21 @@ Those two things surrounded by `<< >>` are "template variables" that you can def
 
 ```yaml
 collections:
-  Bruce Lee:
-    template: {name: Actor, person: 19429}
-```
-
-or as a list:
-
-```yaml
-collections:
   Chris Pratt:
     template:
       name: Actor
       person: 73457
 ```
 
-Note that we provide the template name ["Actor"] and the value to insert in the place of `<<person>>`.  The `<<collection_name>>` is a required property of a collection, so it is always available and doesn't have to be called out like `<<person>>`.
+or to do it in a single line you can do this 
+
+```yaml
+collections:
+  Bruce Lee:
+    template: {name: Actor, person: 19429}
+```
+
+Note that we provide the template name `Actor` and the value to insert in the place of `<<person>>`.  The `<<collection_name>>` is a template variable that is always available and doesn't have to be called out like `<<person>>`.
 
 Inside a template, you can use all the Builders, Details, and [Filters](filters) attributes that you can give collections/playlists [except `template`; templates cannot be nested].
 
@@ -95,12 +95,16 @@ collections:
       person: 73457
 ```
 
-There are three attributes unique to `templates`, `default`, `optional`, and `move_prefix`.
+There are three attributes unique to `templates`; `default`, `optional`, and `move_prefix`.
 
 * `default` can set default values for template variables to be used if they're not specified in the call.
 * `optional` can specify variables that if not specified on the template call will cause any attribute using one of those variables to be ignored in the template. You can make any template variable optional per collection by setting it to `null`.
 * `move_prefix` can be given a list or comma-separated string of prefixes to move to the end of the collection/playlist name for sorting.
     i.e. If you have `move_prefix: The` and a collection is called `The Avengers` then `<<collection_name>>` is replaced with `Avengers, The` instead of `The Avengers` for that collection.
+
+Every template call is given either `<<collection_name>>` or `<<playlist_name>>` and `<<library_type>>` as template variables.
+
+All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. `<<collection_name_encoded>>`
 
 Here's an example IMDb Genre template and two different ways to call it.
 

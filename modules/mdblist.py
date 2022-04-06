@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 logger = util.logger
 
 builders = ["mdblist_list"]
-sort_names = ["score", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular", "rogerebert", "budget", "revenue", "added"]
+sort_names = ["score", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular", "rogerebert", "rtomatoes", "metacritic", "myanimelist", "budget", "revenue", "added"]
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 base_url = "https://mdblist.com/lists"
 api_url = "https://mdblist.com/api/"

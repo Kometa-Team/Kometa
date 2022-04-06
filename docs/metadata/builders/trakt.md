@@ -1,6 +1,6 @@
 # Trakt Builders
 
-You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt). 
+You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
 
 [Configuring Trakt](../../config/trakt) in the config is required for any of these builders.
 
@@ -10,7 +10,7 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
 | [`trakt_list_details`](#trakt-list)               | Finds every movie/show in the Trakt List and updates the collection summary with the list description                                                                                                                                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`trakt_chart`](#trakt-chart)                     | Finds the movies/shows in the Trakt Chart                                                                                                                                                                                                                                   |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`trakt_userlist`](#trakt-userlist)               | Finds every movie/show in the Trakt Userlist                                                                                                                                                                                                                                |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`trakt_recommendations`](#trakt-recommendations) | Finds the movies/shows in Trakt's Personal Recommendations for your User [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations) |      &#9989;      |     &#9989;      |               &#9989;                | 
+| [`trakt_recommendations`](#trakt-recommendations) | Finds the movies/shows in Trakt's Personal Recommendations for your User [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations) |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`trakt_boxoffice`](#trakt-box-office)            | Finds the 10 movies in Trakt's Top Box Office [Movies](https://trakt.tv/movies/boxoffice) list                                                                                                                                                                              |      &#9989;      |     &#10060;     |               &#9989;                |
 
 ## Trakt List
@@ -19,7 +19,7 @@ Finds every item in the Trakt List.
 
 The expected input is a Trakt List URL. Multiple values are supported only as a list.
 
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
 **Trakt Lists cannot be sorted through the API, but the list is always returned to the default list order if you own the list.**
 
@@ -112,16 +112,16 @@ Finds every movie/show in the Trakt Userlist.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
-| Attribute  | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `userlist` | **Description:** Which Trakt userlist to query<br>**Values:**<table class="clearTable"><tr><td>`trending`</td><td>Trakt's Trending [Movies](https://trakt.tv/movies/trending)/[Shows](https://trakt.tv/shows/trending) list</td></tr><tr><td>`popular`</td><td>Trakt's Popular [Movies](https://trakt.tv/movies/popular)/[Shows](https://trakt.tv/shows/popular) list</td></tr><tr><td>`recommended`</td><td>Trakt's Recommended [Movies](https://trakt.tv/movies/recommended)/[Shows](https://trakt.tv/shows/recommended) list</td></tr><tr><td>`watched`</td><td>Trakt's Watched [Movies](https://trakt.tv/movies/watched)/[Shows](https://trakt.tv/shows/watched) list</td></tr><tr><td>`collected`</td><td>Trakt's Collected [Movies](https://trakt.tv/movies/collected)/[Shows](https://trakt.tv/shows/collected) list</td></tr></table> |
-| `user`     | **Description:** The User who's user lists you want to query.<br>**Default:** `me`<br>**Values:** Username of User or `me` for the authenticated user.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `sort_by`  | **Description:** How to sort the results<br>**Default:** `rank`<br>**Values:** `rank`, `added`, `released`, `title`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Attribute  | Description & Values                                                                                                                                                                                                                                                                                                                                                                      |
+|:-----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `userlist` | **Description:** Which Trakt userlist to query<br>**Values:**<table class="clearTable"><tr><td>`watchlist`</td><td>Trakt User's Watchlist</td></tr><tr><td>`recommended`</td><td>Trakt User's Personal Recommended list</td></tr><tr><td>`watched`</td><td>Trakt User's Personal Watched list</td></tr><tr><td>`collected`</td><td>Trakt User's Personal Collected list</td></tr></table> |
+| `user`     | **Description:** The User who's user lists you want to query.<br>**Default:** `me`<br>**Values:** Username of User or `me` for the authenticated user.                                                                                                                                                                                                                                    |
+| `sort_by`  | **Description:** How to sort the results<br>**Default:** `rank`<br>**Values:** `rank`, `added`, `released`, `title`                                                                                                                                                                                                                                                                       |
 
 ```yaml
 collections:
   Trakt Watchlist:
-    trakt_userlist: 
+    trakt_userlist:
       userlist: watchlist
       user: me
       sort_by: released
@@ -147,9 +147,9 @@ collections:
 
 Finds the movies/shows in Trakt's Recommendations for [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations)
 
-The expected input is a single integer value of how many movies/shows to query. 
+The expected input is a single integer value of how many movies/shows to query.
 
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
 ```yaml
 collections:
@@ -163,9 +163,9 @@ collections:
 
 Finds the 10 movies in Trakt's Top Box Office [Movies](https://trakt.tv/movies/boxoffice) list.
 
-The expected input is true. 
+The expected input is true.
 
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
 ```yaml
 collections:

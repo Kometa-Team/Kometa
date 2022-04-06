@@ -1,9 +1,8 @@
-import math, operator, os, re
+import math, operator, os, re, requests
 from datetime import datetime
 from modules import plex, ergast, util
 from modules.util import Failed, ImageData
 from plexapi.exceptions import NotFound, BadRequest
-from tmdbapis import NotFound as TMDbNotFound
 from ruamel import yaml
 
 logger = util.logger
@@ -12,11 +11,11 @@ github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Co
 
 all_auto = ["genre"]
 ms_auto = [
-    "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists",
-    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution"
+    "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio",
+    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade"
 ]
 auto = {
-    "Movie": ["tmdb_collection", "decade", "country", "director", "producer", "writer"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "country", "director", "producer", "writer"] + all_auto + ms_auto,
     "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
@@ -59,6 +58,7 @@ def get_dict(attribute, attr_data, check_list=None):
 class DataFile:
     def __init__(self, config, file_type, path):
         self.config = config
+        self.library = None
         self.type = file_type
         self.path = path
         self.data_type = ""
@@ -102,6 +102,7 @@ class DataFile:
             raise Failed(f"{self.data_type} Error: template attribute is blank")
         else:
             logger.debug(f"Value: {template_call}")
+            new_attributes = {}
             for variables in util.get_list(template_call, split=False):
                 if not isinstance(variables, dict):
                     raise Failed(f"{self.data_type} Error: template attribute is not a dictionary")
@@ -127,9 +128,13 @@ class DataFile:
                         variables["collection_name"] = str(name)
                     if self.data_type == "Playlist" and "playlist_name" not in variables:
                         variables["playlist_name"] = str(name)
+                    variables["library_type"] = self.library.type.lower()
 
                     template_name = variables["name"]
                     template = self.templates[template_name]
+
+                    for key, value in variables.copy().items():
+                        variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 
                     default = {}
                     if "default" in template:
@@ -138,11 +143,12 @@ class DataFile:
                                 for dv in template["default"]:
                                     if str(dv) not in optional:
                                         if template["default"][dv] is not None:
-                                            final_value = str(template["default"][dv])
-                                            for key in variables:
-                                                if f"<<{key}>>" in final_value:
-                                                    final_value = final_value.replace(f"<<{key}>>", str(name))
+                                            final_value = template["default"][dv]
+                                            for key, value in variables.items():
+                                                if f"<<{key}>>" in str(final_value):
+                                                    final_value = str(final_value).replace(f"<<{key}>>", str(value))
                                             default[dv] = final_value
+                                            default[f"{dv}_encoded"] = requests.utils.quote(str(final_value))
                                         else:
                                             raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
                             else:
@@ -155,6 +161,7 @@ class DataFile:
                             for op in util.get_list(template["optional"]):
                                 if op not in default:
                                     optional.append(str(op))
+                                    optional.append(f"{op}_encoded")
                                 else:
                                     logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
                         else:
@@ -210,17 +217,19 @@ class DataFile:
                                 final_data = scan_text(final_data, dm, dd)
                         return final_data
 
-                    new_attributes = {}
                     for method_name, attr_data in template.items():
                         if method_name not in data and method_name not in ["default", "optional", "move_collection_prefix", "move_prefix"]:
                             if attr_data is None:
                                 logger.error(f"Template Error: template attribute {method_name} is blank")
                                 continue
-                            try:
-                                new_attributes[method_name] = check_data(method_name, attr_data)
-                            except Failed:
-                                continue
-                    return new_attributes
+                            if method_name in new_attributes:
+                                logger.warning(f"Template Warning: template attribute: {method_name} from {variables['name']} skipped")
+                            else:
+                                try:
+                                    new_attributes[method_name] = check_data(method_name, attr_data)
+                                except Failed:
+                                    continue
+            return new_attributes
 
 
 class MetadataFile(DataFile):
@@ -265,13 +274,11 @@ class MetadataFile(DataFile):
                         auto_type = dynamic[methods["type"]].lower()
                         og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist") if "exclude" in methods else []
                         include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if "include" in methods else []
-                        if og_exclude and include:
-                            raise Failed(f"Config Error: {map_name} cannot have both include and exclude attributes")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "addons" in methods else {}
                         exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
                             if k in v:
-                                raise Failed(f"Config Warning: {k} cannot be an addon for itself")
+                                logger.warning(f"Config Warning: {k} cannot be an addon for itself")
                             exclude.extend([y for y in v if y != k and y not in exclude])
                         default_title_format = "<<key_name>>"
                         default_template = None
@@ -307,7 +314,15 @@ class MetadataFile(DataFile):
                                 tags = library.get_tags(f"episode.{search_tag}")
                             else:
                                 tags = library.get_tags(search_tag)
-                            if auto_type in ["decade", "subtitle_language", "audio_language"]:
+                            if auto_type in ["subtitle_language", "audio_language"]:
+                                all_keys = []
+                                auto_list = {}
+                                for i in tags:
+                                    all_keys.append(str(i.key))
+                                    final_title = self.config.TMDb.TMDb._iso_639_1[str(i.key)].english_name if str(i.key) in self.config.TMDb.TMDb._iso_639_1 else str(i.title)
+                                    if all([x not in exclude for x in [final_title, str(i.title), str(i.key)]]):
+                                        auto_list[str(i.key)] = final_title
+                            elif auto_type in ["resolution", "decade"]:
                                 all_keys = [str(i.key) for i in tags]
                                 auto_list = {str(i.key): i.title for i in tags if str(i.title) not in exclude and str(i.key) not in exclude}
                             else:
@@ -320,7 +335,7 @@ class MetadataFile(DataFile):
                                 default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}
                                 default_title_format = "<<key_name>> <<library_type>>s"
                             else:
-                                default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {auto_type: f"<<value>>"}}}
+                                default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {f"{auto_type}.is" if auto_type == "studio" else auto_type: "<<value>>"}}}
                                 default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade"] else "Top <<key_name>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
                             all_items = library.get_all()
@@ -353,9 +368,9 @@ class MetadataFile(DataFile):
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
                                 if tmdb_item and tmdb_item.countries:
                                     for country in tmdb_item.countries:
-                                        all_keys.append(country.iso_3166_1)
-                                        if country.iso_3166_1 not in exclude and country.name not in exclude:
-                                            auto_list[country.iso_3166_1] = country.name
+                                        all_keys.append(country.iso_3166_1.lower())
+                                        if country.iso_3166_1.lower() not in exclude and country.name not in exclude:
+                                            auto_list[country.iso_3166_1.lower()] = country.name
                             logger.exorcise()
                             default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type in ["actor", "director", "writer", "producer"]:
@@ -374,8 +389,6 @@ class MetadataFile(DataFile):
                             person_depth = util.parse("Config", "depth", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1)
                             person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
                             person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
-                            if not person_minimum and not person_limit:
-                                person_minimum = 3
                             for i, item in enumerate(library.get_all(), 1):
                                 try:
                                     self.library.reload(item)
@@ -387,19 +400,17 @@ class MetadataFile(DataFile):
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
                             roles.sort(key=operator.itemgetter('count'), reverse=True)
+                            if not person_minimum:
+                                person_minimum = 0 if person_limit else 3
+                            if not person_limit:
+                                person_limit = len(roles)
                             person_count = 0
                             for role in roles:
-                                if (person_limit and person_count >= person_limit) or (person_minimum and role["count"] < person_minimum):
-                                    break
-                                if role["name"] not in exclude:
-                                    try:
-                                        results = self.config.TMDb.search_people(role["name"])
-                                        if results[0].id not in exclude:
-                                            auto_list[str(results[0].id)] = results[0].name
-                                            person_count += 1
-                                    except TMDbNotFound:
-                                        logger.error(f"TMDb Error: Actor {role['name']} Not Found")
-                            default_template = {"tmdb_person": "<<value>>", "plex_search": {"all": {auto_type: "tmdb"}}},
+                                if person_count < person_limit and role["count"] > person_minimum and role["name"] not in exclude:
+                                    auto_list[role["name"]] = role["name"]
+                                    all_keys.append(role["name"])
+                                    person_count += 1
+                            default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
@@ -443,25 +454,37 @@ class MetadataFile(DataFile):
                         title_format = title_format.replace("<<library_type>>", library.type)
                     template_variables = util.parse("Config", "template_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "template_variables" in methods else {}
                     if "template" in methods:
-                        template_name = util.parse("Config", "template", dynamic, parent=map_name, methods=methods)
-                        if template_name not in self.templates:
-                            raise Failed(f"Config Error: {map_name} template: {template_name} not found")
-                        if "<<value>>" not in str(self.templates[template_name]) and f"<<{auto_type}>>" not in str(self.templates[template_name]):
-                            raise Failed(f"Config Error: {map_name} template: {template_name} is required to have the template variable <<value>>")
+                        template_names = util.parse("Config", "template", dynamic, parent=map_name, methods=methods, datatype="strlist")
+                        has_var = False
+                        for template_name in template_names:
+                            if template_name not in self.templates:
+                                raise Failed(f"Config Error: {map_name} template: {template_name} not found")
+                            if "<<value>>" in str(self.templates[template_name]) or f"<<{auto_type}>>" in str(self.templates[template_name]):
+                                has_var = True
+                        if not has_var:
+                            raise Failed(f"Config Error: One {map_name} template: {template_names} is required to have the template variable <<value>>")
                     else:
                         self.templates[map_name] = default_template if default_template else default_templates[auto_type]
-                        template_name = map_name
+                        template_names = [map_name]
                     remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
                     remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
                     other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods) if "other_name" in methods and include else None
+                    other_templates = util.parse("Config", "other_template", dynamic, parent=map_name, methods=methods, datatype="strlist") if "other_template" in methods and include else None
+                    if other_templates:
+                        for other_template in other_templates:
+                            if other_template not in self.templates:
+                                raise Failed(f"Config Error: {map_name} other template: {other_template} not found")
+                    else:
+                        other_templates = template_names
                     other_keys = []
                     logger.debug(f"Mapping Name: {map_name}")
                     logger.debug(f"Type: {auto_type}")
                     logger.debug(f"Data: {dynamic_data}")
                     logger.debug(f"Exclude: {exclude}")
                     logger.debug(f"Addons: {addons}")
-                    logger.debug(f"Template: {template_name}")
+                    logger.debug(f"Template: {template_names}")
+                    logger.debug(f"Other Template: {other_templates}")
                     logger.debug(f"Template Variables: {template_variables}")
                     logger.debug(f"Remove Prefix: {remove_prefix}")
                     logger.debug(f"Remove Suffix: {remove_suffix}")
@@ -476,6 +499,7 @@ class MetadataFile(DataFile):
                     for key, value in auto_list.items():
                         logger.debug(f"  - {key}{'' if key == value else f' ({value})'}")
 
+                    used_keys = []
                     for key, value in auto_list.items():
                         if include and key not in include:
                             if key not in exclude:
@@ -494,15 +518,16 @@ class MetadataFile(DataFile):
                         key_value = [key] if key in all_keys else []
                         if key in addons:
                             key_value.extend([a for a in addons[key] if a in all_keys and a != key])
-                        template_call = {
-                            "name": template_name,
-                            "value": key_value,
-                            auto_type: key_value,
-                            "key_name": key_name, "key": key
-                        }
+                        used_keys.extend(key_value)
+                        og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
                             if key in v:
-                                template_call[k] = v[key]
+                                og_call[k] = v[key]
+                        template_call = []
+                        for template_name in template_names:
+                            new_call = og_call.copy()
+                            new_call["name"] = template_name
+                            template_call.append(new_call)
                         if key in title_override:
                             collection_title = title_override[key]
                         else:
@@ -517,13 +542,19 @@ class MetadataFile(DataFile):
                                 sync.pop(collection_title)
                             self.collections[collection_title] = col
                     if other_name:
-                        template_call = {
-                            "name": template_name,
-                            "value": other_keys,
-                            auto_type: other_keys,
-                            "key_name": str(map_name), "key": str(map_name)
+                        og_other = {
+                            "value": other_keys, "included_keys": include, "used_keys": used_keys,
+                            auto_type: other_keys, "key_name": other_name, "key": "other"
                         }
-                        col = {"template": template_call, "label": str(map_name)}
+                        for k, v in template_variables.items():
+                            if "other" in v:
+                                og_other[k] = v["other"]
+                        other_call = []
+                        for other_template in other_templates:
+                            new_call = og_other.copy()
+                            new_call["name"] = other_template
+                            other_call.append(new_call)
+                        col = {"template": other_call, "label": str(map_name)}
                         if test:
                             col["test"] = True
                         if other_name in sync:
@@ -988,7 +1019,7 @@ class MetadataFile(DataFile):
                 races = self.config.Ergast.get_races(f1_season, f1_language)
                 race_lookup = {r.round: r for r in races}
                 for season in item.seasons():
-                    if season.seasonNumber is 0:
+                    if not season.seasonNumber:
                         continue
                     sprint_weekend = False
                     for episode in season.episodes():

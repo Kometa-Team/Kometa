@@ -640,20 +640,27 @@ def library_operations(config, library):
                 batch_display += f"\n{library.edit_tags('genre', item, sync_tags=new_genres)}"
 
             if library.mass_audience_rating_update:
-                new_rating = get_rating(library.mass_audience_rating_update)
-                if new_rating is None:
-                    logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                elif str(item.audienceRating) != str(new_rating):
-                    item.editField("audienceRating", new_rating)
-                    batch_display += f"\n{item.title[:25]:<25} | Audience Rating | {new_rating}"
+                try:
+                    new_rating = get_rating(library.mass_audience_rating_update)
+                    if new_rating is None:
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
+                    elif str(item.audienceRating) != str(new_rating):
+                        item.editField("audienceRating", new_rating)
+                        batch_display += f"\n{item.title[:25]:<25} | Audience Rating | {new_rating}"
+                except Failed:
+                    pass
 
             if library.mass_critic_rating_update:
-                new_rating = get_rating(library.mass_critic_rating_update)
-                if new_rating is None:
-                    logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                elif str(item.rating) != str(new_rating):
-                    item.editField("rating", new_rating)
-                    batch_display += f"{item.title[:25]:<25} | Critic Rating | {new_rating}"
+                try:
+                    new_rating = get_rating(library.mass_critic_rating_update)
+                    if new_rating is None:
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
+                    elif str(item.rating) != str(new_rating):
+                        item.editField("rating", new_rating)
+                        batch_display += f"{item.title[:25]:<25} | Critic Rating | {new_rating}"
+                except Failed:
+                    pass
+
             if library.mass_content_rating_update or library.content_rating_mapper:
                 try:
                     new_rating = None
@@ -940,7 +947,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[mapping_name]["sonarr"] += sonarr_add
 
             valid = True
-            if builder.build_collection and (
+            if builder.build_collection and not builder.blank_collection and (
                     (builder.smart_url and len(library.get_filter_items(builder.smart_url)) < builder.minimum)
                     or (not builder.smart_url and len(builder.added_items) + builder.beginning_count < builder.minimum)
             ):
@@ -1210,7 +1217,7 @@ try:
                 valid_times.append(datetime.strftime(datetime.strptime(time_to_run, "%H:%M"), "%H:%M"))
             except ValueError:
                 if time_to_run:
-                    raise Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format")
+                    raise Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format between 00:00-23:59")
                 else:
                     raise Failed(f"Argument Error: blank time argument")
         for time_to_run in valid_times:
