@@ -9,7 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "develop"
+    target-branch: "nightly"
     assignees:
       - "meisnate12"
   - package-ecosystem: github-actions
