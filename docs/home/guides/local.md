@@ -427,9 +427,9 @@ libraries:                                      # Library mappings must have a c
 ```
 
 
-You need an entry here for each of the libraries on which you want PMM to act.  Those top-level elements [Movies, TV Shows, Anime] are names of libraries on your Plex server.
+You will ultimately need an entry here for each of the libraries on which you want PMM to act.  Those top-level elements [Movies, TV Shows, Anime] are names of libraries on your Plex server.
 
-Delete the “TV Shows” and “Anime” sections and change the name of the “Movies” section to something that is NOT included in your Plex.  I’m using “Movies-HIDDEN":
+For now, delete the “TV Shows” and “Anime” sections and change the name of the “Movies” section to something that is NOT included in your Plex.  I’m using “Movies-HIDDEN":
 
 ```
 libraries:                                      # Library mappings must have a colon (:) placed after them
@@ -511,7 +511,9 @@ $ python plex_meta_manager.py -r
 ...
 ```
 
-We can see there that it connected to the Plex Library, failed to find that `Main Movies.yml` metadata file, and then quit.
+PMM may start cataloging your movies at this point; you cna hit control-C to stop that if it's happening.
+
+We can see there that it connected to the Plex Library but failed to find that `Main Movies.yml` metadata file.
 
 So far so good.
 
