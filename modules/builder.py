@@ -1813,13 +1813,22 @@ class CollectionBuilder:
                     else:
                         valid_list.append(search_choices[str(value).lower()])
                 else:
-                    error = f"Plex Error: {attribute}: {value} not found"
-                    if self.details["show_options"]:
-                        error += f"\nOptions: {names}"
-                    if validate:
-                        raise Failed(error)
-                    else:
-                        logger.error(error)
+                    actor_id = None
+                    if attribute in ["actor", "director", "producer", "writer"]:
+                        actor_id = self.library.get_actor_id(value)
+                        if actor_id:
+                            if pairs:
+                                valid_list.append((value, actor_id))
+                            else:
+                                valid_list.append(actor_id)
+                    if not actor_id:
+                        error = f"Plex Error: {attribute}: {value} not found"
+                        if self.details["show_options"]:
+                            error += f"\nOptions: {names}"
+                        if validate:
+                            raise Failed(error)
+                        else:
+                            logger.error(error)
             return valid_list
         elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
             if data == "today":

@@ -8,6 +8,7 @@ from plexapi import utils
 from plexapi.audio import Artist, Track, Album
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
+from plexapi.library import Actor
 from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from plexapi.video import Movie, Show, Season, Episode
@@ -567,6 +568,13 @@ class Plex(Library):
     def upload_file_poster(self, item, image):
         item.uploadPoster(filepath=image)
         self.reload(item)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    def get_actor_id(self, name):
+        results = self.Plex.hubSearch(name)
+        for result in results:
+            if isinstance(result, Actor) and result.librarySectionID == self.Plex.key and result.tag == name:
+                return result.id
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True):
