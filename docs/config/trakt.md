@@ -38,4 +38,4 @@ trakt:
     ![Trakt Authorize](trakt.png)
 8. Record the `PIN` as `pin` in your Configuration File.
 
-* Run the script shortly after obtaining your pin I don't know if it expires at any point or not.
+* Run the script shortly after obtaining your PIN; the PIN may expire at some point.
