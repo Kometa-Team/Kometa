@@ -120,6 +120,7 @@ html_theme_options = {
                 ("_divider", ),
                 ("Local Walkthrough", "home/guides/local"),
                 ("Docker Walkthrough", "home/guides/docker"),
+                ("QNAP Walkthrough", "home/guides/qnap"),
                 ("unRAID Walkthrough", "home/guides/unraid"),
                 ("Kubernetes Walkthrough", "home/guides/kubernetes"),
             ]),
