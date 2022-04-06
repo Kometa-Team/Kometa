@@ -1,6 +1,6 @@
 # Trakt Attributes
 
-Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt based collections to function.
+Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt based collections to function. 
 
 A `trakt` mapping is in the root of the config file.
 
@@ -25,7 +25,7 @@ trakt:
 | `client_secret` | Trakt Application Client Secret |   N/A   | &#9989;  |
 | `pin`           | Trakt Pin                       |  None   | &#10060; |
 
-* All other attributes will be filled in by the script.
+* All other attributes will be filled in by the script. 
 
 * To connect to Trakt.tv you must create a Trakt application and supply the script the `client_id`, `client_secret`, and `pin` provided, please do the following:
 1. [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
