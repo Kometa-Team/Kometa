@@ -703,7 +703,7 @@ class CollectionBuilder:
             self.sonarr_details["add_missing"] = self.library.Sonarr.add_missing if self.library.Sonarr else False
         if "add_existing" not in self.sonarr_details:
             self.sonarr_details["add_existing"] = self.library.Sonarr.add_existing if self.library.Sonarr else False
-
+            
         if self.smart_url or self.collectionless or self.library.is_music:
             self.radarr_details["add_missing"] = False
             self.radarr_details["add_existing"] = False
