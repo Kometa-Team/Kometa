@@ -102,7 +102,7 @@ ignored_details = [
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
 details = [
-    "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_mode", "limit", "url_theme",
+    "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
     "file_theme", "minimum_items", "label", "album_sorting", "cache_builders", "tmdb_region"
 ] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
@@ -173,6 +173,7 @@ all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in date_filters for m in date_modifiers] + \
               [f"{f}{m}" for f in number_filters for m in number_modifiers]
 smart_invalid = ["collection_order", "collection_level"]
+smart_only = ["collection_filtering"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
     "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
@@ -190,7 +191,7 @@ custom_sort_builders = [
 ]
 episode_parts_only = ["plex_pilots"]
 parts_collection_valid = [
-     "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_mode", "label", "visible_library", "limit",
+     "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_filtering", "collection_mode", "label", "visible_library", "limit",
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll", "changes_webhooks",
      "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "cache_builders",
      "url_theme", "file_theme"
@@ -201,7 +202,7 @@ playlist_attributes = [
     "server_preroll", "changes_webhooks", "minimum_items", "cache_builders"
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
-   "non_item_remove_label", "item_label", "item_assets", "item_lock_background", "item_lock_poster", "item_lock_title",
+   "non_item_remove_label", "item_label", "item_assets", "collection_filtering", "item_lock_background", "item_lock_poster", "item_lock_title",
    "item_refresh", "item_refresh_delay", "plex_search", "plex_all", "filters"
 ] + details + summary_details + poster_details + background_details
 
@@ -628,6 +629,8 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed with Collection Level: {self.collection_level.capitalize()}")
                 elif self.smart and method_name in smart_invalid:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with normal collections")
+                elif not self.smart and method_name in smart_only:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with smart collections")
                 elif self.collectionless and method_name not in collectionless_details:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed for Collectionless collection")
                 elif self.smart_url and method_name in all_builders + smart_url_invalid:
@@ -806,7 +809,15 @@ class CollectionBuilder:
         elif method_name == "tmdb_region":
             self.tmdb_region = util.parse(self.Type, method_name, method_data, options=self.config.TMDb.iso_3166_1)
         elif method_name == "collection_mode":
-            self.details[method_name] = util.check_collection_mode(method_data)
+            if method_data and str(method_data).lower() in plex.collection_mode_options:
+                self.details[method_name] = plex.collection_mode_options[str(method_data).lower()]
+            else:
+                logger.error(f"Config Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
+        elif method_name == "collection_filtering":
+            if method_data and str(method_data).lower() in plex.collection_filtering_options:
+                self.details[method_name] = str(method_data).lower()
+            else:
+                logger.error(f"Config Error: {method_data} collection_filtering invalid\n\tadmin (Always the server admin user)\n\tuser (User currently viewing the content)")
         elif method_name == "minimum_items":
             self.minimum = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
         elif method_name == "limit":
@@ -2458,6 +2469,9 @@ class CollectionBuilder:
 
             if "collection_mode" in self.details:
                 self.library.collection_mode_query(self.obj, self.details["collection_mode"])
+
+            if "collection_filtering" in self.details:
+                self.library.edit_query(self.obj, {"collectionFilterBasedOnUser": 0 if self.details["collection_filtering"] == "admin" else 1}, advanced=True)
 
             if "collection_order" in self.details:
                 if int(self.obj.collectionSort) not in plex.collection_order_keys\

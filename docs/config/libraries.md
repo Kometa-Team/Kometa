@@ -141,7 +141,8 @@ The four path types are outlined as follows:
 
 * `- file:` refers to a metadata file which is located within the system that PMM is being run from.
 * `- folder:` refers to a directory containing metadata files which is located within the system that PMM is being run from.
-* `- git:` refers to a metadata file which is hosted on GitHub.  This file is assumed to be in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) unless the user has specified a custom repository with the [`custom-repo` Setting Attribute](settings.md#custom-repo).
+* `- git:` refers to a metadata file which is hosted on the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
+* `- repo:` refers to a metadata file which is hosted on a custom repository specified aby the user with the [`custom-repo` Setting Attribute](settings.md#custom-repo).
 * `- url:` refers to a metadata file which is hosted publicly on the internet.
 
 Within the above example, PMM will:
