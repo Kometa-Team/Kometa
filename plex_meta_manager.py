@@ -835,15 +835,30 @@ def library_operations(config, library):
             meta = {}
         if "metadata" not in meta:
             meta["metadata"] = {}
+        special_names = {}
+        for mk, mv in meta["metadata"].items():
+            if "title" in mv:
+                special_names[mv["title"]] = mk
+                if "year" in mv:
+                    special_names[f"{mv['title']} ({mv['year']})"] = mk
         items = library.get_all(load=True)
         titles = [i.title for i in items]
         for i, item in enumerate(items, 1):
             logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
             map_key, attrs = library.get_locked_attributes(item, titles)
-            if attrs or library.metadata_backup["add_blank_entries"]:
+            if map_key in special_names:
+                map_key = special_names[map_key]
+            og_dict = meta["metadata"][map_key] if map_key in meta["metadata"] and meta["metadata"][map_key] else {}
+            if attrs or (library.metadata_backup["add_blank_entries"] and not og_dict):
                 def get_dict(attrs_dict):
-                    return {ak: get_dict(av) if isinstance(av, dict) else av for ak, av in attrs_dict.items()} if isinstance(attrs_dict, dict) else attrs_dict
-                meta["metadata"][map_key] = get_dict(attrs)
+                    return {ak: get_dict(av) if isinstance(av, dict) else av for ak, av in attrs_dict.items()}
+                def loop_dict(looping, dest_dict):
+                    if not looping:
+                        return None
+                    for lk, lv in looping:
+                        dest_dict[lk] = loop_dict(lv, dest_dict[lk] if lk in dest_dict and dest_dict[lk] else {}) if isinstance(lv, dict) else lv
+                    return dest_dict
+                meta["metadata"][map_key] = loop_dict(get_dict(attrs), og_dict)
         logger.exorcise()
         try:
             yaml.round_trip_dump(meta, open(library.metadata_backup["path"], "w", encoding="utf-8"), block_seq_indent=2)

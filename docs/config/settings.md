@@ -527,7 +527,7 @@ Specify where the `repo` attribute's base is when defining `metadata_paths` and 
 </table>
 
 ## Verify SSL
-Turn SSl Verification on or off.
+Turn SSL Verification on or off.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
