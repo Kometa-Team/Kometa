@@ -1137,4 +1137,4 @@ class Plex(Library):
         elif isinstance(item, Album):
             _recur("tracks")
 
-        return map_key, attrs if attrs else None
+        return map_key, attrs

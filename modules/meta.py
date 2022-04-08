@@ -626,6 +626,7 @@ class MetadataFile(DataFile):
         logger.info("")
         logger.separator("Running Metadata")
         logger.info("")
+        next_year = datetime.now().year + 1
         for mapping_name, meta in self.metadata.items():
             methods = {mm.lower(): mm for mm in meta}
 
@@ -687,7 +688,6 @@ class MetadataFile(DataFile):
             logger.info("")
             year = None
             if "year" in methods and not self.library.is_music:
-                next_year = datetime.now().year + 1
                 if meta[methods["year"]] is None:
                     raise Failed("Metadata Error: year attribute is blank")
                 try:
