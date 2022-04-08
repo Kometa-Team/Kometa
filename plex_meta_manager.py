@@ -622,8 +622,6 @@ def library_operations(config, library):
                         new_genres = tvdb_item.genres
                     elif anidb_item and library.mass_genre_update == "anidb":
                         new_genres = anidb_item.tags
-                    else:
-                        raise Failed
                     if not new_genres:
                         logger.info(f"{item.title[:25]:<25} | No Genres Found")
                 if library.genre_mapper:

@@ -130,6 +130,12 @@ metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
 collection_order_options = ["release", "alpha", "custom"]
+collection_filtering_options = ["user", "admin"]
+collection_mode_options = {
+    "default": "default", "hide": "hide",
+    "hide_items": "hideItems", "hideitems": "hideItems",
+    "show_items": "showItems", "showitems": "showItems"
+}
 collection_level_show_options = ["episode", "season"]
 collection_level_music_options = ["album", "track"]
 collection_level_options = collection_level_show_options + collection_level_music_options
@@ -522,7 +528,7 @@ class Plex(Library):
     def collection_mode_query(self, collection, data):
         if int(collection.collectionMode) not in collection_mode_keys or collection_mode_keys[int(collection.collectionMode)] != data:
             collection.modeUpdate(mode=data)
-            logger.info(f"Collection Mode | data")
+            logger.info(f"Collection Mode | {data}")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_order_query(self, collection, data):
@@ -546,7 +552,6 @@ class Plex(Library):
             item.editAdvanced(**edits)
         else:
             item.edit(**edits)
-        self.reload(item)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _upload_image(self, item, image):
