@@ -114,21 +114,21 @@ class Library(ABC):
 
     def scan_metadata_files(self):
         metadata = []
-        for file_type, metadata_file in self.metadata_path:
+        for file_type, metadata_file, temp_vars in self.metadata_path:
             if file_type == "Folder":
                 if os.path.isdir(metadata_file):
                     yml_files = util.glob_filter(os.path.join(metadata_file, "*.yml"))
                     if yml_files:
-                        metadata.extend([("File", yml) for yml in yml_files])
+                        metadata.extend([("File", yml, temp_vars) for yml in yml_files])
                     else:
                         logger.error(f"Config Error: No YAML (.yml) files found in {metadata_file}")
                 else:
                     logger.error(f"Config Error: Folder not found: {metadata_file}")
             else:
-                metadata.append((file_type, metadata_file))
-        for file_type, metadata_file in metadata:
+                metadata.append((file_type, metadata_file, temp_vars))
+        for file_type, metadata_file, temp_vars in metadata:
             try:
-                meta_obj = MetadataFile(self.config, self, file_type, metadata_file)
+                meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars)
                 if meta_obj.collections:
                     self.collections.extend([c for c in meta_obj.collections])
                 if meta_obj.metadata:

@@ -855,7 +855,7 @@ def library_operations(config, library):
                 def loop_dict(looping, dest_dict):
                     if not looping:
                         return None
-                    for lk, lv in looping:
+                    for lk, lv in looping.items():
                         dest_dict[lk] = loop_dict(lv, dest_dict[lk] if lk in dest_dict and dest_dict[lk] else {}) if isinstance(lv, dict) else lv
                     return dest_dict
                 meta["metadata"][map_key] = loop_dict(get_dict(attrs), og_dict)
