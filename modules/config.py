@@ -492,6 +492,9 @@ class ConfigFile:
                     paths_to_check = [self.data["playlist_files"]]
                 for path in paths_to_check:
                     if isinstance(path, dict):
+                        temp_vars = {}
+                        if "template_variables" in path and path["template_variables"] and isinstance(path["template_variables"], dict):
+                            temp_vars = path["template_variables"]
                         def check_dict(attr):
                             if attr in path:
                                 if path[attr] is None:
@@ -503,36 +506,36 @@ class ConfigFile:
 
                         url = check_dict("url")
                         if url:
-                            playlists_pairs.append(("URL", url))
+                            playlists_pairs.append(("URL", url, temp_vars))
                         git = check_dict("git")
                         if git:
-                            playlists_pairs.append(("Git", git))
+                            playlists_pairs.append(("Git", git, temp_vars))
                         repo = check_dict("repo")
                         if repo:
-                            playlists_pairs.append(("Repo", repo))
+                            playlists_pairs.append(("Repo", repo, temp_vars))
                         file = check_dict("file")
                         if file:
-                            playlists_pairs.append(("File", file))
+                            playlists_pairs.append(("File", file, temp_vars))
                         folder = check_dict("folder")
                         if folder:
                             if os.path.isdir(folder):
                                 yml_files = util.glob_filter(os.path.join(folder, "*.yml"))
                                 if yml_files:
-                                    playlists_pairs.extend([("File", yml) for yml in yml_files])
+                                    playlists_pairs.extend([("File", yml, temp_vars) for yml in yml_files])
                                 else:
                                     logger.error(f"Config Error: No YAML (.yml) files found in {folder}")
                             else:
                                 logger.error(f"Config Error: Folder not found: {folder}")
                     else:
                         if os.path.exists(path):
-                            playlists_pairs.append(("File", path))
+                            playlists_pairs.append(("File", path, {}))
                         else:
                             logger.warning(f"Config Warning: Path not found: {path}")
             else:
                 logger.warning("playlist_files attribute not found")
-            for file_type, playlist_file in playlists_pairs:
+            for file_type, playlist_file, temp_vars in playlists_pairs:
                 try:
-                    playlist_obj = PlaylistFile(self, file_type, playlist_file)
+                    playlist_obj = PlaylistFile(self, file_type, playlist_file, temp_vars)
                     self.playlist_names.extend([p for p in playlist_obj.playlists])
                     self.playlist_files.append(playlist_obj)
                 except Failed as e:
@@ -824,6 +827,9 @@ class ConfigFile:
                         paths_to_check = lib["metadata_path"] if isinstance(lib["metadata_path"], list) else [lib["metadata_path"]]
                         for path in paths_to_check:
                             if isinstance(path, dict):
+                                temp_vars = {}
+                                if "template_variables" in path and path["template_variables"] and isinstance(path["template_variables"], dict):
+                                    temp_vars = path["template_variables"]
                                 def check_dict(attr, name):
                                     if attr in path:
                                         if path[attr] is None:
@@ -831,16 +837,16 @@ class ConfigFile:
                                             self.errors.append(err)
                                             logger.error(err)
                                         else:
-                                            params["metadata_path"].append((name, path[attr]))
+                                            params["metadata_path"].append((name, path[attr], temp_vars))
                                 check_dict("url", "URL")
                                 check_dict("git", "Git")
                                 check_dict("repo", "Repo")
                                 check_dict("file", "File")
                                 check_dict("folder", "Folder")
                             else:
-                                params["metadata_path"].append(("File", path))
+                                params["metadata_path"].append(("File", path, {}))
                     else:
-                        params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"))]
+                        params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), {})]
                     params["default_dir"] = default_dir
 
                     params["skip_library"] = False
