@@ -479,67 +479,23 @@ class ConfigFile:
 
             self.playlist_names = []
             self.playlist_files = []
-            playlists_pairs = []
             if "playlist_files" in self.data:
                 logger.info("Reading in Playlist Files")
-                if self.data["playlist_files"] is None:
+                if self.data["playlist_files"]:
+                    paths_to_check = self.data["playlist_files"]
+                else:
                     default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
                     logger.warning(f"Config Warning: playlist_files attribute is blank using default: {default_playlist_file}")
                     paths_to_check = [default_playlist_file]
-                elif isinstance(self.data["playlist_files"], list):
-                    paths_to_check = self.data["playlist_files"]
-                else:
-                    paths_to_check = [self.data["playlist_files"]]
-                for path in paths_to_check:
-                    if isinstance(path, dict):
-                        temp_vars = {}
-                        if "template_variables" in path and path["template_variables"] and isinstance(path["template_variables"], dict):
-                            temp_vars = path["template_variables"]
-                        def check_dict(attr):
-                            if attr in path:
-                                if path[attr] is None:
-                                    err = f"Config Error: playlist_files {attr} is blank"
-                                    self.errors.append(err)
-                                    logger.error(err)
-                                else:
-                                    return path[attr]
-
-                        url = check_dict("url")
-                        if url:
-                            playlists_pairs.append(("URL", url, temp_vars))
-                        git = check_dict("git")
-                        if git:
-                            playlists_pairs.append(("Git", git, temp_vars))
-                        repo = check_dict("repo")
-                        if repo:
-                            playlists_pairs.append(("Repo", repo, temp_vars))
-                        file = check_dict("file")
-                        if file:
-                            playlists_pairs.append(("File", file, temp_vars))
-                        folder = check_dict("folder")
-                        if folder:
-                            if os.path.isdir(folder):
-                                yml_files = util.glob_filter(os.path.join(folder, "*.yml"))
-                                if yml_files:
-                                    playlists_pairs.extend([("File", yml, temp_vars) for yml in yml_files])
-                                else:
-                                    logger.error(f"Config Error: No YAML (.yml) files found in {folder}")
-                            else:
-                                logger.error(f"Config Error: Folder not found: {folder}")
-                    else:
-                        if os.path.exists(path):
-                            playlists_pairs.append(("File", path, {}))
-                        else:
-                            logger.warning(f"Config Warning: Path not found: {path}")
+                for file_type, playlist_file, temp_vars in util.load_yaml_files(paths_to_check):
+                    try:
+                        playlist_obj = PlaylistFile(self, file_type, playlist_file, temp_vars)
+                        self.playlist_names.extend([p for p in playlist_obj.playlists])
+                        self.playlist_files.append(playlist_obj)
+                    except Failed as e:
+                        logger.error(e)
             else:
                 logger.warning("playlist_files attribute not found")
-            for file_type, playlist_file, temp_vars in playlists_pairs:
-                try:
-                    playlist_obj = PlaylistFile(self, file_type, playlist_file, temp_vars)
-                    self.playlist_names.extend([p for p in playlist_obj.playlists])
-                    self.playlist_files.append(playlist_obj)
-                except Failed as e:
-                    logger.error(e)
 
             self.TVDb = TVDb(self, self.general["tvdb_language"])
             self.IMDb = IMDb(self)
@@ -821,30 +777,9 @@ class ConfigFile:
 
                 try:
                     if lib and "metadata_path" in lib:
-                        params["metadata_path"] = []
-                        if lib["metadata_path"] is None:
+                        if not lib["metadata_path"]:
                             raise Failed("Config Error: metadata_path attribute is blank")
-                        paths_to_check = lib["metadata_path"] if isinstance(lib["metadata_path"], list) else [lib["metadata_path"]]
-                        for path in paths_to_check:
-                            if isinstance(path, dict):
-                                temp_vars = {}
-                                if "template_variables" in path and path["template_variables"] and isinstance(path["template_variables"], dict):
-                                    temp_vars = path["template_variables"]
-                                def check_dict(attr, name):
-                                    if attr in path:
-                                        if path[attr] is None:
-                                            err = f"Config Error: metadata_path {attr} is blank"
-                                            self.errors.append(err)
-                                            logger.error(err)
-                                        else:
-                                            params["metadata_path"].append((name, path[attr], temp_vars))
-                                check_dict("url", "URL")
-                                check_dict("git", "Git")
-                                check_dict("repo", "Repo")
-                                check_dict("file", "File")
-                                check_dict("folder", "Folder")
-                            else:
-                                params["metadata_path"].append(("File", path, {}))
+                        params["metadata_path"] = util.load_yaml_files(lib["metadata_path"])
                     else:
                         params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), {})]
                     params["default_dir"] = default_dir

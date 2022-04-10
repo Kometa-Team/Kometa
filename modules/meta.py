@@ -237,36 +237,7 @@ class DataFile:
 
     def load_templates(self):
         if "load_templates" in self.templates and self.templates["load_templates"]:
-            template_files = []
-            for template_file in util.get_list(self.templates["load_templates"], split=False):
-                if isinstance(template_file, dict):
-                    temp_vars = {}
-                    if "template_variables" in template_file and template_file["template_variables"] and isinstance(template_file["template_variables"], dict):
-                        temp_vars = template_file["template_variables"]
-                    def check_dict(attr, name):
-                        if attr in template_file:
-                            if template_file[attr] is None:
-                                logger.error(f"Config Error: metadata_path {attr} is blank")
-                            else:
-                                template_files.append((name, template_file[attr], temp_vars))
-                    check_dict("url", "URL")
-                    check_dict("git", "Git")
-                    check_dict("repo", "Repo")
-                    check_dict("file", "File")
-                    if "folder" in template_file:
-                        if template_file["folder"] is None:
-                            logger.error(f"Config Error: metadata_path folder is blank")
-                        elif not os.path.isdir(template_file["folder"]):
-                            logger.error(f"Config Error: Folder not found: {template_file['folder']}")
-                        else:
-                            yml_files = util.glob_filter(os.path.join(template_file["folder"], "*.yml"))
-                            if yml_files:
-                                template_files.extend([("File", yml, temp_vars) for yml in yml_files])
-                            else:
-                                logger.error(f"Config Error: No YAML (.yml) files found in {template_file['folder']}")
-                else:
-                    template_files.append(("File", template_file, {}))
-            for file_type, template_file, temp_vars in template_files:
+            for file_type, template_file, temp_vars in util.load_yaml_files(self.templates["load_templates"]):
                 temp_data = self.load_file(file_type, template_file)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     for temp_key, temp_value in temp_data["templates"].items():
