@@ -74,20 +74,20 @@ class DataFile:
         else:
             return data
 
-    def load_file(self):
+    def load_file(self, file_type, file_path):
         try:
-            if self.type in ["URL", "Git", "Repo"]:
-                if self.type == "Repo" and not self.config.custom_repo:
+            if file_type in ["URL", "Git", "Repo"]:
+                if file_type == "Repo" and not self.config.custom_repo:
                     raise Failed("Config Error: No custom_repo defined")
-                content_path = self.path if self.type == "URL" else f"{self.config.custom_repo if self.type == 'Repo' else github_base}{self.path}.yml"
+                content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else github_base}{file_path}.yml"
                 response = self.config.get(content_path)
                 if response.status_code >= 400:
                     raise Failed(f"URL Error: No file found at {content_path}")
                 content = response.content
-            elif os.path.exists(os.path.abspath(self.path)):
-                content = open(self.path, encoding="utf-8")
+            elif os.path.exists(os.path.abspath(file_path)):
+                content = open(file_path, encoding="utf-8")
             else:
-                raise Failed(f"File Error: File does not exist {os.path.abspath(self.path)}")
+                raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
             data, _, _ = yaml.util.load_yaml_guess_indent(content)
             return data
         except yaml.scanner.ScannerError as ye:
@@ -235,6 +235,47 @@ class DataFile:
                                     continue
             return new_attributes
 
+    def load_templates(self):
+        if "load_templates" in self.templates and self.templates["load_templates"]:
+            template_files = []
+            for template_file in util.get_list(self.templates["load_templates"], split=False):
+                if isinstance(template_file, dict):
+                    temp_vars = {}
+                    if "template_variables" in template_file and template_file["template_variables"] and isinstance(template_file["template_variables"], dict):
+                        temp_vars = template_file["template_variables"]
+                    def check_dict(attr, name):
+                        if attr in template_file:
+                            if template_file[attr] is None:
+                                logger.error(f"Config Error: metadata_path {attr} is blank")
+                            else:
+                                template_files.append((name, template_file[attr], temp_vars))
+                    check_dict("url", "URL")
+                    check_dict("git", "Git")
+                    check_dict("repo", "Repo")
+                    check_dict("file", "File")
+                    if "folder" in template_file:
+                        if template_file["folder"] is None:
+                            logger.error(f"Config Error: metadata_path folder is blank")
+                        elif not os.path.isdir(template_file["folder"]):
+                            logger.error(f"Config Error: Folder not found: {template_file['folder']}")
+                        else:
+                            yml_files = util.glob_filter(os.path.join(template_file["folder"], "*.yml"))
+                            if yml_files:
+                                template_files.extend([("File", yml, temp_vars) for yml in yml_files])
+                            else:
+                                logger.error(f"Config Error: No YAML (.yml) files found in {template_file['folder']}")
+                else:
+                    template_files.append(("File", template_file, {}))
+            for file_type, template_file, temp_vars in template_files:
+                temp_data = self.load_file(file_type, template_file)
+                if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
+                    for temp_key, temp_value in temp_data["templates"].items():
+                        if temp_key not in self.templates:
+                            self.templates[temp_key] = temp_value
+                for tk, tv in temp_vars.items():
+                    if tk not in self.temp_vars:
+                        self.temp_vars[tk] = tv
+            self.templates.pop("load_templates")
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars):
@@ -249,9 +290,11 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info(f"Loading Metadata {file_type}: {path}")
             logger.info("")
-            data = self.load_file()
+            data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadata_files)
             self.templates = get_dict("templates", data)
+            self.load_templates()
+
             self.collections = get_dict("collections", data, library.collections)
             self.dynamic_collections = get_dict("dynamic_collections", data)
             col_names = library.collections + [c for c in self.collections]
@@ -1057,9 +1100,10 @@ class PlaylistFile(DataFile):
         self.playlists = {}
         logger.info("")
         logger.info(f"Loading Playlist File {file_type}: {path}")
-        data = self.load_file()
+        data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
+        self.load_templates()
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info(f"Playlist File Loaded Successfully")
