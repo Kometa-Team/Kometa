@@ -25,7 +25,7 @@ These are the attributes which can be used within the Metadata File:
 
 Playlists are defined in one or more Playlist files that are mapped in the [Playlist Files Attribute](../config/playlist) within the Configuration File.
 
-There are two attributes which can be utilized within the Playlist File:
+These are the attributes which can be utilized within the Playlist File:
 
 | Attribute                                               | Description                                                                                                         |
 |:--------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------|
