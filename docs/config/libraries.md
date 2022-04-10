@@ -1,12 +1,12 @@
-# Library Attributes & Metadata Paths
+# Library & Playlist Files Attributes
 
-## Overview
+## Library Attributes
 
 Within the [Configuration File](configuration), the `libraries:` attribute specifies the Plex libraries that the user wants Plex Meta Manager to act on.
 
 Attributes are used to instruct Plex Meta Manager what actions to take, such as "load the following libraries" or "execute the following Collection Definition files". These attributes can be specified individually per library, or can be inherited from the global value if it has been set. If an attribute is specified at both the library and global level, then the library level attribute will take priority.
 
-## Example
+### Example
 
 This example is an advanced version of the library mappings which highlights some attributes being set at the global level, and some being set at the library level:
 
@@ -71,7 +71,7 @@ radarr:
 ```
 </details>
 
-## Attributes
+### Attributes
 
 The available attributes for each library are as follows:
 
@@ -88,7 +88,7 @@ The available attributes for each library are as follows:
 | [`sonarr`](sonarr)                         | Any `sonarr` attribute that overrides a global value                                         |                 global                 |            &#10060;             |
 | [`tautulli`](tautulli)                     | Any `tautulli` attribute that overrides a global value                                       |                 global                 |            &#10060;             |
 
-## Library Name
+#### Library Name
 
 Each library that the user wants Plex Meta Manager to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. `Movies` or `TV Shows`), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the `library_name` attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder. This is showcased below:
 <details>
@@ -114,43 +114,15 @@ plex:
 * In this example, `"Movies01"`, `"TV Shows"`, and `"Anime"` will all use the global plex server (http://192.168.1.12:32400) which is defined using the global `plex` mapping. `"Movies02"` will use the plex server http://192.168.1.35:32400 which is defined under its `plex` mapping over the global mapping.
 </details>
 
-## Metadata Path
+### Metadata Path
 
-### Overview
-
-The `metadata_path` attribute is used to define the metadata (aka YAML) files that will be executed against the parent library.
+The `metadata_path` attribute is used to define [Metadata Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them. 
 
 By default, when `metadata_path` is missing the script will look within the root PMM directory for a metadata file called `<MAPPING_NAME>.yml`. In this example, Plex Meta Manager will look for a file named `TV Shows.yml`.
 ```yaml
 libraries:
   TV Shows:
 ```
-
-### Path Types
-
-In this example, four metadata file path types are  defined for the `"TV Shows"` library:
-```yaml
-  TV Shows:
-    metadata_path:
-      - file: config/TVShows.yml
-      - folder: config/TV Shows/
-      - git: meisnate12/ShowCharts
-      - url: https://somewhere.com/PopularTV.yml
-```
-The four path types are outlined as follows:
-
-* `- file:` refers to a metadata file which is located within the system that PMM is being run from.
-* `- folder:` refers to a directory containing metadata files which is located within the system that PMM is being run from.
-* `- git:` refers to a metadata file which is hosted on the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
-* `- repo:` refers to a metadata file which is hosted on a custom repository specified aby the user with the [`custom-repo` Setting Attribute](settings.md#custom-repo).
-* `- url:` refers to a metadata file which is hosted publicly on the internet.
-
-Within the above example, PMM will:
-
-* First, look within the root of the PMM directory (also known as `config/`) for a metadata file named `TVShows.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
-* Then, look within the root of the PMM directory (also known as `config/`) for a directory called `TV Shows`, and then load any metadata files within that directory.
-* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `MovieCharts.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/meisnate12/MovieCharts.yml).
-* Finally, load the metadata file located at `https://somewhere.com/PopularTV.yml`
 
 ## Missing Path
 
@@ -172,4 +144,16 @@ Alternatively, "missing items" YAML files can be placed in their own directory, 
 libraries:
   Movies:
     missing_path: /config/missing/Movies.yml
+```
+
+## Playlist Files Attribute
+
+As playlists are not tied to one specific library and can combine media from multiple libraries, they require their own special [Playlist Files](../metadata/metadata) to work.
+
+You can define Playlist Files by using `playlist_files` mapper by specifying the path type and path of the files that will be executed. See [Path Types](paths) for how to define them.
+
+```yaml
+playlist_files:
+  - file: config/playlists.yml       
+  - git: meisnate12/Playlists
 ```

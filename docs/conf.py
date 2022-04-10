@@ -140,13 +140,12 @@ html_theme_options = {
         ("_menu", "Config", [
             ("Configuration File", "config/configuration"),
             ("_divider", ),
-            ("_menu", "Libraries/Playlists", [
-                ("Libraries", "config/libraries"),
-                ("Playlists", "config/playlist"),
-                ("Operations", "config/operations"),
-            ]),
-            ("Settings Attributes", "config/settings"),
-            ("_menu", "Services Attributes", [
+            ("Libraries", "config/libraries"),
+            ("Playlists", "config/playlist"),
+            ("Path Types", "config/paths"),
+            ("Operations", "config/operations"),
+            ("Settings", "config/settings"),
+            ("_menu", "Services", [
                 ("Webhooks Attributes", "config/webhooks"),
                 ("Plex Attributes", "config/plex"),
                 ("TMDb Attributes", "config/tmdb"),

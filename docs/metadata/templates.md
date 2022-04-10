@@ -1,6 +1,6 @@
 # Templates
 
-Collections often share a lot of common [or generalizable] configuration details.  Templates allow you to define these details so they can be used across multiple collections.
+Collections often share a lot of common [or generalizable] configuration details. Templates allow you to define these details so they can be used across multiple collections.
 
 For example, an actor collection might look like this:
 
@@ -9,7 +9,7 @@ collections:
   Bruce Lee:
     actor: tmdb
     tmdb_person: 19429
-    sort_title: +_Bruce Lee
+    sort_title: !_Bruce Lee
     sync_mode: sync
     collection_order: release
 ```
@@ -21,20 +21,24 @@ collections:
   Bruce Lee:
     actor: tmdb
     tmdb_person: 19429
-    sort_title: +_Bruce Lee
+    sort_title: !_Bruce Lee
     sync_mode: sync
     collection_order: release
   Chris Pratt:
     actor: tmdb
     tmdb_person: 73457
-    sort_title: +_Chris Pratt
+    sort_title: !_Chris Pratt
     sync_mode: sync
     collection_order: release
 ```
 
-You could keep going in this way, but there's a lot of repetition there.  Both of these collections have the same `sync_mode`, `collection_order`, and `actor` settings; the other two details, `tmdb_person` and `sort_title`, depend on a value defined in the collection.
+You could keep going in this way, but there's a lot of repetition there. Both of these collections have the same `sync_mode`, `collection_order`, and `actor` settings; the other two details, `tmdb_person` and `sort_title`, depend on a value defined in the collection.
 
-Those repetitive aspects can be moved into template and leveraged by multiple collections.
+Those repetitive aspects can be moved into a template and leveraged by multiple collections.
+
+## Template Variables
+
+Template Variables are used to define the data that going to be changing in the template.
 
 For example, a template for those two collections might look like this:
 
@@ -43,7 +47,7 @@ templates:
   Actor:
     actor: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: !_<<collection_name>>
     sync_mode: sync
     collection_order: release
 ```
@@ -68,11 +72,11 @@ collections:
     template: {name: Actor, person: 19429}
 ```
 
-Note that we provide the template name `Actor` and the value to insert in the place of `<<person>>`.  The `<<collection_name>>` is a template variable that is always available and doesn't have to be called out like `<<person>>`.
+Note that we provide the template name `Actor` and the value to insert in the place of `<<person>>`. The `<<collection_name>>` is a template variable that is always available and doesn't have to be called out like `<<person>>`.
 
 Inside a template, you can use all the Builders, Details, and [Filters](filters) attributes that you can give collections/playlists [except `template`; templates cannot be nested].
 
-The names of template variables that you define are arbitrary.  In the example above, `<<person>>` could have been `<<tvdb_person_id>>` or `<<bing>>` or anything else.  The only thing that matters is that in the template definition you surround them with `<< >>` and in the collection definition you spell it correctly.
+The names of template variables that you define are arbitrary. In the example above, `<<person>>` could have been `<<tvdb_person_id>>` or `<<bing>>` or anything else. The only thing that matters is that in the template definition you surround them with `<< >>` and in the collection definition you spell it correctly.
 
 To use a template with a collection definition you use the `template` attribute. The only required attribute under `template` is `name` which must correspond exactly to the template mapping name. Any other attributes under `template` are considered template variables whose names correspond exactly with the template variable name surrounded by `<<` and `>>` in the templates. These template variables will replace any part of any value that contains the template variable name surrounded by `<<` and `>>` in the template with the specified template variable's value.
 
@@ -83,7 +87,7 @@ templates:
   Actor:
     actor: tmdb
     tmdb_person: <<person>>
-    sort_title: +_<<collection_name>>
+    sort_title: !_<<collection_name>>
     sync_mode: sync
     collection_order: release
 collections:
@@ -95,6 +99,8 @@ collections:
       person: 73457
 ```
 
+## Special Template Attributes
+
 There are three attributes unique to `templates`; `default`, `optional`, and `move_prefix`.
 
 * `default` can set default values for template variables to be used if they're not specified in the call.
@@ -105,6 +111,8 @@ There are three attributes unique to `templates`; `default`, `optional`, and `mo
 Every template call is given either `<<collection_name>>` or `<<playlist_name>>` and `<<library_type>>` as template variables.
 
 All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. `<<collection_name_encoded>>`
+
+## Advance Example
 
 Here's an example IMDb Genre template and two different ways to call it.
 
@@ -121,7 +129,7 @@ templates:
       limit: <<limit>>
     - url: https://www.imdb.com/search/title/?title_type=<<title>>&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=<<genre>>&sort=user_rating,desc
       limit: <<limit>>
-    sort_title: ++_<<collection_name>>
+    sort_title: !_<<collection_name>>
     url_poster: https://theposterdb.com/api/assets/<<poster_id>>
     sync_mode: sync
     collection_order: alpha
@@ -142,3 +150,13 @@ collections:
 ```
 
 Check out the example files in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) for more uses and examples.
+
+## External Templates
+
+To load external templates located in another file you can use the `external_templates` attribute by specifying the path type and path of the files that will be executed. See [Path Types](../config/paths) for how to define them.
+
+```yaml
+external_templates:
+  - file: config/templates.yml       
+  - git: PMM/templates
+```
