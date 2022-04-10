@@ -612,30 +612,35 @@ def library_operations(config, library):
                     raise Failed
 
             if library.mass_genre_update or library.genre_mapper:
-                new_genres = []
-                if library.mass_genre_update:
-                    if tmdb_item and library.mass_genre_update == "tmdb":
-                        new_genres = tmdb_item.genres
-                    elif omdb_item and library.mass_genre_update == "omdb":
-                        new_genres = omdb_item.genres
-                    elif tvdb_item and library.mass_genre_update == "tvdb":
-                        new_genres = tvdb_item.genres
-                    elif anidb_item and library.mass_genre_update == "anidb":
-                        new_genres = anidb_item.tags
-                    if not new_genres:
-                        logger.info(f"{item.title[:25]:<25} | No Genres Found")
-                if library.genre_mapper:
-                    if not new_genres:
-                        new_genres = [g.tag for g in item.genres]
-                    mapped_genres = []
-                    for genre in new_genres:
-                        if genre in library.genre_mapper:
-                            if library.genre_mapper[genre]:
-                                mapped_genres.append(library.genre_mapper[genre])
+                try:
+                    new_genres = []
+                    if library.mass_genre_update:
+                        if tmdb_item and library.mass_genre_update == "tmdb":
+                            new_genres = tmdb_item.genres
+                        elif omdb_item and library.mass_genre_update == "omdb":
+                            new_genres = omdb_item.genres
+                        elif tvdb_item and library.mass_genre_update == "tvdb":
+                            new_genres = tvdb_item.genres
+                        elif anidb_item and library.mass_genre_update == "anidb":
+                            new_genres = anidb_item.tags
                         else:
-                            mapped_genres.append(genre)
-                    new_genres = mapped_genres
-                batch_display += f"\n{library.edit_tags('genre', item, sync_tags=new_genres)}"
+                            raise Failed
+                        if not new_genres:
+                            logger.info(f"{item.title[:25]:<25} | No Genres Found")
+                    if library.genre_mapper:
+                        if not new_genres:
+                            new_genres = [g.tag for g in item.genres]
+                        mapped_genres = []
+                        for genre in new_genres:
+                            if genre in library.genre_mapper:
+                                if library.genre_mapper[genre]:
+                                    mapped_genres.append(library.genre_mapper[genre])
+                            else:
+                                mapped_genres.append(genre)
+                        new_genres = mapped_genres
+                    batch_display += f"\n{library.edit_tags('genre', item, sync_tags=new_genres)}"
+                except Failed:
+                    pass
 
             if library.mass_audience_rating_update:
                 try:
