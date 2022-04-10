@@ -10,12 +10,13 @@ Collections, templates, metadata, and dynamic collections are defined within one
 
 These are the attributes which can be used within the Metadata File:
 
-| Attribute                                            | Description                                                                                                  |
-|:-----------------------------------------------------|:-------------------------------------------------------------------------------------------------------------|
-| `metadata`                                           | contains definitions of metadata changes to make to library items [movie titles, episode descriptions, etc.] |
-| [`templates`](templates)                             | contains definitions of templates that can be leveraged by multiple collections                              |
-| [`collections`](#collections-and-playlists-mappings) | contains definitions of collections you wish to add to one or more libraries                                 |
-| [`dynamic_collections`](dynamic)                     | contains definitions of dynamic collections you wish to create in one or more libraries                      |
+| Attribute                                               | Description                                                                                                                                                                       |
+|:--------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `metadata`                                              | contains definitions of metadata changes to [movie](metadata/movie), [show](metadata/show), or [music](metadata/music) library's items [movie titles, episode descriptions, etc.] |
+| [`templates`](templates)                                | contains definitions of templates that can be leveraged by multiple collections                                                                                                   |
+| [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths) that point to external templates that can be leveraged by multiple collections                                                             |
+| [`collections`](#collections-and-playlists-mappings)    | contains definitions of collections you wish to add to one or more libraries                                                                                                      |
+| [`dynamic_collections`](dynamic)                        | contains definitions of dynamic collections you wish to create in one or more libraries                                                                                           |
 
 * One of `metadata`, `collections` or `dynamic_collections` must be present for the Metadata File to execute.
 * Example Metadata Files can be found in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs)
@@ -26,10 +27,11 @@ Playlists are defined in one or more Playlist files that are mapped in the [Play
 
 There are two attributes which can be utilized within the Playlist File:
 
-| Attribute                                      | Description                                                                   |
-|:-----------------------------------------------|:------------------------------------------------------------------------------|
-| [`templates`](templates)                       | contains definitions of templates that can be leveraged by multiple playlists |
-| [`playlists`](#additional-playlist-attributes) | contains definitions of playlists you wish to add to the server               |
+| Attribute                                               | Description                                                                                                         |
+|:--------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------|
+| [`templates`](templates)                                | contains definitions of templates that can be leveraged by multiple playlists                                       |
+| [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths) that point to external templates that can be leveraged by multiple playlists |
+| [`playlists`](#additional-playlist-attributes)          | contains definitions of playlists you wish to add to the server                                                     |
 
 * `playlists` is required in order to run the Playlist File.
 * You can find example Playlist Files in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs)

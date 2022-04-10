@@ -235,9 +235,9 @@ class DataFile:
                                     continue
             return new_attributes
 
-    def load_templates(self):
-        if "load_templates" in self.templates and self.templates["load_templates"]:
-            for file_type, template_file, temp_vars in util.load_yaml_files(self.templates["load_templates"]):
+    def external_templates(self, data):
+        if "external_templates" in data and data["external_templates"]:
+            for file_type, template_file, temp_vars in util.load_yaml_files(data["external_templates"]):
                 temp_data = self.load_file(file_type, template_file)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     for temp_key, temp_value in temp_data["templates"].items():
@@ -246,7 +246,6 @@ class DataFile:
                 for tk, tv in temp_vars.items():
                     if tk not in self.temp_vars:
                         self.temp_vars[tk] = tv
-            self.templates.pop("load_templates")
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars):
@@ -264,8 +263,7 @@ class MetadataFile(DataFile):
             data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadata_files)
             self.templates = get_dict("templates", data)
-            self.load_templates()
-
+            self.external_templates(data)
             self.collections = get_dict("collections", data, library.collections)
             self.dynamic_collections = get_dict("dynamic_collections", data)
             col_names = library.collections + [c for c in self.collections]
@@ -1074,7 +1072,7 @@ class PlaylistFile(DataFile):
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
-        self.load_templates()
+        self.external_templates(data)
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info(f"Playlist File Loaded Successfully")
