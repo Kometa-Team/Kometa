@@ -88,7 +88,7 @@ The available attributes for each library are as follows:
 | [`sonarr`](sonarr)                         | Any `sonarr` attribute that overrides a global value                                         |                 global                 |            &#10060;             |
 | [`tautulli`](tautulli)                     | Any `tautulli` attribute that overrides a global value                                       |                 global                 |            &#10060;             |
 
-#### Library Name
+### Library Name
 
 Each library that the user wants Plex Meta Manager to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. `Movies` or `TV Shows`), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the `library_name` attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder. This is showcased below:
 <details>
@@ -119,12 +119,13 @@ plex:
 The `metadata_path` attribute is used to define [Metadata Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them. 
 
 By default, when `metadata_path` is missing the script will look within the root PMM directory for a metadata file called `<MAPPING_NAME>.yml`. In this example, Plex Meta Manager will look for a file named `TV Shows.yml`.
+
 ```yaml
 libraries:
   TV Shows:
 ```
 
-## Missing Path
+### Missing Path
 
 The `missing_path` attribute is used to define where to save the "missing items" YAML file. This file is used to store information about media which is missing from the Plex library compared to what is expected from the Metadata file.
 
