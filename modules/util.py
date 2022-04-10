@@ -257,6 +257,43 @@ def time_window(tw):
     else:
         return tw
 
+def load_yaml_files(yaml_files):
+    files = []
+    for yaml_file in get_list(yaml_files, split=False):
+        if isinstance(yaml_file, dict):
+            temp_vars = {}
+            if "template_variables" in yaml_file and yaml_file["template_variables"] and isinstance(yaml_file["template_variables"], dict):
+                temp_vars = yaml_file["template_variables"]
+
+            def check_dict(attr, name):
+                if attr in yaml_file:
+                    if yaml_file[attr]:
+                        files.append((name, yaml_file[attr], temp_vars))
+                    else:
+                        logger.error(f"Config Error: metadata_path {attr} is blank")
+
+            check_dict("url", "URL")
+            check_dict("git", "Git")
+            check_dict("repo", "Repo")
+            check_dict("file", "File")
+            if "folder" in yaml_file:
+                if yaml_file["folder"] is None:
+                    logger.error(f"Config Error: metadata_path folder is blank")
+                elif not os.path.isdir(yaml_file["folder"]):
+                    logger.error(f"Config Error: Folder not found: {yaml_file['folder']}")
+                else:
+                    yml_files = glob_filter(os.path.join(yaml_file["folder"], "*.yml"))
+                    if yml_files:
+                        files.extend([("File", yml, temp_vars) for yml in yml_files])
+                    else:
+                        logger.error(f"Config Error: No YAML (.yml) files found in {yaml_file['folder']}")
+        else:
+            if os.path.exists(yaml_file):
+                files.append(("File", yaml_file, {}))
+            else:
+                logger.warning(f"Config Warning: Path not found: {path}")
+    return files
+
 def check_num(num, is_int=True):
     try:
         return int(str(num)) if is_int else float(str(num))
