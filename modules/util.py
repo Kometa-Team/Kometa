@@ -77,6 +77,11 @@ tags_to_edit = {
     "Artist": ["genre", "style", "mood", "country", "collection", "similar_artist"]
 }
 mdb_types = ["mdb", "mdb_imdb", "mdb_metacritic", "mdb_metacriticuser", "mdb_trakt", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_letterboxd"]
+collection_mode_options = {
+    "default": "default", "hide": "hide",
+    "hide_items": "hideItems", "hideitems": "hideItems",
+    "show_items": "showItems", "showitems": "showItems"
+}
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n      ") if "\n" in str(data) else str(data)
@@ -291,7 +296,7 @@ def load_yaml_files(yaml_files):
             if os.path.exists(yaml_file):
                 files.append(("File", yaml_file, {}))
             else:
-                logger.warning(f"Config Warning: Path not found: {path}")
+                logger.error(f"Config Error: Path not found: {yaml_file}")
     return files
 
 def check_num(num, is_int=True):
@@ -299,6 +304,12 @@ def check_num(num, is_int=True):
         return int(str(num)) if is_int else float(str(num))
     except (ValueError, TypeError):
         return None
+
+def check_collection_mode(collection_mode):
+    if collection_mode and str(collection_mode).lower() in collection_mode_options:
+        return collection_mode_options[str(collection_mode).lower()]
+    else:
+        raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
@@ -343,7 +354,7 @@ def is_string_filter(values, modifier, data):
                     or (modifier in [".is", ".isnot"] and value.lower() == check_value.lower()) \
                     or (modifier == ".begins" and value.lower().startswith(check_value.lower())) \
                     or (modifier == ".ends" and value.lower().endswith(check_value.lower())) \
-                    or (modifier == ".regex" and re.compile(check_value).match(value)):
+                    or (modifier == ".regex" and re.compile(check_value).search(value)):
                 jailbreak = True
                 break
         if jailbreak: break

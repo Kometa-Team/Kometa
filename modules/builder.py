@@ -207,11 +207,10 @@ music_attributes = [
 ] + details + summary_details + poster_details + background_details
 
 class CollectionBuilder:
-    def __init__(self, config, metadata, name, no_missing, data, library=None):
+    def __init__(self, config, metadata, name, data, library=None, overlay=None):
         self.config = config
         self.metadata = metadata
         self.mapping_name = name
-        self.no_missing = no_missing
         self.data = data
         self.library = library
         self.libraries = []
@@ -720,9 +719,9 @@ class CollectionBuilder:
             self.details["collection_mode"] = "hide"
             self.sync = True
 
-        self.do_missing = not self.no_missing and (self.details["show_missing"] or self.details["save_missing"]
-                                                   or (self.library.Radarr and self.radarr_details["add_missing"])
-                                                   or (self.library.Sonarr and self.sonarr_details["add_missing"]))
+        self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.details["save_missing"]
+                                                          or (self.library.Radarr and self.radarr_details["add_missing"])
+                                                          or (self.library.Sonarr and self.sonarr_details["add_missing"]))
 
         if self.build_collection:
             try:

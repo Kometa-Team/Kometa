@@ -39,6 +39,8 @@ class MyLogger:
         self.playlists_dir = os.path.join(self.log_dir, PLAYLIST_DIR)
         self.main_log = os.path.join(self.log_dir, MAIN_LOG)
         self.main_handler = None
+        self.save_errors = False
+        self.saved_errors = []
         self.library_handlers = {}
         self.collection_handlers = {}
         self.playlist_handlers = {}
@@ -54,6 +56,9 @@ class MyLogger:
         cmd_handler.setLevel(logging.DEBUG if self.debug else logging.INFO)
 
         self._logger.addHandler(cmd_handler)
+
+    def clear_errors(self):
+        self.saved_errors = []
 
     def _get_handler(self, log_file, count=3):
         _handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
@@ -170,10 +175,14 @@ class MyLogger:
             self._log(WARNING, str(msg), args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
+        if self.save_errors:
+            self.saved_errors.append(msg)
         if self._logger.isEnabledFor(ERROR):
             self._log(ERROR, str(msg), args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
+        if self.save_errors:
+            self.saved_errors.append(msg)
         if self._logger.isEnabledFor(CRITICAL):
             self._log(CRITICAL, str(msg), args, **kwargs)
 

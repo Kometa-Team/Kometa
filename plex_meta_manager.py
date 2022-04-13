@@ -1,4 +1,4 @@
-import argparse, os, re, sys, time, traceback
+import argparse, os, sys, time, traceback
 from datetime import datetime
 
 try:
@@ -99,7 +99,6 @@ from modules import util
 util.logger = logger
 from modules.builder import CollectionBuilder
 from modules.config import ConfigFile
-from modules.meta import MetadataFile
 from modules.util import Failed, NotScheduled
 
 def my_except_hook(exctype, value, tb):
@@ -146,6 +145,7 @@ def start(attrs):
     attrs["read_only"] = read_only_config
     attrs["version"] = version
     attrs["latest_version"] = latest_version
+    attrs["no_missing"] = no_missing
     logger.separator(debug=True)
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
     logger.debug(f"--time (PMM_TIME): {times}")
@@ -212,7 +212,7 @@ def update_libraries(config):
             logger.separator(f"{library.name} Library")
 
             if config.library_first and library.library_operation and not config.test_mode and not collection_only:
-                library_operations(config, library)
+                library.Operations.run_operations()
 
             logger.debug("")
             logger.debug(f"Mapping Name: {library.original_mapping_name}")
@@ -279,7 +279,7 @@ def update_libraries(config):
                     logger.re_add_library_handler(library.mapping_name)
 
             if not config.library_first and library.library_operation and not config.test_mode and not collection_only:
-                library_operations(config, library)
+                library.Operations.run_operations()
 
             logger.remove_library_handler(library.mapping_name)
         except Exception as e:
@@ -400,477 +400,6 @@ def update_libraries(config):
         stats["names"].extend([{"name": n, "library": "PLAYLIST"} for n in playlist_stats["names"]])
     return stats
 
-def library_operations(config, library):
-    logger.info("")
-    logger.separator(f"{library.name} Library Operations")
-    logger.info("")
-    logger.debug(f"Assets For All: {library.assets_for_all}")
-    logger.debug(f"Delete Collections With Less: {library.delete_collections_with_less}")
-    logger.debug(f"Delete Unmanaged Collections: {library.delete_unmanaged_collections}")
-    logger.debug(f"Mass Genre Update: {library.mass_genre_update}")
-    logger.debug(f"Mass Audience Rating Update: {library.mass_audience_rating_update}")
-    logger.debug(f"Mass Critic Rating Update: {library.mass_critic_rating_update}")
-    logger.debug(f"Mass Content Rating Update: {library.mass_content_rating_update}")
-    logger.debug(f"Mass Originally Available Update: {library.mass_originally_available_update}")
-    logger.debug(f"Mass IMDb Parental Labels: {library.mass_imdb_parental_labels}")
-    logger.debug(f"Mass Trakt Rating Update: {library.mass_trakt_rating_update}")
-    logger.debug(f"Mass Collection Mode Update: {library.mass_collection_mode}")
-    logger.debug(f"Split Duplicates: {library.split_duplicates}")
-    logger.debug(f"Radarr Add All Existing: {library.radarr_add_all_existing}")
-    logger.debug(f"Radarr Remove by Tag: {library.radarr_remove_by_tag}")
-    logger.debug(f"Sonarr Add All Existing: {library.sonarr_add_all_existing}")
-    logger.debug(f"Sonarr Remove by Tag: {library.sonarr_remove_by_tag}")
-    logger.debug(f"Update Blank Track Titles: {library.update_blank_track_titles}")
-    logger.debug(f"Update Remove Title Parentheses: {library.remove_title_parentheses}")
-    logger.debug(f"TMDb Collections: {library.tmdb_collections}")
-    logger.debug(f"Genre Collections: {library.genre_collections}")
-    logger.debug(f"Genre Mapper: {library.genre_mapper}")
-    logger.debug(f"Content Rating Mapper: {library.content_rating_mapper}")
-    logger.debug(f"Metadata Backup: {library.metadata_backup}")
-    logger.debug(f"Item Operation: {library.items_library_operation}")
-    logger.debug("")
-
-    if library.split_duplicates:
-        items = library.search(**{"duplicate": True})
-        for item in items:
-            item.split()
-            logger.info(f"{item.title[:25]:<25} | Splitting")
-
-    if library.update_blank_track_titles:
-        tracks = library.get_all(collection_level="track")
-        num_edited = 0
-        for i, track in enumerate(tracks, 1):
-            logger.ghost(f"Processing Track: {i}/{len(tracks)} {track.title}")
-            if not track.title and track.titleSort:
-                track.editTitle(track.titleSort)
-                num_edited += 1
-                logger.info(f"Track: {track.titleSort} was updated with sort title")
-        logger.info(f"{len(tracks)} Tracks Processed; {num_edited} Blank Track Titles Updated")
-
-    tmdb_collections = {}
-    if library.items_library_operation:
-        items = library.get_all(load=True)
-        radarr_adds = []
-        sonarr_adds = []
-        trakt_ratings = config.Trakt.user_ratings(library.is_movie) if library.mass_trakt_rating_update else []
-
-        reverse_anidb = {}
-        if library.mass_genre_update == "anidb":
-            for k, v in library.anidb_map.items():
-                reverse_anidb[v] = k
-
-        for i, item in enumerate(items, 1):
-            try:
-                library.reload(item)
-            except Failed as e:
-                logger.error(e)
-                continue
-            logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
-            if library.assets_for_all:
-                library.find_assets(item)
-            tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
-
-            item.batchEdits()
-            batch_display = "Batch Edits"
-
-            if library.remove_title_parentheses:
-                if not any([f.name == "title" and f.locked for f in item.fields]) and item.title.endswith(")"):
-                    new_title = re.sub(" \(\w+\)$", "", item.title)
-                    item.editTitle(new_title)
-                    batch_display += f"\n{item.title[:25]:<25} | Title | {new_title}"
-
-            if library.mass_trakt_rating_update:
-                try:
-                    if library.is_movie and tmdb_id in trakt_ratings:
-                        new_rating = trakt_ratings[tmdb_id]
-                    elif library.is_show and tvdb_id in trakt_ratings:
-                        new_rating = trakt_ratings[tvdb_id]
-                    else:
-                        raise Failed
-                    if str(item.userRating) != str(new_rating):
-                        library.query_data(item.rate, new_rating)
-                        logger.info(f"{item.title[:25]:<25} | User Rating | {new_rating}")
-                except Failed:
-                    pass
-
-            if library.mass_imdb_parental_labels:
-                try:
-                    parental_guide = config.IMDb.parental_guide(imdb_id)
-                    labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if library.mass_imdb_parental_labels == "with_none" or v != "None"]
-                    batch_display += f"\n{library.edit_tags('label', item, add_tags=labels)}"
-                except Failed:
-                    pass
-
-            path = os.path.dirname(str(item.locations[0])) if library.is_movie else str(item.locations[0])
-            if library.Radarr and library.radarr_add_all_existing and tmdb_id:
-                path = path.replace(library.Radarr.plex_path, library.Radarr.radarr_path)
-                path = path[:-1] if path.endswith(('/', '\\')) else path
-                radarr_adds.append((tmdb_id, path))
-            if library.Sonarr and library.sonarr_add_all_existing and tvdb_id:
-                path = path.replace(library.Sonarr.plex_path, library.Sonarr.sonarr_path)
-                path = path[:-1] if path.endswith(("/", "\\")) else path
-                sonarr_adds.append((tvdb_id, path))
-
-            tmdb_item = None
-            if library.tmdb_collections or any([o == "tmdb" for o in library.meta_operations]):
-                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.is_movie)
-
-            omdb_item = None
-            if any([o == "omdb" for o in library.meta_operations]):
-                if config.OMDb.limit is False:
-                    if tmdb_id and not imdb_id:
-                        imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
-                    elif tvdb_id and not imdb_id:
-                        imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
-                    if imdb_id:
-                        try:
-                            omdb_item = config.OMDb.get_omdb(imdb_id)
-                        except Failed as e:
-                            logger.error(str(e))
-                        except Exception:
-                            logger.error(f"IMDb ID: {imdb_id}")
-                            raise
-                    else:
-                        logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
-
-            tvdb_item = None
-            if any([o == "tvdb" for o in library.meta_operations]):
-                if tvdb_id:
-                    try:
-                        tvdb_item = config.TVDb.get_item(tvdb_id, library.is_movie)
-                    except Failed as e:
-                        logger.error(str(e))
-                else:
-                    logger.info(f"{item.title[:25]:<25} | No TVDb ID for Guid: {item.guid}")
-
-            anidb_item = None
-            if any([o == "anidb" for o in library.meta_operations]):
-                if item.ratingKey in reverse_anidb:
-                    anidb_id = reverse_anidb[item.ratingKey]
-                elif tvdb_id in config.Convert._tvdb_to_anidb:
-                    anidb_id = config.Convert._tvdb_to_anidb[tvdb_id]
-                elif imdb_id in config.Convert._imdb_to_anidb:
-                    anidb_id = config.Convert._imdb_to_anidb[imdb_id]
-                else:
-                    anidb_id = None
-                    logger.info(f"{item.title[:25]:<25} | No AniDB ID for Guid: {item.guid}")
-                if anidb_id:
-                    try:
-                        anidb_item = config.AniDB.get_anime(anidb_id)
-                    except Failed as e:
-                        logger.error(str(e))
-
-            mdb_item = None
-            if any([o and o.startswith("mdb") for o in library.meta_operations]):
-                if config.Mdblist.limit is False:
-                    if tmdb_id and not imdb_id:
-                        imdb_id = config.Convert.tmdb_to_imdb(tmdb_id)
-                    elif tvdb_id and not imdb_id:
-                        imdb_id = config.Convert.tvdb_to_imdb(tvdb_id)
-                    if imdb_id:
-                        try:
-                            mdb_item = config.Mdblist.get_imdb(imdb_id)
-                        except Failed as e:
-                            logger.error(str(e))
-                        except Exception:
-                            logger.error(f"IMDb ID: {imdb_id}")
-                            raise
-                    else:
-                        logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
-
-            if library.tmdb_collections and tmdb_item and tmdb_item.collection_id:
-                tmdb_collections[tmdb_item.collection_id] = tmdb_item.collection_name
-
-            def get_rating(attribute):
-                if tmdb_item and attribute == "tmdb":
-                    return tmdb_item.vote_average
-                elif omdb_item and attribute == "omdb":
-                    return omdb_item.imdb_rating
-                elif mdb_item and attribute == "mdb":
-                    return mdb_item.score / 10 if mdb_item.score else None
-                elif mdb_item and attribute == "mdb_imdb":
-                    return mdb_item.imdb_rating if mdb_item.imdb_rating else None
-                elif mdb_item and attribute == "mdb_metacritic":
-                    return mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
-                elif mdb_item and attribute == "mdb_metacriticuser":
-                    return mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
-                elif mdb_item and attribute == "mdb_trakt":
-                    return mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
-                elif mdb_item and attribute == "mdb_tomatoes":
-                    return mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
-                elif mdb_item and attribute == "mdb_tomatoesaudience":
-                    return mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
-                elif mdb_item and attribute == "mdb_tmdb":
-                    return mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
-                elif mdb_item and attribute == "mdb_letterboxd":
-                    return mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
-                elif anidb_item and attribute == "anidb_rating":
-                    return anidb_item.rating
-                elif anidb_item and attribute == "anidb_average":
-                    return anidb_item.average
-                else:
-                    raise Failed
-
-            if library.mass_genre_update or library.genre_mapper:
-                try:
-                    new_genres = []
-                    if library.mass_genre_update:
-                        if tmdb_item and library.mass_genre_update == "tmdb":
-                            new_genres = tmdb_item.genres
-                        elif omdb_item and library.mass_genre_update == "omdb":
-                            new_genres = omdb_item.genres
-                        elif tvdb_item and library.mass_genre_update == "tvdb":
-                            new_genres = tvdb_item.genres
-                        elif anidb_item and library.mass_genre_update == "anidb":
-                            new_genres = anidb_item.tags
-                        else:
-                            raise Failed
-                        if not new_genres:
-                            logger.info(f"{item.title[:25]:<25} | No Genres Found")
-                    if library.genre_mapper:
-                        if not new_genres:
-                            new_genres = [g.tag for g in item.genres]
-                        mapped_genres = []
-                        for genre in new_genres:
-                            if genre in library.genre_mapper:
-                                if library.genre_mapper[genre]:
-                                    mapped_genres.append(library.genre_mapper[genre])
-                            else:
-                                mapped_genres.append(genre)
-                        new_genres = mapped_genres
-                    batch_display += f"\n{library.edit_tags('genre', item, sync_tags=new_genres)}"
-                except Failed:
-                    pass
-
-            if library.mass_audience_rating_update:
-                try:
-                    new_rating = get_rating(library.mass_audience_rating_update)
-                    if new_rating is None:
-                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                    elif str(item.audienceRating) != str(new_rating):
-                        item.editField("audienceRating", new_rating)
-                        batch_display += f"\n{item.title[:25]:<25} | Audience Rating | {new_rating}"
-                except Failed:
-                    pass
-
-            if library.mass_critic_rating_update:
-                try:
-                    new_rating = get_rating(library.mass_critic_rating_update)
-                    if new_rating is None:
-                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                    elif str(item.rating) != str(new_rating):
-                        item.editField("rating", new_rating)
-                        batch_display += f"{item.title[:25]:<25} | Critic Rating | {new_rating}"
-                except Failed:
-                    pass
-
-            if library.mass_content_rating_update or library.content_rating_mapper:
-                try:
-                    new_rating = None
-                    if library.mass_content_rating_update:
-                        if omdb_item and library.mass_content_rating_update == "omdb":
-                            new_rating = omdb_item.content_rating
-                        elif mdb_item and library.mass_content_rating_update == "mdb":
-                            new_rating = mdb_item.content_rating if mdb_item.content_rating else None
-                        elif mdb_item and library.mass_content_rating_update == "mdb_commonsense":
-                            new_rating = mdb_item.commonsense if mdb_item.commonsense else None
-                        elif tmdb_item and library.mass_content_rating_update == "tmdb":
-                            new_rating = tmdb_item.content_rating if tmdb_item.content_rating else None
-                        else:
-                            raise Failed
-                        if new_rating is None:
-                            logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
-                    if library.content_rating_mapper:
-                        if new_rating is None:
-                            new_rating = item.contentRating
-                        if new_rating in library.content_rating_mapper:
-                            new_rating = library.content_rating_mapper[new_rating]
-                    if str(item.contentRating) != str(new_rating):
-                        item.editContentRating(new_rating)
-                        batch_display += f"\n{item.title[:25]:<25} | Content Rating | {new_rating}"
-                except Failed:
-                    pass
-            if library.mass_originally_available_update:
-                try:
-                    if omdb_item and library.mass_originally_available_update == "omdb":
-                        new_date = omdb_item.released
-                    elif mdb_item and library.mass_originally_available_update == "mdb":
-                        new_date = mdb_item.released
-                    elif tvdb_item and library.mass_originally_available_update == "tvdb":
-                        new_date = tvdb_item.released
-                    elif tmdb_item and library.mass_originally_available_update == "tmdb":
-                        new_date = tmdb_item.release_date if library.is_movie else tmdb_item.first_air_date
-                    elif anidb_item and library.mass_originally_available_update == "anidb":
-                        new_date = anidb_item.released
-                    else:
-                        raise Failed
-                    if new_date is None:
-                        logger.info(f"{item.title[:25]:<25} | No Originally Available Date Found")
-                    elif str(item.originallyAvailableAt) != str(new_date):
-                        item.editOriginallyAvailable(new_date)
-                        batch_display += f"\n{item.title[:25]:<25} | Originally Available Date | {new_date.strftime('%Y-%m-%d')}"
-                except Failed:
-                    pass
-
-            item.saveEdits()
-
-        if library.Radarr and library.radarr_add_all_existing:
-            try:
-                library.Radarr.add_tmdb(radarr_adds)
-            except Failed as e:
-                logger.error(e)
-
-        if library.Sonarr and library.sonarr_add_all_existing:
-            try:
-                library.Sonarr.add_tvdb(sonarr_adds)
-            except Failed as e:
-                logger.error(e)
-
-    if tmdb_collections or library.genre_collections:
-        logger.info("")
-        logger.separator(f"Starting Automated Collections")
-        logger.info("")
-        new_collections = {}
-        templates = {}
-
-        if tmdb_collections:
-            templates["TMDb Collection"] = library.tmdb_collections["template"]
-            for _i, _n in tmdb_collections.items():
-                if int(_i) not in library.tmdb_collections["exclude_ids"]:
-                    template = {"name": "TMDb Collection", "collection_id": _i}
-                    for k, v in library.tmdb_collections["dictionary_variables"].items():
-                        if int(_i) in v:
-                            template[k] = v[int(_i)]
-                    for suffix in library.tmdb_collections["remove_suffix"]:
-                        if _n.endswith(suffix):
-                            _n = _n[:-len(suffix)]
-                    new_collections[_n.strip()] = {"template": template}
-
-        if library.genre_collections:
-            templates["Genre Collection"] = library.genre_collections["template"]
-            for genre in library.get_tags("genre"):
-                if genre.title not in library.genre_collections["exclude_genres"]:
-                    template = {"name": "Genre Collection", "genre": genre.title}
-                    for k, v in library.genre_collections["dictionary_variables"].items():
-                        if genre.title in v:
-                            template[k] = v[genre.title]
-                    title = library.genre_collections["title_format"]
-                    title = title.replace("<<genre>>", genre.title)
-                    if "<<library_type>>" in title:
-                        title = title.replace("<<library_type>>", library.type)
-                    new_collections[title] = {"template": template}
-
-        metadata = MetadataFile(config, library, "Data", {"collections": new_collections, "templates": templates})
-        if metadata.collections:
-            library.collections.extend([c for c in metadata.collections])
-        run_collection(config, library, metadata, metadata.get_collections(None))
-
-    if library.radarr_remove_by_tag:
-        library.Radarr.remove_all_with_tags(library.radarr_remove_by_tag)
-    if library.sonarr_remove_by_tag:
-        library.Sonarr.remove_all_with_tags(library.sonarr_remove_by_tag)
-
-    if library.delete_collections_with_less is not None or library.delete_unmanaged_collections:
-        logger.info("")
-        print_suffix = ""
-        unmanaged = ""
-        if library.delete_collections_with_less is not None and library.delete_collections_with_less > 0:
-            print_suffix = f" with less then {library.delete_collections_with_less} item{'s' if library.delete_collections_with_less > 1 else ''}"
-        if library.delete_unmanaged_collections:
-            if library.delete_collections_with_less is None:
-                unmanaged = "Unmanaged Collections "
-            elif library.delete_collections_with_less > 0:
-                unmanaged = "Unmanaged Collections and "
-        logger.separator(f"Deleting All {unmanaged}Collections{print_suffix}", space=False, border=False)
-        logger.info("")
-    unmanaged_collections = []
-    for col in library.get_all_collections():
-        if (library.delete_collections_with_less and col.childCount < library.delete_collections_with_less) \
-            or (library.delete_unmanaged_collections and col.title not in library.collections):
-            library.query(col.delete)
-            logger.info(f"{col.title} Deleted")
-        elif col.title not in library.collections:
-            unmanaged_collections.append(col)
-    if library.mass_collection_mode:
-        logger.info("")
-        logger.separator(f"Mass Collection Mode for {library.name} Library", space=False, border=False)
-        logger.info("")
-        for col in library.get_all_collections():
-            library.collection_mode_query(col, library.mass_collection_mode)
-
-    if library.show_unmanaged and len(unmanaged_collections) > 0:
-        logger.info("")
-        logger.separator(f"Unmanaged Collections in {library.name} Library", space=False, border=False)
-        logger.info("")
-        for col in unmanaged_collections:
-            logger.info(col.title)
-        logger.info("")
-        logger.info(f"{len(unmanaged_collections)} Unmanaged Collection{'s' if len(unmanaged_collections) > 1 else ''}")
-    elif library.show_unmanaged:
-        logger.info("")
-        logger.separator(f"No Unmanaged Collections in {library.name} Library", space=False, border=False)
-        logger.info("")
-
-    if library.assets_for_all and len(unmanaged_collections) > 0:
-        logger.info("")
-        logger.separator(f"Unmanaged Collection Assets Check for {library.name} Library", space=False, border=False)
-        logger.info("")
-        for col in unmanaged_collections:
-            library.find_assets(col)
-
-    if library.metadata_backup:
-        logger.info("")
-        logger.separator(f"Metadata Backup for {library.name} Library", space=False, border=False)
-        logger.info("")
-        logger.info(f"Metadata Backup Path: {library.metadata_backup['path']}")
-        logger.info("")
-        meta = None
-        if os.path.exists(library.metadata_backup["path"]):
-            try:
-                meta, _, _ = yaml.util.load_yaml_guess_indent(open(library.metadata_backup["path"], encoding="utf-8"))
-            except yaml.scanner.ScannerError as e:
-                logger.error(f"YAML Error: {util.tab_new_lines(e)}")
-                filename, file_extension = os.path.splitext(library.metadata_backup["path"])
-                i = 1
-                while os.path.exists(f"{filename}{i}{file_extension}"):
-                    i += 1
-                os.rename(library.metadata_backup["path"], f"{filename}{i}{file_extension}")
-                logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
-        if not meta:
-            meta = {}
-        if "metadata" not in meta:
-            meta["metadata"] = {}
-        special_names = {}
-        for mk, mv in meta["metadata"].items():
-            if "title" in mv:
-                special_names[mv["title"]] = mk
-                if "year" in mv:
-                    special_names[f"{mv['title']} ({mv['year']})"] = mk
-        items = library.get_all(load=True)
-        titles = [i.title for i in items]
-        for i, item in enumerate(items, 1):
-            logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
-            map_key, attrs = library.get_locked_attributes(item, titles)
-            if map_key in special_names:
-                map_key = special_names[map_key]
-            og_dict = meta["metadata"][map_key] if map_key in meta["metadata"] and meta["metadata"][map_key] else {}
-            if attrs or (library.metadata_backup["add_blank_entries"] and not og_dict):
-                def get_dict(attrs_dict):
-                    return {ak: get_dict(av) if isinstance(av, dict) else av for ak, av in attrs_dict.items()}
-                def loop_dict(looping, dest_dict):
-                    if not looping:
-                        return None
-                    for lk, lv in looping.items():
-                        dest_dict[lk] = loop_dict(lv, dest_dict[lk] if lk in dest_dict and dest_dict[lk] else {}) if isinstance(lv, dict) else lv
-                    return dest_dict
-                meta["metadata"][map_key] = loop_dict(get_dict(attrs), og_dict)
-        logger.exorcise()
-        try:
-            yaml.round_trip_dump(meta, open(library.metadata_backup["path"], "w", encoding="utf-8"), block_seq_indent=2)
-            logger.info(f"{len(meta['metadata'])} {library.type.capitalize()}{'s' if len(meta['metadata']) > 1 else ''} Backed Up")
-        except yaml.scanner.ScannerError as e:
-            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
-
 def run_collection(config, library, metadata, requested_collections):
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
@@ -913,7 +442,7 @@ def run_collection(config, library, metadata, requested_collections):
 
             logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
-            builder = CollectionBuilder(config, metadata, mapping_name, no_missing, collection_attrs, library=library)
+            builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library)
             library.stats["names"].append(builder.name)
             logger.info("")
 
@@ -1089,7 +618,7 @@ def run_playlists(config):
 
                 logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
 
-                builder = CollectionBuilder(config, playlist_file, mapping_name, no_missing, playlist_attrs)
+                builder = CollectionBuilder(config, playlist_file, mapping_name, playlist_attrs)
                 stats["names"].append(builder.name)
                 logger.info("")
 
