@@ -15,6 +15,7 @@ class Library(ABC):
         self.Sonarr = None
         self.Tautulli = None
         self.Webhooks = None
+        self.Operations = None
         self.Notifiarr = None
         self.collections = []
         self.metadatas = []
@@ -82,8 +83,6 @@ class Library(ABC):
         self.remove_title_parentheses = params["remove_title_parentheses"]
         self.mass_collection_mode = params["mass_collection_mode"]
         self.metadata_backup = params["metadata_backup"]
-        self.tmdb_collections = params["tmdb_collections"]
-        self.genre_collections = params["genre_collections"]
         self.genre_mapper = params["genre_mapper"]
         self.content_rating_mapper = params["content_rating_mapper"]
         self.error_webhooks = params["error_webhooks"]
@@ -97,9 +96,9 @@ class Library(ABC):
 
         self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.mass_audience_rating_update or self.remove_title_parentheses \
                                        or self.mass_critic_rating_update or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_imdb_parental_labels or self.mass_trakt_rating_update \
-                                       or self.genre_mapper or self.content_rating_mapper or self.tmdb_collections or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
+                                       or self.genre_mapper or self.content_rating_mapper or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
         self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
-                                 or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode or self.genre_collections \
+                                 or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
                                  or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False
         self.meta_operations = [self.mass_genre_update, self.mass_audience_rating_update, self.mass_critic_rating_update, self.mass_content_rating_update, self.mass_originally_available_update]
 
@@ -112,21 +111,8 @@ class Library(ABC):
             logger.info("")
             logger.info(output)
 
-    def scan_metadata_files(self):
-        metadata = []
+    def scan_files(self):
         for file_type, metadata_file, temp_vars in self.metadata_path:
-            if file_type == "Folder":
-                if os.path.isdir(metadata_file):
-                    yml_files = util.glob_filter(os.path.join(metadata_file, "*.yml"))
-                    if yml_files:
-                        metadata.extend([("File", yml, temp_vars) for yml in yml_files])
-                    else:
-                        logger.error(f"Config Error: No YAML (.yml) files found in {metadata_file}")
-                else:
-                    logger.error(f"Config Error: Folder not found: {metadata_file}")
-            else:
-                metadata.append((file_type, metadata_file, temp_vars))
-        for file_type, metadata_file, temp_vars in metadata:
             try:
                 meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars)
                 if meta_obj.collections:
@@ -136,10 +122,6 @@ class Library(ABC):
                 self.metadata_files.append(meta_obj)
             except Failed as e:
                 logger.error(e)
-
-        if len(self.metadata_files) == 0 and not self.library_operation and not self.config.playlist_files:
-            logger.info("")
-            raise Failed("Config Error: No valid metadata files, playlist files, or library operations found")
 
     def upload_images(self, item, poster=None, background=None, overlay=None):
         image = None

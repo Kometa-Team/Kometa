@@ -435,10 +435,6 @@ class Plex(Library):
             self.update_blank_track_titles = False
             logger.error(f"update_blank_track_titles library operation only works with music libraries")
 
-        if self.tmdb_collections and self.is_show:
-            self.tmdb_collections = None
-            logger.error("Config Error: tmdb_collections only work with Movie Libraries.")
-
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
 

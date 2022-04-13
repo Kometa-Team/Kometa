@@ -31,7 +31,7 @@ default_templates = {
     "trakt_people_list": {"tmdb_person": f"<<value>>", "plex_search": {"all": {"actor": "tmdb"}}}
 }
 
-def get_dict(attribute, attr_data, check_list=None):
+def get_dict(attribute, attr_data, check_list=None, lower=False):
     if check_list is None:
         check_list = []
     if attr_data and attribute in attr_data:
@@ -39,8 +39,8 @@ def get_dict(attribute, attr_data, check_list=None):
             if isinstance(attr_data[attribute], dict):
                 new_dict = {}
                 for _name, _data in attr_data[attribute].items():
-                    if _name in check_list:
-                        logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name}")
+                    if lower and str(_name).lower() in check_list or not lower and _name in check_list:
+                        logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {str(_name).lower() if lower else _name}")
                     elif _data is None:
                         logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
                     elif not isinstance(_data, dict):
@@ -237,6 +237,9 @@ class DataFile:
 
     def external_templates(self, data):
         if "external_templates" in data and data["external_templates"]:
+            files = util.load_yaml_files(data["external_templates"])
+            if not files:
+                logger.error("Config Error: No Paths Found for external_templates")
             for file_type, template_file, temp_vars in util.load_yaml_files(data["external_templates"]):
                 temp_data = self.load_file(file_type, template_file)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
@@ -261,7 +264,7 @@ class MetadataFile(DataFile):
             logger.info(f"Loading Metadata {file_type}: {path}")
             logger.info("")
             data = self.load_file(self.type, self.path)
-            self.metadata = get_dict("metadata", data, library.metadata_files)
+            self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
             self.external_templates(data)
             self.collections = get_dict("collections", data, library.collections)
@@ -1066,7 +1069,6 @@ class PlaylistFile(DataFile):
     def __init__(self, config, file_type, path, temp_vars):
         super().__init__(config, file_type, path, temp_vars)
         self.data_type = "Playlist"
-        self.playlists = {}
         logger.info("")
         logger.info(f"Loading Playlist File {file_type}: {path}")
         data = self.load_file(self.type, self.path)
