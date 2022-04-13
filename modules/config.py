@@ -67,6 +67,7 @@ class ConfigFile:
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.version = attrs["version"] if "version" in attrs else None
         self.latest_version = attrs["latest_version"] if "latest_version" in attrs else None
+        self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.delete_collections = attrs["delete"] if "delete" in attrs else False
@@ -368,8 +369,7 @@ class ConfigFile:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
 
-        self.errors = []
-
+        logger.save_errors = True
         logger.separator()
 
         try:
@@ -398,7 +398,6 @@ class ConfigFile:
                         "expiration": check_for_attribute(self.data, "cache_expiration", parent="omdb", var_type="int", default=60)
                     })
                 except Failed as e:
-                    self.errors.append(e)
                     logger.error(e)
                 logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
             else:
@@ -416,7 +415,6 @@ class ConfigFile:
                     )
                     logger.info("Mdblist Connection Successful")
                 except Failed as e:
-                    self.errors.append(e)
                     logger.error(e)
                     logger.info("Mdblist Connection Failed")
             else:
@@ -436,7 +434,6 @@ class ConfigFile:
                         "authorization": self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] else None
                     })
                 except Failed as e:
-                    self.errors.append(e)
                     logger.error(e)
                 logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
             else:
@@ -455,7 +452,6 @@ class ConfigFile:
                         "authorization": self.data["mal"]["authorization"] if "authorization" in self.data["mal"] else None
                     })
                 except Failed as e:
-                    self.errors.append(e)
                     logger.error(e)
                 logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
             else:
@@ -471,7 +467,6 @@ class ConfigFile:
                         check_for_attribute(self.data, "password", parent="anidb", throw=True)
                     )
                 except Failed as e:
-                    self.errors.append(e)
                     logger.error(e)
                 logger.info(f"AniDB Connection {'Failed Continuing as Guest ' if self.MyAnimeList is None else 'Successful'}")
 
@@ -487,7 +482,10 @@ class ConfigFile:
                     default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
                     logger.warning(f"Config Warning: playlist_files attribute is blank using default: {default_playlist_file}")
                     paths_to_check = [default_playlist_file]
-                for file_type, playlist_file, temp_vars in util.load_yaml_files(paths_to_check):
+                files = util.load_yaml_files(paths_to_check)
+                if not files:
+                    raise Failed("Config Error: No Paths Found for playlist_files")
+                for file_type, playlist_file, temp_vars in files:
                     try:
                         playlist_obj = PlaylistFile(self, file_type, playlist_file, temp_vars)
                         self.playlist_names.extend([p for p in playlist_obj.playlists])
@@ -566,14 +564,12 @@ class ConfigFile:
                 params = {
                     "mapping_name": str(library_name),
                     "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name),
-                    "tmdb_collections": None,
                     "genre_mapper": None,
                     "content_rating_mapper": None,
                     "radarr_remove_by_tag": None,
                     "sonarr_remove_by_tag": None,
                     "mass_collection_mode": None,
                     "metadata_backup": None,
-                    "genre_collections": None,
                     "update_blank_track_titles": None,
                     "mass_content_rating_update": None,
                     "mass_originally_available_update": None,
@@ -689,28 +685,6 @@ class ConfigFile:
                                 params["metadata_backup"]["exclude"] = check_for_attribute(lib["operations"]["metadata_backup"], "exclude", var_type="comma_list", default_is_none=True, save=False)
                                 params["metadata_backup"]["sync_tags"] = check_for_attribute(lib["operations"]["metadata_backup"], "sync_tags", var_type="bool", default=False, save=False)
                                 params["metadata_backup"]["add_blank_entries"] = check_for_attribute(lib["operations"]["metadata_backup"], "add_blank_entries", var_type="bool", default=True, save=False)
-                        if "tmdb_collections" in lib["operations"]:
-                            params["tmdb_collections"] = {
-                                "exclude_ids": [],
-                                "remove_suffix": [],
-                                "dictionary_variables": {},
-                                "template": {"tmdb_collection_details": "<<collection_id>>"}
-                            }
-                            if lib["operations"]["tmdb_collections"] and isinstance(lib["operations"]["tmdb_collections"], dict):
-                                params["tmdb_collections"]["exclude_ids"] = check_for_attribute(lib["operations"]["tmdb_collections"], "exclude_ids", var_type="int_list", default_is_none=True, save=False)
-                                params["tmdb_collections"]["remove_suffix"] = check_for_attribute(lib["operations"]["tmdb_collections"], "remove_suffix", var_type="comma_list", default_is_none=True, save=False)
-                                if "dictionary_variables" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["dictionary_variables"] and isinstance(lib["operations"]["tmdb_collections"]["dictionary_variables"], dict):
-                                    for key, value in lib["operations"]["tmdb_collections"]["dictionary_variables"].items():
-                                        if isinstance(value, dict):
-                                            params["tmdb_collections"]["dictionary_variables"][key] = value
-                                        else:
-                                            logger.warning(f"Config Warning: tmdb_collections dictionary_variables {key} must be a dictionary")
-                                if "template" in lib["operations"]["tmdb_collections"] and lib["operations"]["tmdb_collections"]["template"] and isinstance(lib["operations"]["tmdb_collections"]["template"], dict):
-                                    params["tmdb_collections"]["template"] = lib["operations"]["tmdb_collections"]["template"]
-                                else:
-                                    logger.warning("Config Warning: Using default template for tmdb_collections")
-                            else:
-                                logger.error("Config Error: tmdb_collections blank using default settings")
                         if "genre_mapper" in lib["operations"]:
                             if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
                                 params["genre_mapper"] = lib["operations"]["genre_mapper"]
@@ -731,40 +705,15 @@ class ConfigFile:
                                         params["content_rating_mapper"][old_content] = new_content if new_content else None
                             else:
                                 logger.error("Config Error: content_rating_mapper is blank")
-                        if "genre_collections" in lib["operations"]:
-                            params["genre_collections"] = {
-                                "exclude_genres": [],
-                                "dictionary_variables": {},
-                                "title_format": "Top <<genre>> <<library_type>>s",
-                                "template": {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "all": {"genre": "<<genre>>"}}}
-                            }
-                            if lib["operations"]["genre_collections"] and isinstance(lib["operations"]["genre_collections"], dict):
-                                params["genre_collections"]["exclude_genres"] = check_for_attribute(lib["operations"]["genre_collections"], "exclude_genres", var_type="comma_list", default_is_none=True, save=False)
-                                title_format = check_for_attribute(lib["operations"]["genre_collections"], "title_format", default=params["genre_collections"]["title_format"], save=False)
-                                if "<<genre>>" in title_format:
-                                    params["genre_collections"]["title_format"] = title_format
-                                else:
-                                    logger.error(f"Config Error: using default title_format. <<genre>> not in title_format attribute: {title_format} ")
-                                if "dictionary_variables" in lib["operations"]["genre_collections"] and lib["operations"]["genre_collections"]["dictionary_variables"] and isinstance(lib["operations"]["genre_collections"]["dictionary_variables"], dict):
-                                    for key, value in lib["operations"]["genre_collections"]["dictionary_variables"].items():
-                                        if isinstance(value, dict):
-                                            params["genre_collections"]["dictionary_variables"][key] = value
-                                        else:
-                                            logger.warning(f"Config Warning: genre_collections dictionary_variables {key} must be a dictionary")
-                                if "template" in lib["operations"]["genre_collections"] and lib["operations"]["genre_collections"]["template"] and isinstance(lib["operations"]["genre_collections"]["template"], dict):
-                                    params["genre_collections"]["template"] = lib["operations"]["genre_collections"]["template"]
-                                else:
-                                    logger.warning("Config Warning: Using default template for genre_collections")
-                            else:
-                                logger.error("Config Error: genre_collections blank using default settings")
+                        for atr in ["tmdb_collections", "genre_collections"]:
+                            if atr in lib["operations"]:
+                                logger.error(f"Deprecated Error: {atr} has been replaced with dynamic collections")
                     else:
                         logger.error("Config Error: operations must be a dictionary")
 
                 def error_check(attr, service):
-                    err = f"Config Error: {attr} cannot be {params[attr]} without a successful {service} Connection"
                     params[attr] = None
-                    self.errors.append(err)
-                    logger.error(err)
+                    logger.error(f"Config Error: {attr} cannot be {params[attr]} without a successful {service} Connection")
 
                 for mass_key in ["mass_genre_update", "mass_audience_rating_update", "mass_critic_rating_update", "mass_content_rating_update", "mass_originally_available_update"]:
                     if params[mass_key] == "omdb" and self.OMDb is None:
@@ -779,7 +728,10 @@ class ConfigFile:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
                             raise Failed("Config Error: metadata_path attribute is blank")
-                        params["metadata_path"] = util.load_yaml_files(lib["metadata_path"])
+                        files = util.load_yaml_files(lib["metadata_path"])
+                        if not files:
+                            raise Failed("Config Error: No Paths Found for metadata_path")
+                        params["metadata_path"] = files
                     else:
                         params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), {})]
                     params["default_dir"] = default_dir
@@ -808,22 +760,18 @@ class ConfigFile:
                     library = Plex(self, params)
                     logger.info(f"{display_name} Library Connection Successful")
                 except Failed as e:
-                    self.errors.append(e)
                     logger.stacktrace()
                     logger.error(e)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
                     continue
-                try:
+
+                logger.info("")
+                logger.separator("Scanning Metadata Files", space=False, border=False)
+                library.scan_files()
+                if not library.metadata_files and not library.library_operation and not self.playlist_files:
                     logger.info("")
-                    logger.separator("Scanning Metadata Files", space=False, border=False)
-                    library.scan_metadata_files()
-                except Failed as e:
-                    self.errors.append(e)
-                    logger.stacktrace()
-                    logger.error(e)
-                    logger.info("")
-                    logger.info(f"{display_name} Metadata Failed to Load")
+                    logger.error("Config Error: No valid metadata files, playlist files, or library operations found")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):
@@ -848,7 +796,6 @@ class ConfigFile:
                             "plex_path": check_for_attribute(lib, "plex_path", parent="radarr", default=self.general["radarr"]["plex_path"], default_is_none=True, save=False)
                         })
                     except Failed as e:
-                        self.errors.append(e)
                         logger.stacktrace()
                         logger.error(e)
                         logger.info("")
@@ -879,7 +826,6 @@ class ConfigFile:
                             "plex_path": check_for_attribute(lib, "plex_path", parent="sonarr", default=self.general["sonarr"]["plex_path"], default_is_none=True, save=False)
                         })
                     except Failed as e:
-                        self.errors.append(e)
                         logger.stacktrace()
                         logger.error(e)
                         logger.info("")
@@ -897,7 +843,6 @@ class ConfigFile:
                             "apikey": check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
                         })
                     except Failed as e:
-                        self.errors.append(e)
                         logger.stacktrace()
                         logger.error(e)
                         logger.info("")
@@ -919,11 +864,13 @@ class ConfigFile:
 
             logger.separator()
 
-            if self.errors:
-                self.notify(self.errors)
+            if logger.saved_errors:
+                self.notify(logger.saved_errors)
         except Exception as e:
             logger.stacktrace()
-            self.notify(e)
+            self.notify(logger.saved_errors + [e])
+            logger.save_errors = False
+            logger.clear_errors()
             raise
 
     def notify(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
