@@ -839,7 +839,7 @@ class CollectionBuilder:
             else:
                 self.details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name == "changes_webhooks":
-            self.details[method_name] = util.parse(self.Type, method_name, method_data, datatype="list")
+            self.details[method_name] = util.parse(self.Type, method_name, method_data, datatype="list") if method_data else None
         elif method_name in scheduled_boolean:
             if isinstance(method_data, bool):
                 self.details[method_name] = method_data
