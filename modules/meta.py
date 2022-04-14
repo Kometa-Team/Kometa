@@ -20,6 +20,10 @@ auto = {
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
 }
+dynamic_attributes = [
+    "type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix",
+    "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name"
+]
 auto_type_translation = {"content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage"}
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
@@ -279,6 +283,9 @@ class MetadataFile(DataFile):
                 logger.info("")
                 try:
                     methods = {dm.lower(): dm for dm in dynamic}
+                    for m in methods:
+                        if m not in dynamic_attributes:
+                            logger.warning(f"Config Warning: {methods[m]} attribute is invalid. Options: {', '.join(dynamic_attributes)}")
                     if "type" not in methods:
                         raise Failed(f"Config Error: {map_name} type attribute not found")
                     elif not dynamic[methods["type"]]:
@@ -307,8 +314,8 @@ class MetadataFile(DataFile):
                         def _check_dict(check_dict):
                             for ck, cv in check_dict.items():
                                 all_keys.append(ck)
-                                if ck not in exclude and cv not in exclude:
-                                    auto_list[ck] = cv
+                                if str(ck) not in exclude and str(cv) not in exclude:
+                                    auto_list[str(ck)] = cv
                         if auto_type == "decade" and library.is_show:
                             all_items = library.get_all()
                             if addons:
@@ -364,7 +371,7 @@ class MetadataFile(DataFile):
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
                                 if tmdb_item and tmdb_item.collection_id:
                                     all_keys.append(str(tmdb_item.collection_id))
-                                    if tmdb_item.collection_id not in exclude and tmdb_item.collection_name not in exclude:
+                                    if str(tmdb_item.collection_id) not in exclude and tmdb_item.collection_name not in exclude:
                                         auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
                             logger.exorcise()
                         elif auto_type == "original_language":
