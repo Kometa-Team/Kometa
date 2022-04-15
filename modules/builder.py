@@ -2121,7 +2121,20 @@ class CollectionBuilder:
                             return False
                 elif modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                     divider = 60000 if filter_attr == "duration" else 1
-                    test_number = getattr(item, filter_actual)
+                    test_number = []
+                    if filter_attr == "resolution":
+                        for media in item.media:
+                            test_number.append(media.videoResolution)
+                    elif filter_attr == "audio_language":
+                        for media in item.media:
+                            for part in media.parts:
+                                test_number.extend([a.language for a in part.audioStreams()])
+                    elif filter_attr == "subtitle_language":
+                        for media in item.media:
+                            for part in media.parts:
+                                test_number.extend([s.language for s in part.subtitleStreams()])
+                    else:
+                        test_number = getattr(item, filter_actual)
                     if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                         test_number = len(test_number) if test_number else 0
                         modifier = f".{modifier[7:]}"
