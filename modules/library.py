@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile
 from modules.util import Failed
+from modules.operations import Operations
 from PIL import Image
 from plexapi.exceptions import BadRequest
 from ruamel import yaml
@@ -15,7 +16,7 @@ class Library(ABC):
         self.Sonarr = None
         self.Tautulli = None
         self.Webhooks = None
-        self.Operations = None
+        self.Operations = Operations(config, self)
         self.Notifiarr = None
         self.collections = []
         self.metadatas = []
