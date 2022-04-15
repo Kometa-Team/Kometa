@@ -211,11 +211,8 @@ def update_libraries(config):
             logger.info("")
             logger.separator(f"{library.name} Library")
 
-            if config.library_first and not config.test_mode and not collection_only:
-                if not overlay_only and library.library_operation:
-                    library.Operations.run_operations()
-                if not library_only and library.overlay_files:
-                    library.Overlays.run_overlays()
+            if config.library_first and library.library_operation and not config.test_mode and not collection_only:
+                library.Operations.run_operations()
 
             logger.debug("")
             logger.debug(f"Mapping Name: {library.original_mapping_name}")
@@ -281,11 +278,8 @@ def update_libraries(config):
                     run_collection(config, library, metadata, collections_to_run)
                     logger.re_add_library_handler(library.mapping_name)
 
-            if not config.library_first and not config.test_mode and not collection_only:
-                if not overlay_only and library.library_operation:
-                    library.Operations.run_operations()
-                if not library_only and library.overlay_files:
-                    library.Overlays.run_overlays()
+            if config.library_first and library.library_operation and not config.test_mode and not collection_only:
+                library.Operations.run_operations()
 
             logger.remove_library_handler(library.mapping_name)
         except Exception as e:
