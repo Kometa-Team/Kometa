@@ -38,7 +38,7 @@ class Tautulli:
         if items is None:
             raise Failed("Tautulli Error: No Items found in the response")
 
-        section_id = self._section_id(library.name)
+        section_id = library.Plex.key
         rating_keys = []
         for item in items:
             if (all_items or item["section_id"] == section_id) and len(rating_keys) < int(params['list_size']):
@@ -54,20 +54,10 @@ class Tautulli:
                     if new_item:
                         rating_keys.append((new_item[0].ratingKey, "ratingKey"))
                     else:
-                        logger.error(f"Plex Error: Item {item} not found")
+                        logger.error(f"Plex Error: Item not found {item}")
         logger.debug("")
         logger.debug(f"{len(rating_keys)} Keys Found: {rating_keys}")
         return rating_keys
-
-    def _section_id(self, library_name):
-        response = self._request(f"{self.url}/api/v2?apikey={self.apikey}&cmd=get_library_names")
-        section_id = None
-        for entry in response["response"]["data"]:
-            if entry["section_name"] == library_name:
-                section_id = entry["section_id"]
-                break
-        if section_id:              return section_id
-        else:                       raise Failed(f"Tautulli Error: No Library named {library_name} in the response")
 
     def _request(self, url):
         if self.config.trace_mode:
