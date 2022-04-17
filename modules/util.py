@@ -82,6 +82,7 @@ collection_mode_options = {
     "hide_items": "hideItems", "hideitems": "hideItems",
     "show_items": "showItems", "showitems": "showItems"
 }
+github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n      ") if "\n" in str(data) else str(data)
@@ -556,7 +557,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
                     return f"{start}{range_split}{end}"
         else:
             value = check_int(value, datatype=datatype, minimum=minimum, maximum=maximum)
-            if value:
+            if value is not None:
                 return value
         message = f"{display} {value} must {'each ' if range_split else ''}be {'an integer' if datatype == 'int' else 'a number'}"
         message = f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}"
