@@ -62,6 +62,7 @@ class ConfigFile:
         elif os.path.exists(os.path.join(default_dir, "config.yml")):       self.config_path = os.path.abspath(os.path.join(default_dir, "config.yml"))
         else:                                                               raise Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
         logger.info(f"Using {self.config_path} as config")
+        logger.clear_errors()
 
         self.default_dir = default_dir
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
