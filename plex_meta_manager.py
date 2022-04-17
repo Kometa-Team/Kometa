@@ -278,7 +278,7 @@ def update_libraries(config):
                     run_collection(config, library, metadata, collections_to_run)
                     logger.re_add_library_handler(library.mapping_name)
 
-            if config.library_first and library.library_operation and not config.test_mode and not collection_only:
+            if not config.library_first and library.library_operation and not config.test_mode and not collection_only:
                 library.Operations.run_operations()
 
             logger.remove_library_handler(library.mapping_name)
