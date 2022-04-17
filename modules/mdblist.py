@@ -173,7 +173,10 @@ class Mdblist:
             url_base = url_base if url_base.endswith("/") else f"{url_base}/"
             url_base = url_base if url_base.endswith("json/") else f"{url_base}json/"
             try:
-                return [(i["imdb_id"], "imdb") for i in self.config.get_json(url_base, headers=headers, params=params)]
+                response = self.config.get_json(url_base, headers=headers, params=params)
+                if "error" in response:
+                    raise Failed(f"Mdblist Error: Invalid Response {response}")
+                return [(i["imdb_id"], "imdb") for i in response]
             except JSONDecodeError:
                 raise Failed(f"Mdblist Error: Invalid Response")
         else:

@@ -16,7 +16,7 @@ class Webhooks:
 
     def _request(self, webhooks, json):
         if self.config.trace_mode:
-            logger.separator("Webhooks", space=False, border=False)
+            logger.separator("Webhooks", space=False, border=False, debug=True)
             logger.debug("")
             logger.debug(f"JSON: {json}")
         for webhook in list(set(webhooks)):

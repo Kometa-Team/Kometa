@@ -7,8 +7,6 @@ from ruamel import yaml
 
 logger = util.logger
 
-github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
-
 all_auto = ["genre"]
 ms_auto = [
     "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio",
@@ -70,7 +68,7 @@ class DataFile:
         self.templates = {}
 
     def get_file_name(self):
-        data = f"{github_base}{self.path}.yml" if self.type == "GIT" else self.path
+        data = f"{util.github_base}{self.path}.yml" if self.type == "GIT" else self.path
         if "/" in data:
             return data[data.rfind("/") + 1:-4]
         elif "\\" in data:
@@ -83,7 +81,7 @@ class DataFile:
             if file_type in ["URL", "Git", "Repo"]:
                 if file_type == "Repo" and not self.config.custom_repo:
                     raise Failed("Config Error: No custom_repo defined")
-                content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else github_base}{file_path}.yml"
+                content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else util.github_base}{file_path}.yml"
                 response = self.config.get(content_path)
                 if response.status_code >= 400:
                     raise Failed(f"URL Error: No file found at {content_path}")
@@ -427,12 +425,12 @@ class MetadataFile(DataFile):
                             roles = [data for _, data in people.items()]
                             roles.sort(key=operator.itemgetter('count'), reverse=True)
                             if not person_minimum:
-                                person_minimum = 0 if person_limit else 3
+                                person_minimum = 1 if person_limit else 3
                             if not person_limit:
                                 person_limit = len(roles)
                             person_count = 0
                             for role in roles:
-                                if person_count < person_limit and role["count"] > person_minimum and role["name"] not in exclude:
+                                if person_count < person_limit and role["count"] >= person_minimum and role["name"] not in exclude:
                                     auto_list[role["name"]] = role["name"]
                                     all_keys.append(role["name"])
                                     person_count += 1
