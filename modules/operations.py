@@ -74,7 +74,7 @@ class Operations:
                     continue
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
                 if self.library.assets_for_all:
-                    self.library.find_assets(item)
+                    self.library.update_asset2(item)
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
                 item.batchEdits()
@@ -381,7 +381,7 @@ class Operations:
             logger.separator(f"Unmanaged Collection Assets Check for {self.library.name} Library", space=False, border=False)
             logger.info("")
             for col in unmanaged_collections:
-                self.library.find_assets(col)
+                self.library.update_asset2(col)
 
         if self.library.metadata_backup:
             logger.info("")

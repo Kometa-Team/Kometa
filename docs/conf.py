@@ -127,7 +127,9 @@ html_theme_options = {
             ("Run Commands & Environment Variables", "home/environmental"),
             ("_divider", ),
             ("Configuration File", "config/configuration"),
-            ("Metadata File", "metadata/metadata"),
+            ("Metadata Files", "metadata/metadata"),
+            ("Overlay Files", "metadata/overlay"),
+            ("Playlist Files", "metadata/playlist"),
             ("_divider", ),
             ("Scheduling Guide", "home/guides/scheduling"),
             ("Image Asset Directory Guide", "home/guides/assets"),
@@ -160,7 +162,9 @@ html_theme_options = {
             ("Notifiarr", "config/notifiarr"),
         ]),
         ("_menu", "Metadata", [
-            ("Metadata and Playlist Files", "metadata/metadata"),
+            ("Metadata Files", "metadata/metadata"),
+            ("Overlay Files", "metadata/overlay"),
+            ("Playlist Files", "metadata/playlist"),
             ("_divider", ),
             ("Templates", "metadata/templates"),
             ("Filters", "metadata/filters"),
@@ -191,7 +195,6 @@ html_theme_options = {
             ("_menu", "Details", [
                 ("Setting Details", "metadata/details/setting"),
                 ("Schedule Details", "metadata/details/schedule"),
-                ("Image Overlay Details", "metadata/details/overlay"),
                 ("Metadata Details", "metadata/details/metadata"),
                 ("Radarr/Sonarr Details", "metadata/details/arr"),
             ])

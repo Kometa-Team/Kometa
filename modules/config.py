@@ -16,6 +16,7 @@ from modules.mal import MyAnimeList
 from modules.meta import PlaylistFile
 from modules.notifiarr import Notifiarr
 from modules.omdb import OMDb
+from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
@@ -483,7 +484,7 @@ class ConfigFile:
                     default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
                     logger.warning(f"Config Warning: playlist_files attribute is blank using default: {default_playlist_file}")
                     paths_to_check = [default_playlist_file]
-                files = util.load_yaml_files(paths_to_check)
+                files = util.load_files(paths_to_check, "playlist_files")
                 if not files:
                     raise Failed("Config Error: No Paths Found for playlist_files")
                 for file_type, playlist_file, temp_vars in files:
@@ -575,7 +576,8 @@ class ConfigFile:
                     "mass_content_rating_update": None,
                     "mass_originally_available_update": None,
                     "mass_imdb_parental_labels": None,
-                    "remove_title_parentheses": None
+                    "remove_title_parentheses": None,
+                    "remove_overlays": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -669,6 +671,8 @@ class ConfigFile:
                             params["update_blank_track_titles"] = check_for_attribute(lib["operations"], "update_blank_track_titles", var_type="bool", default=False, save=False)
                         if "remove_title_parentheses" in lib["operations"]:
                             params["remove_title_parentheses"] = check_for_attribute(lib["operations"], "remove_title_parentheses", var_type="bool", default=False, save=False)
+                        if "remove_overlays" in lib["operations"]:
+                            params["remove_overlays"] = check_for_attribute(lib["operations"], "remove_overlays", var_type="bool", default=False, save=False)
                         if "mass_collection_mode" in lib["operations"]:
                             try:
                                 params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
@@ -729,7 +733,7 @@ class ConfigFile:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
                             raise Failed("Config Error: metadata_path attribute is blank")
-                        files = util.load_yaml_files(lib["metadata_path"])
+                        files = util.load_files(lib["metadata_path"], "metadata_path")
                         if not files:
                             raise Failed("Config Error: No Paths Found for metadata_path")
                         params["metadata_path"] = files
@@ -747,6 +751,15 @@ class ConfigFile:
                                 util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
                             except NotScheduled:
                                 params["skip_library"] = True
+
+                    params["overlay_path"] = []
+                    if lib and "overlay_path" in lib:
+                        if not lib["overlay_path"]:
+                            raise Failed("Config Error: overlay_path attribute is blank")
+                        files = util.load_files(lib["overlay_path"], "overlay_path")
+                        if not files:
+                            raise Failed("Config Error: No Paths Found for overlay_path")
+                        params["overlay_path"] = files
 
                     logger.info("")
                     logger.separator("Plex Configuration", space=False, border=False)
@@ -850,6 +863,7 @@ class ConfigFile:
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
                 library.Webhooks = Webhooks(self, {"error_webhooks": library.error_webhooks}, library=library, notifiarr=self.NotifiarrFactory)
+                library.Overlays = Overlays(self, library)
 
                 logger.info("")
                 self.libraries.append(library)

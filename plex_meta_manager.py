@@ -26,7 +26,8 @@ parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="
 parser.add_argument("-ig", "--ignore-ghost", dest="ignore_ghost", help="Run ignoring ghost logging", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
 parser.add_argument("-co", "--collection-only", "--collections-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
-parser.add_argument("-lo", "--library-only", "--libraries-only", dest="library_only", help="Run only library operations", action="store_true", default=False)
+parser.add_argument("-op", "--operation", "--operations", "-lo", "--library-only", "--libraries-only", "--operation-only", "--operations-only", dest="operations", help="Run only operations", action="store_true", default=False)
+parser.add_argument("-ov", "--overlay", "--overlays", "--overlay-only", "--overlays-only", dest="overlays", help="Run only overlays", action="store_true", default=False)
 parser.add_argument("-lf", "--library-first", "--libraries-first", dest="library_first", help="Run library operations before collections", action="store_true", default=False)
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
@@ -40,19 +41,25 @@ parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 
 args = parser.parse_args()
 
 def get_arg(env_str, default, arg_bool=False, arg_int=False):
-    env_var = os.environ.get(env_str)
-    if env_var:
+    env_vars = [env_str] if not isinstance(env_str, list) else env_str
+    final_value = None
+    for env_var in env_vars:
+        env_value = os.environ.get(env_var)
+        if env_value is not None:
+            final_value = env_value
+            break
+    if final_value is not None:
         if arg_bool:
-            if env_var is True or env_var is False:
-                return env_var
-            elif env_var.lower() in ["t", "true"]:
+            if final_value is True or final_value is False:
+                return final_value
+            elif final_value.lower() in ["t", "true"]:
                 return True
             else:
                 return False
         elif arg_int:
-            return int(env_var)
+            return int(final_value)
         else:
-            return str(env_var)
+            return str(final_value)
     else:
         return default
 
@@ -63,7 +70,8 @@ test = get_arg("PMM_TEST", args.test, arg_bool=True)
 ignore_schedules = get_arg("PMM_IGNORE_SCHEDULES", args.ignore_schedules, arg_bool=True)
 ignore_ghost = get_arg("PMM_IGNORE_GHOST", args.ignore_ghost, arg_bool=True)
 collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
-library_only = get_arg("PMM_LIBRARIES_ONLY", args.library_only, arg_bool=True)
+operations_only = get_arg(["PMM_OPERATIONS", "PMM_LIBRARIES_ONLY"], args.operations, arg_bool=True)
+overlays_only = get_arg(["PMM_OVERLAYS", "PMM_OVERLAYS_ONLY"], args.overlays, arg_bool=True)
 library_first = get_arg("PMM_LIBRARIES_FIRST", args.library_first, arg_bool=True)
 collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
@@ -152,7 +160,8 @@ def start(attrs):
     logger.debug(f"--run (PMM_RUN): {run}")
     logger.debug(f"--run-tests (PMM_TEST): {test}")
     logger.debug(f"--collections-only (PMM_COLLECTIONS_ONLY): {collection_only}")
-    logger.debug(f"--libraries-only (PMM_LIBRARIES_ONLY): {library_only}")
+    logger.debug(f"--operations (PMM_OPERATIONS): {operations_only}")
+    logger.debug(f"--overlays (PMM_OVERLAYS): {overlays_only}")
     logger.debug(f"--libraries-first (PMM_LIBRARIES_FIRST): {library_first}")
     logger.debug(f"--run-collections (PMM_COLLECTIONS): {collections}")
     logger.debug(f"--run-libraries (PMM_LIBRARIES): {libraries}")
@@ -211,8 +220,11 @@ def update_libraries(config):
             logger.info("")
             logger.separator(f"{library.name} Library")
 
-            if config.library_first and library.library_operation and not config.test_mode and not collection_only:
-                library.Operations.run_operations()
+            if config.library_first and not config.test_mode and not collection_only:
+                if not overlays_only and library.library_operation:
+                    library.Operations.run_operations()
+                if not operations_only and library.overlay_files or library.remove_overlays:
+                    library.Overlays.run_overlays()
 
             logger.debug("")
             logger.debug(f"Mapping Name: {library.original_mapping_name}")
@@ -247,7 +259,7 @@ def update_libraries(config):
                 for collection in library.get_all_collections():
                     logger.info(f"Collection {collection.title} Deleted")
                     library.query(collection.delete)
-            if not library.is_other and not library.is_music and (library.metadata_files or library.original_mapping_name in config.library_map) and not library_only:
+            if not library.is_other and not library.is_music and not operations_only and (library.metadata_files or library.overlay_files):
                 logger.info("")
                 logger.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
@@ -271,15 +283,18 @@ def update_libraries(config):
                     logger.info("")
                     logger.warning(f"Collection: {config.resume_from} not in Metadata File: {metadata.path}")
                     continue
-                if collections_to_run and not library_only:
+                if collections_to_run and not operations_only and not overlays_only:
                     logger.info("")
                     logger.separator(f"{'Test ' if config.test_mode else ''}Collections")
                     logger.remove_library_handler(library.mapping_name)
                     run_collection(config, library, metadata, collections_to_run)
                     logger.re_add_library_handler(library.mapping_name)
 
-            if not config.library_first and library.library_operation and not config.test_mode and not collection_only:
-                library.Operations.run_operations()
+            if not config.library_first and not config.test_mode and not collection_only:
+                if not overlays_only and library.library_operation:
+                    library.Operations.run_operations()
+                if not operations_only and library.overlay_files or library.remove_overlays:
+                    library.Overlays.run_overlays()
 
             logger.remove_library_handler(library.mapping_name)
         except Exception as e:
@@ -301,7 +316,7 @@ def update_libraries(config):
             break
 
     amount_added = 0
-    if has_run_again and not library_only:
+    if has_run_again and not operations_only and not overlays_only:
         logger.info("")
         logger.separator("Run Again")
         logger.info("")
