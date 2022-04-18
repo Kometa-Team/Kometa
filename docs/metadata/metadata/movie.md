@@ -86,35 +86,13 @@ The available attributes for editing movies are as follows
 
 ### Special Attributes
 
-| Attribute    | Allowed Values                                                                                    |
-|:-------------|:--------------------------------------------------------------------------------------------------|
-| `title`      | Title if different from the mapping value useful when you have multiple movies with the same name |
-| `alt_title`  | Alternative title to look for                                                                     |
-| `year`       | Year of movie for better identification                                                           |
-| `tmdb_show`  | TMDb Show ID to use for metadata useful for miniseries that have been compiled into a movie       |
-| `tmdb_movie` | TMDb Movie ID to use for metadata useful for movies that have been split into segments            |
-
-
-* YAML files cannot have two items with the same mapping name so if you have two movies with the same name you would change the mapping values to whatever you want. Then use the `title` attribute to specify the real title and use the `year` attribute to specify which of the multiple movies to choose.
-    ```yaml
-    metadata:
-      Godzilla1:
-        title: Godzilla
-        year: 1954
-        content_rating: R
-      Godzilla2:
-        title: Godzilla
-        year: 1998
-        content_rating: PG-13
-    ```
-
-* If you know of another Title your movie might exist under, but you want it titled differently you can use `alt_title` to specify another title to look under and then be changed to the mapping name. For Example TMDb uses the name `The Legend of Korra`, but I want it as `Avatar: The Legend of Korra` (Which must be surrounded by quotes since it uses the character `:`):
-    ```yaml
-    metadata:
-      "Avatar: The Legend of Korra":
-        alt_title: The Legend of Korra
-    ```
-    This would change the name of the TMDb default `The Legend of Korra` to `Avatar: The Legend of Korra` and would not mess up any subsequent runs.
+| Attribute    | Allowed Values                                                                                                                                                                                    |
+|:-------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `title`      | Title if different from the mapping value useful when you have multiple movies with the same name. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works. |
+| `alt_title`  | Alternative title to look for and then change to the mapping name. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                 |
+| `year`       | Year of movie for better identification. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                           |
+| `tmdb_show`  | TMDb Show ID to use for metadata useful for miniseries that have been compiled into a movie. **This is not used to say this show is the given ID.**                                               |
+| `tmdb_movie` | TMDb Movie ID to use for metadata useful for movies that have been split into segments **This is not used to say this show is the given ID.**                                                     |
 
 ### General Attributes
 

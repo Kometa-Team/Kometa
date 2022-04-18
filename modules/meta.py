@@ -239,10 +239,10 @@ class DataFile:
 
     def external_templates(self, data):
         if "external_templates" in data and data["external_templates"]:
-            files = util.load_yaml_files(data["external_templates"])
+            files = util.load_files(data["external_templates"], "external_templates")
             if not files:
                 logger.error("Config Error: No Paths Found for external_templates")
-            for file_type, template_file, temp_vars in util.load_yaml_files(data["external_templates"]):
+            for file_type, template_file, temp_vars in util.load_files(data["external_templates"], "external_templates"):
                 temp_data = self.load_file(file_type, template_file)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     for temp_key, temp_value in temp_data["templates"].items():
@@ -1083,3 +1083,18 @@ class PlaylistFile(DataFile):
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info(f"Playlist File Loaded Successfully")
+
+class OverlayFile(DataFile):
+    def __init__(self, config, library, file_type, path, temp_vars):
+        super().__init__(config, file_type, path, temp_vars)
+        self.library = library
+        self.data_type = "Overlay"
+        logger.info("")
+        logger.info(f"Loading Overlay File {file_type}: {path}")
+        data = self.load_file(self.type, self.path)
+        self.overlays = get_dict("overlays", data, self.library.overlays)
+        self.templates = get_dict("templates", data)
+        self.external_templates(data)
+        if not self.overlays:
+            raise Failed("YAML Error: overlays attribute is required")
+        logger.info(f"Overlay File Loaded Successfully")

@@ -13,7 +13,8 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [Run](#run)                                           | `-r` or `--run`                    | `PMM_RUN`                |
 | [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests` | `PMM_TEST`               |
 | [Collections Only](#collections-only)                 | `-co` or `--collections-only`      | `PMM_COLLECTIONS_ONLY`   |
-| [Libraries Only](#libraries-only)                     | `-lo` or `--libraries-only`        | `PMM_LIBRARIES_ONLY`     |
+| [Operations](#operations)                             | `-op` or `--operations`            | `PMM_OPERATIONS`         |
+| [Overlays](#overlays)                                 | `-ov` or `--overlays`              | `PMM_OVERLAYS`           |
 | [Run Collections](#run-collections)                   | `-rc` or `--run-collections`       | `PMM_COLLECTIONS`        |
 | [Run Libraries](#run-libraries)                       | `-rl` or `--run-libraries`         | `PMM_LIBRARIES`          |
 | [Run Metadata Files](#run-metadata-files)             | `-rm` or `--run-metadata-files`    | `PMM_METADATA_FILES`     |
@@ -247,9 +248,9 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 </details>
 
-### Libraries Only
+### Operations
 
-Only run library operations, skip collections.
+Only run library operations skipping collections and overlays.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -259,13 +260,13 @@ Only run library operations, skip collections.
   </tr>
   <tr>
     <th>Flags</th>
-    <td><code>-lo</code> or <code>--libraries-only</code></td>
-    <td><code>PMM_LIBRARIES_ONLY</code></td>
+    <td><code>-op</code> or <code>--operations</code></td>
+    <td><code>PMM_OPERATIONS</code></td>
   </tr>
   <tr>
     <th>Example</th>
-    <td><code>--libraries-only</code></td>
-    <td><code>PMM_LIBRARIES_ONLY=true</code></td>
+    <td><code>--operations</code></td>
+    <td><code>PMM_OPERATIONS=true</code></td>
   </tr>
 </table>
 
@@ -273,7 +274,7 @@ Only run library operations, skip collections.
   <summary>Local Environment</summary>
 
 ```shell
-python plex_meta_manager.py --libraries-only
+python plex_meta_manager.py --operations
 ```
 
 </details>
@@ -281,7 +282,46 @@ python plex_meta_manager.py --libraries-only
   <summary>Docker Environment</summary>
 
 ```shell
-docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --libraries-only
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --operations
+```
+
+</details>
+
+### Overlays
+
+Only run library overlays skipping operations and collections.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #222;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-ov</code> or <code>--overlays</code></td>
+    <td><code>PMM_OVERLAYS</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--overlays</code></td>
+    <td><code>PMM_OVERLAYS=true</code></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Local Environment</summary>
+
+```shell
+python plex_meta_manager.py --overlays
+```
+
+</details>
+<details>
+  <summary>Docker Environment</summary>
+
+```shell
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --overlays
 ```
 
 </details>

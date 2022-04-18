@@ -1,9 +1,9 @@
 import os, shutil, time
 from abc import ABC, abstractmethod
 from modules import util
-from modules.meta import MetadataFile
-from modules.util import Failed
+from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
+from modules.util import Failed, ImageData
 from PIL import Image
 from plexapi.exceptions import BadRequest
 from ruamel import yaml
@@ -17,10 +17,13 @@ class Library(ABC):
         self.Tautulli = None
         self.Webhooks = None
         self.Operations = Operations(config, self)
+        self.Overlays = None
         self.Notifiarr = None
         self.collections = []
         self.metadatas = []
+        self.overlays = []
         self.metadata_files = []
+        self.overlay_files = []
         self.missing = {}
         self.movie_map = {}
         self.show_map = {}
@@ -30,18 +33,21 @@ class Library(ABC):
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
         self.run_again = []
-        self.overlays = []
+        self.overlays_old = []
         self.type = ""
         self.config = config
         self.name = params["name"]
         self.original_mapping_name = params["mapping_name"]
         self.metadata_path = params["metadata_path"]
+        self.overlay_path = params["overlay_path"]
         self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
+        self.overlay_folder = os.path.join(self.config.default_dir, "overlays")
+        self.overlay_backup = os.path.join(self.overlay_folder, f"{self.mapping_name} Original Posters")
         self.missing_path = params["missing_path"] if params["missing_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
@@ -82,6 +88,7 @@ class Library(ABC):
         self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
         self.update_blank_track_titles = params["update_blank_track_titles"]
         self.remove_title_parentheses = params["remove_title_parentheses"]
+        self.remove_overlays = params["remove_overlays"]
         self.mass_collection_mode = params["mass_collection_mode"]
         self.metadata_backup = params["metadata_backup"]
         self.genre_mapper = params["genre_mapper"]
@@ -123,13 +130,20 @@ class Library(ABC):
                 self.metadata_files.append(meta_obj)
             except Failed as e:
                 logger.error(e)
+        for file_type, overlay_file, temp_vars in self.overlay_path:
+            try:
+                over_obj = OverlayFile(self.config, self, file_type, overlay_file, temp_vars)
+                self.overlays.extend([o.lower() for o in over_obj.overlays])
+                self.overlay_files.append(over_obj)
+            except Failed as e:
+                logger.error(e)
 
     def upload_images(self, item, poster=None, background=None, overlay=None):
         image = None
         image_compare = None
         poster_uploaded = False
         if self.config.Cache:
-            image, image_compare = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+            image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
 
         if poster is not None:
             try:
@@ -158,11 +172,10 @@ class Library(ABC):
                 response = self.config.get(item.posterUrl)
                 if response.status_code >= 400:
                     raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
-                og_image = response.content
                 ext = "jpg" if response.headers["Content-Type"] == "image/jpegss" else "png"
                 temp_image = os.path.join(overlay_folder, f"temp.{ext}")
                 with open(temp_image, "wb") as handler:
-                    handler.write(og_image)
+                    handler.write(response.content)
                 shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.{ext}"))
                 while util.is_locked(temp_image):
                     time.sleep(1)
@@ -171,8 +184,9 @@ class Library(ABC):
                     new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
                     new_poster.paste(overlay_image, (0, 0), overlay_image)
                     new_poster.save(temp_image)
-                    self.upload_file_poster(item, temp_image)
+                    self.upload_poster(item, temp_image)
                     self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
+                    self.reload(item)
                     poster_uploaded = True
                     logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
                 except (OSError, BadRequest) as e:
@@ -184,7 +198,7 @@ class Library(ABC):
             try:
                 image = None
                 if self.config.Cache:
-                    image, image_compare = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds")
+                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds")
                     if str(background.compare) != str(image_compare):
                         image = None
                 if image is None or image != item.art:
@@ -212,7 +226,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def upload_file_poster(self, item, image):
+    def upload_poster(self, item, image, url=False):
         pass
 
     @abstractmethod
@@ -226,6 +240,47 @@ class Library(ABC):
     @abstractmethod
     def get_all(self, collection_level=None, load=False):
         pass
+
+    def find_assets(self, name="poster", folder_name=None, item_directory=None, prefix=""):
+        poster = None
+        background = None
+        item_dir = None
+        search_dir = item_directory if item_directory else None
+        for ad in self.asset_directory:
+            item_dir = None
+            if not search_dir:
+                search_dir = ad
+                if folder_name:
+                    if os.path.isdir(os.path.join(ad, folder_name)):
+                        item_dir = os.path.join(ad, folder_name)
+                    else:
+                        for n in range(1, self.asset_depth + 1):
+                            new_path = ad
+                            for i in range(1, n + 1):
+                                new_path = os.path.join(new_path, "*")
+                            matches = util.glob_filter(os.path.join(new_path, folder_name))
+                            if len(matches) > 0:
+                                item_dir = os.path.abspath(matches[0])
+                                break
+                    if item_dir is None:
+                        continue
+                    search_dir = item_dir
+            if item_directory:
+                item_dir = item_directory
+            file_name = name if item_dir else f"{folder_name}_{name}"
+            poster_filter = os.path.join(search_dir, f"{file_name}.*")
+            background_filter = os.path.join(search_dir, "background.*" if file_name == "poster" else f"{file_name}_background.*")
+
+            poster_matches = util.glob_filter(poster_filter)
+            if len(poster_matches) > 0:
+                poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=prefix, is_url=False)
+
+            background_matches = util.glob_filter(background_filter)
+            if len(background_matches) > 0:
+                background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, is_poster=False, is_url=False)
+
+            break
+        return poster, background, item_dir
 
     def add_missing(self, collection, items, is_movie):
         if collection not in self.missing:
