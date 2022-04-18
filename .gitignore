@@ -13,9 +13,10 @@ __pycache__/
 /test*
 logs/
 config/*
-!config/overlays/*/overlay.png
+!config/overlays/
+config/overlays/*/
+config/overlays/temp.png
 !config/*.template
-!overlay.png
 build/
 develop-eggs/
 dist/

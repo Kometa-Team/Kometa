@@ -98,7 +98,7 @@ scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
-    "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level",
+    "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
 details = [
@@ -108,7 +108,7 @@ details = [
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
-item_bool_details = ["item_tmdb_season_titles", "item_assets", "revert_overlay", "item_refresh"] + item_false_details
+item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_refresh"] + item_false_details
 item_details = ["non_item_remove_label", "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync"]
 radarr_details = ["radarr_add_missing", "radarr_add_existing", "radarr_folder", "radarr_monitor", "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag"]
@@ -190,6 +190,10 @@ custom_sort_builders = [
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
 episode_parts_only = ["plex_pilots"]
+overlay_only = ["overlay"]
+overlay_attributes = [
+     "filters", "limit", "show_missing", "save_missing", "missing_only_released", "minimum_items", "cache_builders", "tmdb_region"
+] + all_builders + overlay_only
 parts_collection_valid = [
      "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_filtering", "collection_mode", "label", "visible_library", "limit",
      "visible_home", "visible_shared", "show_missing", "save_missing", "missing_only_released", "server_preroll", "changes_webhooks",
@@ -202,7 +206,7 @@ playlist_attributes = [
     "server_preroll", "changes_webhooks", "minimum_items", "cache_builders"
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
-   "non_item_remove_label", "item_label", "item_assets", "collection_filtering", "item_lock_background", "item_lock_poster", "item_lock_title",
+   "non_item_remove_label", "item_label", "collection_filtering", "item_lock_background", "item_lock_poster", "item_lock_title",
    "item_refresh", "item_refresh_delay", "plex_search", "plex_all", "filters"
 ] + details + summary_details + poster_details + background_details
 
@@ -215,8 +219,14 @@ class CollectionBuilder:
         self.library = library
         self.libraries = []
         self.playlist = library is None
+        self.overlay = overlay
         methods = {m.lower(): m for m in self.data}
-        self.type = "playlist" if self.playlist else "collection"
+        if self.playlist:
+            self.type = "playlist"
+        elif self.overlay:
+            self.type = "overlay"
+        else:
+            self.type = "collection"
         self.Type = self.type.capitalize()
 
         if "name" in methods:
@@ -245,6 +255,48 @@ class CollectionBuilder:
                 if attr.lower() not in methods:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
+
+        if self.overlay:
+            if "overlay" in methods:
+                logger.debug("")
+                logger.debug("Validating Method: overlay")
+                logger.debug(f"Value: {data[methods['overlay']]}")
+                if isinstance(data[methods["overlay"]], dict):
+                    if "name" not in data[methods["overlay"]] or not data[methods["overlay"]]["name"]:
+                        raise Failed(f"{self.Type} Error: overlay must have the name attribute")
+                    self.overlay = data[methods["overlay"]]["name"]
+                    if "git" in data[methods["overlay"]] and data[methods["overlay"]]["git"]:
+                        url = f"{util.github_base}{data[methods['overlay']]['git']}.png"
+                    elif "repo" in data[methods["overlay"]] and data[methods["overlay"]]["repo"]:
+                        url = f"{self.config.custom_repo}{data[methods['overlay']]['git']}.png"
+                    elif "url" in data[methods["overlay"]] and data[methods["overlay"]]["url"]:
+                        url = data[methods["overlay"]]["url"]
+                    else:
+                        url = None
+                    if url:
+                        response = self.config.get(url)
+                        if response.status_code >= 400:
+                            raise Failed(f"{self.Type} Error: Overlay Image not found at: {url}")
+                        if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
+                            raise Failed(f"{self.Type} Error: Overlay Image not a png: {url}")
+                        if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
+                            os.makedirs(library.overlay_folder, exist_ok=False)
+                            logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
+                        clean_name, _ = util.validate_filename(self.overlay)
+                        overlay_path = os.path.join(library.overlay_folder, f"{clean_name}.png")
+                        if os.path.exists(overlay_path):
+                            os.remove(overlay_path)
+                        with open(overlay_path, "wb") as handler:
+                            handler.write(response.content)
+                        while util.is_locked(overlay_path):
+                            time.sleep(1)
+                else:
+                    self.overlay = data[methods["overlay"]]
+            else:
+                self.overlay = self.mapping_name
+            overlay_path = os.path.join(library.overlay_folder, f"{self.overlay}.png")
+            if not os.path.exists(overlay_path):
+                raise Failed(f"{self.Type} Error: Overlay Image not found at: {overlay_path}")
 
         if self.playlist:
             if "libraries" in methods:
@@ -355,7 +407,7 @@ class CollectionBuilder:
                         else:
                             raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
 
-        if "delete_not_scheduled" in methods:
+        if "delete_not_scheduled" in methods and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: delete_not_scheduled")
             logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
@@ -388,38 +440,38 @@ class CollectionBuilder:
                             suffix = f" and could not be found to delete"
                     raise NotScheduled(f"{err}\n\n{self.Type} {self.name} not scheduled to run{suffix}")
 
-        self.collectionless = "plex_collectionless" in methods and not self.playlist
+        self.collectionless = "plex_collectionless" in methods and not self.playlist and not self.overlay
 
         self.validate_builders = True
-        if "validate_builders" in methods:
+        if "validate_builders" in methods and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: validate_builders")
             logger.debug(f"Value: {data[methods['validate_builders']]}")
             self.validate_builders = util.parse(self.Type, "validate_builders", self.data, datatype="bool", methods=methods, default=True)
 
         self.run_again = False
-        if "run_again" in methods:
+        if "run_again" in methods and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: run_again")
             logger.debug(f"Value: {data[methods['run_again']]}")
             self.run_again = util.parse(self.Type, "run_again", self.data, datatype="bool", methods=methods, default=False)
 
-        self.build_collection = True
-        if "build_collection" in methods and not self.playlist:
+        self.build_collection = False if self.overlay else True
+        if "build_collection" in methods and not self.playlist and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: build_collection")
             logger.debug(f"Value: {data[methods['build_collection']]}")
             self.build_collection = util.parse(self.Type, "build_collection", self.data, datatype="bool", methods=methods, default=True)
 
         self.blank_collection = False
-        if "blank_collection" in methods and not self.playlist:
+        if "blank_collection" in methods and not self.playlist and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: blank_collection")
             logger.debug(f"Value: {data[methods['blank_collection']]}")
             self.blank_collection = util.parse(self.Type, "blank_collection", self.data, datatype="bool", methods=methods, default=False)
 
         self.sync = self.library.sync_mode == "sync"
-        if "sync_mode" in methods:
+        if "sync_mode" in methods and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: sync_mode")
             if not self.data[methods["sync_mode"]]:
@@ -493,7 +545,7 @@ class CollectionBuilder:
         self.smart_filter_details = ""
         self.smart_label = {"sort_by": "random", "all": {"label": [self.name]}}
         self.smart_label_collection = False
-        if "smart_label" in methods and not self.playlist and not self.library.is_music:
+        if "smart_label" in methods and not self.playlist and not self.overlay and not self.library.is_music:
             logger.debug("")
             logger.debug("Validating Method: smart_label")
             self.smart_label_collection = True
@@ -516,7 +568,7 @@ class CollectionBuilder:
 
         self.smart_url = None
         self.smart_type_key = None
-        if "smart_url" in methods and not self.playlist:
+        if "smart_url" in methods and not self.playlist and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: smart_url")
             if not self.data[methods["smart_url"]]:
@@ -528,7 +580,7 @@ class CollectionBuilder:
                 except ValueError:
                     raise Failed(f"{self.Type} Error: smart_url is incorrectly formatted")
 
-        if "smart_filter" in methods and not self.playlist:
+        if "smart_filter" in methods and not self.playlist and not self.overlay:
             self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], display=True, default_sort="random")
 
         if self.collectionless:
@@ -634,6 +686,10 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed for Collectionless collection")
                 elif self.smart_url and method_name in all_builders + smart_url_invalid:
                     raise Failed(f"{self.Type} Error: {method_final} builder not allowed when using smart_filter")
+                elif not self.overlay and method_name in overlay_only:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed in an overlay file")
+                elif self.overlay and method_name not in overlay_attributes:
+                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed in an overlay file")
                 elif method_name in summary_details:
                     self._summary(method_name, method_data)
                 elif method_name in poster_details:
@@ -722,7 +778,6 @@ class CollectionBuilder:
         self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.details["save_missing"]
                                                           or (self.library.Radarr and self.radarr_details["add_missing"])
                                                           or (self.library.Sonarr and self.sonarr_details["add_missing"]))
-
         if self.build_collection:
             try:
                 self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name)
@@ -909,9 +964,9 @@ class CollectionBuilder:
                 name = method_data
             if not os.path.exists(overlay):
                 raise Failed(f"{self.Type} Error: {name} overlay image not found at {overlay}")
-            if name in self.library.overlays:
+            if name in self.library.overlays_old:
                 raise Failed("Each Overlay can only be used once per Library")
-            self.library.overlays.append(name)
+            self.library.overlays_old.append(name)
             self.item_details[method_name] = name
         elif method_name == "item_refresh_delay":
             self.item_details[method_name] = util.parse(self.Type, method_name, method_data, datatype="int", default=0, minimum=0)
@@ -2089,7 +2144,7 @@ class CollectionBuilder:
                         filter_check = len(item.collections) > 0
                     elif filter_attr == "has_overlay":
                         for label in item.labels:
-                            if label.tag.lower().endswith(" overlay"):
+                            if label.tag.lower().endswith(" overlay") or label.tag.lower() == "overlay":
                                 filter_check = True
                                 break
                     elif filter_attr == "has_dolby_vision":
@@ -2275,19 +2330,7 @@ class CollectionBuilder:
         rating_keys = []
         if "item_overlay" in self.item_details:
             overlay_name = self.item_details["item_overlay"]
-            if self.config.Cache:
-                cache_keys = self.config.Cache.query_image_map_overlay(self.library.image_table_name, overlay_name)
-                if cache_keys:
-                    for rating_key in cache_keys:
-                        try:
-                            item = self.fetch_item(rating_key)
-                        except Failed as e:
-                            logger.error(e)
-                            continue
-                        if isinstance(item, (Movie, Show)):
-                            self.library.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
-                    self.config.Cache.update_remove_overlay(self.library.image_table_name, overlay_name)
-            rating_keys = [int(item.ratingKey) for item in self.library.get_labeled_items(f"{overlay_name} Overlay")]
+            rating_keys = [int(item.ratingKey) for item in self.library.search(label=f"{overlay_name} Overlay")]
             overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
             overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png")).convert("RGBA")
             overlay = (overlay_name, overlay_folder, overlay_image)
@@ -2303,7 +2346,7 @@ class CollectionBuilder:
         if "non_item_remove_label" in self.item_details:
             rk_compare = [item.ratingKey for item in self.items]
             for remove_label in self.item_details["non_item_remove_label"]:
-                for non_item in self.library.get_labeled_items(remove_label):
+                for non_item in self.library.search(label=remove_label, libtype=self.collection_level):
                     if non_item.ratingKey not in rk_compare:
                         self.library.edit_tags("label", non_item, remove_tags=[remove_label])
 
@@ -2312,9 +2355,9 @@ class CollectionBuilder:
         for item in self.items:
             if int(item.ratingKey) in rating_keys and not revert:
                 rating_keys.remove(int(item.ratingKey))
-            if "item_assets" in self.item_details or overlay is not None:
+            if overlay is not None:
                 try:
-                    self.library.find_assets(item, overlay=overlay, folders=self.details["asset_folders"], create=self.details["create_asset_folders"])
+                    self.library.update_asset(item, overlay=overlay, folders=self.details["asset_folders"], create=self.details["create_asset_folders"])
                 except Failed as e:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
@@ -2384,14 +2427,14 @@ class CollectionBuilder:
             self.library.edit_tags("label", item, remove_tags=[f"{overlay_name} Overlay"])
             og_image = os.path.join(overlay_folder, f"{rating_key}.png")
             if os.path.exists(og_image):
-                self.library.upload_file_poster(item, og_image)
+                self.library.upload_poster(item, og_image)
                 os.remove(og_image)
             self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, "", "")
 
     def load_collection(self):
-        if not self.obj and self.smart_url:
+        if self.obj is None and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
-        elif not self.obj and self.blank_collection:
+        elif self.obj is None and self.blank_collection:
             self.library.create_blank_collection(self.name)
         elif self.smart_label_collection:
             try:
@@ -2518,9 +2561,11 @@ class CollectionBuilder:
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
+            final_name, _ = util.validate_filename(name_mapping)
             poster_image, background_image, asset_location = self.library.find_assets(
-                self.obj, name=name_mapping, upload=False,
-                folders=self.details["asset_folders"], create=self.details["create_asset_folders"]
+                name="poster" if self.details["asset_folders"] else final_name,
+                folder_name=final_name if self.details["asset_folders"] else None,
+                prefix=f"{name_mapping}'s "
             )
             if poster_image:
                 self.posters["asset_directory"] = poster_image

@@ -25,10 +25,8 @@ By default [if no `asset_directory` is specified], the program will look in the 
 
 Assets are searched for only at specific times.
 
-1. Collection assets are searched for whenever that collection is run.
-2. Item assets for items in a collection are searched for whenever that collection is run and has `item_assets: true` as a Collection Detail.
-3. Item assets and Unmanaged Collections assets are searched for whenever the `assets_for_all` Library Operation is active.
-4. Item assets will be searched for any item that has an overlay applied to it.
+1. Collection and Playlist assets are searched for whenever that collection/playlist is run.
+2. Item assets and Unmanaged Collections assets are searched for whenever the `assets_for_all` Library Operation is active.
 
 * If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md#show-missing-assets):
   ```yaml
@@ -48,6 +46,7 @@ The table below shows the asset folder path structures that will be searched for
 | Season poster                    | `assets/ASSET_NAME/Season##.ext`                 | `assets/ASSET_NAME_Season##.ext`                    |
 | Season background                | `assets/ASSET_NAME/Season##_background.ext`      | `assets/ASSET_NAME_Season##_background.ext`         |
 | Episode poster                   | `assets/ASSET_NAME/S##E##.ext`                   | `assets/ASSET_NAME_S##E##.ext`                      |
+| Episode background               | `assets/ASSET_NAME/S##E##_background.ext`        | `assets/ASSET_NAME_S##E##_background.ext`           |
 
 * For **Collections** replace `ASSET_NAME` with the mapping name used with the collection unless `system_name` is specified, which you would then use what's specified in `system_name`.
 
@@ -67,7 +66,7 @@ The table below shows the asset folder path structures that will be searched for
 
 Here's an example config folder structure with an assets directory with `asset_folders` set to true and false.
 
-### `asset_folders: true` without nesting
+### `asset_folders: true`
 
 ```
 config
@@ -117,58 +116,6 @@ config
 │       ├── Season03_background.png
 │       ├── Season04.png
 │       ├── Season04_background.png
-```
-
-### `asset_folders: true` with nesting
-
-```
-config
-├── config.yml
-├── Movies.yml
-├── TV Shows.yml
-├── assets
-│   ├── The Lord of the Rings
-│       ├── poster.png
-│       ├── background.png
-│       ├── The Lord of the Rings The Fellowship of the Ring (2001)
-│           ├── poster.png
-│           ├── background.png
-│       ├── The Lord of the Rings The Two Towers (2002)
-│           ├── poster.png
-│           ├── background.png
-│       ├── The Lord of the Rings The Return of the King (2003)
-│           ├── poster.png
-│           ├── background.png
-│   ├── Star Wars (Animated)
-│       ├── poster.png
-│       ├── background.png
-│       ├── Star Wars The Clone Wars
-│           ├── poster.png
-│           ├── background.png
-│           ├── Season00.png
-│           ├── Season01.png
-│           ├── Season02.png
-│           ├── Season03.png
-│           ├── Season04.png
-│           ├── Season05.png
-│           ├── Season06.png
-│           ├── Season07.png
-│           ├── S07E01.png
-│           ├── S07E02.png
-│           ├── S07E03.png
-│           ├── S07E04.png
-│           ├── S07E05.png
-│       ├── Star Wars Rebels
-│           ├── poster.png
-│           ├── background.png
-│           ├── Season01.png
-│           ├── Season01_background.png
-│           ├── Season02.png
-│           ├── Season02_background.png
-│           ├── Season03.png
-│           ├── Season03_background.png
-│           ├── Season04.png
-│           ├── Season04_background.png
 ```
 
 ### `asset_folders: false`

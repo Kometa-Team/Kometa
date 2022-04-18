@@ -599,6 +599,14 @@ class Cache:
                             compare TEXT,
                             location TEXT)"""
                         )
+                        cursor.execute(
+                            f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
+                            key INTEGER PRIMARY KEY,
+                            rating_key TEXT UNIQUE,
+                            overlay TEXT,
+                            compare TEXT,
+                            location TEXT)"""
+                        )
         return table_name
 
     def query_image_map_overlay(self, table_name, overlay):
@@ -625,8 +633,8 @@ class Cache:
                 cursor.execute(f"SELECT * FROM {table_name} WHERE rating_key = ?", (rating_key,))
                 row = cursor.fetchone()
                 if row and row["location"]:
-                    return row["location"], row["compare"]
-        return None, None
+                    return row["location"], row["compare"], row["overlay"]
+        return None, None, None
 
     def update_image_map(self, rating_key, table_name, location, compare, overlay=""):
         with sqlite3.connect(self.cache_path) as connection:

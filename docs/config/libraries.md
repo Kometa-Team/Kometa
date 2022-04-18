@@ -35,6 +35,8 @@ libraries:
       - file: config/TV Shows.yml
       - git: meisnate12/ShowCharts
       - git: meisnate12/Networks
+    overlay_path:
+      - file: config/Overlays.yml
   TV Shows On Second Plex:
     library_name: TV Shows
     plex:
@@ -79,6 +81,7 @@ The available attributes for each library are as follows:
 |:-------------------------------------------|:---------------------------------------------------------------------------------------------|:--------------------------------------:|:-------------------------------:|
 | [`library_name`](#library-name)            | Library name (required only when trying to use multiple libraries with the same name)        |          Base Attribute Name           |            &#10060;             |
 | [`metadata_path`](#metadata-path)          | Location of Metadata YAML files                                                              |     `/config/<<MAPPING_NAME>>.yml`     |            &#10060;             |
+| [`overlay_path`](#overlay-path)            | Location of Overlay YAML files                                                               |                  None                  |            &#10060;             |
 | [`missing_path`](#missing-path)            | Location to create the YAML file listing missing items for this library                      | `/config/<<MAPPING_NAME>>_missing.yml` |            &#10060;             |
 | [`schedule`](../metadata/details/schedule) | Use any [schedule option](../metadata/details/schedule) to control when this library is run. |                 daily                  |            &#10060;             |
 | [`operations`](operations)                 | Library Operations to run                                                                    |                  N/A                   |            &#10060;             |
@@ -123,6 +126,19 @@ By default, when `metadata_path` is missing the script will look within the root
 ```yaml
 libraries:
   TV Shows:
+```
+
+### Overlay Path
+
+The `overlay_path` attribute is used to define [Overlay Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them. 
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_path:
+      - file: config/TV Shows.yml
+    overlay_path:
+      - file: config/Overlays.yml
 ```
 
 ### Missing Path

@@ -206,6 +206,14 @@ class TMDb:
         try:                            return TMDbShow(self, tmdb_id)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Show found for TMDb ID {tmdb_id}: {e}")
 
+    def get_season(self, tmdb_id, season_number, partial=None):
+        try:                            return self.TMDb.tv_season(tmdb_id, season_number, partial=partial)
+        except TMDbException as e:      raise Failed(f"TMDb Error: No Season found for TMDb ID {tmdb_id} Season {season_number}: {e}")
+
+    def get_episode(self, tmdb_id, season_number, episode_number, partial=None):
+        try:                            return self.TMDb.tv_episode(tmdb_id, season_number, episode_number, partial=partial)
+        except TMDbException as e:      raise Failed(f"TMDb Error: No Episode found for TMDb ID {tmdb_id} Season {season_number} Episode {episode_number}: {e}")
+
     def get_collection(self, tmdb_id, partial=None):
         try:                            return self.TMDb.collection(tmdb_id, partial=partial)
         except TMDbException as e:      raise Failed(f"TMDb Error: No Collection found for TMDb ID {tmdb_id}: {e}")
