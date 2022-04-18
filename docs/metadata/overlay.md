@@ -21,7 +21,7 @@ These are the attributes which can be used within the Overlay File:
 
 ## Overlay Attributes
 
-Each overlay requires its own section within the `overalys` attribute.
+Each overlay requires its own section within the `overlays` attribute.
 
 ```yaml
 overlays:
@@ -107,7 +107,7 @@ overlays:
   Dolby:
     overlay:
       name: Dolby
-      url: https://somewebsite.com/dobly_overlay.png
+      url: https://somewebsite.com/dolby_overlay.png
     plex_all: true
     filters:
       has_dolby_vision: true
