@@ -575,6 +575,14 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"SELECT * FROM image_maps WHERE library = ?", (library,))
                 row = cursor.fetchone()
+                cursor.execute(
+                    f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
+                    key INTEGER PRIMARY KEY,
+                    rating_key TEXT UNIQUE,
+                    overlay TEXT,
+                    compare TEXT,
+                    location TEXT)"""
+                )
                 if row and row["key"]:
                     table_name = f"image_map_{row['key']}"
                 else:
@@ -599,32 +607,7 @@ class Cache:
                             compare TEXT,
                             location TEXT)"""
                         )
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)"""
-                        )
         return table_name
-
-    def query_image_map_overlay(self, table_name, overlay):
-        rks = []
-        with sqlite3.connect(self.cache_path) as connection:
-            connection.row_factory = sqlite3.Row
-            with closing(connection.cursor()) as cursor:
-                cursor.execute(f"SELECT * FROM {table_name} WHERE overlay = ?", (overlay,))
-                rows = cursor.fetchall()
-                for row in rows:
-                    rks.append(int(row["rating_key"]))
-        return rks
-
-    def update_remove_overlay(self, table_name, overlay):
-        with sqlite3.connect(self.cache_path) as connection:
-            connection.row_factory = sqlite3.Row
-            with closing(connection.cursor()) as cursor:
-                cursor.execute(f"UPDATE {table_name} SET overlay = ? WHERE overlay = ?", ("", overlay))
 
     def query_image_map(self, rating_key, table_name):
         with sqlite3.connect(self.cache_path) as connection:
