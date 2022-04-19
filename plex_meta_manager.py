@@ -259,7 +259,7 @@ def update_libraries(config):
                 for collection in library.get_all_collections():
                     logger.info(f"Collection {collection.title} Deleted")
                     library.query(collection.delete)
-            if not library.is_other and not library.is_music and not operations_only and (library.metadata_files or library.overlay_files):
+            if not library.is_other and not library.is_music and not operations_only and (library.metadata_files or library.overlay_files or library.remove_overlays):
                 logger.info("")
                 logger.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
