@@ -575,16 +575,16 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"SELECT * FROM image_maps WHERE library = ?", (library,))
                 row = cursor.fetchone()
-                cursor.execute(
-                    f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
-                    key INTEGER PRIMARY KEY,
-                    rating_key TEXT UNIQUE,
-                    overlay TEXT,
-                    compare TEXT,
-                    location TEXT)"""
-                )
                 if row and row["key"]:
                     table_name = f"image_map_{row['key']}"
+                    cursor.execute(
+                        f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
+                        key INTEGER PRIMARY KEY,
+                        rating_key TEXT UNIQUE,
+                        overlay TEXT,
+                        compare TEXT,
+                        location TEXT)"""
+                    )
                 else:
                     cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
                     cursor.execute(f"SELECT * FROM image_maps WHERE library = ?", (library,))
@@ -601,6 +601,14 @@ class Cache:
                         )
                         cursor.execute(
                             f"""CREATE TABLE IF NOT EXISTS {table_name}_backgrounds (
+                            key INTEGER PRIMARY KEY,
+                            rating_key TEXT UNIQUE,
+                            overlay TEXT,
+                            compare TEXT,
+                            location TEXT)"""
+                        )
+                        cursor.execute(
+                            f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
                             overlay TEXT,
