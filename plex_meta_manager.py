@@ -223,7 +223,7 @@ def update_libraries(config):
             if config.library_first and not config.test_mode and not collection_only:
                 if not overlays_only and library.library_operation:
                     library.Operations.run_operations()
-                if not operations_only and library.overlay_files or library.remove_overlays:
+                if not operations_only and (library.overlay_files or library.remove_overlays):
                     library.Overlays.run_overlays()
 
             logger.debug("")

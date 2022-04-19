@@ -24,40 +24,47 @@ class Overlays:
         overlay_updated = {}
         overlay_images = {}
         item_overlays = {}
-        if not self.library.remove_overlays:
+        if self.library.remove_overlays:
+            logger.info("")
+            logger.separator(f"Removing Overlays for the {self.library.name} Library")
+            logger.info("")
+        else:
             for overlay_file in self.library.overlay_files:
                 for k, v in overlay_file.overlays.items():
-                    builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
-                    logger.info("")
-
-                    logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
-
-                    if builder.overlay not in overlay_rating_keys:
-                        overlay_rating_keys[builder.overlay] = []
-
-                    if builder.filters or builder.tmdb_filters:
+                    try:
+                        builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
                         logger.info("")
-                        for filter_key, filter_value in builder.filters:
-                            logger.info(f"Collection Filter {filter_key}: {filter_value}")
-                        for filter_key, filter_value in builder.tmdb_filters:
-                            logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
-                    for method, value in builder.builders:
-                        logger.debug("")
-                        logger.debug(f"Builder: {method}: {value}")
-                        logger.info("")
-                        builder.filter_and_save_items(builder.gather_ids(method, value))
-                        if builder.added_items:
-                            for item in builder.added_items:
-                                item_keys[item.ratingKey] = item
-                                if item.ratingKey not in overlay_rating_keys[builder.overlay]:
-                                    overlay_rating_keys[builder.overlay].append(item.ratingKey)
+                        logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
 
-                    if builder.remove_overlays:
-                        for rk in overlay_rating_keys[builder.overlay]:
-                            for remove_overlay in builder.remove_overlays:
-                                if remove_overlay in overlay_rating_keys and rk in overlay_rating_keys[remove_overlay]:
-                                    overlay_rating_keys[remove_overlay].remove(rk)
+                        if builder.overlay not in overlay_rating_keys:
+                            overlay_rating_keys[builder.overlay] = []
+
+                        if builder.filters or builder.tmdb_filters:
+                            logger.info("")
+                            for filter_key, filter_value in builder.filters:
+                                logger.info(f"Collection Filter {filter_key}: {filter_value}")
+                            for filter_key, filter_value in builder.tmdb_filters:
+                                logger.info(f"Collection Filter {filter_key}: {filter_value}")
+
+                        for method, value in builder.builders:
+                            logger.debug("")
+                            logger.debug(f"Builder: {method}: {value}")
+                            logger.info("")
+                            builder.filter_and_save_items(builder.gather_ids(method, value))
+                            if builder.added_items:
+                                for item in builder.added_items:
+                                    item_keys[item.ratingKey] = item
+                                    if item.ratingKey not in overlay_rating_keys[builder.overlay]:
+                                        overlay_rating_keys[builder.overlay].append(item.ratingKey)
+
+                        if builder.remove_overlays:
+                            for rk in overlay_rating_keys[builder.overlay]:
+                                for remove_overlay in builder.remove_overlays:
+                                    if remove_overlay in overlay_rating_keys and rk in overlay_rating_keys[remove_overlay]:
+                                        overlay_rating_keys[remove_overlay].remove(rk)
+                    except Failed as e:
+                        logger.error(e)
 
             for overlay_name, over_keys in overlay_rating_keys.items():
                 clean_name, _ = util.validate_filename(overlay_name)
@@ -98,11 +105,6 @@ class Overlays:
             remove_overlays.extend(get_overlay_items(libtype="season"))
         elif self.library.is_music:
             remove_overlays.extend(get_overlay_items(libtype="album"))
-
-        if remove_overlays:
-            logger.info("")
-            logger.separator(f"Removing Overlays for the {self.library.name} Library")
-            logger.info("")
 
         for i, item in enumerate(remove_overlays, 1):
             logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item.title}")

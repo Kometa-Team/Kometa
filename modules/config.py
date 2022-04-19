@@ -781,11 +781,11 @@ class ConfigFile:
                     continue
 
                 logger.info("")
-                logger.separator("Scanning Metadata Files", space=False, border=False)
+                logger.separator("Scanning Metadata and Overlay Files", space=False, border=False)
                 library.scan_files()
                 if not library.metadata_files and not library.library_operation and not self.playlist_files:
                     logger.info("")
-                    logger.error("Config Error: No valid metadata files, playlist files, or library operations found")
+                    logger.error("Config Error: No valid metadata files, overlay files, playlist files, or library operations found")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):
