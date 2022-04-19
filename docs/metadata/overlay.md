@@ -6,7 +6,7 @@ Overlays and templates are defined within one or more Overlay files, which are l
 
 **To remove all overlays use the `remove_overlays` library operation.**
 
-**To change a single overlay original Image either replace the image in the assets folder or remove the `Overlay` shared label and then PMM will overlay the new image**
+**To change a single overlay original image either replace the image in the assets folder or remove the `Overlay` shared label and then PMM will overlay the new image**
 
 These are the attributes which can be used within the Overlay File:
 
@@ -35,6 +35,26 @@ overlays:
 
 Each section must have the only required attribute, `overlay`.
 
+### Overlay Name
+
+You can specify the Overlay Name in 3 ways.
+
+1. If there is no `overlay` attribute PMM will look in your `config/overlays` folder for a `.png` file named the same as the mapping name of the overlay definition.
+    ```yaml
+    overlays:
+      IMDb Top 250:
+        imdb_chart: top_movies
+    ```
+   
+2. If the `overlay` attribute is given a string PMM will look in your `config/overlays` folder for a `.png` file named the same as the string given.
+    ```yaml
+    overlays:
+      overlay: IMDb Top 250
+      IMDb Top 250:
+        imdb_chart: top_movies
+    ```
+   
+3. Using a dictionary for more overlay location options.
 
 | Attribute | Description                                                                                                  | Required |
 |:----------|:-------------------------------------------------------------------------------------------------------------|:--------:|
@@ -53,7 +73,29 @@ overlays:
     imdb_chart: top_movies
 ```
 
-There are three types of attributes that can be utilized within an overlay:
+### Remove Overlay
+
+You can add `remove_overlay` to an overlay definition and give it a list or comma separated string of overlay names you want removed from this item if this overlay is attached to the item.
+
+```yaml
+overlays:
+  4K:
+    plex_search:
+      all:
+        resolution: 4K
+  HDR:
+    plex_search:
+      all:
+        hdr: true
+  4K-HDR:
+    remove_overlay:
+      - 4K
+      - HDR
+    plex_search:
+      all:
+        resolution: 4K
+        hdr: true
+```
 
 ### Builders
 
@@ -93,7 +135,7 @@ These filter media items added to the collection by any of the Builders.
 overlays:
   4K:
     overlay:
-      name: 4K    # This will look for a local overlays/4K.png in your configs folder
+      name: 4K    # This will look for a local overlays/4K.png in your config folder
     plex_search:
       all:
         resolution: 4K

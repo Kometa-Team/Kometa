@@ -30,7 +30,10 @@ class Overlays:
                     builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
                     logger.info("")
 
-                    logger.separator(f"Running {k} Overlay", space=False, border=False)
+                    logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
+
+                    if builder.overlay not in overlay_rating_keys:
+                        overlay_rating_keys[builder.overlay] = []
 
                     if builder.filters or builder.tmdb_filters:
                         logger.info("")
@@ -45,12 +48,16 @@ class Overlays:
                         logger.info("")
                         builder.filter_and_save_items(builder.gather_ids(method, value))
                         if builder.added_items:
-                            if builder.overlay not in overlay_rating_keys:
-                                overlay_rating_keys[builder.overlay] = []
                             for item in builder.added_items:
                                 item_keys[item.ratingKey] = item
                                 if item.ratingKey not in overlay_rating_keys[builder.overlay]:
                                     overlay_rating_keys[builder.overlay].append(item.ratingKey)
+
+                    if builder.remove_overlays:
+                        for rk in overlay_rating_keys[builder.overlay]:
+                            for remove_overlay in builder.remove_overlays:
+                                if remove_overlay in overlay_rating_keys and rk in overlay_rating_keys[remove_overlay]:
+                                    overlay_rating_keys[remove_overlay].remove(rk)
 
             for overlay_name, over_keys in overlay_rating_keys.items():
                 clean_name, _ = util.validate_filename(overlay_name)
@@ -68,6 +75,20 @@ class Overlays:
                 if self.config.Cache:
                     self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
 
+        def find_poster_url(plex_item):
+            if self.library.is_movie:
+                if plex_item.ratingKey in self.library.movie_rating_key_map:
+                    return self.config.TMDb.get_movie(self.library.movie_rating_key_map[plex_item.ratingKey]).poster_url
+            elif self.library.is_show:
+                check_key = plex_item.ratingKey if isinstance(plex_item, Show) else plex_item.show().ratingKey
+                tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[check_key])
+                if isinstance(plex_item, Show) and plex_item.ratingKey in self.library.show_rating_key_map:
+                    return self.config.TMDb.get_show(tmdb_id).poster_url
+                elif isinstance(plex_item, Season):
+                    return self.config.TMDb.get_season(tmdb_id, plex_item.seasonNumber).poster_url
+                elif isinstance(plex_item, Episode):
+                    return self.config.TMDb.get_episode(tmdb_id, plex_item.seasonNumber, plex_item.episodeNumber).still_url
+
         def get_overlay_items(libtype=None):
             return [o for o in self.library.search(label="Overlay", libtype=libtype) if o.ratingKey not in item_overlays]
 
@@ -78,6 +99,11 @@ class Overlays:
         elif self.library.is_music:
             remove_overlays.extend(get_overlay_items(libtype="album"))
 
+        if remove_overlays:
+            logger.info("")
+            logger.separator(f"Removing Overlays for the {self.library.name} Library")
+            logger.info("")
+
         for i, item in enumerate(remove_overlays, 1):
             logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item.title}")
             clean_name, _ = util.validate_filename(item.title)
@@ -86,28 +112,32 @@ class Overlays:
                 folder_name=clean_name if self.library.asset_folders else None,
                 prefix=f"{item.title}'s "
             )
-            poster_location = None
             is_url = False
+            original = None
             if poster:
                 poster_location = poster.location
             elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
-                poster_location = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
+                original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
+                poster_location = original
             elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
-                poster_location = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
+                original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
+                poster_location = original
             else:
                 is_url = True
-                if self.library.is_movie:
-                    if item.ratingKey in self.library.movie_rating_key_map:
-                        poster_location = self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey]).poster_url
-                elif self.library.is_show:
-                    if item.ratingKey in self.library.show_rating_key_map:
-                        poster_location = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey])).poster_url
+                poster_location = find_poster_url(item)
             if poster_location:
                 self.library.upload_poster(item, poster_location, url=is_url)
                 self.library.edit_tags("label", item, remove_tags=["Overlay"])
+                if original:
+                    os.remove(original)
             else:
                 logger.error(f"No Poster found to restore for {item.title}")
         logger.exorcise()
+
+        if item_overlays:
+            logger.info("")
+            logger.separator(f"Applying Overlays for the {self.library.name} Library")
+            logger.info("")
 
         for i, (over_key, over_names) in enumerate(item_overlays.items(), 1):
             try:
@@ -136,43 +166,38 @@ class Overlays:
                     folder_name=clean_name if self.library.asset_folders else None,
                     prefix=f"{item.title}'s "
                 )
+
                 has_original = False
                 changed_image = False
+                new_backup = None
                 if poster:
                     if image_compare and str(poster.compare) != str(image_compare):
                         changed_image = True
-                else:
+                elif has_overlay:
                     if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                         has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
                     elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                         has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
                     else:
-                        changed_image = True
                         self.library.reload(item)
-                        poster_url = item.posterUrl
-                        if has_overlay:
-                            if self.library.is_movie:
-                                if item.ratingKey in self.library.movie_rating_key_map:
-                                    poster_url = self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey]).poster_url
-                            elif self.library.is_show:
-                                check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey
-                                tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[check_key])
-                                if isinstance(item, Show) and item.ratingKey in self.library.show_rating_key_map:
-                                    poster_url = self.config.TMDb.get_show(tmdb_id).poster_url
-                                elif isinstance(item, Season):
-                                    poster_url = self.config.TMDb.get_season(tmdb_id, item.seasonNumber).poster_url
-                                elif isinstance(item, Episode):
-                                    poster_url = self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
-                        response = self.config.get(poster_url)
-                        if response.status_code >= 400:
-                            raise Failed(f"Overlay Error: Poster Download Failed for {item.title}")
-                        ext = "jpg" if response.headers["Content-Type"] == "image/jpeg" else "png"
-                        backup_image = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.{ext}")
-                        with open(backup_image, "wb") as handler:
-                            handler.write(response.content)
-                        while util.is_locked(backup_image):
-                            time.sleep(1)
-                        has_original = backup_image
+                        new_backup = find_poster_url(item)
+                        if new_backup is None:
+                            new_backup = item.posterUrl
+                else:
+                    self.library.reload(item)
+                    new_backup = item.posterUrl
+                if new_backup:
+                    changed_image = True
+                    image_response = self.config.get(new_backup)
+                    if image_response.status_code >= 400:
+                        raise Failed(f"Overlay Error: Poster Download Failed for {item.title}")
+                    i_ext = "jpg" if image_response.headers["Content-Type"] == "image/jpeg" else "png"
+                    backup_image_path = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.{i_ext}")
+                    with open(backup_image_path, "wb") as handler:
+                        handler.write(image_response.content)
+                    while util.is_locked(backup_image_path):
+                        time.sleep(1)
+                    has_original = backup_image_path
 
                 poster_uploaded = False
                 if changed_image or overlay_change:
