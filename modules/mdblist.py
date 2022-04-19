@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 logger = util.logger
 
 builders = ["mdblist_list"]
-sort_names = ["score", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular", "rogerebert", "rtomatoes", "metacritic", "myanimelist", "budget", "revenue", "added"]
+sort_names = ["rank", "score", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular", "rogerebert", "rtomatoes", "metacritic", "myanimelist", "budget", "revenue", "added"]
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 base_url = "https://mdblist.com/lists"
 api_url = "https://mdblist.com/api/"
@@ -145,7 +145,7 @@ class Mdblist:
                     logger.warning(f"{error_type} Warning: mdb_list limit attribute must be an integer 0 or greater using 0 as default")
             if list_count is None:
                 list_count = 0
-            sort_by = "score.desc"
+            sort_by = "rank.asc"
             if "sort_by" in dict_methods:
                 if mdb_dict[dict_methods["sort_by"]] is None:
                     logger.warning(f"{error_type} Warning: mdb_list sort_by attribute is blank using score as default")
