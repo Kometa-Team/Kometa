@@ -34,12 +34,13 @@ collections:
 ```
 You can also sort the items by using the `sort_by` and `url` attributes under `mdblist_list`.
 
-The default `sort_by` when it's not specified is `score.desc`.
+The default `sort_by` when it's not specified is `rank.asc`.
 
 ### Sort Options
 
 | Option                                  | Description                   |
 |:----------------------------------------|:------------------------------|
+| `rank.asc`<br>`rank.desc`               | Sort by MdbList Rank          |
 | `score.asc`<br>`score.desc`             | Sort by MdbList Score         |
 | `released.asc`<br>`released.desc`       | Sort by Release Date          |
 | `imdbrating.asc`<br>`imdbrating.desc`   | Sort by IMDb Rating           |
