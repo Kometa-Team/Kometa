@@ -449,15 +449,7 @@ def run_collection(config, library, metadata, requested_collections):
         library.status[mapping_name] = {"status": "", "errors": [], "created": False, "modified": False, "deleted": False, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
-            logger.separator(f"{mapping_name} Collection in {library.name}")
-            logger.info("")
-            if output_str:
-                logger.info(output_str)
-                logger.info("")
-
-            logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
-
-            builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library)
+            builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str)
             library.stats["names"].append(builder.name)
             logger.info("")
 
@@ -625,15 +617,7 @@ def run_playlists(config):
             server_name = None
             library_names = None
             try:
-                logger.separator(f"{mapping_name} Playlist")
-                logger.info("")
-                if output_str:
-                    logger.info(output_str)
-                    logger.info("")
-
-                logger.separator(f"Validating {mapping_name} Attributes", space=False, border=False)
-
-                builder = CollectionBuilder(config, playlist_file, mapping_name, playlist_attrs)
+                builder = CollectionBuilder(config, playlist_file, mapping_name, playlist_attrs, extra=output_str)
                 stats["names"].append(builder.name)
                 logger.info("")
 
