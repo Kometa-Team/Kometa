@@ -97,7 +97,7 @@ boolean_details = [
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
-    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test",
+    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "remove_overlay",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
@@ -190,7 +190,7 @@ custom_sort_builders = [
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
 episode_parts_only = ["plex_pilots"]
-overlay_only = ["overlay"]
+overlay_only = ["overlay", "remove_overlay"]
 overlay_attributes = [
      "filters", "limit", "show_missing", "save_missing", "missing_only_released", "minimum_items", "cache_builders", "tmdb_region"
 ] + all_builders + overlay_only
@@ -211,7 +211,7 @@ music_attributes = [
 ] + details + summary_details + poster_details + background_details
 
 class CollectionBuilder:
-    def __init__(self, config, metadata, name, data, library=None, overlay=None):
+    def __init__(self, config, metadata, name, data, library=None, overlay=None, extra=None):
         self.config = config
         self.metadata = metadata
         self.mapping_name = name
@@ -228,6 +228,14 @@ class CollectionBuilder:
         else:
             self.type = "collection"
         self.Type = self.type.capitalize()
+
+        logger.separator(f"{self.mapping_name} {self.Type}{f' in {self.library.name}' if self.library else ''}")
+        logger.info("")
+        if extra:
+            logger.info(extra)
+            logger.info("")
+
+        logger.separator(f"Validating {self.mapping_name} Attributes", space=False, border=False)
 
         if "name" in methods:
             name = self.data[methods["name"]]
@@ -256,6 +264,7 @@ class CollectionBuilder:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
 
+        self.remove_overlays = []
         if self.overlay:
             if "overlay" in methods:
                 logger.debug("")
@@ -294,9 +303,19 @@ class CollectionBuilder:
                     self.overlay = data[methods["overlay"]]
             else:
                 self.overlay = self.mapping_name
+                logger.warning(f"{self.Type} Warning: No overlay attribute using mapping name {self.mapping_name} as the overlay name")
             overlay_path = os.path.join(library.overlay_folder, f"{self.overlay}.png")
             if not os.path.exists(overlay_path):
                 raise Failed(f"{self.Type} Error: Overlay Image not found at: {overlay_path}")
+
+            if "remove_overlay" in methods:
+                logger.debug("")
+                logger.debug("Validating Method: remove_overlay")
+                logger.debug(f"Value: {data[methods['remove_overlay']]}")
+                if data[methods["remove_overlay"]]:
+                    self.remove_overlays = util.get_list(data[methods["remove_overlay"]])
+                else:
+                    logger.error(f"{self.Type} Error: remove_overlay attribute is blank")
 
         if self.playlist:
             if "libraries" in methods:
@@ -388,8 +407,8 @@ class CollectionBuilder:
                 s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
                 logger.debug("")
                 logger.debug(f"Validating Method: {s_attr}")
+                logger.debug(f"Value: {self.data[methods[s_attr]]}")
                 if self.data[methods[s_attr]]:
-                    logger.debug(f"Value: {self.data[methods[s_attr]]}")
                     self.sync_to_users = self.data[methods[s_attr]]
                 else:
                     logger.warning(f"Playlist Error: sync_to_users attribute is blank defaulting to playlist_sync_to_users: {self.sync_to_users}")
