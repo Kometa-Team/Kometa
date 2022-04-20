@@ -4,7 +4,7 @@ from modules.builder import CollectionBuilder
 from modules.util import Failed
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
-from PIL import Image
+from PIL import Image, ImageFilter
 
 logger = util.logger
 
@@ -67,20 +67,24 @@ class Overlays:
                         logger.error(e)
 
             for overlay_name, over_keys in overlay_to_keys.items():
-                clean_name, _ = util.validate_filename(overlay_name)
-                image_compare = None
-                if self.config.Cache:
-                    _, image_compare, _ = self.config.Cache.query_image_map(overlay_name, f"{self.library.image_table_name}_overlays")
-                overlay_file = os.path.join(self.library.overlay_folder, f"{clean_name}.png")
-                overlay_size = os.stat(overlay_file).st_size
-                overlay_updated[overlay_name] = not image_compare or str(overlay_size) != str(image_compare)
-                overlay_images[overlay_name] = Image.open(overlay_file).convert("RGBA")
+                if overlay_name == "blur":
+                    overlay_updated[overlay_name] = False
+                    overlay_images[overlay_name] = None
+                else:
+                    clean_name, _ = util.validate_filename(overlay_name)
+                    image_compare = None
+                    if self.config.Cache:
+                        _, image_compare, _ = self.config.Cache.query_image_map(overlay_name, f"{self.library.image_table_name}_overlays")
+                    overlay_file = os.path.join(self.library.overlay_folder, f"{clean_name}.png")
+                    overlay_size = os.stat(overlay_file).st_size
+                    overlay_updated[overlay_name] = not image_compare or str(overlay_size) != str(image_compare)
+                    overlay_images[overlay_name] = Image.open(overlay_file).convert("RGBA")
+                    if self.config.Cache:
+                        self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
                 for over_key in over_keys:
                     if over_key not in key_to_overlays:
                         key_to_overlays[over_key] = (key_to_item[over_key], [])
                     key_to_overlays[over_key][1].append(overlay_name)
-                if self.config.Cache:
-                    self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
 
         def find_poster_url(plex_item):
             if isinstance(plex_item, Movie):
@@ -207,8 +211,11 @@ class Overlays:
                         temp = os.path.join(self.library.overlay_folder, f"temp.png")
                         try:
                             for over_name in over_names:
-                                new_poster = new_poster.resize(overlay_images[over_name].size, Image.ANTIALIAS)
-                                new_poster.paste(overlay_images[over_name], (0, 0), overlay_images[over_name])
+                                if over_name == "blur":
+                                    new_poster = new_poster.filter(ImageFilter.GaussianBlur(50))
+                                else:
+                                    new_poster = new_poster.resize(overlay_images[over_name].size, Image.ANTIALIAS)
+                                    new_poster.paste(overlay_images[over_name], (0, 0), overlay_images[over_name])
                             new_poster.save(temp, "PNG")
                             self.library.upload_poster(item, temp)
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)

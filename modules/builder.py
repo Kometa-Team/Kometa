@@ -305,7 +305,7 @@ class CollectionBuilder:
                 self.overlay = self.mapping_name
                 logger.warning(f"{self.Type} Warning: No overlay attribute using mapping name {self.mapping_name} as the overlay name")
             overlay_path = os.path.join(library.overlay_folder, f"{self.overlay}.png")
-            if not os.path.exists(overlay_path):
+            if self.overlay != "blur" and not os.path.exists(overlay_path):
                 raise Failed(f"{self.Type} Error: Overlay Image not found at: {overlay_path}")
 
             if "supress_overlays" in methods:

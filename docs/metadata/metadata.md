@@ -47,7 +47,7 @@ There are three types of attributes that can be utilized within a collection:
 Builders use third-party services to source items to be added to the collection. Multiple builders can be used in the same collection from a variety of sources listed below.
 
 * [Plex Builders](builders/plex)
-* [Smart Builders](builders/smart)
+* [Smart Builders](builders/smart) (Collections Only)
 * [TMDb Builders](builders/tmdb)
 * [TVDb Builders](builders/tvdb)
 * [IMDb Builders](builders/imdb)
