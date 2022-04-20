@@ -7,6 +7,7 @@ libraries:                                      # This is called out once within
       - folder: config/Movies/                  # This is a local directory on the system
       - git: meisnate12/MovieCharts             # This is a file within the GitHub Repository
     overlay_path:
+      - remove_overlays: false                  # Set this to true to remove all overlays
       - file: config/Overlays.yml               # This is a local file on the system
   TV Shows:                           
     metadata_path:
