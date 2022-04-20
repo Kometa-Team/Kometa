@@ -77,11 +77,13 @@ overlays:
 
 There is a special overlay named `blur` that when given as the overlay name will instead of finding the image will just blur the image instead.
 
+You can control the level of the blur by providing a number with the attribute like so `blur(##)`.
+
 ```yaml
 overlays:
   blur:
     overlay:
-      name: blur
+      name: blur(50)
     plex_search:
       all:
         resolution: 4K
