@@ -32,6 +32,7 @@ class Library(ABC):
         self.mal_map = {}
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
+        self.cached_items = {}
         self.run_again = []
         self.overlays_old = []
         self.type = ""
@@ -296,9 +297,17 @@ class Library(ABC):
         except yaml.scanner.ScannerError as e:
             logger.error(f"YAML Error: {util.tab_new_lines(e)}")
 
-    def map_guids(self):
+    def cache_items(self):
+        logger.info("")
+        logger.separator(f"Caching {self.name} Library Items", space=False, border=False)
+        logger.info("")
         items = self.get_all()
-        logger.info(f"Mapping {self.type} Library: {self.name}")
+        for item in items:
+            self.cached_items[item.ratingKey] = item
+        return items
+
+    def map_guids(self, items):
+        logger.info(f"Mapping {self.type} Library: {self.name}", space=False, border=False)
         logger.info("")
         for i, item in enumerate(items, 1):
             logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
@@ -315,4 +324,3 @@ class Library(ABC):
                     util.add_dict_list(imdb_id, item.ratingKey, self.imdb_map)
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")
-        return items

@@ -220,12 +220,6 @@ def update_libraries(config):
             logger.info("")
             logger.separator(f"{library.name} Library")
 
-            if config.library_first and not config.test_mode and not collection_only:
-                if not overlays_only and library.library_operation:
-                    library.Operations.run_operations()
-                if not operations_only and (library.overlay_files or library.remove_overlays):
-                    library.Overlays.run_overlays()
-
             logger.debug("")
             logger.debug(f"Mapping Name: {library.original_mapping_name}")
             logger.debug(f"Folder Name: {library.mapping_name}")
@@ -259,11 +253,20 @@ def update_libraries(config):
                 for collection in library.get_all_collections():
                     logger.info(f"Collection {collection.title} Deleted")
                     library.query(collection.delete)
-            if not library.is_other and not library.is_music and not operations_only and (library.metadata_files or library.overlay_files or library.remove_overlays):
+
+            temp_items = library.cache_items()
+            if not library.is_other and not library.is_music:
                 logger.info("")
                 logger.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
-                library.map_guids()
+                library.map_guids(temp_items)
+
+            if config.library_first and not config.test_mode and not collection_only:
+                if not overlays_only and library.library_operation:
+                    library.Operations.run_operations()
+                if not operations_only and (library.overlay_files or library.remove_overlays):
+                    library.Overlays.run_overlays()
+
             for metadata in library.metadata_files:
                 metadata_name = metadata.get_file_name()
                 if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
