@@ -56,7 +56,7 @@ class Operations:
             logger.info(f"{len(tracks)} Tracks Processed; {num_edited} Blank Track Titles Updated")
 
         if self.library.items_library_operation:
-            items = self.library.get_all(load=True)
+            items = self.library.get_all()
             radarr_adds = []
             sonarr_adds = []
             trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie) if self.library.mass_trakt_rating_update else []
@@ -67,11 +67,6 @@ class Operations:
                     reverse_anidb[v] = k
 
             for i, item in enumerate(items, 1):
-                try:
-                    self.library.reload(item)
-                except Failed as e:
-                    logger.error(e)
-                    continue
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
                 if self.library.assets_for_all:
                     self.library.update_asset2(item)
@@ -356,12 +351,6 @@ class Operations:
                 logger.info(f"{col.title} Deleted")
             elif col.title not in self.library.collections:
                 unmanaged_collections.append(col)
-        if self.library.mass_collection_mode:
-            logger.info("")
-            logger.separator(f"Mass Collection Mode for {self.library.name} Library", space=False, border=False)
-            logger.info("")
-            for col in self.library.get_all_collections():
-                self.library.collection_mode_query(col, self.library.mass_collection_mode)
 
         if self.library.show_unmanaged and len(unmanaged_collections) > 0:
             logger.info("")
@@ -382,6 +371,12 @@ class Operations:
             logger.info("")
             for col in unmanaged_collections:
                 self.library.update_asset2(col)
+        if self.library.mass_collection_mode:
+            logger.info("")
+            logger.separator(f"Unmanaged Mass Collection Mode for {self.library.name} Library", space=False, border=False)
+            logger.info("")
+            for col in unmanaged_collections:
+                self.library.collection_mode_query(col, self.library.mass_collection_mode)
 
         if self.library.metadata_backup:
             logger.info("")
