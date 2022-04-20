@@ -1955,9 +1955,13 @@ class CollectionBuilder:
 
     def fetch_item(self, item):
         try:
-            current = self.library.fetchItem(item.ratingKey if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) else int(item))
+            key = item.ratingKey if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) else int(item)
+            if key in self.library.cached_items:
+                return self.library.cached_items[key]
+            current = self.library.fetchItem(key)
             if not isinstance(current, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 raise NotFound
+            self.library.cached_items[key] = current
             return current
         except (BadRequest, NotFound):
             raise Failed(f"Plex Error: Item {item} not found")
