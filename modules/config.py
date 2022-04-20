@@ -577,7 +577,6 @@ class ConfigFile:
                     "mass_originally_available_update": None,
                     "mass_imdb_parental_labels": None,
                     "remove_title_parentheses": None,
-                    "remove_overlays": None
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -671,8 +670,6 @@ class ConfigFile:
                             params["update_blank_track_titles"] = check_for_attribute(lib["operations"], "update_blank_track_titles", var_type="bool", default=False, save=False)
                         if "remove_title_parentheses" in lib["operations"]:
                             params["remove_title_parentheses"] = check_for_attribute(lib["operations"], "remove_title_parentheses", var_type="bool", default=False, save=False)
-                        if "remove_overlays" in lib["operations"]:
-                            params["remove_overlays"] = check_for_attribute(lib["operations"], "remove_overlays", var_type="bool", default=False, save=False)
                         if "mass_collection_mode" in lib["operations"]:
                             try:
                                 params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
@@ -753,12 +750,16 @@ class ConfigFile:
                                 params["skip_library"] = True
 
                     params["overlay_path"] = []
+                    params["remove_overlays"] = False
                     if lib and "overlay_path" in lib:
                         if not lib["overlay_path"]:
                             raise Failed("Config Error: overlay_path attribute is blank")
                         files = util.load_files(lib["overlay_path"], "overlay_path")
                         if not files:
                             raise Failed("Config Error: No Paths Found for overlay_path")
+                        for file in util.get_list(lib["overlay_path"], split=False):
+                            if isinstance(file, dict) and "remove_overlays" in file and file["remove_overlays"] is True:
+                                params["remove_overlays"] = True
                         params["overlay_path"] = files
 
                     logger.info("")

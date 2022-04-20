@@ -141,6 +141,22 @@ libraries:
       - file: config/Overlays.yml
 ```
 
+### Remove Overlays
+
+You can remove overlays from a library by adding `remove_overlays: true` to overlay_path
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_path:
+      - file: config/TV Shows.yml
+    overlay_path:
+      - file: config/Overlays.yml
+      - remove_overlays: ture
+```
+
+* This will remove all overlays when run and not generate new ones.
+
 ### Missing Path
 
 The `missing_path` attribute is used to define where to save the "missing items" YAML file. This file is used to store information about media which is missing from the Plex library compared to what is expected from the Metadata file.

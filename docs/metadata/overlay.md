@@ -4,7 +4,7 @@ Overlay files are used to create and maintain overlays within the Plex libraries
 
 Overlays and templates are defined within one or more Overlay files, which are linked to libraries in the [Libraries Attribute](../config/libraries.md#overlay-path) within the [Configuration File](../config/configuration.md).
 
-**To remove all overlays use the `remove_overlays` library operation.**
+**To remove all overlays add `remove_overlays: true` to the `overlay_path` [Libraries Attribute](../config/libraries.md#remove-overlays).**
 
 **To change a single overlay original image either replace the image in the assets folder or remove the `Overlay` shared label and then PMM will overlay the new image**
 
@@ -73,9 +73,11 @@ overlays:
     imdb_chart: top_movies
 ```
 
-### Remove Overlay
+### Supress Overlays
 
-You can add `remove_overlay` to an overlay definition and give it a list or comma separated string of overlay names you want removed from this item if this overlay is attached to the item.
+You can add `supress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.
+
+So in this example if the `4K-HDR` overlay matches an item then the `4K` and `HDR` overlays will also match. The `supress_overlays` attribute on `4K-HDR` will stop the overlays specified (`4K` and `HDR`) from also being applied. 
 
 ```yaml
 overlays:
@@ -88,7 +90,7 @@ overlays:
       all:
         hdr: true
   4K-HDR:
-    remove_overlay:
+    supress_overlays:
       - 4K
       - HDR
     plex_search:
@@ -129,7 +131,9 @@ These filter media items added to the collection by any of the Builders.
 
 * [Filters](filters)
 
-## Examples
+## Example
+
+### Example Overlay File
 
 ```yaml
 overlays:
@@ -153,4 +157,18 @@ overlays:
     plex_all: true
     filters:
       has_dolby_vision: true
+```
+
+### Example Folder Structure
+
+```
+config
+├── config.yml
+├── Movies.yml
+├── TV Shows.yml
+├── Overlays.yml
+├── overlays
+│   ├── 4K.png
+│   ├── Dolby.png
+│   ├── HDR.png
 ```
