@@ -307,6 +307,16 @@ class CollectionBuilder:
             else:
                 self.overlay = self.mapping_name
                 logger.warning(f"{self.Type} Warning: No overlay attribute using mapping name {self.mapping_name} as the overlay name")
+            if self.overlay.startswith("blur"):
+                try:
+                    match = re.search("\\(([^)]+)\\)", self.overlay)
+                    if not match or 0 >= int(match.group(1)) > 100:
+                        raise ValueError
+                    self.overlay = f"blur({match.group(1)})"
+                except ValueError:
+                    logger.error(f"Overlay Error: failed to parse overlay blur name: {self.overlay} defaulting to blur(50)")
+                    self.overlay = "blur(50)"
+
             overlay_path = os.path.join(library.overlay_folder, f"{self.overlay}.png")
             if self.overlay != "blur" and not os.path.exists(overlay_path):
                 raise Failed(f"{self.Type} Error: Overlay Image not found at: {overlay_path}")

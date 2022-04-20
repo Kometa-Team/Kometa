@@ -1,4 +1,4 @@
-import os, time
+import os, re, time
 from modules import util
 from modules.builder import CollectionBuilder
 from modules.util import Failed
@@ -29,6 +29,7 @@ class Overlays:
             logger.separator(f"Removing Overlays for the {self.library.name} Library")
             logger.info("")
         else:
+            overlay_suppression = {}
             for overlay_file in self.library.overlay_files:
                 for k, v in overlay_file.overlays.items():
                     try:
@@ -59,12 +60,15 @@ class Overlays:
                                         overlay_to_keys[builder.overlay].append(item.ratingKey)
 
                         if builder.suppress_overlays:
-                            for rk in overlay_to_keys[builder.overlay]:
-                                for suppress_overlay in builder.suppress_overlays:
-                                    if suppress_overlay in overlay_to_keys and rk in overlay_to_keys[suppress_overlay]:
-                                        overlay_to_keys[suppress_overlay].remove(rk)
+                            overlay_suppression[builder.overlay] = builder.suppress_overlays
                     except Failed as e:
                         logger.error(e)
+
+            for over_name, suppress_names in overlay_suppression.items():
+                for rk in overlay_to_keys[over_name]:
+                    for suppress_name in suppress_names:
+                        if suppress_name in overlay_to_keys and rk in overlay_to_keys[suppress_name]:
+                            overlay_to_keys[suppress_name].remove(rk)
 
             for overlay_name, over_keys in overlay_to_keys.items():
                 if overlay_name == "blur":
@@ -144,7 +148,7 @@ class Overlays:
             logger.info("")
             logger.separator(f"Applying Overlays for the {self.library.name} Library")
             logger.info("")
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: io[1][0].title), 1):
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: io[1][0].titleSort), 1):
                 try:
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item.title}")
                     image_compare = None
@@ -210,10 +214,16 @@ class Overlays:
                         new_poster = Image.open(poster.location if poster else has_original).convert("RGBA")
                         temp = os.path.join(self.library.overlay_folder, f"temp.png")
                         try:
+                            blur_num = 0
                             for over_name in over_names:
-                                if over_name == "blur":
-                                    new_poster = new_poster.filter(ImageFilter.GaussianBlur(50))
-                                else:
+                                if over_name.startswith("blur"):
+                                    blur_test = int(re.search("\\(([^)]+)\\)", over_name).group(1))
+                                    if blur_test > blur_num:
+                                        blur_num = blur_test
+                            if blur_num > 0:
+                                new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
+                            for over_name in over_names:
+                                if not over_name.startswith("blur"):
                                     new_poster = new_poster.resize(overlay_images[over_name].size, Image.ANTIALIAS)
                                     new_poster.paste(overlay_images[over_name], (0, 0), overlay_images[over_name])
                             new_poster.save(temp, "PNG")
