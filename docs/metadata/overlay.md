@@ -73,6 +73,20 @@ overlays:
     imdb_chart: top_movies
 ```
 
+#### Blurring Overlay
+
+There is a special overlay named `blur` that when given as the overlay name will instead of finding the image will just blur the image instead.
+
+```yaml
+overlays:
+  blur:
+    overlay:
+      name: blur
+    plex_search:
+      all:
+        resolution: 4K
+```
+
 ### Supress Overlays
 
 You can add `supress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.

@@ -38,9 +38,9 @@ body:
   - type: textarea
     id: config
     attributes:
-      label: Relevant Collection/Playlist Definition
+      label: Relevant Collection/Overlay/Playlist Definition
       description: >
-        If you issue is happening with a specific collection/playlist please paste your definition here
+        If you issue is happening with a specific collection/overlay/playlist please paste your definition here
         This will be automatically formatted into code, so no need for backticks.
       render: yml
   - type: input
