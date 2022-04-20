@@ -87,11 +87,11 @@ overlays:
         resolution: 4K
 ```
 
-### Supress Overlays
+### Suppress Overlays
 
-You can add `supress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.
+You can add `suppress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.
 
-So in this example if the `4K-HDR` overlay matches an item then the `4K` and `HDR` overlays will also match. The `supress_overlays` attribute on `4K-HDR` will stop the overlays specified (`4K` and `HDR`) from also being applied. 
+So in this example if the `4K-HDR` overlay matches an item then the `4K` and `HDR` overlays will also match. The `suppress_overlays` attribute on `4K-HDR` will stop the overlays specified (`4K` and `HDR`) from also being applied. 
 
 ```yaml
 overlays:
@@ -104,7 +104,7 @@ overlays:
       all:
         hdr: true
   4K-HDR:
-    supress_overlays:
+    suppress_overlays:
       - 4K
       - HDR
     plex_search:
