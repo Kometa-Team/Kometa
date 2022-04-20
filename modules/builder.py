@@ -97,7 +97,7 @@ boolean_details = [
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
-    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "remove_overlay",
+    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "supress_overlays",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
 ]
@@ -190,7 +190,7 @@ custom_sort_builders = [
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
 episode_parts_only = ["plex_pilots"]
-overlay_only = ["overlay", "remove_overlay"]
+overlay_only = ["overlay", "supress_overlays"]
 overlay_attributes = [
      "filters", "limit", "show_missing", "save_missing", "missing_only_released", "minimum_items", "cache_builders", "tmdb_region"
 ] + all_builders + overlay_only
@@ -264,7 +264,7 @@ class CollectionBuilder:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
 
-        self.remove_overlays = []
+        self.supress_overlays = []
         if self.overlay:
             if "overlay" in methods:
                 logger.debug("")
@@ -308,14 +308,14 @@ class CollectionBuilder:
             if not os.path.exists(overlay_path):
                 raise Failed(f"{self.Type} Error: Overlay Image not found at: {overlay_path}")
 
-            if "remove_overlay" in methods:
+            if "supress_overlays" in methods:
                 logger.debug("")
-                logger.debug("Validating Method: remove_overlay")
-                logger.debug(f"Value: {data[methods['remove_overlay']]}")
-                if data[methods["remove_overlay"]]:
-                    self.remove_overlays = util.get_list(data[methods["remove_overlay"]])
+                logger.debug("Validating Method: supress_overlays")
+                logger.debug(f"Value: {data[methods['supress_overlays']]}")
+                if data[methods["supress_overlays"]]:
+                    self.supress_overlays = util.get_list(data[methods["supress_overlays"]])
                 else:
-                    logger.error(f"{self.Type} Error: remove_overlay attribute is blank")
+                    logger.error(f"{self.Type} Error: supress_overlays attribute is blank")
 
         if self.playlist:
             if "libraries" in methods:
