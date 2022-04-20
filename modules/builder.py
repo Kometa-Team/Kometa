@@ -354,6 +354,8 @@ class CollectionBuilder:
             "changes_webhooks": self.library.changes_webhooks,
             "cache_builders": 0
         }
+        if self.library.mass_collection_mode:
+            self.details["collection_mode"] = self.library.mass_collection_mode
         self.item_details = {}
         self.radarr_details = {}
         self.sonarr_details = {}
@@ -885,10 +887,10 @@ class CollectionBuilder:
         elif method_name == "tmdb_region":
             self.tmdb_region = util.parse(self.Type, method_name, method_data, options=self.config.TMDb.iso_3166_1)
         elif method_name == "collection_mode":
-            if method_data and str(method_data).lower() in plex.collection_mode_options:
-                self.details[method_name] = plex.collection_mode_options[str(method_data).lower()]
-            else:
-                logger.error(f"Config Error: {method_data} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
+            try:
+                self.details[method_name] = util.check_collection_mode(method_data)
+            except Failed as e:
+                logger.error(e)
         elif method_name == "collection_filtering":
             if method_data and str(method_data).lower() in plex.collection_filtering_options:
                 self.details[method_name] = str(method_data).lower()
@@ -2023,7 +2025,6 @@ class CollectionBuilder:
             total = len(items)
             spacing = len(str(total)) * 2 + 1
             for i, item in enumerate(items, 1):
-                self.library.reload(item)
                 number_text = f"{i}/{total}"
                 logger.info(f"{number_text:>{spacing}} | {self.name} {self.Type} | - | {util.item_title(item)}")
                 if self.playlist:
@@ -2409,15 +2410,15 @@ class CollectionBuilder:
                 path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
                 path = path[:-1] if path.endswith(('/', '\\')) else path
                 tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], path))
-            advance_edits = {}
-            if hasattr(item, "preferences"):
+            if any([mn in plex.item_advance_keys for mn in self.item_details]) and hasattr(item, "preferences"):
+                advance_edits = {}
                 prefs = [p.id for p in item.preferences()]
                 for method_name, method_data in self.item_details.items():
                     if method_name in plex.item_advance_keys:
                         key, options = plex.item_advance_keys[method_name]
                         if key in prefs and getattr(item, key) != options[method_data]:
                             advance_edits[key] = options[method_data]
-            self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
+                self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
 
             if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
                 try:
