@@ -58,11 +58,11 @@ class Overlays:
                                     if item.ratingKey not in overlay_to_keys[builder.overlay]:
                                         overlay_to_keys[builder.overlay].append(item.ratingKey)
 
-                        if builder.supress_overlays:
+                        if builder.suppress_overlays:
                             for rk in overlay_to_keys[builder.overlay]:
-                                for supress_overlay in builder.supress_overlays:
-                                    if supress_overlay in overlay_to_keys and rk in overlay_to_keys[supress_overlay]:
-                                        overlay_to_keys[supress_overlay].remove(rk)
+                                for suppress_overlay in builder.suppress_overlays:
+                                    if suppress_overlay in overlay_to_keys and rk in overlay_to_keys[suppress_overlay]:
+                                        overlay_to_keys[suppress_overlay].remove(rk)
                     except Failed as e:
                         logger.error(e)
 

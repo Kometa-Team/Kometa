@@ -296,8 +296,16 @@ class MetadataFile(DataFile):
                         raise Failed(f"Config Error: {map_name} type attribute: {dynamic[methods['type']]} requires trakt to be configured")
                     else:
                         auto_type = dynamic[methods["type"]].lower()
-                        og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist") if "exclude" in methods else []
-                        include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if "include" in methods else []
+                        og_exclude = []
+                        if "exclude" in self.temp_vars:
+                            og_exclude = util.parse("Config", "exclude", self.temp_vars["exclude"], parent="template_variable", datatype="strlist")
+                        elif "exclude" in methods:
+                            og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist")
+                        include = []
+                        if "include" in self.temp_vars:
+                            include = util.parse("Config", "include", self.temp_vars["include"], parent="template_variable", datatype="strlist")
+                        elif "include" in methods:
+                            include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist")
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "addons" in methods else {}
                         exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
@@ -461,7 +469,9 @@ class MetadataFile(DataFile):
                             else:
                                 logger.warning(f"Config Error: {add_key} Custom Key must have at least one Key")
                     title_format = default_title_format
-                    if "title_format" in methods:
+                    if "title_format" in self.temp_vars:
+                        title_format = util.parse("Config", "title_format", self.temp_vars["title_format"], parent="template_variable", default=default_title_format)
+                    elif "title_format" in methods:
                         title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
                     if "<<key_name>>" not in title_format and "<<title>>" not in title_format:
                         logger.error(f"Config Error: <<key_name>> not in title_format: {title_format} using default: {default_title_format}")
@@ -490,10 +500,22 @@ class MetadataFile(DataFile):
                     else:
                         self.templates[map_name] = default_template if default_template else default_templates[auto_type]
                         template_names = [map_name]
-                    remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_prefix" in methods else []
-                    remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist") if "remove_suffix" in methods else []
+                    remove_prefix = []
+                    if "remove_prefix" in self.temp_vars:
+                        remove_prefix = util.parse("Config", "remove_prefix", self.temp_vars["remove_prefix"], parent="template_variable", datatype="commalist")
+                    elif "remove_prefix" in methods:
+                        remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist")
+                    remove_suffix = []
+                    if "remove_suffix" in self.temp_vars:
+                        remove_suffix = util.parse("Config", "remove_suffix", self.temp_vars["remove_suffix"], parent="template_variable", datatype="commalist")
+                    elif "remove_suffix" in methods:
+                        remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist")
                     sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
-                    other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods) if "other_name" in methods and include else None
+                    other_name = None
+                    if "other_name" in self.temp_vars and include:
+                        other_name = util.parse("Config", "other_name", self.temp_vars["remove_suffix"], parent="template_variable")
+                    elif "other_name" in methods and include:
+                        other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods)
                     other_templates = util.parse("Config", "other_template", dynamic, parent=map_name, methods=methods, datatype="strlist") if "other_template" in methods and include else None
                     if other_templates:
                         for other_template in other_templates:
