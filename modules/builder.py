@@ -158,20 +158,23 @@ string_filters = ["title", "summary", "studio", "record_label", "filepath", "aud
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year", "origin_country",
-    "writer", "original_language", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "tmdb_status", "tmdb_type"
+    "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre"
 ]
-tag_modifiers = ["", ".not", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
+tag_modifiers = ["", ".not", ".regex", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_overlay", "has_dolby_vision"]
 date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired"]
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = ["year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration"]
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
-special_filters = ["history"]
+special_filters = ["history", "original_language", "original_language.not", "tmdb_status", "tmdb_status.not", "tmdb_type", "tmdb_type.not"]
 all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in string_filters for m in string_modifiers] + \
               [f"{f}{m}" for f in tag_filters for m in tag_modifiers] + \
               [f"{f}{m}" for f in date_filters for m in date_modifiers] + \
               [f"{f}{m}" for f in number_filters for m in number_modifiers]
+date_attributes = plex.date_attributes + ["first_episode_aired", "last_episode_aired"]
+year_attributes = plex.year_attributes + ["tmdb_year"]
+number_attributes = plex.number_attributes + ["tmdb_vote_count"]
 smart_invalid = ["collection_order", "collection_level"]
 smart_only = ["collection_filtering"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_missing", "smart_label"] + radarr_details + sonarr_details
@@ -1773,7 +1776,7 @@ class CollectionBuilder:
                                 display_add += inside_display
                                 results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                     else:
-                        validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, pairs=True)
+                        validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, plex_search=True)
                         if validation is not False and not validation:
                             continue
                         elif attr in plex.date_attributes and modifier in ["", ".not"]:
@@ -1786,7 +1789,7 @@ class CollectionBuilder:
                             bool_mod = "" if validation else "!"
                             bool_arg = "true" if validation else "false"
                             results, display_add = build_url_arg(1, mod=bool_mod, arg_s=bool_arg, mod_s="is")
-                        elif (attr in plex.tag_attributes + plex.string_attributes + plex.year_attributes) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends"]:
+                        elif (attr in plex.tag_attributes + plex.string_attributes + plex.year_attributes) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends", ".regex"]:
                             results = ""
                             display_add = ""
                             for og_value, result in validation:
@@ -1839,24 +1842,11 @@ class CollectionBuilder:
 
         return type_key, filter_details, filter_url
 
-    def validate_attribute(self, attribute, modifier, final, data, validate, pairs=False):
+    def validate_attribute(self, attribute, modifier, final, data, validate, plex_search=False):
         def smart_pair(list_to_pair):
-            return [(t, t) for t in list_to_pair] if pairs else list_to_pair
-        if modifier == ".regex":
-            regex_list = util.get_list(data, split=False)
-            valid_regex = []
-            for reg in regex_list:
-                try:
-                    re.compile(reg)
-                    valid_regex.append(reg)
-                except re.error:
-                    logger.stacktrace()
-                    err = f"{self.Type} Error: Regular Expression Invalid: {reg}"
-                    if validate:
-                        raise Failed(err)
-                    else:
-                        logger.error(err)
-            return valid_regex
+            return [(t, t) for t in list_to_pair] if plex_search else list_to_pair
+        if modifier == ".regex" and not plex_search:
+            return util.validate_regex(data, self.Type, validate=validate)
         elif attribute in plex.string_attributes + string_filters and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "origin_country":
@@ -1871,12 +1861,23 @@ class CollectionBuilder:
             except Failed:
                 if str(data).lower() in ["day", "month"]:
                     return data.lower()
-            raise Failed(f"{self.Type} Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
+                else:
+                    raise Failed(f"{self.Type} Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
         elif attribute == "tmdb_type":
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_types.items()])
         elif attribute == "tmdb_status":
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_status.items()])
-        elif attribute in plex.tag_attributes and modifier in ["", ".not"]:
+        elif attribute in plex.tag_attributes and modifier in [".regex"]:
+            _, names = self.library.get_search_choices(attribute, title=not plex_search, name_pairs=True)
+            valid_list = []
+            used = []
+            if plex_search and modifier == ".regex":
+                for reg in util.validate_regex(data, self.Type, validate=validate):
+                    for name, key in names:
+                        if name not in used and re.compile(reg).search(name):
+                            valid_list.append((name, key) if plex_search else key)
+            return valid_list
+        elif attribute in plex.tag_attributes and modifier in ["", ".not", ".regex"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
                 for value in util.get_list(data):
@@ -1887,12 +1888,11 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data)
-            use_title = not pairs
-            search_choices, names = self.library.get_search_choices(attribute, title=use_title)
+            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search)
             valid_list = []
             for value in final_values:
                 if str(value).lower() in search_choices:
-                    if pairs:
+                    if plex_search:
                         valid_list.append((value, search_choices[str(value).lower()]))
                     else:
                         valid_list.append(search_choices[str(value).lower()])
@@ -1901,7 +1901,7 @@ class CollectionBuilder:
                     if attribute in ["actor", "director", "producer", "writer"]:
                         actor_id = self.library.get_actor_id(value)
                         if actor_id:
-                            if pairs:
+                            if plex_search:
                                 valid_list.append((value, actor_id))
                             else:
                                 valid_list.append(actor_id)
@@ -1914,18 +1914,18 @@ class CollectionBuilder:
                         else:
                             logger.error(error)
             return valid_list
-        elif attribute in plex.date_attributes and modifier in [".before", ".after"]:
+        elif attribute in date_attributes and modifier in [".before", ".after"]:
             if data == "today":
                 return datetime.strftime(datetime.now(), "%Y-%m-%d")
             else:
                 return util.validate_date(data, final, return_as="%Y-%m-%d")
-        elif attribute in plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not"]:
+        elif attribute in year_attributes and modifier in ["", ".not"]:
             final_years = []
             values = util.get_list(data)
             for value in values:
                 final_years.append(util.parse(self.Type, final, value, datatype="int"))
             return smart_pair(final_years)
-        elif (attribute in plex.number_attributes + plex.date_attributes + plex.year_attributes + ["tmdb_year"] and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
+        elif (attribute in number_attributes + date_attributes + year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
                 or (attribute in plex.tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return util.parse(self.Type, final, data, datatype="int")
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
@@ -1944,9 +1944,9 @@ class CollectionBuilder:
             attribute = "radarr_add_missing" if self.library.is_movie else "sonarr_add_missing"
         elif attribute in ["arr_tag", "arr_folder"]:
             attribute = f"{'rad' if self.library.is_movie else 'son'}{attribute}"
-        elif attribute in plex.date_attributes and modifier in [".gt", ".gte"]:
+        elif attribute in date_attributes and modifier in [".gt", ".gte"]:
             modifier = ".after"
-        elif attribute in plex.date_attributes and modifier in [".lt", ".lte"]:
+        elif attribute in date_attributes and modifier in [".lt", ".lte"]:
             modifier = ".before"
         final = f"{attribute}{modifier}"
         if text != final:
@@ -2092,7 +2092,15 @@ class CollectionBuilder:
                             attrs = [c.iso_3166_1 for c in item.countries]
                         else:
                             raise Failed
-                        if (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                        if modifier == ".regex":
+                            has_match = False
+                            for reg in filter_data:
+                                for name in attrs:
+                                    if re.compile(reg).search(name):
+                                        has_match = True
+                            if has_match is False:
+                                return False
+                        elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
                                 or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                             return False
                     elif filter_attr == "tmdb_title":
@@ -2227,11 +2235,19 @@ class CollectionBuilder:
                                     attrs.extend([s.language for s in part.subtitleStreams()])
                     elif filter_attr in ["content_rating", "year", "rating"]:
                         attrs = [getattr(item, filter_actual)]
-                    elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection"]:
+                    elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection", "network"]:
                         attrs = [attr.tag for attr in getattr(item, filter_actual)]
                     else:
                         raise Failed(f"Filter Error: filter: {filter_final} not supported")
-                    if (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                    if modifier == ".regex":
+                        has_match = False
+                        for reg in filter_data:
+                            for name in attrs:
+                                if re.compile(reg).search(name):
+                                    has_match = True
+                        if has_match is False:
+                            return False
+                    elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
                             or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                         return False
             logger.ghost(f"Filtering {display} {item.title}")

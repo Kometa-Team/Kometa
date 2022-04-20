@@ -165,10 +165,11 @@ Tag search can take multiple values as a **list or a comma-separated string**.
 
 ### Tag Modifiers
 
-| Tag Modifier | Description                                                            | Plex Web UI Display |
-|:-------------|:-----------------------------------------------------------------------|:-------------------:|
-| No Modifier  | Matches every item where the attribute matches the given string        |        `is`         |
-| `.not`       | Matches every item where the attribute does not match the given string |      `is not`       |
+| Tag Modifier | Description                                                             | Plex Web UI Display |
+|:-------------|:------------------------------------------------------------------------|:-------------------:|
+| No Modifier  | Matches every item where the attribute matches the given string         |        `is`         |
+| `.not`       | Matches every item where the attribute does not match the given string  |      `is not`       |
+| `.regex`     | Matches every item where one value of this attribute matches the regex. |        `N/A`        |
 
 ### Tag Attributes
 

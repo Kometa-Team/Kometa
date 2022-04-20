@@ -143,7 +143,7 @@ libraries:
 
 ### Remove Overlays
 
-You can remove overlays from a library by adding `remove_overlays: true` to overlay_path
+You can remove overlays from a library by adding `remove_overlays: true` to `overlay_path`.
 
 ```yaml
 libraries:
@@ -151,8 +151,8 @@ libraries:
     metadata_path:
       - file: config/TV Shows.yml
     overlay_path:
+      - remove_overlays: true
       - file: config/Overlays.yml
-      - remove_overlays: ture
 ```
 
 * This will remove all overlays when run and not generate new ones.
