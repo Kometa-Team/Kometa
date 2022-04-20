@@ -114,7 +114,7 @@ show_translation = {
 }
 modifier_translation = {
     "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
-    ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E"
+    ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": ""
 }
 album_sorting_options = {"default": -1, "newest": 0, "oldest": 1, "name": 2}
 episode_sorting_options = {"default": -1, "oldest": 0, "newest": 1}
@@ -152,84 +152,6 @@ item_advance_keys = {
     "item_use_original_title": ("useOriginalTitle", use_original_title_options)
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
-music_searches = [
-    "artist_title", "artist_title.not", "artist_title.is", "artist_title.isnot", "artist_title.begins", "artist_title.ends",
-    "artist_user_rating.gt", "artist_user_rating.gte", "artist_user_rating.lt", "artist_user_rating.lte",
-    "artist_genre", "artist_genre.not",
-    "artist_collection", "artist_collection.not",
-    "artist_country", "artist_country.not",
-    "artist_mood", "artist_mood.not",
-    "artist_style", "artist_style.not",
-    "artist_added", "artist_added.not", "artist_added.before", "artist_added.after",
-    "artist_last_played", "artist_last_played.not", "artist_last_played.before", "artist_last_played.after",
-    "artist_unmatched",
-    "album_title", "album_title.not", "album_title.is", "album_title.isnot", "album_title.begins", "album_title.ends",
-    "album_year.gt", "album_year.gte", "album_year.lt", "album_year.lte",
-    "album_decade",
-    "album_genre", "album_genre.not",
-    "album_plays.gt", "album_plays.gte", "album_plays.lt", "album_plays.lte",
-    "album_last_played", "album_last_played.not", "album_last_played.before", "album_last_played.after",
-    "album_user_rating.gt", "album_user_rating.gte", "album_user_rating.lt", "album_user_rating.lte",
-    "album_critic_rating.gt", "album_critic_rating.gte", "album_critic_rating.lt", "album_critic_rating.lte",
-    "album_record_label", "album_record_label.not", "album_record_label.is", "album_record_label.isnot", "album_record_label.begins", "album_record_label.ends",
-    "album_mood", "album_mood.not",
-    "album_style", "album_style.not",
-    "album_format", "album_format.not",
-    "album_type", "album_type.not",
-    "album_collection", "album_collection.not",
-    "album_added", "album_added.not", "album_added.before", "album_added.after",
-    "album_released", "album_released.not", "album_released.before", "album_released.after",
-    "album_unmatched",
-    "album_source", "album_source.not",
-    "album_label", "album_label.not",
-    "track_mood", "track_mood.not",
-    "track_title", "track_title.not", "track_title.is", "track_title.isnot", "track_title.begins", "track_title.ends",
-    "track_plays.gt", "track_plays.gte", "track_plays.lt", "track_plays.lte",
-    "track_last_played", "track_last_played.not", "track_last_played.before", "track_last_played.after",
-    "track_skips.gt", "track_skips.gte", "track_skips.lt", "track_skips.lte",
-    "track_last_skipped", "track_last_skipped.not", "track_last_skipped.before", "track_last_skipped.after",
-    "track_user_rating.gt", "track_user_rating.gte", "track_user_rating.lt", "track_user_rating.lte",
-    "track_last_rated", "track_last_rated.not", "track_last_rated.before", "track_last_rated.after",
-    "track_added", "track_added.not", "track_added.before", "track_added.after",
-    "track_trash",
-    "track_source", "track_source.not"
-]
-searches = [
-    "title", "title.not", "title.is", "title.isnot", "title.begins", "title.ends",
-    "studio", "studio.not", "studio.is", "studio.isnot", "studio.begins", "studio.ends",
-    "actor", "actor.not",
-    "audio_language", "audio_language.not",
-    "collection", "collection.not",
-    "season_collection", "season_collection.not",
-    "episode_collection", "episode_collection.not",
-    "content_rating", "content_rating.not",
-    "country", "country.not",
-    "director", "director.not",
-    "genre", "genre.not",
-    "label", "label.not",
-    "network", "network.not",
-    "producer", "producer.not",
-    "subtitle_language", "subtitle_language.not",
-    "writer", "writer.not",
-    "decade", "resolution", "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash",
-    "last_played", "last_played.not", "last_played.before", "last_played.after",
-    "added", "added.not", "added.before", "added.after",
-    "release", "release.not", "release.before", "release.after",
-    "duration.gt", "duration.gte", "duration.lt", "duration.lte",
-    "plays.gt", "plays.gte", "plays.lt", "plays.lte",
-    "user_rating.gt", "user_rating.gte", "user_rating.lt", "user_rating.lte",
-    "critic_rating.gt", "critic_rating.gte", "critic_rating.lt", "critic_rating.lte",
-    "audience_rating.gt", "audience_rating.gte", "audience_rating.lt", "audience_rating.lte",
-    "year", "year.not", "year.gt", "year.gte", "year.lt", "year.lte",
-    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
-    "episode_title", "episode_title.not", "episode_title.is", "episode_title.isnot", "episode_title.begins", "episode_title.ends",
-    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
-    "episode_air_date", "episode_air_date.not", "episode_air_date.before", "episode_air_date.after",
-    "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
-    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
-    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
-    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte"
-] + music_searches
 and_searches = [
     "title.and", "studio.and", "actor.and", "audio_language.and", "collection.and",
     "content_rating.and", "country.and",  "director.and", "genre.and", "label.and",
@@ -260,6 +182,7 @@ show_only_searches = [
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
 ]
 string_attributes = ["title", "studio", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
+string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 float_attributes = [
     "user_rating", "episode_user_rating", "critic_rating", "audience_rating", "duration",
     "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
@@ -271,11 +194,13 @@ boolean_attributes = [
 tmdb_attributes = ["actor", "director", "producer", "writer"]
 date_attributes = [
     "added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played",
-    "first_episode_aired", "last_episode_aired", "artist_added", "artist_last_played", "album_last_played",
+    "artist_added", "artist_last_played", "album_last_played",
     "album_added", "album_released", "track_last_played", "track_last_skipped", "track_last_rated", "track_added"
 ]
+date_modifiers = ["", ".not", ".before", ".after"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
-number_attributes = ["plays", "episode_plays", "tmdb_vote_count", "album_plays", "track_plays", "track_skips"] + year_attributes
+number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips"] + year_attributes
+number_modifiers = [".gt", ".gte", ".lt", ".lte"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
@@ -283,6 +208,14 @@ tag_attributes = [
     "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_style", "album_genre", "album_mood",
     "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source"
 ]
+tag_modifiers = ["", ".not", ".regex"]
+no_mods = ["resolution", "decade", "album_decade"]
+searches = boolean_attributes + no_mods + \
+               [f"{f}{m}" for f in string_attributes for m in string_modifiers] + \
+               [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_mods] + \
+               [f"{f}{m}" for f in date_attributes for m in date_modifiers] + \
+               [f"{f}{m}" for f in number_attributes + float_attributes for m in number_modifiers if f not in no_mods]
+music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
 movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
     "year.asc": "year", "year.desc": "year%3Adesc",
@@ -580,7 +513,7 @@ class Plex(Library):
                 return result.id
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def get_search_choices(self, search_name, title=True):
+    def get_search_choices(self, search_name, title=True, name_pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         try:
@@ -589,9 +522,7 @@ class Plex(Library):
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
             for choice in self.Plex.listFilterChoices(final_search):
                 if choice.title not in names:
-                    names.append(choice.title)
-                if choice.key not in names:
-                    names.append(choice.key)
+                    names.append((choice.title, choice.key) if name_pairs else choice.title)
                 choices[choice.title] = choice.title if use_title else choice.key
                 choices[choice.key] = choice.title if use_title else choice.key
                 choices[choice.title.lower()] = choice.title if use_title else choice.key

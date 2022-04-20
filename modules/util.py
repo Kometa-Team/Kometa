@@ -143,6 +143,21 @@ def validate_date(date_text, method, return_as=None):
             raise Failed(f"Collection Error: {method}: {date_text} must match pattern YYYY-MM-DD (e.g. 2020-12-25) or MM/DD/YYYY (e.g. 12/25/2020)")
     return datetime.strftime(date_obg, return_as) if return_as else date_obg
 
+def validate_regex(data, col_type, validate=True):
+    regex_list = get_list(data, split=False)
+    valid_regex = []
+    for reg in regex_list:
+        try:
+            re.compile(reg)
+            valid_regex.append(reg)
+        except re.error:
+            err = f"{col_type} Error: Regular Expression Invalid: {reg}"
+            if validate:
+                raise Failed(err)
+            else:
+                logger.error(err)
+    return valid_regex
+
 def logger_input(prompt, timeout=60):
     if windows:                             return windows_input(prompt, timeout)
     elif hasattr(signal, "SIGALRM"):        return unix_input(prompt, timeout)
