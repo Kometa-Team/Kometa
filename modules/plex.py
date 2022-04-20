@@ -357,6 +357,7 @@ class Plex(Library):
 
         self._users = []
         self._all_items = []
+        self.cached_items = {}
         self.agent = self.Plex.agent
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
