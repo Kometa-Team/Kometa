@@ -307,7 +307,7 @@ class Library(ABC):
         return items
 
     def map_guids(self, items):
-        logger.info(f"Mapping {self.type} Library: {self.name}", space=False, border=False)
+        logger.separator(f"Mapping {self.type} Library: {self.name}", space=False, border=False)
         logger.info("")
         for i, item in enumerate(items, 1):
             logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
