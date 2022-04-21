@@ -319,7 +319,7 @@ class CollectionBuilder:
                     self.overlay = "blur(50)"
 
             overlay_path = os.path.join(library.overlay_folder, f"{self.overlay}.png")
-            if self.overlay != "blur" and not os.path.exists(overlay_path):
+            if not self.overlay.startswith("blur") and not os.path.exists(overlay_path):
                 raise Failed(f"{self.Type} Error: Overlay Image not found at: {overlay_path}")
 
             if "suppress_overlays" in methods:
