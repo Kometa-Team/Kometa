@@ -18,10 +18,10 @@ class Overlays:
         logger.info("")
         logger.separator(f"{self.library.name} Library Overlays")
         logger.info("")
-        key_to_item = {}
         os.makedirs(self.library.overlay_backup, exist_ok=True)
+        key_to_item = {}
         key_to_overlays = {}
-        overlay_attrs = {}
+        settings = {}
         if self.library.remove_overlays:
             logger.info("")
             logger.separator(f"Removing Overlays for the {self.library.name} Library")
@@ -35,8 +35,8 @@ class Overlays:
 
                         logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
 
-                        if builder.overlay not in overlay_attrs:
-                            overlay_attrs[builder.overlay] = {
+                        if builder.overlay not in settings:
+                            settings[builder.overlay] = {
                                 "keys": [], "suppress": [], "group": None,
                                 "priority": None, "updated": False, "image": None
                             }
@@ -59,27 +59,27 @@ class Overlays:
                             for item in builder.added_items:
                                 key_to_item[item.ratingKey] = item
                                 added_titles.append(item.title)
-                                if item.ratingKey not in overlay_attrs[builder.overlay]["keys"]:
-                                    overlay_attrs[builder.overlay]["keys"].append(item.ratingKey)
+                                if item.ratingKey not in settings[builder.overlay]["keys"]:
+                                    settings[builder.overlay]["keys"].append(item.ratingKey)
                         if added_titles:
                             logger.debug(f"{len(added_titles)} Titles Found: {added_titles}")
                         logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay}")
 
                         if builder.suppress_overlays:
-                            overlay_attrs[builder.overlay]["suppress"] = builder.suppress_overlays
+                            settings[builder.overlay]["suppress"] = builder.suppress_overlays
                     except Failed as e:
                         logger.error(e)
 
             overlay_groups = {}
-            for overlay_name, over_attrs in overlay_attrs.items():
-                if overlay_attrs["group"]:
-                    if overlay_attrs["group"] not in overlay_groups:
-                        overlay_groups[overlay_attrs["group"]] = {}
-                    overlay_groups[overlay_attrs["group"]][overlay_name] = overlay_attrs["priority"]
+            for overlay_name, over_attrs in settings.items():
+                if over_attrs["group"]:
+                    if over_attrs["group"] not in overlay_groups:
+                        overlay_groups[over_attrs["group"]] = {}
+                    overlay_groups[over_attrs["group"]][overlay_name] = over_attrs["priority"]
                 for rk in over_attrs["keys"]:
                     for suppress_name in over_attrs["suppress"]:
-                        if suppress_name in overlay_attrs and rk in overlay_attrs[suppress_name]["keys"]:
-                            overlay_attrs[suppress_name]["keys"].remove(rk)
+                        if suppress_name in settings and rk in settings[suppress_name]["keys"]:
+                            settings[suppress_name]["keys"].remove(rk)
                 if not overlay_name.startswith("blur"):
                     clean_name, _ = util.validate_filename(overlay_name)
                     image_compare = None
@@ -87,12 +87,12 @@ class Overlays:
                         _, image_compare, _ = self.config.Cache.query_image_map(overlay_name, f"{self.library.image_table_name}_overlays")
                     overlay_file = os.path.join(self.library.overlay_folder, f"{clean_name}.png")
                     overlay_size = os.stat(overlay_file).st_size
-                    overlay_attrs[overlay_name]["updated"] = not image_compare or str(overlay_size) != str(image_compare)
-                    overlay_attrs[overlay_name]["image"] = Image.open(overlay_file).convert("RGBA")
+                    settings[overlay_name]["updated"] = not image_compare or str(overlay_size) != str(image_compare)
+                    settings[overlay_name]["image"] = Image.open(overlay_file).convert("RGBA")
                     if self.config.Cache:
                         self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
 
-            for overlay_name, over_attrs in overlay_attrs.items():
+            for overlay_name, over_attrs in settings.items():
                 for over_key in over_attrs["keys"]:
                     if over_key not in key_to_overlays:
                         key_to_overlays[over_key] = (key_to_item[over_key], [])
@@ -192,7 +192,7 @@ class Overlays:
                                 overlay_change = True
                     if not overlay_change:
                         for over_name in over_names:
-                            if over_name not in overlay_compare or overlay_attrs[over_name]["updated"]:
+                            if over_name not in overlay_compare or settings[over_name]["updated"]:
                                 overlay_change = True
 
                     clean_name, _ = util.validate_filename(item.title)
@@ -258,8 +258,8 @@ class Overlays:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
                             for over_name in over_names:
                                 if not over_name.startswith("blur"):
-                                    new_poster = new_poster.resize(overlay_attrs[over_name]["image"].size, Image.ANTIALIAS)
-                                    new_poster.paste(overlay_attrs[over_name]["image"], (0, 0), overlay_attrs[over_name]["image"])
+                                    new_poster = new_poster.resize(settings[over_name]["image"].size, Image.ANTIALIAS)
+                                    new_poster.paste(settings[over_name]["image"], (0, 0), settings[over_name]["image"])
                             new_poster.save(temp, "PNG")
                             self.library.upload_poster(item, temp)
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
