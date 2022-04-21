@@ -121,9 +121,9 @@ class Library(ABC):
             logger.info(output)
 
     def scan_files(self):
-        for file_type, metadata_file, temp_vars in self.metadata_path:
+        for file_type, metadata_file, temp_vars, asset_directory in self.metadata_path:
             try:
-                meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars)
+                meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory)
                 if meta_obj.collections:
                     self.collections.extend([c for c in meta_obj.collections])
                 if meta_obj.metadata:
@@ -131,9 +131,9 @@ class Library(ABC):
                 self.metadata_files.append(meta_obj)
             except Failed as e:
                 logger.error(e)
-        for file_type, overlay_file, temp_vars in self.overlay_path:
+        for file_type, overlay_file, temp_vars, asset_directory in self.overlay_path:
             try:
-                over_obj = OverlayFile(self.config, self, file_type, overlay_file, temp_vars)
+                over_obj = OverlayFile(self.config, self, file_type, overlay_file, temp_vars, asset_directory)
                 self.overlays.extend([o.lower() for o in over_obj.overlays])
                 self.overlay_files.append(over_obj)
             except Failed as e:

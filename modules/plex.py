@@ -806,7 +806,7 @@ class Plex(Library):
                 logger.info(final)
         return final
 
-    def update_asset(self, item, overlay=None, folders=None, create=None):
+    def update_asset(self, item, overlay=None, folders=None, create=None, asset_directory=None):
         if isinstance(item, (Movie, Artist, Show, Episode, Season)):
             starting = item.show() if isinstance(item, (Episode, Season)) else item
             path_test = str(starting.locations[0])
@@ -821,6 +821,8 @@ class Plex(Library):
             folders = self.asset_folders
         if create is None:
             create = self.create_asset_folders
+        if asset_directory is None:
+            asset_directory = self.asset_directory
 
         poster, background, item_dir = self.find_assets(
             name="poster" if folders else name,
@@ -910,7 +912,7 @@ class Plex(Library):
             self.upload_images(item, overlay=overlay)
         if create and folders and item_dir is None:
             filename, _ = util.validate_filename(name)
-            item_dir = os.path.join(self.asset_directory[0], filename)
+            item_dir = os.path.join(asset_directory[0], filename)
             os.makedirs(item_dir, exist_ok=True)
             logger.info(f"Asset Directory Created: {item_dir}")
         elif isinstance(item, (Movie, Show)) and not overlay and folders and item_dir is None:
@@ -919,7 +921,7 @@ class Plex(Library):
             logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
         return None, None, item_dir
 
-    def update_asset2(self, item, folders=None, create=None):
+    def update_asset2(self, item, folders=None, create=None, asset_directory=None):
         if isinstance(item, (Movie, Artist, Show)):
             starting = item.show() if isinstance(item, (Episode, Season)) else item
             path_test = str(starting.locations[0])
@@ -934,6 +936,8 @@ class Plex(Library):
             folders = self.asset_folders
         if create is None:
             create = self.create_asset_folders
+        if asset_directory is None:
+            asset_directory = self.asset_directory
 
         poster, background, item_dir = self.find_assets(
             name="poster" if folders else name,
@@ -1021,7 +1025,7 @@ class Plex(Library):
 
         if create and folders and item_dir is None:
             filename, _ = util.validate_filename(name)
-            item_dir = os.path.join(self.asset_directory[0], filename)
+            item_dir = os.path.join(asset_directory[0], filename)
             os.makedirs(item_dir, exist_ok=True)
             logger.info(f"Asset Directory Created: {item_dir}")
         elif folders and item_dir is None:

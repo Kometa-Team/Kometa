@@ -58,12 +58,13 @@ def get_dict(attribute, attr_data, check_list=None, lower=False):
 
 
 class DataFile:
-    def __init__(self, config, file_type, path, temp_vars):
+    def __init__(self, config, file_type, path, temp_vars, asset_directory):
         self.config = config
         self.library = None
         self.type = file_type
         self.path = path
         self.temp_vars = temp_vars
+        self.asset_directory = asset_directory
         self.data_type = ""
         self.templates = {}
 
@@ -242,7 +243,7 @@ class DataFile:
             files = util.load_files(data["external_templates"], "external_templates")
             if not files:
                 logger.error("Config Error: No Paths Found for external_templates")
-            for file_type, template_file, temp_vars in util.load_files(data["external_templates"], "external_templates"):
+            for file_type, template_file, temp_vars, _ in files:
                 temp_data = self.load_file(file_type, template_file)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     for temp_key, temp_value in temp_data["templates"].items():
@@ -253,8 +254,8 @@ class DataFile:
                         self.temp_vars[tk] = tv
 
 class MetadataFile(DataFile):
-    def __init__(self, config, library, file_type, path, temp_vars):
-        super().__init__(config, file_type, path, temp_vars)
+    def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
+        super().__init__(config, file_type, path, temp_vars, asset_directory)
         self.data_type = "Collection"
         self.library = library
         if file_type == "Data":
@@ -1093,8 +1094,8 @@ class MetadataFile(DataFile):
 
 
 class PlaylistFile(DataFile):
-    def __init__(self, config, file_type, path, temp_vars):
-        super().__init__(config, file_type, path, temp_vars)
+    def __init__(self, config, file_type, path, temp_vars, asset_directory):
+        super().__init__(config, file_type, path, temp_vars, asset_directory)
         self.data_type = "Playlist"
         logger.info("")
         logger.info(f"Loading Playlist File {file_type}: {path}")
@@ -1107,8 +1108,8 @@ class PlaylistFile(DataFile):
         logger.info(f"Playlist File Loaded Successfully")
 
 class OverlayFile(DataFile):
-    def __init__(self, config, library, file_type, path, temp_vars):
-        super().__init__(config, file_type, path, temp_vars)
+    def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
+        super().__init__(config, file_type, path, temp_vars, asset_directory)
         self.library = library
         self.data_type = "Overlay"
         logger.info("")
