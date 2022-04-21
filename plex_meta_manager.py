@@ -485,18 +485,18 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
+                for method, value in builder.builders:
+                    logger.debug("")
+                    logger.debug(f"Builder: {method}: {value}")
+                    logger.info("")
+                    builder.filter_and_save_items(builder.gather_ids(method, value))
+
                 if builder.filters or builder.tmdb_filters:
                     logger.info("")
                     for filter_key, filter_value in builder.filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
                     for filter_key, filter_value in builder.tmdb_filters:
                         logger.info(f"Collection Filter {filter_key}: {filter_value}")
-
-                for method, value in builder.builders:
-                    logger.debug("")
-                    logger.debug(f"Builder: {method}: {value}")
-                    logger.info("")
-                    builder.filter_and_save_items(builder.gather_ids(method, value))
 
                 if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
@@ -649,13 +649,6 @@ def run_playlists(config):
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
-                if builder.filters or builder.tmdb_filters:
-                    logger.info("")
-                    for filter_key, filter_value in builder.filters:
-                        logger.info(f"Playlist Filter {filter_key}: {filter_value}")
-                    for filter_key, filter_value in builder.tmdb_filters:
-                        logger.info(f"Playlist Filter {filter_key}: {filter_value}")
-
                 method, value = builder.builders[0]
                 logger.debug("")
                 logger.debug(f"Builder: {method}: {value}")
@@ -672,6 +665,13 @@ def run_playlists(config):
                     ids = builder.gather_ids(method, value)
 
                 builder.filter_and_save_items(ids)
+
+                if builder.filters or builder.tmdb_filters:
+                    logger.info("")
+                    for filter_key, filter_value in builder.filters:
+                        logger.info(f"Playlist Filter {filter_key}: {filter_value}")
+                    for filter_key, filter_value in builder.tmdb_filters:
+                        logger.info(f"Playlist Filter {filter_key}: {filter_value}")
 
                 if len(builder.added_items) >= builder.minimum:
                     items_added, items_unchanged = builder.add_to_collection()
