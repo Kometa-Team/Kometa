@@ -289,7 +289,7 @@ def update_libraries(config):
                     continue
                 logger.info("")
                 logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
-                if not config.test_mode and not config.resume_from and not collection_only:
+                if not config.test_mode and not config.resume_from and not collection_only and not operations_only and not overlays_only:
                     try:
                         metadata.update_metadata()
                     except Failed as e:
