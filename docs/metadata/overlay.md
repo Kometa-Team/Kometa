@@ -56,14 +56,17 @@ You can specify the Overlay Name in 3 ways.
    
 3. Using a dictionary for more overlay location options.
 
-| Attribute | Description                                                                                                  | Required |
-|:----------|:-------------------------------------------------------------------------------------------------------------|:--------:|
-| `name`    | Name of the overlay. Each overlay name should be unique.                                                     | &#9989;  |
-| `url`     | URL of Overlay Image Online                                                                                  | &#10060; |
-| `git`     | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image | &#10060; |
-| `repo`    | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image                        | &#10060; |
+| Attribute  | Description                                                                                                   | Required |
+|:-----------|:--------------------------------------------------------------------------------------------------------------|:--------:|
+| `name`     | Name of the overlay. Each overlay name should be unique.                                                      | &#9989;  |
+| `url`      | URL of Overlay Image Onlin.                                                                                   | &#10060; |
+| `git`      | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image. | &#10060; |
+| `repo`     | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                        | &#10060; |
+| `group`    | Name of the Grouping for this overlay. **`priority` is required when using `group`**                          | &#10060; |
+| `priority` | Priority of this overlay in its group. **`group` is required when using `priority`**                          | &#10060; |
 
 * If `url`, `git`, and `repo` are all not defined then PMM will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
+* Only one overlay with the highest priority per group will be applied.  
 
 ```yaml
 overlays:
