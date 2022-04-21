@@ -183,10 +183,6 @@ show_only_searches = [
 ]
 string_attributes = ["title", "studio", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
-float_attributes = [
-    "user_rating", "episode_user_rating", "critic_rating", "audience_rating", "duration",
-    "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
-]
 boolean_attributes = [
     "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash", "unplayed_episodes", "episode_unplayed",
     "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched", "artist_unmatched", "album_unmatched", "track_trash"
@@ -200,6 +196,10 @@ date_attributes = [
 date_modifiers = ["", ".not", ".before", ".after"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
 number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips"] + year_attributes
+float_attributes = [
+    "user_rating", "episode_user_rating", "critic_rating", "audience_rating", "duration",
+    "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
+]
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
@@ -209,12 +209,12 @@ tag_attributes = [
     "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source"
 ]
 tag_modifiers = ["", ".not", ".regex"]
-no_mods = ["resolution", "decade", "album_decade"]
-searches = boolean_attributes + no_mods + \
+no_not_mods = ["resolution", "decade", "album_decade"]
+searches = boolean_attributes + \
                [f"{f}{m}" for f in string_attributes for m in string_modifiers] + \
-               [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_mods] + \
+               [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"] + \
                [f"{f}{m}" for f in date_attributes for m in date_modifiers] + \
-               [f"{f}{m}" for f in number_attributes + float_attributes for m in number_modifiers if f not in no_mods]
+               [f"{f}{m}" for f in number_attributes + float_attributes for m in number_modifiers if f not in no_not_mods]
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
 movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
