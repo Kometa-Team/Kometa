@@ -289,7 +289,7 @@ class ConfigFile:
         self.general = {
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60),
-            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default=[os.path.join(default_dir, "assets")], default_is_none=True),
+            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
             "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
             "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False),
@@ -487,9 +487,9 @@ class ConfigFile:
                 files = util.load_files(paths_to_check, "playlist_files")
                 if not files:
                     raise Failed("Config Error: No Paths Found for playlist_files")
-                for file_type, playlist_file, temp_vars in files:
+                for file_type, playlist_file, temp_vars, asset_directory in files:
                     try:
-                        playlist_obj = PlaylistFile(self, file_type, playlist_file, temp_vars)
+                        playlist_obj = PlaylistFile(self, file_type, playlist_file, temp_vars, asset_directory)
                         self.playlist_names.extend([p for p in playlist_obj.playlists])
                         self.playlist_files.append(playlist_obj)
                     except Failed as e:
@@ -586,9 +586,6 @@ class ConfigFile:
                 logger.info("")
 
                 params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
-                if params["asset_directory"] is None:
-                    logger.warning("Config Warning: Assets will not be used asset_directory attribute must be set under config or under this specific Library")
-
                 params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
                 params["asset_depth"] = check_for_attribute(lib, "asset_depth", parent="settings", var_type="int", default=self.general["asset_depth"], do_print=False, save=False)
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)

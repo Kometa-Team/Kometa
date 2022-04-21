@@ -223,6 +223,7 @@ class CollectionBuilder:
         self.libraries = []
         self.playlist = library is None
         self.overlay = overlay
+        self.asset_directory = metadata.asset_directory if metadata.asset_directory else self.library.asset_directory
         methods = {m.lower(): m for m in self.data}
         if self.playlist:
             self.type = "playlist"
@@ -276,7 +277,7 @@ class CollectionBuilder:
                 if isinstance(data[methods["overlay"]], dict):
                     if "name" not in data[methods["overlay"]] or not data[methods["overlay"]]["name"]:
                         raise Failed(f"{self.Type} Error: overlay must have the name attribute")
-                    self.overlay = data[methods["overlay"]]["name"]
+                    self.overlay = str(data[methods["overlay"]]["name"])
                     if "git" in data[methods["overlay"]] and data[methods["overlay"]]["git"]:
                         url = f"{util.github_base}{data[methods['overlay']]['git']}.png"
                     elif "repo" in data[methods["overlay"]] and data[methods["overlay"]]["repo"]:
@@ -303,9 +304,9 @@ class CollectionBuilder:
                         while util.is_locked(overlay_path):
                             time.sleep(1)
                 else:
-                    self.overlay = data[methods["overlay"]]
+                    self.overlay = str(data[methods["overlay"]])
             else:
-                self.overlay = self.mapping_name
+                self.overlay = str(self.mapping_name)
                 logger.warning(f"{self.Type} Warning: No overlay attribute using mapping name {self.mapping_name} as the overlay name")
             if self.overlay.startswith("blur"):
                 try:
@@ -2407,7 +2408,8 @@ class CollectionBuilder:
                 rating_keys.remove(int(item.ratingKey))
             if overlay is not None:
                 try:
-                    self.library.update_asset(item, overlay=overlay, folders=self.details["asset_folders"], create=self.details["create_asset_folders"])
+                    self.library.update_asset(item, overlay=overlay, folders=self.details["asset_folders"],
+                                              create=self.details["create_asset_folders"], asset_directory=self.asset_directory)
                 except Failed as e:
                     logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
@@ -2606,7 +2608,7 @@ class CollectionBuilder:
         poster_image = None
         background_image = None
         asset_location = None
-        if self.library.asset_directory:
+        if self.asset_directory:
             name_mapping = self.name
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]

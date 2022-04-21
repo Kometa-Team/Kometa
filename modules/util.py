@@ -285,11 +285,14 @@ def load_files(files_to_load, method, file_type="yml"):
             temp_vars = {}
             if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
                 temp_vars = file["template_variables"]
+            asset_directory = None
+            if "asset_directory" in file and file["asset_directory"] and os.path.exists(file["asset_directory"]):
+                asset_directory = file["asset_directory"]
 
             def check_dict(attr, name):
                 if attr in file:
                     if file[attr]:
-                        files.append((name, file[attr], temp_vars))
+                        files.append((name, file[attr], temp_vars, asset_directory))
                     else:
                         logger.error(f"Config Error: {method} {attr} is blank")
 
@@ -305,12 +308,12 @@ def load_files(files_to_load, method, file_type="yml"):
                 else:
                     yml_files = glob_filter(os.path.join(file["folder"], f"*.{file_type}"))
                     if yml_files:
-                        files.extend([("File", yml, temp_vars) for yml in yml_files])
+                        files.extend([("File", yml, temp_vars, asset_directory) for yml in yml_files])
                     else:
                         logger.error(f"Config Error: No {file_type.upper()} (.{file_type}) files found in {file['folder']}")
         else:
             if os.path.exists(file):
-                files.append(("File", file, {}))
+                files.append(("File", file, {}, None))
             else:
                 logger.error(f"Config Error: Path not found: {file}")
     return files
