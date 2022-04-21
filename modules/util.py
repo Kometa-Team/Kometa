@@ -83,6 +83,8 @@ collection_mode_options = {
     "show_items": "showItems", "showitems": "showItems"
 }
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
+previous_time = None
+start_time = None
 
 def tab_new_lines(data):
     return str(data).replace("\n", "\n      ") if "\n" in str(data) else str(data)
@@ -622,3 +624,16 @@ def replace_label(_label, _data):
         final_data = _data
 
     return final_data, replaced
+
+def check_time(message, end=False):
+    global previous_time
+    global start_time
+    current_time = time.time()
+    if end:
+        previous_time = start_time
+    if previous_time is None:
+        logger.debug(f"{message}: {current_time}")
+        start_time = current_time
+    else:
+        logger.debug(f"{message}: {current_time - previous_time}")
+    previous_time = None if end else current_time
