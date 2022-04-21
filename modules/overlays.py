@@ -170,11 +170,13 @@ class Overlays:
                                 overlay_change = True
 
                     clean_name, _ = util.validate_filename(item.title)
+                    util.check_time("Initial Bit")
                     poster, _, item_dir = self.library.find_assets(
                         name="poster" if self.library.asset_folders else clean_name,
                         folder_name=clean_name if self.library.asset_folders else None,
                         prefix=f"{item.title}'s "
                     )
+                    util.check_time("Find Asset Time")
 
                     has_original = None
                     changed_image = False
@@ -182,19 +184,22 @@ class Overlays:
                     if poster:
                         if image_compare and str(poster.compare) != str(image_compare):
                             changed_image = True
+                        util.check_time("Choose Image (From Assets) Time")
                     elif has_overlay:
+                        test = "Backup"
                         if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
                         elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
                         else:
-                            self.library.reload(item)
+                            test = "Online"
                             new_backup = find_poster_url(item)
                             if new_backup is None:
                                 new_backup = item.posterUrl
+                        util.check_time(f"Choose Image (From {test}) Time")
                     else:
-                        self.library.reload(item)
                         new_backup = item.posterUrl
+                        util.check_time("Choose Image (From Plex) Time")
                     if new_backup:
                         changed_image = True
                         image_response = self.config.get(new_backup)
@@ -230,13 +235,9 @@ class Overlays:
                                     new_poster = new_poster.resize(overlay_images[over_name].size, Image.ANTIALIAS)
                                     new_poster.paste(overlay_images[over_name], (0, 0), overlay_images[over_name])
                             new_poster.save(temp, "PNG")
-                            util.check_time("Overlay and Save Image Time")
                             self.library.upload_poster(item, temp)
-                            util.check_time("Upload Image Time")
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
-                            util.check_time("Edit Tag Time")
                             self.library.reload(item)
-                            util.check_time("Reload Time")
                             poster_compare = poster.compare if poster else item.thumb
                             logger.info(f"Detail: Overlays: {', '.join(over_names)} applied to {item.title}")
                         except (OSError, BadRequest) as e:
