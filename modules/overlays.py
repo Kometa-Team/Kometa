@@ -149,6 +149,8 @@ class Overlays:
             logger.separator(f"Applying Overlays for the {self.library.name} Library")
             logger.info("")
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: io[1][0].titleSort), 1):
+                start_time = time.time()
+                logger.info(f"Overlay Start Time: {start_time}")
                 try:
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item.title}")
                     image_compare = None
@@ -206,6 +208,8 @@ class Overlays:
                         while util.is_locked(backup_image_path):
                             time.sleep(1)
                         has_original = backup_image_path
+                    new_time = time.time() - start_time
+                    logger.info(f"Find Image Time {new_time}")
 
                     poster_compare = None
                     if poster is None and has_original is None:
@@ -213,6 +217,8 @@ class Overlays:
                     elif changed_image or overlay_change:
                         new_poster = Image.open(poster.location if poster else has_original).convert("RGBA")
                         temp = os.path.join(self.library.overlay_folder, f"temp.png")
+                        new_time = time.time() - new_time
+                        logger.info(f"Open Image Time {new_time}")
                         try:
                             blur_num = 0
                             for over_name in over_names:
@@ -227,9 +233,17 @@ class Overlays:
                                     new_poster = new_poster.resize(overlay_images[over_name].size, Image.ANTIALIAS)
                                     new_poster.paste(overlay_images[over_name], (0, 0), overlay_images[over_name])
                             new_poster.save(temp, "PNG")
+                            new_time = time.time() - new_time
+                            logger.info(f"Overlay and Save Image Time {new_time}")
                             self.library.upload_poster(item, temp)
+                            new_time = time.time() - new_time
+                            logger.info(f"Upload Image Time {new_time}")
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
+                            new_time = time.time() - new_time
+                            logger.info(f"Edit Tag Time {new_time}")
                             self.library.reload(item)
+                            new_time = time.time() - new_time
+                            logger.info(f"Reload Time {new_time}")
                             poster_compare = poster.compare if poster else item.thumb
                             logger.info(f"Detail: Overlays: {', '.join(over_names)} applied to {item.title}")
                         except (OSError, BadRequest) as e:
@@ -241,4 +255,5 @@ class Overlays:
                                                            poster_compare, overlay=','.join(over_names))
                 except Failed as e:
                     logger.error(e)
+                logger.info(f"Overall Overlay Time {time.time() - start_time}")
         logger.exorcise()
