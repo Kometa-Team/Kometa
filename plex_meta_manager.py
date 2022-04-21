@@ -1,4 +1,4 @@
-import argparse, os, sys, time, traceback
+import argparse, os, sys, time, traceback, uuid
 from datetime import datetime
 
 try:
@@ -123,7 +123,21 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
             version = util.parse_version(line)
             break
 
-plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = "Plex-Meta-Manager"
+uuid_file = os.path.join(default_dir, "UUID")
+uuid_num = None
+if os.path.exists(uuid_file):
+    with open(uuid_file) as handle:
+        for line in handle.readlines():
+            line = line.strip()
+            if len(line) > 0:
+                uuid_num = line
+                break
+if not uuid_num:
+    uuid_num = uuid.uuid4()
+    with open(uuid_file, "w") as handle:
+        handle.write(str(uuid_num))
+
+plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = str(uuid_num)
 
 def start(attrs):
     logger.add_main_handler()
