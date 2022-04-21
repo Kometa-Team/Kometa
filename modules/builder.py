@@ -269,6 +269,8 @@ class CollectionBuilder:
                     methods[attr.lower()] = attr
 
         self.suppress_overlays = []
+        self.overlay_group = None
+        self.overlay_priority = None
         if self.overlay:
             if "overlay" in methods:
                 logger.debug("")
@@ -278,6 +280,15 @@ class CollectionBuilder:
                     if "name" not in data[methods["overlay"]] or not data[methods["overlay"]]["name"]:
                         raise Failed(f"{self.Type} Error: overlay must have the name attribute")
                     self.overlay = str(data[methods["overlay"]]["name"])
+                    if "group" in data[methods["overlay"]] and data[methods["overlay"]]["group"]:
+                        self.overlay_group = str(data[methods["overlay"]]["group"])
+                        if "priority" in data[methods["overlay"]] and data[methods["overlay"]]["priority"]:
+                            pri = util.check_num(data[methods["overlay"]]["group"])
+                            if pri is None:
+                                raise Failed(f"{self.Type} Error: overlay priority must be a number")
+                            self.overlay_priority = pri
+                        else:
+                            raise Failed(f"{self.Type} Error: overlay group and overlay priority must be used together")
                     if "git" in data[methods["overlay"]] and data[methods["overlay"]]["git"]:
                         url = f"{util.github_base}{data[methods['overlay']]['git']}.png"
                     elif "repo" in data[methods["overlay"]] and data[methods["overlay"]]["repo"]:
@@ -1889,8 +1900,14 @@ class CollectionBuilder:
                     for name, key in names:
                         if name not in used and re.compile(reg).search(name):
                             valid_list.append((name, key) if plex_search else key)
+            if not valid_list:
+                error = f"Plex Error: {attribute}: No matches found with regex pattern {data}"
+                if validate:
+                    raise Failed(error)
+                else:
+                    logger.error(error)
             return valid_list
-        elif attribute in plex.tag_attributes and modifier in ["", ".not", ".regex"]:
+        elif attribute in plex.tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
                 for value in util.get_list(data):
