@@ -11,8 +11,8 @@ except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
     sys.exit(0)
 
-if sys.version_info[0] != 3 or sys.version_info[1] < 6:
-    print("Version Error: Version: %s.%s.%s incompatible please use Python 3.6+" % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+if sys.version_info[0] != 3 or sys.version_info[1] < 7:
+    print("Version Error: Version: %s.%s.%s incompatible please use Python 3.7+" % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     sys.exit(0)
 
 parser = argparse.ArgumentParser()
@@ -86,7 +86,6 @@ screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 
-
 if screen_width < 90 or screen_width > 300:
     print(f"Argument Error: width argument invalid: {screen_width} must be an integer between 90 and 300 using the default 100")
     screen_width = 100
@@ -150,8 +149,7 @@ def start(attrs):
     logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
     logger.info_center("                                                                     |___/           ")
     logger.info(f"    Version: {version[0]}")
-
-    latest_version = util.current_version()
+    latest_version = util.current_version(version)
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
         logger.info(f"    Newest Version: {new_version}")
@@ -166,7 +164,6 @@ def start(attrs):
     attrs["time_obj"] = start_time
     attrs["read_only"] = read_only_config
     attrs["version"] = version
-    attrs["latest_version"] = latest_version
     attrs["no_missing"] = no_missing
     logger.separator(debug=True)
     logger.debug(f"--config (PMM_CONFIG): {config_file}")

@@ -37,8 +37,8 @@ class Overlays:
 
                         if builder.overlay not in settings:
                             settings[builder.overlay] = {
-                                "keys": [], "suppress": [], "group": None,
-                                "priority": None, "updated": False, "image": None
+                                "keys": [], "suppress": builder.suppress_overlays, "group": builder.overlay_group,
+                                "weight": builder.overlay_weight, "updated": False, "image": None
                             }
 
                         for method, value in builder.builders:
@@ -64,9 +64,6 @@ class Overlays:
                         if added_titles:
                             logger.debug(f"{len(added_titles)} Titles Found: {added_titles}")
                         logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay}")
-
-                        if builder.suppress_overlays:
-                            settings[builder.overlay]["suppress"] = builder.suppress_overlays
                     except Failed as e:
                         logger.error(e)
 
@@ -75,7 +72,7 @@ class Overlays:
                 if over_attrs["group"]:
                     if over_attrs["group"] not in overlay_groups:
                         overlay_groups[over_attrs["group"]] = {}
-                    overlay_groups[over_attrs["group"]][overlay_name] = over_attrs["priority"]
+                    overlay_groups[over_attrs["group"]][overlay_name] = over_attrs["weight"]
                 for rk in over_attrs["keys"]:
                     for suppress_name in over_attrs["suppress"]:
                         if suppress_name in settings and rk in settings[suppress_name]["keys"]:
@@ -254,7 +251,7 @@ class Overlays:
                             new_poster.save(temp, "PNG")
                             self.library.upload_poster(item, temp)
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
-                            self.library.reload(item)
+                            self.library.reload(item, force=True)
                             poster_compare = poster.compare if poster else item.thumb
                             logger.info(f"Detail: Overlays: {', '.join(over_names)} applied to {item.title}")
                         except (OSError, BadRequest) as e:
