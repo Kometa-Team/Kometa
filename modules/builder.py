@@ -270,7 +270,7 @@ class CollectionBuilder:
 
         self.suppress_overlays = []
         self.overlay_group = None
-        self.overlay_priority = None
+        self.overlay_weight = None
         if self.overlay:
             if "overlay" in methods:
                 logger.debug("")
@@ -282,13 +282,13 @@ class CollectionBuilder:
                     self.overlay = str(data[methods["overlay"]]["name"])
                     if "group" in data[methods["overlay"]] and data[methods["overlay"]]["group"]:
                         self.overlay_group = str(data[methods["overlay"]]["group"])
-                        if "priority" in data[methods["overlay"]] and data[methods["overlay"]]["priority"]:
-                            pri = util.check_num(data[methods["overlay"]]["group"])
+                        if "weight" in data[methods["overlay"]] and data[methods["overlay"]]["weight"]:
+                            pri = util.check_num(data[methods["overlay"]]["weight"])
                             if pri is None:
-                                raise Failed(f"{self.Type} Error: overlay priority must be a number")
-                            self.overlay_priority = pri
+                                raise Failed(f"{self.Type} Error: overlay weight must be a number")
+                            self.overlay_weight = pri
                         else:
-                            raise Failed(f"{self.Type} Error: overlay group and overlay priority must be used together")
+                            raise Failed(f"{self.Type} Error: overlay group and overlay weight must be used together")
                     if "git" in data[methods["overlay"]] and data[methods["overlay"]]["git"]:
                         url = f"{util.github_base}{data[methods['overlay']]['git']}.png"
                     elif "repo" in data[methods["overlay"]] and data[methods["overlay"]]["repo"]:
@@ -2151,7 +2151,7 @@ class CollectionBuilder:
     def check_filters(self, item, display):
         if (self.filters or self.tmdb_filters) and not self.details["only_filter_missing"]:
             logger.ghost(f"Filtering {display} {item.title}")
-            self.library.reload(item)
+            item = self.library.reload(item)
             if self.tmdb_filters and isinstance(item, (Movie, Show)):
                 if item.ratingKey not in self.library.movie_rating_key_map and item.ratingKey not in self.library.show_rating_key_map:
                     logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")

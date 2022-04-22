@@ -424,7 +424,7 @@ class MetadataFile(DataFile):
                             person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
                             for i, item in enumerate(library.get_all(), 1):
                                 try:
-                                    self.library.reload(item)
+                                    item = self.library.reload(item)
                                     for person in getattr(item, f"{auto_type}s")[:person_depth]:
                                         if person.id not in people:
                                             people[person.id] = {"name": person.tag, "count": 0}
