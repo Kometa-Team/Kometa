@@ -281,31 +281,32 @@ def update_libraries(config):
                 if not operations_only and (library.overlay_files or library.remove_overlays):
                     library.Overlays.run_overlays()
 
-            for metadata in library.metadata_files:
-                metadata_name = metadata.get_file_name()
-                if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
+            if not operations_only and not overlays_only:
+                for metadata in library.metadata_files:
+                    metadata_name = metadata.get_file_name()
+                    if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
+                        logger.info("")
+                        logger.separator(f"Skipping {metadata_name} Metadata File")
+                        continue
                     logger.info("")
-                    logger.separator(f"Skipping {metadata_name} Metadata File")
-                    continue
-                logger.info("")
-                logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
-                if not config.test_mode and not config.resume_from and not collection_only and not operations_only and not overlays_only:
-                    try:
-                        metadata.update_metadata()
-                    except Failed as e:
-                        library.notify(e)
-                        logger.error(e)
-                collections_to_run = metadata.get_collections(config.requested_collections)
-                if config.resume_from and config.resume_from not in collections_to_run:
-                    logger.info("")
-                    logger.warning(f"Collection: {config.resume_from} not in Metadata File: {metadata.path}")
-                    continue
-                if collections_to_run and not operations_only and not overlays_only:
-                    logger.info("")
-                    logger.separator(f"{'Test ' if config.test_mode else ''}Collections")
-                    logger.remove_library_handler(library.mapping_name)
-                    run_collection(config, library, metadata, collections_to_run)
-                    logger.re_add_library_handler(library.mapping_name)
+                    logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
+                    if not config.test_mode and not config.resume_from and not collection_only:
+                        try:
+                            metadata.update_metadata()
+                        except Failed as e:
+                            library.notify(e)
+                            logger.error(e)
+                    collections_to_run = metadata.get_collections(config.requested_collections)
+                    if config.resume_from and config.resume_from not in collections_to_run:
+                        logger.info("")
+                        logger.warning(f"Collection: {config.resume_from} not in Metadata File: {metadata.path}")
+                        continue
+                    if collections_to_run:
+                        logger.info("")
+                        logger.separator(f"{'Test ' if config.test_mode else ''}Collections")
+                        logger.remove_library_handler(library.mapping_name)
+                        run_collection(config, library, metadata, collections_to_run)
+                        logger.re_add_library_handler(library.mapping_name)
 
             if not config.library_first and not config.test_mode and not collection_only:
                 if not overlays_only and library.library_operation:

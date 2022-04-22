@@ -175,13 +175,13 @@ class Overlays:
             logger.separator(f"Applying Overlays for the {self.library.name} Library")
             logger.info("")
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: io[1][0].titleSort), 1):
-                util.check_time("Overlay Start Time")
                 try:
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item.title}")
                     image_compare = None
                     overlay_compare = None
                     if self.config.Cache:
                         image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
+
                     overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare)
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in item.labels])
 
@@ -196,13 +196,11 @@ class Overlays:
                                 overlay_change = True
 
                     clean_name, _ = util.validate_filename(item.title)
-                    util.check_time("Initial Bit")
                     poster, _, item_dir = self.library.find_assets(
                         name="poster" if self.library.asset_folders else clean_name,
                         folder_name=clean_name if self.library.asset_folders else None,
                         prefix=f"{item.title}'s "
                     )
-                    util.check_time("Find Asset Time")
 
                     has_original = None
                     changed_image = False
@@ -210,22 +208,17 @@ class Overlays:
                     if poster:
                         if image_compare and str(poster.compare) != str(image_compare):
                             changed_image = True
-                        util.check_time("Choose Image (From Assets) Time")
                     elif has_overlay:
-                        test = "Backup"
                         if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
                         elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
                         else:
-                            test = "Online"
                             new_backup = find_poster_url(item)
                             if new_backup is None:
                                 new_backup = item.posterUrl
-                        util.check_time(f"Choose Image (From {test}) Time")
                     else:
                         new_backup = item.posterUrl
-                        util.check_time("Choose Image (From Plex) Time")
                     if new_backup:
                         changed_image = True
                         image_response = self.config.get(new_backup)
@@ -238,7 +231,6 @@ class Overlays:
                         while util.is_locked(backup_image_path):
                             time.sleep(1)
                         has_original = backup_image_path
-                    util.check_time("Find Image Time")
 
                     poster_compare = None
                     if poster is None and has_original is None:
@@ -246,7 +238,6 @@ class Overlays:
                     elif changed_image or overlay_change:
                         new_poster = Image.open(poster.location if poster else has_original).convert("RGBA")
                         temp = os.path.join(self.library.overlay_folder, f"temp.png")
-                        util.check_time("Open Image Time")
                         try:
                             blur_num = 0
                             for over_name in over_names:
@@ -275,5 +266,4 @@ class Overlays:
                                                            poster_compare, overlay=','.join(over_names))
                 except Failed as e:
                     logger.error(e)
-                util.check_time("Overall Overlay Time", end=True)
         logger.exorcise()
