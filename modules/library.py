@@ -187,7 +187,7 @@ class Library(ABC):
                     new_poster.save(temp_image)
                     self.upload_poster(item, temp_image)
                     self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
-                    self.reload(item)
+                    self.reload(item, force=True)
                     poster_uploaded = True
                     logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
                 except (OSError, BadRequest) as e:
@@ -231,7 +231,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def reload(self, item):
+    def reload(self, item, force=False):
         pass
 
     @abstractmethod

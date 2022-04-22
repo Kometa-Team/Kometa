@@ -53,6 +53,7 @@ The available setting attributes which can be set at each level are outlined bel
 | [`playlist_sync_to_users`](#playlist-sync-to-users)           |   &#9989;    |   &#10060;    |          &#9989;          |
 | [`custom_repo`](#custom-repo)                                 |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`verify_ssl`](#verify-ssl)                                   |   &#9989;    |   &#10060;    |         &#10060;          |
+| [`check_nightly`](#check-nightly)                             |   &#9989;    |   &#10060;    |         &#10060;          |
 
 ## Cache
 Cache the Plex GUID and associated IDs for each library item for faster subsequent processing. The cache file is created in the same directory as the configuration file.
@@ -528,6 +529,21 @@ Specify where the `repo` attribute's base is when defining `metadata_paths` and 
 
 ## Verify SSL
 Turn SSL Verification on or off.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th>Default Value</th>
+    <td><code>true</code></td>
+  </tr>
+  <tr>
+    <th>Allowed Values</th>
+    <td><code>true</code> or <code>false</code>
+    </td>
+  </tr>
+</table>
+
+## Check Nightly
+Will check nightly for updates instead of develop. 
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>

@@ -68,7 +68,7 @@ class Operations:
 
             for i, item in enumerate(items, 1):
                 try:
-                    self.library.reload(item)
+                    item = self.library.reload(item)
                 except Failed as e:
                     logger.error(e)
                     continue

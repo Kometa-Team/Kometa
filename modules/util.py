@@ -95,13 +95,21 @@ def make_ordinal(n):
 def add_zero(number):
     return str(number) if len(str(number)) > 1 else f"0{number}"
 
-def current_version(develop=False):
-    url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{'develop' if develop else 'master'}/VERSION"
+def current_version(version, nightly=False):
+    if nightly:
+        return get_version("nightly")
+    elif version[2] > 0:
+        new_version = get_version("develop")
+        return get_version("nightly") if new_version[2] < version[2] else new_version
+    else:
+        return get_version("master")
+
+def get_version(level):
+    url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{level}/VERSION"
     try:
         return parse_version(requests.get(url).content.decode().strip())
     except requests.exceptions.ConnectionError:
         return None
-
 
 def parse_version(version):
     split_version = version.split("-develop")

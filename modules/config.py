@@ -68,7 +68,6 @@ class ConfigFile:
         self.default_dir = default_dir
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.version = attrs["version"] if "version" in attrs else None
-        self.latest_version = attrs["latest_version"] if "latest_version" in attrs else None
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
@@ -319,9 +318,12 @@ class ConfigFile:
             "playlist_sync_to_users": check_for_attribute(self.data, "playlist_sync_to_users", parent="settings", default="all", default_is_none=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
+            "check_nightly": check_for_attribute(self.data, "check_nightly", parent="settings", var_type="bool", default=False),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.custom_repo = self.general["custom_repo"].replace("https://github.com/", "https://raw.githubusercontent.com/") if self.general["custom_repo"] else None
+
+        self.latest_version = util.current_version(self.version, nightly=self.general["check_nightly"])
 
         self.session = requests.Session()
         if not self.general["verify_ssl"]:

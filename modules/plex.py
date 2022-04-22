@@ -391,10 +391,6 @@ class Plex(Library):
         return self.Plex.search(libtype=libtype, **terms)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def get_labeled_items(self, label):
-        return self.search(label=label)
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
@@ -464,18 +460,21 @@ class Plex(Library):
         collection.sortUpdate(sort=data)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def reload(self, item, force=True):
+    def reload(self, item, force=False):
         is_full = False
+        cached_item = item
         if item.ratingKey in self.cached_items:
             cached_item, is_full = self.cached_items[item.ratingKey]
         try:
-            if not is_full:
-                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                            includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                            includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                            includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
-                            includeRelatedCount=0, includeReviews=False, includeStations=False)
+            if not is_full or force:
+                cached_item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False,
+                                   includeChapters=False, includeChildren=False, includeConcerts=False,
+                                   includeExternalMedia=False, includeExtras=False, includeFields=False,
+                                   includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                                   includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
+                                   includeRelatedCount=0, includeReviews=False, includeStations=False)
                 self.cached_items[item.ratingKey] = (item, True)
+            return cached_item
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
@@ -498,7 +497,7 @@ class Plex(Library):
                 item.uploadArt(url=image.location)
             else:
                 item.uploadArt(filepath=image.location)
-            self.reload(item)
+            self.reload(item, force=True)
         except BadRequest as e:
             item.refresh()
             raise Failed(e)
@@ -793,7 +792,7 @@ class Plex(Library):
             _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
             _sync_tags = [t.lower() for t in sync_tags] if sync_tags else []
             try:
-                self.reload(obj)
+                obj = self.reload(obj)
                 _item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
             except BadRequest:
                 _item_tags = []
