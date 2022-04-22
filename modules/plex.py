@@ -464,13 +464,18 @@ class Plex(Library):
         collection.sortUpdate(sort=data)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def reload(self, item):
+    def reload(self, item, force=True):
+        is_full = False
+        if item.ratingKey in self.cached_items:
+            cached_item, is_full = self.cached_items[item.ratingKey]
         try:
-            item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                        includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                        includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                        includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
-                        includeRelatedCount=0, includeReviews=False, includeStations=False)
+            if not is_full:
+                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                            includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
+                            includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                            includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
+                            includeRelatedCount=0, includeReviews=False, includeStations=False)
+                self.cached_items[item.ratingKey] = (item, True)
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
@@ -711,7 +716,6 @@ class Plex(Library):
             for i, item in enumerate(all_items, 1):
                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
-                self.reload(item)
                 for collection in item.collections:
                     if collection.id in collection_indexes:
                         add_item = False

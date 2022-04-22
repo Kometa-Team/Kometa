@@ -67,6 +67,11 @@ class Operations:
                     reverse_anidb[v] = k
 
             for i, item in enumerate(items, 1):
+                try:
+                    self.library.reload(item)
+                except Failed as e:
+                    logger.error(e)
+                    continue
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
                 if self.library.assets_for_all:
                     self.library.update_asset2(item)

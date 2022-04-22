@@ -1984,14 +1984,19 @@ class CollectionBuilder:
         return attribute, modifier, final
 
     def fetch_item(self, item):
+        if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
+            if item.ratingKey not in self.library.cached_items:
+                self.library.cached_items[item.ratingKey] = (item, False)
+                return item
+        key = int(item)
+        if key in self.library.cached_items:
+            cached_item, full_obj = self.library.cached_items[key]
+            return cached_item
         try:
-            key = item.ratingKey if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) else int(item)
-            if key in self.library.cached_items:
-                return self.library.cached_items[key]
             current = self.library.fetchItem(key)
             if not isinstance(current, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 raise NotFound
-            self.library.cached_items[key] = current
+            self.library.cached_items[key] = (current, True)
             return current
         except (BadRequest, NotFound):
             raise Failed(f"Plex Error: Item {item} not found")
@@ -2146,6 +2151,7 @@ class CollectionBuilder:
     def check_filters(self, item, display):
         if (self.filters or self.tmdb_filters) and not self.details["only_filter_missing"]:
             logger.ghost(f"Filtering {display} {item.title}")
+            self.library.reload(item)
             if self.tmdb_filters and isinstance(item, (Movie, Show)):
                 if item.ratingKey not in self.library.movie_rating_key_map and item.ratingKey not in self.library.show_rating_key_map:
                     logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")

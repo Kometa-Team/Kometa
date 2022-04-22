@@ -303,7 +303,7 @@ class Library(ABC):
         logger.info("")
         items = self.get_all()
         for item in items:
-            self.cached_items[item.ratingKey] = item
+            self.cached_items[item.ratingKey] = (item, False)
         return items
 
     def map_guids(self, items):
