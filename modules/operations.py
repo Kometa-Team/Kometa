@@ -73,8 +73,11 @@ class Operations:
                     logger.error(e)
                     continue
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
-                if self.library.assets_for_all:
-                    self.library.update_asset2(item)
+                current_labels = [la.tag for la in item.labels] if self.library.assets_for_all or self.library.mass_imdb_parental_labels else []
+
+                if self.library.assets_for_all and "Overlay" not in current_labels:
+                    self.library.update_asset(item)
+
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
                 item.batchEdits()
@@ -103,8 +106,11 @@ class Operations:
                 if self.library.mass_imdb_parental_labels:
                     try:
                         parental_guide = self.config.IMDb.parental_guide(imdb_id)
-                        labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if self.library.mass_imdb_parental_labels == "with_none" or v != "None"]
-                        batch_display += f"\n{self.library.edit_tags('label', item, add_tags=labels)}"
+                        parental_labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if self.library.mass_imdb_parental_labels == "with_none" or v != "None"]
+                        add_labels = [la for la in parental_labels if la not in current_labels]
+                        remove_labels = [la for la in current_labels if la in util.parental_labels and la not in parental_labels]
+                        if add_labels or remove_labels:
+                            batch_display += f"\n{self.library.edit_tags('label', item, add_tags=add_labels, remove_tags=remove_labels)}"
                     except Failed:
                         pass
 
@@ -375,7 +381,7 @@ class Operations:
             logger.separator(f"Unmanaged Collection Assets Check for {self.library.name} Library", space=False, border=False)
             logger.info("")
             for col in unmanaged_collections:
-                self.library.update_asset2(col)
+                self.library.update_asset(col)
         if self.library.mass_collection_mode:
             logger.info("")
             logger.separator(f"Unmanaged Mass Collection Mode for {self.library.name} Library", space=False, border=False)

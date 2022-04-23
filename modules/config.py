@@ -757,7 +757,9 @@ class ConfigFile:
                         if not files:
                             raise Failed("Config Error: No Paths Found for overlay_path")
                         for file in util.get_list(lib["overlay_path"], split=False):
-                            if isinstance(file, dict) and "remove_overlays" in file and file["remove_overlays"] is True:
+                            if isinstance(file, dict) \
+                                    and ("remove_overlays" in file and file["remove_overlays"] is True) \
+                                    or ("revert_overlays" in file and file["revert_overlays"] is True):
                                 params["remove_overlays"] = True
                         params["overlay_path"] = files
 

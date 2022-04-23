@@ -82,6 +82,9 @@ collection_mode_options = {
     "hide_items": "hideItems", "hideitems": "hideItems",
     "show_items": "showItems", "showitems": "showItems"
 }
+parental_types = ["nudity", "violence", "profanity", "alcohol", "frightening"]
+parental_values = ["None", "Mild", "Moderate", "Severe"]
+parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in parental_values]
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 previous_time = None
 start_time = None
