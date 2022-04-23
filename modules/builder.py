@@ -271,6 +271,7 @@ class CollectionBuilder:
         self.suppress_overlays = []
         self.overlay_group = None
         self.overlay_weight = None
+        self.overlay_path = None
         if self.overlay:
             if "overlay" in methods:
                 logger.debug("")
@@ -289,31 +290,33 @@ class CollectionBuilder:
                             self.overlay_weight = pri
                         else:
                             raise Failed(f"{self.Type} Error: overlay group and overlay weight must be used together")
-                    if "git" in data[methods["overlay"]] and data[methods["overlay"]]["git"]:
-                        url = f"{util.github_base}{data[methods['overlay']]['git']}.png"
-                    elif "repo" in data[methods["overlay"]] and data[methods["overlay"]]["repo"]:
-                        url = f"{self.config.custom_repo}{data[methods['overlay']]['git']}.png"
-                    elif "url" in data[methods["overlay"]] and data[methods["overlay"]]["url"]:
-                        url = data[methods["overlay"]]["url"]
-                    else:
-                        url = None
-                    if url:
-                        response = self.config.get(url)
+                    def get_and_save_image(image_url):
+                        response = self.config.get(image_url)
                         if response.status_code >= 400:
-                            raise Failed(f"{self.Type} Error: Overlay Image not found at: {url}")
+                            raise Failed(f"{self.Type} Error: Overlay Image not found at: {image_url}")
                         if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
                             raise Failed(f"{self.Type} Error: Overlay Image not a png: {url}")
                         if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
                             os.makedirs(library.overlay_folder, exist_ok=False)
                             logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
-                        clean_name, _ = util.validate_filename(self.overlay)
-                        overlay_path = os.path.join(library.overlay_folder, f"{clean_name}.png")
-                        if os.path.exists(overlay_path):
-                            os.remove(overlay_path)
-                        with open(overlay_path, "wb") as handler:
+                        clean_image_name, _ = util.validate_filename(self.overlay)
+                        image_path = os.path.join(library.overlay_folder, f"{clean_image_name}.png")
+                        if os.path.exists(image_path):
+                            os.remove(image_path)
+                        with open(image_path, "wb") as handler:
                             handler.write(response.content)
-                        while util.is_locked(overlay_path):
+                        while util.is_locked(image_path):
                             time.sleep(1)
+                        return image_path
+
+                    if "file" in data[methods["overlay"]] and data[methods["overlay"]]["file"]:
+                        self.overlay_path = data[methods["overlay"]]["file"]
+                    elif "git" in data[methods["overlay"]] and data[methods["overlay"]]["git"]:
+                        self.overlay_path = get_and_save_image(f"{util.github_base}{data[methods['overlay']]['git']}.png")
+                    elif "repo" in data[methods["overlay"]] and data[methods["overlay"]]["repo"]:
+                        self.overlay_path = get_and_save_image(f"{self.config.custom_repo}{data[methods['overlay']]['repo']}.png")
+                    elif "url" in data[methods["overlay"]] and data[methods["overlay"]]["url"]:
+                        self.overlay_path = get_and_save_image(data[methods["overlay"]]["url"])
                 else:
                     self.overlay = str(data[methods["overlay"]])
             else:
@@ -328,10 +331,12 @@ class CollectionBuilder:
                 except ValueError:
                     logger.error(f"Overlay Error: failed to parse overlay blur name: {self.overlay} defaulting to blur(50)")
                     self.overlay = "blur(50)"
-
-            overlay_path = os.path.join(library.overlay_folder, f"{self.overlay}.png")
-            if not self.overlay.startswith("blur") and not os.path.exists(overlay_path):
-                raise Failed(f"{self.Type} Error: Overlay Image not found at: {overlay_path}")
+            else:
+                if not self.overlay_path:
+                    clean_name, _ = util.validate_filename(self.overlay)
+                    self.overlay_path = os.path.join(library.overlay_folder, f"{clean_name}.png")
+                if not os.path.exists(self.overlay_path):
+                    raise Failed(f"{self.Type} Error: Overlay Image not found at: {self.overlay_path}")
 
             if "suppress_overlays" in methods:
                 logger.debug("")
