@@ -59,7 +59,8 @@ You can specify the Overlay Name in 3 ways.
 | Attribute | Description                                                                                                   | Required |
 |:----------|:--------------------------------------------------------------------------------------------------------------|:--------:|
 | `name`    | Name of the overlay. Each overlay name should be unique.                                                      | &#9989;  |
-| `url`     | URL of Overlay Image Onlin.                                                                                   | &#10060; |
+| `file`    | Local location of the Overlay Image.                                                                          | &#10060; |
+| `url`     | URL of Overlay Image Online.                                                                                  | &#10060; |
 | `git`     | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image. | &#10060; |
 | `repo`    | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                        | &#10060; |
 | `group`   | Name of the Grouping for this overlay. **`weight` is required when using `group`**                            | &#10060; |

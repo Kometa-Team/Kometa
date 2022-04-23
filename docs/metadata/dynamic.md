@@ -1628,15 +1628,17 @@ For example, when using `type: tmdb_collection` and you want to define a poster 
 
 ```yaml
 templates:
-  optional:
-    - my_collection_poster
-  tmdb_collection_details: <<value>>
-  collection_order: release
-  url_poster: <<my_collection_poster>>
+  my_template:
+    optional:
+      - my_collection_poster
+    tmdb_collection_details: <<value>>
+    collection_order: release
+    url_poster: <<my_collection_poster>>
 dynamic_collections:
   TMDb Collections:          # This name is the mapping name
     type: tmdb_collection
     remove_suffix: "Collection"
+    template: my_template
     template_variables:
       my_collection_poster:
         119: https://www.themoviedb.org/t/p/original/oENY593nKRVL2PnxXsMtlh8izb4.jpg
