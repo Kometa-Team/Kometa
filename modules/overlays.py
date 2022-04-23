@@ -38,7 +38,7 @@ class Overlays:
                         if builder.overlay not in settings:
                             settings[builder.overlay] = {
                                 "keys": [], "suppress": builder.suppress_overlays, "group": builder.overlay_group,
-                                "weight": builder.overlay_weight, "updated": False, "image": None
+                                "weight": builder.overlay_weight, "path": builder.overlay_path, "updated": False, "image": None
                             }
 
                         for method, value in builder.builders:
@@ -78,14 +78,12 @@ class Overlays:
                         if suppress_name in settings and rk in settings[suppress_name]["keys"]:
                             settings[suppress_name]["keys"].remove(rk)
                 if not overlay_name.startswith("blur"):
-                    clean_name, _ = util.validate_filename(overlay_name)
                     image_compare = None
                     if self.config.Cache:
                         _, image_compare, _ = self.config.Cache.query_image_map(overlay_name, f"{self.library.image_table_name}_overlays")
-                    overlay_file = os.path.join(self.library.overlay_folder, f"{clean_name}.png")
-                    overlay_size = os.stat(overlay_file).st_size
+                    overlay_size = os.stat(settings[overlay_name]["path"]).st_size
                     settings[overlay_name]["updated"] = not image_compare or str(overlay_size) != str(image_compare)
-                    settings[overlay_name]["image"] = Image.open(overlay_file).convert("RGBA")
+                    settings[overlay_name]["image"] = Image.open(settings[overlay_name]["path"]).convert("RGBA")
                     if self.config.Cache:
                         self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
 

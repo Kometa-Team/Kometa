@@ -92,6 +92,8 @@ class DataFile:
             else:
                 raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
             data, _, _ = yaml.util.load_yaml_guess_indent(content)
+            if not data or not isinstance(data, dict):
+                raise Failed("YAML Error: File is empty")
             return data
         except yaml.scanner.ScannerError as ye:
             raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
