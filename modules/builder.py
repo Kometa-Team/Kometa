@@ -1272,7 +1272,7 @@ class CollectionBuilder:
                 new_dictionary = {}
                 if method_name == "plex_search":
                     type_override = f"{self.collection_level}s" if self.collection_level in plex.collection_level_options else None
-                    new_dictionary = self.build_filter("plex_search", dict_data, type_override=type_override)
+                    new_dictionary = self.build_filter("plex_search", dict_data, type_override=type_override, default_sort="season.asc" if self.collection_level == "season" else "title.asc")
                 elif method_name == "plex_collectionless":
                     prefix_list = util.parse(self.Type, "exclude_prefix", dict_data, datatype="list", methods=dict_methods) if "exclude_prefix" in dict_methods else []
                     exact_list = util.parse(self.Type, "exclude", dict_data, datatype="list", methods=dict_methods) if "exclude" in dict_methods else []
@@ -2202,7 +2202,7 @@ class CollectionBuilder:
                     if filter_attr == "audio_track_title":
                         for media in item.media:
                             for part in media.parts:
-                                values.extend([a.title for a in part.audioStreams() if a.title])
+                                values.extend([a.extendedDisplayTitle for a in part.audioStreams() if a.extendedDisplayTitle])
                     elif filter_attr == "filepath":
                         values = [loc for loc in item.locations]
                     else:
@@ -2403,20 +2403,6 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Updating Details of the Items in {self.name} {self.Type}", space=False, border=False)
         logger.info("")
-        overlay = None
-        overlay_folder = None
-        overlay_name = ""
-        rating_keys = []
-        if "item_overlay" in self.item_details:
-            overlay_name = self.item_details["item_overlay"]
-            rating_keys = [int(item.ratingKey) for item in self.library.search(label=f"{overlay_name} Overlay")]
-            overlay_folder = os.path.join(self.config.default_dir, "overlays", overlay_name)
-            overlay_image = Image.open(os.path.join(overlay_folder, "overlay.png")).convert("RGBA")
-            overlay = (overlay_name, overlay_folder, overlay_image)
-
-        revert = "revert_overlay" in self.item_details
-        if revert:
-            overlay = None
 
         add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
@@ -2432,14 +2418,6 @@ class CollectionBuilder:
         tmdb_paths = []
         tvdb_paths = []
         for item in self.items:
-            if int(item.ratingKey) in rating_keys and not revert:
-                rating_keys.remove(int(item.ratingKey))
-            if overlay is not None:
-                try:
-                    self.library.update_asset(item, overlay=overlay, folders=self.details["asset_folders"],
-                                              create=self.details["create_asset_folders"], asset_directory=self.asset_directory)
-                except Failed as e:
-                    logger.error(e)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
             if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
@@ -2497,19 +2475,6 @@ class CollectionBuilder:
             if self.sonarr_details["add_existing"]:
                 added = self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
                 self.added_to_sonarr.extend([{"title": show.title, "id": show.tvdbId} for show in added])
-
-        for rating_key in rating_keys:
-            try:
-                item = self.fetch_item(rating_key)
-            except Failed as e:
-                logger.error(e)
-                continue
-            self.library.edit_tags("label", item, remove_tags=[f"{overlay_name} Overlay"])
-            og_image = os.path.join(overlay_folder, f"{rating_key}.png")
-            if os.path.exists(og_image):
-                self.library.upload_poster(item, og_image)
-                os.remove(og_image)
-            self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, "", "")
 
     def load_collection(self):
         if self.obj is None and self.smart_url:

@@ -18,7 +18,6 @@ charts = {
     "top_indian": "Top Rated Indian Movies",
     "lowest_rated": "Lowest Rated Movies"
 }
-
 base_url = "https://www.imdb.com"
 urls = {
     "lists": f"{base_url}/list/ls",
@@ -136,7 +135,7 @@ class IMDb:
             if parental_dict and expired is False:
                 return parental_dict
         response = self.config.get_html(f"https://www.imdb.com/title/{imdb_id}/parentalguide")
-        for ptype in ["nudity", "violence", "profanity", "alcohol", "frightening"]:
+        for ptype in util.parental_types:
             results = response.xpath(f"//section[@id='advisory-{ptype}']//span[contains(@class,'ipl-status-pill')]/text()")
             if results:
                 parental_dict[ptype] = results[0].strip()
