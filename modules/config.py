@@ -367,7 +367,7 @@ class ConfigFile:
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
         try:
             self.Webhooks.start_time_hooks(self.start_time)
-            if self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2]):
+            if self.version and (self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2])):
                 self.Webhooks.version_hooks(self.version, self.latest_version)
         except Failed as e:
             logger.stacktrace()
