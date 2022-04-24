@@ -120,9 +120,9 @@ class Overlays:
                     if poster is None and has_original is None:
                         logger.error(f"Overlay Error: No poster found for {item.title}")
                     elif changed_image or overlay_change:
-                        new_poster = Image.open(poster.location if poster else has_original).convert("RGBA")
-                        temp = os.path.join(self.library.overlay_folder, f"temp.png")
                         try:
+                            new_poster = Image.open(poster.location if poster else has_original).convert("RGBA")
+                            temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             blur_num = 0
                             for over_name in over_names:
                                 if over_name.startswith("blur"):
@@ -144,6 +144,8 @@ class Overlays:
                         except (OSError, BadRequest) as e:
                             logger.stacktrace()
                             raise Failed(f"Overlay Error: {e}")
+                    else:
+                        logger.error(f"Overlay Not Needed for {item.title}")
 
                     if self.config.Cache and poster_compare:
                         self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, item.thumb,
@@ -214,9 +216,13 @@ class Overlays:
                     _, image_compare, _ = self.config.Cache.query_image_map(overlay_name, f"{self.library.image_table_name}_overlays")
                 overlay_size = os.stat(properties[overlay_name]["path"]).st_size
                 properties[overlay_name]["updated"] = not image_compare or str(overlay_size) != str(image_compare)
-                properties[overlay_name]["image"] = Image.open(properties[overlay_name]["path"]).convert("RGBA")
-                if self.config.Cache:
-                    self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
+                try:
+                    properties[overlay_name]["image"] = Image.open(properties[overlay_name]["path"]).convert("RGBA")
+                    if self.config.Cache:
+                        self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
+                except OSError:
+                    logger.error(f"Overlay Error: overlay image {properties[overlay_name]['path']} failed to load")
+                    properties.pop(overlay_name)
 
         for overlay_name, over_attrs in properties.items():
             for over_key in over_attrs["keys"]:
