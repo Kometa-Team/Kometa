@@ -2,7 +2,6 @@ import os, re, time
 from datetime import datetime, timedelta
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, ImageData, NotScheduled, NotScheduledRange
-from PIL import Image
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
@@ -464,7 +463,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
             self.details["delete_not_scheduled"] = util.parse(self.Type, "delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
 
-        if "schedule" in methods and not self.config.requested_collections:
+        if "schedule" in methods and not self.config.requested_collections and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: schedule")
             if not self.data[methods["schedule"]]:
@@ -473,7 +472,7 @@ class CollectionBuilder:
                 logger.debug(f"Value: {self.data[methods['schedule']]}")
                 err = None
                 try:
-                    util.schedule_check("schedule", self.data[methods['schedule']], self.current_time, self.config.run_hour)
+                    util.schedule_check("schedule", self.data[methods["schedule"]], self.current_time, self.config.run_hour)
                 except NotScheduledRange as e:
                     err = e
                 except NotScheduled as e:
@@ -2607,11 +2606,7 @@ class CollectionBuilder:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
             final_name, _ = util.validate_filename(name_mapping)
-            poster_image, background_image, asset_location = self.library.find_assets(
-                name="poster" if self.details["asset_folders"] else final_name,
-                folder_name=final_name if self.details["asset_folders"] else None,
-                prefix=f"{name_mapping}'s "
-            )
+            poster_image, background_image, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
             if poster_image:
                 self.posters["asset_directory"] = poster_image
             if background_image:
