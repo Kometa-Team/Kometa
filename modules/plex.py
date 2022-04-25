@@ -1,5 +1,8 @@
 import os, plexapi, requests
 from datetime import datetime
+
+from plexapi.base import PlexObject
+
 from modules import builder, util
 from modules.library import Library
 from modules.util import Failed, ImageData
@@ -809,118 +812,101 @@ class Plex(Library):
                 logger.info(final)
         return final
 
-    def update_asset(self, item, folders=None, create=None, asset_directory=None):
-        if isinstance(item, (Movie, Artist, Show)):
-            starting = item.show() if isinstance(item, (Episode, Season)) else item
-            path_test = str(starting.locations[0])
-            if not os.path.dirname(path_test):
-                path_test = path_test.replace("\\", "/")
-            name = os.path.basename(os.path.dirname(path_test) if isinstance(starting, Movie) else path_test)
-        elif isinstance(item, (Collection, Playlist)):
-            name, _ = util.validate_filename(item.title)
-        else:
-            return None, None, None
-        if folders is None:
-            folders = self.asset_folders
-        if create is None:
-            create = self.create_asset_folders
+    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None):
+        poster = None
+        background = None
+        item_dir = None
+        folder_name = None
+
         if asset_directory is None:
             asset_directory = self.asset_directory
 
-        poster, background, item_dir = self.find_assets(
-            name="poster" if folders else name,
-            folder_name=name if folders else None,
-            prefix=f"{item.title}'s "
-        )
-        if item_dir and self.dimensional_asset_rename and (not poster or not background):
-            for file in util.glob_filter(os.path.join(item_dir, "*.*")):
-                if file.lower().endswith((".jpg", ".png", ".jpeg")):
-                    image = Image.open(file)
-                    _w, _h = image.size
-                    image.close()
-                    if not poster and _h >= _w:
-                        new_path = os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
-                        os.rename(file, new_path)
-                        poster = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_url=False)
-                    elif not background and _w > _h:
-                        new_path = os.path.join(os.path.dirname(file), f"background{os.path.splitext(file)[1].lower()}")
-                        os.rename(file, new_path)
-                        background = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
-                    if poster and background:
-                        break
+        is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist))
+        if isinstance(item, Album):
+            prefix = f"{item.title} Album {item.title}'s "
+            file_name = item.title
+        elif isinstance(item, Season):
+            prefix = f"{item.title} Season {item.seasonNumber}'s "
+            file_name = f"Season{'0' if item.seasonNumber < 10 else ''}{item.seasonNumber}"
+        elif isinstance(item, Episode):
+            prefix = f"{item.title} {item.seasonEpisode.upper()}'s "
+            file_name = item.seasonEpisode.upper()
+        else:
+            prefix = f"{item.title if is_top_level else item}'s "
+            file_name = "poster"
 
-        if poster or background:
-            self.upload_images(item, poster=poster, background=background)
+        if not item_asset_directory:
+            if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
+                starting = item.show() if isinstance(item, (Episode, Season)) else item
+                path_test = str(starting.locations[0])
+                if not os.path.dirname(path_test):
+                    path_test = path_test.replace("\\", "/")
+                folder_name = os.path.basename(os.path.dirname(path_test) if isinstance(starting, Movie) else path_test)
+            elif isinstance(item, (Collection, Playlist)):
+                folder_name, _ = util.validate_filename(item.title)
+            else:
+                folder_name, _ = util.validate_filename(item)
 
-        if isinstance(item, Show):
-            missing_seasons = ""
-            missing_episodes = ""
-            found_season = False
-            found_episode = False
-            for season in self.query(item.seasons):
-                season_name = f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}"
-                season_poster, season_background, _ = self.find_assets(
-                    name=season_name,
-                    folder_name=name,
-                    item_directory=item_dir,
-                    prefix=f"{item.title} Season {season.seasonNumber}'s "
-                )
-                if season_poster:
-                    found_season = True
-                elif self.show_missing_season_assets and season.seasonNumber > 0:
-                    missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
-                if season_poster or season_background:
-                    self.upload_images(season, poster=season_poster, background=season_background)
-                for episode in self.query(season.episodes):
-                    if episode.seasonEpisode:
-                        episode_poster, episode_background, _ = self.find_assets(
-                            name=episode.seasonEpisode.upper(),
-                            folder_name=name,
-                            item_directory=item_dir,
-                            prefix=f"{item.title} {episode.seasonEpisode.upper()}'s "
-                        )
-                        if episode_poster or episode_background:
-                            found_episode = True
-                            self.upload_images(episode, poster=episode_poster, background=episode_background)
-                        elif self.show_missing_episode_assets:
-                            missing_episodes += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
+            if not self.asset_folders:
+                file_name = folder_name if file_name == "poster" else f"{folder_name}_{file_name}"
 
-            if (found_season and missing_seasons) or (found_episode and missing_episodes):
-                output = f"Missing Posters for {item.title}"
-                if found_season:
-                    output += missing_seasons
-                if found_episode:
-                    output += missing_episodes
-                logger.info(output)
-        if isinstance(item, Artist):
-            missing_assets = ""
-            found_album = False
-            for album in self.query(item.albums):
-                album_poster, album_background, _ = self.find_assets(
-                    name=album.title,
-                    folder_name=name,
-                    item_directory=item_dir,
-                    prefix=f"{item.title} Album {album.title}'s "
-                )
-                if album_poster:
-                    found_album = True
+            for ad in asset_directory:
+                if self.asset_folders:
+                    if os.path.isdir(os.path.join(ad, folder_name)):
+                        item_asset_directory = os.path.join(ad, folder_name)
+                    else:
+                        for n in range(1, self.asset_depth + 1):
+                            new_path = ad
+                            for i in range(1, n + 1):
+                                new_path = os.path.join(new_path, "*")
+                            matches = util.glob_filter(os.path.join(new_path, folder_name))
+                            if len(matches) > 0:
+                                item_asset_directory = os.path.abspath(matches[0])
                 else:
-                    missing_assets += f"\nMissing Album {album.title} Poster"
-                if album_poster or album_background:
-                    self.upload_images(album, poster=album_poster, background=album_background)
-            if self.show_missing_season_assets and found_album and missing_assets:
-                logger.info(f"Missing Album Posters for {item.title}{missing_assets}")
+                    matches = util.glob_filter(os.path.join(ad, f"{file_name}.*"))
+                    if len(matches) > 0:
+                        item_asset_directory = ad
+                if item_asset_directory:
+                    break
+            if not item_asset_directory:
+                if self.create_asset_folders and self.asset_folders:
+                    item_asset_directory = os.path.join(asset_directory[0], folder_name)
+                    os.makedirs(item_asset_directory, exist_ok=True)
+                    logger.info(f"Asset Directory Created: {item_asset_directory}")
+                raise Failed(f"Asset Error: Unable to find asset {'folder' if self.asset_folders else 'file'}: {folder_name if self.asset_folders else file_name}")
 
-        if create and folders and item_dir is None:
-            filename, _ = util.validate_filename(name)
-            item_dir = os.path.join(asset_directory[0], filename)
-            os.makedirs(item_dir, exist_ok=True)
-            logger.info(f"Asset Directory Created: {item_dir}")
-        elif folders and item_dir is None:
-            logger.warning(f"Asset Warning: No asset folder found called '{name}'")
-        elif not poster and not background and self.show_missing_assets:
-            logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
-        return poster, background, item_dir
+        poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")
+        background_filter = os.path.join(item_asset_directory, "background.*" if file_name == "poster" else f"{file_name}_background.*")
+
+        poster_matches = util.glob_filter(poster_filter)
+        if len(poster_matches) > 0:
+            poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=prefix, is_url=False)
+
+        background_matches = util.glob_filter(background_filter)
+        if len(background_matches) > 0:
+            background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, is_poster=False, is_url=False)
+
+        if is_top_level and self.asset_folders and self.dimensional_asset_rename and (not poster or not background):
+            for file in util.glob_filter(os.path.join(item_asset_directory, "*.*")):
+                if file.lower().endswith((".jpg", ".png", ".jpeg")):
+                    try:
+                        image = Image.open(file)
+                        _w, _h = image.size
+                        image.close()
+                        if not poster and _h >= _w:
+                            new_path = os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
+                            os.rename(file, new_path)
+                            poster = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_url=False)
+                        elif not background and _w > _h:
+                            new_path = os.path.join(os.path.dirname(file), f"background{os.path.splitext(file)[1].lower()}")
+                            os.rename(file, new_path)
+                            background = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+                        if poster and background:
+                            break
+                    except OSError:
+                        logger.error(f"Asset Error: Failed to open image: {file}")
+
+        return poster, background, item_dir, folder_name
 
     def get_ids(self, item):
         tmdb_id = None

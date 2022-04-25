@@ -139,7 +139,7 @@ class Library(ABC):
             except Failed as e:
                 logger.error(e)
 
-    def upload_images(self, item, poster=None, background=None, overlay=None):
+    def upload_images(self, item, poster=None, background=None):
         image = None
         image_compare = None
         poster_uploaded = False
@@ -159,40 +159,6 @@ class Library(ABC):
             except Failed:
                 logger.stacktrace()
                 logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
-
-        if overlay is not None:
-            overlay_name, overlay_folder, overlay_image = overlay
-            self.reload(item)
-            item_labels = {item_tag.tag.lower(): item_tag.tag for item_tag in item.labels}
-            for item_label in item_labels:
-                if item_label.endswith(" overlay") and item_label != f"{overlay_name.lower()} overlay":
-                    raise Failed(f"Overlay Error: Poster already has an existing Overlay: {item_labels[item_label]}")
-            if poster_uploaded or image is None or image != item.thumb or f"{overlay_name.lower()} overlay" not in item_labels:
-                if not item.posterUrl:
-                    raise Failed(f"Overlay Error: No existing poster to Overlay for {item.title}")
-                response = self.config.get(item.posterUrl)
-                if response.status_code >= 400:
-                    raise Failed(f"Overlay Error: Overlay Failed for {item.title}")
-                ext = "jpg" if response.headers["Content-Type"] == "image/jpegss" else "png"
-                temp_image = os.path.join(overlay_folder, f"temp.{ext}")
-                with open(temp_image, "wb") as handler:
-                    handler.write(response.content)
-                shutil.copyfile(temp_image, os.path.join(overlay_folder, f"{item.ratingKey}.{ext}"))
-                while util.is_locked(temp_image):
-                    time.sleep(1)
-                try:
-                    new_poster = Image.open(temp_image).convert("RGBA")
-                    new_poster = new_poster.resize(overlay_image.size, Image.ANTIALIAS)
-                    new_poster.paste(overlay_image, (0, 0), overlay_image)
-                    new_poster.save(temp_image)
-                    self.upload_poster(item, temp_image)
-                    self.edit_tags("label", item, add_tags=[f"{overlay_name} Overlay"])
-                    self.reload(item, force=True)
-                    poster_uploaded = True
-                    logger.info(f"Detail: Overlay: {overlay_name} applied to {item.title}")
-                except (OSError, BadRequest) as e:
-                    logger.stacktrace()
-                    raise Failed(f"Overlay Error: {e}")
 
         background_uploaded = False
         if background is not None:

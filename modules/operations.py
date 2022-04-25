@@ -1,6 +1,8 @@
 import os, re
 from modules import util
 from modules.util import Failed
+from plexapi.audio import Artist
+from plexapi.video import Show
 from ruamel import yaml
 
 logger = util.logger
@@ -76,7 +78,53 @@ class Operations:
                 current_labels = [la.tag for la in item.labels] if self.library.assets_for_all or self.library.mass_imdb_parental_labels else []
 
                 if self.library.assets_for_all and "Overlay" not in current_labels:
-                    self.library.update_asset(item)
+                    poster, background, item_dir, name = self.library.find_item_assets(item)
+
+                    if item_dir:
+                        if poster or background:
+                            self.library.upload_images(item, poster=poster, background=background)
+
+                        if isinstance(item, Show):
+                            missing_seasons = ""
+                            missing_episodes = ""
+                            found_season = False
+                            found_episode = False
+                            for season in self.library.query(item.seasons):
+                                season_poster, season_background, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir)
+                                if season_poster:
+                                    found_season = True
+                                elif self.library.show_missing_season_assets and season.seasonNumber > 0:
+                                    missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
+                                if season_poster or season_background:
+                                    self.library.upload_images(season, poster=season_poster, background=season_background)
+                                for episode in self.library.query(season.episodes):
+                                    if episode.seasonEpisode:
+                                        episode_poster, episode_background, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir)
+                                        if episode_poster or episode_background:
+                                            found_episode = True
+                                            self.library.upload_images(episode, poster=episode_poster, background=episode_background)
+                                        elif self.library.show_missing_episode_assets:
+                                            missing_episodes += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
+                            if (found_season and missing_seasons) or (found_episode and missing_episodes):
+                                logger.info(f"Missing Posters for {item.title}{missing_seasons}{missing_episodes}")
+                        if isinstance(item, Artist):
+                            missing_assets = ""
+                            found_album = False
+                            for album in self.library.query(item.albums):
+                                album_poster, album_background, _, _ = self.library.find_item_assets(album, item_asset_directory=item_dir)
+                                if album_poster or album_background:
+                                    found_album = True
+                                elif self.library.show_missing_season_assets:
+                                    missing_assets += f"\nMissing Album {album.title} Poster"
+                                if album_poster or album_background:
+                                    self.library.upload_images(album, poster=album_poster, background=album_background)
+                            if self.library.show_missing_season_assets and found_album and missing_assets:
+                                logger.info(f"Missing Album Posters for {item.title}{missing_assets}")
+
+                    elif self.library.asset_folders:
+                        logger.warning(f"Asset Warning: No asset folder found called '{name}'")
+                    elif not poster and not background and self.library.show_missing_assets:
+                        logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
 
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
@@ -381,7 +429,15 @@ class Operations:
             logger.separator(f"Unmanaged Collection Assets Check for {self.library.name} Library", space=False, border=False)
             logger.info("")
             for col in unmanaged_collections:
-                self.library.update_asset(col)
+                poster, background, item_dir, name = self.library.find_item_assets(col)
+                if item_dir:
+                    if poster or background:
+                        self.library.upload_images(col, poster=poster, background=background)
+                if self.library.asset_folders and item_dir is None:
+                    logger.warning(f"Asset Warning: No asset folder found called '{name}'")
+                elif not poster and not background and self.library.show_missing_assets:
+                    logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
+
         if self.library.mass_collection_mode:
             logger.info("")
             logger.separator(f"Unmanaged Mass Collection Mode for {self.library.name} Library", space=False, border=False)

@@ -320,6 +320,7 @@ class MetadataFile(DataFile):
                         auto_list = {}
                         all_keys = []
                         dynamic_data = None
+                        logger.debug(exclude)
                         def _check_dict(check_dict):
                             for ck, cv in check_dict.items():
                                 all_keys.append(ck)
