@@ -78,11 +78,12 @@ class Operations:
                 current_labels = [la.tag for la in item.labels] if self.library.assets_for_all or self.library.mass_imdb_parental_labels else []
 
                 if self.library.assets_for_all and "Overlay" not in current_labels:
-                    poster, background, item_dir, name = self.library.find_item_assets(item)
-
-                    if item_dir:
+                    try:
+                        poster, background, item_dir, name = self.library.find_item_assets(item)
                         if poster or background:
                             self.library.upload_images(item, poster=poster, background=background)
+                        elif self.library.show_missing_assets:
+                            logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
 
                         if isinstance(item, Show):
                             missing_seasons = ""
@@ -120,11 +121,9 @@ class Operations:
                                     self.library.upload_images(album, poster=album_poster, background=album_background)
                             if self.library.show_missing_season_assets and found_album and missing_assets:
                                 logger.info(f"Missing Album Posters for {item.title}{missing_assets}")
-
-                    elif self.library.asset_folders:
-                        logger.warning(f"Asset Warning: No asset folder found called '{name}'")
-                    elif not poster and not background and self.library.show_missing_assets:
-                        logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
+                    except Failed as e:
+                        if self.library.show_missing_assets:
+                            logger.warning(e)
 
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
@@ -429,14 +428,14 @@ class Operations:
             logger.separator(f"Unmanaged Collection Assets Check for {self.library.name} Library", space=False, border=False)
             logger.info("")
             for col in unmanaged_collections:
-                poster, background, item_dir, name = self.library.find_item_assets(col)
-                if item_dir:
+                try:
+                    poster, background, item_dir, name = self.library.find_item_assets(col)
                     if poster or background:
                         self.library.upload_images(col, poster=poster, background=background)
-                if self.library.asset_folders and item_dir is None:
-                    logger.warning(f"Asset Warning: No asset folder found called '{name}'")
-                elif not poster and not background and self.library.show_missing_assets:
-                    logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
+                    elif self.library.show_missing_assets:
+                        logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
+                except Failed as e:
+                    logger.warning(e)
 
         if self.library.mass_collection_mode:
             logger.info("")

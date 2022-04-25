@@ -78,6 +78,7 @@ class Overlays:
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item.title}")
                     image_compare = None
                     overlay_compare = None
+                    poster = None
                     if self.config.Cache:
                         image, image_compare, overlay_compare = self.config.Cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
 
@@ -93,7 +94,13 @@ class Overlays:
                         for over_name in over_names:
                             if over_name not in overlay_compare or properties[over_name]["updated"]:
                                 overlay_change = True
-                    poster, _, _, _ = self.library.find_item_assets(item)
+                    try:
+                        poster, _, item_dir, _ = self.library.find_item_assets(item)
+                        if not poster and self.library.assets_for_all and self.library.show_missing_assets:
+                            logger.warning(f"Asset Warning: No poster found in the assets folder '{item_dir}'")
+                    except Failed as e:
+                        if self.library.assets_for_all and self.library.show_missing_assets:
+                            logger.warning(e)
 
                     has_original = None
                     changed_image = False
@@ -277,7 +284,10 @@ class Overlays:
         return items if not ignore else [o for o in items if o.ratingKey not in ignore]
 
     def remove_overlay(self, item, label, locations):
-        poster, _, _, _ = self.library.find_item_assets(item)
+        try:
+            poster, _, _, _ = self.library.find_item_assets(item)
+        except Failed:
+            poster = None
         is_url = False
         original = None
         if poster:

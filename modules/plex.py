@@ -815,7 +815,6 @@ class Plex(Library):
     def find_item_assets(self, item, item_asset_directory=None, asset_directory=None):
         poster = None
         background = None
-        item_dir = None
         folder_name = None
 
         if asset_directory is None:
@@ -869,11 +868,12 @@ class Plex(Library):
                 if item_asset_directory:
                     break
             if not item_asset_directory:
+                extra = ""
                 if self.create_asset_folders and self.asset_folders:
                     item_asset_directory = os.path.join(asset_directory[0], folder_name)
                     os.makedirs(item_asset_directory, exist_ok=True)
-                    logger.info(f"Asset Directory Created: {item_asset_directory}")
-                raise Failed(f"Asset Error: Unable to find asset {'folder' if self.asset_folders else 'file'}: {folder_name if self.asset_folders else file_name}")
+                    extra = f"\nAsset Directory Created: {item_asset_directory}"
+                raise Failed(f"Asset Warning: Unable to find asset {'folder' if self.asset_folders else 'file'}: {folder_name if self.asset_folders else file_name}{extra}")
 
         poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")
         background_filter = os.path.join(item_asset_directory, "background.*" if file_name == "poster" else f"{file_name}_background.*")
@@ -906,7 +906,7 @@ class Plex(Library):
                     except OSError:
                         logger.error(f"Asset Error: Failed to open image: {file}")
 
-        return poster, background, item_dir, folder_name
+        return poster, background, item_asset_directory, folder_name
 
     def get_ids(self, item):
         tmdb_id = None
