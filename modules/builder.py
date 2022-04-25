@@ -2605,12 +2605,15 @@ class CollectionBuilder:
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
-            final_name, _ = util.validate_filename(name_mapping)
-            poster_image, background_image, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
-            if poster_image:
-                self.posters["asset_directory"] = poster_image
-            if background_image:
-                self.backgrounds["asset_directory"] = background_image
+            try:
+                poster_image, background_image, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
+                if poster_image:
+                    self.posters["asset_directory"] = poster_image
+                if background_image:
+                    self.backgrounds["asset_directory"] = background_image
+            except Failed as e:
+                if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
+                    logger.error(e)
 
         self.collection_poster = None
         if len(self.posters) > 0:
