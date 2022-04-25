@@ -86,6 +86,9 @@ screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 
+if collections or metadata_files:
+    collection_only = True
+
 if screen_width < 90 or screen_width > 300:
     print(f"Argument Error: width argument invalid: {screen_width} must be an integer between 90 and 300 using the default 100")
     screen_width = 100

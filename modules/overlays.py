@@ -2,6 +2,7 @@ import os, re, time
 from modules import util
 from modules.builder import CollectionBuilder
 from modules.util import Failed
+from plexapi.audio import Album
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
 from PIL import Image, ImageFilter
@@ -63,13 +64,22 @@ class Overlays:
             logger.info("")
             logger.separator(f"Applying Overlays for the {self.library.name} Library")
             logger.info("")
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: io[1][0].titleSort), 1):
+            def get_item_sort_title(item_to_sort):
+                if isinstance(item_to_sort, Album):
+                    return f"{item_to_sort.titleSort} Album {item_to_sort.title}"
+                elif isinstance(item_to_sort, Season):
+                    return f"{item_to_sort.titleSort} Season {item_to_sort.seasonNumber}"
+                elif isinstance(item_to_sort, Episode):
+                    return f"{item_to_sort.titleSort} {item_to_sort.seasonEpisode.upper()}"
+                else:
+                    return item_to_sort.titleSort
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: get_item_sort_title(io[1][0])), 1):
                 try:
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item.title}")
                     image_compare = None
                     overlay_compare = None
                     if self.config.Cache:
-                        image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
+                        image, image_compare, overlay_compare = self.config.Cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
 
                     overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare)
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in item.labels])
@@ -83,8 +93,7 @@ class Overlays:
                         for over_name in over_names:
                             if over_name not in overlay_compare or properties[over_name]["updated"]:
                                 overlay_change = True
-
-                    poster, _, item_dir = self.find_asset(item)
+                    poster, _, _, _ = self.library.find_item_assets(item)
 
                     has_original = None
                     changed_image = False
@@ -145,7 +154,7 @@ class Overlays:
                             logger.stacktrace()
                             raise Failed(f"Overlay Error: {e}")
                     else:
-                        logger.error(f"Overlay Not Needed for {item.title}")
+                        logger.error(f"Overlay Update Not Needed for {item.title}")
 
                     if self.config.Cache and poster_compare:
                         self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, item.thumb,
@@ -249,14 +258,6 @@ class Overlays:
                             key_to_overlays[over_key][1].remove(v)
         return key_to_overlays, properties
 
-    def find_asset(self, item):
-        clean_asset_name, _ = util.validate_filename(item.title)
-        return self.library.find_assets(
-            name="poster" if self.library.asset_folders else clean_asset_name,
-            folder_name=clean_asset_name if self.library.asset_folders else None,
-            prefix=f"{item.title}'s "
-        )
-
     def find_poster_url(self, item):
         if isinstance(item, Movie):
             if item.ratingKey in self.library.movie_rating_key_map:
@@ -276,7 +277,7 @@ class Overlays:
         return items if not ignore else [o for o in items if o.ratingKey not in ignore]
 
     def remove_overlay(self, item, label, locations):
-        poster, _, item_dir = self.find_asset(item)
+        poster, _, _, _ = self.library.find_item_assets(item)
         is_url = False
         original = None
         if poster:

@@ -26,7 +26,7 @@ from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
 from modules.trakt import Trakt
 from modules.tvdb import TVDb
-from modules.util import Failed, NotScheduled
+from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
 from retrying import retry
 from ruamel import yaml
@@ -367,7 +367,7 @@ class ConfigFile:
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
         try:
             self.Webhooks.start_time_hooks(self.start_time)
-            if self.version and (self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2])):
+            if self.version and self.latest_version and (self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2])):
                 self.Webhooks.version_hooks(self.version, self.latest_version)
         except Failed as e:
             logger.stacktrace()
@@ -751,16 +751,37 @@ class ConfigFile:
                     params["overlay_path"] = []
                     params["remove_overlays"] = False
                     if lib and "overlay_path" in lib:
-                        if not lib["overlay_path"]:
-                            raise Failed("Config Error: overlay_path attribute is blank")
-                        files = util.load_files(lib["overlay_path"], "overlay_path")
-                        if not files:
-                            raise Failed("Config Error: No Paths Found for overlay_path")
-                        for file in util.get_list(lib["overlay_path"], split=False):
-                            if isinstance(file, dict) \
-                                    and ("remove_overlays" in file and file["remove_overlays"] is True) \
-                                    or ("revert_overlays" in file and file["revert_overlays"] is True):
-                                params["remove_overlays"] = True
+                        try:
+                            if not lib["overlay_path"]:
+                                raise Failed("Config Error: overlay_path attribute is blank")
+                            files = util.load_files(lib["overlay_path"], "overlay_path")
+                            if not files:
+                                raise Failed("Config Error: No Paths Found for overlay_path")
+                            for file in util.get_list(lib["overlay_path"], split=False):
+                                if isinstance(file, dict):
+                                    if ("remove_overlays" in file and file["remove_overlays"] is True) \
+                                        or ("revert_overlays" in file and file["revert_overlays"] is True):
+                                        params["remove_overlays"] = True
+                                    if "schedule" in file and file["schedule"]:
+                                        logger.debug(f"Value: {file['schedule']}")
+                                        err = None
+                                        try:
+                                            util.schedule_check("schedule", file["schedule"], current_time, self.run_hour)
+                                        except NotScheduledRange as e:
+                                            err = e
+                                        except NotScheduled as e:
+                                            if not self.ignore_schedules:
+                                                err = e
+                                        if err:
+                                            raise NotScheduled(f"{err}\n\nOverlays not scheduled to run")
+                        except NotScheduled as e:
+                            logger.error(e)
+                            params["overlay_path"] = []
+                            params["remove_overlays"] = False
+
+
+
+
                         params["overlay_path"] = files
 
                     logger.info("")
