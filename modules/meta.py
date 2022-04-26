@@ -241,7 +241,7 @@ class DataFile:
             return new_attributes
 
     def external_templates(self, data):
-        if "external_templates" in data and data["external_templates"]:
+        if data and "external_templates" in data and data["external_templates"]:
             files = util.load_files(data["external_templates"], "external_templates")
             if not files:
                 logger.error("Config Error: No Paths Found for external_templates")
