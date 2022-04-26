@@ -271,6 +271,7 @@ class CollectionBuilder:
         self.overlay_group = None
         self.overlay_weight = None
         self.overlay_path = None
+        self.overlay_coordinates = None
         if self.overlay:
             if "overlay" in methods:
                 logger.debug("")
@@ -282,19 +283,33 @@ class CollectionBuilder:
                     self.overlay = str(data[methods["overlay"]]["name"])
                     if "group" in data[methods["overlay"]] and data[methods["overlay"]]["group"]:
                         self.overlay_group = str(data[methods["overlay"]]["group"])
-                        if "weight" in data[methods["overlay"]] and data[methods["overlay"]]["weight"]:
-                            pri = util.check_num(data[methods["overlay"]]["weight"])
-                            if pri is None:
-                                raise Failed(f"{self.Type} Error: overlay weight must be a number")
-                            self.overlay_weight = pri
-                        else:
-                            raise Failed(f"{self.Type} Error: overlay group and overlay weight must be used together")
+                    if "weight" in data[methods["overlay"]] and data[methods["overlay"]]["weight"] is not None:
+                        pri = util.check_num(data[methods["overlay"]]["weight"])
+                        if pri is None:
+                            raise Failed(f"{self.Type} Error: overlay weight must be a number")
+                        self.overlay_weight = pri
+                    if ("group" in data[methods["overlay"]] or "weight" in data[methods["overlay"]]) and (not self.overlay_group or self.overlay_weight is None):
+                        raise Failed(f"{self.Type} Error: overlay group and overlay weight must be used together")
+                    x_coordinate = None
+                    if "x_coordinate" in data[methods["x_coordinate"]] and data[methods["overlay"]]["x_coordinate"] is not None:
+                        x_coordinate = util.check_num(data[methods["overlay"]]["x_coordinate"])
+                        if x_coordinate is None or x_coordinate < 0:
+                            raise Failed(f"{self.Type} Error: overlay x_coordinate: {data[methods['overlay']]['x_coordinate']} invalid must be a number 0 or greater")
+                    y_coordinate = None
+                    if "y_coordinate" in data[methods["y_coordinate"]] and data[methods["overlay"]]["y_coordinate"] is not None:
+                        y_coordinate = util.check_num(data[methods["overlay"]]["y_coordinate"])
+                        if y_coordinate is None or y_coordinate < 0:
+                            raise Failed(f"{self.Type} Error: overlay y_coordinate: {data[methods['overlay']]['y_coordinate']} invalid must be a number 0 or greater")
+                    if ("x_coordinate" in data[methods["overlay"]] or "y_coordinate" in data[methods["overlay"]]) and (x_coordinate is None or y_coordinate is None):
+                        raise Failed(f"{self.Type} Error: overlay x_coordinate and overlay y_coordinate must be used together")
+                    if x_coordinate or y_coordinate:
+                        self.overlay_coordinates = (x_coordinate, y_coordinate)
                     def get_and_save_image(image_url):
                         response = self.config.get(image_url)
                         if response.status_code >= 400:
                             raise Failed(f"{self.Type} Error: Overlay Image not found at: {image_url}")
                         if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
-                            raise Failed(f"{self.Type} Error: Overlay Image not a png: {url}")
+                            raise Failed(f"{self.Type} Error: Overlay Image not a png: {image_url}")
                         if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
                             os.makedirs(library.overlay_folder, exist_ok=False)
                             logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
@@ -331,6 +346,8 @@ class CollectionBuilder:
                     logger.error(f"Overlay Error: failed to parse overlay blur name: {self.overlay} defaulting to blur(50)")
                     self.overlay = "blur(50)"
             else:
+                if "|" in self.overlay:
+                    raise Failed(f"{self.Type} Error: Overlay Name: {self.overlay} cannot contain '|'")
                 if not self.overlay_path:
                     clean_name, _ = util.validate_filename(self.overlay)
                     self.overlay_path = os.path.join(library.overlay_folder, f"{clean_name}.png")
@@ -2293,7 +2310,6 @@ class CollectionBuilder:
                     elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
                             or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                         return False
-            logger.ghost(f"Filtering {display} {item.title}")
         return True
 
     def run_missing(self):

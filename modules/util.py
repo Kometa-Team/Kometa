@@ -125,12 +125,12 @@ def add_dict_list(keys, value, dict_map):
         else:
             dict_map[key] = [value]
 
-def get_list(data, lower=False, upper=False, split=True, int_list=False):
+def get_list(data, lower=False, upper=False, split=",", int_list=False):
     if data is None:                return None
     elif isinstance(data, list):    list_data = data
     elif isinstance(data, dict):    return [data]
     elif split is False:            list_data = [str(data)]
-    else:                           list_data = str(data).split(",")
+    else:                           list_data = str(data).split(split)
 
     if lower is True:               return [str(d).strip().lower() for d in list_data]
     elif upper is True:             return [str(d).strip().upper() for d in list_data]

@@ -21,7 +21,7 @@ class Overlays:
         logger.info("")
         os.makedirs(self.library.overlay_backup, exist_ok=True)
 
-        old_overlays = [l for l in self.library.Plex.listFilterChoices("label") if str(l.title).lower().endswith(" overlay")]
+        old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]
         if old_overlays:
             logger.info("")
             logger.separator(f"Removing Old Overlays for the {self.library.name} Library")
@@ -76,7 +76,7 @@ class Overlays:
                     if self.config.Cache:
                         image, image_compare, overlay_compare = self.config.Cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
 
-                    overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare)
+                    overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare, split="|")
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in item.labels])
 
                     overlay_change = False if has_overlay else True
@@ -143,8 +143,12 @@ class Overlays:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
                             for over_name in over_names:
                                 if not over_name.startswith("blur"):
-                                    new_poster = new_poster.resize(properties[over_name]["image"].size, Image.ANTIALIAS)
-                                    new_poster.paste(properties[over_name]["image"], (0, 0), properties[over_name]["image"])
+                                    if properties[over_name]["coordinates"]:
+                                        new_poster = new_poster.resize((1920, 1080) if isinstance(item, Episode) else (1000, 1500), Image.ANTIALIAS)
+                                        new_poster.paste(properties[over_name]["image"], properties[over_name]["coordinates"], properties[over_name]["image"])
+                                    else:
+                                        new_poster = new_poster.resize(properties[over_name]["image"].size, Image.ANTIALIAS)
+                                        new_poster.paste(properties[over_name]["image"], (0, 0), properties[over_name]["image"])
                             new_poster.save(temp, "PNG")
                             self.library.upload_poster(item, temp)
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
@@ -155,11 +159,11 @@ class Overlays:
                             logger.stacktrace()
                             raise Failed(f"{item_title[:60]:<60} | Overlay Error: {e}")
                     elif self.library.show_asset_not_needed:
-                        logger.error(f"{item_title[:60]:<60} | Overlay Update Not Needed")
+                        logger.info(f"{item_title[:60]:<60} | Overlay Update Not Needed")
 
                     if self.config.Cache and poster_compare:
                         self.config.Cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays",
-                                                           item.thumb, poster_compare, overlay=','.join(over_names))
+                                                           item.thumb, poster_compare, overlay='|'.join(over_names))
                 except Failed as e:
                     logger.error(e)
         logger.exorcise()
@@ -192,7 +196,7 @@ class Overlays:
                         properties[builder.overlay] = {
                             "keys": [], "suppress": builder.suppress_overlays, "group": builder.overlay_group,
                             "weight": builder.overlay_weight, "path": builder.overlay_path, "updated": False,
-                            "image": None
+                            "image": None, "coordinates": builder.overlay_coordinates,
                         }
 
                     for method, value in builder.builders:

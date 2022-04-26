@@ -80,6 +80,9 @@ class ConfigFile:
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
         self.requested_metadata_files = util.get_list(attrs["metadata_files"]) if "metadata_files" in attrs else None
         self.resume_from = attrs["resume"] if "resume" in attrs else None
+        self.collection_only = attrs["collection_only"] if "collection_only" in attrs else None
+        self.operations_only = attrs["operations_only"] if "operations_only" in attrs else None
+        self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else None
         current_time = datetime.now()
 
         yaml.YAML().allow_duplicate_keys = True
@@ -801,7 +804,7 @@ class ConfigFile:
 
                 logger.info("")
                 logger.separator("Scanning Metadata and Overlay Files", space=False, border=False)
-                library.scan_files()
+                library.scan_files(self.operations_only, self.overlays_only, self.collection_only)
                 if not library.metadata_files and not library.library_operation and not self.playlist_files:
                     logger.info("")
                     logger.error("Config Error: No valid metadata files, overlay files, playlist files, or library operations found")
