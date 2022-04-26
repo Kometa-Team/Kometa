@@ -291,12 +291,12 @@ class CollectionBuilder:
                     if ("group" in data[methods["overlay"]] or "weight" in data[methods["overlay"]]) and (not self.overlay_group or self.overlay_weight is None):
                         raise Failed(f"{self.Type} Error: overlay group and overlay weight must be used together")
                     x_coordinate = None
-                    if "x_coordinate" in data[methods["x_coordinate"]] and data[methods["overlay"]]["x_coordinate"] is not None:
+                    if "x_coordinate" in data[methods["overlay"]] and data[methods["overlay"]]["x_coordinate"] is not None:
                         x_coordinate = util.check_num(data[methods["overlay"]]["x_coordinate"])
                         if x_coordinate is None or x_coordinate < 0:
                             raise Failed(f"{self.Type} Error: overlay x_coordinate: {data[methods['overlay']]['x_coordinate']} invalid must be a number 0 or greater")
                     y_coordinate = None
-                    if "y_coordinate" in data[methods["y_coordinate"]] and data[methods["overlay"]]["y_coordinate"] is not None:
+                    if "y_coordinate" in data[methods["overlay"]] and data[methods["overlay"]]["y_coordinate"] is not None:
                         y_coordinate = util.check_num(data[methods["overlay"]]["y_coordinate"])
                         if y_coordinate is None or y_coordinate < 0:
                             raise Failed(f"{self.Type} Error: overlay y_coordinate: {data[methods['overlay']]['y_coordinate']} invalid must be a number 0 or greater")
