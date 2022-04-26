@@ -168,6 +168,9 @@ def start(attrs):
     attrs["read_only"] = read_only_config
     attrs["version"] = version
     attrs["no_missing"] = no_missing
+    attrs["collection_only"] = collection_only
+    attrs["operations_only"] = operations_only
+    attrs["overlays_only"] = overlays_only
     logger.separator(debug=True)
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
     logger.debug(f"--time (PMM_TIME): {times}")

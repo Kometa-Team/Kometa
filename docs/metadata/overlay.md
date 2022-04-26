@@ -56,18 +56,20 @@ You can specify the Overlay Name in 3 ways.
    
 3. Using a dictionary for more overlay location options.
 
-| Attribute | Description                                                                                                   | Required |
-|:----------|:--------------------------------------------------------------------------------------------------------------|:--------:|
-| `name`    | Name of the overlay. Each overlay name should be unique.                                                      | &#9989;  |
-| `file`    | Local location of the Overlay Image.                                                                          | &#10060; |
-| `url`     | URL of Overlay Image Online.                                                                                  | &#10060; |
-| `git`     | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image. | &#10060; |
-| `repo`    | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                        | &#10060; |
-| `group`   | Name of the Grouping for this overlay. **`weight` is required when using `group`**                            | &#10060; |
-| `weight`  | Weight of this overlay in its group. **`group` is required when using `weight`**                              | &#10060; |
+| Attribute      | Description                                                                                                   | Required |
+|:---------------|:--------------------------------------------------------------------------------------------------------------|:--------:|
+| `name`         | Name of the overlay. Each overlay name should be unique.                                                      | &#9989;  |
+| `file`         | Local location of the Overlay Image.                                                                          | &#10060; |
+| `url`          | URL of Overlay Image Online.                                                                                  | &#10060; |
+| `git`          | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image. | &#10060; |
+| `repo`         | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                        | &#10060; |
+| `group`        | Name of the Grouping for this overlay. **`weight` is required when using `group`**                            | &#10060; |
+| `weight`       | Weight of this overlay in its group. **`group` is required when using `weight`**                              | &#10060; |
+| `x_coordinate` | Top Left X Coordinate of this overlay. **`y_coordinate` is required when using `x_coordinate`**               | &#10060; |
+| `y_coordinate` | Top Left Y Coordinate of this overlay. **`x_coordinate` is required when using `y_coordinate`**               | &#10060; |
 
 * If `url`, `git`, and `repo` are all not defined then PMM will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
-* Only one overlay with the highest weight per group will be applied.  
+* Only one overlay with the highest weight per group will be applied.
 
 ```yaml
 overlays:
