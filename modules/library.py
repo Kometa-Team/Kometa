@@ -1,11 +1,9 @@
-import os, shutil, time
+import os
 from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.util import Failed, ImageData
-from PIL import Image
-from plexapi.exceptions import BadRequest
 from ruamel import yaml
 
 logger = util.logger

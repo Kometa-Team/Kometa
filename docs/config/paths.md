@@ -110,7 +110,7 @@ In this example, multiple overlay file path types are defined for the `"TV Shows
 ```yaml
 libraries:
   TV Shows:
-    overlay_apth:
+    overlay_path:
       - file: config/overlays.yml
       - folder: config/overlay configs/
       - git: PMM/overlays/imdb

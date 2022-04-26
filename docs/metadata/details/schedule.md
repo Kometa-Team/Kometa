@@ -23,14 +23,18 @@ libraries:
   Movies:
     metadata_path:
       - file: config/Movies.yml
-        schedule: weekly(friday)
+        schedule: weekly(monday)
       - git: meisnate12/MovieCharts
+        schedule: weekly(tuesday)
       - git: meisnate12/Studios
+        schedule: weekly(wednesday)
       - git: meisnate12/IMDBGenres
+        schedule: weekly(thursday)
       - git: meisnate12/People
+        schedule: weekly(friday)
     overlay_path:
       - git: PMM/overlays/imdb
-    schedule: weekly(saturday)
+        schedule: weekly(saturday)
     operations:
       mass_critic_rating_update: tmdb
 playlist_files:

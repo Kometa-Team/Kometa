@@ -33,8 +33,9 @@ class Overlays:
                     logger.separator(f"Removing {old_overlay.title}")
                     logger.info("")
                     for i, item in enumerate(label_items, 1):
-                        logger.ghost(f"Restoring {old_overlay.title}: {i}/{len(label_items)} {item.title}")
-                        self.remove_overlay(item, old_overlay.title, [
+                        item_title = self.get_item_sort_title(item, atr="title")
+                        logger.ghost(f"Restoring {old_overlay.title}: {i}/{len(label_items)} {item_title}")
+                        self.remove_overlay(item, item_title, old_overlay.title, [
                             os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")
                         ])
 
@@ -50,8 +51,9 @@ class Overlays:
             if remove_overlays:
                 logger.separator(f"Removing Overlays for the {self.library.name} Library")
                 for i, item in enumerate(remove_overlays, 1):
-                    logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item.title}")
-                    self.remove_overlay(item, "Overlay", [
+                    item_title = self.get_item_sort_title(item, atr="title")
+                    logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
+                    self.remove_overlay(item, item_title, "Overlay", [
                         os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
                         os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
                     ])
@@ -64,18 +66,10 @@ class Overlays:
             logger.info("")
             logger.separator(f"Applying Overlays for the {self.library.name} Library")
             logger.info("")
-            def get_item_sort_title(item_to_sort):
-                if isinstance(item_to_sort, Album):
-                    return f"{item_to_sort.titleSort} Album {item_to_sort.title}"
-                elif isinstance(item_to_sort, Season):
-                    return f"{item_to_sort.titleSort} Season {item_to_sort.seasonNumber}"
-                elif isinstance(item_to_sort, Episode):
-                    return f"{item_to_sort.titleSort} {item_to_sort.seasonEpisode.upper()}"
-                else:
-                    return item_to_sort.titleSort
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: get_item_sort_title(io[1][0])), 1):
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.get_item_sort_title(io[1][0])), 1):
                 try:
-                    logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item.title}")
+                    item_title = self.get_item_sort_title(item, atr="title")
+                    logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item_title}")
                     image_compare = None
                     overlay_compare = None
                     poster = None
@@ -123,7 +117,7 @@ class Overlays:
                         changed_image = True
                         image_response = self.config.get(new_backup)
                         if image_response.status_code >= 400:
-                            raise Failed(f"Overlay Error: Poster Download Failed for {item.title}")
+                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: Poster Download Failed")
                         i_ext = "jpg" if image_response.headers["Content-Type"] == "image/jpeg" else "png"
                         backup_image_path = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.{i_ext}")
                         with open(backup_image_path, "wb") as handler:
@@ -134,7 +128,7 @@ class Overlays:
 
                     poster_compare = None
                     if poster is None and has_original is None:
-                        logger.error(f"Overlay Error: No poster found for {item.title}")
+                        logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
                     elif changed_image or overlay_change:
                         try:
                             new_poster = Image.open(poster.location if poster else has_original).convert("RGBA")
@@ -156,19 +150,29 @@ class Overlays:
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
                             self.library.reload(item, force=True)
                             poster_compare = poster.compare if poster else item.thumb
-                            logger.info(f"Detail: Overlays: {', '.join(over_names)} applied to {item.title}")
+                            logger.info(f"{item_title[:60]:<60} | Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest) as e:
                             logger.stacktrace()
-                            raise Failed(f"Overlay Error: {e}")
-                    else:
-                        logger.error(f"Overlay Update Not Needed for {item.title}")
+                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: {e}")
+                    elif self.library.show_asset_not_needed:
+                        logger.error(f"{item_title[:60]:<60} | Overlay Update Not Needed")
 
                     if self.config.Cache and poster_compare:
-                        self.config.Cache.update_image_map(item.ratingKey, self.library.image_table_name, item.thumb,
-                                                           poster_compare, overlay=','.join(over_names))
+                        self.config.Cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays",
+                                                           item.thumb, poster_compare, overlay=','.join(over_names))
                 except Failed as e:
                     logger.error(e)
         logger.exorcise()
+
+    def get_item_sort_title(self, item_to_sort, atr="titleSort"):
+        if isinstance(item_to_sort, Album):
+            return f"{getattr(item_to_sort.artist(), atr)} Album {getattr(item_to_sort, atr)}"
+        elif isinstance(item_to_sort, Season):
+            return f"{getattr(item_to_sort.show(), atr)} Season {item_to_sort.seasonNumber}"
+        elif isinstance(item_to_sort, Episode):
+            return f"{getattr(item_to_sort.show(), atr)} {item_to_sort.seasonEpisode.upper()}"
+        else:
+            return getattr(item_to_sort, atr)
 
     def compile_overlays(self):
         key_to_item = {}
@@ -208,11 +212,11 @@ class Overlays:
                     if builder.added_items:
                         for item in builder.added_items:
                             key_to_item[item.ratingKey] = item
-                            added_titles.append(item.title)
+                            added_titles.append(item)
                             if item.ratingKey not in properties[builder.overlay]["keys"]:
                                 properties[builder.overlay]["keys"].append(item.ratingKey)
                     if added_titles:
-                        logger.debug(f"{len(added_titles)} Titles Found: {added_titles}")
+                        logger.debug(f"{len(added_titles)} Titles Found: {[self.get_item_sort_title(a, atr='title') for a in added_titles]}")
                     logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay}")
                 except Failed as e:
                     logger.error(e)
@@ -286,7 +290,7 @@ class Overlays:
         items = self.library.search(label=label, libtype=libtype)
         return items if not ignore else [o for o in items if o.ratingKey not in ignore]
 
-    def remove_overlay(self, item, label, locations):
+    def remove_overlay(self, item, item_title, label, locations):
         try:
             poster, _, _, _ = self.library.find_item_assets(item)
         except Failed:
@@ -307,4 +311,4 @@ class Overlays:
             if original:
                 os.remove(original)
         else:
-            logger.error(f"No Poster found to restore for {item.title}")
+            logger.error(f"No Poster found to restore for {item_title}")
