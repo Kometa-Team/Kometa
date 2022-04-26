@@ -1,6 +1,6 @@
 from modules import util
 from modules.util import Failed
-from tmdbapis import TMDbAPIs, TMDbException, NotFound
+from tmdbapis import TMDbAPIs, TMDbException, NotFound, Movie
 
 logger = util.logger
 
@@ -321,7 +321,7 @@ class TMDb:
             if method == "tmdb_list":
                 results = self.get_list(tmdb_id)
                 tmdb_name = results.name
-                ids = [(i.id, result_type) for i in results.get_results(results.total_results)]
+                ids = [(i.id, "tmdb" if isinstance(i, Movie) else "tmdb_show") for i in results.get_results(results.total_results)]
             elif method == "tmdb_movie":
                 tmdb_name = self.get_movie(tmdb_id).title
                 ids.append((tmdb_id, "tmdb"))
