@@ -1477,7 +1477,7 @@ class CollectionBuilder:
         expired = None
         list_key = None
         if self.config.Cache and self.details["cache_builders"]:
-            list_key, expired = self.config.Cache.query_list_cache(method, str(value), self.details["cache_builders"])
+            list_key, expired = self.config.Cache.query_list_cache(f"{self.library.type}:{method}", str(value), self.details["cache_builders"])
             if list_key and expired is False:
                 logger.info(f"Builder: {method} loaded from Cache")
                 return self.config.Cache.query_list_ids(list_key)
@@ -1518,7 +1518,7 @@ class CollectionBuilder:
         if self.config.Cache and self.details["cache_builders"] and ids:
             if list_key:
                 self.config.Cache.delete_list_ids(list_key)
-            list_key = self.config.Cache.update_list_cache(method, str(value), expired, self.details["cache_builders"])
+            list_key = self.config.Cache.update_list_cache(f"{self.library.type}:{method}", str(value), expired, self.details["cache_builders"])
             self.config.Cache.update_list_ids(list_key, ids)
         return ids
 
