@@ -266,18 +266,21 @@ class Overlays:
         return key_to_overlays, properties
 
     def find_poster_url(self, item):
-        if isinstance(item, Movie):
-            if item.ratingKey in self.library.movie_rating_key_map:
-                return self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey]).poster_url
-        elif isinstance(item, (Show, Season, Episode)):
-            check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey
-            tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[check_key])
-            if isinstance(item, Show) and item.ratingKey in self.library.show_rating_key_map:
-                return self.config.TMDb.get_show(tmdb_id).poster_url
-            elif isinstance(item, Season):
-                return self.config.TMDb.get_season(tmdb_id, item.seasonNumber).poster_url
-            elif isinstance(item, Episode):
-                return self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
+        try:
+            if isinstance(item, Movie):
+                if item.ratingKey in self.library.movie_rating_key_map:
+                    return self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey]).poster_url
+            elif isinstance(item, (Show, Season, Episode)):
+                check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey
+                tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[check_key])
+                if isinstance(item, Show) and item.ratingKey in self.library.show_rating_key_map:
+                    return self.config.TMDb.get_show(tmdb_id).poster_url
+                elif isinstance(item, Season):
+                    return self.config.TMDb.get_season(tmdb_id, item.seasonNumber).poster_url
+                elif isinstance(item, Episode):
+                    return self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
+        except Failed as e:
+            logger.error(e)
 
     def get_overlay_items(self, label="Overlay", libtype=None, ignore=None):
         items = self.library.search(label=label, libtype=libtype)
