@@ -17,6 +17,27 @@ libraries:
       mass_critic_rating_update: tmdb
 ```
 
+Below is an example of a scheduled Metadata File, Overlay File, and Playlist File: 
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - file: config/Movies.yml
+        schedule: weekly(friday)
+      - git: meisnate12/MovieCharts
+      - git: meisnate12/Studios
+      - git: meisnate12/IMDBGenres
+      - git: meisnate12/People
+    overlay_path:
+      - git: PMM/overlays/imdb
+    schedule: weekly(saturday)
+    operations:
+      mass_critic_rating_update: tmdb
+playlist_files:
+  - file: config/Playlists.yml
+    schedule: weekly(sunday)
+```
+
 Below is an example of a scheduled collection: 
 ```yaml
 collections:
