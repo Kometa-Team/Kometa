@@ -80,6 +80,7 @@ class ConfigFile:
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
         self.requested_metadata_files = util.get_list(attrs["metadata_files"]) if "metadata_files" in attrs else None
         self.resume_from = attrs["resume"] if "resume" in attrs else None
+        current_time = datetime.now()
 
         yaml.YAML().allow_duplicate_keys = True
         try:
@@ -486,7 +487,7 @@ class ConfigFile:
                     default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
                     logger.warning(f"Config Warning: playlist_files attribute is blank using default: {default_playlist_file}")
                     paths_to_check = [default_playlist_file]
-                files = util.load_files(paths_to_check, "playlist_files")
+                files = util.load_files(paths_to_check, "playlist_files", (current_time, self.run_hour, self.ignore_schedules))
                 if not files:
                     raise Failed("Config Error: No Paths Found for playlist_files")
                 for file_type, playlist_file, temp_vars, asset_directory in files:
@@ -560,7 +561,6 @@ class ConfigFile:
             self.libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
-            current_time = datetime.now()
 
             for library_name, lib in libs.items():
                 if self.requested_libraries and library_name not in self.requested_libraries:
@@ -729,7 +729,7 @@ class ConfigFile:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
                             raise Failed("Config Error: metadata_path attribute is blank")
-                        files = util.load_files(lib["metadata_path"], "metadata_path")
+                        files = util.load_files(lib["metadata_path"], "metadata_path", (current_time, self.run_hour, self.ignore_schedules))
                         if not files:
                             raise Failed("Config Error: No Paths Found for metadata_path")
                         params["metadata_path"] = files
@@ -774,15 +774,11 @@ class ConfigFile:
                                                 err = e
                                         if err:
                                             raise NotScheduled(f"{err}\n\nOverlays not scheduled to run")
+                            params["overlay_path"] = files
                         except NotScheduled as e:
                             logger.error(e)
                             params["overlay_path"] = []
                             params["remove_overlays"] = False
-
-
-
-
-                        params["overlay_path"] = files
 
                     logger.info("")
                     logger.separator("Plex Configuration", space=False, border=False)

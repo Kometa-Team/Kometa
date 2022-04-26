@@ -291,7 +291,7 @@ def time_window(tw):
     else:
         return tw
 
-def load_files(files_to_load, method, file_type="yml"):
+def load_files(files_to_load, method, file_type="yml", schedule=None):
     files = []
     for file in get_list(files_to_load, split=False):
         if isinstance(file, dict):
@@ -302,10 +302,11 @@ def load_files(files_to_load, method, file_type="yml"):
             if "asset_directory" in file and file["asset_directory"] and os.path.exists(file["asset_directory"]):
                 asset_directory = file["asset_directory"]
 
+            current = []
             def check_dict(attr, name):
                 if attr in file:
                     if file[attr]:
-                        files.append((name, file[attr], temp_vars, asset_directory))
+                        current.append((name, file[attr], temp_vars, asset_directory))
                     else:
                         logger.error(f"Config Error: {method} {attr} is blank")
 
@@ -321,9 +322,27 @@ def load_files(files_to_load, method, file_type="yml"):
                 else:
                     yml_files = glob_filter(os.path.join(file["folder"], f"*.{file_type}"))
                     if yml_files:
-                        files.extend([("File", yml, temp_vars, asset_directory) for yml in yml_files])
+                        current.extend([("File", yml, temp_vars, asset_directory) for yml in yml_files])
                     else:
                         logger.error(f"Config Error: No {file_type.upper()} (.{file_type}) files found in {file['folder']}")
+
+            if schedule and "schedule" in file and file["schedule"]:
+                current_time, run_hour, ignore_schedules = schedule
+                logger.debug(f"Value: {file['schedule']}")
+                err = None
+                try:
+                    schedule_check("schedule", file["schedule"], current_time, run_hour)
+                except NotScheduledRange as e:
+                    err = e
+                except NotScheduled as e:
+                    if not ignore_schedules:
+                        err = e
+                if err:
+                    logger.warning(f"{err}\n\nMetadata File{'s' if len(current) > 1 else ''} not scheduled to run")
+                    for file_type, file_path, temp_vars, asset_directory in current:
+                        logger.warning(f"{file_type}: {file_path}")
+                    continue
+            files.extend(current)
         else:
             if os.path.exists(file):
                 files.append(("File", file, {}, None))
