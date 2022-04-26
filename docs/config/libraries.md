@@ -141,7 +141,7 @@ libraries:
       - file: config/Overlays.yml
 ```
 
-### Remove Overlays
+#### Remove Overlays
 
 You can remove overlays from a library by adding `remove_overlays: true` to `overlay_path`.
 
