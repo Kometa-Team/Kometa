@@ -134,6 +134,8 @@ class DataFile:
                         variables["collection_name"] = str(name)
                     if self.data_type == "Playlist" and "playlist_name" not in variables:
                         variables["playlist_name"] = str(name)
+                    if self.data_type == "Overlay" and "overlay_name" not in variables:
+                        variables["overlay_name"] = str(name)
                     variables["library_type"] = self.library.type.lower()
 
                     for temp_key, temp_value in self.temp_vars.items():
@@ -266,7 +268,7 @@ class MetadataFile(DataFile):
             self.templates = get_dict("templates", path)
         else:
             logger.info("")
-            logger.info(f"Loading Metadata {file_type}: {path}")
+            logger.separator(f"Loading Metadata {file_type}: {path}")
             logger.info("")
             data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadatas)
@@ -275,9 +277,6 @@ class MetadataFile(DataFile):
             self.collections = get_dict("collections", data, library.collections)
             self.dynamic_collections = get_dict("dynamic_collections", data)
             col_names = library.collections + [c for c in self.collections]
-            if self.dynamic_collections:
-                logger.info("")
-                logger.separator("Dynamic Collections")
             for map_name, dynamic in self.dynamic_collections.items():
                 logger.info("")
                 logger.separator(f"Building {map_name} Dynamic Collections", space=False, border=False)
@@ -547,7 +546,7 @@ class MetadataFile(DataFile):
                     logger.debug(f"Other Name: {other_name}")
                     logger.debug(f"Keys (Title)")
                     for key, value in auto_list.items():
-                        logger.debug(f"  - {key}{'' if key == value else f' ({value})'}")
+                        logger.info(f"  - {key}{'' if key == value else f' ({value})'}")
 
                     used_keys = []
                     for key, value in auto_list.items():
@@ -620,6 +619,7 @@ class MetadataFile(DataFile):
 
             if not self.metadata and not self.collections:
                 raise Failed("YAML Error: metadata, collections, or dynamic_collections attribute is required")
+            logger.info("")
             logger.info(f"Metadata File Loaded Successfully")
 
     def get_collections(self, requested_collections):

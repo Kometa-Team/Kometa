@@ -291,7 +291,7 @@ def time_window(tw):
     else:
         return tw
 
-def load_files(files_to_load, method, file_type="yml", schedule=None):
+def load_files(files_to_load, method, schedule=None):
     files = []
     for file in get_list(files_to_load, split=False):
         if isinstance(file, dict):
@@ -320,11 +320,11 @@ def load_files(files_to_load, method, file_type="yml", schedule=None):
                 elif not os.path.isdir(file["folder"]):
                     logger.error(f"Config Error: Folder not found: {file['folder']}")
                 else:
-                    yml_files = glob_filter(os.path.join(file["folder"], f"*.{file_type}"))
+                    yml_files = glob_filter(os.path.join(file["folder"], f"*.yml"))
                     if yml_files:
                         current.extend([("File", yml, temp_vars, asset_directory) for yml in yml_files])
                     else:
-                        logger.error(f"Config Error: No {file_type.upper()} (.{file_type}) files found in {file['folder']}")
+                        logger.error(f"Config Error: No YAML (.yml) files found in {file['folder']}")
 
             if schedule and "schedule" in file and file["schedule"]:
                 current_time, run_hour, ignore_schedules = schedule
