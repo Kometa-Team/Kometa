@@ -1946,13 +1946,15 @@ class CollectionBuilder:
                 for filter_method, filter_data in data.items():
                     filter_attr, filter_modifier, filter_final = self.library.split(filter_method)
                     message = None
+                    if filter_final == "percentage":
+                        continue
                     if filter_final not in all_filters:
                         message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
                     elif filter_attr not in filters[attribute[:-1]] or filter_attr in ["seasons", "episodes", "albums", "tracks"]:
                         message = f"{self.Type} Error: {filter_final} is not a valid {attribute[:-1]} filter attribute"
                     elif filter_final is None:
                         message = f"{self.Type} Error: {filter_final} filter attribute is blank"
-                    elif filter_final != "percentage":
+                    else:
                         final_filters[filter_final] = self.validate_attribute(filter_attr, filter_modifier, f"{attribute} {filter_final} filter", filter_data, validate)
                     if message:
                         if validate:
