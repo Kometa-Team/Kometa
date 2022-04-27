@@ -1,5 +1,5 @@
 import os, re, time
-from datetime import datetime, timedelta
+from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, ImageData, NotScheduled, NotScheduledRange
 from plexapi.audio import Artist, Album, Track
@@ -11,65 +11,6 @@ logger = util.logger
 
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
-method_alias = {
-    "actors": "actor", "role": "actor", "roles": "actor",
-    "show_actor": "actor", "show_actors": "actor", "show_role": "actor", "show_roles": "actor",
-    "collections": "collection", "plex_collection": "collection",
-    "show_collections": "collection", "show_collection": "collection",
-    "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
-    "countries": "country",
-    "decades": "decade",
-    "directors": "director",
-    "genres": "genre",
-    "labels": "label",
-    "collection_minimum": "minimum_items",
-    "playlist_minimum": "minimum_items",
-    "rating": "critic_rating",
-    "show_user_rating": "user_rating",
-    "video_resolution": "resolution",
-    "tmdb_trending": "tmdb_trending_daily",
-    "play": "plays", "show_plays": "plays", "show_play": "plays", "episode_play": "episode_plays",
-    "originally_available": "release", "episode_originally_available": "episode_air_date",
-    "episode_release": "episode_air_date", "episode_released": "episode_air_date",
-    "show_originally_available": "release", "show_release": "release", "show_air_date": "release",
-    "released": "release", "show_released": "release", "max_age": "release",
-    "studios": "studio",
-    "networks": "network",
-    "producers": "producer",
-    "writers": "writer",
-    "years": "year", "show_year": "year", "show_years": "year",
-    "show_title": "title", "filter": "filters",
-    "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
-    "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
-    "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
-    "mal_producer": "mal_studio", "mal_licensor": "mal_studio",
-    "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
-    "collection_changes_webhooks": "changes_webhooks",
-    "radarr_add": "radarr_add_missing", "sonarr_add": "sonarr_add_missing",
-    "trakt_recommended_personal": "trakt_recommendations"
-}
-filter_translation = {
-    "record_label": "studio",
-    "actor": "actors",
-    "audience_rating": "audienceRating",
-    "collection": "collections",
-    "content_rating": "contentRating",
-    "country": "countries",
-    "critic_rating": "rating",
-    "director": "directors",
-    "genre": "genres",
-    "label": "labels",
-    "producer": "producers",
-    "release": "originallyAvailableAt",
-    "added": "addedAt",
-    "last_played": "lastViewedAt",
-    "plays": "viewCount",
-    "user_rating": "userRating",
-    "writer": "writers",
-    "mood": "moods",
-    "style": "styles"
-}
-modifier_alias = {".greater": ".gt", ".less": ".lt"}
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
                letterboxd.builders + mal.builders + plex.builders + reciperr.builders + tautulli.builders + \
                tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders
@@ -137,7 +78,10 @@ filters_by_type = {
     "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword"],
     "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language", "has_dolby_vision"],
     "movie_artist": ["country"],
-    "show": ["tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired"],
+    "show_season": ["episodes"],
+    "artist_album": ["tracks"],
+    "show": ["seasons", "tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired"],
+    "artist": ["albums"],
     "album": ["record_label"]
 }
 filters = {
@@ -165,7 +109,10 @@ date_filters = ["release", "added", "last_played", "first_episode_aired", "last_
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = ["year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration"]
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
-special_filters = ["history", "original_language", "original_language.not", "tmdb_status", "tmdb_status.not", "tmdb_type", "tmdb_type.not"]
+special_filters = [
+    "history", "episodes", "seasons", "albums", "tracks", "original_language", "original_language.not",
+    "tmdb_status", "tmdb_status.not", "tmdb_type", "tmdb_type.not"
+]
 all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in string_filters for m in string_modifiers] + \
               [f"{f}{m}" for f in tag_filters for m in tag_modifiers] + \
@@ -705,7 +652,7 @@ class CollectionBuilder:
             if method_key.lower() in ignored_details:
                 continue
             logger.debug("")
-            method_name, method_mod, method_final = self._split(method_key)
+            method_name, method_mod, method_final = self.library.split(method_key)
             if method_name in ignored_details:
                 continue
             logger.debug(f"Validating Method: {method_key}")
@@ -1472,7 +1419,7 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: validate filter attribute must be either true or false")
             validate = dict_data.pop(dict_methods["validate"])
         for filter_method, filter_data in dict_data.items():
-            filter_attr, modifier, filter_final = self._split(filter_method)
+            filter_attr, modifier, filter_final = self.library.split(filter_method)
             message = None
             if filter_final not in all_filters:
                 message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
@@ -1778,7 +1725,7 @@ class CollectionBuilder:
             indent = f"\n{'  ' * level}"
             conjunction = f"{'and' if is_all else 'or'}=1&"
             for _key, _data in filter_dict.items():
-                attr, modifier, final_attr = self._split(_key)
+                attr, modifier, final_attr = self.library.split(_key)
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
                     arg_key = plex.search_translation[attr] if attr in plex.search_translation else attr
@@ -1857,7 +1804,7 @@ class CollectionBuilder:
             base_dict = {}
             any_dicts = []
             for alias_key, alias_value in filter_alias.items():
-                _, _, final = self._split(alias_key)
+                _, _, final = self.library.split(alias_key)
                 if final in plex.and_searches:
                     base_dict[alias_value[:-4]] = plex_filter[alias_value]
                 elif final in plex.or_searches:
@@ -1983,26 +1930,42 @@ class CollectionBuilder:
             return util.parse(self.Type, final, data, datatype="float", minimum=0, maximum=None if attribute == "duration" else 10)
         elif attribute in plex.boolean_attributes + boolean_filters:
             return util.parse(self.Type, attribute, data, datatype="bool")
+        elif attribute in ["seasons", "episodes", "albums", "tracks"]:
+            if isinstance(data, dict) and data:
+                percentage = 60
+                if "percentage" in data:
+                    if data["percentage"] is None:
+                        logger.warning(f"{self.Type} Warning: percentage filter attribute is blank using 60 as default")
+                    else:
+                        maybe = util.check_num(data["percentage"])
+                        if maybe < 0 or maybe > 100:
+                            logger.warning(f"{self.Type} Warning: percentage filter attribute must be a number 0-100 using 60 as default")
+                        else:
+                            percentage = maybe
+                final_filters = {"percentage": percentage}
+                for filter_method, filter_data in data.items():
+                    filter_attr, filter_modifier, filter_final = self.library.split(filter_method)
+                    message = None
+                    if filter_final not in all_filters:
+                        message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
+                    elif filter_attr not in filters[attribute[:-1]] or filter_attr in ["seasons", "episodes", "albums", "tracks"]:
+                        message = f"{self.Type} Error: {filter_final} is not a valid {attribute[:-1]} filter attribute"
+                    elif filter_final is None:
+                        message = f"{self.Type} Error: {filter_final} filter attribute is blank"
+                    elif filter_final != "percentage":
+                        final_filters[filter_final] = self.validate_attribute(filter_attr, filter_modifier, f"{attribute} {filter_final} filter", filter_data, validate)
+                    if message:
+                        if validate:
+                            raise Failed(message)
+                        else:
+                            logger.error(message)
+                if not final_filters:
+                    raise Failed(f"{self.Type} Error: no filters found under {attribute}")
+                return final_filters
+            else:
+                raise Failed(f"{self.Type} Error: {final} attribute must be a dictionary")
         else:
             raise Failed(f"{self.Type} Error: {final} attribute not supported")
-
-    def _split(self, text):
-        attribute, modifier = os.path.splitext(str(text).lower())
-        attribute = method_alias[attribute] if attribute in method_alias else attribute
-        modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
-
-        if attribute == "add_to_arr":
-            attribute = "radarr_add_missing" if self.library.is_movie else "sonarr_add_missing"
-        elif attribute in ["arr_tag", "arr_folder"]:
-            attribute = f"{'rad' if self.library.is_movie else 'son'}{attribute}"
-        elif attribute in date_attributes and modifier in [".gt", ".gte"]:
-            modifier = ".after"
-        elif attribute in date_attributes and modifier in [".lt", ".lte"]:
-            modifier = ".before"
-        final = f"{attribute}{modifier}"
-        if text != final:
-            logger.warning(f"Collection Warning: {text} attribute will run as {final}")
-        return attribute, modifier, final
 
     def fetch_item(self, item):
         if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
@@ -2114,7 +2077,7 @@ class CollectionBuilder:
                     if not date_to_check or date_to_check > self.current_time:
                         return False
                 for filter_method, filter_data in self.tmdb_filters:
-                    filter_attr, modifier, filter_final = self._split(filter_method)
+                    filter_attr, modifier, filter_final = self.library.split(filter_method)
                     if filter_attr in ["tmdb_status", "tmdb_type", "original_language"]:
                         if filter_attr == "tmdb_status":
                             check_value = discover_status[item.status]
@@ -2187,129 +2150,8 @@ class CollectionBuilder:
                     return False
                 if not self.check_tmdb_filter(t_id, item.ratingKey in self.library.movie_rating_key_map):
                     return False
-            for filter_method, filter_data in self.filters:
-                filter_attr, modifier, filter_final = self._split(filter_method)
-                filter_actual = filter_translation[filter_attr] if filter_attr in filter_translation else filter_attr
-                item_type = self.collection_level
-                if self.collection_level == "item":
-                    if isinstance(item, Movie):
-                        item_type = "movie"
-                    elif isinstance(item, Show):
-                        item_type = "show"
-                    elif isinstance(item, Season):
-                        item_type = "season"
-                    elif isinstance(item, Episode):
-                        item_type = "episode"
-                    elif isinstance(item, Artist):
-                        item_type = "artist"
-                    elif isinstance(item, Album):
-                        item_type = "album"
-                    elif isinstance(item, Track):
-                        item_type = "track"
-                    else:
-                        continue
-                if filter_attr not in filters[item_type]:
-                    continue
-                elif filter_attr in date_filters:
-                    if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, self.current_time):
-                        return False
-                elif filter_attr in string_filters:
-                    values = []
-                    if filter_attr == "audio_track_title":
-                        for media in item.media:
-                            for part in media.parts:
-                                values.extend([a.extendedDisplayTitle for a in part.audioStreams() if a.extendedDisplayTitle])
-                    elif filter_attr == "filepath":
-                        values = [loc for loc in item.locations]
-                    else:
-                        values = [getattr(item, filter_actual)]
-                    if util.is_string_filter(values, modifier, filter_data):
-                        return False
-                elif filter_attr in boolean_filters:
-                    filter_check = False
-                    if filter_attr == "has_collection":
-                        filter_check = len(item.collections) > 0
-                    elif filter_attr == "has_overlay":
-                        for label in item.labels:
-                            if label.tag.lower().endswith(" overlay") or label.tag.lower() == "overlay":
-                                filter_check = True
-                                break
-                    elif filter_attr == "has_dolby_vision":
-                        for media in item.media:
-                            for part in media.parts:
-                                for stream in part.videoStreams():
-                                    if stream.DOVIPresent:
-                                        filter_check = True
-                                        break
-                    if util.is_boolean_filter(filter_data, filter_check):
-                        return False
-                elif filter_attr == "history":
-                    item_date = item.originallyAvailableAt
-                    if item_date is None:
-                        return False
-                    elif filter_data == "day":
-                        if item_date.month != self.current_time.month or item_date.day != self.current_time.day:
-                            return False
-                    elif filter_data == "month":
-                        if item_date.month != self.current_time.month:
-                            return False
-                    else:
-                        date_match = False
-                        for i in range(filter_data):
-                            check_date = self.current_time - timedelta(days=i)
-                            if item_date.month == check_date.month and item_date.day == check_date.day:
-                                date_match = True
-                        if date_match is False:
-                            return False
-                elif modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
-                    divider = 60000 if filter_attr == "duration" else 1
-                    test_number = []
-                    if filter_attr == "resolution":
-                        for media in item.media:
-                            test_number.append(media.videoResolution)
-                    elif filter_attr == "audio_language":
-                        for media in item.media:
-                            for part in media.parts:
-                                test_number.extend([a.language for a in part.audioStreams()])
-                    elif filter_attr == "subtitle_language":
-                        for media in item.media:
-                            for part in media.parts:
-                                test_number.extend([s.language for s in part.subtitleStreams()])
-                    else:
-                        test_number = getattr(item, filter_actual)
-                    if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
-                        test_number = len(test_number) if test_number else 0
-                        modifier = f".{modifier[7:]}"
-                    if test_number is None or util.is_number_filter(test_number / divider, modifier, filter_data):
-                        return False
-                else:
-                    attrs = []
-                    if filter_attr in ["resolution", "audio_language", "subtitle_language"]:
-                        for media in item.media:
-                            if filter_attr == "resolution":
-                                attrs.append(media.videoResolution)
-                            for part in media.parts:
-                                if filter_attr == "audio_language":
-                                    attrs.extend([a.language for a in part.audioStreams()])
-                                if filter_attr == "subtitle_language":
-                                    attrs.extend([s.language for s in part.subtitleStreams()])
-                    elif filter_attr in ["content_rating", "year", "rating"]:
-                        attrs = [getattr(item, filter_actual)]
-                    elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection", "network"]:
-                        attrs = [attr.tag for attr in getattr(item, filter_actual)]
-                    else:
-                        raise Failed(f"Filter Error: filter: {filter_final} not supported")
-                    if modifier == ".regex":
-                        has_match = False
-                        for reg in filter_data:
-                            for name in attrs:
-                                if re.compile(reg).search(name):
-                                    has_match = True
-                        if has_match is False:
-                            return False
-                    elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
-                            or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
-                        return False
+            if self.library.check_filters(item, self.filters, self.current_time) is False:
+                return False
         return True
 
     def run_missing(self):
