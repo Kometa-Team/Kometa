@@ -80,9 +80,9 @@ class ConfigFile:
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
         self.requested_metadata_files = util.get_list(attrs["metadata_files"]) if "metadata_files" in attrs else None
         self.resume_from = attrs["resume"] if "resume" in attrs else None
-        self.collection_only = attrs["collection_only"] if "collection_only" in attrs else None
-        self.operations_only = attrs["operations_only"] if "operations_only" in attrs else None
-        self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else None
+        self.collection_only = attrs["collection_only"] if "collection_only" in attrs else False
+        self.operations_only = attrs["operations_only"] if "operations_only" in attrs else False
+        self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
         current_time = datetime.now()
 
         yaml.YAML().allow_duplicate_keys = True
@@ -192,8 +192,6 @@ class ConfigFile:
                 new_config["sonarr"] = temp
             if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
             if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            if not self.read_only:
-                yaml.round_trip_dump(new_config, open(self.config_path, "w", encoding="utf-8"), block_seq_indent=2)
             self.data = new_config
         except yaml.scanner.ScannerError as e:
             logger.stacktrace()
@@ -490,7 +488,7 @@ class ConfigFile:
                     default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
                     logger.warning(f"Config Warning: playlist_files attribute is blank using default: {default_playlist_file}")
                     paths_to_check = [default_playlist_file]
-                files = util.load_files(paths_to_check, "playlist_files", (current_time, self.run_hour, self.ignore_schedules))
+                files = util.load_files(paths_to_check, "playlist_files", schedule=(current_time, self.run_hour, self.ignore_schedules))
                 if not files:
                     raise Failed("Config Error: No Paths Found for playlist_files")
                 for file_type, playlist_file, temp_vars, asset_directory in files:
@@ -732,7 +730,7 @@ class ConfigFile:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
                             raise Failed("Config Error: metadata_path attribute is blank")
-                        files = util.load_files(lib["metadata_path"], "metadata_path", (current_time, self.run_hour, self.ignore_schedules))
+                        files = util.load_files(lib["metadata_path"], "metadata_path", schedule=(current_time, self.run_hour, self.ignore_schedules))
                         if not files:
                             raise Failed("Config Error: No Paths Found for metadata_path")
                         params["metadata_path"] = files
@@ -795,19 +793,17 @@ class ConfigFile:
                     }
                     library = Plex(self, params)
                     logger.info(f"{display_name} Library Connection Successful")
+                    logger.info("")
+                    logger.separator("Scanning Metadata and Overlay Files", space=False, border=False)
+                    library.scan_files(self.operations_only, self.overlays_only, self.collection_only)
+                    logger.info("")
+                    if not library.metadata_files and not library.overlay_files and not library.library_operation and not self.playlist_files:
+                        raise Failed("Config Error: No valid metadata files, overlay files, playlist files, or library operations found")
                 except Failed as e:
                     logger.stacktrace()
                     logger.error(e)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
-                    continue
-
-                logger.info("")
-                logger.separator("Scanning Metadata and Overlay Files", space=False, border=False)
-                library.scan_files(self.operations_only, self.overlays_only, self.collection_only)
-                if not library.metadata_files and not library.library_operation and not self.playlist_files:
-                    logger.info("")
-                    logger.error("Config Error: No valid metadata files, overlay files, playlist files, or library operations found")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):
