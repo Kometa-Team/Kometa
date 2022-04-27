@@ -1235,7 +1235,7 @@ class CollectionBuilder:
                 new_dictionary = {}
                 if method_name == "plex_search":
                     type_override = f"{self.collection_level}s" if self.collection_level in plex.collection_level_options else None
-                    new_dictionary = self.build_filter("plex_search", dict_data, type_override=type_override, default_sort="season.asc" if self.collection_level == "season" else "title.asc")
+                    new_dictionary = self.build_filter("plex_search", dict_data, type_override=type_override)
                 elif method_name == "plex_collectionless":
                     prefix_list = util.parse(self.Type, "exclude_prefix", dict_data, datatype="list", methods=dict_methods) if "exclude_prefix" in dict_methods else []
                     exact_list = util.parse(self.Type, "exclude", dict_data, datatype="list", methods=dict_methods) if "exclude" in dict_methods else []
@@ -1652,7 +1652,7 @@ class CollectionBuilder:
                         if self.details["show_filtered"] is True:
                             logger.info(f"{name} {self.Type} | X | {current_title}")
 
-    def build_filter(self, method, plex_filter, display=False, default_sort="title.asc", type_override=None):
+    def build_filter(self, method, plex_filter, display=False, default_sort=None, type_override=None):
         if display:
             logger.info("")
             logger.info(f"Validating Method: {method}")
@@ -1686,9 +1686,9 @@ class CollectionBuilder:
             sort_type = "movies"
         ms = method.split("_")
         filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()[:-1]} {ms[1].capitalize()}\n"
-        type_key, sorts = plex.sort_types[sort_type]
+        type_default_sort, type_key, sorts = plex.sort_types[sort_type]
 
-        sort = default_sort
+        sort = default_sort if default_sort else type_default_sort
         if "sort_by" in filter_alias:
             if plex_filter[filter_alias["sort_by"]] is None:
                 raise Failed(f"{self.Type} Error: sort_by attribute is blank")
