@@ -302,7 +302,7 @@ class CollectionBuilder:
                             raise Failed(f"{self.Type} Error: overlay y_coordinate: {data[methods['overlay']]['y_coordinate']} invalid must be a number 0 or greater")
                     if ("x_coordinate" in data[methods["overlay"]] or "y_coordinate" in data[methods["overlay"]]) and (x_coordinate is None or y_coordinate is None):
                         raise Failed(f"{self.Type} Error: overlay x_coordinate and overlay y_coordinate must be used together")
-                    if x_coordinate or y_coordinate:
+                    if x_coordinate is not None or y_coordinate is not None:
                         self.overlay_coordinates = (x_coordinate, y_coordinate)
                     def get_and_save_image(image_url):
                         response = self.config.get(image_url)
@@ -2629,7 +2629,7 @@ class CollectionBuilder:
                     self.backgrounds["asset_directory"] = background_image
             except Failed as e:
                 if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
-                    logger.error(e)
+                    logger.warning(e)
 
         self.collection_poster = None
         if len(self.posters) > 0:

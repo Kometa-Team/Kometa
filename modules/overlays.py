@@ -79,14 +79,16 @@ class Overlays:
                     overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare, split="|")
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in item.labels])
 
+                    compare_names = {f"{on}{properties[on]['coordinates']}" if properties[on]["coordinates"] else on: on for on in over_names}
+
                     overlay_change = False if has_overlay else True
                     if not overlay_change:
                         for oc in overlay_compare:
-                            if oc not in over_names:
+                            if oc not in compare_names:
                                 overlay_change = True
                     if not overlay_change:
-                        for over_name in over_names:
-                            if over_name not in overlay_compare or properties[over_name]["updated"]:
+                        for over_name in compare_names:
+                            if over_name not in overlay_compare or properties[compare_names[over_name]]["updated"]:
                                 overlay_change = True
                     try:
                         poster, _, item_dir, _ = self.library.find_item_assets(item)
@@ -126,6 +128,7 @@ class Overlays:
                             time.sleep(1)
                         has_original = backup_image_path
 
+
                     poster_compare = None
                     if poster is None and has_original is None:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
@@ -163,7 +166,7 @@ class Overlays:
 
                     if self.config.Cache and poster_compare:
                         self.config.Cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays",
-                                                           item.thumb, poster_compare, overlay='|'.join(over_names))
+                                                           item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
                     logger.error(e)
         logger.exorcise()
