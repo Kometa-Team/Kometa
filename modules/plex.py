@@ -373,13 +373,13 @@ track_sorts = {
     "random": "random"
 }
 sort_types = {
-    "movies": (1, movie_sorts),
-    "shows": (2, show_sorts),
-    "seasons": (3, season_sorts),
-    "episodes": (4, episode_sorts),
-    "artists": (8, artist_sorts),
-    "albums": (9, album_sorts),
-    "tracks": (10, track_sorts)
+    "movies": ("title.asc", 1, movie_sorts),
+    "shows": ("title.asc", 2, show_sorts),
+    "seasons": ("season.asc", 3, season_sorts),
+    "episodes": ("title.asc", 4, episode_sorts),
+    "artists": ("title.asc", 8, artist_sorts),
+    "albums": ("title.asc", 9, album_sorts),
+    "tracks": ("title.asc", 10, track_sorts)
 }
 
 class Plex(Library):
