@@ -1,8 +1,5 @@
-import os, plexapi, requests
-from datetime import datetime
-
-from plexapi.base import PlexObject
-
+import os, plexapi, re, requests
+from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
 from modules.util import Failed, ImageData
@@ -119,6 +116,65 @@ modifier_translation = {
     "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": ""
 }
+attribute_translation = {
+    "record_label": "studio",
+    "actor": "actors",
+    "audience_rating": "audienceRating",
+    "collection": "collections",
+    "content_rating": "contentRating",
+    "country": "countries",
+    "critic_rating": "rating",
+    "director": "directors",
+    "genre": "genres",
+    "label": "labels",
+    "producer": "producers",
+    "release": "originallyAvailableAt",
+    "added": "addedAt",
+    "last_played": "lastViewedAt",
+    "plays": "viewCount",
+    "user_rating": "userRating",
+    "writer": "writers",
+    "mood": "moods",
+    "style": "styles"
+}
+method_alias = {
+    "actors": "actor", "role": "actor", "roles": "actor",
+    "show_actor": "actor", "show_actors": "actor", "show_role": "actor", "show_roles": "actor",
+    "collections": "collection", "plex_collection": "collection",
+    "show_collections": "collection", "show_collection": "collection",
+    "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
+    "countries": "country",
+    "decades": "decade",
+    "directors": "director",
+    "genres": "genre",
+    "labels": "label",
+    "collection_minimum": "minimum_items",
+    "playlist_minimum": "minimum_items",
+    "rating": "critic_rating",
+    "show_user_rating": "user_rating",
+    "video_resolution": "resolution",
+    "tmdb_trending": "tmdb_trending_daily",
+    "play": "plays", "show_plays": "plays", "show_play": "plays", "episode_play": "episode_plays",
+    "originally_available": "release", "episode_originally_available": "episode_air_date",
+    "episode_release": "episode_air_date", "episode_released": "episode_air_date",
+    "show_originally_available": "release", "show_release": "release", "show_air_date": "release",
+    "released": "release", "show_released": "release", "max_age": "release",
+    "studios": "studio",
+    "networks": "network",
+    "producers": "producer",
+    "writers": "writer",
+    "years": "year", "show_year": "year", "show_years": "year",
+    "show_title": "title", "filter": "filters",
+    "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
+    "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
+    "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
+    "mal_producer": "mal_studio", "mal_licensor": "mal_studio",
+    "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
+    "collection_changes_webhooks": "changes_webhooks",
+    "radarr_add": "radarr_add_missing", "sonarr_add": "sonarr_add_missing",
+    "trakt_recommended_personal": "trakt_recommendations"
+}
+modifier_alias = {".greater": ".gt", ".less": ".lt"}
 album_sorting_options = {"default": -1, "newest": 0, "oldest": 1, "name": 2}
 episode_sorting_options = {"default": -1, "oldest": 0, "newest": 1}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
@@ -560,6 +616,11 @@ class Plex(Library):
             self._users = users
         return self._users
 
+    def manage_recommendations(self):
+        return [(r.title, r._data.attrib.get('identifier'), r._data.attrib.get('promotedToRecommended'),
+                 r._data.attrib.get('promotedToOwnHome'), r._data.attrib.get('promotedToSharedHome'))
+                for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")]
+
     def alter_collection(self, item, collection, smart_label_collection=False, add=True):
         if smart_label_collection:
             self.query_data(item.addLabel if add else item.removeLabel, collection)
@@ -787,7 +848,7 @@ class Plex(Library):
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True):
         display = ""
         final = ""
-        key = builder.filter_translation[attr] if attr in builder.filter_translation else attr
+        key = attribute_translation[attr] if attr in attribute_translation else attr
         attr_display = attr.replace("_", " ").title()
         attr_call = attr_display.replace(" ", "")
         if add_tags or remove_tags or sync_tags is not None:
@@ -873,7 +934,7 @@ class Plex(Library):
                     item_asset_directory = os.path.join(asset_directory[0], folder_name)
                     os.makedirs(item_asset_directory, exist_ok=True)
                     extra = f"\nAsset Directory Created: {item_asset_directory}"
-                raise Failed(f"Asset Warning: Unable to find asset {'folder' if self.asset_folders else 'file'}: {folder_name if self.asset_folders else file_name}{extra}")
+                raise Failed(f"Asset Warning: Unable to find asset {'folder' if self.asset_folders else 'file'}: '{folder_name if self.asset_folders else file_name}{extra}'")
 
         poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")
         background_filter = os.path.join(item_asset_directory, "background.*" if file_name == "poster" else f"{file_name}_background.*")
@@ -1013,3 +1074,175 @@ class Plex(Library):
             _recur("tracks")
 
         return map_key, attrs
+
+    def split(self, text):
+        attribute, modifier = os.path.splitext(str(text).lower())
+        attribute = method_alias[attribute] if attribute in method_alias else attribute
+        modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
+
+        if attribute == "add_to_arr":
+            attribute = "radarr_add_missing" if self.is_movie else "sonarr_add_missing"
+        elif attribute in ["arr_tag", "arr_folder"]:
+            attribute = f"{'rad' if self.is_movie else 'son'}{attribute}"
+        elif attribute in builder.date_attributes and modifier in [".gt", ".gte"]:
+            modifier = ".after"
+        elif attribute in builder.date_attributes and modifier in [".lt", ".lte"]:
+            modifier = ".before"
+        final = f"{attribute}{modifier}"
+        if text != final:
+            logger.warning(f"Collection Warning: {text} attribute will run as {final}")
+        return attribute, modifier, final
+
+    def check_filters(self, item, filters_in, current_time):
+        for filter_method, filter_data in filters_in:
+            filter_attr, modifier, filter_final = self.split(filter_method)
+            if self.check_filter(item, filter_attr, modifier, filter_final, filter_data, current_time) is False:
+                return False
+        return True
+
+    def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time):
+        filter_actual = attribute_translation[filter_attr] if filter_attr in attribute_translation else filter_attr
+        if isinstance(item, Movie):
+            item_type = "movie"
+        elif isinstance(item, Show):
+            item_type = "show"
+        elif isinstance(item, Season):
+            item_type = "season"
+        elif isinstance(item, Episode):
+            item_type = "episode"
+        elif isinstance(item, Artist):
+            item_type = "artist"
+        elif isinstance(item, Album):
+            item_type = "album"
+        elif isinstance(item, Track):
+            item_type = "track"
+        else:
+            return True
+        if filter_attr not in builder.filters[item_type]:
+            return True
+        elif filter_attr in builder.date_filters:
+            if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
+                return False
+        elif filter_attr in builder.string_filters:
+            values = []
+            if filter_attr == "audio_track_title":
+                for media in item.media:
+                    for part in media.parts:
+                        values.extend(
+                            [a.extendedDisplayTitle for a in part.audioStreams() if a.extendedDisplayTitle])
+            elif filter_attr == "filepath":
+                values = [loc for loc in item.locations]
+            else:
+                values = [getattr(item, filter_actual)]
+            if util.is_string_filter(values, modifier, filter_data):
+                return False
+        elif filter_attr in builder.boolean_filters:
+            filter_check = False
+            if filter_attr == "has_collection":
+                filter_check = len(item.collections) > 0
+            elif filter_attr == "has_overlay":
+                for label in item.labels:
+                    if label.tag.lower().endswith(" overlay") or label.tag.lower() == "overlay":
+                        filter_check = True
+                        break
+            elif filter_attr == "has_dolby_vision":
+                for media in item.media:
+                    for part in media.parts:
+                        for stream in part.videoStreams():
+                            if stream.DOVIPresent:
+                                filter_check = True
+                                break
+            if util.is_boolean_filter(filter_data, filter_check):
+                return False
+        elif filter_attr == "history":
+            item_date = item.originallyAvailableAt
+            if item_date is None:
+                return False
+            elif filter_data == "day":
+                if item_date.month != current_time.month or item_date.day != current_time.day:
+                    return False
+            elif filter_data == "month":
+                if item_date.month != current_time.month:
+                    return False
+            else:
+                date_match = False
+                for i in range(filter_data):
+                    check_date = current_time - timedelta(days=i)
+                    if item_date.month == check_date.month and item_date.day == check_date.day:
+                        date_match = True
+                if date_match is False:
+                    return False
+        elif filter_attr in ["seasons", "episodes", "albums", "tracks"]:
+            if filter_attr == "seasons":
+                sub_items = item.seasons()
+            elif filter_attr == "albums":
+                sub_items = item.albums()
+            elif filter_attr == "tracks":
+                sub_items = item.tracks()
+            else:
+                sub_items = item.episodes()
+            filters_in = []
+            percentage = 60
+            for sub_atr, sub_data in filter_data.items():
+                if sub_atr == "percentage":
+                    percentage = sub_data
+                else:
+                    filters_in.append((sub_atr, sub_data))
+            failure_threshold = len(sub_items) * ((100 - percentage) / 100)
+            failures = 0
+            for sub_item in sub_items:
+                if self.check_filters(sub_item, filters_in, current_time) is False:
+                    failures += 1
+                if failures > failure_threshold:
+                    return False
+        elif modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
+            divider = 60000 if filter_attr == "duration" else 1
+            test_number = []
+            if filter_attr == "resolution":
+                for media in item.media:
+                    test_number.append(media.videoResolution)
+            elif filter_attr == "audio_language":
+                for media in item.media:
+                    for part in media.parts:
+                        test_number.extend([a.language for a in part.audioStreams()])
+            elif filter_attr == "subtitle_language":
+                for media in item.media:
+                    for part in media.parts:
+                        test_number.extend([s.language for s in part.subtitleStreams()])
+            else:
+                test_number = getattr(item, filter_actual)
+            if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
+                test_number = len(test_number) if test_number else 0
+                modifier = f".{modifier[7:]}"
+            if test_number is None or util.is_number_filter(test_number / divider, modifier, filter_data):
+                return False
+        else:
+            attrs = []
+            if filter_attr in ["resolution", "audio_language", "subtitle_language"]:
+                for media in item.media:
+                    if filter_attr == "resolution":
+                        attrs.append(media.videoResolution)
+                    for part in media.parts:
+                        if filter_attr == "audio_language":
+                            attrs.extend([a.language for a in part.audioStreams()])
+                        if filter_attr == "subtitle_language":
+                            attrs.extend([s.language for s in part.subtitleStreams()])
+            elif filter_attr in ["content_rating", "year", "rating"]:
+                attrs = [getattr(item, filter_actual)]
+            elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer",
+                                 "collection", "network"]:
+                attrs = [attr.tag for attr in getattr(item, filter_actual)]
+            else:
+                raise Failed(f"Filter Error: filter: {filter_final} not supported")
+            if modifier == ".regex":
+                has_match = False
+                for reg in filter_data:
+                    for name in attrs:
+                        if re.compile(reg).search(name):
+                            has_match = True
+                if has_match is False:
+                    return False
+            elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                    or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+                return False
+        return True
