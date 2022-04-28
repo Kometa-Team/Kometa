@@ -562,7 +562,6 @@ class ConfigFile:
             self.libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
-
             for library_name, lib in libs.items():
                 if self.requested_libraries and library_name not in self.requested_libraries:
                     continue

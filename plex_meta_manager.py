@@ -448,9 +448,9 @@ def run_collection(config, library, metadata, requested_collections):
                             and data_template["name"] \
                             and metadata.templates \
                             and data_template["name"] in metadata.templates \
-                            and metadata.templates[data_template["name"]] \
-                            and "test" in metadata.templates[data_template["name"]] \
-                            and metadata.templates[data_template["name"]]["test"] is True:
+                            and metadata.templates[data_template["name"]][0] \
+                            and "test" in metadata.templates[data_template["name"]][0] \
+                            and metadata.templates[data_template["name"]][0]["test"] is True:
                         no_template_test = False
             if no_template_test:
                 continue
@@ -622,9 +622,9 @@ def run_playlists(config):
                                 and data_template["name"] \
                                 and playlist_file.templates \
                                 and data_template["name"] in playlist_file.templates \
-                                and playlist_file.templates[data_template["name"]] \
-                                and "test" in playlist_file.templates[data_template["name"]] \
-                                and playlist_file.templates[data_template["name"]]["test"] is True:
+                                and playlist_file.templates[data_template["name"]][0] \
+                                and "test" in playlist_file.templates[data_template["name"]][0] \
+                                and playlist_file.templates[data_template["name"]][0]["test"] is True:
                             no_template_test = False
                 if no_template_test:
                     continue

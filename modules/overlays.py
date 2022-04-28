@@ -128,7 +128,6 @@ class Overlays:
                             time.sleep(1)
                         has_original = backup_image_path
 
-
                     poster_compare = None
                     if poster is None and has_original is None:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
