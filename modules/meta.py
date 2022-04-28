@@ -47,6 +47,8 @@ def get_dict(attribute, attr_data, check_list=None, lower=False):
                         logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
                     elif not isinstance(_data, dict):
                         logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
+                    elif attribute == "templates":
+                        new_dict[str(_name)] = (_data, {})
                     else:
                         new_dict[str(_name)] = _data
                 return new_dict
@@ -118,7 +120,7 @@ class DataFile:
                     raise Failed(f"{self.data_type} Error: template sub-attribute name is blank")
                 elif variables["name"] not in self.templates:
                     raise Failed(f"{self.data_type} Error: template {variables['name']} not found")
-                elif not isinstance(self.templates[variables["name"]], dict):
+                elif not isinstance(self.templates[variables["name"]][0], dict):
                     raise Failed(f"{self.data_type} Error: template {variables['name']} is not a dictionary")
                 else:
                     remove_variables = []
@@ -138,11 +140,14 @@ class DataFile:
                         variables["overlay_name"] = str(name)
                     variables["library_type"] = self.library.type.lower()
 
-                    for temp_key, temp_value in self.temp_vars.items():
+                    template_name = variables["name"]
+                    template, temp_vars = self.templates[template_name]
+
+                    for temp_key, temp_value in temp_vars.items():
                         variables[temp_key] = temp_value
 
-                    template_name = variables["name"]
-                    template = self.templates[template_name]
+                    for temp_key, temp_value in self.temp_vars.items():
+                        variables[temp_key] = temp_value
 
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
@@ -252,10 +257,7 @@ class DataFile:
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     for temp_key, temp_value in temp_data["templates"].items():
                         if temp_key not in self.templates:
-                            self.templates[temp_key] = temp_value
-                for tk, tv in temp_vars.items():
-                    if tk not in self.temp_vars:
-                        self.temp_vars[tk] = tv
+                            self.templates[temp_key] = (temp_value, temp_vars)
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
@@ -496,12 +498,12 @@ class MetadataFile(DataFile):
                         for template_name in template_names:
                             if template_name not in self.templates:
                                 raise Failed(f"Config Error: {map_name} template: {template_name} not found")
-                            if "<<value>>" in str(self.templates[template_name]) or f"<<{auto_type}>>" in str(self.templates[template_name]):
+                            if "<<value>>" in str(self.templates[template_name][0]) or f"<<{auto_type}>>" in str(self.templates[template_name][0]):
                                 has_var = True
                         if not has_var:
                             raise Failed(f"Config Error: One {map_name} template: {template_names} is required to have the template variable <<value>>")
                     else:
-                        self.templates[map_name] = default_template if default_template else default_templates[auto_type]
+                        self.templates[map_name] = (default_template if default_template else default_templates[auto_type], {})
                         template_names = [map_name]
                     remove_prefix = []
                     if "remove_prefix" in self.temp_vars:
@@ -1101,7 +1103,7 @@ class PlaylistFile(DataFile):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
         self.data_type = "Playlist"
         logger.info("")
-        logger.info(f"Loading Playlist File {file_type}: {path}")
+        logger.info(f"Loading Playlist {file_type}: {path}")
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
@@ -1116,7 +1118,7 @@ class OverlayFile(DataFile):
         self.library = library
         self.data_type = "Overlay"
         logger.info("")
-        logger.info(f"Loading Overlay File {file_type}: {path}")
+        logger.info(f"Loading Overlay {file_type}: {path}")
         data = self.load_file(self.type, self.path)
         self.overlays = get_dict("overlays", data, self.library.overlays)
         self.templates = get_dict("templates", data)
