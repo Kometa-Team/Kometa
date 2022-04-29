@@ -1101,6 +1101,7 @@ class Plex(Library):
         return True
 
     def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time):
+        self.reload(item)
         filter_actual = attribute_translation[filter_attr] if filter_attr in attribute_translation else filter_attr
         if isinstance(item, Movie):
             item_type = "movie"

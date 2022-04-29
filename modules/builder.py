@@ -169,7 +169,6 @@ class CollectionBuilder:
         self.libraries = []
         self.playlist = library is None
         self.overlay = overlay
-        self.asset_directory = metadata.asset_directory if metadata.asset_directory else self.library.asset_directory
         methods = {m.lower(): m for m in self.data}
         if self.playlist:
             self.type = "playlist"
@@ -328,6 +327,8 @@ class CollectionBuilder:
                 raise Failed("Playlist Error: libraries attribute is required")
         else:
             self.libraries.append(self.library)
+
+        self.asset_directory = metadata.asset_directory if metadata.asset_directory else self.library.asset_directory
 
         self.language = self.library.Plex.language
         self.details = {
