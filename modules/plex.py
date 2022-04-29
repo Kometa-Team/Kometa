@@ -522,8 +522,8 @@ class Plex(Library):
     def reload(self, item, force=False):
         is_full = False
         cached_item = item
-        if item.ratingKey in self.cached_items:
-            cached_item, is_full = self.cached_items[item.ratingKey]
+        if cached_item.ratingKey in self.cached_items:
+            cached_item, is_full = self.cached_items[cached_item.ratingKey]
         try:
             if not is_full or force:
                 cached_item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False,
@@ -532,7 +532,7 @@ class Plex(Library):
                                    includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
                                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
                                    includeRelatedCount=0, includeReviews=False, includeStations=False)
-                self.cached_items[item.ratingKey] = (item, True)
+                self.cached_items[cached_item.ratingKey] = (cached_item, True)
             return cached_item
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
@@ -1101,7 +1101,7 @@ class Plex(Library):
         return True
 
     def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time):
-        self.reload(item)
+
         filter_actual = attribute_translation[filter_attr] if filter_attr in attribute_translation else filter_attr
         if isinstance(item, Movie):
             item_type = "movie"
@@ -1119,6 +1119,7 @@ class Plex(Library):
             item_type = "track"
         else:
             return True
+        item = self.reload(item)
         if filter_attr not in builder.filters[item_type]:
             return True
         elif filter_attr in builder.date_filters:
