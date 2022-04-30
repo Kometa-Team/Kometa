@@ -90,7 +90,7 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 |:-----------------|:--------------------------------------------------------|:--------:|:--------:|:--------:|
 | `genre`          | List or comma-separated text of each Genre Tag          | &#9989;  | &#9989;  | &#10060; |
 | `collection`     | List or comma-separated text of each Collection Tag     | &#9989;  | &#9989;  | &#9989;  |
-| `label`          | List or comma-separated text of each Label Tag          | &#10060; | &#9989;  | &#10060; |
+| `label`          | List or comma-separated text of each Label Tag          | &#9989;  | &#9989;  | &#9989;  |
 | `style`          | List or comma-separated text of each Style Tag          | &#9989;  | &#9989;  | &#10060; |
 | `mood`           | List or comma-separated text of each Mood Tag           | &#9989;  | &#9989;  | &#9989;  |
 | `country`        | List or comma-separated text of each Country Tag        | &#9989;  | &#10060; | &#10060; |

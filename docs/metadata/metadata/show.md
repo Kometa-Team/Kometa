@@ -119,8 +119,8 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 | `director`   | List or comma-separated text of each Director Tag   | &#10060; | &#10060; | &#9989;  |
 | `genre`      | List or comma-separated text of each Genre Tag      | &#9989;  | &#10060; | &#10060; |
 | `writer`     | List or comma-separated text of each Writer Tag     | &#10060; | &#10060; | &#9989;  |
-| `collection` | List or comma-separated text of each Collection Tag | &#9989;  | &#10060; | &#10060; |
-| `label`      | List or comma-separated text of each Label Tag      | &#9989;  | &#10060; | &#10060; |
+| `collection` | List or comma-separated text of each Collection Tag | &#9989;  | &#9989;  | &#9989;  |
+| `label`      | List or comma-separated text of each Label Tag      | &#9989;  | &#9989;  | &#9989;  |
 
 ### Image Attributes
 
@@ -128,8 +128,8 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 |:------------------|:------------------------------------------------|:-------:|:-------:|:--------:|
 | `url_poster`      | URL of image publicly available on the internet | &#9989; | &#9989; | &#9989;  |
 | `file_poster`     | Path to image in the file system                | &#9989; | &#9989; | &#9989;  |
-| `url_background`  | URL of image publicly available on the internet | &#9989; | &#9989; | &#10060; |
-| `file_background` | Path to image in the file system                | &#9989; | &#9989; | &#10060; |
+| `url_background`  | URL of image publicly available on the internet | &#9989; | &#9989; | &#9989;  |
+| `file_background` | Path to image in the file system                | &#9989; | &#9989; | &#9989;  |
 
 ### Advanced Attributes
 
