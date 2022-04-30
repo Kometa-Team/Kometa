@@ -74,7 +74,7 @@ advance_tags_to_edit = {
 tags_to_edit = {
     "Movie": ["genre", "label", "collection", "country", "director", "producer", "writer"],
     "Show": ["genre", "label", "collection"],
-    "Artist": ["genre", "style", "mood", "country", "collection", "similar_artist"]
+    "Artist": ["genre", "label", "style", "mood", "country", "collection", "similar_artist"]
 }
 mdb_types = ["mdb", "mdb_imdb", "mdb_metacritic", "mdb_metacriticuser", "mdb_trakt", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_letterboxd"]
 collection_mode_options = {

@@ -883,6 +883,8 @@ class MetadataFile(DataFile):
                         add_edit("title", season, season_dict, season_methods)
                         add_edit("summary", season, season_dict, season_methods)
                         add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
+                        if self.edit_tags("label", season, season_dict, season_methods):
+                            updated = True
                         finish_edit(season, f"Season: {season_id}")
                         self.set_images(season, season_dict, season_methods)
                         logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -915,7 +917,7 @@ class MetadataFile(DataFile):
                                     add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
                                     add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
                                     add_edit("summary", episode, episode_dict, episode_methods)
-                                    for tag_edit in ["director", "writer"]:
+                                    for tag_edit in ["director", "writer", "label"]:
                                         if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                             updated = True
                                     finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
@@ -953,7 +955,7 @@ class MetadataFile(DataFile):
                         add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
                         add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
                         add_edit("summary", episode, episode_dict, episode_methods)
-                        for tag_edit in ["director", "writer"]:
+                        for tag_edit in ["director", "writer", "label"]:
                             if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                 updated = True
                         finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
@@ -1031,8 +1033,9 @@ class MetadataFile(DataFile):
                                     add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
                                     add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
                                     add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")
-                                    if self.edit_tags("mood", track, track_dict, track_methods):
-                                        updated = True
+                                    for tag_edit in ["mood", "collection", "label"]:
+                                        if self.edit_tags(tag_edit, track, track_dict, track_methods):
+                                            updated = True
                                     finish_edit(track, f"Track: {title}")
                                     logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
