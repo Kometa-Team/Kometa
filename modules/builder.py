@@ -1344,7 +1344,7 @@ class CollectionBuilder:
                         self.summaries[method_name] = item.overview
                     if item.backdrop_url:
                         self.backgrounds[method_name] = item.backdrop_url
-                    if item.poster_path:
+                    if item.poster_url:
                         self.posters[method_name] = item.poster_url
                 elif method_name.startswith(("tmdb_actor", "tmdb_crew", "tmdb_director", "tmdb_producer", "tmdb_writer")):
                     item = self.config.TMDb.get_person(values[0])
