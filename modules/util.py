@@ -422,17 +422,22 @@ def check_day(_m, _d):
         return _m, _d
 
 def schedule_check(attribute, data, current_time, run_hour):
-    skip_collection = True
     range_collection = False
-    schedule_list = get_list(data)
+    all_check = 0
+    schedules_run = 0
+    is_all = False
     next_month = current_time.replace(day=28) + timedelta(days=4)
     last_day = next_month - timedelta(days=next_month.day)
     schedule_str = ""
-    for schedule in schedule_list:
+    for schedule in get_list(data):
         run_time = str(schedule).lower()
         display = f"{attribute} attribute {schedule} invalid"
-        if run_time.startswith(("day", "daily")):
-            skip_collection = False
+        schedules_run += 1
+        if run_time == "all":
+            is_all = True
+            all_check += 1
+        elif run_time.startswith(("day", "daily")):
+            all_check += 1
         elif run_time == "never":
             schedule_str += f"\nNever scheduled to run"
         elif run_time.startswith(("hour", "week", "month", "year", "range")):
@@ -446,7 +451,7 @@ def schedule_check(attribute, data, current_time, run_hour):
                     if 0 <= int(param) <= 23:
                         schedule_str += f"\nScheduled to run only on the {make_ordinal(int(param))} hour"
                         if run_hour == int(param):
-                            skip_collection = False
+                            all_check += 1
                     else:
                         raise ValueError
                 except ValueError:
@@ -458,14 +463,14 @@ def schedule_check(attribute, data, current_time, run_hour):
                 weekday = days_alias[param.lower()]
                 schedule_str += f"\nScheduled weekly on {pretty_days[weekday]}"
                 if weekday == current_time.weekday():
-                    skip_collection = False
+                    all_check += 1
             elif run_time.startswith("month"):
                 try:
                     if 1 <= int(param) <= 31:
                         schedule_str += f"\nScheduled monthly on the {make_ordinal(int(param))}"
                         if current_time.day == int(param) or (
                                 current_time.day == last_day.day and int(param) > last_day.day):
-                            skip_collection = False
+                            all_check += 1
                     else:
                         raise ValueError
                 except ValueError:
@@ -479,7 +484,7 @@ def schedule_check(attribute, data, current_time, run_hour):
                         schedule_str += f"\nScheduled yearly on {pretty_months[month]} {make_ordinal(day)}"
                         if current_time.month == month and (current_time.day == day or (
                                 current_time.day == last_day.day and day > last_day.day)):
-                            skip_collection = False
+                            all_check += 1
                     else:
                         raise ValueError
                 except ValueError:
@@ -498,15 +503,14 @@ def schedule_check(attribute, data, current_time, run_hour):
                 range_collection = True
                 schedule_str += f"\nScheduled between {pretty_months[month_start]} {make_ordinal(day_start)} and {pretty_months[month_end]} {make_ordinal(day_end)}"
                 if start <= check <= end if start < end else (check <= end or check >= start):
-                    skip_collection = False
+                    all_check += 1
         else:
             logger.error(f"Schedule Error: {display}")
-    if len(schedule_str) == 0:
-        skip_collection = False
-    if skip_collection and range_collection:
-        raise NotScheduledRange(schedule_str)
-    elif skip_collection:
-        raise NotScheduled(schedule_str)
+    if all_check == 0 or (is_all and schedules_run != all_check):
+        if range_collection:
+            raise NotScheduledRange(schedule_str)
+        else:
+            raise NotScheduled(schedule_str)
 
 def check_int(value, datatype="int", minimum=1, maximum=None):
     try:
