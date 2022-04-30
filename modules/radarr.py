@@ -21,10 +21,12 @@ class Radarr:
             self.api = RadarrAPI(self.url, self.token, session=self.config.session)
             self.api.respect_list_exclusions_when_adding()
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"])
+            self.profiles = self.api.quality_profile()
         except ArrException as e:
             raise Failed(e)
         self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
+        self.upgrade_existing = params["upgrade_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
         self.availability = params["availability"]
@@ -48,6 +50,7 @@ class Radarr:
         logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
         for tmdb_id in _paths:
             logger.debug(tmdb_id)
+        upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
         availability = availability_translation[options["availability"] if "availability" in options else self.availability]
@@ -125,6 +128,11 @@ class Radarr:
             mass_add()
             movies = []
 
+        qp = None
+        for profile in self.profiles:
+            if (isinstance(quality_profile, int) and profile.id == quality_profile) or profile.name == quality_profile:
+                qp = profile
+
         if len(added) > 0:
             logger.info("")
             for movie in added:
@@ -136,10 +144,15 @@ class Radarr:
         if len(exists) > 0 or len(skipped) > 0:
             logger.info("")
             if len(exists) > 0:
+                upgrade_qp = []
                 for movie in exists:
                     logger.info(f"Already in Radarr | {movie.tmdbId:<7} | {movie.title}")
+                    if movie.qualityProfileId != qp.id:
+                        upgrade_qp.append(movie)
                     if self.config.Cache:
                         self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
+                if upgrade_qp and upgrade_existing:
+                    self.api.edit_multiple_movies(upgrade_qp, quality_profile=qp)
             if len(skipped) > 0:
                 for movie in skipped:
                     logger.info(f"Skipped: In Cache | {movie}")

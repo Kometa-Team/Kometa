@@ -39,10 +39,12 @@ class Sonarr:
             self.api = SonarrAPI(self.url, self.token, session=self.config.session)
             self.api.respect_list_exclusions_when_adding()
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"], params["language_profile"])
+            self.profiles = self.api.quality_profile()
         except ArrException as e:
             raise Failed(e)
         self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
+        self.upgrade_existing = params["upgrade_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
         self.quality_profile = params["quality_profile"]
@@ -70,6 +72,7 @@ class Sonarr:
         logger.debug(f"Sonarr Adds: {_ids if _ids else ''}")
         for tvdb_id in _paths:
             logger.debug(tvdb_id)
+        upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
@@ -151,6 +154,11 @@ class Sonarr:
             mass_add()
             shows = []
 
+        qp = None
+        for profile in self.profiles:
+            if (isinstance(quality_profile, int) and profile.id == quality_profile) or profile.name == quality_profile:
+                qp = profile
+
         if len(added) > 0:
             logger.info("")
             for series in added:
@@ -162,10 +170,15 @@ class Sonarr:
         if len(exists) > 0 or len(skipped) > 0:
             logger.info("")
             if len(exists) > 0:
+                upgrade_qp = []
                 for series in exists:
                     logger.info(f"Already in Sonarr | {series.tvdbId:<7} | {series.title}")
+                    if series.qualityProfileId != qp.id:
+                        upgrade_qp.append(series)
                     if self.config.Cache:
                         self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
+                if upgrade_qp and upgrade_existing:
+                    self.api.edit_multiple_series(upgrade_qp, quality_profile=qp)
             if len(skipped) > 0:
                 for series in skipped:
                     logger.info(f"Skipped: In Cache | {series}")
