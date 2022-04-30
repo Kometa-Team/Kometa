@@ -23,7 +23,7 @@ To make a collection a Smart Label Collection,the `smart_label` attribute must a
     collections:
       Unplayed Marvel Cinematic Universe:
         trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
-        smart_label:
+        smart_filter:
           sort_by: release.desc
           all:
             label: <<smart_label>>
