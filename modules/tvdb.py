@@ -93,11 +93,14 @@ class TVDbObj:
             self.writers = parse_page("//strong[text()='Writers']/parent::li/span/a/text()[normalize-space()]", is_list=True)
             self.studios = parse_page("//strong[text()='Studio']/parent::li/span/a/text()[normalize-space()]", is_list=True)
             released = parse_page("//strong[text()='Released']/parent::li/span/text()[normalize-space()]")
-            self.released = datetime.strptime(released, "%B %d, %Y") if released else released
         else:
             self.networks = parse_page("//strong[text()='Networks']/parent::li/span/a/text()[normalize-space()]", is_list=True)
             released = parse_page("//strong[text()='First Aired']/parent::li/span/text()[normalize-space()]")
+        try:
             self.released = datetime.strptime(released, "%B %d, %Y") if released else released
+        except ValueError:
+            self.released = None
+
         self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]", is_list=True)
 
         tmdb_id = None
