@@ -138,7 +138,8 @@ class DataFile:
                         variables["playlist_name"] = str(name)
                     if self.data_type == "Overlay" and "overlay_name" not in variables:
                         variables["overlay_name"] = str(name)
-                    variables["library_type"] = self.library.type.lower()
+
+                    variables["library_type"] = self.library.type.lower() if self.library else "items"
 
                     template_name = variables["name"]
                     template, temp_vars = self.templates[template_name]

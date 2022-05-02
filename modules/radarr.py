@@ -5,6 +5,7 @@ from arrapi.exceptions import ArrException
 
 logger = util.logger
 
+builders = ["radarr_all", "radarr_taglist"]
 availability_translation = {"announced": "announced", "cinemas": "inCinemas", "released": "released", "db": "preDB"}
 apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
 availability_descriptions = {"announced": "For Announced", "cinemas": "For In Cinemas", "released": "For Released", "db": "For PreDB"}
@@ -217,3 +218,21 @@ class Radarr:
                 remove_items.append(movie)
         if remove_items:
             self.api.delete_multiple_movies(remove_items)
+
+    def get_tmdb_ids(self, method, data):
+        ids = []
+        for movie in self.api.all_movies():
+            append = False
+            if method == "radarr_all":
+                append = True
+            elif method == "radarr_taglist":
+                if data:
+                    for tag in movie.tags:
+                        if tag.label.lower() in data:
+                            append = True
+                            break
+                elif not movie.tags:
+                    append = True
+            if append:
+                ids.append((movie.tmdbId, "tmdb"))
+        return ids
