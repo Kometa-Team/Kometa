@@ -13,15 +13,15 @@ advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
                letterboxd.builders + mal.builders + plex.builders + reciperr.builders + tautulli.builders + \
-               tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders
+               tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders + radarr.builders + sonarr.builders
 show_only_builders = [
     "tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "tmdb_airing_today",
-    "tmdb_on_the_air", "collection_level", "item_tmdb_season_titles"
+    "tmdb_on_the_air", "collection_level", "item_tmdb_season_titles", "sonarr_all", "sonarr_taglist"
 ]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
-    "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list"
+    "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list", "radarr_all", "radarr_taglist"
 ]
 music_only_builders = ["item_album_sorting"]
 summary_details = [
@@ -50,7 +50,7 @@ collectionless_details = ["collection_order", "plex_collectionless", "label", "l
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_refresh"] + item_false_details
 item_details = ["non_item_remove_label", "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
-none_details = ["label.sync", "item_label.sync"]
+none_details = ["label.sync", "item_label.sync", "radarr_taglist", "sonarr_taglist"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_folder", "radarr_monitor",
     "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag"
@@ -718,9 +718,9 @@ class CollectionBuilder:
                     self._details(method_name, method_data, method_final, methods)
                 elif method_name in item_details:
                     self._item_details(method_name, method_data, method_mod, method_final, methods)
-                elif method_name in radarr_details:
+                elif method_name in radarr_details or method_name in radarr.builders:
                     self._radarr(method_name, method_data)
-                elif method_name in sonarr_details:
+                elif method_name in sonarr_details or method_name in sonarr.builders:
                     self._sonarr(method_name, method_data)
                 elif method_name in anidb.builders:
                     self._anidb(method_name, method_data)
@@ -1018,6 +1018,10 @@ class CollectionBuilder:
             self.radarr_details["quality"] = method_data
         elif method_name == "radarr_tag":
             self.radarr_details["tag"] = util.get_list(method_data, lower=True)
+        elif method_name == "radarr_taglist":
+            self.builders.append((method_name, util.get_list(method_data, lower=True)))
+        elif method_name == "radarr_all":
+            self.builders.append((method_name, True))
 
     def _sonarr(self, method_name, method_data):
         if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
@@ -1036,6 +1040,10 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: {method_name} attribute must be either standard, daily, or anime")
         elif method_name == "sonarr_tag":
             self.sonarr_details["tag"] = util.get_list(method_data, lower=True)
+        elif method_name == "sonarr_taglist":
+            self.builders.append((method_name, util.get_list(method_data, lower=True)))
+        elif method_name == "sonarr_all":
+            self.builders.append((method_name, True))
 
     def _anidb(self, method_name, method_data):
         if method_name == "anidb_popular":
@@ -1452,7 +1460,7 @@ class CollectionBuilder:
         if "plex" in method:
             ids = self.library.get_rating_keys(method, value)
         elif "tautulli" in method:
-            ids = self.library.Tautulli.get_rating_keys(self.library, value, self.playlist)
+            ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
         elif "anidb" in method:
             anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
             ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
@@ -1480,6 +1488,10 @@ class CollectionBuilder:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
         elif "trakt" in method:
             ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
+        elif "radarr" in method:
+            ids = self.library.Radarr.get_tmdb_ids(method, value)
+        elif "sonarr" in method:
+            ids = self.library.Sonarr.get_tvdb_ids(method, value)
         else:
             ids = []
             logger.error(f"{self.Type} Error: {method} method not supported")

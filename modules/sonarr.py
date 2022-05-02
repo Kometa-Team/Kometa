@@ -5,6 +5,7 @@ from arrapi.exceptions import ArrException
 
 logger = util.logger
 
+builders = ["sonarr_all", "sonarr_taglist"]
 series_types = ["standard", "daily", "anime"]
 monitor_translation = {
     "all": "all", "future": "future", "missing": "missing", "existing": "existing",
@@ -243,3 +244,21 @@ class Sonarr:
                 remove_items.append(series)
         if remove_items:
             self.api.delete_multiple_series(remove_items)
+
+    def get_tvdb_ids(self, method, data):
+        ids = []
+        for series in self.api.all_series():
+            append = False
+            if method == "sonarr_all":
+                append = True
+            elif method == "sonarr_taglist":
+                if data:
+                    for tag in series.tags:
+                        if tag.label.lower() in data:
+                            append = True
+                            break
+                elif not series.tags:
+                    append = True
+            if append:
+                ids.append((series.tvdbId, "tvdb"))
+        return ids

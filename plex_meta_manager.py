@@ -664,7 +664,7 @@ def run_playlists(config):
                 elif "tautulli" in method:
                     ids = []
                     for pl_library in builder.libraries:
-                        ids.extend(pl_library.Tautulli.get_rating_keys(pl_library, value, True))
+                        ids.extend(pl_library.Tautulli.get_rating_keys(value, True))
                 else:
                     ids = builder.gather_ids(method, value)
 
