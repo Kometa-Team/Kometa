@@ -642,18 +642,18 @@ deactivate
 All you need do is point to the python executable inside the virtual env.  In our example, that means that if your scheduled job normally would be:
 ```
 cd /Users/mroche/Plex-Meta-Manager
-python plex-meta-manager.py -r
+python plex_meta_manager.py -r
 ```
 You would instead use:
 ```
 cd /Users/mroche/Plex-Meta-Manager
-pmm-venv/bin/python plex-meta-manager.py -r
+pmm-venv/bin/python plex_meta_manager.py -r
 ```
 
 On Windows that path is:
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
-pmm-venv\Scripts\python.exe plex-meta-manager.py -r
+pmm-venv\Scripts\python.exe plex_meta_manager.py -r
 ```
 
 ### I want to update to the latest version of the code
