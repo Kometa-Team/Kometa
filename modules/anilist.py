@@ -149,6 +149,10 @@ class AniList:
                         value = f'["{temp}"]'
                 elif attr in ["season", "source", "country"]:
                     value = self.options[attr.replace("_", " ").title()][value]
+                if value is True:
+                    value = "true"
+                elif value is False:
+                    value = "false"
                 if mod == "gte":
                     value -= 1
                 elif mod == "lte":
