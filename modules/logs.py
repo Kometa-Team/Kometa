@@ -198,7 +198,12 @@ class MyLogger:
 
     def ghost(self, text):
         if not self.ignore_ghost:
-            print(self._space(f"| {text}"), end="\r")
+            try:
+                final_text = f"| {text}"
+            except UnicodeEncodeError:
+                text = text.encode("utf-8")
+                final_text = f"| {text}"
+            print(self._space(final_text), end="\r")
             self.spacing = len(text) + 2
 
     def exorcise(self):
