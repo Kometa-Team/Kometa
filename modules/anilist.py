@@ -149,6 +149,8 @@ class AniList:
                         value = f'["{temp}"]'
                 elif attr in ["season", "source", "country"]:
                     value = self.options[attr.replace("_", " ").title()][value]
+                elif attr in ["isAdult", "adult"]:
+                    value = str(value).lower() if type(value) is bool else value
                 if mod == "gte":
                     value -= 1
                 elif mod == "lte":
