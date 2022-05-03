@@ -12,19 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Send Discord Commit Notification
-        uses: meisnate12/discord-notifications@master
-        with:
-          webhook_id: ${{ secrets.NIGHTLY_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.NIGHTLY_WEBHOOK_TOKEN }}
-          title: Nightly Commits
-          message: "<@&967002147520675840>"
-          commits: "true"
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
-          author: Github
-          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/git.png
-
       - name: Check Out Repo
         uses: actions/checkout@v3
         with:
@@ -54,6 +41,17 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:nightly
+
+      - name: Send Discord Commit Notification
+        uses: meisnate12/discord-notifications@master
+        with:
+          webhook_id: ${{ secrets.NIGHTLY_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.NIGHTLY_WEBHOOK_TOKEN }}
+          title: Nightly Commits
+          message: "<@&967002147520675840>"
+          commits: "true"
+          username: Metabot
+          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
 
       - name: Discord Success Notification
         uses: meisnate12/discord-notifications@master
