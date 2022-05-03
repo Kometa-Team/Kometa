@@ -6,6 +6,7 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
 
 | Attribute                                           | Description                                                                                                                                                       | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
 |:----------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
+| [`mal_search`](#myanimelist-search)                 | Finds every anime in a MyAnimeList Search list                                                                                                                    |      &#9989;      |     &#9989;      |               &#9989;                | 
 | [`mal_all`](#myanimelist-top-all-anime)             | Finds every anime in MyAnimeList's [Top All Anime](https://myanimelist.net/topanime.php) list                                                                     |      &#9989;      |     &#9989;      |               &#9989;                | 
 | [`mal_airing`](#myanimelist-top-airing-anime)       | Finds every anime in MyAnimeList's [Top Airing Anime](https://myanimelist.net/topanime.php?type=airing) list                                                      |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`mal_upcoming`](#myanimelist-top-upcoming-anime)   | Finds every anime in MyAnimeList's [Top Upcoming Anime](https://myanimelist.net/topanime.php?type=upcoming) list                                                  |      &#9989;      |     &#9989;      |               &#9989;                |
@@ -19,29 +20,50 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
 | [`mal_id`](#myanimelist-id)                         | Finds the anime specified by the MyAnimeList ID                                                                                                                   |      &#9989;      |     &#9989;      |               &#10060;               |
 | [`mal_userlist`](#myanimelist-user-anime-list)      | Finds anime in MyAnimeList User's Anime list the options are detailed below                                                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`mal_season`](#myanimelist-seasonal-anime)         | Finds anime in MyAnimeList's [Seasonal Anime](https://myanimelist.net/anime/season) list the options are detailed below                                           |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_genre`](#myanimelist-genre)                   | Finds every anime tagged with the specified genre id. Genre options can be found on [MyAnimeList's Search](https://myanimelist.net/anime.php)                     |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_studio`](#myanimelist-studio)                 | Finds every anime tagged with the specified studio/producer/licensor id. Studio options can be found on [MyAnimeList's Search](https://myanimelist.net/anime.php) |      &#9989;      |     &#9989;      |               &#9989;                |
 
-## Expected Input
+## MyAnimeList Search
 
-The builders below are expected to have a single integer value of how many movies/shows to query. 
-* [MyAnimeList Top All Anime](#myanimelist-top-all-anime)
-* [MyAnimeList Top Airing Anime](#myanimelist-top-airing-anime)
-* [MyAnimeList Top Upcoming Anime](#myanimelist-top-upcoming-anime)
-* [MyAnimeList Top Anime TV Series](#myanimelist-top-anime-tv-series)
-* [MyAnimeList Top Anime Movies](#myanimelist-top-anime-movies)
-* [MyAnimeList Top Anime OVA Series](#myanimelist-top-anime-ova-series)
-* [MyAnimeList Top Anime Specials](#myanimelist-top-anime-specials)
-* [MyAnimeList Most Popular Anime](#myanimelist-most-popular-anime)
-* [MyAnimeList Most Favorited Anime](#myanimelist-most-favorited-anime)
-* [MyAnimeList Suggested Anime](#myanimelist-suggested-anime)
+Gets every anime in a MyAnimeList search. The different sub-attributes are detailed below. At least one attribute is required.
 
-The attributes of [MyAnimeList ID](#myanimelist-id), [MyAnimeList Seasonal Anime](#myanimelist-seasonal-anime), [MyAnimeList User Anime List](#myanimelist-user-anime-list), [MyAnimeList Genre](#myanimelist-genre), and [MyAnimeList Studio](#myanimelist-studio) are detailed in their sections below.
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
+| Attribute              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+|:-----------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sort_by`              | **Description:** Sort Order to return<br>**Values:** `mal_id.desc`, `mal_id.asc`, `title.desc`, `title.asc`, `type.desc`, `type.asc`, `rating.desc`, `rating.asc`, `start_date.desc`, `start_date.asc`, `end_date.desc`, `end_date.asc`, `episodes.desc`, `episodes.asc`, `score.desc`, `score.asc`, `scored_by.desc`, `scored_by.asc`, `rank.desc`, `rank.asc`, `popularity.desc`, `popularity.asc`, `members.desc`, `members.asc`, `favorites.desc`, `favorites.asc` |
+| `limit`                | **Description:** Don't return more then this number<br>**Values:** Number of Anime to query from MyAnimeList                                                                                                                                                                                                                                                                                                                                                           |
+| `query`                | **Description:** Text query to search for                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `prefix`               | **Description:** Results must begin with this prefix                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `type`                 | **Description:** Type of Anime to search for<br>**Values:** `tv`, `movie`, `ova`, `special`, `ona`, `music`                                                                                                                                                                                                                                                                                                                                                            |
+| `status`               | **Description:** Status to search for<br>**Values:** `airing`, `complete`, `upcoming`                                                                                                                                                                                                                                                                                                                                                                                  |
+| `genre`                | **Description:** List of Genres to include<br>**Values:** Genre Name or ID                                                                                                                                                                                                                                                                                                                                                                                             |
+| `genre.not`            | **Description:** List of Genres to exclude<br>**Values:** Genre Name or ID                                                                                                                                                                                                                                                                                                                                                                                             |
+| `studio`               | **Description:** List of Studios to include<br>**Values:** Studio Name or ID                                                                                                                                                                                                                                                                                                                                                                                           |
+| `content_rating`       | **Description:** Content Rating to search for<br>**Values:** `g`, `pg`, `pg13`, `r17`, `r`, `rx`                                                                                                                                                                                                                                                                                                                                                                       |
+| `score.gt`/`score.gte` | **Description:** Score must be greater then the given number<br>**Values:** Float between `0.00`-`10.00`                                                                                                                                                                                                                                                                                                                                                               |
+| `score.lt`/`score.lte` | **Description:** Score must be less then the given number<br>**Values:** Float between `0.00`-`10.00`                                                                                                                                                                                                                                                                                                                                                                  |
+| `sfw`                  | **Description:** Results must be Safe for Work<br>**Value:** `true`                                                                                                                                                                                                                                                                                                                                                                                                    |
+
+* Studio options can be found on [MyAnimeList's Search](https://myanimelist.net/anime.php) Page.
+* Genre options can be found on [MyAnimeList's Search](https://myanimelist.net/anime.php) Page.
+* To find the ID click on a Studio or Genre in the link above and there should be a number in the URL that's the `id`.
+* For example if the url is `https://myanimelist.net/anime/producer/4/Bones` the `id` would be `4` or if the url is `https://myanimelist.net/anime/genre/1/Action` the `id` would be `1`.
+ 
+```yaml
+collections:
+  Top Action Anime:
+    mal_search:
+      limit: 100
+      sort_by: score.desc
+      genre: Action
+    collection_order: custom
+    sync_mode: sync
+```
 
 ## MyAnimeList Top All Anime
 
 Gets every anime in MyAnimeList's [Top Airing Anime](https://myanimelist.net/topanime.php?type=airing) list. (Maximum: 500)
+
+The expected input value is a single integer value of how many movies/shows to query.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
@@ -57,6 +79,8 @@ collections:
 
 Gets every anime in MyAnimeList's [Top Airing Anime](https://myanimelist.net/topanime.php?type=airing) list. (Maximum: 500)
 
+The expected input value is a single integer value of how many movies/shows to query.
+
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
 ```yaml
@@ -70,6 +94,8 @@ collections:
 ## MyAnimeList Top Upcoming Anime
 
 Gets every anime in MyAnimeList's [Top Upcoming Anime](https://myanimelist.net/topanime.php?type=upcoming) list. (Maximum: 500)
+
+The expected input value is a single integer value of how many movies/shows to query.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
@@ -85,6 +111,8 @@ collections:
 
 Gets every anime in MyAnimeList's [Top Anime TV Series](https://myanimelist.net/topanime.php?type=tv) list. (Maximum: 500)
 
+The expected input value is a single integer value of how many movies/shows to query.
+
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
 ```yaml
@@ -98,6 +126,8 @@ collections:
 ## MyAnimeList Top Anime Movies
 
 Gets every anime in MyAnimeList's [Top Anime Movies](https://myanimelist.net/topanime.php?type=movie) list. (Maximum: 500)
+
+The expected input value is a single integer value of how many movies/shows to query.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
@@ -113,6 +143,8 @@ collections:
 
 Gets every anime in MyAnimeList's [Top Anime OVA Series](https://myanimelist.net/topanime.php?type=ova) list. (Maximum: 500)
 
+The expected input value is a single integer value of how many movies/shows to query.
+
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
 ```yaml
@@ -126,6 +158,8 @@ collections:
 ## MyAnimeList Top Anime Specials
 
 Gets every anime in MyAnimeList's [Top Anime Specials](https://myanimelist.net/topanime.php?type=special) list. (Maximum: 500)
+
+The expected input value is a single integer value of how many movies/shows to query.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
@@ -141,6 +175,8 @@ collections:
 
 Gets every anime in MyAnimeList's [Most Popular Anime](https://myanimelist.net/topanime.php?type=bypopularity) list. (Maximum: 500)
 
+The expected input value is a single integer value of how many movies/shows to query.
+
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
 ```yaml
@@ -155,6 +191,8 @@ collections:
 
 Gets every anime in MyAnimeList's [Most Favorited Anime](https://myanimelist.net/topanime.php?type=favorite) list. (Maximum: 500)
 
+The expected input value is a single integer value of how many movies/shows to query.
+
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
 ```yaml
@@ -168,6 +206,8 @@ collections:
 ## MyAnimeList Suggested Anime
 
 Gets the suggested anime in by MyAnimeList for the authorized user. (Maximum: 100)
+
+The expected input value is a single integer value of how many movies/shows to query.
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
 
@@ -245,54 +285,6 @@ collections:
       season: fall
       year: 2020
       limit: 50
-    collection_order: custom
-    sync_mode: sync
-```
-
-## MyAnimeList Genre
-
-Gets every anime tagged with the specified genre ID sorted by members the options are detailed below. `genre_id` is the only required attribute.
-
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
-
-* Genre options can be found on [MyAnimeList's Search](https://myanimelist.net/anime.php) Page.
-* To find the ID click on a Genre in the link above and there should be a number in the URL that's the `genre_id`.
-* For example if the url is `https://myanimelist.net/anime/genre/1/Action` the `genre_id` would be `1`.
-
-| Attribute  | Description                                                         |
-|:-----------|:--------------------------------------------------------------------|
-| `genre_id` | The ID of Genre from MyAnimeList                                    |
-| `limit`    | Number of Anime to query from MyAnimeList<br>**Default:** `0` (All) |
-
-```yaml
-collections:
-  Sports Anime:
-    mal_genre:
-      genre_id: 30
-    collection_order: custom
-    sync_mode: sync
-```
-
-## MyAnimeList Studio 
-
-Gets every anime tagged with the specified studio/producer/licensor ID sorted by members the options are detailed below. `studio_id` is the only required attribute.
-
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
-
-* Studio options can be found on [MyAnimeList's Search](https://myanimelist.net/anime.php) Page.
-* To find the ID click on a Studio in the link above and there should be a number in the URL that's the `studio_id`.
-* For example if the url is `https://myanimelist.net/anime/producer/4/Bones` the `studio_id` would be `4`.
-
-| Attribute   | Description                                                         |
-|:------------|:--------------------------------------------------------------------|
-| `studio_id` | The ID of Studio/Producer/Licensor from MyAnimeList                 |
-| `limit`     | Number of Anime to query from MyAnimeList<br>**Default:** `0` (All) |
-
-```yaml
-collections:
-  Bones Studio Anime:
-    mal_studio:
-      studio_id: 4
     collection_order: custom
     sync_mode: sync
 ```
