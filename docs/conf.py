@@ -182,6 +182,8 @@ html_theme_options = {
                 ("IMDb Builders", "metadata/builders/imdb"),
                 ("Trakt Builders", "metadata/builders/trakt"),
                 ("Tautulli Builders", "metadata/builders/tautulli"),
+                ("Radarr Builders", "metadata/builders/radarr"),
+                ("Sonarr Builders", "metadata/builders/sonarr"),
                 ("MdbList Builders", "metadata/builders/mdblist"),
                 ("Letterboxd Builders", "metadata/builders/letterboxd"),
                 ("ICheckMovies Builders", "metadata/builders/icheckmovies"),

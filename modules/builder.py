@@ -138,7 +138,7 @@ custom_sort_builders = [
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
     "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list",
     "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search", "anilist_userlist",
-    "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special",
+    "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special", "mal_search",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
 episode_parts_only = ["plex_pilots"]
@@ -1202,7 +1202,7 @@ class CollectionBuilder:
                 self.builders.append((method_name, mal_id))
         elif method_name in ["mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special", "mal_popular", "mal_favorite", "mal_suggested"]:
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100 if method_name == "mal_suggested" else 500)))
-        elif method_name in ["mal_season", "mal_userlist"]:
+        elif method_name in ["mal_season", "mal_userlist", "mal_search"]:
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
                 if method_name == "mal_season":
@@ -1226,12 +1226,80 @@ class CollectionBuilder:
                         "sort_by": util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=mal.userlist_sort_options, translation=mal.userlist_sort_translation),
                         "limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name, maximum=1000)
                     }))
+                elif method_name == "mal_search":
+                    final_attributes = {}
+                    final_text = "MyAnimeList Search"
+                    if "sort_by" in dict_methods:
+                        sort = util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, options=mal.search_combos)
+                        sort_type, sort_direction = sort.split(".")
+                        final_text += f"\nSorted By: {sort}"
+                        final_attributes["order_by"] = sort_type
+                        final_attributes["sort"] = sort_direction
+                    limit = 0
+                    if "limit" in dict_methods:
+                        limit = util.parse(self.Type, "limit", dict_data, datatype="int", default=0, methods=dict_methods, parent=method_name)
+                        final_text += f"\nLimit: {limit if limit else 'None'}"
+                    if "query" in dict_methods:
+                        final_attributes["q"] = util.parse(self.Type, "query", dict_data, methods=dict_methods, parent=method_name)
+                        final_text += f"\nQuery: {final_attributes['q']}"
+                    if "prefix" in dict_methods:
+                        final_attributes["letter"] = util.parse(self.Type, "prefix", dict_data, methods=dict_methods, parent=method_name)
+                        final_text += f"\nPrefix: {final_attributes['letter']}"
+                    if "type" in dict_methods:
+                        type_list = util.parse(self.Type, "type", dict_data, datatype="commalist", methods=dict_methods, parent=method_name, options=mal.search_types)
+                        final_attributes["type"] = ",".join(type_list)
+                        final_text += f"\nType: {' or '.join(type_list)}"
+                    if "status" in dict_methods:
+                        final_attributes["status"] = util.parse(self.Type, "status", dict_data, methods=dict_methods, parent=method_name, options=mal.search_status)
+                        final_text += f"\nStatus: {final_attributes['status']}"
+                    if "genre" in dict_methods:
+                        genre_list = util.parse(self.Type, "genre", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
+                        final_genres = [self.config.MyAnimeList.genres[g] for g in genre_list if g in self.config.MyAnimeList.genres]
+                        final_attributes["genres"] = ",".join(final_genres)
+                        final_text += f"\nGenre: {' or '.join([self.config.MyAnimeList.genres[g] for g in final_genres])}"
+                    if "genre.not" in dict_methods:
+                        genre_list = util.parse(self.Type, "genre.not", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
+                        final_genres = [self.config.MyAnimeList.genres[g] for g in genre_list if g in self.config.MyAnimeList.genres]
+                        final_attributes["genres_exclude"] = ",".join(final_genres)
+                        final_text += f"\nNot Genre: {' or '.join([self.config.MyAnimeList.genres[g] for g in final_genres])}"
+                    if "studio" in dict_methods:
+                        studio_list = util.parse(self.Type, "studio", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
+                        final_studios = [self.config.MyAnimeList.studios[s] for s in studio_list if s in self.config.MyAnimeList.studios]
+                        final_attributes["producers"] = ",".join(final_studios)
+                        final_text += f"\nStudio: {' or '.join([self.config.MyAnimeList.studios[s] for s in final_studios])}"
+                    if "content_rating" in dict_methods:
+                        final_attributes["rating"] = util.parse(self.Type, "content_rating", dict_data, methods=dict_methods, parent=method_name, options=mal.search_ratings)
+                        final_text += f"\nContent Rating: {final_attributes['rating']}"
+                    if "score.gte" in dict_methods:
+                        final_attributes["min_score"] = util.parse(self.Type, "score.gte", dict_data, datatype="float", methods=dict_methods, parent=method_name, minimum=0, maximum=10)
+                        final_text += f"\nScore Greater Than or Equal: {final_attributes['min_score']}"
+                    elif "score.gt" in dict_methods:
+                        original_score = util.parse(self.Type, "score.gt", dict_data, datatype="float", methods=dict_methods, parent=method_name, minimum=0, maximum=10)
+                        final_attributes["min_score"] = original_score + 0.01
+                        final_text += f"\nScore Greater Than: {original_score}"
+                    if "score.lte" in dict_methods:
+                        final_attributes["max_score"] = util.parse(self.Type, "score.lte", dict_data, datatype="float", methods=dict_methods, parent=method_name, minimum=0, maximum=10)
+                        final_text += f"\nScore Less Than or Equal: {final_attributes['max_score']}"
+                    elif "score.lt" in dict_methods:
+                        original_score = util.parse(self.Type, "score.lt", dict_data, datatype="float", methods=dict_methods, parent=method_name, minimum=0, maximum=10)
+                        final_attributes["max_score"] = original_score - 0.01
+                        final_text += f"\nScore Less Than: {original_score}"
+                    if "min_score" in final_attributes and "max_score"  in final_attributes and final_attributes["max_score"] <= final_attributes["min_score"]:
+                        raise Failed(f"{self.Type} Error: mal_search score.lte/score.lt attribute must be greater then score.gte/score.gt")
+                    if "sfw" in dict_methods:
+                        sfw = util.parse(self.Type, "sfw", dict_data, datatype="bool", methods=dict_methods, parent=method_name)
+                        if sfw:
+                            final_attributes["sfw"] = 1
+                        final_text += f"\nSafe for Work: {final_attributes['sfw']}"
+                    if not final_attributes:
+                        raise Failed(f"{self.Type} Error: no mal_search attributes found")
+                    self.builders.append((method_name, (final_attributes, final_text, limit)))
         elif method_name in ["mal_genre", "mal_studio"]:
             id_name = f"{method_name[4:]}_id"
             final_data = []
             for data in util.get_list(method_data):
                 final_data.append(data if isinstance(data, dict) else {id_name: data, "limit": 0})
-            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            for dict_data in final_data:
                 dict_methods = {dm.lower(): dm for dm in dict_data}
                 self.builders.append((method_name, {
                     id_name: util.parse(self.Type, id_name, dict_data, datatype="int", methods=dict_methods, parent=method_name, maximum=999999),

@@ -53,6 +53,8 @@ Builders use third-party services to source items to be added to the collection.
 * [IMDb Builders](builders/imdb)
 * [Trakt Builders](builders/trakt)
 * [Tautulli Builders](builders/tautulli)
+* [Radarr Builders](builders/radarr)
+* [Sonarr Builders](builders/sonarr)
 * [Letterboxd Builders](builders/letterboxd)
 * [ICheckMovies Builders](builders/icheckmovies)
 * [FlixPatrol Builders](builders/flixpatrol)
