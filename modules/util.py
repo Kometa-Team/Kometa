@@ -108,11 +108,11 @@ def current_version(version, nightly=False):
         return get_version("master")
 
 def get_version(level):
-    url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{level}/VERSION"
     try:
+        url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{level}/VERSION"
         return parse_version(requests.get(url).content.decode().strip())
     except requests.exceptions.ConnectionError:
-        return None
+        return "Unknown", "Unknown", 0
 
 def parse_version(version):
     split_version = version.split("-develop")
