@@ -1,5 +1,5 @@
 import os, re
-from modules import util
+from modules import plex, util
 from modules.util import Failed
 from plexapi.audio import Artist
 from plexapi.video import Show
@@ -439,10 +439,13 @@ class Operations:
 
         if self.library.mass_collection_mode:
             logger.info("")
-            logger.separator(f"Unmanaged Mass Collection Mode for {self.library.name} Library", space=False, border=False)
+            logger.separator(f"Unmanaged Mass Collection Mode to {self.library.mass_collection_mode} for {self.library.name} Library", space=False, border=False)
             logger.info("")
             for col in unmanaged_collections:
-                self.library.collection_mode_query(col, self.library.mass_collection_mode)
+                if int(col.collectionMode) not in plex.collection_mode_keys \
+                        or plex.collection_mode_keys[int(col.collectionMode)] != self.library.mass_collection_mode:
+                    self.library.collection_mode_query(col, self.library.mass_collection_mode)
+                    logger.info(f"{col.title} Collection Mode Updated")
 
         if self.library.metadata_backup:
             logger.info("")

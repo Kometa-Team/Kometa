@@ -27,8 +27,8 @@ Set the attribute to the tag you want to search for. Multiple values are support
 
 ```yaml
 collections:
-  Radarr Movies Without Tags:
-    radarr_taglist: action, drama
+  Radarr Tag1 and Tag2 Movies:
+    radarr_taglist: tag1, tag2
 ```
 
 If no tag is specified then it gets every Movie without a tag.
