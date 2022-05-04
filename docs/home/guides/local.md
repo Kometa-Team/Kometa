@@ -28,9 +28,6 @@ I am assuming you do not have any of these tools already installed.  When writin
 
 ### Installing Python.
 
-NOTE:
-You need to use Python 3.9, not Python 3.10.  There's one specific requirement that has not yet been updated for Python 3.10, and if you use Python 3.10 the requirements step will fail with a non-obvious error.
-
 <details>
   <summary>Linux</summary>
   <br />
@@ -41,7 +38,7 @@ You need to use Python 3.9, not Python 3.10.  There's one specific requirement t
   python3 --version
   ```
 
-  If this doesn't return `3.9.[something]`, you'll need to get Python 3.9 installed. Describing this for any arbitrary linux is out of scope here, but if you're using Ubuntu, [this](https://techviewleo.com/how-to-install-python-on-ubuntu-linux/) might be useful.
+  If this doesn't return `3.7.[something]` or higher, you'll need to get Python 3 installed. Describing this for any arbitrary linux is out of scope here, but if you're using Ubuntu, [this](https://techviewleo.com/how-to-install-python-on-ubuntu-linux/) might be useful.
 </details>
 
 <details>
@@ -53,7 +50,7 @@ You need to use Python 3.9, not Python 3.10.  There's one specific requirement t
   python3 --version
   ```
 
-  If this doesn't return `3.9.[something]`, you'll need to get Python 3.9 installed.
+  If this doesn't return `3.7.[something]` or higher, you'll need to get Python 3 installed. 
 
   Follow the instructions here: [Installing Python 3 on Mac OS X](https://docs.python-guide.org/starting/install3/osx/)
 </details>
@@ -62,7 +59,7 @@ You need to use Python 3.9, not Python 3.10.  There's one specific requirement t
   <summary>Windows</summary>
   <br />
 
-  Go to http://www.python.org/download and download the latest version of Python for Windows **version 3.9** in 32 or 64-bit as appropriate for your system.  As this is written, that's 3.9.6.  **Don't download 3.10, even though it's the default offered.**
+  Go to http://www.python.org/download and download the latest version of Python for Windows in 32 or 64-bit as appropriate for your system.  As this is written, that's 3.10.4.
 
   Once downloaded, run the installer.  Tick “Add to path” checkbox at the bottom and click “Install Now”.
 
@@ -287,7 +284,7 @@ WARNING: You are using pip version 21.1.3; however, version 21.3 is available.
 You should consider upgrading via the '/Users/mroche/Plex-Meta-Manager/pmm-venv/bin/python -m pip install --upgrade pip' command.
 ```
 
-Don't worry about the WARNING if it comes up.
+Don't worry about the WARNING about `pip version thus-and-such` if it comes up.
 
 Let’s make sure it’s working so far.  At the command prompt, type:
 
