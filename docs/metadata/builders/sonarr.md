@@ -27,8 +27,8 @@ Set the attribute to the tag you want to search for. Multiple values are support
 
 ```yaml
 collections:
-  Sonarr Series Without Tags:
-    sonarr_taglist: action, drama
+  Sonarr Tag1 and Tag2 Series:
+    sonarr_taglist: tag1, tag2
 ```
 
 If no tag is specified then it gets every Movie without a tag.
