@@ -2438,45 +2438,44 @@ class CollectionBuilder:
             self.created = True
 
     def update_details(self):
+        updated_details = []
         logger.info("")
         logger.separator(f"Updating Details of {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         if self.smart_url and self.smart_url != self.library.smart_filter(self.obj):
             self.library.update_smart_collection(self.obj, self.smart_url)
             logger.info(f"Detail: Smart Filter updated to {self.smart_url}")
-
-        def get_summary(summary_method, summaries):
-            logger.info(f"Detail: {summary_method} will update {self.Type} Summary")
-            return summaries[summary_method]
-        if "summary" in self.summaries:                     summary = get_summary("summary", self.summaries)
-        elif "tmdb_description" in self.summaries:          summary = get_summary("tmdb_description", self.summaries)
-        elif "letterboxd_description" in self.summaries:    summary = get_summary("letterboxd_description", self.summaries)
-        elif "tmdb_summary" in self.summaries:              summary = get_summary("tmdb_summary", self.summaries)
-        elif "tvdb_summary" in self.summaries:              summary = get_summary("tvdb_summary", self.summaries)
-        elif "tmdb_biography" in self.summaries:            summary = get_summary("tmdb_biography", self.summaries)
-        elif "tmdb_person" in self.summaries:               summary = get_summary("tmdb_person", self.summaries)
-        elif "tmdb_collection_details" in self.summaries:   summary = get_summary("tmdb_collection_details", self.summaries)
-        elif "trakt_list_details" in self.summaries:        summary = get_summary("trakt_list_details", self.summaries)
-        elif "tmdb_list_details" in self.summaries:         summary = get_summary("tmdb_list_details", self.summaries)
-        elif "letterboxd_list_details" in self.summaries:   summary = get_summary("letterboxd_list_details", self.summaries)
-        elif "icheckmovies_list_details" in self.summaries: summary = get_summary("icheckmovies_list_details", self.summaries)
-        elif "tmdb_actor_details" in self.summaries:        summary = get_summary("tmdb_actor_details", self.summaries)
-        elif "tmdb_crew_details" in self.summaries:         summary = get_summary("tmdb_crew_details", self.summaries)
-        elif "tmdb_director_details" in self.summaries:     summary = get_summary("tmdb_director_details", self.summaries)
-        elif "tmdb_producer_details" in self.summaries:     summary = get_summary("tmdb_producer_details", self.summaries)
-        elif "tmdb_writer_details" in self.summaries:       summary = get_summary("tmdb_writer_details", self.summaries)
-        elif "tmdb_movie_details" in self.summaries:        summary = get_summary("tmdb_movie_details", self.summaries)
-        elif "tvdb_movie_details" in self.summaries:        summary = get_summary("tvdb_movie_details", self.summaries)
-        elif "tvdb_show_details" in self.summaries:         summary = get_summary("tvdb_show_details", self.summaries)
-        elif "tmdb_show_details" in self.summaries:         summary = get_summary("tmdb_show_details", self.summaries)
+            updated_details.append("Smart Filter")
+        if "summary" in self.summaries:                     summary = ("summary", self.summaries["summary"])
+        elif "tmdb_description" in self.summaries:          summary = ("tmdb_description", self.summaries["tmdb_description"])
+        elif "letterboxd_description" in self.summaries:    summary = ("letterboxd_description", self.summaries["letterboxd_description"])
+        elif "tmdb_summary" in self.summaries:              summary = ("tmdb_summary", self.summaries["tmdb_summary"])
+        elif "tvdb_summary" in self.summaries:              summary = ("tvdb_summary", self.summaries["tvdb_summary"])
+        elif "tmdb_biography" in self.summaries:            summary = ("tmdb_biography", self.summaries["tmdb_biography"])
+        elif "tmdb_person" in self.summaries:               summary = ("tmdb_person", self.summaries["tmdb_person"])
+        elif "tmdb_collection_details" in self.summaries:   summary = ("tmdb_collection_details", self.summaries["tmdb_collection_details"])
+        elif "trakt_list_details" in self.summaries:        summary = ("trakt_list_details", self.summaries["trakt_list_details"])
+        elif "tmdb_list_details" in self.summaries:         summary = ("tmdb_list_details", self.summaries["tmdb_list_details"])
+        elif "letterboxd_list_details" in self.summaries:   summary = ("letterboxd_list_details", self.summaries["letterboxd_list_details"])
+        elif "icheckmovies_list_details" in self.summaries: summary = ("icheckmovies_list_details", self.summaries["icheckmovies_list_details"])
+        elif "tmdb_actor_details" in self.summaries:        summary = ("tmdb_actor_details", self.summaries["tmdb_actor_details"])
+        elif "tmdb_crew_details" in self.summaries:         summary = ("tmdb_crew_details", self.summaries["tmdb_crew_details"])
+        elif "tmdb_director_details" in self.summaries:     summary = ("tmdb_director_details", self.summaries["tmdb_director_details"])
+        elif "tmdb_producer_details" in self.summaries:     summary = ("tmdb_producer_details", self.summaries["tmdb_producer_details"])
+        elif "tmdb_writer_details" in self.summaries:       summary = ("tmdb_writer_details", self.summaries["tmdb_writer_details"])
+        elif "tmdb_movie_details" in self.summaries:        summary = ("tmdb_movie_details", self.summaries["tmdb_movie_details"])
+        elif "tvdb_movie_details" in self.summaries:        summary = ("tvdb_movie_details", self.summaries["tvdb_movie_details"])
+        elif "tvdb_show_details" in self.summaries:         summary = ("tvdb_show_details", self.summaries["tvdb_show_details"])
+        elif "tmdb_show_details" in self.summaries:         summary = ("tmdb_show_details", self.summaries["tmdb_show_details"])
         else:                                               summary = None
 
         if self.playlist:
-            if summary and str(summary) != str(self.obj.summary):
+            if summary and str(summary[1]) != str(self.obj.summary):
                 try:
-                    self.obj.edit(summary=str(summary))
-                    logger.info(f"Summary | {summary:<25}")
+                    self.obj.edit(summary=str(summary[1]))
+                    logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
                     logger.info("Details: have been updated")
+                    updated_details.append("Metadata")
                 except NotFound:
                     logger.error("Details: Failed to Update Please delete the collection and run again")
                 logger.info("")
@@ -2484,9 +2483,9 @@ class CollectionBuilder:
             self.obj.batchEdits()
 
             batch_display = "Collection Metadata Edits"
-            if summary and str(summary) != str(self.obj.summary):
-                self.obj.editSummary(summary)
-                batch_display += f"\nSummary | {summary:<25}"
+            if summary and str(summary[1]) != str(self.obj.summary):
+                self.obj.editSummary(summary[1])
+                batch_display += f"\nSummary ({summary[0]}) | {summary[1]:<25}"
 
             if "sort_title" in self.details and str(self.details["sort_title"]) != str(self.obj.titleSort):
                 self.obj.editSortTitle(self.details["sort_title"])
@@ -2506,21 +2505,29 @@ class CollectionBuilder:
                 try:
                     self.obj.saveEdits()
                     logger.info("Details: have been updated")
+                    updated_details.append("Metadata")
                 except NotFound:
                     logger.error("Details: Failed to Update Please delete the collection and run again")
                 logger.info("")
 
+            advance_update = False
             if "collection_mode" in self.details:
-                self.library.collection_mode_query(self.obj, self.details["collection_mode"])
+                if int(self.obj.collectionMode) not in plex.collection_mode_keys \
+                        or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:
+                    self.library.collection_mode_query(self.obj, self.details["collection_mode"])
+                    logger.info(f"Collection Mode | {self.details['collection_mode']}")
+                    advance_update = True
 
             if "collection_filtering" in self.details:
                 self.library.edit_query(self.obj, {"collectionFilterBasedOnUser": 0 if self.details["collection_filtering"] == "admin" else 1}, advanced=True)
+                advance_update = True
 
             if "collection_order" in self.details:
-                if int(self.obj.collectionSort) not in plex.collection_order_keys\
+                if int(self.obj.collectionSort) not in plex.collection_order_keys \
                         or plex.collection_order_keys[int(self.obj.collectionSort)] != self.details["collection_order"]:
                     self.library.collection_order_query(self.obj, self.details["collection_order"])
                     logger.info(f"Collection Order | {self.details['collection_order']}")
+                    advance_update = True
 
             if "visible_library" in self.details or "visible_home" in self.details or "visible_shared" in self.details:
                 visibility = self.library.collection_visibility(self.obj)
@@ -2539,7 +2546,11 @@ class CollectionBuilder:
 
                 if visible_library is not None or visible_home is not None or visible_shared is not None:
                     self.library.collection_visibility_update(self.obj, visibility=visibility, library=visible_library, home=visible_home, shared=visible_shared)
+                    advance_update = True
                     logger.info("Collection Visibility Updated")
+
+            if advance_update and "Metadata" not in updated_details:
+                updated_details.append("Metadata")
 
         poster_image = None
         background_image = None
@@ -2633,12 +2644,15 @@ class CollectionBuilder:
             logger.info(f"No background {self.type} detail or asset folder found")
 
         if self.collection_poster or self.collection_background:
-            self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
+            pu, bu = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
+            if pu or bu:
+                updated_details.append("Image")
 
-        if self.url_theme:
+        if self.url_theme:  # TODO: cache theme path to not constantly upload
             self.library.upload_theme(self.obj, url=self.url_theme)
         elif self.file_theme:
             self.library.upload_theme(self.obj, filepath=self.file_theme)
+        return updated_details
 
     def sort_collection(self):
         logger.info("")

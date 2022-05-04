@@ -184,6 +184,8 @@ class Library(ABC):
             if background_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
 
+        return poster_uploaded, background_uploaded
+
     @abstractmethod
     def notify(self, text, collection=None, critical=True):
         pass

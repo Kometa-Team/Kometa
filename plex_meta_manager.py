@@ -396,11 +396,11 @@ def update_libraries(config):
         logger.info("")
         logger.separator(f"{section} Summary", space=False, border=False)
         logger.info("")
-        logger.info(f"{'Title':^{longest}} |  +  |  =  |  -  | {'Status':^13}")
+        logger.info(f"{'Title':^{longest}} |  +  |  =  |  -  | Run Time | {'Status'}")
         breaker = f"{logger.separating_character * longest}|{logger.separating_character * 5}|{logger.separating_character * 5}|{logger.separating_character * 5}|"
         logger.separator(breaker, space=False, border=False, side_space=False, left=True)
         for name, data in status.items():
-            logger.info(f"{name:<{longest}} | {data['added']:^3} | {data['unchanged']:^3} | {data['removed']:^3} | {data['status']}")
+            logger.info(f"{name:<{longest}} | {data['added']:^3} | {data['unchanged']:^3} | {data['removed']:^3} | {data['run_time']:>8} | {data['status']}")
             if data["errors"]:
                 for error in data["errors"]:
                     logger.info(error)
@@ -467,7 +467,7 @@ def run_collection(config, library, metadata, requested_collections):
         else:
             collection_log_name, output_str = util.validate_filename(mapping_name)
         logger.add_collection_handler(library.mapping_name, collection_log_name)
-        library.status[mapping_name] = {"status": "", "errors": [], "created": False, "modified": False, "deleted": False, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+        library.status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
             builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str)
@@ -528,11 +528,14 @@ def run_collection(config, library, metadata, requested_collections):
             ):
                 logger.info("")
                 logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
+                delete_status = f"Minimum {builder.minimum} Not Met"
                 valid = False
                 if builder.details["delete_below_minimum"] and builder.obj:
                     logger.info("")
                     logger.info(builder.delete())
-                    builder.deleted = True
+                    library.stats["deleted"] += 1
+                    delete_status = f"Deleted; {delete_status}"
+                library.status[mapping_name]["status"] = delete_status
 
             run_item_details = True
             if valid and builder.build_collection and (builder.builders or builder.smart_url or builder.blank_collection):
@@ -540,28 +543,29 @@ def run_collection(config, library, metadata, requested_collections):
                     builder.load_collection()
                     if builder.created:
                         library.stats["created"] += 1
-                        library.status[mapping_name]["created"] = True
+                        library.status[mapping_name]["status"] = "Created"
                     elif items_added > 0 or items_removed > 0:
                         library.stats["modified"] += 1
-                        library.status[mapping_name]["modified"] = True
+                        library.status[mapping_name]["status"] = "Modified"
                 except Failed:
                     logger.stacktrace()
                     run_item_details = False
                     logger.info("")
                     logger.separator("No Collection to Update", space=False, border=False)
                 else:
-                    builder.update_details()
-
-            if builder.deleted:
-                library.stats["deleted"] += 1
-                library.status[mapping_name]["deleted"] = True
+                    details_list = builder.update_details()
+                    if details_list:
+                        pre = ""
+                        if library.status[mapping_name]["status"] != "Unchanged":
+                            pre = f"{library.status[mapping_name]['status']} and "
+                        library.status[mapping_name]["status"] = f"{pre}Updated {', '.join(details_list)}"
 
             if builder.server_preroll is not None:
                 library.set_server_preroll(builder.server_preroll)
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
 
-            if (builder.item_details or builder.custom_sort) and run_item_details and builder.builders:
+            if valid and run_item_details and builder.builders and (builder.item_details or builder.custom_sort):
                 try:
                     builder.load_collection_items()
                 except Failed:
@@ -578,17 +582,13 @@ def run_collection(config, library, metadata, requested_collections):
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
 
-            if library.status[mapping_name]["created"]:
-                library.status[mapping_name]["status"] = "Created"
-            elif library.status[mapping_name]["deleted"]:
-                library.status[mapping_name]["status"] = "Deleted"
-            elif library.status[mapping_name]["modified"]:
-                library.status[mapping_name]["status"] = "Modified"
-            else:
-                library.status[mapping_name]["status"] = "Unchanged"
         except NotScheduled as e:
             logger.info(e)
-            library.status[mapping_name]["status"] = "Not Scheduled"
+            if str(e).endswith("and was deleted"):
+                library.stats["deleted"] += 1
+                library.status[mapping_name]["status"] = "Deleted Not Scheduled"
+            else:
+                library.status[mapping_name]["status"] = "Not Scheduled"
         except Failed as e:
             library.notify(e, collection=mapping_name)
             logger.stacktrace()
@@ -601,8 +601,10 @@ def run_collection(config, library, metadata, requested_collections):
             logger.error(f"Unknown Error: {e}")
             library.status[mapping_name]["status"] = "Unknown Error"
             library.status[mapping_name]["errors"].append(e)
+        collection_run_time = str(datetime.now() - collection_start).split('.')[0]
+        library.status[mapping_name]["run_time"] = collection_run_time
         logger.info("")
-        logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {str(datetime.now() - collection_start).split('.')[0]}")
+        logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {collection_run_time}")
         logger.remove_collection_handler(library.mapping_name, collection_log_name)
 
 def run_playlists(config):
@@ -634,7 +636,7 @@ def run_playlists(config):
             else:
                 playlist_log_name, output_str = util.validate_filename(mapping_name)
             logger.add_playlist_handler(playlist_log_name)
-            status[mapping_name] = {"status": "", "errors": [], "created": False, "modified": False, "deleted": False, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+            status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
             library_names = None
             try:
@@ -677,7 +679,7 @@ def run_playlists(config):
                     for filter_key, filter_value in builder.tmdb_filters:
                         logger.info(f"Playlist Filter {filter_key}: {filter_value}")
 
-                if len(builder.added_items) >= builder.minimum:
+                if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum:
                     items_added, items_unchanged = builder.add_to_collection()
                     stats["added"] += items_added
                     status[mapping_name]["added"] += items_added
@@ -691,11 +693,14 @@ def run_playlists(config):
                 elif len(builder.added_items) < builder.minimum:
                     logger.info("")
                     logger.info(f"Playlist Minimum: {builder.minimum} not met for {mapping_name} Playlist")
+                    delete_status = f"Minimum {builder.minimum} Not Met"
                     valid = False
                     if builder.details["delete_below_minimum"] and builder.obj:
                         logger.info("")
                         logger.info(builder.delete())
-                        builder.deleted = True
+                        stats["deleted"] += 1
+                        delete_status = f"Deleted; {delete_status}"
+                    status[mapping_name]["status"] = delete_status
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     radarr_add, sonarr_add = builder.run_missing()
@@ -705,25 +710,27 @@ def run_playlists(config):
                     status[mapping_name]["sonarr"] += sonarr_add
 
                 run_item_details = True
-                try:
-                    builder.load_collection()
-                    if builder.created:
-                        stats["created"] += 1
-                        status[mapping_name]["created"] = True
-                    elif items_added > 0 or items_removed > 0:
-                        stats["modified"] += 1
-                        status[mapping_name]["modified"] = True
-                except Failed:
-                    logger.stacktrace()
-                    run_item_details = False
-                    logger.info("")
-                    logger.separator("No Playlist to Update", space=False, border=False)
-                else:
-                    builder.update_details()
-
-                if builder.deleted:
-                    stats["deleted"] += 1
-                    status[mapping_name]["deleted"] = True
+                if valid and builder.builders:
+                    try:
+                        builder.load_collection()
+                        if builder.created:
+                            stats["created"] += 1
+                            status[mapping_name]["status"] = "Created"
+                        elif items_added > 0 or items_removed > 0:
+                            stats["modified"] += 1
+                            status[mapping_name]["status"] = "Modified"
+                    except Failed:
+                        logger.stacktrace()
+                        run_item_details = False
+                        logger.info("")
+                        logger.separator("No Playlist to Update", space=False, border=False)
+                    else:
+                        details_list = builder.update_details()
+                        if details_list:
+                            pre = ""
+                            if status[mapping_name]["status"] != "Unchanged":
+                                pre = f"{status[mapping_name]['status']} and "
+                            status[mapping_name]["status"] = f"{pre}Updated {', '.join(details_list)}"
 
                 if valid and run_item_details and builder.builders and (builder.item_details or builder.custom_sort):
                     try:
@@ -744,7 +751,11 @@ def run_playlists(config):
 
             except NotScheduled as e:
                 logger.info(e)
-                status[mapping_name]["status"] = "Not Scheduled"
+                if str(e).endswith("and was deleted"):
+                    stats["deleted"] += 1
+                    status[mapping_name]["status"] = "Deleted Not Scheduled"
+                else:
+                    status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:
                 config.notify(e, server=server_name, library=library_names, playlist=mapping_name)
                 logger.stacktrace()
@@ -758,7 +769,10 @@ def run_playlists(config):
                 status[mapping_name]["status"] = "Unknown Error"
                 status[mapping_name]["errors"].append(e)
             logger.info("")
-            logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {str(datetime.now() - playlist_start).split('.')[0]}")
+            playlist_run_time = str(datetime.now() - playlist_start).split('.')[0]
+            status[mapping_name]["run_time"] = playlist_run_time
+            logger.info("")
+            logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {playlist_run_time}")
             logger.remove_playlist_handler(playlist_log_name)
     return status, stats
 
