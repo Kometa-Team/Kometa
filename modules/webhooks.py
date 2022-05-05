@@ -32,6 +32,8 @@ class Webhooks:
                             break
             elif webhook.startswith("https://discord.com/api/webhooks"):
                 response = self.config.post(webhook, json=self.discord(json))
+            elif webhook.startswith("https://hooks.slack.com/services"):
+                response = self.config.post(webhook, json=self.slack(json))
             else:
                 response = self.config.post(webhook, json=json)
             if response:
@@ -109,6 +111,103 @@ class Webhooks:
                 "radarr_adds": radarr if radarr else [],
                 "sonarr_adds": sonarr if sonarr else [],
             })
+
+    def slack(self, json):
+        if "end_time" in json:
+            title = ":white_check_mark: Plex Meta Manager Has Finished a Run"
+            rows = [
+                [("*Start Time*", json["start_time"]), ("*End Time*", json["end_time"]), ("*Run Time*", json["run_time"])],
+                [],
+                [
+                    (":heavy_plus_sign: *Collections Created*", json["collections_created"]),
+                    (":infinity: *Collections Modified*", json["collections_modified"]),
+                    (":heavy_minus_sign: *Collections Deleted*", json["collections_deleted"])
+                ]
+            ]
+            if json["added_to_radarr"] or json["added_to_sonarr"]:
+                rows.append([])
+            if json["added_to_radarr"]:
+                rows.append([("*Added To Radarr*", json['added_to_radarr'])])
+            if json["added_to_sonarr"]:
+                rows.append([("*Added To Sonarr*", json['added_to_sonarr'])])
+
+        elif "start_time" in json:
+            title = ":information_source: Plex Meta Manager Has Started!"
+            rows = [[("*Start Time*", json["start_time"])]]
+        elif "current" in json:
+            title = "Plex Meta Manager Has a New Version Available"
+            rows = [
+                [("*Current Version*", json["current"]), ("*Latest Version*", json["latest"])],
+                [(json["notes"], )]
+            ]
+        else:
+            rows = []
+            row1 = []
+            text = ""
+            if "server_name" in json:
+                row1.append(("*Server Name*", json["server_name"]))
+            if "library_name" in json:
+                row1.append(("*Library Name*", json["library_name"]))
+            if "collection" in json:
+                text = "Collection"
+                row1.append(("*Collection Name*", json["collection"]))
+            elif "playlist" in json:
+                text = "Playlist"
+                row1.append(("*Playlist Name*", json["playlist"]))
+            if row1:
+                rows.append(row1)
+            if "error" in json:
+                title = f":warning: Plex Meta Manager Encountered {'a Critical' if json['critical'] else 'an'} Error"
+                rows.append([])
+                rows.append([(json["notes"], )])
+            else:
+                if json["deleted"]:
+                    title = f":heavy_minus_sign: A {text} has Been Deleted!"
+                else:
+                    title = f"{':heavy_plus_sign:' if json['created'] else ':infinity:'} A {text} has Been {'Created' if json['created'] else 'Modified'}!"
+
+                    def get_field_text(items_list):
+                        field_text = ""
+                        for i, item in enumerate(items_list, 1):
+                            if "tmdb_id" in item:
+                                field_text += f"\n{i}. [{item['title']}](https://www.themoviedb.org/movie/{item['tmdb_id']})"
+                            elif "tvdb_id" in item:
+                                field_text += f"\n{i}. [{item['title']}](https://www.thetvdb.com/dereferrer/series/{item['tvdb_id']})"
+                            else:
+                                field_text += f"\n{i}. {item['title']}"
+                        return field_text
+
+                    if json["additions"]:
+                        rows.append([])
+                        rows.append([("*Items Added*", " ")])
+                        rows.append([(get_field_text(json["additions"]), )])
+                    if json["removals"]:
+                        rows.append([])
+                        rows.append([("*Items Removed*", " ")])
+                        rows.append([(get_field_text(json["removals"]), )])
+
+        new_json = {
+            "text": title,
+            "blocks": [{
+                "type": "header",
+                "text": {"type": "plain_text", "text": title}
+            }]
+        }
+
+        if rows:
+            for row in rows:
+                if row:
+                    if len(row[0]) == 1:
+                        new_json["blocks"].append({"type": "section", "text": row[0][0]})
+                    else:
+                        section = {"type": "section", "fields": []}
+                        for col in row:
+                            section["fields"].append({"type": "mrkdwn", "text": col[0]})
+                            section["fields"].append({"type": "plain_text", "text": col[1]})
+                        new_json["blocks"].append(section)
+                else:
+                    new_json["blocks"].append({"type": "divider"})
+        return new_json
 
     def discord(self, json):
         description = None
