@@ -14,9 +14,9 @@ class GitHub:
         response = self.config.get_json(f"{base_url}/releases/latest")
         return response["body"]
 
-    def get_develop_commits(self, dev_version):
+    def get_commits(self, dev_version, nightly=False):
         master_sha = self.config.get_json(f"{base_url}/commits/master")["sha"]
-        response = self.config.get_json(f"{base_url}/commits?sha=develop")
+        response = self.config.get_json(f"{base_url}/commits", params={"sha": "nightly" if nightly else "develop"})
         commits = []
         for commit in response:
             if commit["sha"] == master_sha:

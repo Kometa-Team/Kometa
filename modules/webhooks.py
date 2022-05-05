@@ -55,7 +55,7 @@ class Webhooks:
             if version[1] != latest_version[1]:
                 notes = self.config.GitHub.latest_release_notes()
             elif version[2] and version[2] < latest_version[2]:
-                notes = self.config.GitHub.get_develop_commits(version[2])
+                notes = self.config.GitHub.get_commits(version[2], nightly=self.config.check_nightly)
             self._request(self.version_webhooks, {"current": version[0], "latest": latest_version[0], "notes": notes})
 
     def end_time_hooks(self, start_time, end_time, run_time, stats):
