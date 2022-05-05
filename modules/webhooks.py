@@ -159,7 +159,7 @@ class Webhooks:
             if "error" in json:
                 title = f":warning: Plex Meta Manager Encountered {'a Critical' if json['critical'] else 'an'} Error"
                 rows.append([])
-                rows.append([(json["notes"], )])
+                rows.append([(json["error"], )])
             else:
                 if json["deleted"]:
                     title = f":heavy_minus_sign: A {text} has Been Deleted!"
@@ -249,7 +249,7 @@ class Webhooks:
                 rows.append(row1)
             if "error" in json:
                 title = f"{'Critical ' if json['critical'] else ''}Error"
-                rows.append([("Error Message", json["notes"])])
+                rows.append([("Error Message", json["error"])])
             else:
                 if json["deleted"]:
                     title = f"{text} Deleted"
