@@ -881,7 +881,7 @@ class Plex(Library):
         if asset_directory is None:
             asset_directory = self.asset_directory
 
-        is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist))
+        is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist, str))
         if isinstance(item, Album):
             prefix = f"{item.title} Album {item.title}'s "
             file_name = item.title
@@ -892,7 +892,7 @@ class Plex(Library):
             prefix = f"{item.title} {item.seasonEpisode.upper()}'s "
             file_name = item.seasonEpisode.upper()
         else:
-            prefix = f"{item.title if is_top_level else item}'s "
+            prefix = f"{item if isinstance(item, str) else item.title}'s "
             file_name = "poster"
 
         if not item_asset_directory:
@@ -922,6 +922,7 @@ class Plex(Library):
                             matches = util.glob_filter(os.path.join(new_path, folder_name))
                             if len(matches) > 0:
                                 item_asset_directory = os.path.abspath(matches[0])
+                                break
                 else:
                     matches = util.glob_filter(os.path.join(ad, f"{file_name}.*"))
                     if len(matches) > 0:

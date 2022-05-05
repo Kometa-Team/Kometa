@@ -401,11 +401,11 @@ def update_libraries(config):
                 longest = len(title)
 
     def print_status( status):
-        logger.info(f"{'Title':^{longest}} |  +  |  =  |  -  | Run Time | {'Status'}")
-        breaker = f"{logger.separating_character * longest}|{logger.separating_character * 5}|{logger.separating_character * 5}|{logger.separating_character * 5}|"
+        logger.info(f"{'Title':^{longest}} |   +   |   =   |   -   | Run Time | {'Status'}")
+        breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
         logger.separator(breaker, space=False, border=False, side_space=False, left=True)
         for name, data in status.items():
-            logger.info(f"{name:<{longest}} | {data['added']:^3} | {data['unchanged']:^3} | {data['removed']:^3} | {data['run_time']:>8} | {data['status']}")
+            logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
             if data["errors"]:
                 for error in data["errors"]:
                     logger.info(error)
@@ -416,9 +416,10 @@ def update_libraries(config):
         logger.info("")
         logger.separator(f"{library.name} Summary", space=False, border=False)
         logger.info("")
-        logger.info(f"{'Title':<27} | Run Time")
+        logger.info(f"{'Title':<27} | Run Time |")
+        logger.separator(f"{logger.separating_character * 27}|{logger.separating_character * 10}|", space=False, border=False, side_space=False, left=True)
         for text, value in library_status[library.name].items():
-            logger.info(f"{text:<27} | {value:>8}")
+            logger.info(f"{text:<27} | {value:>8} |")
         logger.info("")
         print_status(library.status)
     if playlist_status:
