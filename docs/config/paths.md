@@ -51,15 +51,38 @@ Below is an example of a scheduled Metadata File, Overlay File, and Playlist Fil
 ```yaml
 libraries:
   Movies:
-    schedule: weekly(saturday)
     metadata_path:
       - file: config/Movies.yml
         schedule: weekly(friday)
+      - git: PMM/actors
+        schedule: weekly(saturday)
+    overlay_path:
+      - git: PMM/overlays/imdb
+        schedule: weekly(monday)
+playlist_files:
+  - file: config/Playlists.yml
+    schedule: weekly(sunday)
+```
+
+### Asset Directory
+
+You can define custom Asset Directories per file by adding `asset_directory` to the file call.
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - file: config/Movies.yml
+        asset_directory: assets/Movies
+      - git: PMM/actors
+        asset_directory: assets/people
     overlay_path:
       - git: PMM/overlays/imdb
 playlist_files:
   - file: config/Playlists.yml
-    schedule: weekly(sunday)
+    asset_directory:
+      - assets/playlists1
+      - assets/playlists2
 ```
 
 ## Metadata Path 

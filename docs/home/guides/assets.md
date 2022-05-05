@@ -19,7 +19,8 @@ settings:
     - config/assets_ahoy
 ```
 
-By default [if no `asset_directory` is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
+* You can specify an Image Asset Directory per Metadata/Playlist/Overlay File when calling the file. See [Path Types](../../config/paths.md#asset-directory) for how to define them.
+* By default [if no `asset_directory` is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
 
 ## How assets are run
 
@@ -33,7 +34,6 @@ Assets are searched for only at specific times.
   settings:
     show_missing_assets: false
   ```
-
 
 ## Asset Naming
 

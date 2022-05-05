@@ -103,7 +103,9 @@ def current_version(version, nightly=False):
         return get_version("nightly")
     elif version[2] > 0:
         new_version = get_version("develop")
-        return get_version("nightly") if new_version[2] < version[2] else new_version
+        if version[1] != new_version[1] or new_version[2] >= version[2]:
+            return new_version
+        return get_version("nightly")
     else:
         return get_version("master")
 
@@ -125,7 +127,8 @@ def add_dict_list(keys, value, dict_map):
         else:
             dict_map[key] = [value]
 
-def get_list(data, lower=False, upper=False, split=",", int_list=False):
+def get_list(data, lower=False, upper=False, split=True, int_list=False):
+    if split is True:               split = ","
     if data is None:                return None
     elif isinstance(data, list):    list_data = data
     elif isinstance(data, dict):    return [data]
@@ -298,9 +301,13 @@ def load_files(files_to_load, method, schedule=None):
             temp_vars = {}
             if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
                 temp_vars = file["template_variables"]
-            asset_directory = None
-            if "asset_directory" in file and file["asset_directory"] and os.path.exists(file["asset_directory"]):
-                asset_directory = file["asset_directory"]
+            asset_directory = []
+            if "asset_directory" in file and file["asset_directory"]:
+                for asset_path in get_list(file["asset_directory"], split=False):
+                    if os.path.exists(asset_path):
+                        asset_directory.append(asset_path)
+                    else:
+                        logger.error(f"Config Error: Asset Directory Does Not Exist: {asset_path}")
 
             current = []
             def check_dict(attr, name):
