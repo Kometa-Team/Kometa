@@ -226,11 +226,13 @@ def start(attrs):
     logger.remove_main_handler()
 
 def update_libraries(config):
+    library_status = {}
     for library in config.libraries:
         if library.skip_library:
             logger.info("")
             logger.separator(f"Skipping {library.name} Library")
             continue
+        library_status[library.name] = {}
         try:
             logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout
@@ -264,27 +266,32 @@ def update_libraries(config):
             logger.debug(f"Timeout: {library.timeout}")
 
             if config.delete_collections:
+                time_start = datetime.now()
                 logger.info("")
                 logger.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
                 logger.info("")
                 for collection in library.get_all_collections():
                     logger.info(f"Collection {collection.title} Deleted")
                     library.query(collection.delete)
+                library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split('.')[0]
 
             temp_items = library.cache_items()
             if not library.is_other and not library.is_music:
+                time_start = datetime.now()
                 logger.info("")
                 logger.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
                 library.map_guids(temp_items)
+                library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
 
             if config.library_first and not config.test_mode and not collection_only:
                 if not overlays_only and library.library_operation:
-                    library.Operations.run_operations()
+                    library_status[library.name]["Library Operations"] = library.Operations.run_operations()
                 if not operations_only and (library.overlay_files or library.remove_overlays):
-                    library.Overlays.run_overlays()
+                    library_status[library.name]["Library Overlays"] = library.Overlays.run_overlays()
 
             if not operations_only and not overlays_only:
+                time_start = datetime.now()
                 for metadata in library.metadata_files:
                     metadata_name = metadata.get_file_name()
                     if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
@@ -310,12 +317,13 @@ def update_libraries(config):
                         logger.remove_library_handler(library.mapping_name)
                         run_collection(config, library, metadata, collections_to_run)
                         logger.re_add_library_handler(library.mapping_name)
+                library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
 
             if not config.library_first and not config.test_mode and not collection_only:
                 if not overlays_only and library.library_operation:
-                    library.Operations.run_operations()
+                    library_status[library.name]["Library Operations"] = library.Operations.run_operations()
                 if not operations_only and (library.overlay_files or library.remove_overlays):
-                    library.Overlays.run_overlays()
+                    library_status[library.name]["Library Overlays"] = library.Overlays.run_overlays()
 
             logger.remove_library_handler(library.mapping_name)
         except Exception as e:
@@ -392,10 +400,7 @@ def update_libraries(config):
             if len(title) > longest:
                 longest = len(title)
 
-    def print_status(section, status):
-        logger.info("")
-        logger.separator(f"{section} Summary", space=False, border=False)
-        logger.info("")
+    def print_status( status):
         logger.info(f"{'Title':^{longest}} |  +  |  =  |  -  | Run Time | {'Status'}")
         breaker = f"{logger.separating_character * longest}|{logger.separating_character * 5}|{logger.separating_character * 5}|{logger.separating_character * 5}|"
         logger.separator(breaker, space=False, border=False, side_space=False, left=True)
@@ -408,9 +413,19 @@ def update_libraries(config):
 
     logger.separator("Summary")
     for library in config.libraries:
-        print_status(library.name, library.status)
+        logger.info("")
+        logger.separator(f"{library.name} Summary", space=False, border=False)
+        logger.info("")
+        logger.info(f"{'Title':<27} | Run Time")
+        for text, value in library_status[library.name].items():
+            logger.info(f"{text:<27} | {value:>8}")
+        logger.info("")
+        print_status(library.status)
     if playlist_status:
-        print_status("Playlists", playlist_status)
+        logger.info("")
+        logger.separator(f"Playlists Summary", space=False, border=False)
+        logger.info("")
+        print_status(playlist_status)
 
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     stats["added"] += amount_added

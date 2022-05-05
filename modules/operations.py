@@ -1,4 +1,5 @@
 import os, re
+from datetime import datetime
 from modules import plex, util
 from modules.util import Failed
 from plexapi.audio import Artist
@@ -13,6 +14,7 @@ class Operations:
         self.library = library
 
     def run_operations(self):
+        operation_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Operations")
         logger.info("")
@@ -499,3 +501,8 @@ class Operations:
                 logger.info(f"{len(meta['metadata'])} {self.library.type.capitalize()}{'s' if len(meta['metadata']) > 1 else ''} Backed Up")
             except yaml.scanner.ScannerError as e:
                 logger.error(f"YAML Error: {util.tab_new_lines(e)}")
+
+        operation_run_time = str(datetime.now() - operation_start).split('.')[0]
+        logger.info("")
+        logger.separator(f"Finished {self.library.name} Library Operations\nOperations Run Time: {operation_run_time}")
+        return operation_run_time
