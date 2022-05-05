@@ -199,7 +199,7 @@ class Operations:
                 if any([o == "tvdb" for o in self.library.meta_operations]):
                     if tvdb_id:
                         try:
-                            tvdb_item = self.config.TVDb.get_item(tvdb_id, self.library.is_movie)
+                            tvdb_item = self.config.TVDb.get_tvdb_obj(tvdb_id, is_movie=self.library.is_movie)
                         except Failed as e:
                             logger.error(str(e))
                     else:
@@ -356,7 +356,7 @@ class Operations:
                         elif mdb_item and self.library.mass_originally_available_update == "mdb":
                             new_date = mdb_item.released
                         elif tvdb_item and self.library.mass_originally_available_update == "tvdb":
-                            new_date = tvdb_item.released
+                            new_date = tvdb_item.release_date
                         elif tmdb_item and self.library.mass_originally_available_update == "tmdb":
                             new_date = tmdb_item.release_date if self.library.is_movie else tmdb_item.first_air_date
                         elif anidb_item and self.library.mass_originally_available_update == "anidb":

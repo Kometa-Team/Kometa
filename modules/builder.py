@@ -832,7 +832,7 @@ class CollectionBuilder:
         elif method_name == "tmdb_biography":
             self.summaries[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, "TMDb Person ID")).biography
         elif method_name == "tvdb_summary":
-            self.summaries[method_name] = self.config.TVDb.get_item(method_data, self.library.is_movie).summary
+            self.summaries[method_name] = self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).summary
         elif method_name == "tvdb_description":
             self.summaries[method_name] = self.config.TVDb.get_list_description(method_data)
         elif method_name == "trakt_description":
@@ -850,7 +850,7 @@ class CollectionBuilder:
         elif method_name == "tmdb_profile":
             self.posters[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, 'TMDb Person ID')).profile_url
         elif method_name == "tvdb_poster":
-            self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).poster_path}"
+            self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).poster_url}"
         elif method_name == "file_poster":
             if os.path.exists(os.path.abspath(method_data)):
                 self.posters[method_name] = os.path.abspath(method_data)
@@ -863,7 +863,7 @@ class CollectionBuilder:
         elif method_name == "tmdb_background":
             self.backgrounds[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).backdrop_url
         elif method_name == "tvdb_background":
-            self.posters[method_name] = f"{self.config.TVDb.get_item(method_data, self.library.is_movie).background_path}"
+            self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).background_url}"
         elif method_name == "file_background":
             if os.path.exists(os.path.abspath(method_data)):
                 self.backgrounds[method_name] = os.path.abspath(method_data)
@@ -1478,11 +1478,11 @@ class CollectionBuilder:
         values = util.get_list(method_data)
         if method_name.endswith("_details"):
             if method_name.startswith(("tvdb_movie", "tvdb_show")):
-                item = self.config.TVDb.get_item(values[0], method_name.startswith("tvdb_movie"))
-                if item.background_path:
-                    self.backgrounds[method_name] = item.background_path
-                if item.poster_path:
-                    self.posters[method_name] = item.poster_path
+                item = self.config.TVDb.get_tvdb_obj(values[0], is_movie=method_name.startswith("tvdb_movie"))
+                if item.background_url:
+                    self.backgrounds[method_name] = item.background_url
+                if item.poster_url:
+                    self.posters[method_name] = item.poster_url
             elif method_name.startswith("tvdb_list"):
                 self.summaries[method_name] = self.config.TVDb.get_list_description(values[0])
         for value in values:
@@ -2293,17 +2293,17 @@ class CollectionBuilder:
             missing_shows_with_names = []
             for missing_id in self.missing_shows:
                 try:
-                    show = self.config.TVDb.get_series(missing_id)
+                    title = self.config.TVDb.get_tvdb_obj(missing_id).title
                 except Failed as e:
                     logger.error(e)
                     continue
                 if self.check_tmdb_filter(missing_id, False, check_released=self.details["missing_only_released"]):
-                    missing_shows_with_names.append((show.title, missing_id))
+                    missing_shows_with_names.append((title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {show.title} (TVDb: {missing_id})")
+                        logger.info(f"{self.name} {self.Type} | ? | {title} (TVDb: {missing_id})")
                 else:
                     if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | X | {show.title} (TVDb: {missing_id})")
+                        logger.info(f"{self.name} {self.Type} | X | {title} (TVDb: {missing_id})")
             logger.info("")
             logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
             if len(missing_shows_with_names) > 0:
@@ -2791,7 +2791,7 @@ class CollectionBuilder:
             for missing_id in self.run_again_shows:
                 if missing_id not in self.library.show_map:
                     try:
-                        title = self.config.TVDb.get_series(missing_id).title
+                        title = self.config.TVDb.get_tvdb_obj(missing_id).title
                     except Failed as e:
                         logger.error(e)
                         continue
