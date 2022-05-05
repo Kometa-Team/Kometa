@@ -1,4 +1,5 @@
 import os, re, time
+from datetime import datetime
 from modules import util
 from modules.builder import CollectionBuilder
 from modules.util import Failed
@@ -16,6 +17,7 @@ class Overlays:
         self.overlays = []
 
     def run_overlays(self):
+        overlay_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Overlays")
         logger.info("")
@@ -169,6 +171,10 @@ class Overlays:
                 except Failed as e:
                     logger.error(e)
         logger.exorcise()
+        overlay_run_time = str(datetime.now() - overlay_start).split('.')[0]
+        logger.info("")
+        logger.separator(f"Finished {self.library.name} Library Overlays\nOverlays Run Time: {overlay_run_time}")
+        return overlay_run_time
 
     def get_item_sort_title(self, item_to_sort, atr="titleSort"):
         if isinstance(item_to_sort, Album):
