@@ -164,6 +164,26 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS tvdb_data (
+                    key INTEGER PRIMARY KEY,
+                    tvdb_id INTEGER UNIQUE,
+                    type TEXT,
+                    title TEXT,
+                    summary TEXT,
+                    poster_url TEXT,
+                    background_url TEXT,
+                    release_date TEXT,
+                    genres TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS tvdb_map (
+                    key INTEGER PRIMARY KEY,
+                    tvdb_url TEXT UNIQUE,
+                    tvdb_id INTEGER,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS anime_map (
                     key INTEGER PRIMARY KEY,
                     anidb TEXT UNIQUE,
@@ -539,6 +559,64 @@ class Cache:
                     obj.status, obj.type, obj.tvdb_id, "|".join([str(c) for c in obj.countries]), "|".join([str(s) for s in obj.seasons]),
                     expiration_date.strftime("%Y-%m-%d"), obj.tmdb_id
                 ))
+
+    def query_tvdb(self, tvdb_id, is_movie, expiration):
+        tvdb_dict = {}
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM tvdb_data WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
+                row = cursor.fetchone()
+                if row:
+                    tvdb_dict["tvdb_id"] = int(row["tvdb_id"]) if row["tvdb_id"] else 0
+                    tvdb_dict["type"] = row["type"] if row["type"] else ""
+                    tvdb_dict["title"] = row["title"] if row["title"] else ""
+                    tvdb_dict["summary"] = row["summary"] if row["summary"] else ""
+                    tvdb_dict["poster_url"] = row["poster_url"] if row["poster_url"] else ""
+                    tvdb_dict["background_url"] = row["background_url"] if row["background_url"] else ""
+                    tvdb_dict["release_date"] = datetime.strptime(row["release_date"], "%Y-%m-%d") if row["release_date"] else None
+                    tvdb_dict["genres"] = row["genres"] if row["genres"] else ""
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    expired = time_between_insertion.days > expiration
+        return tvdb_dict, expired
+
+    def update_tvdb(self, expired, obj, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO tvdb_data(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
+                update_sql = "UPDATE tvdb_data SET title = ?, summary = ?, poster_url = ?, background_url = ?, " \
+                             "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
+                cursor.execute(update_sql, (
+                    obj.title, obj.summary, obj.poster_url, obj.background_url, obj.release_date.strftime("%Y-%m-%d") if obj.release_date else None,
+                    "|".join(obj.genres), expiration_date.strftime("%Y-%m-%d"), obj.tvdb_id, "movie" if obj.is_movie else "show"
+                ))
+
+    def query_tvdb_map(self, tvdb_url, expiration):
+        tvdb_id = None
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM tvdb_map WHERE tvdb_url = ?", (tvdb_url, ))
+                row = cursor.fetchone()
+                if row:
+                    tvdb_id = int(row["tvdb_id"]) if row["tvdb_id"] else None
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    expired = time_between_insertion.days > expiration
+        return tvdb_id, expired
+
+    def update_tvdb_map(self, expired, tvdb_url, tvdb_id, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO tvdb_map(tvdb_url) VALUES(?)", (tvdb_url, ))
+                cursor.execute("UPDATE tvdb_map SET tvdb_id = ?, expiration_date = ? WHERE tvdb_url = ?", (tvdb_id, expiration_date.strftime("%Y-%m-%d"), tvdb_url))
 
     def query_anime_map(self, anime_id, id_type):
         ids = None
