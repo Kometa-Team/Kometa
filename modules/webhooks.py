@@ -30,6 +30,8 @@ class Webhooks:
                         response = self.config.get(url, json=json, params=params)
                         if response.status_code < 500:
                             break
+            elif webhook.startswith("https://discord.com/api/webhooks"):
+                response = self.config.post(webhook, json=self.discord(json))
             else:
                 response = self.config.post(webhook, json=json)
             if response:
@@ -107,3 +109,92 @@ class Webhooks:
                 "radarr_adds": radarr if radarr else [],
                 "sonarr_adds": sonarr if sonarr else [],
             })
+
+    def discord(self, json):
+        description = None
+        rows = []
+        if "end_time" in json:
+            title = "Run Completed"
+            rows = [
+                [("Start Time", json["start_time"]), ("End Time", json["end_time"]), ("Run Time", json["run_time"])],
+                [("Collections", None)],
+                [("Created", json["collections_created"]), ("Modified", json["collections_modified"]), ("Deleted", json["collections_deleted"])]
+            ]
+            if json["added_to_radarr"]:
+                rows.append([(f"{json['added_to_radarr']} Movies Added To Radarr", None)])
+            if json["added_to_sonarr"]:
+                rows.append([(f"{json['added_to_sonarr']} Series Added To Sonarr", None)])
+        elif "start_time" in json:
+            title = "Run Started"
+            description = json["start_time"]
+        elif "current" in json:
+            title = "New Version Available"
+            rows = [
+                [("Current", json["current"]), ("Latest", json["latest"])],
+                [("New Commits", json["notes"])]
+            ]
+        else:
+            row1 = []
+            text = ""
+            if "server_name" in json:
+                row1.append(("Server", json["server_name"]))
+            if "library_name" in json:
+                row1.append(("Library", json["library_name"]))
+            if "collection" in json:
+                text = "Collection"
+                row1.append(("Collection", json["collection"]))
+            elif "playlist" in json:
+                text = "Playlist"
+                row1.append(("Playlist", json["playlist"]))
+            if row1:
+                rows.append(row1)
+            if "error" in json:
+                title = f"{'Critical ' if json['critical'] else ''}Error"
+                rows.append([("Error Message", json["notes"])])
+            else:
+                if json["deleted"]:
+                    title = f"{text} Deleted"
+                else:
+                    title = f"{text} {'Created' if json['created'] else 'Modified'}"
+
+                    def get_field_text(items_list):
+                        field_text = ""
+                        for i, item in enumerate(items_list, 1):
+                            if "tmdb_id" in item:
+                                field_text += f"\n{i}. [{item['title']}](https://www.themoviedb.org/movie/{item['tmdb_id']})"
+                            elif "tvdb_id" in item:
+                                field_text += f"\n{i}. [{item['title']}](https://www.thetvdb.com/dereferrer/series/{item['tvdb_id']})"
+                            else:
+                                field_text += f"\n{i}. {item['title']}"
+                        return field_text
+
+                    if json["additions"]:
+                        rows.append([("Items Added", get_field_text(json["additions"]))])
+                    if json["removals"]:
+                        rows.append([("Items Removed", get_field_text(json["removals"]))])
+        new_json = {
+            "embeds": [
+                {
+                    "title": title,
+                    "color": 844716
+                }
+            ],
+            "username": "Metabot",
+            "avatar_url": "https://github.com/meisnate12/Plex-Meta-Manager/raw/master/.github/pmm.png"
+        }
+        if description:
+            new_json["embeds"][0]["description"] = description
+
+        if rows:
+            fields = []
+            for row in rows:
+                for col in row:
+                    col_name, col_value = col
+                    field = {"name": col_name}
+                    if col_value:
+                        field["value"] = col_value
+                    if len(row) > 1:
+                        field["inline"] = True
+                    fields.append(field)
+            new_json["embeds"][0]["fields"] = fields
+        return new_json
