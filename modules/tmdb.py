@@ -124,7 +124,7 @@ class TMDbMovie(TMDBObj):
         try:
             return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
         except NotFound:
-            Failed(f"TMDb Error: No Movie found for TMDb ID {self.tmdb_id}")
+            raise Failed(f"TMDb Error: No Movie found for TMDb ID {self.tmdb_id}")
 
 
 class TMDbShow(TMDBObj):
@@ -158,7 +158,7 @@ class TMDbShow(TMDBObj):
         try:
             return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
         except NotFound:
-            Failed(f"TMDb Error: No Show found for TMDb ID {self.tmdb_id}")
+            raise Failed(f"TMDb Error: No Show found for TMDb ID {self.tmdb_id}")
 
 class TMDb:
     def __init__(self, config, params):
