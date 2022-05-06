@@ -259,14 +259,14 @@ class Trakt:
                 logger.error(f"Trakt Error: No {id_display} found for {name}")
         return ids
 
-    def all_user_lists(self, user):
+    def all_user_lists(self, user="me"):
         try:
             items = self._request(f"/users/{user}/lists")
         except Failed:
             raise Failed(f"Trakt Error: User {user} not found")
         if len(items) == 0:
             raise Failed(f"Trakt Error: User {user} has no lists")
-        return {self.build_user_url(user, i["ids"]["slug"]): i["name"] for i in items}
+        return [(user, i["ids"]["slug"], i["name"]) for i in items]
 
     def all_liked_lists(self):
         items = self._request(f"/users/likes/lists")
@@ -277,9 +277,10 @@ class Trakt:
     def build_user_url(self, user, name):
         return f"{base_url.replace('api.', '')}/users/{user}/lists/{name}"
 
-    def _list(self, data):
+    def _list(self, data, urlparse=True):
         try:
-            items = self._request(f"{requests.utils.urlparse(data).path}/items")
+            url = requests.utils.urlparse(data).path if urlparse else f"/users/me/lists/{data}"
+            items = self._request(f"{url}/items")
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
         if len(items) == 0:
