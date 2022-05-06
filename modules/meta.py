@@ -94,14 +94,14 @@ class DataFile:
             else:
                 raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
             data, _, _ = yaml.util.load_yaml_guess_indent(content)
-            if not data or not isinstance(data, dict):
-                raise Failed("YAML Error: File is empty")
-            return data
         except yaml.scanner.ScannerError as ye:
             raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
         except Exception as e:
             logger.stacktrace()
             raise Failed(f"YAML Error: {e}")
+        if not data or not isinstance(data, dict):
+            raise Failed("YAML Error: File is empty")
+        return data
 
     def apply_template(self, name, data, template_call):
         if not self.templates:
@@ -452,7 +452,7 @@ class MetadataFile(DataFile):
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
-                                _check_dict(self.config.Trakt.all_user_lists(option))
+                                _check_dict({self.config.Trakt.build_user_url(u[0], u[1]): u[2] for u in self.config.Trakt.all_user_lists(option)})
                         elif auto_type == "trakt_liked_lists":
                             _check_dict(self.config.Trakt.all_liked_lists())
                         elif auto_type == "tmdb_popular_people":
