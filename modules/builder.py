@@ -1662,7 +1662,7 @@ class CollectionBuilder:
                                 rating_keys = pl_library.show_map[tvdb_id]
                                 break
                         if not found and tvdb_id not in self.missing_shows:
-                            self.missing_shows.append(input_id)
+                            self.missing_shows.append(tvdb_id)
                 elif id_type == "tvdb_season" and (self.collection_level == "season" or self.playlist):
                     tvdb_id, season_num = input_id.split("_")
                     tvdb_id = int(tvdb_id)
@@ -2157,7 +2157,7 @@ class CollectionBuilder:
                     if is_movie:
                         item = self.config.TMDb.get_movie(item_id)
                     else:
-                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id))
+                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True))
                 if check_released:
                     date_to_check = item.release_date if is_movie else item.first_air_date
                     if not date_to_check or date_to_check > self.current_time:
@@ -2498,7 +2498,9 @@ class CollectionBuilder:
             add_tags = self.details["label"] if "label" in self.details else None
             remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
             sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
-            batch_display += f"\n{self.library.edit_tags('label', self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, do_print=False)[28:]}"
+            tag_results = self.library.edit_tags('label', self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, do_print=False)[28:]
+            if tag_results:
+                batch_display += f"\n{tag_results}"
 
             logger.info(batch_display)
             if len(batch_display) > 25:
