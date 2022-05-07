@@ -434,11 +434,18 @@ class Plex(Library):
         self.PlexServer.settings.get('cinemaTrailersPrerollID').set(preroll)
         self.PlexServer.settings.save()
 
-    def get_all_collections(self):
-        return self.search(libtype="collection")
+    def get_all_collections(self, label=None):
+        args = "?type=18"
+        if label:
+            label_id = next((c.key for c in self.get_tags("label") if c.title == label), None)
+            if label_id:
+                args = f"{args}&{label_id}"
+            else:
+                return []
+        return self.get_filter_items(args)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def search(self, title=None, libtype=None, sort=None, maxresults=None, **kwargs):
+    def search(self, title=None, sort=None, maxresults=None, libtype=None, **kwargs):
         return self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -575,7 +582,6 @@ class Plex(Library):
             if isinstance(result, Actor) and result.librarySectionID == self.Plex.key and result.tag == name:
                 return result.id
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_search_choices(self, search_name, title=True, name_pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
@@ -583,7 +589,7 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            for choice in self.Plex.listFilterChoices(final_search):
+            for choice in self.get_tags(final_search):
                 if choice.title not in names:
                     names.append((choice.title, choice.key) if name_pairs else choice.title)
                 choices[choice.title] = choice.title if use_title else choice.key

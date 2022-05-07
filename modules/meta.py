@@ -516,7 +516,7 @@ class MetadataFile(DataFile):
                         remove_suffix = util.parse("Config", "remove_suffix", self.temp_vars["remove_suffix"], parent="template_variable", datatype="commalist")
                     elif "remove_suffix" in methods:
                         remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist")
-                    sync = {i.title: i for i in self.library.search(libtype="collection", label=str(map_name))} if sync else {}
+                    sync = {i.title: i for i in self.library.get_all_collections(label=str(map_name))} if sync else {}
                     other_name = None
                     if "other_name" in self.temp_vars and include:
                         other_name = util.parse("Config", "other_name", self.temp_vars["remove_suffix"], parent="template_variable")
