@@ -229,7 +229,7 @@ From here on in, when I say "open the config file", I mean the `nano` or `notepa
 
 Scroll down a bit and update the three things you just collected; Plex URL, Plex Token, and TMDb API Key.
 
-```
+```yaml
 plex:                                           # Can be individually specified per library as well
   url: http://bing.bang.boing                <<< ENTER YOUR PLEX URL
   token: XXXXXXXXXXXXXXXXXXXX                <<< ENTER YOUR PLEX TOKEN
@@ -244,7 +244,7 @@ tmdb:
 
 Now scroll up and look at the top section:
 
-```
+```yaml
 libraries:                                      # Library mappings must have a colon (:) placed after them
   Movies:
     metadata_path:
@@ -265,11 +265,11 @@ You will ultimately need an entry here for each of the libraries on which you wa
 
 For now, delete the “TV Shows” and “Anime” sections and change the name of the “Movies” section to something that is NOT included in your Plex.  I’m using “Movies-HIDDEN":
 
-```
-libraries:                                      # Library mappings must have a colon (:) placed after them
-  Movies-HIDDEN:
+```yaml
+libraries:
+  Movies-HIDDEN:                          ## <<< CHANGE THIS LINE
     metadata_path:
-      - file: config/Movies.yml                 # You have to create this file the other are online
+      - file: config/Movies.yml
       - git: meisnate12/MovieCharts
 ```
 
@@ -332,11 +332,11 @@ Open the config file again and change "Movies-HIDDEN" [or whatever you used in t
 
 My Movies library is called “Main Movies", so mine looks like this:
 
-```
-libraries:                                      # Library mappings must have a colon (:) placed after them
-  Main Movies:
+```yaml
+libraries:
+  Main Movies:                            ## <<< CHANGE THIS LINE
     metadata_path:
-      - file: config/Main Movies.yml                 # You have to create this file the other are online
+      - file: config/Main Movies.yml      ## <<< CHANGE THIS LINE
 ```
 
 NOTE: the matching naming of Library and YML is not actually required, I'm doing it here for clarity.
@@ -424,7 +424,7 @@ First, open the metadata file [this will create the file if it doesn't already e
 
 In this file, add the following, exactly as it is shown here:
 
-```
+```yaml
 templates:
   Actor:
     actor: tmdb
@@ -455,7 +455,7 @@ This is going to create three collections.  One contains movies that feature Bil
 
 The first one is based on a template, so if you wanted to create a collection for another actor you just have to copy and edit those two lines [the ID comes from TMDb].  All the other config details come from the template.
 
-```
+```yaml
    Amy Adams:
      template: {name:  Actor, person: 9273}
 ```
@@ -511,7 +511,7 @@ If you download any of the missing 22 movies on the Vulture list, running PMM wo
 
 Delete these three collections if you want, from both Plex and the metadata file. If you add that “git” line you removed back into the config file:
 
-```
+```yaml
       - git: meisnate12/MovieCharts
 ```
 
