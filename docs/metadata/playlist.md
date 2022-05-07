@@ -6,6 +6,8 @@ If utilized to their fullest, these files can be used to maintain the entire ser
 
 Playlists are defined in one or more Playlist files that are mapped in the [Playlist Files Attribute](../config/libraries.md#playlist-files-attribute) within the Configuration File.
 
+You can use the [`playlist_report` setting](../config/settings.md#playlist-report) to get a list of your playlists printed out in your log. 
+
 These are the attributes which can be utilized within the Playlist File:
 
 | Attribute                                               | Description                                                                                                         |
@@ -38,7 +40,7 @@ playlists:
 
 | Attribute         | Description                                                                                                                                                                                                                                                                                                       | Required |
 |:------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
-| `libraries`       | Determine which libraries the playlist will be built from.<br>**Options:** Comma-separated string or list of library mapping names defined in the `libraries` attribute.                                                                                                                                          | &#9989;  |
+| `libraries`       | Determine which libraries the playlist will be built from.<br>**Options:** Comma-separated string or list of library mapping names defined in the `libraries` attribute in the base of your [Configuration File](../config/configuration).                                                                        | &#9989;  |
 | `sync_to_users`   | Determine which Users have the playlist synced.<br>This will override the global [`playlist_sync_to_users` Setting](../config/settings.md#playlist-sync-to-users).<br>**Options:** Comma-separated string or list of users, `all` for every user who has server access, or leave blank for just the server owner. | &#10060; |
 | `delete_playlist` | Will delete this playlist for the users defined by sync_to_users.<br>**Options:** `true` or `false`                                                                                                                                                                                                               | &#10060; |
 
