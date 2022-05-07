@@ -34,9 +34,15 @@ playlists:
     # ... builder, details, and filters for this playlist
 ```
 
-Playlists require the `libraries` attribute, which instructs the operation to look in the specified libraries. This allows media to be combined from multiple libraries into one playlist. The mappings that you define in the `libraries` attribute must match the library names in your [Configuration File](../config/configuration).
+### Special Playlist Attributes
 
-The playlist can also use the `sync_to_users` attributes to control who has visibility of the playlist. This will override the global [`playlist_sync_to_users` Setting](../config/settings.md#playlist-sync-to-users). `sync_to_users` can be set to `all` to sync to all users who have access to the Plex Media Server, or a list/comma-separated string of users. The Plex Media Server owner will always have visibility of the Playlists, so does not need to be defined within the attribute. Leaving `sync_to_users` empty will make the playlist visible to the Plex Media Server owner only.
+| Attribute         | Description                                                                                                                                                                                                                                                                                                       | Required |
+|:------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
+| `libraries`       | Determine which libraries the playlist will be built from.<br>**Options:** Comma-separated string or list of library mapping names defined in the `libraries` attribute.                                                                                                                                          | &#9989;  |
+| `sync_to_users`   | Determine which Users have the playlist synced.<br>This will override the global [`playlist_sync_to_users` Setting](../config/settings.md#playlist-sync-to-users).<br>**Options:** Comma-separated string or list of users, `all` for every user who has server access, or leave blank for just the server owner. | &#10060; |
+| `delete_playlist` | Will delete this playlist for the users defined by sync_to_users.<br>**Options:** `true` or `false`                                                                                                                                                                                                               | &#10060; |
+
+* Any defined playlist will be always be visible by The Plex Media Server owner, so it doesn't need to be defined within `sync_to_users`.
 
 There are three types of attributes that can be utilized within a playlist:
 

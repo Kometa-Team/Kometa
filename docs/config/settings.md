@@ -51,6 +51,7 @@ The available setting attributes which can be set at each level are outlined bel
 | [`ignore_imdb_ids`](#ignore-imdb-ids)                         |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`item_refresh_delay`](#item-refresh-delay)                   |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`playlist_sync_to_users`](#playlist-sync-to-users)           |   &#9989;    |   &#10060;    |          &#9989;          |
+| [`playlist_report`](#playlist-report)                         |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`custom_repo`](#custom-repo)                                 |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`verify_ssl`](#verify-ssl)                                   |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`check_nightly`](#check-nightly)                             |   &#9989;    |   &#10060;    |         &#10060;          |
@@ -513,9 +514,24 @@ Set the default playlist `sync_to_users`. To Sync a playlist to only yourself le
   </tr>
 </table>
 
+# Playlist Report
+Set `playlist_report` to true to print out a playlist report at the end of the log.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th>Default Value</th>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <th>Allowed Values</th>
+    <td><code>true</code> or <code>false</code>
+  </tr>
+</table>
+
 ## Custom Repo
 Specify where the `repo` attribute's base is when defining `metadata_paths` and `playlist_files`.
 * Ensure you are using the raw GitHub link (i.e. https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12 )
+
 <table class="dualTable colwidths-auto align-default table">
   <tr>
     <th>Default Value</th>

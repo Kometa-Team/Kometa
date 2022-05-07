@@ -450,10 +450,9 @@ class Plex(Library):
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def exact_search(self, title, libtype=None, year=None):
+        terms = {"title=": title}
         if year:
-            terms = {"title=": title, "year": year}
-        else:
-            terms = {"title=": title}
+            terms["year"] = year
         return self.Plex.search(libtype=libtype, **terms)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
@@ -621,6 +620,21 @@ class Plex(Library):
                     users.append(user.title)
             self._users = users
         return self._users
+
+    def delete_user_playlist(self, title, user):
+        self.PlexServer.switchUser(user).playlist(title).delete()
+
+    def playlist_report(self):
+        playlists = {}
+        def scan_user(server, username):
+            for playlist in server.playlists():
+                if playlist.title not in playlists:
+                    playlists[playlist.title] = []
+                playlists[playlist.title].append(username)
+        scan_user(self.PlexServer, self.PlexServer.myPlexAccount().title)
+        for user in self.users:
+            scan_user(self.PlexServer.switchUser(user), user)
+        return playlists
 
     def manage_recommendations(self):
         return [(r.title, r._data.attrib.get('identifier'), r._data.attrib.get('promotedToRecommended'),
