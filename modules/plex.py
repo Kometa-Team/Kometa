@@ -516,9 +516,7 @@ class Plex(Library):
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_mode_query(self, collection, data):
-        if int(collection.collectionMode) not in collection_mode_keys or collection_mode_keys[int(collection.collectionMode)] != data:
-            collection.modeUpdate(mode=data)
-            logger.info(f"Collection Mode | {data}")
+        collection.modeUpdate(mode=data)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def collection_order_query(self, collection, data):

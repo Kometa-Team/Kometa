@@ -315,6 +315,22 @@ class CollectionBuilder:
         self.sync_to_users = None
         self.valid_users = []
         if self.playlist:
+            if "libraries" in methods:
+                logger.debug("")
+                logger.debug("Validating Method: libraries")
+                if not self.data[methods["libraries"]]:
+                    raise Failed(f"{self.Type} Error: libraries attribute is blank")
+                else:
+                    logger.debug(f"Value: {self.data[methods['libraries']]}")
+                    for pl_library in util.get_list(self.data[methods["libraries"]]):
+                        if str(pl_library) in config.library_map:
+                            self.libraries.append(config.library_map[pl_library])
+                        else:
+                            raise Failed(f"Playlist Error: Library: {pl_library} not defined")
+                    self.library = self.libraries[0]
+            else:
+                raise Failed("Playlist Error: libraries attribute is required")
+
             self.sync_to_users = config.general["playlist_sync_to_users"]
             if "sync_to_users" in methods or "sync_to_user" in methods:
                 s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
@@ -346,22 +362,6 @@ class CollectionBuilder:
                 if util.parse(self.Type, "delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False):
                     self.obj = self.library.get_playlist(self.name)
                     logger.info(self.delete())
-
-            if "libraries" in methods:
-                logger.debug("")
-                logger.debug("Validating Method: libraries")
-                if not self.data[methods["libraries"]]:
-                    raise Failed(f"{self.Type} Error: libraries attribute is blank")
-                else:
-                    logger.debug(f"Value: {self.data[methods['libraries']]}")
-                    for pl_library in util.get_list(self.data[methods["libraries"]]):
-                        if str(pl_library) in config.library_map:
-                            self.libraries.append(config.library_map[pl_library])
-                        else:
-                            raise Failed(f"Playlist Error: Library: {pl_library} not defined")
-                    self.library = self.libraries[0]
-            else:
-                raise Failed("Playlist Error: libraries attribute is required")
         else:
             self.libraries.append(self.library)
 
