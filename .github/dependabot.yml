@@ -16,6 +16,7 @@ updates:
     directory: '/'
     schedule:
       interval: daily
+    target-branch: "nightly"
     assignees:
       - "meisnate12"
     ignore:

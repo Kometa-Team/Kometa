@@ -40,8 +40,8 @@ spec:
             runAsGroup: 1000
           containers:
             - name: plex-media-manager
-              image: meisnate12/plex-meta-manager:v1.15.1
-              imagePullPolicy: IfNotFound
+              image: meisnate12/plex-meta-manager:latest
+              imagePullPolicy: IfNotPresent
               args: [ "--run", "--read-only-config" ]
               resources:
                 limits:
@@ -323,7 +323,7 @@ spec:
                   mountPath: /config
           containers:
             - name: plex-media-manager
-              image: meisnate12/plex-meta-manager:v1.15.1
+              image: meisnate12/plex-meta-manager:latest
               imagePullPolicy: Always
               args: [ "--run", "--read-only-config" ]
               resources:
