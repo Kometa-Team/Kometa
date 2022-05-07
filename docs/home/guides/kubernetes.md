@@ -41,7 +41,7 @@ spec:
           containers:
             - name: plex-media-manager
               image: meisnate12/plex-meta-manager:v1.15.1
-              imagePullPolicy: IfNotFound
+              imagePullPolicy: IfNotPresent
               args: [ "--run", "--read-only-config" ]
               resources:
                 limits:
