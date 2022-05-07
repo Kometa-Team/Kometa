@@ -312,7 +312,41 @@ class CollectionBuilder:
                 else:
                     logger.error(f"{self.Type} Error: suppress_overlays attribute is blank")
 
+        self.sync_to_users = None
+        self.valid_users = []
         if self.playlist:
+            self.sync_to_users = config.general["playlist_sync_to_users"]
+            if "sync_to_users" in methods or "sync_to_user" in methods:
+                s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
+                logger.debug("")
+                logger.debug(f"Validating Method: {s_attr}")
+                logger.debug(f"Value: {self.data[methods[s_attr]]}")
+                if self.data[methods[s_attr]]:
+                    self.sync_to_users = self.data[methods[s_attr]]
+                else:
+                    logger.warning(f"Playlist Error: sync_to_users attribute is blank defaulting to playlist_sync_to_users: {self.sync_to_users}")
+            else:
+                logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
+
+            plex_users = self.library.users
+            if self.sync_to_users:
+                if str(self.sync_to_users) == "all":
+                    self.valid_users = plex_users
+                else:
+                    for user in util.get_list(self.sync_to_users):
+                        if user in plex_users:
+                            self.valid_users.append(user)
+                        else:
+                            raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
+
+            if "delete_playlist" in methods:
+                logger.debug("")
+                logger.debug("Validating Method: delete_not_scheduled")
+                logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
+                if util.parse(self.Type, "delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False):
+                    self.obj = self.library.get_playlist(self.name)
+                    logger.info(self.delete())
+
             if "libraries" in methods:
                 logger.debug("")
                 logger.debug("Validating Method: libraries")
@@ -389,8 +423,6 @@ class CollectionBuilder:
         self.exists = False
         self.created = False
         self.deleted = False
-        self.sync_to_users = None
-        self.valid_users = []
 
         if self.playlist:
             server_check = None
@@ -400,30 +432,6 @@ class CollectionBuilder:
                         raise Failed("Playlist Error: All defined libraries must be on the same server")
                 else:
                     server_check = pl_library.PlexServer.machineIdentifier
-
-            self.sync_to_users = config.general["playlist_sync_to_users"]
-            if "sync_to_users" in methods or "sync_to_user" in methods:
-                s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
-                logger.debug("")
-                logger.debug(f"Validating Method: {s_attr}")
-                logger.debug(f"Value: {self.data[methods[s_attr]]}")
-                if self.data[methods[s_attr]]:
-                    self.sync_to_users = self.data[methods[s_attr]]
-                else:
-                    logger.warning(f"Playlist Error: sync_to_users attribute is blank defaulting to playlist_sync_to_users: {self.sync_to_users}")
-            else:
-                logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
-
-            plex_users = self.library.users
-            if self.sync_to_users:
-                if str(self.sync_to_users) == "all":
-                    self.valid_users = plex_users
-                else:
-                    for user in util.get_list(self.sync_to_users):
-                        if user in plex_users:
-                            self.valid_users.append(user)
-                        else:
-                            raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
 
         if "delete_not_scheduled" in methods and not self.overlay:
             logger.debug("")
@@ -2679,11 +2687,6 @@ class CollectionBuilder:
                 self.library.moveItem(self.obj, item, previous)
             previous = item
 
-    def delete_user_playlist(self, title, user):
-        user_server = self.library.PlexServer.switchUser(user)
-        user_playlist = user_server.playlist(title)
-        user_playlist.delete()
-
     def delete(self):
         output = ""
         if self.obj:
@@ -2693,7 +2696,7 @@ class CollectionBuilder:
                 if self.valid_users:
                     for user in self.valid_users:
                         try:
-                            self.delete_user_playlist(self.obj.title, user)
+                            self.library.delete_user_playlist(self.obj.title, user)
                             output += f"\nPlaylist {self.obj.title} deleted on User {user}"
                         except NotFound:
                             output += f"\nPlaylist {self.obj.title} not found on User {user}"
@@ -2706,7 +2709,7 @@ class CollectionBuilder:
             logger.info("")
             for user in self.valid_users:
                 try:
-                    self.delete_user_playlist(self.obj.title, user)
+                    self.library.delete_user_playlist(self.obj.title, user)
                 except NotFound:
                     pass
                 self.obj.copyToUser(user)

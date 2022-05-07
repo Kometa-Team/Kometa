@@ -333,9 +333,28 @@ def update_libraries(config):
 
     playlist_status = {}
     playlist_stats = {}
-    if config.playlist_files:
+    if config.playlist_files or config.general["playlist_report"]:
         logger.add_playlists_handler()
-        playlist_status, playlist_stats = run_playlists(config)
+        if config.playlist_files:
+            playlist_status, playlist_stats = run_playlists(config)
+        if config.general["playlist_report"]:
+            ran = []
+            for library in config.libraries:
+                if library.PlexServer.machineIdentifier in ran:
+                    continue
+                ran.append(library.PlexServer.machineIdentifier)
+                logger.info("")
+                logger.separator(f"{library.PlexServer.friendlyName} Playlist Report")
+                logger.info("")
+                report = library.playlist_report()
+                max_length = 0
+                for playlist_name in report:
+                    if len(playlist_name) > max_length:
+                        max_length = len(playlist_name)
+                logger.info(f"{'Playlist Title':<{max_length}} | Users")
+                logger.separator(f"{logger.separating_character * max_length}|", space=False, border=False, side_space=False, left=True)
+                for playlist_name, users in report.items():
+                    logger.info(f"{playlist_name:<{max_length}} | {'all' if len(users) == len(library.users) + 1 else ', '.join(users)}")
         logger.remove_playlists_handler()
 
     has_run_again = False
@@ -411,13 +430,14 @@ def update_libraries(config):
                     logger.info(error)
                 logger.info("")
 
+    logger.info("")
     logger.separator("Summary")
     for library in config.libraries:
         logger.info("")
         logger.separator(f"{library.name} Summary", space=False, border=False)
         logger.info("")
         logger.info(f"{'Title':<27} | Run Time |")
-        logger.separator(f"{logger.separating_character * 27}|{logger.separating_character * 10}|", space=False, border=False, side_space=False, left=True)
+        logger.info(f"{logger.separating_character * 27} | {logger.separating_character * 8} |")
         for text, value in library_status[library.name].items():
             logger.info(f"{text:<27} | {value:>8} |")
         logger.info("")
