@@ -37,7 +37,7 @@ Assets are searched for only at specific times.
 
 ## Asset Naming
 
-The table below shows the asset folder path structures that will be searched for. There are two options for how Plex Meta Manager looks at the files inside your Asset Directories. Choose an option with the [`asset_folders` Setting Attribute](../../config/settings.md#image-asset-folders).
+The table below shows the asset folder path structures that will be searched for. There are two options for how Plex Meta Manager looks at the files inside your Asset Directories. Choose an option with the [`asset_folders` Setting Attribute](../../config/settings.md#image-asset-folders).  Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
 
 | Image Type                       | Image Path With Folders<br>`asset_folders: true` | Image Path Without Folder<br>`asset_folders: false` |
 |:---------------------------------|:-------------------------------------------------|:----------------------------------------------------|
@@ -60,7 +60,7 @@ The table below shows the asset folder path structures that will be searched for
 
 * Replace `.ext` with the image extension
 
-* When `asset_folders` is set to true you can also nest movie/show folders inside other folders, but you must specify how deep you want to search because the more levels to search the longer it takes.
+* When `asset_folders` is set to `true` movie/show folders can be nested inside other folders, but you must specify how deep you want to search because the more levels to search the longer it takes.
 
 * You can specify how deep you want to scan by using the [`asset_depth` Setting Attribute](../../config/settings.md#asset-depth).
 
