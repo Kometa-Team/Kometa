@@ -1,6 +1,7 @@
-import requests, webbrowser
+import requests, time, webbrowser
 from modules import util
 from modules.util import Failed, TimeoutExpired
+from retrying import retry
 from ruamel import yaml
 
 logger = util.logger
@@ -46,6 +47,7 @@ class Trakt:
         if not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
+        self._slugs = None
         self._movie_genres = None
         self._show_genres = None
         self._movie_languages = None
@@ -54,6 +56,17 @@ class Trakt:
         self._show_countries = None
         self._movie_certifications = None
         self._show_certifications = None
+
+    @property
+    def slugs(self):
+        if self._slugs is None:
+            items = []
+            try:
+                items = [i["ids"]["slug"] for i in self._request(f"/users/me/lists")]
+            except Failed:
+                pass
+            self._slugs = items
+        return self._slugs
 
     @property
     def movie_genres(self):
@@ -175,7 +188,8 @@ class Trakt:
             return True
         return False
 
-    def _request(self, url, params=None):
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    def _request(self, url, params=None, json=None):
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.authorization['access_token']}",
@@ -189,24 +203,28 @@ class Trakt:
         current = 1
         if self.config.trace_mode:
             logger.debug(f"URL: {base_url}{url}")
+            if params:
+                logger.debug(f"Params: {params}")
+            if json:
+                logger.debug(f"JSON: {json}")
         while current <= pages:
-            if pages == 1:
-                response = self.config.get(f"{base_url}{url}", headers=headers, params=params)
-                if "X-Pagination-Page-Count" in response.headers and not params:
-                    pages = int(response.headers["X-Pagination-Page-Count"])
-            else:
+            if pages > 1:
                 params["page"] = current
-                response = self.config.get(f"{base_url}{url}", headers=headers, params=params)
-            if response.status_code == 200:
-                json_data = response.json()
-                if self.config.trace_mode:
-                    logger.debug(f"Response: {json_data}")
-                if isinstance(json_data, dict):
-                    return json_data
-                else:
-                    output_json.extend(response.json())
+            if json is not None:
+                response = self.config.post(f"{base_url}{url}", json=json, headers=headers)
             else:
+                response = self.config.get(f"{base_url}{url}", headers=headers, params=params)
+            if pages == 1 and "X-Pagination-Page-Count" in response.headers:
+                pages = int(response.headers["X-Pagination-Page-Count"])
+            if response.status_code >= 400:
                 raise Failed(f"({response.status_code}) {response.reason}")
+            json_data = response.json()
+            if self.config.trace_mode:
+                logger.debug(f"Response: {json_data}")
+            if isinstance(json_data, dict):
+                return json_data
+            else:
+                output_json.extend(json_data)
             current += 1
         return output_json
 
@@ -229,7 +247,7 @@ class Trakt:
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
 
-    def _parse(self, items, typeless=False, item_type=None):
+    def _parse(self, items, typeless=False, item_type=None, trakt_ids=False):
         ids = []
         for item in items:
             if typeless:
@@ -253,11 +271,54 @@ class Trakt:
                 if current_type in ["person", "list"]:
                     final_id = (final_id, data["name"])
                 final_type = f"{id_type}_{current_type}" if current_type in ["episode", "season", "person"] else id_type
-                ids.append((final_id, final_type))
+                ids.append((int(item["id"]), final_id, final_type) if trakt_ids else (final_id, final_type))
             else:
                 name = data["name"] if current_type in ["person", "list"] else f"{data['title']} ({data['year']})"
                 logger.error(f"Trakt Error: No {id_display} found for {name}")
         return ids
+
+    def _build_item_json(self, ids):
+        data = {}
+        for input_id, id_type in ids:
+            movies = id_type in ["imdb", "tmdb"]
+            shows = id_type in ["imdb", "tvdb", "tmdb_show", "tvdb_season", "tvdb_episode"]
+            if not movies and not shows:
+                continue
+            type_set = str(id_type).split("_")
+            id_set = str(input_id).split("_")
+            item = {"ids": {type_set[0]: id_set[0] if type_set[0] == "imdb" else int(id_set[0])}}
+            if id_type in ["tvdb_season", "tvdb_episode"]:
+                season_data = {"number": int(id_set[1])}
+                if id_type == "tvdb_episode":
+                    season_data["episodes"] = [{"number": int(id_set[2])}]
+                item["seasons"] = [season_data]
+            if movies:
+                if "movies" not in data:
+                    data["movies"] = []
+                data["movies"].append(item)
+            if shows:
+                if "shows" not in data:
+                    data["shows"] = []
+                data["shows"].append(item)
+        return data
+
+    def sync_list(self, slug, ids):
+        current_ids = self._list(slug, urlparse=False)
+
+        add_ids = [id_set for id_set in ids if id_set not in current_ids]
+        if add_ids:
+            self._request(f"/users/me/lists/{slug}/items", json=self._build_item_json(add_ids))
+            time.sleep(1)
+
+        remove_ids = [id_set for id_set in current_ids if id_set not in ids]
+        if remove_ids:
+            self._request(f"/users/me/lists/{slug}/items/remove", json=self._build_item_json(remove_ids))
+            time.sleep(1)
+
+        trakt_ids = self._list(slug, urlparse=False, trakt_ids=True)
+        trakt_lookup = {f"{ty}_{i_id}": t_id for t_id, i_id, ty in trakt_ids}
+        rank_ids = [trakt_lookup[f"{ty}_{i_id}"] for i_id, ty in ids if f"{ty}_{i_id}" in trakt_lookup]
+        self._request(f"/users/me/lists/{slug}/items/reorder", json={"rank": rank_ids})
 
     def all_user_lists(self, user="me"):
         try:
@@ -277,7 +338,7 @@ class Trakt:
     def build_user_url(self, user, name):
         return f"{base_url.replace('api.', '')}/users/{user}/lists/{name}"
 
-    def _list(self, data, urlparse=True):
+    def _list(self, data, urlparse=True, trakt_ids=False):
         try:
             url = requests.utils.urlparse(data).path if urlparse else f"/users/me/lists/{data}"
             items = self._request(f"{url}/items")
@@ -285,7 +346,7 @@ class Trakt:
             raise Failed(f"Trakt Error: List {data} not found")
         if len(items) == 0:
             raise Failed(f"Trakt Error: List {data} is empty")
-        return self._parse(items)
+        return self._parse(items, trakt_ids=trakt_ids)
 
     def _userlist(self, list_type, user, is_movie, sort_by=None):
         try:
