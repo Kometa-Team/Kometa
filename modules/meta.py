@@ -684,59 +684,6 @@ class MetadataFile(DataFile):
         for mapping_name, meta in self.metadata.items():
             methods = {mm.lower(): mm for mm in meta}
 
-            updated = False
-
-            def add_edit(name, current_item, group=None, alias=None, key=None, value=None, var_type="str"):
-                nonlocal updated
-                if value or name in alias:
-                    if value or group[alias[name]]:
-                        if key is None:         key = name
-                        if value is None:       value = group[alias[name]]
-                        try:
-                            current = str(getattr(current_item, key, ""))
-                            final_value = None
-                            if var_type == "date":
-                                final_value = util.validate_date(value, name, return_as="%Y-%m-%d")
-                                current = current[:-9]
-                            elif var_type == "float":
-                                try:
-                                    value = float(str(value))
-                                    if 0 <= value <= 10:
-                                        final_value = value
-                                except ValueError:
-                                    pass
-                                if final_value is None:
-                                    raise Failed(f"Metadata Error: {name} attribute must be a number between 0 and 10")
-                            elif var_type == "int":
-                                try:
-                                    final_value = int(str(value))
-                                except ValueError:
-                                    pass
-                                if final_value is None:
-                                    raise Failed(f"Metadata Error: {name} attribute must be an integer")
-                            else:
-                                final_value = value
-                            if current != str(final_value):
-                                if key == "title":
-                                    current_item.editTitle(final_value)
-                                else:
-                                    current_item.editField(key, final_value)
-                                logger.info(f"Detail: {name} updated to {final_value}")
-                                updated = True
-                        except Failed as ee:
-                            logger.error(ee)
-                    else:
-                        logger.error(f"Metadata Error: {name} attribute is blank")
-
-            def finish_edit(current_item, description):
-                nonlocal updated
-                if updated:
-                    try:
-                        current_item.saveEdits()
-                        logger.info(f"{description} Details Update Successful")
-                    except BadRequest:
-                        logger.error(f"{description} Details Update Failed")
-
             logger.info("")
             if (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
                 if isinstance(mapping_name, int):
@@ -745,16 +692,20 @@ class MetadataFile(DataFile):
                     id_type = "IMDb"
                 logger.separator(f"{id_type} ID: {mapping_name} Metadata", space=False, border=False)
                 logger.info("")
+                item = []
                 if self.library.is_movie and mapping_name in self.library.movie_map:
-                    item = self.library.fetchItem(self.library.movie_map[mapping_name][0])
+                    for item_id in self.library.movie_map[mapping_name]:
+                        item.append(self.library.fetchItem(item_id))
                 elif self.library.is_show and mapping_name in self.library.show_map:
-                    item = self.library.fetchItem(self.library.show_map[mapping_name][0])
+                    for item_id in self.library.show_map[mapping_name]:
+                        item.append(self.library.fetchItem(item_id))
                 elif mapping_name in self.library.imdb_map:
-                    item = self.library.fetchItem(self.library.imdb_map[mapping_name][0])
+                    for item_id in self.library.imdb_map[mapping_name]:
+                        item.append(self.library.fetchItem(item_id))
                 else:
                     logger.error(f"Metadata Error: {id_type} ID not mapped")
                     continue
-                title = item.title
+                title = None
                 if "title" in methods:
                     if meta[methods["title"]] is None:
                         logger.error("Metadata Error: title attribute is blank")
@@ -795,339 +746,396 @@ class MetadataFile(DataFile):
                             item = self.library.search_item(alt_title)
 
                 if item is None:
-                    logger.error(f"Plex Error: Item {mapping_name} not found")
-                    logger.error(f"Skipping {mapping_name}")
+                    logger.error(f"Skipping {mapping_name}: Item {mapping_name} not found")
                     continue
+            if not isinstance(item, list):
+                item = [item]
+            for i in item:
+                self.update_metadata_item(i, title, mapping_name, meta, methods)
 
-                logger.separator(f"{title} Metadata", space=False, border=False)
+    def update_metadata_item(self, item, title, mapping_name, meta, methods):
 
-            tmdb_item = None
-            tmdb_is_movie = None
-            if not self.library.is_music and ("tmdb_show" in methods or "tmdb_id" in methods) and "tmdb_movie" in methods:
-                logger.error("Metadata Error: Cannot use tmdb_movie and tmdb_show when editing the same metadata item")
+        updated = False
 
-            if not self.library.is_music and "tmdb_show" in methods or "tmdb_id" in methods or "tmdb_movie" in methods:
-                try:
-                    if "tmdb_show" in methods or "tmdb_id" in methods:
-                        data = meta[methods["tmdb_show" if "tmdb_show" in methods else "tmdb_id"]]
-                        if data is None:
-                            logger.error("Metadata Error: tmdb_show attribute is blank")
+        def add_edit(name, current_item, group=None, alias=None, key=None, value=None, var_type="str"):
+            nonlocal updated
+            if value or name in alias:
+                if value or group[alias[name]]:
+                    if key is None:         key = name
+                    if value is None:       value = group[alias[name]]
+                    try:
+                        current = str(getattr(current_item, key, ""))
+                        final_value = None
+                        if var_type == "date":
+                            final_value = util.validate_date(value, name, return_as="%Y-%m-%d")
+                            current = current[:-9]
+                        elif var_type == "float":
+                            try:
+                                value = float(str(value))
+                                if 0 <= value <= 10:
+                                    final_value = value
+                            except ValueError:
+                                pass
+                            if final_value is None:
+                                raise Failed(f"Metadata Error: {name} attribute must be a number between 0 and 10")
+                        elif var_type == "int":
+                            try:
+                                final_value = int(str(value))
+                            except ValueError:
+                                pass
+                            if final_value is None:
+                                raise Failed(f"Metadata Error: {name} attribute must be an integer")
                         else:
-                            tmdb_is_movie = False
-                            tmdb_item = self.config.TMDb.get_show(util.regex_first_int(data, "Show"))
-                    elif "tmdb_movie" in methods:
-                        if meta[methods["tmdb_movie"]] is None:
-                            logger.error("Metadata Error: tmdb_movie attribute is blank")
-                        else:
-                            tmdb_is_movie = True
-                            tmdb_item = self.config.TMDb.get_movie(util.regex_first_int(meta[methods["tmdb_movie"]], "Movie"))
-                except Failed as e:
-                    logger.error(e)
-
-            originally_available = None
-            original_title = None
-            rating = None
-            studio = None
-            tagline = None
-            summary = None
-            genres = []
-            if tmdb_item:
-                originally_available = datetime.strftime(tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date, "%Y-%m-%d")
-
-                if tmdb_item.original_title != tmdb_item.title:
-                    original_title = tmdb_item.original_title
-                rating = tmdb_item.vote_average
-                studio = tmdb_item.studio
-                tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
-                summary = tmdb_item.overview
-                genres = tmdb_item.genres
-
-            item.batchEdits()
-            add_edit("title", item, meta, methods, value=title)
-            add_edit("sort_title", item, meta, methods, key="titleSort")
-            add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
-            if not self.library.is_music:
-                add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
-                add_edit("critic_rating", item, meta, methods, value=rating, key="rating", var_type="float")
-                add_edit("audience_rating", item, meta, methods, key="audienceRating", var_type="float")
-                add_edit("content_rating", item, meta, methods, key="contentRating")
-                add_edit("original_title", item, meta, methods, key="originalTitle", value=original_title)
-                add_edit("studio", item, meta, methods, value=studio)
-                add_edit("tagline", item, meta, methods, value=tagline)
-            add_edit("summary", item, meta, methods, value=summary)
-            for tag_edit in util.tags_to_edit[self.library.type]:
-                if self.edit_tags(tag_edit, item, meta, methods, extra=genres if tag_edit == "genre" else None):
-                    updated = True
-            finish_edit(item, f"{self.library.type}: {mapping_name}")
-
-            if self.library.type in util.advance_tags_to_edit:
-                advance_edits = {}
-                prefs = [p.id for p in item.preferences()]
-                for advance_edit in util.advance_tags_to_edit[self.library.type]:
-                    if advance_edit in methods:
-                        if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
-                            logger.error(f"Metadata Error: {advance_edit} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
-                        elif meta[methods[advance_edit]]:
-                            ad_key, options = plex.item_advance_keys[f"item_{advance_edit}"]
-                            method_data = str(meta[methods[advance_edit]]).lower()
-                            if method_data not in options:
-                                logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
-                            elif ad_key in prefs and getattr(item, ad_key) != options[method_data]:
-                                advance_edits[ad_key] = options[method_data]
-                                logger.info(f"Detail: {advance_edit} updated to {method_data}")
-                        else:
-                            logger.error(f"Metadata Error: {advance_edit} attribute is blank")
-                if advance_edits:
-                    if self.library.edit_advance(item, advance_edits):
-                        updated = True
-                        logger.info(f"{mapping_name} Advanced Details Update Successful")
-                    else:
-                        logger.error(f"{mapping_name} Advanced Details Update Failed")
-
-            logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
-
-            self.set_images(item, meta, methods)
-
-            if "seasons" in methods and self.library.is_show:
-                if not meta[methods["seasons"]]:
-                    logger.error("Metadata Error: seasons attribute is blank")
-                elif not isinstance(meta[methods["seasons"]], dict):
-                    logger.error("Metadata Error: seasons attribute must be a dictionary")
-                else:
-                    seasons = {}
-                    for season in item.seasons():
-                        seasons[season.title] = season
-                        seasons[int(season.index)] = season
-                    for season_id, season_dict in meta[methods["seasons"]].items():
-                        updated = False
-                        logger.info("")
-                        logger.info(f"Updating season {season_id} of {mapping_name}...")
-                        if season_id in seasons:
-                            season = seasons[season_id]
-                        else:
-                            logger.error(f"Metadata Error: Season: {season_id} not found")
-                            continue
-                        season_methods = {sm.lower(): sm for sm in season_dict}
-                        season.batchEdits()
-                        add_edit("title", season, season_dict, season_methods)
-                        add_edit("summary", season, season_dict, season_methods)
-                        add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
-                        if self.edit_tags("label", season, season_dict, season_methods):
+                            final_value = value
+                        if current != str(final_value):
+                            if key == "title":
+                                current_item.editTitle(final_value)
+                            else:
+                                current_item.editField(key, final_value)
+                            logger.info(f"Detail: {name} updated to {final_value}")
                             updated = True
-                        finish_edit(season, f"Season: {season_id}")
-                        self.set_images(season, season_dict, season_methods)
-                        logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
-
-                        if "episodes" in season_methods and self.library.is_show:
-                            if not season_dict[season_methods["episodes"]]:
-                                logger.error("Metadata Error: episodes attribute is blank")
-                            elif not isinstance(season_dict[season_methods["episodes"]], dict):
-                                logger.error("Metadata Error: episodes attribute must be a dictionary")
-                            else:
-                                episodes = {}
-                                for episode in season.episodes():
-                                    episodes[episode.title] = episode
-                                    episodes[int(episode.index)] = episode
-                                for episode_str, episode_dict in season_dict[season_methods["episodes"]].items():
-                                    updated = False
-                                    logger.info("")
-                                    logger.info(f"Updating episode {episode_str} in {season_id} of {mapping_name}...")
-                                    if episode_str in episodes:
-                                        episode = episodes[episode_str]
-                                    else:
-                                        logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
-                                        continue
-                                    episode_methods = {em.lower(): em for em in episode_dict}
-                                    episode.batchEdits()
-                                    add_edit("title", episode, episode_dict, episode_methods)
-                                    add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
-                                    add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
-                                    add_edit("audience_rating", episode, episode_dict, episode_methods, key="audienceRating", var_type="float")
-                                    add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
-                                    add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
-                                    add_edit("summary", episode, episode_dict, episode_methods)
-                                    for tag_edit in ["director", "writer", "label"]:
-                                        if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
-                                            updated = True
-                                    finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
-                                    self.set_images(episode, episode_dict, episode_methods)
-                                    logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
-
-            if "episodes" in methods and self.library.is_show:
-                if not meta[methods["episodes"]]:
-                    logger.error("Metadata Error: episodes attribute is blank")
-                elif not isinstance(meta[methods["episodes"]], dict):
-                    logger.error("Metadata Error: episodes attribute must be a dictionary")
+                    except Failed as ee:
+                        logger.error(ee)
                 else:
-                    for episode_str, episode_dict in meta[methods["episodes"]].items():
-                        updated = False
-                        logger.info("")
-                        match = re.search("[Ss]\\d+[Ee]\\d+", episode_str)
-                        if not match:
-                            logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
-                            continue
-                        output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
-                        season_id = int(output[0])
-                        episode_id = int(output[1])
-                        logger.info(f"Updating episode S{season_id}E{episode_id} of {mapping_name}...")
-                        try:
-                            episode = item.episode(season=season_id, episode=episode_id)
-                        except NotFound:
-                            logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
-                            continue
-                        episode_methods = {em.lower(): em for em in episode_dict}
-                        episode.batchEdits()
-                        add_edit("title", episode, episode_dict, episode_methods)
-                        add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
-                        add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
-                        add_edit("audience_rating", episode, episode_dict, episode_methods, key="audienceRating", var_type="float")
-                        add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
-                        add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
-                        add_edit("summary", episode, episode_dict, episode_methods)
-                        for tag_edit in ["director", "writer", "label"]:
-                            if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
-                                updated = True
-                        finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
-                        self.set_images(episode, episode_dict, episode_methods)
-                        logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                    logger.error(f"Metadata Error: {name} attribute is blank")
 
-            if "albums" in methods and self.library.is_music:
-                if not meta[methods["albums"]]:
-                    logger.error("Metadata Error: albums attribute is blank")
-                elif not isinstance(meta[methods["albums"]], dict):
-                    logger.error("Metadata Error: albums attribute must be a dictionary")
-                else:
-                    albums = {album.title: album for album in item.albums()}
-                    for album_name, album_dict in meta[methods["albums"]].items():
-                        updated = False
-                        title = None
-                        album_methods = {am.lower(): am for am in album_dict}
-                        logger.info("")
-                        logger.info(f"Updating album {album_name} of {mapping_name}...")
-                        if album_name in albums:
-                            album = albums[album_name]
-                        elif "alt_title" in album_methods and album_dict[album_methods["alt_title"]] and album_dict[album_methods["alt_title"]] in albums:
-                            album = albums[album_dict[album_methods["alt_title"]]]
-                            title = album_name
-                        else:
-                            logger.error(f"Metadata Error: Album: {album_name} not found")
-                            continue
-                        if not title:
-                            title = album.title
-                        album.batchEdits()
-                        add_edit("title", album, album_dict, album_methods, value=title)
-                        add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
-                        add_edit("critic_rating", album, album_dict, album_methods, key="rating", var_type="float")
-                        add_edit("user_rating", album, album_dict, album_methods, key="userRating", var_type="float")
-                        add_edit("originally_available", album, album_dict, album_methods, key="originallyAvailableAt", var_type="date")
-                        add_edit("record_label", album, album_dict, album_methods, key="studio")
-                        add_edit("summary", album, album_dict, album_methods)
-                        for tag_edit in ["genre", "style", "mood", "collection", "label"]:
-                            if self.edit_tags(tag_edit, album, album_dict, album_methods):
-                                updated = True
-                        finish_edit(album, f"Album: {title}")
-                        self.set_images(album, album_dict, album_methods)
-                        logger.info(f"Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
-
-                        if "tracks" in album_methods:
-                            if not album_dict[album_methods["tracks"]]:
-                                logger.error("Metadata Error: tracks attribute is blank")
-                            elif not isinstance(album_dict[album_methods["tracks"]], dict):
-                                logger.error("Metadata Error: tracks attribute must be a dictionary")
-                            else:
-                                tracks = {}
-                                for track in album.tracks():
-                                    tracks[track.title] = track
-                                    tracks[int(track.index)] = track
-                                for track_num, track_dict in album_dict[album_methods["tracks"]].items():
-                                    updated = False
-                                    title = None
-                                    track_methods = {tm.lower(): tm for tm in track_dict}
-                                    logger.info("")
-                                    logger.info(f"Updating track {track_num} on {album_name} of {mapping_name}...")
-                                    if track_num in tracks:
-                                        track = tracks[track_num]
-                                    elif "alt_title" in track_methods and track_dict[track_methods["alt_title"]] and track_dict[track_methods["alt_title"]] in tracks:
-                                        track = tracks[track_dict[track_methods["alt_title"]]]
-                                        title = track_num
-                                    else:
-                                        logger.error(f"Metadata Error: Track: {track_num} not found")
-                                        continue
-
-                                    if not title:
-                                        title = track.title
-                                    track.batchEdits()
-                                    add_edit("title", track, track_dict, track_methods, value=title)
-                                    add_edit("user_rating", track, track_dict, track_methods, key="userRating", var_type="float")
-                                    add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
-                                    add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
-                                    add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")
-                                    for tag_edit in ["mood", "collection", "label"]:
-                                        if self.edit_tags(tag_edit, track, track_dict, track_methods):
-                                            updated = True
-                                    finish_edit(track, f"Track: {title}")
-                                    logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
-
-            if "f1_season" in methods and self.library.is_show:
-                f1_season = None
-                current_year = datetime.now().year
-                if meta[methods["f1_season"]] is None:
-                    raise Failed("Metadata Error: f1_season attribute is blank")
+        def finish_edit(current_item, description):
+            nonlocal updated
+            if updated:
                 try:
-                    year_value = int(str(meta[methods["f1_season"]]))
-                    if 1950 <= year_value <= current_year:
-                        f1_season = year_value
-                except ValueError:
-                    pass
-                if f1_season is None:
-                    raise Failed(f"Metadata Error: f1_season attribute must be an integer between 1950 and {current_year}")
-                round_prefix = False
-                if "round_prefix" in methods:
-                    if meta[methods["round_prefix"]] is True:
-                        round_prefix = True
+                    current_item.saveEdits()
+                    logger.info(f"{description} Details Update Successful")
+                except BadRequest:
+                    logger.error(f"{description} Details Update Failed")
+
+        tmdb_item = None
+        tmdb_is_movie = None
+        if not self.library.is_music and ("tmdb_show" in methods or "tmdb_id" in methods) and "tmdb_movie" in methods:
+            logger.error("Metadata Error: Cannot use tmdb_movie and tmdb_show when editing the same metadata item")
+
+        if not self.library.is_music and "tmdb_show" in methods or "tmdb_id" in methods or "tmdb_movie" in methods:
+            try:
+                if "tmdb_show" in methods or "tmdb_id" in methods:
+                    data = meta[methods["tmdb_show" if "tmdb_show" in methods else "tmdb_id"]]
+                    if data is None:
+                        logger.error("Metadata Error: tmdb_show attribute is blank")
                     else:
-                        logger.error("Metadata Error: round_prefix must be true to do anything")
-                shorten_gp = False
-                if "shorten_gp" in methods:
-                    if meta[methods["shorten_gp"]] is True:
-                        shorten_gp = True
+                        tmdb_is_movie = False
+                        tmdb_item = self.config.TMDb.get_show(util.regex_first_int(data, "Show"))
+                elif "tmdb_movie" in methods:
+                    if meta[methods["tmdb_movie"]] is None:
+                        logger.error("Metadata Error: tmdb_movie attribute is blank")
                     else:
-                        logger.error("Metadata Error: shorten_gp must be true to do anything")
-                f1_language = None
-                if "f1_language" in methods:
-                    if str(meta[methods["f1_language"]]).lower() in ergast.translations:
-                        f1_language = str(meta[methods["f1_language"]]).lower()
+                        tmdb_is_movie = True
+                        tmdb_item = self.config.TMDb.get_movie(util.regex_first_int(meta[methods["tmdb_movie"]], "Movie"))
+            except Failed as e:
+                logger.error(e)
+
+        originally_available = None
+        original_title = None
+        rating = None
+        studio = None
+        tagline = None
+        summary = None
+        genres = []
+        if tmdb_item:
+            originally_available = datetime.strftime(tmdb_item.release_date if tmdb_is_movie else tmdb_item.first_air_date, "%Y-%m-%d")
+
+            if tmdb_item.original_title != tmdb_item.title:
+                original_title = tmdb_item.original_title
+            rating = tmdb_item.vote_average
+            studio = tmdb_item.studio
+            tagline = tmdb_item.tagline if len(tmdb_item.tagline) > 0 else None
+            summary = tmdb_item.overview
+            genres = tmdb_item.genres
+
+        item.batchEdits()
+        if title:
+            add_edit("title", item, meta, methods, value=title)
+        add_edit("sort_title", item, meta, methods, key="titleSort")
+        add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
+        if not self.library.is_music:
+            add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
+            add_edit("critic_rating", item, meta, methods, value=rating, key="rating", var_type="float")
+            add_edit("audience_rating", item, meta, methods, key="audienceRating", var_type="float")
+            add_edit("content_rating", item, meta, methods, key="contentRating")
+            add_edit("original_title", item, meta, methods, key="originalTitle", value=original_title)
+            add_edit("studio", item, meta, methods, value=studio)
+            add_edit("tagline", item, meta, methods, value=tagline)
+        add_edit("summary", item, meta, methods, value=summary)
+        for tag_edit in util.tags_to_edit[self.library.type]:
+            if self.edit_tags(tag_edit, item, meta, methods, extra=genres if tag_edit == "genre" else None):
+                updated = True
+        finish_edit(item, f"{self.library.type}: {mapping_name}")
+
+        if self.library.type in util.advance_tags_to_edit:
+            advance_edits = {}
+            prefs = [p.id for p in item.preferences()]
+            for advance_edit in util.advance_tags_to_edit[self.library.type]:
+                if advance_edit in methods:
+                    if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
+                        logger.error(f"Metadata Error: {advance_edit} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                    elif meta[methods[advance_edit]]:
+                        ad_key, options = plex.item_advance_keys[f"item_{advance_edit}"]
+                        method_data = str(meta[methods[advance_edit]]).lower()
+                        if method_data not in options:
+                            logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
+                        elif ad_key in prefs and getattr(item, ad_key) != options[method_data]:
+                            advance_edits[ad_key] = options[method_data]
+                            logger.info(f"Detail: {advance_edit} updated to {method_data}")
                     else:
-                        logger.error(f"Metadata Error: f1_language must be a language code PMM has a translation for. Options: {ergast.translations}")
-                logger.info(f"Setting Metadata of {item.title} to F1 Season {f1_season}")
-                races = self.config.Ergast.get_races(f1_season, f1_language)
-                race_lookup = {r.round: r for r in races}
+                        logger.error(f"Metadata Error: {advance_edit} attribute is blank")
+            if advance_edits:
+                if self.library.edit_advance(item, advance_edits):
+                    updated = True
+                    logger.info(f"{mapping_name} Advanced Details Update Successful")
+                else:
+                    logger.error(f"{mapping_name} Advanced Details Update Failed")
+
+        logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+        self.set_images(item, meta, methods)
+
+        if "seasons" in methods and self.library.is_show:
+            if not meta[methods["seasons"]]:
+                logger.error("Metadata Error: seasons attribute is blank")
+            elif not isinstance(meta[methods["seasons"]], dict):
+                logger.error("Metadata Error: seasons attribute must be a dictionary")
+            else:
+                seasons = {}
                 for season in item.seasons():
-                    if not season.seasonNumber:
-                        continue
-                    sprint_weekend = False
-                    for episode in season.episodes():
-                        if "sprint" in episode.locations[0].lower():
-                            sprint_weekend = True
-                            break
-                    if season.seasonNumber in race_lookup:
-                        race = race_lookup[season.seasonNumber]
-                        title = race.format_name(round_prefix, shorten_gp)
-                        updated = False
-                        season.batchEdits()
-                        add_edit("title", season, value=title)
-                        finish_edit(season, f"Season: {title}")
-                        logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Details Update {'Complete' if updated else 'Not Needed'}")
-                        for episode in season.episodes():
-                            if len(episode.locations) > 0:
-                                ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
-                                episode.batchEdits()
-                                add_edit("title", episode, value=ep_title)
-                                add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
-                                finish_edit(episode, f"Season: {season.seasonNumber} Episode: {episode.episodeNumber}")
-                                logger.info(f"Session {episode.title}: Details Update {'Complete' if updated else 'Not Needed'}")
+                    seasons[season.title] = season
+                    seasons[int(season.index)] = season
+                for season_id, season_dict in meta[methods["seasons"]].items():
+                    updated = False
+                    logger.info("")
+                    logger.info(f"Updating season {season_id} of {mapping_name}...")
+                    if season_id in seasons:
+                        season = seasons[season_id]
                     else:
-                        logger.warning(f"Ergast Error: No Round: {season.seasonNumber} for Season {f1_season}")
+                        logger.error(f"Metadata Error: Season: {season_id} not found")
+                        continue
+                    season_methods = {sm.lower(): sm for sm in season_dict}
+                    season.batchEdits()
+                    add_edit("title", season, season_dict, season_methods)
+                    add_edit("summary", season, season_dict, season_methods)
+                    add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
+                    if self.edit_tags("label", season, season_dict, season_methods):
+                        updated = True
+                    finish_edit(season, f"Season: {season_id}")
+                    self.set_images(season, season_dict, season_methods)
+                    logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+                    if "episodes" in season_methods and self.library.is_show:
+                        if not season_dict[season_methods["episodes"]]:
+                            logger.error("Metadata Error: episodes attribute is blank")
+                        elif not isinstance(season_dict[season_methods["episodes"]], dict):
+                            logger.error("Metadata Error: episodes attribute must be a dictionary")
+                        else:
+                            episodes = {}
+                            for episode in season.episodes():
+                                episodes[episode.title] = episode
+                                episodes[int(episode.index)] = episode
+                            for episode_str, episode_dict in season_dict[season_methods["episodes"]].items():
+                                updated = False
+                                logger.info("")
+                                logger.info(f"Updating episode {episode_str} in {season_id} of {mapping_name}...")
+                                if episode_str in episodes:
+                                    episode = episodes[episode_str]
+                                else:
+                                    logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
+                                    continue
+                                episode_methods = {em.lower(): em for em in episode_dict}
+                                episode.batchEdits()
+                                add_edit("title", episode, episode_dict, episode_methods)
+                                add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
+                                add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
+                                add_edit("audience_rating", episode, episode_dict, episode_methods, key="audienceRating", var_type="float")
+                                add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
+                                add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
+                                add_edit("summary", episode, episode_dict, episode_methods)
+                                for tag_edit in ["director", "writer", "label"]:
+                                    if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
+                                        updated = True
+                                finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
+                                self.set_images(episode, episode_dict, episode_methods)
+                                logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+        if "episodes" in methods and self.library.is_show:
+            if not meta[methods["episodes"]]:
+                logger.error("Metadata Error: episodes attribute is blank")
+            elif not isinstance(meta[methods["episodes"]], dict):
+                logger.error("Metadata Error: episodes attribute must be a dictionary")
+            else:
+                for episode_str, episode_dict in meta[methods["episodes"]].items():
+                    updated = False
+                    logger.info("")
+                    match = re.search("[Ss]\\d+[Ee]\\d+", episode_str)
+                    if not match:
+                        logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
+                        continue
+                    output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
+                    season_id = int(output[0])
+                    episode_id = int(output[1])
+                    logger.info(f"Updating episode S{season_id}E{episode_id} of {mapping_name}...")
+                    try:
+                        episode = item.episode(season=season_id, episode=episode_id)
+                    except NotFound:
+                        logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
+                        continue
+                    episode_methods = {em.lower(): em for em in episode_dict}
+                    episode.batchEdits()
+                    add_edit("title", episode, episode_dict, episode_methods)
+                    add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
+                    add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
+                    add_edit("audience_rating", episode, episode_dict, episode_methods, key="audienceRating", var_type="float")
+                    add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
+                    add_edit("originally_available", episode, episode_dict, episode_methods, key="originallyAvailableAt", var_type="date")
+                    add_edit("summary", episode, episode_dict, episode_methods)
+                    for tag_edit in ["director", "writer", "label"]:
+                        if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
+                            updated = True
+                    finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
+                    self.set_images(episode, episode_dict, episode_methods)
+                    logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+        if "albums" in methods and self.library.is_music:
+            if not meta[methods["albums"]]:
+                logger.error("Metadata Error: albums attribute is blank")
+            elif not isinstance(meta[methods["albums"]], dict):
+                logger.error("Metadata Error: albums attribute must be a dictionary")
+            else:
+                albums = {album.title: album for album in item.albums()}
+                for album_name, album_dict in meta[methods["albums"]].items():
+                    updated = False
+                    title = None
+                    album_methods = {am.lower(): am for am in album_dict}
+                    logger.info("")
+                    logger.info(f"Updating album {album_name} of {mapping_name}...")
+                    if album_name in albums:
+                        album = albums[album_name]
+                    elif "alt_title" in album_methods and album_dict[album_methods["alt_title"]] and album_dict[album_methods["alt_title"]] in albums:
+                        album = albums[album_dict[album_methods["alt_title"]]]
+                        title = album_name
+                    else:
+                        logger.error(f"Metadata Error: Album: {album_name} not found")
+                        continue
+                    if not title:
+                        title = album.title
+                    album.batchEdits()
+                    add_edit("title", album, album_dict, album_methods, value=title)
+                    add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
+                    add_edit("critic_rating", album, album_dict, album_methods, key="rating", var_type="float")
+                    add_edit("user_rating", album, album_dict, album_methods, key="userRating", var_type="float")
+                    add_edit("originally_available", album, album_dict, album_methods, key="originallyAvailableAt", var_type="date")
+                    add_edit("record_label", album, album_dict, album_methods, key="studio")
+                    add_edit("summary", album, album_dict, album_methods)
+                    for tag_edit in ["genre", "style", "mood", "collection", "label"]:
+                        if self.edit_tags(tag_edit, album, album_dict, album_methods):
+                            updated = True
+                    finish_edit(album, f"Album: {title}")
+                    self.set_images(album, album_dict, album_methods)
+                    logger.info(f"Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+                    if "tracks" in album_methods:
+                        if not album_dict[album_methods["tracks"]]:
+                            logger.error("Metadata Error: tracks attribute is blank")
+                        elif not isinstance(album_dict[album_methods["tracks"]], dict):
+                            logger.error("Metadata Error: tracks attribute must be a dictionary")
+                        else:
+                            tracks = {}
+                            for track in album.tracks():
+                                tracks[track.title] = track
+                                tracks[int(track.index)] = track
+                            for track_num, track_dict in album_dict[album_methods["tracks"]].items():
+                                updated = False
+                                title = None
+                                track_methods = {tm.lower(): tm for tm in track_dict}
+                                logger.info("")
+                                logger.info(f"Updating track {track_num} on {album_name} of {mapping_name}...")
+                                if track_num in tracks:
+                                    track = tracks[track_num]
+                                elif "alt_title" in track_methods and track_dict[track_methods["alt_title"]] and track_dict[track_methods["alt_title"]] in tracks:
+                                    track = tracks[track_dict[track_methods["alt_title"]]]
+                                    title = track_num
+                                else:
+                                    logger.error(f"Metadata Error: Track: {track_num} not found")
+                                    continue
+
+                                if not title:
+                                    title = track.title
+                                track.batchEdits()
+                                add_edit("title", track, track_dict, track_methods, value=title)
+                                add_edit("user_rating", track, track_dict, track_methods, key="userRating", var_type="float")
+                                add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
+                                add_edit("disc", track, track_dict, track_methods, key="parentIndex", var_type="int")
+                                add_edit("original_artist", track, track_dict, track_methods, key="originalTitle")
+                                for tag_edit in ["mood", "collection", "label"]:
+                                    if self.edit_tags(tag_edit, track, track_dict, track_methods):
+                                        updated = True
+                                finish_edit(track, f"Track: {title}")
+                                logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+
+        if "f1_season" in methods and self.library.is_show:
+            f1_season = None
+            current_year = datetime.now().year
+            if meta[methods["f1_season"]] is None:
+                raise Failed("Metadata Error: f1_season attribute is blank")
+            try:
+                year_value = int(str(meta[methods["f1_season"]]))
+                if 1950 <= year_value <= current_year:
+                    f1_season = year_value
+            except ValueError:
+                pass
+            if f1_season is None:
+                raise Failed(f"Metadata Error: f1_season attribute must be an integer between 1950 and {current_year}")
+            round_prefix = False
+            if "round_prefix" in methods:
+                if meta[methods["round_prefix"]] is True:
+                    round_prefix = True
+                else:
+                    logger.error("Metadata Error: round_prefix must be true to do anything")
+            shorten_gp = False
+            if "shorten_gp" in methods:
+                if meta[methods["shorten_gp"]] is True:
+                    shorten_gp = True
+                else:
+                    logger.error("Metadata Error: shorten_gp must be true to do anything")
+            f1_language = None
+            if "f1_language" in methods:
+                if str(meta[methods["f1_language"]]).lower() in ergast.translations:
+                    f1_language = str(meta[methods["f1_language"]]).lower()
+                else:
+                    logger.error(f"Metadata Error: f1_language must be a language code PMM has a translation for. Options: {ergast.translations}")
+            logger.info(f"Setting Metadata of {item.title} to F1 Season {f1_season}")
+            races = self.config.Ergast.get_races(f1_season, f1_language)
+            race_lookup = {r.round: r for r in races}
+            for season in item.seasons():
+                if not season.seasonNumber:
+                    continue
+                sprint_weekend = False
+                for episode in season.episodes():
+                    if "sprint" in episode.locations[0].lower():
+                        sprint_weekend = True
+                        break
+                if season.seasonNumber in race_lookup:
+                    race = race_lookup[season.seasonNumber]
+                    title = race.format_name(round_prefix, shorten_gp)
+                    updated = False
+                    season.batchEdits()
+                    add_edit("title", season, value=title)
+                    finish_edit(season, f"Season: {title}")
+                    logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Details Update {'Complete' if updated else 'Not Needed'}")
+                    for episode in season.episodes():
+                        if len(episode.locations) > 0:
+                            ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
+                            episode.batchEdits()
+                            add_edit("title", episode, value=ep_title)
+                            add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
+                            finish_edit(episode, f"Season: {season.seasonNumber} Episode: {episode.episodeNumber}")
+                            logger.info(f"Session {episode.title}: Details Update {'Complete' if updated else 'Not Needed'}")
+                else:
+                    logger.warning(f"Ergast Error: No Round: {season.seasonNumber} for Season {f1_season}")
 
 
 class PlaylistFile(DataFile):
@@ -1143,6 +1151,7 @@ class PlaylistFile(DataFile):
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info(f"Playlist File Loaded Successfully")
+
 
 class OverlayFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
