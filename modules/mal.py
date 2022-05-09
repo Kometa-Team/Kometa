@@ -240,13 +240,13 @@ class MyAnimeList:
             mal_ids = self._ranked(mal_ranked_name[method], data)
         elif method == "mal_search":
             logger.info(f"Processing {data[1]}")
-            mal_ids = self._pagination("anime", params=data[0], limit=data[2])
+            mal_ids = [mal_data["mal_id"] for mal_data in self._pagination("anime", params=data[0], limit=data[2])]
         elif method == "mal_genre":
             logger.info(f"Processing {mal_ranked_pretty[method]} ID: {data['genre_id']}")
-            mal_ids = self._pagination("anime", params={"genres": data["genre_id"]}, limit=data["limit"])
+            mal_ids = [mal_data["mal_id"] for mal_data in self._pagination("anime", params={"genres": data["genre_id"]}, limit=data["limit"])]
         elif method == "mal_studio":
             logger.info(f"Processing {mal_ranked_pretty[method]} ID: {data['studio_id']}")
-            mal_ids = self._pagination("anime", params={"producers": data["studio_id"]}, limit=data["limit"])
+            mal_ids = [mal_data["mal_id"] for mal_data in self._pagination("anime", params={"producers": data["studio_id"]}, limit=data["limit"])]
         elif method == "mal_season":
             logger.info(f"Processing MyAnimeList Season: {data['limit']} Anime from {data['season'].title()} {data['year']} sorted by {pretty_names[data['sort_by']]}")
             mal_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])

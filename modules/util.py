@@ -127,7 +127,7 @@ def add_dict_list(keys, value, dict_map):
         else:
             dict_map[key] = [value]
 
-def get_list(data, lower=False, upper=False, split=True, int_list=False):
+def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True):
     if split is True:               split = ","
     if data is None:                return None
     elif isinstance(data, list):    list_data = data
@@ -135,12 +135,15 @@ def get_list(data, lower=False, upper=False, split=True, int_list=False):
     elif split is False:            list_data = [str(data)]
     else:                           list_data = str(data).split(split)
 
-    if lower is True:               return [str(d).strip().lower() for d in list_data]
-    elif upper is True:             return [str(d).strip().upper() for d in list_data]
+    def get_str(input_data):
+        return str(input_data).strip() if trim else str(input_data)
+
+    if lower is True:               return [get_str(d).lower() for d in list_data]
+    elif upper is True:             return [get_str(d).upper() for d in list_data]
     elif int_list is True:
-        try:                            return [int(str(d).strip()) for d in list_data]
+        try:                            return [int(get_str(d)) for d in list_data]
         except ValueError:              return []
-    else:                           return [d if isinstance(d, dict) else str(d).strip() for d in list_data]
+    else:                           return [d if isinstance(d, dict) else get_str(d) for d in list_data]
 
 def get_int_list(data, id_type):
     int_values = []

@@ -305,20 +305,48 @@ class Trakt:
     def sync_list(self, slug, ids):
         current_ids = self._list(slug, urlparse=False)
 
+        def read_result(data, obj_type, result_type, result_str=None):
+            result_str = result_str if result_str else result_type.capitalize()
+            if data[result_type][obj_type] > 0:
+                logger.info(f"{data[result_type][obj_type]} {obj_type.capitalize()} {result_str}")
+
+        def read_not_found(data, result_str):
+            not_found = []
+            for item in data["not_found"]["movies"]:
+                not_found.append((item["ids"]["tmdb"], "tmdb"))
+            for item in data["not_found"]["shows"]:
+                not_found.append((item["ids"]["tvdb"], "tvdb"))
+            for item in data["not_found"]["seasons"]:
+                not_found.append((f"{item['ids']['tvdb']}_{item['seasons'][0]['number']}", "tvdb_season"))
+            for item in data["not_found"]["episodes"]:
+                not_found.append((f"{item['ids']['tvdb']}_{item['seasons'][0]['number']}_{item['seasons'][0]['episodes'][0]['number']}", "tvdb_episode"))
+            if not_found:
+                logger.error(f"{len(not_found)} Items Unable to {result_str}: {not_found}")
+
         add_ids = [id_set for id_set in ids if id_set not in current_ids]
         if add_ids:
-            self._request(f"/users/me/lists/{slug}/items", json=self._build_item_json(add_ids))
+            logger.info("")
+            results = self._request(f"/users/me/lists/{slug}/items", json=self._build_item_json(add_ids))
+            for object_type in ["movies", "shows", "seasons", "episodes"]:
+                read_result(results, object_type, "added")
+            read_not_found(results, "Add")
             time.sleep(1)
 
         remove_ids = [id_set for id_set in current_ids if id_set not in ids]
         if remove_ids:
-            self._request(f"/users/me/lists/{slug}/items/remove", json=self._build_item_json(remove_ids))
+            logger.info("")
+            results = self._request(f"/users/me/lists/{slug}/items/remove", json=self._build_item_json(remove_ids))
+            for object_type in ["movies", "shows", "seasons", "episodes"]:
+                read_result(results, object_type, "deleted", "Removed")
+            read_not_found(results, "Remove")
             time.sleep(1)
 
         trakt_ids = self._list(slug, urlparse=False, trakt_ids=True)
         trakt_lookup = {f"{ty}_{i_id}": t_id for t_id, i_id, ty in trakt_ids}
         rank_ids = [trakt_lookup[f"{ty}_{i_id}"] for i_id, ty in ids if f"{ty}_{i_id}" in trakt_lookup]
         self._request(f"/users/me/lists/{slug}/items/reorder", json={"rank": rank_ids})
+        logger.info("")
+        logger.info("Trakt List Ordered Successfully")
 
     def all_user_lists(self, user="me"):
         try:
