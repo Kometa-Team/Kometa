@@ -419,6 +419,7 @@ class CollectionBuilder:
         self.url_theme = None
         self.file_theme = None
         self.sync_to_trakt_list = None
+        self.sync_missing_to_trakt_list = False
         self.collection_poster = None
         self.collection_background = None
         self.exists = False
@@ -753,7 +754,7 @@ class CollectionBuilder:
                     self._tautulli(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
-                elif method_name in trakt.builders or method_name == "sync_to_trakt_list":
+                elif method_name in trakt.builders or method_name in ["sync_to_trakt_list", "sync_missing_to_trakt_list"]:
                     self._trakt(method_name, method_data)
                 elif method_name in tvdb.builders:
                     self._tvdb(method_name, method_data)
@@ -1465,6 +1466,8 @@ class CollectionBuilder:
             if method_data not in self.config.Trakt.slugs:
                 raise Failed(f"{self.Type} Error: {method_data} invalid. Options {', '.join(self.config.Trakt.slugs)}")
             self.sync_to_trakt_list = method_data
+        elif method_name == "sync_missing_to_trakt_list":
+            self.sync_missing_to_trakt_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
         elif method_name in trakt.builders:
             if method_name in ["trakt_chart", "trakt_userlist"]:
                 trakt_dicts = method_data
@@ -1982,7 +1985,7 @@ class CollectionBuilder:
                     else:
                         final_values.append(value)
             else:
-                final_values = util.get_list(data)
+                final_values = util.get_list(data, trim=False)
             search_choices, names = self.library.get_search_choices(attribute, title=not plex_search)
             valid_list = []
             for value in final_values:
@@ -2714,6 +2717,9 @@ class CollectionBuilder:
                 if new_id:
                     current_ids.append(new_id)
                     break
+        if self.sync_missing_to_trakt_list:
+            current_ids.extend([(mm, "tmdb") for mm in self.missing_movies])
+            current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
     def delete(self):
