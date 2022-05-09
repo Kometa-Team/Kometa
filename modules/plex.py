@@ -849,19 +849,15 @@ class Plex(Library):
                 return d
         return None
 
-    def edit_item(self, item, name, item_type, edits, advanced=False):
-        if len(edits) > 0:
-            logger.debug(f"Details Update: {edits}")
-            try:
-                self.edit_query(item, edits, advanced=advanced)
-                if advanced and ("languageOverride" in edits or "useOriginalTitle" in edits):
-                    self.query(item.refresh)
-                logger.info(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Successful")
-                return True
-            except BadRequest:
-                logger.stacktrace()
-                logger.error(f"{item_type}: {name}{' Advanced' if advanced else ''} Details Update Failed")
-        return False
+    def edit_advance(self, item, edits):
+        try:
+            self.edit_query(item, edits, advanced=True)
+            if "languageOverride" in edits or "useOriginalTitle" in edits:
+                self.query(item.refresh)
+            return True
+        except BadRequest:
+            logger.stacktrace()
+            return False
 
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True):
         display = ""

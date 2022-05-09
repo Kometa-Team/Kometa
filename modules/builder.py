@@ -2395,7 +2395,12 @@ class CollectionBuilder:
                         key, options = plex.item_advance_keys[method_name]
                         if key in prefs and getattr(item, key) != options[method_data]:
                             advance_edits[key] = options[method_data]
-                self.library.edit_item(item, item.title, self.collection_level.capitalize(), advance_edits, advanced=True)
+                if advance_edits:
+                    logger.debug(f"Details Update: {advance_edits}")
+                    if self.library.edit_advance(item, advance_edits):
+                        logger.info(f"{item.title} Advanced Details Update Successful")
+                    else:
+                        logger.error(f"{item.title} Advanced Details Update Failed")
 
             if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
                 try:

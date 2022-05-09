@@ -59,7 +59,24 @@ metadata:
 
 ## Shows
 
-Each show is defined by the mapping name which must be the same as the show name in the library unless an `alt_title` is specified.
+Each metadata definition is defined by the mapping name which can link to a show in multiple ways.
+
+* Mapping name must match the show name in Plex exactly unless an `alt_title` is specified.
+* Mapping name must match the TVDb ID or IMDb ID mapped to the show.
+
+**Note:** to search for a show titled with a number surround the number in quotes like in the example below.
+
+```yaml
+metadata:
+  Game of Thrones:  # Matches via the Name "Game of Thrones"
+    edits...
+  366524:           # Matches via TVDb ID: 366524
+    edits...
+  tt10234724:       # Matches via IMDb ID: tt10234724
+    edits...
+  "24":             # Matches via the Name "24" 
+    edits...
+```
 
 ### Seasons
 

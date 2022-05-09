@@ -126,7 +126,7 @@ class Library(ABC):
                     if meta_obj.collections:
                         self.collections.extend([c for c in meta_obj.collections])
                     if meta_obj.metadata:
-                        self.metadatas.extend([c for c in meta_obj.metadata])
+                        self.metadatas.extend([m for m in meta_obj.metadata])
                     self.metadata_files.append(meta_obj)
                 except Failed as e:
                     logger.error(e)
@@ -275,8 +275,6 @@ class Library(ABC):
         return items
 
     def map_guids(self, items):
-        logger.separator(f"Mapping {self.type} Library: {self.name}", space=False, border=False)
-        logger.info("")
         for i, item in enumerate(items, 1):
             logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
             if item.ratingKey not in self.movie_rating_key_map and item.ratingKey not in self.show_rating_key_map:

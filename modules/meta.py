@@ -33,7 +33,7 @@ default_templates = {
     "trakt_people_list": {"tmdb_person": f"<<value>>", "plex_search": {"all": {"actor": "tmdb"}}}
 }
 
-def get_dict(attribute, attr_data, check_list=None, lower=False):
+def get_dict(attribute, attr_data, check_list=None, make_str=False):
     if check_list is None:
         check_list = []
     if attr_data and attribute in attr_data:
@@ -41,8 +41,9 @@ def get_dict(attribute, attr_data, check_list=None, lower=False):
             if isinstance(attr_data[attribute], dict):
                 new_dict = {}
                 for _name, _data in attr_data[attribute].items():
-                    if lower and str(_name).lower() in check_list or not lower and _name in check_list:
-                        logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {str(_name).lower() if lower else _name}")
+                    if make_str and str(_name) in check_list or not make_str and _name in check_list:
+                        new_name = f'"{str(_name)}"' if make_str or not isinstance(_name, int) else _name
+                        logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {new_name}")
                     elif _data is None:
                         logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
                     elif not isinstance(_data, dict):
@@ -50,7 +51,7 @@ def get_dict(attribute, attr_data, check_list=None, lower=False):
                     elif attribute == "templates":
                         new_dict[str(_name)] = (_data, {})
                     else:
-                        new_dict[str(_name)] = _data
+                        new_dict[str(_name) if make_str else _name] = _data
                 return new_dict
             else:
                 logger.error(f"Config Error: {attribute} must be a dictionary")
@@ -737,45 +738,68 @@ class MetadataFile(DataFile):
                         logger.error(f"{description} Details Update Failed")
 
             logger.info("")
-            logger.separator()
-            logger.info("")
-            year = None
-            if "year" in methods and not self.library.is_music:
-                if meta[methods["year"]] is None:
-                    raise Failed("Metadata Error: year attribute is blank")
-                try:
-                    year_value = int(str(meta[methods["year"]]))
-                    if 1800 <= year_value <= next_year:
-                        year = year_value
-                except ValueError:
-                    pass
-                if year is None:
-                    raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
-
-            title = mapping_name
-            if "title" in methods:
-                if meta[methods["title"]] is None:
-                    logger.error("Metadata Error: title attribute is blank")
+            if (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
+                if isinstance(mapping_name, int):
+                    id_type = "TMDb" if self.library.is_movie else "TVDb"
                 else:
-                    title = meta[methods["title"]]
-
-            item = self.library.search_item(title, year=year)
-
-            if item is None and "alt_title" in methods:
-                if meta[methods["alt_title"]] is None:
-                    logger.error("Metadata Error: alt_title attribute is blank")
+                    id_type = "IMDb"
+                logger.separator(f"{id_type} ID: {mapping_name} Metadata", space=False, border=False)
+                logger.info("")
+                if self.library.is_movie and mapping_name in self.library.movie_map:
+                    item = self.library.fetchItem(self.library.movie_map[mapping_name][0])
+                elif self.library.is_show and mapping_name in self.library.show_map:
+                    item = self.library.fetchItem(self.library.show_map[mapping_name][0])
+                elif mapping_name in self.library.imdb_map:
+                    item = self.library.fetchItem(self.library.imdb_map[mapping_name][0])
                 else:
-                    alt_title = meta["alt_title"]
-                    item = self.library.search_item(alt_title, year=year)
-                    if item is None:
-                        item = self.library.search_item(alt_title)
+                    logger.error(f"Metadata Error: {id_type} ID not mapped")
+                    continue
+                title = item.title
+                if "title" in methods:
+                    if meta[methods["title"]] is None:
+                        logger.error("Metadata Error: title attribute is blank")
+                    else:
+                        title = meta[methods["title"]]
+            else:
+                logger.separator(f"{mapping_name} Metadata", space=False, border=False)
+                logger.info("")
+                year = None
+                if "year" in methods and not self.library.is_music:
+                    if meta[methods["year"]] is None:
+                        raise Failed("Metadata Error: year attribute is blank")
+                    try:
+                        year_value = int(str(meta[methods["year"]]))
+                        if 1800 <= year_value <= next_year:
+                            year = year_value
+                    except ValueError:
+                        pass
+                    if year is None:
+                        raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
 
-            if item is None:
-                logger.error(f"Plex Error: Item {mapping_name} not found")
-                logger.error(f"Skipping {mapping_name}")
-                continue
+                title = mapping_name
+                if "title" in methods:
+                    if meta[methods["title"]] is None:
+                        logger.error("Metadata Error: title attribute is blank")
+                    else:
+                        title = meta[methods["title"]]
 
-            logger.info(f"Updating {self.library.type}: {title}...")
+                item = self.library.search_item(title, year=year)
+
+                if item is None and "alt_title" in methods:
+                    if meta[methods["alt_title"]] is None:
+                        logger.error("Metadata Error: alt_title attribute is blank")
+                    else:
+                        alt_title = meta[methods["alt_title"]]
+                        item = self.library.search_item(alt_title, year=year)
+                        if item is None:
+                            item = self.library.search_item(alt_title)
+
+                if item is None:
+                    logger.error(f"Plex Error: Item {mapping_name} not found")
+                    logger.error(f"Skipping {mapping_name}")
+                    continue
+
+                logger.separator(f"{title} Metadata", space=False, border=False)
 
             tmdb_item = None
             tmdb_is_movie = None
@@ -853,8 +877,12 @@ class MetadataFile(DataFile):
                                 logger.info(f"Detail: {advance_edit} updated to {method_data}")
                         else:
                             logger.error(f"Metadata Error: {advance_edit} attribute is blank")
-                if self.library.edit_item(item, mapping_name, self.library.type, advance_edits, advanced=True):
-                    updated = True
+                if advance_edits:
+                    if self.library.edit_advance(item, advance_edits):
+                        updated = True
+                        logger.info(f"{mapping_name} Advanced Details Update Successful")
+                    else:
+                        logger.error(f"{mapping_name} Advanced Details Update Failed")
 
             logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
