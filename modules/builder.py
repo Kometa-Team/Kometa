@@ -418,6 +418,7 @@ class CollectionBuilder:
         self.current_year = self.current_time.year
         self.url_theme = None
         self.file_theme = None
+        self.sync_to_trakt_list = None
         self.collection_poster = None
         self.collection_background = None
         self.exists = False
@@ -752,7 +753,7 @@ class CollectionBuilder:
                     self._tautulli(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
-                elif method_name in trakt.builders:
+                elif method_name in trakt.builders or method_name == "sync_to_trakt_list":
                     self._trakt(method_name, method_data)
                 elif method_name in tvdb.builders:
                     self._tvdb(method_name, method_data)
@@ -1460,6 +1461,10 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: {method_name} must be set to true")
         elif method_name == "trakt_recommendations":
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100)))
+        elif method_name == "sync_to_trakt_list":
+            if method_data not in self.config.Trakt.slugs:
+                raise Failed(f"{self.Type} Error: {method_data} invalid. Options {', '.join(self.config.Trakt.slugs)}")
+            self.sync_to_trakt_list = method_data
         elif method_name in trakt.builders:
             if method_name in ["trakt_chart", "trakt_userlist"]:
                 trakt_dicts = method_data
@@ -2686,6 +2691,30 @@ class CollectionBuilder:
                 logger.info(f"Moving {util.item_title(item)} {text}")
                 self.library.moveItem(self.obj, item, previous)
             previous = item
+
+    def sync_trakt_list(self):
+        logger.info("")
+        logger.separator(f"Syncing {self.name} {self.Type} to Trakt List {self.sync_to_trakt_list}", space=False, border=False)
+        logger.info("")
+        if self.obj:
+            self.obj.reload()
+        self.load_collection_items()
+        current_ids = []
+        for item in self.items:
+            for pl_library in self.libraries:
+                new_id = None
+                if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
+                    new_id = (pl_library.movie_rating_key_map[item.ratingKey], "tmdb")
+                elif isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
+                    new_id = (pl_library.show_rating_key_map[item.ratingKey], "tvdb")
+                elif isinstance(item, Season) and item.parentRatingKey in pl_library.show_rating_key_map:
+                    new_id = (f"{pl_library.show_rating_key_map[item.parentRatingKey]}_{item.seasonNumber}", "tvdb_season")
+                elif isinstance(item, Episode) and item.grandparentRatingKey in pl_library.show_rating_key_map:
+                    new_id = (f"{pl_library.show_rating_key_map[item.grandparentRatingKey]}_{item.seasonNumber}_{item.episodeNumber}", "tvdb_episode")
+                if new_id:
+                    current_ids.append(new_id)
+                    break
+        self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
     def delete(self):
         output = ""
