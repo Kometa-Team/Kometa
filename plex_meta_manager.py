@@ -419,7 +419,7 @@ def update_libraries(config):
             if len(title) > longest:
                 longest = len(title)
 
-    def print_status( status):
+    def print_status(status):
         logger.info(f"{'Title':^{longest}} |   +   |   =   |   -   | Run Time | {'Status'}")
         breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
         logger.separator(breaker, space=False, border=False, side_space=False, left=True)

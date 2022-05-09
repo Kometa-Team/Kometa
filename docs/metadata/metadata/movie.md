@@ -78,7 +78,24 @@ metadata:
 
 ## Movies
 
-Each movie is defined by the mapping name which must be the same as the movie name in the library unless an `alt_title` is specified.
+Each metadata definition is defined by the mapping name which can link to a movie in multiple ways.
+
+* Mapping name must match the movie name in Plex exactly unless an `alt_title` is specified.
+* Mapping name must match the TMDb ID or IMDb ID mapped to the movie.
+
+**Note:** to search for a movie titled with a number surround the number in quotes like in the example below.
+
+```yaml
+metadata:
+  Star Wars:    # Matches via the Name "Star Wars"
+    edits...
+  299534:       # Matches via TMDb ID: 299534
+    edits...
+  tt4154756:    # Matches via IMDb ID: tt4154756
+    edits...
+  "9":          # Matches via the Name "9" 
+    edits...
+```
 
 ## Metadata Edits
 
