@@ -194,7 +194,9 @@ class DataFile:
                             prefix = template["move_collection_prefix"]
                         if prefix:
                             for op in util.get_list(prefix):
-                                variables["collection_name"] = variables["collection_name"].replace(f"{str(op).strip()} ", "") + f", {str(op).strip()}"
+                                # Check if the collection_name starts with the op, but only if it's followed by a space character
+                                if variables["collection_name"].startswith(f"{str(op).strip()} "):
+                                    variables["collection_name"] = variables["collection_name"][len(str(op).strip()):].lstrip() + f", {str(op).strip()}"
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
 
