@@ -867,14 +867,14 @@ class Plex(Library):
         attr_call = attr_display.replace(" ", "")
         if add_tags or remove_tags or sync_tags is not None:
             _add_tags = add_tags if add_tags else []
-            _remove_tags = [t.lower() for t in remove_tags] if remove_tags else []
-            _sync_tags = [t.lower() for t in sync_tags] if sync_tags else []
+            _remove_tags = remove_tags if remove_tags else []
+            _sync_tags = sync_tags if sync_tags else []
             try:
                 obj = self.reload(obj)
-                _item_tags = [item_tag.tag.lower() for item_tag in getattr(obj, key)]
+                _item_tags = [item_tag.tag for item_tag in getattr(obj, key)]
             except BadRequest:
                 _item_tags = []
-            _add = [f"{t[:1].upper()}{t[1:]}" for t in _add_tags + _sync_tags if t.lower() not in _item_tags]
+            _add = [t for t in _add_tags + _sync_tags if t not in _item_tags]
             _remove = [t for t in _item_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]
             if _add:
                 self.query_data(getattr(obj, f"add{attr_call}"), _add)

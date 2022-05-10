@@ -2369,10 +2369,9 @@ class CollectionBuilder:
 
         if "non_item_remove_label" in self.item_details:
             rk_compare = [item.ratingKey for item in self.items]
-            for remove_label in self.item_details["non_item_remove_label"]:
-                for non_item in self.library.search(label=remove_label, libtype=self.collection_level):
-                    if non_item.ratingKey not in rk_compare:
-                        self.library.edit_tags("label", non_item, remove_tags=[remove_label])
+            for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.collection_level):
+                if non_item.ratingKey not in rk_compare:
+                    self.library.edit_tags("label", non_item, remove_tags=self.item_details["non_item_remove_label"])
 
         tmdb_paths = []
         tvdb_paths = []

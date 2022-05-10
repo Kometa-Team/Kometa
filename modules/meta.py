@@ -637,18 +637,18 @@ class MetadataFile(DataFile):
             logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
         elif f"{attr}.remove" in alias and f"{attr}.sync" in alias:
             logger.error(f"Metadata Error: Cannot use {attr}.remove and {attr}.sync together")
-        elif attr in alias and group[alias[attr]] is None:
+        elif attr in alias and not group[alias[attr]]:
             logger.error(f"Metadata Error: {attr} attribute is blank")
-        elif f"{attr}.remove" in alias and group[alias[f"{attr}.remove"]] is None:
+        elif f"{attr}.remove" in alias and not group[alias[f"{attr}.remove"]]:
             logger.error(f"Metadata Error: {attr}.remove attribute is blank")
-        elif f"{attr}.sync" in alias and group[alias[f"{attr}.sync"]] is None:
+        elif f"{attr}.sync" in alias and not group[alias[f"{attr}.sync"]]:
             logger.error(f"Metadata Error: {attr}.sync attribute is blank")
         elif attr in alias or f"{attr}.remove" in alias or f"{attr}.sync" in alias:
             add_tags = util.get_list(group[alias[attr]]) if attr in alias else []
             if extra:
                 add_tags.extend(extra)
             remove_tags = util.get_list(group[alias[f"{attr}.remove"]]) if f"{attr}.remove" in alias else None
-            sync_tags = util.get_list(group[alias[f"{attr}.sync"]] if group[alias[f"{attr}.sync"]] else []) if f"{attr}.sync" in alias else None
+            sync_tags = util.get_list(group[alias[f"{attr}.sync"]]) if f"{attr}.sync" in alias else None
             return len(self.library.edit_tags(attr, obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)) > 0
         return False
 

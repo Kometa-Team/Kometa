@@ -159,7 +159,7 @@ class Operations:
                         add_labels = [la for la in parental_labels if la not in current_labels]
                         remove_labels = [la for la in current_labels if la in util.parental_labels and la not in parental_labels]
                         if add_labels or remove_labels:
-                            batch_display += f"\n{self.library.edit_tags('label', item, add_tags=add_labels, remove_tags=remove_labels)}"
+                            batch_display += f"\n{self.library.edit_tags('label', item, add_tags=add_labels, remove_tags=remove_labels, do_print=False)}"
                     except Failed:
                         pass
 
@@ -297,7 +297,7 @@ class Operations:
                                 else:
                                     mapped_genres.append(genre)
                             new_genres = mapped_genres
-                        batch_display += f"\n{self.library.edit_tags('genre', item, sync_tags=new_genres)}"
+                        batch_display += f"\n{self.library.edit_tags('genre', item, sync_tags=new_genres, do_print=False)}"
                     except Failed:
                         pass
 
