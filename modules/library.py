@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
-from modules.util import Failed, ImageData
+from modules.util import Failed
 from ruamel import yaml
 
 logger = util.logger
@@ -22,7 +22,6 @@ class Library(ABC):
         self.overlays = []
         self.metadata_files = []
         self.overlay_files = []
-        self.missing = {}
         self.movie_map = {}
         self.show_map = {}
         self.imdb_map = {}
@@ -47,7 +46,8 @@ class Library(ABC):
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
         self.overlay_folder = os.path.join(self.config.default_dir, "overlays")
         self.overlay_backup = os.path.join(self.overlay_folder, f"{self.mapping_name} Original Posters")
-        self.missing_path = params["missing_path"] if params["missing_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_missing.yml")
+        self.report_path = params["report_path"] if params["report_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_report.yml")
+        self.report_data = {}
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
         self.dimensional_asset_rename = params["dimensional_asset_rename"]
@@ -68,7 +68,7 @@ class Library(ABC):
         self.show_options = params["show_options"]
         self.show_missing = params["show_missing"]
         self.show_missing_assets = params["show_missing_assets"]
-        self.save_missing = params["save_missing"]
+        self.save_report = params["save_report"]
         self.only_filter_missing = params["only_filter_missing"]
         self.ignore_ids = params["ignore_ids"]
         self.ignore_imdb_ids = params["ignore_imdb_ids"]
@@ -187,6 +187,13 @@ class Library(ABC):
 
         return poster_uploaded, background_uploaded
 
+    def get_id_from_maps(self, key):
+        key = str(key)
+        if key in self.movie_rating_key_map:
+            return self.movie_rating_key_map[key]
+        elif key in self.show_rating_key_map:
+            return self.show_rating_key_map[key]
+
     @abstractmethod
     def notify(self, text, collection=None, critical=True):
         pass
@@ -211,17 +218,48 @@ class Library(ABC):
     def get_all(self, collection_level=None, load=False):
         pass
 
+    def add_additions(self, collection, items, is_movie):
+        self._add_to_file("Added", collection, items, is_movie)
+
     def add_missing(self, collection, items, is_movie):
-        if collection not in self.missing:
-            self.missing[collection] = {}
-        section = "Movies Missing (TMDb IDs)" if is_movie else "Shows Missing (TVDb IDs)"
-        if section not in self.missing[collection]:
-            self.missing[collection][section] = {}
-        for title, item_id in items:
-            self.missing[collection][section][int(item_id)] = title
-        with open(self.missing_path, "w"): pass
+        self._add_to_file("Missing", collection, items, is_movie)
+
+    def add_removed(self, collection, items, is_movie):
+        self._add_to_file("Removed", collection, items, is_movie)
+
+    def add_filtered(self, collection, items, is_movie):
+        self._add_to_file("Filtered", collection, items, is_movie)
+
+    def _add_to_file(self, file_type, collection, items, is_movie):
+        logger.info(items)
+        if collection not in self.report_data:
+            self.report_data[collection] = {}
+        parts = isinstance(items[0], str)
+        if parts:
+            other = f"Parts {file_type}"
+            section = other
+        elif is_movie:
+            other = f"Movies {file_type}"
+            section = f"{other} (TMDb IDs)"
+        else:
+            other = f"Shows {file_type}"
+            section = f"{other} (TVDb IDs)"
+        if section not in self.report_data[collection]:
+            self.report_data[collection][section] = [] if parts else {}
+        if parts:
+            self.report_data[collection][section].extend(items)
+        else:
+            for title, item_id in items:
+                if item_id:
+                    self.report_data[collection][section][int(item_id)] = title
+                else:
+                    if other not in self.report_data[collection]:
+                        self.report_data[collection][other] = []
+                    self.report_data[collection][other].append(title)
+
+        with open(self.report_path, "w"): pass
         try:
-            yaml.round_trip_dump(self.missing, open(self.missing_path, "w", encoding="utf-8"))
+            yaml.round_trip_dump(self.report_data, open(self.report_path, "w", encoding="utf-8"))
         except yaml.scanner.ScannerError as e:
             logger.error(f"YAML Error: {util.tab_new_lines(e)}")
 
