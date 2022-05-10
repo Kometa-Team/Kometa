@@ -740,15 +740,6 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"INSERT OR IGNORE INTO {arr}_adds({id_type}, library) VALUES(?, ?)", (t_id, library))
 
-    def update_list_ids(self, list_key, media_ids):
-        final_ids = []
-        for media_id, media_type in media_ids:
-            final_ids.append((list_key, media_id, media_type))
-        with sqlite3.connect(self.cache_path) as connection:
-            connection.row_factory = sqlite3.Row
-            with closing(connection.cursor()) as cursor:
-                cursor.executemany(f"INSERT OR IGNORE INTO list_ids(list_key, media_id, media_type) VALUES(?, ?, ?)", final_ids)
-
     def update_list_cache(self, list_type, list_data, expired, expiration):
         list_key = None
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=expiration))
@@ -777,6 +768,15 @@ class Cache:
                     list_key = row["key"]
                     expired = time_between_insertion.days > expiration
         return list_key, expired
+
+    def update_list_ids(self, list_key, media_ids):
+        final_ids = []
+        for media_id, media_type in media_ids:
+            final_ids.append((list_key, media_id, media_type))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.executemany(f"INSERT OR IGNORE INTO list_ids(list_key, media_id, media_type) VALUES(?, ?, ?)", final_ids)
 
     def query_list_ids(self, list_key):
         ids = []

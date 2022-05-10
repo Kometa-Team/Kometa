@@ -32,6 +32,7 @@ parser.add_argument("-lf", "--library-first", "--libraries-first", dest="library
 parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collection", "--run-collections", dest="collections", help="Process only specified collections (comma-separated list)", type=str)
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-rm", "-m", "--metadata", "--metadata-files", "--run-metadata-files", dest="metadata", help="Process only specified Metadata files (comma-separated list)", type=str)
+parser.add_argument("-ca", "--cache-library", "--cache-libraries", dest="cache_libraries", help="Cache Library load for 1 day", action="store_true", default=False)
 parser.add_argument("-dc", "--delete", "--delete-collections", dest="delete", help="Deletes all Collections in the Plex Library before running", action="store_true", default=False)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
@@ -76,6 +77,7 @@ library_first = get_arg("PMM_LIBRARIES_FIRST", args.library_first, arg_bool=True
 collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
 metadata_files = get_arg("PMM_METADATA_FILES", args.metadata)
+cache_libraries = get_arg("PMM_CACHE_LIBRARIES", args.cache_libraries, arg_bool=True)
 delete = get_arg("PMM_DELETE_COLLECTIONS", args.delete, arg_bool=True)
 resume = get_arg("PMM_RESUME", args.resume)
 no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
@@ -275,14 +277,29 @@ def update_libraries(config):
                     library.query(collection.delete)
                 library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split('.')[0]
 
-            temp_items = library.cache_items()
+            time_start = datetime.now()
+            temp_items = None
+            list_key = None
+            expired = None
+            if config.Cache and cache_libraries:
+                list_key, expired = config.Cache.query_list_cache("library", library.mapping_name, 1)
+                if list_key and expired is False:
+                    logger.info(f"Library: {library.mapping_name} loaded from Cache")
+                    temp_items = config.Cache.query_list_ids(list_key)
+
+            if not temp_items:
+                temp_items = library.cache_items()
+                if config.Cache and cache_libraries:
+                    if list_key:
+                        config.Cache.delete_list_ids(list_key)
+                    list_key = config.Cache.update_list_cache("library", library.mapping_name, expired, 1)
+                    config.Cache.update_list_ids(list_key, [(i.ratingKey, i.guid) for i in temp_items])
             if not library.is_other and not library.is_music:
-                time_start = datetime.now()
                 logger.info("")
                 logger.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")
                 library.map_guids(temp_items)
-                library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
+            library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
 
             if config.library_first and not config.test_mode and not collection_only:
                 if not overlays_only and library.library_operation:

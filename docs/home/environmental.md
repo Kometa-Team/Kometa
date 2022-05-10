@@ -21,6 +21,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [Libraries First](#libraries-first)                   | `-lf` or `--libraries-first`       | `PMM_LIBRARIES_FIRST`    |
 | [Ignore Schedules](#ignore-schedules)                 | `-is` or `--ignore-schedules`      | `PMM_IGNORE_SCHEDULES`   |
 | [Ignore Ghost](#ignore-ghost)                         | `-ig` or `--ignore-ghost`          | `PMM_IGNORE_GHOST`       |
+| [Cache Libraries](#cache-libraries)                   | `-ca` or `--cache-libraries`       | `PMM_CACHE_LIBRARIES`    |
 | [Delete Collections](#delete-collections)             | `-dc` or `--delete-collections`    | `PMM_DELETE_COLLECTIONS` |
 | [Resume Run](#resume-run)                             | `-re` or `--resume`                | `PMM_RESUME`             |
 | [No Countdown](#no-countdown)                         | `-nc` or `--no-countdown`          | `PMM_NO_COUNTDOWN`       |
@@ -570,6 +571,45 @@ python plex_meta_manager.py --ignore-ghost
 
 ```shell
 docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --ignore-ghost
+```
+
+</details>
+
+### Cache Libraries
+
+Cache the library Load for 1 day.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #222;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-ca</code> or <code>--cache-libraries</code></td>
+    <td><code>PMM_CACHE_LIBRARIES</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--cache-libraries</code></td>
+    <td><code>PMM_CACHE_LIBRARIES=true</code></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Local Environment</summary>
+
+```shell
+python plex_meta_manager.py --cache-libraries
+```
+
+</details>
+<details>
+  <summary>Docker Environment</summary>
+
+```shell
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --cache-libraries
 ```
 
 </details>
