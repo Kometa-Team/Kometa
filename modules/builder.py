@@ -2342,7 +2342,7 @@ class CollectionBuilder:
                                 logger.error(e)
                     if self.run_again:
                         self.run_again_shows.extend(missing_tvdb_ids)
-        if len(self.missing_parts) > 0 and self.library.is_show and self.details["save_missing"] is True:
+        if len(self.missing_parts) > 0 and self.library.is_show and self.details["show_missing"] is True:
             for missing in self.missing_parts:
                 logger.info(f"{self.name} {self.Type} | X | {missing}")
         return added_to_radarr, added_to_sonarr

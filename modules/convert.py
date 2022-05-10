@@ -204,25 +204,36 @@ class Convert:
         else:
             return None
 
+    def ids_from_cache(self, ratingKey, guid, item_type, check_id, library):
+        media_id_type = None
+        cache_id = None
+        imdb_check = None
+        expired = None
+        if self.config.Cache:
+            cache_id, imdb_check, media_type, expired = self.config.Cache.query_guid_map(guid)
+            if (cache_id or imdb_check) and not expired:
+                media_id_type = "movie" if "movie" in media_type else "show"
+                if item_type == "hama" and check_id.startswith("anidb"):
+                    anidb_id = int(re.search("-(.*)", check_id).group(1))
+                    library.anidb_map[anidb_id] = ratingKey
+                elif item_type == "myanimelist":
+                    library.mal_map[int(check_id)] = ratingKey
+        return media_id_type, cache_id, imdb_check, expired
+
+    def scan_guid(self, guid_str):
+        guid = requests.utils.urlparse(guid_str)
+        return guid.scheme.split(".")[-1], guid.netloc
+
     def get_id(self, item, library):
         expired = None
         tmdb_id = []
         tvdb_id = []
         imdb_id = []
         anidb_id = None
-        guid = requests.utils.urlparse(item.guid)
-        item_type = guid.scheme.split(".")[-1]
-        check_id = guid.netloc
-        if self.config.Cache:
-            cache_id, imdb_check, media_type, expired = self.config.Cache.query_guid_map(item.guid)
-            if (cache_id or imdb_check) and not expired:
-                media_id_type = "movie" if "movie" in media_type else "show"
-                if item_type == "hama" and check_id.startswith("anidb"):
-                    anidb_id = int(re.search("-(.*)", check_id).group(1))
-                    library.anidb_map[anidb_id] = item.ratingKey
-                elif item_type == "myanimelist":
-                    library.mal_map[int(check_id)] = item.ratingKey
-                return media_id_type, cache_id, imdb_check
+        item_type, check_id = self.scan_guid(item.guid)
+        media_id_type, cache_id, imdb_check, expired = self.ids_from_cache(item.ratingKey, item.guid, item_type, check_id, library)
+        if (cache_id or imdb_check) and expired is False:
+            return media_id_type, cache_id, imdb_check
         try:
             if item_type == "plex":
                 try:
