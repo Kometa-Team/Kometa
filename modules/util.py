@@ -120,6 +120,88 @@ def parse_version(version):
     split_version = version.split("-develop")
     return version, split_version[0], int(split_version[1]) if len(split_version) > 1 else 0
 
+def download_image(title, image_url, download_directory, filename):
+    response = requests.get(image_url, headers=header())
+    if response.status_code >= 400 or "Content-Type" not in response.headers or response.headers["Content-Type"] not in ["image/png", "image/jpeg"]:
+        raise Failed(f"Image Error: Failed to download Image URL: {image_url}")
+    new_image = os.path.join(download_directory, f"{filename}{'.png' if response.headers['Content-Type'] == 'image/png' else '.jpg'}")
+    with open(new_image, "wb") as handler:
+        handler.write(response.content)
+    return ImageData("asset_directory", new_image, prefix=f"{title}'s ", is_url=False)
+
+def get_image_dicts(group, alias):
+    posters = {}
+    backgrounds = {}
+
+    for attr in ["url_poster", "file_poster", "url_background", "file_background"]:
+        if attr in alias:
+            if group[alias[attr]]:
+                if "poster" in attr:
+                    posters[attr] = ImageData(attr, group[alias[attr]], is_url="url" in attr)
+                else:
+                    backgrounds[attr] = ImageData(attr, group[alias[attr]], is_poster=False, is_url="url" in attr)
+            else:
+                logger.error(f"Metadata Error: {attr} attribute is blank")
+    return posters, backgrounds
+
+def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, is_poster=True, image_name=None):
+    image_type = "poster" if is_poster else "background"
+    if image_name is None:
+        image_name = image_type
+    if images:
+        logger.debug(f"{len(images)} {image_type}s found:")
+        for i in images:
+            logger.debug(f"Method: {i} {image_type.capitalize()}: {images[i]}")
+        is_url = True
+        final_attr = None
+        if prioritize_assets and "asset_directory" in images:
+            return images["asset_directory"]
+        elif f"url_{image_type}" in images:
+            if download_url_assets and item_dir:
+                if "asset_directory" in images:
+                    return images["asset_directory"]
+                else:
+                    try:
+                        return download_image(title, images[f"url_{image_type}"], item_dir, image_name)
+                    except Failed as e:
+                        logger.error(e)
+            final_attr = f"url_{image_type}"
+        elif f"file_{image_type}" in images:
+            final_attr = f"file_{image_type}"
+            is_url = False
+        elif f"tmdb_{image_type}" in images:
+            final_attr = f"tmdb_{image_type}"
+        elif "tmdb_profile" in images:
+            final_attr = "tmdb_profile"
+        elif f"tvdb_{image_type}" in images:
+            final_attr = f"tvdb_{image_type}"
+        elif "asset_directory" in images:
+            return images["asset_directory"]
+        elif "tmdb_person" in images:
+            final_attr = "tmdb_person"
+        elif "tmdb_collection_details" in images:
+            final_attr = "tmdb_collection_details"
+        elif "tmdb_actor_details" in images:
+            final_attr = "tmdb_actor_details"
+        elif "tmdb_crew_details" in images:
+            final_attr = "tmdb_crew_details"
+        elif "tmdb_director_details" in images:
+            final_attr = "tmdb_director_details"
+        elif "tmdb_producer_details" in images:
+            final_attr = "tmdb_producer_details"
+        elif "tmdb_writer_details" in images:
+            final_attr = "tmdb_writer_details"
+        elif "tmdb_movie_details" in images:
+            final_attr = "tmdb_movie_details"
+        elif "tvdb_movie_details" in images:
+            final_attr = "tvdb_movie_details"
+        elif "tvdb_show_details" in images:
+            final_attr = "tvdb_show_details"
+        elif "tmdb_show_details" in images:
+            final_attr = "tmdb_show_details"
+        if final_attr:
+            return ImageData(final_attr, images[final_attr], is_poster=is_poster, is_url=is_url)
+
 def add_dict_list(keys, value, dict_map):
     for key in keys:
         if key in dict_map:

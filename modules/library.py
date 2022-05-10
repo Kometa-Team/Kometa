@@ -51,6 +51,7 @@ class Library(ABC):
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
         self.dimensional_asset_rename = params["dimensional_asset_rename"]
+        self.prioritize_assets = params["prioritize_assets"]
         self.download_url_assets = params["download_url_assets"]
         self.show_missing_season_assets = params["show_missing_season_assets"]
         self.show_missing_episode_assets = params["show_missing_episode_assets"]
@@ -209,47 +210,6 @@ class Library(ABC):
     @abstractmethod
     def get_all(self, collection_level=None, load=False):
         pass
-
-    def find_assets(self, name="poster", folder_name=None, item_directory=None, prefix=""):
-        poster = None
-        background = None
-        item_dir = None
-        search_dir = item_directory if item_directory else None
-        for ad in self.asset_directory:
-            item_dir = None
-            if not search_dir:
-                search_dir = ad
-                if folder_name:
-                    if os.path.isdir(os.path.join(ad, folder_name)):
-                        item_dir = os.path.join(ad, folder_name)
-                    else:
-                        for n in range(1, self.asset_depth + 1):
-                            new_path = ad
-                            for i in range(1, n + 1):
-                                new_path = os.path.join(new_path, "*")
-                            matches = util.glob_filter(os.path.join(new_path, folder_name))
-                            if len(matches) > 0:
-                                item_dir = os.path.abspath(matches[0])
-                                break
-                    if item_dir is None:
-                        continue
-                    search_dir = item_dir
-            if item_directory:
-                item_dir = item_directory
-            file_name = name if item_dir else f"{folder_name}_{name}"
-            poster_filter = os.path.join(search_dir, f"{file_name}.*")
-            background_filter = os.path.join(search_dir, "background.*" if file_name == "poster" else f"{file_name}_background.*")
-
-            poster_matches = util.glob_filter(poster_filter)
-            if len(poster_matches) > 0:
-                poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=prefix, is_url=False)
-
-            background_matches = util.glob_filter(background_filter)
-            if len(background_matches) > 0:
-                background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, is_poster=False, is_url=False)
-
-            break
-        return poster, background, item_dir
 
     def add_missing(self, collection, items, is_movie):
         if collection not in self.missing:

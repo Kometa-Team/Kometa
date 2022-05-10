@@ -887,7 +887,32 @@ class Plex(Library):
                 logger.info(final)
         return final
 
-    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None):
+    def item_images(self, item, group, alias, asset_location=None, top_item=None, title=None, image_name=None):
+        if title is None:
+            title = item.title
+        posters, backgrounds = util.get_image_dicts(group, alias)
+        try:
+            asset_poster, asset_background, item_dir, _ = self.find_item_assets(item, item_asset_directory=asset_location, top_item=top_item)
+            if asset_poster:
+                posters["asset_directory"] = asset_poster
+            if asset_background:
+                backgrounds["asset_directory"] = asset_background
+            if asset_location is None:
+                asset_location = item_dir
+        except Failed as e:
+            logger.warning(e)
+        poster = util.pick_image(title, posters, self.prioritize_assets, self.download_url_assets, asset_location, image_name=image_name)
+        background = util.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location,
+                                     is_poster=False, image_name=f"{image_name}_background" if image_name else image_name)
+        if poster and poster.attribute == "asset_directory":
+            poster = None
+        if background and background.attribute == "asset_directory":
+            background = None
+        if poster or background:
+            self.upload_images(item, poster=poster, background=background)
+        return asset_location
+
+    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, top_item=None):
         poster = None
         background = None
         folder_name = None
@@ -897,13 +922,13 @@ class Plex(Library):
 
         is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist, str))
         if isinstance(item, Album):
-            prefix = f"{item.title} Album {item.title}'s "
+            prefix = f"{top_item.title} Album {item.title}'s "
             file_name = item.title
         elif isinstance(item, Season):
-            prefix = f"{item.title} Season {item.seasonNumber}'s "
+            prefix = f"{top_item.title} Season {item.seasonNumber}'s "
             file_name = f"Season{'0' if item.seasonNumber < 10 else ''}{item.seasonNumber}"
         elif isinstance(item, Episode):
-            prefix = f"{item.title} {item.seasonEpisode.upper()}'s "
+            prefix = f"{top_item.title} {item.seasonEpisode.upper()}'s "
             file_name = item.seasonEpisode.upper()
         else:
             prefix = f"{item if isinstance(item, str) else item.title}'s "
@@ -972,11 +997,11 @@ class Plex(Library):
                         if not poster and _h >= _w:
                             new_path = os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
                             os.rename(file, new_path)
-                            poster = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_url=False)
+                            poster = ImageData("asset_directory", os.path.abspath(new_path), prefix=prefix, is_url=False)
                         elif not background and _w > _h:
                             new_path = os.path.join(os.path.dirname(file), f"background{os.path.splitext(file)[1].lower()}")
                             os.rename(file, new_path)
-                            background = ImageData("asset_directory", os.path.abspath(new_path), prefix=f"{item.title}'s ", is_poster=False, is_url=False)
+                            background = ImageData("asset_directory", os.path.abspath(new_path), prefix=prefix, is_poster=False, is_url=False)
                         if poster and background:
                             break
                     except OSError:

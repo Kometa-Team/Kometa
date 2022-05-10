@@ -27,6 +27,7 @@ The available setting attributes which can be set at each level are outlined bel
 | [`asset_folders`](#image-asset-folders)                       |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`asset_depth`](#asset-depth)                                 |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`create_asset_folders`](#create-asset-folders)               |   &#9989;    |    &#9989;    |         &#10060;          |
+| [`prioritize_assets`](#prioritize-assets)                     |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`dimensional_asset_rename`](#dimensional-asset-rename)       |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`download_url_assets`](#download-url-assets)                 |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`show_missing_season_assets`](#show-missing-season-assets)   |   &#9989;    |    &#9989;    |         &#10060;          |
@@ -147,6 +148,20 @@ Whilst searching for assets, if an asset folder cannot be found within the `asse
   </tr>
 </table>
 
+## Prioritize Assets
+When determining which image to use on an item prioritize the `asset_directory` over all other images types.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th>Default Value</th>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <th>Allowed Values</th>
+    <td><code>true</code> or <code>false</code>
+    </td>
+  </tr>
+</table>
 
 ## Dimensional Asset Rename
 Whilst searching for assets, scan the folders within the `asset_directory` and if an asset poster (i.e. `/ASSET_NAME/poster.ext`) was not found, rename the first image found that has a height greater than or equal to its width to `poster.ext`. If an asset background (i.e. `/ASSET_NAME/background.ext`), rename the first image found that has a width greater than its height to `background.ext`.
