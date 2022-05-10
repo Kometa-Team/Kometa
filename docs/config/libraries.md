@@ -77,19 +77,19 @@ radarr:
 
 The available attributes for each library are as follows:
 
-| Attribute                                  | Values                                                                                       |                Default                 |            Required             |
-|:-------------------------------------------|:---------------------------------------------------------------------------------------------|:--------------------------------------:|:-------------------------------:|
-| [`library_name`](#library-name)            | Library name (required only when trying to use multiple libraries with the same name)        |          Base Attribute Name           |            &#10060;             |
-| [`metadata_path`](#metadata-path)          | Location of Metadata YAML files                                                              |     `/config/<<MAPPING_NAME>>.yml`     |            &#10060;             |
-| [`overlay_path`](#overlay-path)            | Location of Overlay YAML files                                                               |                  None                  |            &#10060;             |
-| [`missing_path`](#missing-path)            | Location to create the YAML file listing missing items for this library                      | `/config/<<MAPPING_NAME>>_missing.yml` |            &#10060;             |
-| [`schedule`](../metadata/details/schedule) | Use any [schedule option](../metadata/details/schedule) to control when this library is run. |                 daily                  |            &#10060;             |
-| [`operations`](operations)                 | Library Operations to run                                                                    |                  N/A                   |            &#10060;             |
-| [`settings`](settings)                     | Any `setting` attribute that overrides a global value                                        |                 global                 |            &#10060;             |
-| [`plex`](plex)                             | Any `plex` attribute that overrides a global value                                           |                 global                 | &#9989; Either here or globally |
-| [`radarr`](radarr)                         | Any `radarr` attribute that overrides a global value                                         |                 global                 |            &#10060;             |
-| [`sonarr`](sonarr)                         | Any `sonarr` attribute that overrides a global value                                         |                 global                 |            &#10060;             |
-| [`tautulli`](tautulli)                     | Any `tautulli` attribute that overrides a global value                                       |                 global                 |            &#10060;             |
+| Attribute                                  | Values                                                                                                |                Default                |            Required             |
+|:-------------------------------------------|:------------------------------------------------------------------------------------------------------|:-------------------------------------:|:-------------------------------:|
+| [`library_name`](#library-name)            | Library name (required only when trying to use multiple libraries with the same name)                 |          Base Attribute Name          |            &#10060;             |
+| [`metadata_path`](#metadata-path)          | Location of Metadata YAML files                                                                       |    `/config/<<MAPPING_NAME>>.yml`     |            &#10060;             |
+| [`overlay_path`](#overlay-path)            | Location of Overlay YAML files                                                                        |                 None                  |            &#10060;             |
+| [`report_path`](#report-path)              | Location to create the YAML file listing added, removed, filtered, and missing items for this library | `/config/<<MAPPING_NAME>>_report.yml` |            &#10060;             |
+| [`schedule`](../metadata/details/schedule) | Use any [schedule option](../metadata/details/schedule) to control when this library is run.          |                 daily                 |            &#10060;             |
+| [`operations`](operations)                 | Library Operations to run                                                                             |                  N/A                  |            &#10060;             |
+| [`settings`](settings)                     | Any `setting` attribute that overrides a global value                                                 |                global                 |            &#10060;             |
+| [`plex`](plex)                             | Any `plex` attribute that overrides a global value                                                    |                global                 | &#9989; Either here or globally |
+| [`radarr`](radarr)                         | Any `radarr` attribute that overrides a global value                                                  |                global                 |            &#10060;             |
+| [`sonarr`](sonarr)                         | Any `sonarr` attribute that overrides a global value                                                  |                global                 |            &#10060;             |
+| [`tautulli`](tautulli)                     | Any `tautulli` attribute that overrides a global value                                                |                global                 |            &#10060;             |
 
 ### Library Name
 
@@ -157,26 +157,26 @@ libraries:
 
 * This will remove all overlays when run and not generate new ones.
 
-### Missing Path
+### Report Path
 
-The `missing_path` attribute is used to define where to save the "missing items" YAML file. This file is used to store information about media which is missing from the Plex library compared to what is expected from the Metadata file.
+The `report_path` attribute is used to define where to save the YAML Report file. This file is used to store information about what media is added, removed, filtered, and missing from the Plex library compared to what is expected from the Metadata file.
 
 If your Metadata file creates a collection with `Movie 1`, `Movie 2` and `Movie 3` but your Plex library only has `Movie 1` and `Movie 3`, then the missing YAML file will be updated to inform the user that `Movie 2` was missing from the library.
 
-The default and recommended path is `/config/<<MAPPING_NAME>>_missing.yml` where `<<MAPPING_NAME>>` is the name of the library attribute, as showcased below:
+The default and recommended path is `/config/<<MAPPING_NAME>>report.yml` where `<<MAPPING_NAME>>` is the name of the library attribute, as showcased below:
 
 ```yaml
 libraries:
   Movies:
-    missing_path: /config/Movies_missing.yml
+    report_path: /config/Movies_report.yml
 ```
 
-Alternatively, "missing items" YAML files can be placed in their own directory, as below:
+Alternatively, Report YAML files can be placed in their own directory, as below:
 
 ```yaml
 libraries:
   Movies:
-    missing_path: /config/missing/Movies.yml
+    report_path: /config/reports/Movies.yml
 ```
 
 ## Playlist Files Attribute

@@ -46,7 +46,7 @@ The available setting attributes which can be set at each level are outlined bel
 | [`show_missing`](#show-missing)                               |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`only_filter_missing`](#only-filter-missing)                 |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`show_missing_assets`](#show-missing-assets)                 |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`save_missing`](#save-missing)                               |   &#9989;    |    &#9989;    |          &#9989;          |
+| [`save_report`](#save-report)                                 |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`tvdb_language`](#tvdb-language)                             |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`ignore_ids`](#ignore-ids)                                   |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`ignore_imdb_ids`](#ignore-imdb-ids)                         |   &#9989;    |    &#9989;    |          &#9989;          |
@@ -440,8 +440,8 @@ Display missing asset warnings
   </tr>
 </table>
 
-## Save Missing
-Save missing items from collections to a YAML file in the same directory as your Metadata file.
+## Save Report
+Save a report of the items added, removed, filtered, or missing from collections to a YAML file in the same directory as your Metadata file.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>

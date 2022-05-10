@@ -187,6 +187,7 @@ def start(attrs):
     logger.debug(f"--run-metadata-files (PMM_METADATA_FILES): {metadata_files}")
     logger.debug(f"--ignore-schedules (PMM_IGNORE_SCHEDULES): {ignore_schedules}")
     logger.debug(f"--ignore-ghost (PMM_IGNORE_GHOST): {ignore_ghost}")
+    logger.debug(f"--cache-libraries (PMM_CACHE_LIBRARIES): {cache_libraries}")
     logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete}")
     logger.debug(f"--resume (PMM_RESUME): {resume}")
     logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
@@ -244,7 +245,6 @@ def update_libraries(config):
             logger.debug("")
             logger.debug(f"Mapping Name: {library.original_mapping_name}")
             logger.debug(f"Folder Name: {library.mapping_name}")
-            logger.debug(f"Missing Path: {library.missing_path}")
             for ad in library.asset_directory:
                 logger.debug(f"Asset Directory: {ad}")
             logger.debug(f"Asset Folders: {library.asset_folders}")
@@ -261,7 +261,8 @@ def update_libraries(config):
             logger.debug(f"Show Filtered: {library.show_filtered}")
             logger.debug(f"Show Missing: {library.show_missing}")
             logger.debug(f"Show Missing Assets: {library.show_missing_assets}")
-            logger.debug(f"Save Missing: {library.save_missing}")
+            logger.debug(f"Save Report: {library.save_report}")
+            logger.debug(f"Report Path: {library.report_path}")
             logger.debug(f"Clean Bundles: {library.clean_bundles}")
             logger.debug(f"Empty Trash: {library.empty_trash}")
             logger.debug(f"Optimize: {library.optimize}")
@@ -289,7 +290,7 @@ def update_libraries(config):
 
             if not temp_items:
                 temp_items = library.cache_items()
-                if config.Cache and cache_libraries:
+                if config.Cache:
                     if list_key:
                         config.Cache.delete_list_ids(list_key)
                     list_key = config.Cache.update_list_cache("library", library.mapping_name, expired, 1)
