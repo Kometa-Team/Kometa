@@ -108,9 +108,12 @@ There are three attributes unique to `templates`; `default`, `optional`, and `mo
 * `move_prefix` can be given a list or comma-separated string of prefixes to move to the end of the collection/playlist name for sorting.
     i.e. If you have `move_prefix: The` and a collection is called `The Avengers` then `<<collection_name>>` is replaced with `Avengers, The` instead of `The Avengers` for that collection.
 
-Every template call is given either `<<collection_name>>` or `<<playlist_name>>` and `<<library_type>>` as template variables.
+Every template call is given these template variables.
 
-All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. `<<collection_name_encoded>>`
+* Either `<<collection_name>>`, `<<playlist_name>>`, or `<<overlay_name>>` which is the name of the definition.
+* Either `<<collection_sort>>` or `<<playlist_sort>>` which is the name of the definition after `move_prefix` is applied.
+* `<<library_type>>` which is the library type
+* All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. `<<collection_name_encoded>>`
 
 ## Advance Example
 

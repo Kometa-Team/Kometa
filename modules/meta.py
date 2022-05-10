@@ -1,7 +1,7 @@
 import math, operator, os, re, requests
 from datetime import datetime
 from modules import plex, ergast, util
-from modules.util import Failed, ImageData
+from modules.util import Failed
 from plexapi.exceptions import NotFound, BadRequest
 from ruamel import yaml
 
@@ -133,12 +133,9 @@ class DataFile:
                         variables.pop(remove_variable)
                         optional.append(str(remove_variable))
 
-                    if self.data_type == "Collection" and "collection_name" not in variables:
-                        variables["collection_name"] = str(name)
-                    if self.data_type == "Playlist" and "playlist_name" not in variables:
-                        variables["playlist_name"] = str(name)
-                    if self.data_type == "Overlay" and "overlay_name" not in variables:
-                        variables["overlay_name"] = str(name)
+                    name_var = f"{self.data_type.lower()}_name"
+                    if name_var not in variables:
+                        variables[name_var] = str(name)
 
                     variables["library_type"] = self.library.type.lower() if self.library else "items"
 
@@ -185,6 +182,7 @@ class DataFile:
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute optional is blank")
 
+                    sort_name = None
                     if "move_prefix" in template or "move_collection_prefix" in template:
                         prefix = None
                         if "move_prefix" in template:
@@ -194,9 +192,12 @@ class DataFile:
                             prefix = template["move_collection_prefix"]
                         if prefix:
                             for op in util.get_list(prefix):
-                                variables["collection_name"] = variables["collection_name"].replace(f"{str(op).strip()} ", "") + f", {str(op).strip()}"
+                                if variables[name_var].startswith(op):
+                                    sort_name = f"{variables[name_var][len(op):]}, {op}"
+                                    break
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
+                    variables[f"{self.data_type.lower()}_sort"] = sort_name if sort_name else variables[name_var]
 
                     def check_data(_method, _data):
                         if isinstance(_data, dict):
