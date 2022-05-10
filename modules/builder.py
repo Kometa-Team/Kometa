@@ -2575,8 +2575,6 @@ class CollectionBuilder:
             if advance_update and "Metadata" not in updated_details:
                 updated_details.append("Metadata")
 
-        poster_image = None
-        background_image = None
         asset_location = None
         if self.asset_directory:
             name_mapping = self.name
@@ -2584,87 +2582,17 @@ class CollectionBuilder:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
             try:
-                poster_image, background_image, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
-                if poster_image:
-                    self.posters["asset_directory"] = poster_image
-                if background_image:
-                    self.backgrounds["asset_directory"] = background_image
+                asset_poster, asset_background, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
+                if asset_poster:
+                    self.posters["asset_directory"] = asset_poster
+                if asset_background:
+                    self.backgrounds["asset_directory"] = asset_background
             except Failed as e:
                 if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
                     logger.warning(e)
 
-        self.collection_poster = None
-        if len(self.posters) > 0:
-            logger.debug(f"{len(self.posters)} posters found:")
-            for p in self.posters:
-                logger.debug(f"Method: {p} Poster: {self.posters[p]}")
-
-            if "url_poster" in self.posters:
-                if self.library.download_url_assets and asset_location:
-                    if poster_image:
-                        self.collection_poster = self.posters["asset_directory"]
-                    else:
-                        response = self.config.get(self.posters["url_poster"], headers=util.header())
-                        if response.status_code >= 400 or "Content-Type" not in response.headers or response.headers["Content-Type"] not in ["image/png", "image/jpeg"]:
-                            logger.error(f"Image Error: Failed to parse Image at {self.posters['url_poster']}")
-                        else:
-                            new_image = os.path.join(asset_location, f"poster{'.png' if response.headers['Content-Type'] == 'image/png' else '.jpg'}")
-                            with open(new_image, "wb") as handler:
-                                handler.write(response.content)
-                            self.collection_poster = ImageData("asset_directory", new_image, prefix=f"{self.obj.title}'s ", is_url=False)
-                if not self.collection_poster:
-                    self.collection_poster = ImageData("url_poster", self.posters["url_poster"])
-            elif "file_poster" in self.posters:                 self.collection_poster = ImageData("file_poster", self.posters["file_poster"], is_url=False)
-            elif "tmdb_poster" in self.posters:                 self.collection_poster = ImageData("tmdb_poster", self.posters["tmdb_poster"])
-            elif "tmdb_profile" in self.posters:                self.collection_poster = ImageData("tmdb_poster", self.posters["tmdb_profile"])
-            elif "tvdb_poster" in self.posters:                 self.collection_poster = ImageData("tvdb_poster", self.posters["tvdb_poster"])
-            elif "asset_directory" in self.posters:             self.collection_poster = self.posters["asset_directory"]
-            elif "tmdb_person" in self.posters:                 self.collection_poster = ImageData("tmdb_person", self.posters["tmdb_person"])
-            elif "tmdb_collection_details" in self.posters:     self.collection_poster = ImageData("tmdb_collection_details", self.posters["tmdb_collection_details"])
-            elif "tmdb_actor_details" in self.posters:          self.collection_poster = ImageData("tmdb_actor_details", self.posters["tmdb_actor_details"])
-            elif "tmdb_crew_details" in self.posters:           self.collection_poster = ImageData("tmdb_crew_details", self.posters["tmdb_crew_details"])
-            elif "tmdb_director_details" in self.posters:       self.collection_poster = ImageData("tmdb_director_details", self.posters["tmdb_director_details"])
-            elif "tmdb_producer_details" in self.posters:       self.collection_poster = ImageData("tmdb_producer_details", self.posters["tmdb_producer_details"])
-            elif "tmdb_writer_details" in self.posters:         self.collection_poster = ImageData("tmdb_writer_details", self.posters["tmdb_writer_details"])
-            elif "tmdb_movie_details" in self.posters:          self.collection_poster = ImageData("tmdb_movie_details", self.posters["tmdb_movie_details"])
-            elif "tvdb_movie_details" in self.posters:          self.collection_poster = ImageData("tvdb_movie_details", self.posters["tvdb_movie_details"])
-            elif "tvdb_show_details" in self.posters:           self.collection_poster = ImageData("tvdb_show_details", self.posters["tvdb_show_details"])
-            elif "tmdb_show_details" in self.posters:           self.collection_poster = ImageData("tmdb_show_details", self.posters["tmdb_show_details"])
-        else:
-            logger.info(f"No poster {self.type} detail or asset folder found")
-
-        self.collection_background = None
-        if len(self.backgrounds) > 0:
-            logger.debug(f"{len(self.backgrounds)} backgrounds found:")
-            for b in self.backgrounds:
-                logger.debug(f"Method: {b} Background: {self.backgrounds[b]}")
-
-            if "url_background" in self.backgrounds:
-                if self.library.download_url_assets and asset_location:
-                    if background_image:
-                        self.collection_background = self.backgrounds["asset_directory"]
-                    else:
-                        response = self.config.get(self.backgrounds["url_background"], headers=util.header())
-                        if response.status_code >= 400 or "Content-Type" not in response.headers or response.headers["Content-Type"] not in ["image/png", "image/jpeg"]:
-                            logger.error(f"Image Error: Failed to parse Image at {self.backgrounds['url_background']}")
-                        else:
-                            new_image = os.path.join(asset_location, f"background{'.png' if response.headers['Content-Type'] == 'image/png' else '.jpg'}")
-                            with open(new_image, "wb") as handler:
-                                handler.write(response.content)
-                            self.collection_background = ImageData("asset_directory", new_image, prefix=f"{self.obj.title}'s ", is_url=False, is_poster=False)
-                if not self.collection_background:
-                    self.collection_background = ImageData("url_background", self.backgrounds["url_background"], is_poster=False)
-            elif "file_background" in self.backgrounds:         self.collection_background = ImageData("file_background", self.backgrounds["file_background"], is_poster=False, is_url=False)
-            elif "tmdb_background" in self.backgrounds:         self.collection_background = ImageData("tmdb_background", self.backgrounds["tmdb_background"], is_poster=False)
-            elif "tvdb_background" in self.backgrounds:         self.collection_background = ImageData("tvdb_background", self.backgrounds["tvdb_background"], is_poster=False)
-            elif "asset_directory" in self.backgrounds:         self.collection_background = self.backgrounds["asset_directory"]
-            elif "tmdb_collection_details" in self.backgrounds: self.collection_background = ImageData("tmdb_collection_details", self.backgrounds["tmdb_collection_details"], is_poster=False)
-            elif "tmdb_movie_details" in self.backgrounds:      self.collection_background = ImageData("tmdb_movie_details", self.backgrounds["tmdb_movie_details"], is_poster=False)
-            elif "tvdb_movie_details" in self.backgrounds:      self.collection_background = ImageData("tvdb_movie_details", self.backgrounds["tvdb_movie_details"], is_poster=False)
-            elif "tvdb_show_details" in self.backgrounds:       self.collection_background = ImageData("tvdb_show_details", self.backgrounds["tvdb_show_details"], is_poster=False)
-            elif "tmdb_show_details" in self.backgrounds:       self.collection_background = ImageData("tmdb_show_details", self.backgrounds["tmdb_show_details"], is_poster=False)
-        else:
-            logger.info(f"No background {self.type} detail or asset folder found")
+        self.collection_poster = util.pick_image(self.obj.title, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
+        self.collection_background = util.pick_image(self.obj.title, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
 
         if self.collection_poster or self.collection_background:
             pu, bu = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
