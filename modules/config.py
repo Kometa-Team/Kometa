@@ -738,8 +738,10 @@ class ConfigFile:
                         if not files:
                             raise Failed("Config Error: No Paths Found for metadata_path")
                         params["metadata_path"] = files
-                    else:
+                    elif os.path.exists(os.path.join(default_dir, f"{library_name}.yml")):
                         params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), {}, None)]
+                    else:
+                        params["metadata_path"] = []
                     params["default_dir"] = default_dir
 
                     params["skip_library"] = False
