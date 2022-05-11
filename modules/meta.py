@@ -469,7 +469,7 @@ class MetadataFile(DataFile):
                                 ending = util.parse("Config", "ending", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=1)
                             increment = util.parse("Config", "increment", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=1, minimum=1)
                             if starting > ending:
-                                raise Failed(f"Config Error: {map_name} data ending must be greater then starting")
+                                raise Failed(f"Config Error: {map_name} data ending must be greater than starting")
                             current = starting
                             while starting <= ending:
                                 all_keys.append(str(current))
