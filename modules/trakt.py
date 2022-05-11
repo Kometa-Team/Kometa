@@ -214,7 +214,7 @@ class Trakt:
                 response = self.config.post(f"{base_url}{url}", json=json, headers=headers)
             else:
                 response = self.config.get(f"{base_url}{url}", headers=headers, params=params)
-            if pages == 1 and "X-Pagination-Page-Count" in response.headers:
+            if pages == 1 and "X-Pagination-Page-Count" in response.headers and not params:
                 pages = int(response.headers["X-Pagination-Page-Count"])
             if response.status_code >= 400:
                 raise Failed(f"({response.status_code}) {response.reason}")
