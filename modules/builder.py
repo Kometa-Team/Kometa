@@ -1293,7 +1293,7 @@ class CollectionBuilder:
                         final_attributes["max_score"] = original_score - 0.01
                         final_text += f"\nScore Less Than: {original_score}"
                     if "min_score" in final_attributes and "max_score"  in final_attributes and final_attributes["max_score"] <= final_attributes["min_score"]:
-                        raise Failed(f"{self.Type} Error: mal_search score.lte/score.lt attribute must be greater then score.gte/score.gt")
+                        raise Failed(f"{self.Type} Error: mal_search score.lte/score.lt attribute must be greater than score.gte/score.gt")
                     if "sfw" in dict_methods:
                         sfw = util.parse(self.Type, "sfw", dict_data, datatype="bool", methods=dict_methods, parent=method_name)
                         if sfw:
@@ -1806,7 +1806,7 @@ class CollectionBuilder:
             elif str(plex_filter[filter_alias["limit"]]).lower() == "all":
                 filter_details += "Limit: all\n"
             elif not isinstance(plex_filter[filter_alias["limit"]], int) or plex_filter[filter_alias["limit"]] < 1:
-                raise Failed(f"{self.Type} Error: limit attribute must be an integer greater then 0")
+                raise Failed(f"{self.Type} Error: limit attribute must be an integer greater than 0")
             else:
                 limit = plex_filter[filter_alias["limit"]]
                 filter_details += f"Limit: {limit}\n"

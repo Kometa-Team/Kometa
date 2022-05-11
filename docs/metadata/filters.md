@@ -52,10 +52,10 @@ Tag filters can take multiple values as a **list or a comma-separated string**.
 | No Modifier  | Matches every item where the attribute matches the given string                           |
 | `.not`       | Matches every item where the attribute does not match the given string                    |
 | `.regex`     | Matches every item where one value of this attribute matches the regex.                   |
-| `.count_gt`  | Matches every item where the attribute count is greater then the given number             |
-| `.count_gte` | Matches every item where the attribute count is greater then or equal to the given number |
-| `.count_lt`  | Matches every item where the attribute count is less then the given number                |
-| `.count_lte` | Matches every item where the attribute count is less then the given number                |
+| `.count_lt`  | Matches every item where the attribute count is less than the given number                |
+| `.count_lte` | Matches every item where the attribute count is less than the given number                |
+| `.count_gt`  | Matches every item where the attribute count is greater than the given number             |
+| `.count_gte` | Matches every item where the attribute count is greater than or equal to the given number |
 
 ### Attribute
 
@@ -131,10 +131,10 @@ Number filters can **NOT** take multiple values.
 
 | Number Modifier | Description                                                                                |                      Format                       |
 |:----------------|:-------------------------------------------------------------------------------------------|:-------------------------------------------------:|
-| `.gt`           | Matches every item where the number attribute is greater then the given number             | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-| `.gte`          | Matches every item where the number attribute is greater then or equal to the given number | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-| `.lt`           | Matches every item where the number attribute is less then the given number                | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-| `.lte`          | Matches every item where the number attribute is less then or equal to the given number    | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
+| `.gt`           | Matches every item where the number attribute is greater than the given number             | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
+| `.gte`          | Matches every item where the number attribute is greater than or equal to the given number | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
+| `.lt`           | Matches every item where the number attribute is less than the given number                | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
+| `.lte`          | Matches every item where the number attribute is less than or equal to the given number    | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
 
 ### Attribute
 

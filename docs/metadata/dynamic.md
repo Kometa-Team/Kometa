@@ -193,7 +193,7 @@ Create collections based on each actor found on [TMDb's Popular People List](htt
   </tr>
   <tr>
     <th><code>data</code> Value</th>
-    <td>Number greater then 0</td>
+    <td>Number greater than 0</td>
   </tr>
   <tr>
     <th>Keys</th>
@@ -498,17 +498,17 @@ Create a collection for each actor found in the library.
             </tr>
             <tr>
                 <td><code>depth</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
                 <td><code>minimum</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
                 <td><code>limit</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> None</td>
             </tr>
         </table>
@@ -591,17 +591,17 @@ Create a collection for each director found in the library.
             </tr>
             <tr>
                 <td><code>depth</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
                 <td><code>minimum</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
                 <td><code>limit</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> None</td>
             </tr>
         </table>
@@ -684,17 +684,17 @@ Create a collection for each writer found in the library.
             </tr>
             <tr>
                 <td><code>depth</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
                 <td><code>minimum</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
                 <td><code>limit</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> None</td>
             </tr>
         </table>
@@ -777,17 +777,17 @@ Create a collection for each producer found in the library.
             </tr>
             <tr>
                 <td><code>depth</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
                 <td><code>minimum</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 3</td>
             </tr>
             <tr>
                 <td><code>limit</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> None</td>
             </tr>
         </table>
@@ -1583,17 +1583,17 @@ Creates a collection for each number defined.
             </tr>
             <tr>
                 <td><code>starting</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 0</td>
             </tr>
             <tr>
                 <td><code>ending</code></td>
-                <td><strong>Values:</strong> Number greater then 1</td>
+                <td><strong>Values:</strong> Number greater than 1</td>
                 <td><strong>Default:</strong> 1</td>
             </tr>
             <tr>
                 <td><code>increment</code></td>
-                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Values:</strong> Number greater than 0</td>
                 <td><strong>Default:</strong> 1</td>
             </tr>
         </table>
