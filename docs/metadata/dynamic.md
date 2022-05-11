@@ -1597,6 +1597,10 @@ Creates a collection for each number defined.
                 <td><strong>Default:</strong> 1</td>
             </tr>
         </table>
+        <ul>
+          <li><strong><code>starting</code> and <code>ending</code> can also have the value <code>current_year</code></strong></li>
+          <li><strong>You can also use a value relative to the <code>current_year</code> by doing <code>current_year-5</code></strong></li>
+        </ul>
     </td>
   </tr>
   <tr>
@@ -1644,7 +1648,7 @@ Creates a collection for each item in the list defined .
   </tr>
   <tr>
     <th>Default Template</th>
-    <td>**None**</td>
+    <td><strong>None</strong></td>
   </tr>
 </table>
 

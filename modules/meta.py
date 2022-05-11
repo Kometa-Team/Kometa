@@ -457,12 +457,14 @@ class MetadataFile(DataFile):
                             else:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
                             number_methods = {nm.lower(): nm for nm in dynamic_data}
-                            if "starting" in number_methods and dynamic_data[number_methods["starting"]] == "current_year":
-                                starting = datetime.now().year
+                            if "starting" in number_methods and str(dynamic_data[number_methods["starting"]]).startswith("current_year"):
+                                year_values = str(dynamic_data[number_methods["starting"]]).split("-")
+                                starting = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
                             else:
                                 starting = util.parse("Config", "starting", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=0)
-                            if "ending" in number_methods and dynamic_data[number_methods["ending"]] == "current_year":
-                                ending = datetime.now().year
+                            if "ending" in number_methods and str(dynamic_data[number_methods["ending"]]).startswith("current_year"):
+                                year_values = str(dynamic_data[number_methods["ending"]]).split("-")
+                                ending = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
                             else:
                                 ending = util.parse("Config", "ending", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=1)
                             increment = util.parse("Config", "increment", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=1, minimum=1)
