@@ -26,6 +26,7 @@ parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="
 parser.add_argument("-ig", "--ignore-ghost", dest="ignore_ghost", help="Run ignoring ghost logging", action="store_true", default=False)
 parser.add_argument("-rt", "--test", "--tests", "--run-test", "--run-tests", dest="test", help="Run in debug mode with only collections that have test: true", action="store_true", default=False)
 parser.add_argument("-co", "--collection-only", "--collections-only", dest="collection_only", help="Run only collection operations", action="store_true", default=False)
+parser.add_argument("-po", "--playlist-only", "--playlists-only", dest="playlist_only", help="Run only playlist operations", action="store_true", default=False)
 parser.add_argument("-op", "--operation", "--operations", "-lo", "--library-only", "--libraries-only", "--operation-only", "--operations-only", dest="operations", help="Run only operations", action="store_true", default=False)
 parser.add_argument("-ov", "--overlay", "--overlays", "--overlay-only", "--overlays-only", dest="overlays", help="Run only overlays", action="store_true", default=False)
 parser.add_argument("-lf", "--library-first", "--libraries-first", dest="library_first", help="Run library operations before collections", action="store_true", default=False)
@@ -71,6 +72,7 @@ test = get_arg("PMM_TEST", args.test, arg_bool=True)
 ignore_schedules = get_arg("PMM_IGNORE_SCHEDULES", args.ignore_schedules, arg_bool=True)
 ignore_ghost = get_arg("PMM_IGNORE_GHOST", args.ignore_ghost, arg_bool=True)
 collection_only = get_arg("PMM_COLLECTIONS_ONLY", args.collection_only, arg_bool=True)
+playlist_only = get_arg("PMM_PLAYLISTS_ONLY", args.playlist_only, arg_bool=True)
 operations_only = get_arg(["PMM_OPERATIONS", "PMM_LIBRARIES_ONLY"], args.operations, arg_bool=True)
 overlays_only = get_arg(["PMM_OVERLAYS", "PMM_OVERLAYS_ONLY"], args.overlays, arg_bool=True)
 library_first = get_arg("PMM_LIBRARIES_FIRST", args.library_first, arg_bool=True)
@@ -171,6 +173,7 @@ def start(attrs):
     attrs["version"] = version
     attrs["no_missing"] = no_missing
     attrs["collection_only"] = collection_only
+    attrs["playlist_only"] = playlist_only
     attrs["operations_only"] = operations_only
     attrs["overlays_only"] = overlays_only
     logger.separator(debug=True)
@@ -179,6 +182,7 @@ def start(attrs):
     logger.debug(f"--run (PMM_RUN): {run}")
     logger.debug(f"--run-tests (PMM_TEST): {test}")
     logger.debug(f"--collections-only (PMM_COLLECTIONS_ONLY): {collection_only}")
+    logger.debug(f"--playlists-only (PMM_PLAYLISTS_ONLY): {playlist_only}")
     logger.debug(f"--operations (PMM_OPERATIONS): {operations_only}")
     logger.debug(f"--overlays (PMM_OVERLAYS): {overlays_only}")
     logger.debug(f"--libraries-first (PMM_LIBRARIES_FIRST): {library_first}")
@@ -208,7 +212,7 @@ def start(attrs):
         logger.critical(e)
     else:
         try:
-            stats = update_libraries(config)
+            stats = run_config(config)
         except Exception as e:
             config.notify(e)
             logger.stacktrace()
@@ -228,7 +232,153 @@ def start(attrs):
     logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
     logger.remove_main_handler()
 
-def update_libraries(config):
+def run_config(config):
+    library_status = run_libraries(config) if not playlist_only else {}
+
+    playlist_status = {}
+    playlist_stats = {}
+    if (config.playlist_files or config.general["playlist_report"]) and not overlays_only and not operations_only and not collection_only:
+        logger.add_playlists_handler()
+        if config.playlist_files:
+            playlist_status, playlist_stats = run_playlists(config)
+        if config.general["playlist_report"]:
+            ran = []
+            for library in config.libraries:
+                if library.PlexServer.machineIdentifier in ran:
+                    continue
+                ran.append(library.PlexServer.machineIdentifier)
+                logger.info("")
+                logger.separator(f"{library.PlexServer.friendlyName} Playlist Report")
+                logger.info("")
+                report = library.playlist_report()
+                max_length = 0
+                for playlist_name in report:
+                    if len(playlist_name) > max_length:
+                        max_length = len(playlist_name)
+                logger.info(f"{'Playlist Title':<{max_length}} | Users")
+                logger.separator(f"{logger.separating_character * max_length}|", space=False, border=False, side_space=False, left=True)
+                for playlist_name, users in report.items():
+                    logger.info(f"{playlist_name:<{max_length}} | {'all' if len(users) == len(library.users) + 1 else ', '.join(users)}")
+        logger.remove_playlists_handler()
+
+    amount_added = 0
+    if not operations_only and not overlays_only and not playlist_only:
+        has_run_again = False
+        for library in config.libraries:
+            if library.run_again:
+                has_run_again = True
+                break
+
+        if has_run_again:
+            logger.info("")
+            logger.separator("Run Again")
+            logger.info("")
+            for x in range(1, config.general["run_again_delay"] + 1):
+                logger.ghost(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
+                for y in range(60):
+                    time.sleep(1)
+            logger.exorcise()
+            for library in config.libraries:
+                if library.run_again:
+                    try:
+                        logger.re_add_library_handler(library.mapping_name)
+                        os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
+                        logger.info("")
+                        logger.separator(f"{library.name} Library Run Again")
+                        logger.info("")
+                        library.map_guids()
+                        for builder in library.run_again:
+                            logger.info("")
+                            logger.separator(f"{builder.name} Collection in {library.name}")
+                            logger.info("")
+                            try:
+                                amount_added += builder.run_collections_again()
+                            except Failed as e:
+                                library.notify(e, collection=builder.name, critical=False)
+                                logger.stacktrace()
+                                logger.error(e)
+                        logger.remove_library_handler(library.mapping_name)
+                    except Exception as e:
+                        library.notify(e)
+                        logger.stacktrace()
+                        logger.critical(e)
+
+    if not collection_only and not overlays_only and not playlist_only:
+        used_url = []
+        for library in config.libraries:
+            if library.url not in used_url:
+                used_url.append(library.url)
+                if library.empty_trash:
+                    library.query(library.PlexServer.library.emptyTrash)
+                if library.clean_bundles:
+                    library.query(library.PlexServer.library.cleanBundles)
+                if library.optimize:
+                    library.query(library.PlexServer.library.optimize)
+
+    longest = 20
+    for library in config.libraries:
+        for title in library.status:
+            if len(title) > longest:
+                longest = len(title)
+    if playlist_status:
+        for title in playlist_status:
+            if len(title) > longest:
+                longest = len(title)
+
+    def print_status(status):
+        logger.info(f"{'Title':^{longest}} |   +   |   =   |   -   | Run Time | {'Status'}")
+        breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
+        logger.separator(breaker, space=False, border=False, side_space=False, left=True)
+        for name, data in status.items():
+            logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
+            if data["errors"]:
+                for error in data["errors"]:
+                    logger.info(error)
+                logger.info("")
+
+    logger.info("")
+    logger.separator("Summary")
+    for library in config.libraries:
+        logger.info("")
+        logger.separator(f"{library.name} Summary", space=False, border=False)
+        logger.info("")
+        logger.info(f"{'Title':<27} | Run Time |")
+        logger.info(f"{logger.separating_character * 27} | {logger.separating_character * 8} |")
+        for text, value in library_status[library.name].items():
+            logger.info(f"{text:<27} | {value:>8} |")
+        logger.info("")
+        print_status(library.status)
+    if playlist_status:
+        logger.info("")
+        logger.separator(f"Playlists Summary", space=False, border=False)
+        logger.info("")
+        print_status(playlist_status)
+
+    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
+    stats["added"] += amount_added
+    for library in config.libraries:
+        stats["created"] += library.stats["created"]
+        stats["modified"] += library.stats["modified"]
+        stats["deleted"] += library.stats["deleted"]
+        stats["added"] += library.stats["added"]
+        stats["unchanged"] += library.stats["unchanged"]
+        stats["removed"] += library.stats["removed"]
+        stats["radarr"] += library.stats["radarr"]
+        stats["sonarr"] += library.stats["sonarr"]
+        stats["names"].extend([{"name": n, "library": library.name} for n in library.stats["names"]])
+    if playlist_stats:
+        stats["created"] += playlist_stats["created"]
+        stats["modified"] += playlist_stats["modified"]
+        stats["deleted"] += playlist_stats["deleted"]
+        stats["added"] += playlist_stats["added"]
+        stats["unchanged"] += playlist_stats["unchanged"]
+        stats["removed"] += playlist_stats["removed"]
+        stats["radarr"] += playlist_stats["radarr"]
+        stats["sonarr"] += playlist_stats["sonarr"]
+        stats["names"].extend([{"name": n, "library": "PLAYLIST"} for n in playlist_stats["names"]])
+    return stats
+
+def run_libraries(config):
     library_status = {}
     for library in config.libraries:
         if library.skip_library:
@@ -348,147 +498,7 @@ def update_libraries(config):
             library.notify(e)
             logger.stacktrace()
             logger.critical(e)
-
-    playlist_status = {}
-    playlist_stats = {}
-    if config.playlist_files or config.general["playlist_report"]:
-        logger.add_playlists_handler()
-        if config.playlist_files:
-            playlist_status, playlist_stats = run_playlists(config)
-        if config.general["playlist_report"]:
-            ran = []
-            for library in config.libraries:
-                if library.PlexServer.machineIdentifier in ran:
-                    continue
-                ran.append(library.PlexServer.machineIdentifier)
-                logger.info("")
-                logger.separator(f"{library.PlexServer.friendlyName} Playlist Report")
-                logger.info("")
-                report = library.playlist_report()
-                max_length = 0
-                for playlist_name in report:
-                    if len(playlist_name) > max_length:
-                        max_length = len(playlist_name)
-                logger.info(f"{'Playlist Title':<{max_length}} | Users")
-                logger.separator(f"{logger.separating_character * max_length}|", space=False, border=False, side_space=False, left=True)
-                for playlist_name, users in report.items():
-                    logger.info(f"{playlist_name:<{max_length}} | {'all' if len(users) == len(library.users) + 1 else ', '.join(users)}")
-        logger.remove_playlists_handler()
-
-    has_run_again = False
-    for library in config.libraries:
-        if library.run_again:
-            has_run_again = True
-            break
-
-    amount_added = 0
-    if has_run_again and not operations_only and not overlays_only:
-        logger.info("")
-        logger.separator("Run Again")
-        logger.info("")
-        for x in range(1, config.general["run_again_delay"] + 1):
-            logger.ghost(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
-            for y in range(60):
-                time.sleep(1)
-        logger.exorcise()
-        for library in config.libraries:
-            if library.run_again:
-                try:
-                    logger.re_add_library_handler(library.mapping_name)
-                    os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
-                    logger.info("")
-                    logger.separator(f"{library.name} Library Run Again")
-                    logger.info("")
-                    library.map_guids()
-                    for builder in library.run_again:
-                        logger.info("")
-                        logger.separator(f"{builder.name} Collection in {library.name}")
-                        logger.info("")
-                        try:
-                            amount_added += builder.run_collections_again()
-                        except Failed as e:
-                            library.notify(e, collection=builder.name, critical=False)
-                            logger.stacktrace()
-                            logger.error(e)
-                    logger.remove_library_handler(library.mapping_name)
-                except Exception as e:
-                    library.notify(e)
-                    logger.stacktrace()
-                    logger.critical(e)
-
-    used_url = []
-    for library in config.libraries:
-        if library.url not in used_url:
-            used_url.append(library.url)
-            if library.empty_trash:
-                library.query(library.PlexServer.library.emptyTrash)
-            if library.clean_bundles:
-                library.query(library.PlexServer.library.cleanBundles)
-            if library.optimize:
-                library.query(library.PlexServer.library.optimize)
-
-    longest = 20
-    for library in config.libraries:
-        for title in library.status:
-            if len(title) > longest:
-                longest = len(title)
-    if playlist_status:
-        for title in playlist_status:
-            if len(title) > longest:
-                longest = len(title)
-
-    def print_status(status):
-        logger.info(f"{'Title':^{longest}} |   +   |   =   |   -   | Run Time | {'Status'}")
-        breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
-        logger.separator(breaker, space=False, border=False, side_space=False, left=True)
-        for name, data in status.items():
-            logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
-            if data["errors"]:
-                for error in data["errors"]:
-                    logger.info(error)
-                logger.info("")
-
-    logger.info("")
-    logger.separator("Summary")
-    for library in config.libraries:
-        logger.info("")
-        logger.separator(f"{library.name} Summary", space=False, border=False)
-        logger.info("")
-        logger.info(f"{'Title':<27} | Run Time |")
-        logger.info(f"{logger.separating_character * 27} | {logger.separating_character * 8} |")
-        for text, value in library_status[library.name].items():
-            logger.info(f"{text:<27} | {value:>8} |")
-        logger.info("")
-        print_status(library.status)
-    if playlist_status:
-        logger.info("")
-        logger.separator(f"Playlists Summary", space=False, border=False)
-        logger.info("")
-        print_status(playlist_status)
-
-    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
-    stats["added"] += amount_added
-    for library in config.libraries:
-        stats["created"] += library.stats["created"]
-        stats["modified"] += library.stats["modified"]
-        stats["deleted"] += library.stats["deleted"]
-        stats["added"] += library.stats["added"]
-        stats["unchanged"] += library.stats["unchanged"]
-        stats["removed"] += library.stats["removed"]
-        stats["radarr"] += library.stats["radarr"]
-        stats["sonarr"] += library.stats["sonarr"]
-        stats["names"].extend([{"name": n, "library": library.name} for n in library.stats["names"]])
-    if playlist_stats:
-        stats["created"] += playlist_stats["created"]
-        stats["modified"] += playlist_stats["modified"]
-        stats["deleted"] += playlist_stats["deleted"]
-        stats["added"] += playlist_stats["added"]
-        stats["unchanged"] += playlist_stats["unchanged"]
-        stats["removed"] += playlist_stats["removed"]
-        stats["radarr"] += playlist_stats["radarr"]
-        stats["sonarr"] += playlist_stats["sonarr"]
-        stats["names"].extend([{"name": n, "library": "PLAYLIST"} for n in playlist_stats["names"]])
-    return stats
+    return library_status
 
 def run_collection(config, library, metadata, requested_collections):
     logger.info("")
