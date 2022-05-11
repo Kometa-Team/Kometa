@@ -13,6 +13,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [Run](#run)                                           | `-r` or `--run`                    | `PMM_RUN`                |
 | [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests` | `PMM_TEST`               |
 | [Collections Only](#collections-only)                 | `-co` or `--collections-only`      | `PMM_COLLECTIONS_ONLY`   |
+| [Plsylists Only](#plsylists-only)                     | `-po` or `--plsylists-only`        | `PMM_PLAYLISTS_ONLY`     |
 | [Operations](#operations)                             | `-op` or `--operations`            | `PMM_OPERATIONS`         |
 | [Overlays](#overlays)                                 | `-ov` or `--overlays`              | `PMM_OVERLAYS`           |
 | [Run Collections](#run-collections)                   | `-rc` or `--run-collections`       | `PMM_COLLECTIONS`        |
@@ -212,7 +213,7 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 ### Collections Only
 
-Only run collection metadata/YAML files, skip library operations.
+Only run collection metadata/YAML files, skip library operations, overlays, and collections/metadata.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -249,9 +250,48 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 </details>
 
+### Playlists Only
+
+Only run playlist metadata/YAML files, skip library operations, overlays, and collections/metadata.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #222;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-po</code> or <code>--playlists-only</code></td>
+    <td><code>PMM_PLAYLISTS_ONLY</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--playlists-only</code></td>
+    <td><code>PMM_PLAYLISTS_ONLY=true</code></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Local Environment</summary>
+
+```shell
+python plex_meta_manager.py --playlists-only
+```
+
+</details>
+<details>
+  <summary>Docker Environment</summary>
+
+```shell
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --playlists-only
+```
+
+</details>
+
 ### Operations
 
-Only run library operations skipping collections and overlays.
+Only run library operations skipping collections/metadata, playlists, and overlays.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -290,7 +330,7 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 ### Overlays
 
-Only run library overlays skipping operations and collections.
+Only run library overlays skipping collections/metadata, playlists, and operations.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
