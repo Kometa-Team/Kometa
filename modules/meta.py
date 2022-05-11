@@ -7,7 +7,7 @@ from ruamel import yaml
 
 logger = util.logger
 
-all_auto = ["genre"]
+all_auto = ["genre", "number", "list"]
 ms_auto = [
     "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio",
     "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade"
@@ -451,6 +451,36 @@ class MetadataFile(DataFile):
                                     all_keys.append(role["name"])
                                     person_count += 1
                             default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
+                        elif auto_type == "number":
+                            if "data" in methods:
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            else:
+                                raise Failed(f"Config Error: {map_name} data attribute not found")
+                            number_methods = {nm.lower(): nm for nm in dynamic_data}
+                            if "starting" in number_methods and dynamic_data[number_methods["starting"]] == "current_year":
+                                starting = datetime.now().year
+                            else:
+                                starting = util.parse("Config", "starting", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=0)
+                            if "ending" in number_methods and dynamic_data[number_methods["ending"]] == "current_year":
+                                ending = datetime.now().year
+                            else:
+                                ending = util.parse("Config", "ending", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=1)
+                            increment = util.parse("Config", "increment", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=1, minimum=1)
+                            if starting > ending:
+                                raise Failed(f"Config Error: {map_name} data ending must be greater then starting")
+                            current = starting
+                            while starting <= ending:
+                                all_keys.append(str(current))
+                                if str(current) not in exclude and current not in exclude:
+                                    auto_list[str(current)] = str(current)
+                                current += increment
+                        elif auto_type == "list":
+                            if "data" not in methods:
+                                raise Failed(f"Config Error: {map_name} data attribute not found")
+                            for list_item in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="strlist"):
+                                all_keys.append(list_item)
+                                if list_item not in exclude:
+                                    auto_list[list_item] = list_item
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
@@ -505,6 +535,8 @@ class MetadataFile(DataFile):
                                 has_var = True
                         if not has_var:
                             raise Failed(f"Config Error: One {map_name} template: {template_names} is required to have the template variable <<value>>")
+                    elif auto_type in ["number", "list"]:
+                        raise Failed(f"Config Error: {map_name} template required for type: {auto_type}")
                     else:
                         self.templates[map_name] = (default_template if default_template else default_templates[auto_type], {})
                         template_names = [map_name]
