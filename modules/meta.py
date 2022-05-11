@@ -415,10 +415,12 @@ class MetadataFile(DataFile):
                             default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type in ["actor", "director", "writer", "producer"]:
                             people = {}
-                            if "data" in methods:
-                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
-                            else:
+                            if "data" not in methods:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
+                            elif "data" in self.temp_vars:
+                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
+                            else:
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
                             person_methods = {am.lower(): am for am in dynamic_data}
                             if "actor_depth" in person_methods:
                                 person_methods["depth"] = person_methods.pop("actor_depth")
@@ -452,10 +454,12 @@ class MetadataFile(DataFile):
                                     person_count += 1
                             default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
                         elif auto_type == "number":
-                            if "data" in methods:
-                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
-                            else:
+                            if "data" not in methods:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
+                            elif "data" in self.temp_vars:
+                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
+                            else:
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
                             number_methods = {nm.lower(): nm for nm in dynamic_data}
                             if "starting" in number_methods and str(dynamic_data[number_methods["starting"]]).startswith("current_year"):
                                 year_values = str(dynamic_data[number_methods["starting"]]).split("-")
