@@ -130,6 +130,8 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`network`](#network)                         | Create a collection for each network found in the library                                                   |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`style`](#style)                             | Create a collection for each style found in the library                                                     |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
+| [`number`](#number)                           | Creates a collection for each number defined                                                                |    &#9989;     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| [`list`](#list)                               | Creates a collection for each item in the list defined                                                      |    &#9989;     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
 
 ### TMDb Collection
 
@@ -1561,6 +1563,90 @@ dynamic_collections:
     title_format: Top <<key_name>> Albums
     template: style collection
 ```
+
+### Number
+
+Creates a collection for each number defined.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>number</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Values</th>
+    <td>
+        <table class="clearTable">
+            <tr>
+                <th>Attribute</th>
+                <th>Description & Values</th>
+            </tr>
+            <tr>
+                <td><code>starting</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 0</td>
+            </tr>
+            <tr>
+                <td><code>ending</code></td>
+                <td><strong>Values:</strong> Number greater then 1</td>
+                <td><strong>Default:</strong> 1</td>
+            </tr>
+            <tr>
+                <td><code>increment</code></td>
+                <td><strong>Values:</strong> Number greater then 0</td>
+                <td><strong>Default:</strong> 1</td>
+            </tr>
+        </table>
+    </td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Number</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Number</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>**None**</td>
+  </tr>
+</table>
+
+### List
+
+Creates a collection for each item in the list defined .
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>list</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Values</th>
+    <td>Strings to iterate</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>String</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>String</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>&lt;&lt;key_name&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>**None**</td>
+  </tr>
+</table>
 
 ## Exclude
 
