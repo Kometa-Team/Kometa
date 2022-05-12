@@ -513,21 +513,31 @@ def check_day(_m, _d):
     else:
         return _m, _d
 
-def schedule_check(attribute, data, current_time, run_hour):
+def schedule_check(attribute, data, current_time, run_hour, is_all=False):
     range_collection = False
     all_check = 0
     schedules_run = 0
-    is_all = False
     next_month = current_time.replace(day=28) + timedelta(days=4)
     last_day = next_month - timedelta(days=next_month.day)
     schedule_str = ""
+    if isinstance(data, str) and (("all" in data and not data.endswith("]")) or data.count("all") > 1):
+        raise Failed("Schedule Error: each all schedule must be on its own line")
+    elif isinstance(data, str) and "all" in data:
+        data = [data]
     for schedule in get_list(data):
         run_time = str(schedule).lower()
         display = f"{attribute} attribute {schedule} invalid"
         schedules_run += 1
-        if run_time == "all":
-            is_all = True
-            all_check += 1
+        if run_time.startswith("all"):
+            match = re.search("\\[([^\\]]+)\\]", run_time)
+            if not match:
+                logger.error(f"Schedule Error: failed to parse {attribute}: {schedule}")
+                continue
+            try:
+                schedule_check(attribute, match.group(1), current_time, run_hour, is_all=True)
+                all_check += 1
+            except NotScheduled:
+                continue
         elif run_time.startswith(("day", "daily")):
             all_check += 1
         elif run_time == "never":
@@ -598,7 +608,7 @@ def schedule_check(attribute, data, current_time, run_hour):
                     all_check += 1
         else:
             logger.error(f"Schedule Error: {display}")
-    if all_check == 0 or (is_all and schedules_run != all_check):
+    if (all_check == 0 and not is_all) or (is_all and schedules_run != all_check):
         if range_collection:
             raise NotScheduledRange(schedule_str)
         else:
