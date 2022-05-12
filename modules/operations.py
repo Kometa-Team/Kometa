@@ -1,10 +1,9 @@
 import os, re
 from datetime import datetime
 from modules import plex, util
-from modules.util import Failed
+from modules.util import Failed, YAML
 from plexapi.audio import Artist
 from plexapi.video import Show
-from ruamel import yaml
 
 logger = util.logger
 
@@ -455,24 +454,24 @@ class Operations:
             logger.info("")
             logger.info(f"Metadata Backup Path: {self.library.metadata_backup['path']}")
             logger.info("")
-            meta = None
+            yaml = None
             if os.path.exists(self.library.metadata_backup["path"]):
                 try:
-                    meta, _, _ = yaml.util.load_yaml_guess_indent(open(self.library.metadata_backup["path"], encoding="utf-8"))
-                except yaml.scanner.ScannerError as e:
-                    logger.error(f"YAML Error: {util.tab_new_lines(e)}")
+                    yaml = YAML(path=self.library.metadata_backup["path"])
+                except Failed as e:
+                    logger.error(e)
                     filename, file_extension = os.path.splitext(self.library.metadata_backup["path"])
                     i = 1
                     while os.path.exists(f"{filename}{i}{file_extension}"):
                         i += 1
                     os.rename(self.library.metadata_backup["path"], f"{filename}{i}{file_extension}")
                     logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
-            if not meta:
-                meta = {}
-            if "metadata" not in meta:
-                meta["metadata"] = {}
+            if not yaml:
+                yaml = YAML(path=self.library.metadata_backup["path"], create=True)
+            if "metadata" not in yaml.data:
+                yaml.data["metadata"] = {}
             special_names = {}
-            for mk, mv in meta["metadata"].items():
+            for mk, mv in yaml.data["metadata"].items():
                 if "title" in mv:
                     special_names[mv["title"]] = mk
                     if "year" in mv:
@@ -484,7 +483,7 @@ class Operations:
                 map_key, attrs = self.library.get_locked_attributes(item, titles)
                 if map_key in special_names:
                     map_key = special_names[map_key]
-                og_dict = meta["metadata"][map_key] if map_key in meta["metadata"] and meta["metadata"][map_key] else {}
+                og_dict = yaml.data["metadata"][map_key] if map_key in yaml.data["metadata"] and yaml.data["metadata"][map_key] else {}
                 if attrs or (self.library.metadata_backup["add_blank_entries"] and not og_dict):
                     def get_dict(attrs_dict):
                         return {ak: get_dict(av) if isinstance(av, dict) else av for ak, av in attrs_dict.items()}
@@ -494,13 +493,10 @@ class Operations:
                         for lk, lv in looping.items():
                             dest_dict[lk] = loop_dict(lv, dest_dict[lk] if lk in dest_dict and dest_dict[lk] else {}) if isinstance(lv, dict) else lv
                         return dest_dict
-                    meta["metadata"][map_key] = loop_dict(get_dict(attrs), og_dict)
+                    yaml.data["metadata"][map_key] = loop_dict(get_dict(attrs), og_dict)
             logger.exorcise()
-            try:
-                yaml.round_trip_dump(meta, open(self.library.metadata_backup["path"], "w", encoding="utf-8"), block_seq_indent=2)
-                logger.info(f"{len(meta['metadata'])} {self.library.type.capitalize()}{'s' if len(meta['metadata']) > 1 else ''} Backed Up")
-            except yaml.scanner.ScannerError as e:
-                logger.error(f"YAML Error: {util.tab_new_lines(e)}")
+            yaml.save()
+            logger.info(f"{len(yaml.data['metadata'])} {self.library.type.capitalize()}{'s' if len(yaml.data['metadata']) > 1 else ''} Backed Up")
 
         operation_run_time = str(datetime.now() - operation_start).split('.')[0]
         logger.info("")

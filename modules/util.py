@@ -1,4 +1,4 @@
-import glob, logging, os, re, requests, signal, sys, time
+import glob, logging, os, re, requests, ruamel.yaml, signal, sys, time
 from datetime import datetime, timedelta
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
@@ -88,9 +88,6 @@ parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in pare
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 previous_time = None
 start_time = None
-
-def tab_new_lines(data):
-    return str(data).replace("\n", "\n      ") if "\n" in str(data) else str(data)
 
 def make_ordinal(n):
     return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
@@ -778,3 +775,35 @@ def check_time(message, end=False):
     else:
         logger.debug(f"{message}: {current_time - previous_time}")
     previous_time = None if end else current_time
+
+class YAML:
+    def __init__(self, path=None, input_data=None, check_empty=False, create=False):
+        self.path = path
+        self.input_data = input_data
+        self.yaml = ruamel.yaml.YAML()
+        self.yaml.indent(mapping=2, sequence=2)
+        try:
+            if input_data:
+                self.data = self.yaml.load(input_data)
+            else:
+                if create and not os.path.exists(self.path):
+                    with open(self.path, 'w'):
+                        pass
+                    self.data = {}
+                else:
+                    with open(self.path, encoding="utf-8") as fp:
+                        self.data = self.yaml.load(fp)
+        except ruamel.yaml.error.YAMLError as e:
+            e = str(e).replace("\n", "\n      ")
+            raise Failed(f"YAML Error: {e}")
+        except Exception as e:
+            raise Failed(f"YAML Error: {e}")
+        if not self.data or not isinstance(self.data, dict):
+            if check_empty:
+                raise Failed("YAML Error: File is empty")
+            self.data = {}
+
+    def save(self):
+        if self.path:
+            with open(self.path, 'w') as fp:
+                self.yaml.dump(self.data, fp)

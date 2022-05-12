@@ -26,10 +26,9 @@ from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
 from modules.trakt import Trakt
 from modules.tvdb import TVDb
-from modules.util import Failed, NotScheduled, NotScheduledRange
+from modules.util import Failed, NotScheduled, NotScheduledRange, YAML
 from modules.webhooks import Webhooks
 from retrying import retry
-from ruamel import yaml
 
 logger = util.logger
 
@@ -85,120 +84,113 @@ class ConfigFile:
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
         current_time = datetime.now()
 
-        yaml.YAML().allow_duplicate_keys = True
-        try:
-            new_config, _, _ = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
-            def replace_attr(all_data, attr, par):
-                if "settings" not in all_data:
-                    all_data["settings"] = {}
-                if par in all_data and all_data[par] and attr in all_data[par] and attr not in all_data["settings"]:
-                    all_data["settings"][attr] = all_data[par][attr]
-                    del all_data[par][attr]
-            if "libraries" not in new_config:
-                new_config["libraries"] = {}
-            if "settings" not in new_config:
-                new_config["settings"] = {}
-            if "tmdb" not in new_config:
-                new_config["tmdb"] = {}
-            replace_attr(new_config, "cache", "cache")
-            replace_attr(new_config, "cache_expiration", "cache")
-            if "config" in new_config:
-                del new_config["cache"]
-            replace_attr(new_config, "asset_directory", "plex")
-            replace_attr(new_config, "sync_mode", "plex")
-            replace_attr(new_config, "show_unmanaged", "plex")
-            replace_attr(new_config, "show_filtered", "plex")
-            replace_attr(new_config, "show_missing", "plex")
-            replace_attr(new_config, "save_missing", "plex")
-            if new_config["libraries"]:
-                for library in new_config["libraries"]:
-                    if not new_config["libraries"][library]:
-                        continue
-                    if "radarr_add_all" in new_config["libraries"][library]:
-                        new_config["libraries"][library]["radarr_add_all_existing"] = new_config["libraries"][library].pop("radarr_add_all")
-                    if "sonarr_add_all" in new_config["libraries"][library]:
-                        new_config["libraries"][library]["sonarr_add_all_existing"] = new_config["libraries"][library].pop("sonarr_add_all")
-                    if "plex" in new_config["libraries"][library] and new_config["libraries"][library]["plex"]:
-                        replace_attr(new_config["libraries"][library], "asset_directory", "plex")
-                        replace_attr(new_config["libraries"][library], "sync_mode", "plex")
-                        replace_attr(new_config["libraries"][library], "show_unmanaged", "plex")
-                        replace_attr(new_config["libraries"][library], "show_filtered", "plex")
-                        replace_attr(new_config["libraries"][library], "show_missing", "plex")
-                        replace_attr(new_config["libraries"][library], "save_missing", "plex")
-                    if "settings" in new_config["libraries"][library] and new_config["libraries"][library]["settings"]:
-                        if "collection_minimum" in new_config["libraries"][library]["settings"]:
-                            new_config["libraries"][library]["settings"]["minimum_items"] = new_config["libraries"][library]["settings"].pop("collection_minimum")
-                    if "radarr" in new_config["libraries"][library] and new_config["libraries"][library]["radarr"]:
-                        if "add" in new_config["libraries"][library]["radarr"]:
-                            new_config["libraries"][library]["radarr"]["add_missing"] = new_config["libraries"][library]["radarr"].pop("add")
-                    if "sonarr" in new_config["libraries"][library] and new_config["libraries"][library]["sonarr"]:
-                        if "add" in new_config["libraries"][library]["sonarr"]:
-                            new_config["libraries"][library]["sonarr"]["add_missing"] = new_config["libraries"][library]["sonarr"].pop("add")
-                    if "operations" in new_config["libraries"][library] and new_config["libraries"][library]["operations"]:
-                        if "radarr_add_all" in new_config["libraries"][library]["operations"]:
-                            new_config["libraries"][library]["operations"]["radarr_add_all_existing"] = new_config["libraries"][library]["operations"].pop("radarr_add_all")
-                        if "sonarr_add_all" in new_config["libraries"][library]["operations"]:
-                            new_config["libraries"][library]["operations"]["sonarr_add_all_existing"] = new_config["libraries"][library]["operations"].pop("sonarr_add_all")
-                    if "webhooks" in new_config["libraries"][library] and new_config["libraries"][library]["webhooks"] and "collection_changes" not in new_config["libraries"][library]["webhooks"]:
-                        changes = []
-                        def hooks(attr):
-                            if attr in new_config["libraries"][library]["webhooks"]:
-                                changes.extend([w for w in util.get_list(new_config["libraries"][library]["webhooks"].pop(attr), split=False) if w not in changes])
-                        hooks("collection_creation")
-                        hooks("collection_addition")
-                        hooks("collection_removal")
-                        hooks("collection_changes")
-                        new_config["libraries"][library]["webhooks"]["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
-            if "libraries" in new_config:                   new_config["libraries"] = new_config.pop("libraries")
-            if "playlist_files" in new_config:              new_config["playlist_files"] = new_config.pop("playlist_files")
-            if "settings" in new_config:
-                temp = new_config.pop("settings")
-                if "collection_minimum" in temp:
-                    temp["minimum_items"] = temp.pop("collection_minimum")
-                if "playlist_sync_to_user" in temp:
-                    temp["playlist_sync_to_users"] = temp.pop("playlist_sync_to_user")
-                new_config["settings"] = temp
-            if "webhooks" in new_config:
-                temp = new_config.pop("webhooks")
-                if "changes" not in temp:
+        loaded_yaml = YAML(self.config_path)
+        self.data = loaded_yaml.data
+
+        def replace_attr(all_data, attr, par):
+            if "settings" not in all_data:
+                all_data["settings"] = {}
+            if par in all_data and all_data[par] and attr in all_data[par] and attr not in all_data["settings"]:
+                all_data["settings"][attr] = all_data[par][attr]
+                del all_data[par][attr]
+        if "libraries" not in self.data:
+            self.data["libraries"] = {}
+        if "settings" not in self.data:
+            self.data["settings"] = {}
+        if "tmdb" not in self.data:
+            self.data["tmdb"] = {}
+        replace_attr(self.data, "cache", "cache")
+        replace_attr(self.data, "cache_expiration", "cache")
+        if "config" in self.data:
+            del self.data["cache"]
+        replace_attr(self.data, "asset_directory", "plex")
+        replace_attr(self.data, "sync_mode", "plex")
+        replace_attr(self.data, "show_unmanaged", "plex")
+        replace_attr(self.data, "show_filtered", "plex")
+        replace_attr(self.data, "show_missing", "plex")
+        replace_attr(self.data, "save_missing", "plex")
+        if self.data["libraries"]:
+            for library in self.data["libraries"]:
+                if not self.data["libraries"][library]:
+                    continue
+                if "radarr_add_all" in self.data["libraries"][library]:
+                    self.data["libraries"][library]["radarr_add_all_existing"] = self.data["libraries"][library].pop("radarr_add_all")
+                if "sonarr_add_all" in self.data["libraries"][library]:
+                    self.data["libraries"][library]["sonarr_add_all_existing"] = self.data["libraries"][library].pop("sonarr_add_all")
+                if "plex" in self.data["libraries"][library] and self.data["libraries"][library]["plex"]:
+                    replace_attr(self.data["libraries"][library], "asset_directory", "plex")
+                    replace_attr(self.data["libraries"][library], "sync_mode", "plex")
+                    replace_attr(self.data["libraries"][library], "show_unmanaged", "plex")
+                    replace_attr(self.data["libraries"][library], "show_filtered", "plex")
+                    replace_attr(self.data["libraries"][library], "show_missing", "plex")
+                    replace_attr(self.data["libraries"][library], "save_missing", "plex")
+                if "settings" in self.data["libraries"][library] and self.data["libraries"][library]["settings"]:
+                    if "collection_minimum" in self.data["libraries"][library]["settings"]:
+                        self.data["libraries"][library]["settings"]["minimum_items"] = self.data["libraries"][library]["settings"].pop("collection_minimum")
+                if "radarr" in self.data["libraries"][library] and self.data["libraries"][library]["radarr"]:
+                    if "add" in self.data["libraries"][library]["radarr"]:
+                        self.data["libraries"][library]["radarr"]["add_missing"] = self.data["libraries"][library]["radarr"].pop("add")
+                if "sonarr" in self.data["libraries"][library] and self.data["libraries"][library]["sonarr"]:
+                    if "add" in self.data["libraries"][library]["sonarr"]:
+                        self.data["libraries"][library]["sonarr"]["add_missing"] = self.data["libraries"][library]["sonarr"].pop("add")
+                if "operations" in self.data["libraries"][library] and self.data["libraries"][library]["operations"]:
+                    if "radarr_add_all" in self.data["libraries"][library]["operations"]:
+                        self.data["libraries"][library]["operations"]["radarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("radarr_add_all")
+                    if "sonarr_add_all" in self.data["libraries"][library]["operations"]:
+                        self.data["libraries"][library]["operations"]["sonarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("sonarr_add_all")
+                if "webhooks" in self.data["libraries"][library] and self.data["libraries"][library]["webhooks"] and "collection_changes" not in self.data["libraries"][library]["webhooks"]:
                     changes = []
                     def hooks(attr):
-                        if attr in temp:
-                            items = util.get_list(temp.pop(attr), split=False)
-                            if items:
-                                changes.extend([w for w in items if w not in changes])
+                        if attr in self.data["libraries"][library]["webhooks"]:
+                            changes.extend([w for w in util.get_list(self.data["libraries"][library]["webhooks"].pop(attr), split=False) if w not in changes])
                     hooks("collection_creation")
                     hooks("collection_addition")
                     hooks("collection_removal")
                     hooks("collection_changes")
-                    temp["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
-                new_config["webhooks"] = temp
-            if "plex" in new_config:                        new_config["plex"] = new_config.pop("plex")
-            if "tmdb" in new_config:                        new_config["tmdb"] = new_config.pop("tmdb")
-            if "tautulli" in new_config:                    new_config["tautulli"] = new_config.pop("tautulli")
-            if "omdb" in new_config:                        new_config["omdb"] = new_config.pop("omdb")
-            if "mdblist" in new_config:                     new_config["mdblist"] = new_config.pop("mdblist")
-            if "notifiarr" in new_config:                   new_config["notifiarr"] = new_config.pop("notifiarr")
-            if "anidb" in new_config:                       new_config["anidb"] = new_config.pop("anidb")
-            if "radarr" in new_config:
-                temp = new_config.pop("radarr")
-                if temp and "add" in temp:
-                    temp["add_missing"] = temp.pop("add")
-                new_config["radarr"] = temp
-            if "sonarr" in new_config:
-                temp = new_config.pop("sonarr")
-                if temp and "add" in temp:
-                    temp["add_missing"] = temp.pop("add")
-                new_config["sonarr"] = temp
-            if "trakt" in new_config:                       new_config["trakt"] = new_config.pop("trakt")
-            if "mal" in new_config:                         new_config["mal"] = new_config.pop("mal")
-            self.data = new_config
-        except yaml.scanner.ScannerError as e:
-            logger.stacktrace()
-            raise Failed(f"YAML Error: {util.tab_new_lines(e)}")
-        except Exception as e:
-            logger.stacktrace()
-            raise Failed(f"YAML Error: {e}")
+                    self.data["libraries"][library]["webhooks"]["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
+        if "libraries" in self.data:                   self.data["libraries"] = self.data.pop("libraries")
+        if "playlist_files" in self.data:              self.data["playlist_files"] = self.data.pop("playlist_files")
+        if "settings" in self.data:
+            temp = self.data.pop("settings")
+            if "collection_minimum" in temp:
+                temp["minimum_items"] = temp.pop("collection_minimum")
+            if "playlist_sync_to_user" in temp:
+                temp["playlist_sync_to_users"] = temp.pop("playlist_sync_to_user")
+            self.data["settings"] = temp
+        if "webhooks" in self.data:
+            temp = self.data.pop("webhooks")
+            if "changes" not in temp:
+                changes = []
+                def hooks(attr):
+                    if attr in temp:
+                        items = util.get_list(temp.pop(attr), split=False)
+                        if items:
+                            changes.extend([w for w in items if w not in changes])
+                hooks("collection_creation")
+                hooks("collection_addition")
+                hooks("collection_removal")
+                hooks("collection_changes")
+                temp["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
+            self.data["webhooks"] = temp
+        if "plex" in self.data:                        self.data["plex"] = self.data.pop("plex")
+        if "tmdb" in self.data:                        self.data["tmdb"] = self.data.pop("tmdb")
+        if "tautulli" in self.data:                    self.data["tautulli"] = self.data.pop("tautulli")
+        if "omdb" in self.data:                        self.data["omdb"] = self.data.pop("omdb")
+        if "mdblist" in self.data:                     self.data["mdblist"] = self.data.pop("mdblist")
+        if "notifiarr" in self.data:                   self.data["notifiarr"] = self.data.pop("notifiarr")
+        if "anidb" in self.data:                       self.data["anidb"] = self.data.pop("anidb")
+        if "radarr" in self.data:
+            temp = self.data.pop("radarr")
+            if temp and "add" in temp:
+                temp["add_missing"] = temp.pop("add")
+            self.data["radarr"] = temp
+        if "sonarr" in self.data:
+            temp = self.data.pop("sonarr")
+            if temp and "add" in temp:
+                temp["add_missing"] = temp.pop("add")
+            self.data["sonarr"] = temp
+        if "trakt" in self.data:                       self.data["trakt"] = self.data.pop("trakt")
+        if "mal" in self.data:                         self.data["mal"] = self.data.pop("mal")
 
         def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
             endline = ""
@@ -215,12 +207,12 @@ class ConfigFile:
             if data is None or attribute not in data:
                 message = f"{text} not found"
                 if parent and save is True:
-                    loaded_config, _, _ = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
+                    yaml = YAML(self.config_path)
                     endline = f"\n{parent} sub-attribute {attribute} added to config"
-                    if parent not in loaded_config or not loaded_config[parent]:        loaded_config[parent] = {attribute: default}
-                    elif attribute not in loaded_config[parent]:                        loaded_config[parent][attribute] = default
+                    if parent not in yaml.data or not yaml.data[parent]:                yaml.data[parent] = {attribute: default}
+                    elif attribute not in yaml.data[parent]:                            yaml.data[parent][attribute] = default
                     else:                                                               endline = ""
-                    yaml.round_trip_dump(loaded_config, open(self.config_path, "w"), block_seq_indent=2)
+                    yaml.save()
                 if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
             elif data[attribute] is None:
                 if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
