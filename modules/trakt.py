@@ -1,8 +1,7 @@
 import requests, time, webbrowser
 from modules import util
-from modules.util import Failed, TimeoutExpired
+from modules.util import Failed, TimeoutExpired, YAML
 from retrying import retry
-from ruamel import yaml
 
 logger = util.logger
 
@@ -171,10 +170,9 @@ class Trakt:
     def _save(self, authorization):
         if authorization and self._check(authorization):
             if self.authorization != authorization and not self.config.read_only:
-                yaml.YAML().allow_duplicate_keys = True
-                config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
-                config["trakt"]["pin"] = None
-                config["trakt"]["authorization"] = {
+                yaml = YAML(self.config_path)
+                yaml.data["trakt"]["pin"] = None
+                yaml.data["trakt"]["authorization"] = {
                     "access_token": authorization["access_token"],
                     "token_type": authorization["token_type"],
                     "expires_in": authorization["expires_in"],
@@ -183,7 +181,7 @@ class Trakt:
                     "created_at": authorization["created_at"]
                 }
                 logger.info(f"Saving authorization information to {self.config_path}")
-                yaml.round_trip_dump(config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
+                yaml.save()
                 self.authorization = authorization
             return True
         return False

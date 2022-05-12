@@ -1,9 +1,8 @@
 import math, operator, os, re, requests
 from datetime import datetime
 from modules import plex, ergast, util
-from modules.util import Failed
+from modules.util import Failed, YAML
 from plexapi.exceptions import NotFound, BadRequest
-from ruamel import yaml
 
 logger = util.logger
 
@@ -81,28 +80,19 @@ class DataFile:
             return data
 
     def load_file(self, file_type, file_path):
-        try:
-            if file_type in ["URL", "Git", "Repo"]:
-                if file_type == "Repo" and not self.config.custom_repo:
-                    raise Failed("Config Error: No custom_repo defined")
-                content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else util.github_base}{file_path}.yml"
-                response = self.config.get(content_path)
-                if response.status_code >= 400:
-                    raise Failed(f"URL Error: No file found at {content_path}")
-                content = response.content
-            elif os.path.exists(os.path.abspath(file_path)):
-                content = open(file_path, encoding="utf-8")
-            else:
-                raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
-            data, _, _ = yaml.util.load_yaml_guess_indent(content)
-        except yaml.scanner.ScannerError as ye:
-            raise Failed(f"YAML Error: {util.tab_new_lines(ye)}")
-        except Exception as e:
-            logger.stacktrace()
-            raise Failed(f"YAML Error: {e}")
-        if not data or not isinstance(data, dict):
-            raise Failed("YAML Error: File is empty")
-        return data
+        if file_type in ["URL", "Git", "Repo"]:
+            if file_type == "Repo" and not self.config.custom_repo:
+                raise Failed("Config Error: No custom_repo defined")
+            content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else util.github_base}{file_path}.yml"
+            response = self.config.get(content_path)
+            if response.status_code >= 400:
+                raise Failed(f"URL Error: No file found at {content_path}")
+            yaml = YAML(input_data=response.content, check_empty=True)
+        elif os.path.exists(os.path.abspath(file_path)):
+            yaml = YAML(path=os.path.abspath(file_path), check_empty=True)
+        else:
+            raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
+        return yaml.data
 
     def apply_template(self, name, data, template_call):
         if not self.templates:

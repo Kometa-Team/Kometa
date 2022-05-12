@@ -1,7 +1,6 @@
-import math, re, secrets, time, webbrowser
+import re, secrets, time, webbrowser
 from modules import util
-from modules.util import Failed, TimeoutExpired
-from ruamel import yaml
+from modules.util import Failed, TimeoutExpired, YAML
 
 logger = util.logger
 
@@ -138,16 +137,15 @@ class MyAnimeList:
     def _save(self, authorization):
         if authorization is not None and "access_token" in authorization and authorization["access_token"] and self._check(authorization):
             if self.authorization != authorization and not self.config.read_only:
-                yaml.YAML().allow_duplicate_keys = True
-                config, ind, bsi = yaml.util.load_yaml_guess_indent(open(self.config_path, encoding="utf-8"))
-                config["mal"]["authorization"] = {
+                yaml = YAML(self.config_path)
+                yaml.data["mal"]["authorization"] = {
                     "access_token": authorization["access_token"],
                     "token_type": authorization["token_type"],
                     "expires_in": authorization["expires_in"],
                     "refresh_token": authorization["refresh_token"]
                 }
                 logger.info(f"Saving authorization information to {self.config_path}")
-                yaml.round_trip_dump(config, open(self.config_path, "w"), indent=ind, block_seq_indent=bsi)
+                yaml.save()
                 logger.secret(authorization["access_token"])
             self.authorization = authorization
             return True

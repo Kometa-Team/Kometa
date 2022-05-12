@@ -3,8 +3,7 @@ from abc import ABC, abstractmethod
 from modules import util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
-from modules.util import Failed
-from ruamel import yaml
+from modules.util import Failed, YAML
 
 logger = util.logger
 
@@ -258,10 +257,9 @@ class Library(ABC):
                     self.report_data[collection][other].append(title)
 
         with open(self.report_path, "w"): pass
-        try:
-            yaml.round_trip_dump(self.report_data, open(self.report_path, "w", encoding="utf-8"))
-        except yaml.scanner.ScannerError as e:
-            logger.error(f"YAML Error: {util.tab_new_lines(e)}")
+        yaml = YAML(self.report_path)
+        yaml.data = self.report_data
+        yaml.save()
 
     def cache_items(self):
         logger.info("")

@@ -6,7 +6,6 @@ try:
     from modules.logs import MyLogger
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
-    from ruamel import yaml
 except ModuleNotFoundError:
     print("Requirements Error: Requirements are not installed")
     sys.exit(0)
