@@ -2,7 +2,7 @@ import os, re, time
 from datetime import datetime
 from modules import util
 from modules.builder import CollectionBuilder
-from modules.util import Failed
+from modules.util import Failed, NotScheduled
 from plexapi.audio import Album
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
@@ -230,6 +230,8 @@ class Overlays:
                     if added_titles:
                         logger.debug(f"{len(added_titles)} Titles Found: {[self.get_item_sort_title(a, atr='title') for a in added_titles]}")
                     logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay}")
+                except NotScheduled as e:
+                    logger.info(e)
                 except Failed as e:
                     logger.error(e)
 
