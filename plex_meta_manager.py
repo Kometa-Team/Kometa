@@ -653,6 +653,8 @@ def run_collection(config, library, metadata, requested_collections):
             if str(e).endswith("and was deleted"):
                 library.stats["deleted"] += 1
                 library.status[mapping_name]["status"] = "Deleted Not Scheduled"
+            elif str(e).startswith("Skipped because allowed_library_types"):
+                library.status[mapping_name]["status"] = "Skipped Invalid Library Type"
             else:
                 library.status[mapping_name]["status"] = "Not Scheduled"
         except Failed as e:

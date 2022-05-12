@@ -39,7 +39,8 @@ string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "suppress_overlays",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level", "overlay",
-    "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection"
+    "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection",
+    "allowed_library_types"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
@@ -216,6 +217,21 @@ class CollectionBuilder:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
 
+        if "allowed_library_types" in methods and not self.playlist:
+            logger.debug("")
+            logger.debug("Validating Method: allowed_library_types")
+            if not self.data[methods["allowed_library_types"]]:
+                raise Failed(f"{self.Type} Error: allowed_library_types attribute is blank")
+            logger.debug(f"Value: {data[methods['allowed_library_types']]}")
+            found_type = False
+            for library_type in util.get_list(self.data[methods["allowed_library_types"]], lower=True):
+                if library_type not in plex.library_types:
+                    raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: {', '.join(plex.library_types)}")
+                elif library_type == self.library.Plex.type:
+                    found_type = True
+            if not found_type:
+                raise NotScheduled(f"Skipped because allowed_library_types {self.data[methods['allowed_library_types']]} doesn't match the library type: {self.library.Plex.type}")
+
         self.suppress_overlays = []
         self.overlay_group = None
         self.overlay_weight = None
@@ -315,21 +331,18 @@ class CollectionBuilder:
         self.sync_to_users = None
         self.valid_users = []
         if self.playlist:
-            if "libraries" in methods:
-                logger.debug("")
-                logger.debug("Validating Method: libraries")
-                if not self.data[methods["libraries"]]:
-                    raise Failed(f"{self.Type} Error: libraries attribute is blank")
-                else:
-                    logger.debug(f"Value: {self.data[methods['libraries']]}")
-                    for pl_library in util.get_list(self.data[methods["libraries"]]):
-                        if str(pl_library) in config.library_map:
-                            self.libraries.append(config.library_map[pl_library])
-                        else:
-                            raise Failed(f"Playlist Error: Library: {pl_library} not defined")
-                    self.library = self.libraries[0]
-            else:
+            if "libraries" not in methods:
                 raise Failed("Playlist Error: libraries attribute is required")
+            logger.debug("")
+            logger.debug("Validating Method: libraries")
+            if not self.data[methods["libraries"]]:
+                raise Failed(f"{self.Type} Error: libraries attribute is blank")
+            logger.debug(f"Value: {self.data[methods['libraries']]}")
+            for pl_library in util.get_list(self.data[methods["libraries"]]):
+                if str(pl_library) not in config.library_map:
+                    raise Failed(f"Playlist Error: Library: {pl_library} not defined")
+                self.libraries.append(config.library_map[pl_library])
+            self.library = self.libraries[0]
 
             if "sync_to_users" in methods or "sync_to_user" in methods:
                 s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
@@ -347,10 +360,9 @@ class CollectionBuilder:
                     self.valid_users = plex_users
                 else:
                     for user in util.get_list(self.sync_to_users):
-                        if user in plex_users:
-                            self.valid_users.append(user)
-                        else:
+                        if user not in plex_users:
                             raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
+                        self.valid_users.append(user)
 
             if "delete_playlist" in methods:
                 logger.debug("")

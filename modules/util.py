@@ -534,9 +534,11 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 logger.error(f"Schedule Error: failed to parse {attribute}: {schedule}")
                 continue
             try:
-                schedule_check(attribute, match.group(1), current_time, run_hour, is_all=True)
+                schedule_str += f"\nScheduled to meet all of these:\n\t"
+                schedule_str += schedule_check(attribute, match.group(1), current_time, run_hour, is_all=True)
                 all_check += 1
-            except NotScheduled:
+            except NotScheduled as e:
+                schedule_str += str(e)
                 continue
         elif run_time.startswith(("day", "daily")):
             all_check += 1
@@ -551,7 +553,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             if run_time.startswith("hour"):
                 try:
                     if 0 <= int(param) <= 23:
-                        schedule_str += f"\nScheduled to run only on the {make_ordinal(int(param))} hour"
+                        schedule_str += f"\nScheduled to run on the {make_ordinal(int(param))} hour"
                         if run_hour == int(param):
                             all_check += 1
                     else:
@@ -608,11 +610,14 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                     all_check += 1
         else:
             logger.error(f"Schedule Error: {display}")
+    if is_all:
+        schedule_str.replace("\n", "\n\t")
     if (all_check == 0 and not is_all) or (is_all and schedules_run != all_check):
         if range_collection:
             raise NotScheduledRange(schedule_str)
         else:
             raise NotScheduled(schedule_str)
+    return schedule_str
 
 def check_int(value, datatype="int", minimum=1, maximum=None):
     try:

@@ -19,6 +19,7 @@ from xml.etree.ElementTree import ParseError
 logger = util.logger
 
 builders = ["plex_all", "plex_pilots", "plex_collectionless", "plex_search"]
+library_types = ["movie", "show", "artist"]
 search_translation = {
     "episode_title": "episode.title",
     "network": "show.network",
@@ -409,11 +410,10 @@ class Plex(Library):
                 break
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library '{params['name']}' not found. Options: {library_names}")
-        if self.Plex.type in ["movie", "show", "artist"]:
-            self.type = self.Plex.type.capitalize()
-        else:
+        if self.Plex.type not in library_types:
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
+        self.type = self.Plex.type.capitalize()
         self._users = []
         self._all_items = []
         self.agent = self.Plex.agent
