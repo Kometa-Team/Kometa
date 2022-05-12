@@ -52,7 +52,9 @@ collections:
   TMDb Top Rated:
     tmdb_top_rated: 30
     sync_mode: sync
-    schedule: monthly(1), monthly(15)
+    schedule: 
+     - monthly(1)
+     - monthly(15)
 ```
 
 Below is an example of a scheduled pinning collection: 
@@ -66,18 +68,18 @@ collections:
 
 The scheduling options are:
 
-| Name    | Description                                                                                          | Format                | Example              |
-|:--------|:-----------------------------------------------------------------------------------------------------|:----------------------|:---------------------|
-| Hourly  | Update only when the script is run in that hour                                                      | hourly(Hour of Day)   | `hourly(17)`         |
-| Daily   | Update once a day                                                                                    | daily                 | `daily`              |
-| Weekly  | Update once a week on the specified day                                                              | weekly(Day of Week)   | `weekly(sunday)`     |
-| Monthly | Update once a month on the specified day                                                             | monthly(Day of Month) | `monthly(1)`         |
-| Yearly  | Update once a year on the specified day                                                              | yearly(MM/DD)         | `yearly(01/30)`      |
-| Range   | Updates whenever the date is within the range                                                        | range(MM/DD-MM/DD)    | `range(12/01-12/31)` |
-| Never   | Never updates                                                                                        | never                 | `never`              |
-| All     | Requires that all scheduling option be meet in order to run<br>ex. `all, weekly(sunday), hourly(17)` | all                   | `all`                |
+| Name    | Description                                                                                      | Format                | Example                           |
+|:--------|:-------------------------------------------------------------------------------------------------|:----------------------|:----------------------------------|
+| Hourly  | Update only when the script is run in that hour                                                  | hourly(Hour of Day)   | `hourly(17)`                      |
+| Daily   | Update once a day                                                                                | daily                 | `daily`                           |
+| Weekly  | Update once a week on the specified day                                                          | weekly(Day of Week)   | `weekly(sunday)`                  |
+| Monthly | Update once a month on the specified day                                                         | monthly(Day of Month) | `monthly(1)`                      |
+| Yearly  | Update once a year on the specified day                                                          | yearly(MM/DD)         | `yearly(01/30)`                   |
+| Range   | Updates whenever the date is within the range                                                    | range(MM/DD-MM/DD)    | `range(12/01-12/31)`              |
+| Never   | Never updates                                                                                    | never                 | `never`                           |
+| All     | Requires that all comma separated scheduling options inside its brackets be meet in order to run | all[Options]          | `all[weekly(sunday), hourly(17)]` |
 
 * `daily` is the default when `schedule` isn't specified.
 * You can run the script multiple times per day but using the `--time` command line argument detailed on the [Run Commands & Environmental Variables Page](../../home/environmental.md#time-to-run).
-* You can have multiple scheduling options just make them a list or comma-separated values.
+* You can have multiple scheduling options as a list.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.

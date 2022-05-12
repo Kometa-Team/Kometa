@@ -30,6 +30,7 @@ settings:
   asset_folders: true
   asset_depth: 0
   create_asset_folders: false
+  prioritize_assets: false
   dimensional_asset_rename: false
   download_url_assets: false
   show_missing_season_assets: false
@@ -48,14 +49,16 @@ settings:
   show_options: false
   show_missing: true
   show_missing_assets: true
-  save_missing: true
+  save_report: false
   tvdb_language: eng
   ignore_ids:
   ignore_imdb_ids:
   item_refresh_delay: 0
   playlist_sync_to_user: all
+  playlist_report: false
   verify_ssl: true
   custom_repo:
+  check_nightly: false
 webhooks:                                       # Can be individually specified per library as well
   error:
   version:
