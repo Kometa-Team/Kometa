@@ -38,7 +38,37 @@ mal:
 12. On this page Click the `Edit` button next to the application you just created.
 13. Record the `Client ID` and `Client Secret` found on the application page.
 
-* On the first run, the script will walk the user through the OAuth flow by producing a MyAnimeList URL for the user to follow. After following the URL login to MyAnimeList.net and authorize the application by clicking the `Allow` button which will redirect the user to `http://localhost/`. Copy the entire URL and paste it into the scrip and if the URL is correct then the script will populate the `authorization` sub-attributes to use in subsequent runs.
+* On the first run, the script will walk the user through the OAuth flow by producing a MyAnimeList URL for the user to follow. After following the URL login to MyAnimeList.net and authorize the application by clicking the `Allow` button which will redirect the user to `http://localhost/`. Copy the entire URL and paste it into the script and if the URL is correct then the script will populate the `authorization` sub-attributes to use in subsequent runs.
+
+On first run:
+```
+|====================================================================================================|
+| Connecting to My Anime List...                                                                     |
+|                                                                                                    |
+| Navigate to: https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id=BING&code_challenge=BANG |
+|                                                                                                    |
+| Login and click the Allow option. You will then be redirected to a localhost                       |
+| url that most likely won't load, which is fine. Copy the URL and paste it below                    |
+| URL:
+
+```
+
+Click on that URL to open your browser to MyAnimeList; you'll be looking at a page like this:
+
+![MAL Details](mal.png)
+
+Click "Allow", and you will be taken to a page that will not load.  That's fine and expected.
+
+![Localhost Failure](localhost-fail.png)
+
+Copy the URL, which will be `localhost/?code=BLAH` and paste it at the prompt.
+```
+| URL: http://localhost/?code=BOING
+| Saving authorization information to /path/to/Plex-Meta-Manager/config/config.yml |
+| My Anime List Connection Successful                                                                |
+|====================================================================================================|
+
+```
 
 <h4>OAuth Flow using Docker</h4>
 
