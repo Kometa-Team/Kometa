@@ -21,7 +21,7 @@ Plex Meta Manager is an open source Python 3 project that has been designed to e
 
 3. After that you can start updating Metadata and building automatic Collections by creating a [Metadata File](https://metamanager.wiki/en/latest/metadata/metadata.html) for each Library you want to interact with.
 
-4. After that, explore the Wiki to see all the different Collection Builders that can be used to create collections.
+4. After that, explore [the Wiki](https://metamanager.wiki/) to see all the different Collection Builders that can be used to create collections.
 
 ## Walkthroughs
 
@@ -39,7 +39,7 @@ If you find steps 1-3 above daunting, there are some walkthroughs available that
 
 The [develop](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop) branch has the most updated **documented** fixes and enhancements to Plex Meta Manager.  This version is tested and documented to some degree, but it is still an active development branch, so there may be rough edges.
 
-If switching to the develop build, it is recommended to also use the [develop](https://metamanager.wiki/en/develop/) branch of the wiki, which documents any changes made from the Master build.
+If switching to the develop build, it is recommended to also use the [develop](https://metamanager.wiki/en/develop/) branch of [the wiki](https://metamanager.wiki/), which documents any changes made from the Master build.
 
 ### Nightly
 
@@ -81,7 +81,7 @@ Before posting on GitHub about an enhancement, error, or configuration question 
 If you are unable to use the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB), please follow this guidance:
 * If you have an idea for how to enhance Plex Meta Manager please open a new [Feature Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+enhancement&2.feature_request.yml&title=%5BFeature%5D%3A+).
 * If you're getting an Error please update to the latest version and then open a [Bug Report](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+bug&template=1.bug_report.yml&title=%5BBug%5D%3A++) if the error persists.
-* If you see a mistake/typo with the Plex Meta Manager Wiki or have an idea of how we can improve it please open a [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+)
+* If you see a mistake/typo with the [Plex Meta Manager Wiki](https://metamanager.wiki/) or have an idea of how we can improve it please open a [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+)
 * If you have a metadata configuration query please post in the [Discussions](https://github.com/meisnate12/Plex-Meta-Manager/discussions).
 
 ## Contributing
