@@ -1,12 +1,12 @@
 import os, re, time
 from datetime import datetime
-from modules import util
+from modules import plex, util
 from modules.builder import CollectionBuilder
 from modules.util import Failed, NotScheduled
 from plexapi.audio import Album
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 logger = util.logger
 
@@ -81,17 +81,42 @@ class Overlays:
                     overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare, split="|")
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in item.labels])
 
-                    compare_names = {f"{on}{properties[on]['coordinates']}" if properties[on]["coordinates"] else on: on for on in over_names}
+                    compare_names = {properties[ov].get_overlay_compare(): ov for ov in over_names}
+                    blur_num = 0
+                    text_names = []
+                    normal_overlays = []
+                    for over_name in over_names:
+                        if over_name.startswith("blur"):
+                            blur_test = int(re.search("\\(([^)]+)\\)", over_name).group(1))
+                            if blur_test > blur_num:
+                                blur_num = blur_test
+                        elif over_name.startswith("text"):
+                            text_names.append(over_name)
+                        else:
+                            normal_overlays.append(over_name)
 
                     overlay_change = False if has_overlay else True
                     if not overlay_change:
                         for oc in overlay_compare:
                             if oc not in compare_names:
                                 overlay_change = True
+
                     if not overlay_change:
-                        for over_name in compare_names:
-                            if over_name not in overlay_compare or properties[compare_names[over_name]]["updated"]:
+                        for compare_name, original_name in compare_names.items():
+                            if compare_name not in overlay_compare or properties[original_name].updated:
                                 overlay_change = True
+
+                    if text_names and self.config.Cache:
+                        for over_name in text_names:
+                            rating_type = over_name[5:-1]
+                            if rating_type in ["audience_rating", "critic_rating", "user_rating"]:
+                                cache_rating = self.config.Cache.query_overlay_ratings(item.ratingKey, rating_type)
+                                actual = plex.attribute_translation[rating_type]
+                                if not hasattr(item, actual) or getattr(item, actual) is None:
+                                    continue
+                                if getattr(item, actual) != cache_rating:
+                                    overlay_change = True
+
                     try:
                         poster, _, item_dir, _ = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all and self.library.show_missing_assets:
@@ -135,24 +160,35 @@ class Overlays:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
                     elif changed_image or overlay_change:
                         try:
-                            new_poster = Image.open(poster.location if poster else has_original).convert("RGBA")
-                            temp = os.path.join(self.library.overlay_folder, f"temp.png")
-                            blur_num = 0
-                            for over_name in over_names:
-                                if over_name.startswith("blur"):
-                                    blur_test = int(re.search("\\(([^)]+)\\)", over_name).group(1))
-                                    if blur_test > blur_num:
-                                        blur_num = blur_test
+                            new_poster = Image.open(poster.location if poster else has_original) \
+                                .convert("RGBA") \
+                                .resize((1920, 1080) if isinstance(item, Episode) else (1000, 1500), Image.ANTIALIAS)
                             if blur_num > 0:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
-                            for over_name in over_names:
-                                if not over_name.startswith("blur"):
-                                    if properties[over_name]["coordinates"]:
-                                        new_poster = new_poster.resize((1920, 1080) if isinstance(item, Episode) else (1000, 1500), Image.ANTIALIAS)
-                                        new_poster.paste(properties[over_name]["image"], properties[over_name]["coordinates"], properties[over_name]["image"])
-                                    else:
-                                        new_poster = new_poster.resize(properties[over_name]["image"].size, Image.ANTIALIAS)
-                                        new_poster.paste(properties[over_name]["image"], (0, 0), properties[over_name]["image"])
+                            for over_name in normal_overlays:
+                                overlay = properties[over_name]
+                                if overlay.coordinates:
+                                    new_poster.paste(overlay.image, overlay.coordinates, overlay.image)
+                                else:
+                                    new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
+                                    new_poster.paste(overlay.image, (0, 0), overlay.image)
+                            if text_names:
+                                drawing = ImageDraw.Draw(new_poster)
+                                for over_name in text_names:
+                                    overlay = properties[over_name]
+                                    font = ImageFont.truetype(overlay.font, overlay.font_size) if overlay.font else None
+                                    text = over_name[5:-1]
+                                    if text in ["audience_rating", "critic_rating", "user_rating"]:
+                                        rating_type = text
+                                        actual = plex.attribute_translation[rating_type]
+                                        if not hasattr(item, actual) or getattr(item, actual) is None:
+                                            logger.error(f"Overlay Error: No {rating_type} found")
+                                            continue
+                                        text = getattr(item, actual)
+                                        if self.config.Cache:
+                                            self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
+                                    drawing.text(overlay.coordinates, str(text), font=font, fill=overlay.font_color)
+                            temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             new_poster.save(temp, "PNG")
                             self.library.upload_poster(item, temp)
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
@@ -200,12 +236,8 @@ class Overlays:
 
                     logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
 
-                    if builder.overlay not in properties:
-                        properties[builder.overlay] = {
-                            "keys": [], "suppress": builder.suppress_overlays, "group": builder.overlay_group,
-                            "weight": builder.overlay_weight, "path": builder.overlay_path, "updated": False,
-                            "image": None, "coordinates": builder.overlay_coordinates,
-                        }
+                    if builder.overlay.name not in properties:
+                        properties[builder.overlay.name] = builder.overlay
 
                     for method, value in builder.builders:
                         logger.debug("")
@@ -225,41 +257,42 @@ class Overlays:
                         for item in builder.added_items:
                             key_to_item[item.ratingKey] = item
                             added_titles.append(item)
-                            if item.ratingKey not in properties[builder.overlay]["keys"]:
-                                properties[builder.overlay]["keys"].append(item.ratingKey)
+                            if item.ratingKey not in properties[builder.overlay.name].keys:
+                                properties[builder.overlay.name].keys.append(item.ratingKey)
                     if added_titles:
                         logger.debug(f"{len(added_titles)} Titles Found: {[self.get_item_sort_title(a, atr='title') for a in added_titles]}")
-                    logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay}")
+                    logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay.name}")
                 except NotScheduled as e:
                     logger.info(e)
                 except Failed as e:
+                    logger.stacktrace()
                     logger.error(e)
 
-        for overlay_name, over_attrs in properties.items():
-            if over_attrs["group"]:
-                if over_attrs["group"] not in overlay_groups:
-                    overlay_groups[over_attrs["group"]] = {}
-                overlay_groups[over_attrs["group"]][overlay_name] = over_attrs["weight"]
-            for rk in over_attrs["keys"]:
-                for suppress_name in over_attrs["suppress"]:
-                    if suppress_name in properties and rk in properties[suppress_name]["keys"]:
-                        properties[suppress_name]["keys"].remove(rk)
-            if not overlay_name.startswith("blur"):
+        for overlay_name, over_obj in properties.items():
+            if over_obj.group:
+                if over_obj.group not in overlay_groups:
+                    overlay_groups[over_obj.group] = {}
+                overlay_groups[over_obj.group][overlay_name] = over_obj.weight
+            for rk in over_obj.keys:
+                for suppress_name in over_obj.suppress:
+                    if suppress_name in properties and rk in properties[suppress_name].keys:
+                        properties[suppress_name].keys.remove(rk)
+            if not overlay_name.startswith(("blur", "text")):
                 image_compare = None
                 if self.config.Cache:
                     _, image_compare, _ = self.config.Cache.query_image_map(overlay_name, f"{self.library.image_table_name}_overlays")
-                overlay_size = os.stat(properties[overlay_name]["path"]).st_size
-                properties[overlay_name]["updated"] = not image_compare or str(overlay_size) != str(image_compare)
+                overlay_size = os.stat(over_obj.path).st_size
+                over_obj.updated = not image_compare or str(overlay_size) != str(image_compare)
                 try:
-                    properties[overlay_name]["image"] = Image.open(properties[overlay_name]["path"]).convert("RGBA")
+                    over_obj.image = Image.open(over_obj.path).convert("RGBA")
                     if self.config.Cache:
                         self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
                 except OSError:
-                    logger.error(f"Overlay Error: overlay image {properties[overlay_name]['path']} failed to load")
+                    logger.error(f"Overlay Error: overlay image {over_obj.path} failed to load")
                     properties.pop(overlay_name)
 
-        for overlay_name, over_attrs in properties.items():
-            for over_key in over_attrs["keys"]:
+        for overlay_name, over_obj in properties.items():
+            for over_key in over_obj.keys:
                 if over_key not in key_to_overlays:
                     key_to_overlays[over_key] = (key_to_item[over_key], [])
                 key_to_overlays[over_key][1].append(overlay_name)

@@ -891,7 +891,7 @@ class Plex(Library):
             title = item.title
         posters, backgrounds = util.get_image_dicts(group, alias)
         try:
-            asset_poster, asset_background, item_dir, _ = self.find_item_assets(item, item_asset_directory=asset_location, top_item=top_item)
+            asset_poster, asset_background, item_dir, _ = self.find_item_assets(item, item_asset_directory=asset_location)
             if asset_poster:
                 posters["asset_directory"] = asset_poster
             if asset_background:
@@ -911,7 +911,7 @@ class Plex(Library):
             self.upload_images(item, poster=poster, background=background)
         return asset_location
 
-    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, top_item=None):
+    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None):
         poster = None
         background = None
         folder_name = None
@@ -921,13 +921,13 @@ class Plex(Library):
 
         is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist, str))
         if isinstance(item, Album):
-            prefix = f"{top_item.title} Album {item.title}'s "
+            prefix = f"{item.parentTitle} Album {item.title}'s "
             file_name = item.title
         elif isinstance(item, Season):
-            prefix = f"{top_item.title} Season {item.seasonNumber}'s "
+            prefix = f"{item.parentTitle} Season {item.seasonNumber}'s "
             file_name = f"Season{'0' if item.seasonNumber < 10 else ''}{item.seasonNumber}"
         elif isinstance(item, Episode):
-            prefix = f"{top_item.title} {item.seasonEpisode.upper()}'s "
+            prefix = f"{item.grandparentTitle} {item.seasonEpisode.upper()}'s "
             file_name = item.seasonEpisode.upper()
         else:
             prefix = f"{item if isinstance(item, str) else item.title}'s "
@@ -1140,7 +1140,6 @@ class Plex(Library):
         return True
 
     def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time):
-
         filter_actual = attribute_translation[filter_attr] if filter_attr in attribute_translation else filter_attr
         if isinstance(item, Movie):
             item_type = "movie"
@@ -1169,8 +1168,7 @@ class Plex(Library):
             if filter_attr == "audio_track_title":
                 for media in item.media:
                     for part in media.parts:
-                        values.extend(
-                            [a.extendedDisplayTitle for a in part.audioStreams() if a.extendedDisplayTitle])
+                        values.extend([a.extendedDisplayTitle for a in part.audioStreams() if a.extendedDisplayTitle])
             elif filter_attr == "filepath":
                 values = [loc for loc in item.locations]
             else:

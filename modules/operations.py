@@ -92,7 +92,7 @@ class Operations:
                             found_season = False
                             found_episode = False
                             for season in self.library.query(item.seasons):
-                                season_poster, season_background, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, top_item=item)
+                                season_poster, season_background, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir)
                                 if season_poster:
                                     found_season = True
                                 elif self.library.show_missing_season_assets and season.seasonNumber > 0:
@@ -101,7 +101,7 @@ class Operations:
                                     self.library.upload_images(season, poster=season_poster, background=season_background)
                                 for episode in self.library.query(season.episodes):
                                     if episode.seasonEpisode:
-                                        episode_poster, episode_background, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, top_item=item)
+                                        episode_poster, episode_background, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir)
                                         if episode_poster or episode_background:
                                             found_episode = True
                                             self.library.upload_images(episode, poster=episode_poster, background=episode_background)
@@ -113,7 +113,7 @@ class Operations:
                             missing_assets = ""
                             found_album = False
                             for album in self.library.query(item.albums):
-                                album_poster, album_background, _, _ = self.library.find_item_assets(album, item_asset_directory=item_dir, top_item=item)
+                                album_poster, album_background, _, _ = self.library.find_item_assets(album, item_asset_directory=item_dir)
                                 if album_poster or album_background:
                                     found_album = True
                                 elif self.library.show_missing_season_assets:

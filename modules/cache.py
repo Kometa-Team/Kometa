@@ -243,6 +243,13 @@ class Cache:
                     date TEXT,
                     expiration_date TEXT)"""
                 )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS overlay_ratings (
+                    key INTEGER PRIMARY KEY,
+                    rating_key INTEGER,
+                    type TEXT,
+                    rating REAL)"""
+                )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute(f"SELECT DISTINCT library FROM image_map")
@@ -855,3 +862,21 @@ class Cache:
                 cursor.executemany("UPDATE ergast_race SET name = ?, date = ?, expiration_date = ? WHERE season = ? AND round = ?",
                                    [(r.name, r.date.strftime("%Y-%m-%d") if r.date else None,
                                      expiration_date.strftime("%Y-%m-%d"), r.season, r.round) for r in races])
+
+    def query_overlay_ratings(self, rating_key, rating_type):
+        rating = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM overlay_ratings WHERE rating_key = ? AND type = ?", (rating_key, rating_type))
+                row = cursor.fetchone()
+                if row:
+                    rating = row["rating"]
+        return rating
+
+    def update_overlay_ratings(self, rating_key, rating_type, rating):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO overlay_ratings(rating_key, type) VALUES(?, ?)", (rating_key, rating_type))
+                cursor.execute("UPDATE overlay_ratings SET rating = ? WHERE rating_key = ? AND type = ?", (rating, rating_key, rating_type))

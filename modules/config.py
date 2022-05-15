@@ -317,7 +317,12 @@ class ConfigFile:
             "check_nightly": check_for_attribute(self.data, "check_nightly", parent="settings", var_type="bool", default=False),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
-        self.custom_repo = self.general["custom_repo"].replace("https://github.com/", "https://raw.githubusercontent.com/") if self.general["custom_repo"] else None
+        self.custom_repo = None
+        if self.general["custom_repo"]:
+            repo = self.general["custom_repo"]
+            if "https://github.com/" in repo:
+                repo = repo.replace("https://github.com/", "https://raw.githubusercontent.com/").replace("/tree/", "/")
+            self.custom_repo = repo
         self.check_nightly = self.general["check_nightly"]
         self.latest_version = util.current_version(self.version, nightly=self.check_nightly)
 
