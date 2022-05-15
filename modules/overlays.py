@@ -179,8 +179,10 @@ class Overlays:
                                 for over_name in text_names:
                                     overlay = properties[over_name]
                                     text = over_name[5:-1]
-                                    if text in ["audience_rating", "critic_rating", "user_rating"]:
-                                        rating_type = text
+                                    if text in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
+                                        per = text[:-1] == "%"
+                                        rating_type = text[:-1] if per else text
+
                                         actual = plex.attribute_translation[rating_type]
                                         if not hasattr(item, actual) or getattr(item, actual) is None:
                                             logger.error(f"Overlay Error: No {rating_type} found")
@@ -188,6 +190,8 @@ class Overlays:
                                         text = getattr(item, actual)
                                         if self.config.Cache:
                                             self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
+                                        if per:
+                                            text = f"{int(text * 10)}%"
                                     drawing.text(overlay.get_coordinates(image_width, image_height, text=str(text)), str(text), font=overlay.font, fill=overlay.font_color)
                             temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             new_poster.save(temp, "PNG")
