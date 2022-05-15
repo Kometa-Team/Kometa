@@ -4,6 +4,7 @@ from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
+from PIL import ImageColor
 
 try:
     import msvcrt
@@ -776,6 +777,23 @@ def check_time(message, end=False):
         logger.debug(f"{message}: {current_time - previous_time}")
     previous_time = None if end else current_time
 
+def get_system_fonts():
+    dirs = []
+    if sys.platform == "win32":
+        windir = os.environ.get("WINDIR")
+        if windir:
+            dirs.append(os.path.join(windir, "fonts"))
+    elif sys.platform in ("linux", "linux2"):
+        lindirs = os.environ.get("XDG_DATA_DIRS", "")
+        if not lindirs:
+            lindirs = "/usr/share"
+        dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+    elif sys.platform == "darwin":
+        dirs += ["/Library/Fonts", "/System/Library/Fonts", os.path.expanduser("~/Library/Fonts")]
+    else:
+        return dirs
+    return [n for d in dirs for _, _, ns in os.walk(d) for n in ns]
+
 class YAML:
     def __init__(self, path=None, input_data=None, check_empty=False, create=False):
         self.path = path
@@ -807,3 +825,141 @@ class YAML:
         if self.path:
             with open(self.path, 'w') as fp:
                 self.yaml.dump(self.data, fp)
+
+class Overlay:
+    def __init__(self, config, library, overlay_data, suppress):
+        self.config = config
+        self.library = library
+        self.data = overlay_data
+        self.suppress = suppress
+        self.keys = []
+        self.updated = False
+        self.image = None
+        self.group = None
+        self.weight = None
+        self.path = None
+        self.coordinates = None
+        self.font = None
+        self.font_size = 12
+        self.font_color = None
+        logger.debug("")
+        logger.debug("Validating Method: overlay")
+        logger.debug(f"Value: {self.data}")
+        if isinstance(self.data, dict):
+            if "name" not in self.data or not self.data["name"]:
+                raise Failed(f"Overlay Error: overlay must have the name attribute")
+            self.name = str(self.data["name"])
+
+            if "group" in self.data and self.data["group"]:
+                self.group = str(self.data["group"])
+            if "weight" in self.data and self.data["weight"] is not None:
+                pri = check_num(self.data["weight"])
+                if pri is None:
+                    raise Failed(f"Overlay Error: overlay weight must be a number")
+                self.weight = pri
+            if ("group" in self.data or "weight" in self.data) and (self.weight is None or not self.group):
+                raise Failed(f"Overlay Error: overlay attribute's group and weight must be used together")
+
+            x_cord = None
+            y_cord = None
+            if "x_coordinate" in self.data and self.data["x_coordinate"] is not None:
+                x_cord = check_num(self.data["x_coordinate"])
+                if x_cord is None or x_cord < 0:
+                    raise Failed(f"Overlay Error: overlay x_coordinate: {self.data['x_coordinate']} must be a number 0 or greater")
+            if "y_coordinate" in self.data and self.data["y_coordinate"] is not None:
+                y_cord = check_num(self.data["y_coordinate"])
+                if y_cord is None or y_cord < 0:
+                    raise Failed(f"Overlay Error: overlay y_coordinate: {self.data['y_coordinate']} must be a number 0 or greater")
+            if ("x_coordinate" in self.data or "y_coordinate" in self.data) and (x_cord is None or y_cord is None):
+                raise Failed(f"Overlay Error: overlay x_coordinate and overlay y_coordinate must be used together")
+            if x_cord is not None or y_cord is not None:
+                self.coordinates = (x_cord, y_cord)
+
+            def get_and_save_image(image_url):
+                response = self.config.get(image_url)
+                if response.status_code >= 400:
+                    raise Failed(f"Overlay Error: Overlay Image not found at: {image_url}")
+                if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
+                    raise Failed(f"Overlay Error: Overlay Image not a png: {image_url}")
+                if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
+                    os.makedirs(library.overlay_folder, exist_ok=False)
+                    logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
+                clean_image_name, _ = validate_filename(self.name)
+                image_path = os.path.join(library.overlay_folder, f"{clean_image_name}.png")
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+                with open(image_path, "wb") as handler:
+                    handler.write(response.content)
+                while is_locked(image_path):
+                    time.sleep(1)
+                return image_path
+
+            if not self.name.startswith(("blur", "text")):
+                if "file" in self.data and self.data["file"]:
+                    self.path = self.data["file"]
+                elif "git" in self.data and self.data["git"]:
+                    self.path = get_and_save_image(f"{github_base}{self.data['git']}.png")
+                elif "repo" in self.data and self.data["repo"]:
+                    self.path = get_and_save_image(f"{self.config.custom_repo}{self.data['repo']}.png")
+                elif "url" in self.data and self.data["url"]:
+                    self.path = get_and_save_image(self.data["url"])
+
+            if self.name.startswith("blur"):
+                try:
+                    match = re.search("\\(([^)]+)\\)", self.name)
+                    if not match or 0 >= int(match.group(1)) > 100:
+                        raise ValueError
+                    self.name = f"blur({match.group(1)})"
+                except ValueError:
+                    logger.error(f"Overlay Error: failed to parse overlay blur name: {self.name} defaulting to blur(50)")
+                    self.name = "blur(50)"
+            elif self.name.startswith("text"):
+                if not self.coordinates:
+                    raise Failed(f"Overlay Error: overlay attribute's x_coordinate and y_coordinate are required when using text")
+                match = re.search("\\(([^)]+)\\)", self.name)
+                if not match:
+                    raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
+                self.name = f"text({match.group(1)})"
+                if "font" in self.data and self.data["font"]:
+                    font = str(self.data["font"])
+                    if not os.path.exists(font):
+                        fonts = get_system_fonts()
+                        if font not in fonts:
+                            raise Failed(f"Overlay Error: font: {font} not found. Options: {', '.join(fonts)}")
+                    self.font = font
+                if "font_size" in self.data and self.data["font_size"] is not None:
+                    font_size = check_num(self.data["font_size"])
+                    if font_size is None or font_size < 1:
+                        logger.error(f"Overlay Error: overlay font_size: {self.data['font_size']} invalid must be a greater than 0")
+                    else:
+                        self.font_size = font_size
+                if "font_color" in self.data and self.data["font_color"]:
+                    try:
+                        color_str = self.data["font_color"]
+                        color_str = color_str if color_str.startswith("#") else f"#{color_str}"
+                        self.font_color = ImageColor.getcolor(color_str, "RGB")
+                    except ValueError:
+                        logger.error(f"Overlay Error: overlay color: {self.data['color']} invalid")
+            else:
+                if "|" in self.name:
+                    raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
+                if not self.path:
+                    clean_name, _ = validate_filename(self.name)
+                    self.path = os.path.join(library.overlay_folder, f"{clean_name}.png")
+                if not os.path.exists(self.path):
+                    raise Failed(f"Overlay Error: Overlay Image not found at: {self.path}")
+        else:
+            self.name = str(self.data)
+            logger.warning(f"Overlay Warning: No overlay attribute using mapping name {self.data} as the overlay name")
+
+    def get_overlay_compare(self):
+        output = self.name
+        if self.group:
+            output += f"{self.group}{self.weight}"
+        if self.coordinates:
+            output += str(self.coordinates)
+        if self.font:
+            output += f"{self.font}{self.font_size}"
+        if self.font_color:
+            output += str(self.font_color)
+        return output

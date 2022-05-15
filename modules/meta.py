@@ -461,7 +461,7 @@ class MetadataFile(DataFile):
                                 ending = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
                             else:
                                 ending = util.parse("Config", "ending", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=1)
-                            increment = util.parse("Config", "increment", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=1, minimum=1)
+                            increment = util.parse("Config", "increment", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=1, minimum=1) if "increment" in number_methods else 1
                             if starting > ending:
                                 raise Failed(f"Config Error: {map_name} data ending must be greater than starting")
                             current = starting

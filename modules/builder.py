@@ -1,7 +1,7 @@
 import os, re, time
 from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
-from modules.util import Failed, ImageData, NotScheduled, NotScheduledRange
+from modules.util import Failed, NotScheduled, NotScheduledRange, Overlay
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
@@ -232,101 +232,22 @@ class CollectionBuilder:
             if not found_type:
                 raise NotScheduled(f"Skipped because allowed_library_types {self.data[methods['allowed_library_types']]} doesn't match the library type: {self.library.Plex.type}")
 
-        self.suppress_overlays = []
-        self.overlay_group = None
-        self.overlay_weight = None
-        self.overlay_path = None
-        self.overlay_coordinates = None
         if self.overlay:
             if "overlay" in methods:
-                logger.debug("")
-                logger.debug("Validating Method: overlay")
-                logger.debug(f"Value: {data[methods['overlay']]}")
-                if isinstance(data[methods["overlay"]], dict):
-                    if "name" not in data[methods["overlay"]] or not data[methods["overlay"]]["name"]:
-                        raise Failed(f"{self.Type} Error: overlay must have the name attribute")
-                    self.overlay = str(data[methods["overlay"]]["name"])
-                    if "group" in data[methods["overlay"]] and data[methods["overlay"]]["group"]:
-                        self.overlay_group = str(data[methods["overlay"]]["group"])
-                    if "weight" in data[methods["overlay"]] and data[methods["overlay"]]["weight"] is not None:
-                        pri = util.check_num(data[methods["overlay"]]["weight"])
-                        if pri is None:
-                            raise Failed(f"{self.Type} Error: overlay weight must be a number")
-                        self.overlay_weight = pri
-                    if ("group" in data[methods["overlay"]] or "weight" in data[methods["overlay"]]) and (not self.overlay_group or self.overlay_weight is None):
-                        raise Failed(f"{self.Type} Error: overlay group and overlay weight must be used together")
-                    x_coordinate = None
-                    if "x_coordinate" in data[methods["overlay"]] and data[methods["overlay"]]["x_coordinate"] is not None:
-                        x_coordinate = util.check_num(data[methods["overlay"]]["x_coordinate"])
-                        if x_coordinate is None or x_coordinate < 0:
-                            raise Failed(f"{self.Type} Error: overlay x_coordinate: {data[methods['overlay']]['x_coordinate']} invalid must be a number 0 or greater")
-                    y_coordinate = None
-                    if "y_coordinate" in data[methods["overlay"]] and data[methods["overlay"]]["y_coordinate"] is not None:
-                        y_coordinate = util.check_num(data[methods["overlay"]]["y_coordinate"])
-                        if y_coordinate is None or y_coordinate < 0:
-                            raise Failed(f"{self.Type} Error: overlay y_coordinate: {data[methods['overlay']]['y_coordinate']} invalid must be a number 0 or greater")
-                    if ("x_coordinate" in data[methods["overlay"]] or "y_coordinate" in data[methods["overlay"]]) and (x_coordinate is None or y_coordinate is None):
-                        raise Failed(f"{self.Type} Error: overlay x_coordinate and overlay y_coordinate must be used together")
-                    if x_coordinate is not None or y_coordinate is not None:
-                        self.overlay_coordinates = (x_coordinate, y_coordinate)
-                    def get_and_save_image(image_url):
-                        response = self.config.get(image_url)
-                        if response.status_code >= 400:
-                            raise Failed(f"{self.Type} Error: Overlay Image not found at: {image_url}")
-                        if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
-                            raise Failed(f"{self.Type} Error: Overlay Image not a png: {image_url}")
-                        if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
-                            os.makedirs(library.overlay_folder, exist_ok=False)
-                            logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
-                        clean_image_name, _ = util.validate_filename(self.overlay)
-                        image_path = os.path.join(library.overlay_folder, f"{clean_image_name}.png")
-                        if os.path.exists(image_path):
-                            os.remove(image_path)
-                        with open(image_path, "wb") as handler:
-                            handler.write(response.content)
-                        while util.is_locked(image_path):
-                            time.sleep(1)
-                        return image_path
-
-                    if "file" in data[methods["overlay"]] and data[methods["overlay"]]["file"]:
-                        self.overlay_path = data[methods["overlay"]]["file"]
-                    elif "git" in data[methods["overlay"]] and data[methods["overlay"]]["git"]:
-                        self.overlay_path = get_and_save_image(f"{util.github_base}{data[methods['overlay']]['git']}.png")
-                    elif "repo" in data[methods["overlay"]] and data[methods["overlay"]]["repo"]:
-                        self.overlay_path = get_and_save_image(f"{self.config.custom_repo}{data[methods['overlay']]['repo']}.png")
-                    elif "url" in data[methods["overlay"]] and data[methods["overlay"]]["url"]:
-                        self.overlay_path = get_and_save_image(data[methods["overlay"]]["url"])
-                else:
-                    self.overlay = str(data[methods["overlay"]])
+                overlay_data = data[methods["overlay"]]
             else:
-                self.overlay = str(self.mapping_name)
+                overlay_data = str(self.mapping_name)
                 logger.warning(f"{self.Type} Warning: No overlay attribute using mapping name {self.mapping_name} as the overlay name")
-            if self.overlay.startswith("blur"):
-                try:
-                    match = re.search("\\(([^)]+)\\)", self.overlay)
-                    if not match or 0 >= int(match.group(1)) > 100:
-                        raise ValueError
-                    self.overlay = f"blur({match.group(1)})"
-                except ValueError:
-                    logger.error(f"Overlay Error: failed to parse overlay blur name: {self.overlay} defaulting to blur(50)")
-                    self.overlay = "blur(50)"
-            else:
-                if "|" in self.overlay:
-                    raise Failed(f"{self.Type} Error: Overlay Name: {self.overlay} cannot contain '|'")
-                if not self.overlay_path:
-                    clean_name, _ = util.validate_filename(self.overlay)
-                    self.overlay_path = os.path.join(library.overlay_folder, f"{clean_name}.png")
-                if not os.path.exists(self.overlay_path):
-                    raise Failed(f"{self.Type} Error: Overlay Image not found at: {self.overlay_path}")
-
+            suppress = []
             if "suppress_overlays" in methods:
                 logger.debug("")
                 logger.debug("Validating Method: suppress_overlays")
                 logger.debug(f"Value: {data[methods['suppress_overlays']]}")
                 if data[methods["suppress_overlays"]]:
-                    self.suppress_overlays = util.get_list(data[methods["suppress_overlays"]])
+                    suppress = util.get_list(data[methods["suppress_overlays"]])
                 else:
-                    logger.error(f"{self.Type} Error: suppress_overlays attribute is blank")
+                    logger.error(f"Overlay Error: suppress_overlays attribute is blank")
+            self.overlay = Overlay(config, library, overlay_data, suppress)
 
         self.sync_to_users = None
         self.valid_users = []
