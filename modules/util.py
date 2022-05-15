@@ -4,7 +4,7 @@ from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
-from PIL import ImageColor
+from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 try:
     import msvcrt
@@ -840,126 +840,195 @@ class Overlay:
         self.path = None
         self.coordinates = None
         self.font = None
+        self.font_name = None
         self.font_size = 12
         self.font_color = None
         logger.debug("")
         logger.debug("Validating Method: overlay")
         logger.debug(f"Value: {self.data}")
-        if isinstance(self.data, dict):
-            if "name" not in self.data or not self.data["name"]:
-                raise Failed(f"Overlay Error: overlay must have the name attribute")
-            self.name = str(self.data["name"])
-
-            if "group" in self.data and self.data["group"]:
-                self.group = str(self.data["group"])
-            if "weight" in self.data and self.data["weight"] is not None:
-                pri = check_num(self.data["weight"])
-                if pri is None:
-                    raise Failed(f"Overlay Error: overlay weight must be a number")
-                self.weight = pri
-            if ("group" in self.data or "weight" in self.data) and (self.weight is None or not self.group):
-                raise Failed(f"Overlay Error: overlay attribute's group and weight must be used together")
-
-            x_cord = None
-            y_cord = None
-            if "x_coordinate" in self.data and self.data["x_coordinate"] is not None:
-                x_cord = check_num(self.data["x_coordinate"])
-                if x_cord is None or x_cord < 0:
-                    raise Failed(f"Overlay Error: overlay x_coordinate: {self.data['x_coordinate']} must be a number 0 or greater")
-            if "y_coordinate" in self.data and self.data["y_coordinate"] is not None:
-                y_cord = check_num(self.data["y_coordinate"])
-                if y_cord is None or y_cord < 0:
-                    raise Failed(f"Overlay Error: overlay y_coordinate: {self.data['y_coordinate']} must be a number 0 or greater")
-            if ("x_coordinate" in self.data or "y_coordinate" in self.data) and (x_cord is None or y_cord is None):
-                raise Failed(f"Overlay Error: overlay x_coordinate and overlay y_coordinate must be used together")
-            if x_cord is not None or y_cord is not None:
-                self.coordinates = (x_cord, y_cord)
-
-            def get_and_save_image(image_url):
-                response = self.config.get(image_url)
-                if response.status_code >= 400:
-                    raise Failed(f"Overlay Error: Overlay Image not found at: {image_url}")
-                if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
-                    raise Failed(f"Overlay Error: Overlay Image not a png: {image_url}")
-                if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
-                    os.makedirs(library.overlay_folder, exist_ok=False)
-                    logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
-                clean_image_name, _ = validate_filename(self.name)
-                image_path = os.path.join(library.overlay_folder, f"{clean_image_name}.png")
-                if os.path.exists(image_path):
-                    os.remove(image_path)
-                with open(image_path, "wb") as handler:
-                    handler.write(response.content)
-                while is_locked(image_path):
-                    time.sleep(1)
-                return image_path
-
-            if not self.name.startswith(("blur", "text")):
-                if "file" in self.data and self.data["file"]:
-                    self.path = self.data["file"]
-                elif "git" in self.data and self.data["git"]:
-                    self.path = get_and_save_image(f"{github_base}{self.data['git']}.png")
-                elif "repo" in self.data and self.data["repo"]:
-                    self.path = get_and_save_image(f"{self.config.custom_repo}{self.data['repo']}.png")
-                elif "url" in self.data and self.data["url"]:
-                    self.path = get_and_save_image(self.data["url"])
-
-            if self.name.startswith("blur"):
-                try:
-                    match = re.search("\\(([^)]+)\\)", self.name)
-                    if not match or 0 >= int(match.group(1)) > 100:
-                        raise ValueError
-                    self.name = f"blur({match.group(1)})"
-                except ValueError:
-                    logger.error(f"Overlay Error: failed to parse overlay blur name: {self.name} defaulting to blur(50)")
-                    self.name = "blur(50)"
-            elif self.name.startswith("text"):
-                if not self.coordinates:
-                    raise Failed(f"Overlay Error: overlay attribute's x_coordinate and y_coordinate are required when using text")
-                match = re.search("\\(([^)]+)\\)", self.name)
-                if not match:
-                    raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
-                self.name = f"text({match.group(1)})"
-                if "font" in self.data and self.data["font"]:
-                    font = str(self.data["font"])
-                    if not os.path.exists(font):
-                        fonts = get_system_fonts()
-                        if font not in fonts:
-                            raise Failed(f"Overlay Error: font: {font} not found. Options: {', '.join(fonts)}")
-                    self.font = font
-                if "font_size" in self.data and self.data["font_size"] is not None:
-                    font_size = check_num(self.data["font_size"])
-                    if font_size is None or font_size < 1:
-                        logger.error(f"Overlay Error: overlay font_size: {self.data['font_size']} invalid must be a greater than 0")
-                    else:
-                        self.font_size = font_size
-                if "font_color" in self.data and self.data["font_color"]:
-                    try:
-                        color_str = self.data["font_color"]
-                        color_str = color_str if color_str.startswith("#") else f"#{color_str}"
-                        self.font_color = ImageColor.getcolor(color_str, "RGB")
-                    except ValueError:
-                        logger.error(f"Overlay Error: overlay color: {self.data['color']} invalid")
-            else:
-                if "|" in self.name:
-                    raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
-                if not self.path:
-                    clean_name, _ = validate_filename(self.name)
-                    self.path = os.path.join(library.overlay_folder, f"{clean_name}.png")
-                if not os.path.exists(self.path):
-                    raise Failed(f"Overlay Error: Overlay Image not found at: {self.path}")
-        else:
-            self.name = str(self.data)
+        if not isinstance(self.data, dict):
+            self.data = {"name": str(self.data)}
             logger.warning(f"Overlay Warning: No overlay attribute using mapping name {self.data} as the overlay name")
+
+        if "name" not in self.data or not self.data["name"]:
+            raise Failed(f"Overlay Error: overlay must have the name attribute")
+        self.name = str(self.data["name"])
+
+        if "group" in self.data and self.data["group"]:
+            self.group = str(self.data["group"])
+        if "weight" in self.data and self.data["weight"] is not None:
+            pri = check_num(self.data["weight"])
+            if pri is None:
+                raise Failed(f"Overlay Error: overlay weight must be a number")
+            self.weight = pri
+        if ("group" in self.data or "weight" in self.data) and (self.weight is None or not self.group):
+            raise Failed(f"Overlay Error: overlay attribute's group and weight must be used together")
+
+        self.x_align = parse("Overlay", "x_align", self.data["x_align"], options=["left", "center", "right"]) if "x_align" in self.data else "left"
+        self.y_align = parse("Overlay", "y_align", self.data["y_align"], options=["top", "center", "bottom"]) if "y_align" in self.data else "top"
+
+        x_cord = None
+        if "x_coordinate" in self.data and self.data["x_coordinate"] is not None:
+            x_cord = self.data["x_coordinate"]
+            per = False
+            if str(x_cord).endswith("%"):
+                x_cord = x_cord[:-1]
+                per = True
+            x_cord = check_num(x_cord)
+            error = f"Overlay Error: overlay x_coordinate: {self.data['x_coordinate']} must be a number"
+            if x_cord is None:
+                raise Failed(error)
+            if self.x_align != "center" and not per and x_cord < 0:
+                raise Failed(f"{error} 0 or greater")
+            elif self.x_align != "center" and per and x_cord > 100:
+                raise Failed(f"{error} between 0% and 100%")
+            elif self.x_align == "center" and per and (x_cord > 50 or x_cord < -50):
+                raise Failed(f"{error} between -50% and 50%")
+            if per:
+                x_cord = f"{x_cord}%"
+
+        y_cord = None
+        if "y_coordinate" in self.data and self.data["y_coordinate"] is not None:
+            y_cord = self.data["y_coordinate"]
+            per = False
+            if str(y_cord).endswith("%"):
+                y_cord = y_cord[:-1]
+                per = True
+            y_cord = check_num(y_cord)
+            error = f"Overlay Error: overlay y_coordinate: {self.data['y_coordinate']} must be a number"
+            if y_cord is None:
+                raise Failed(error)
+            if self.y_align != "center" and not per and y_cord < 0:
+                raise Failed(f"{error} 0 or greater")
+            elif self.y_align != "center" and per and y_cord > 100:
+                raise Failed(f"{error} between 0% and 100%")
+            elif self.y_align == "center" and per and (y_cord > 50 or y_cord < -50):
+                raise Failed(f"{error} between -50% and 50%")
+            if per:
+                y_cord = f"{y_cord}%"
+
+        if ("x_coordinate" in self.data or "y_coordinate" in self.data) and (x_cord is None or y_cord is None):
+            raise Failed(f"Overlay Error: overlay x_coordinate and overlay y_coordinate must be used together")
+
+        if x_cord is not None or y_cord is not None:
+            self.coordinates = (x_cord, y_cord)
+
+        def get_and_save_image(image_url):
+            response = self.config.get(image_url)
+            if response.status_code >= 400:
+                raise Failed(f"Overlay Error: Overlay Image not found at: {image_url}")
+            if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
+                raise Failed(f"Overlay Error: Overlay Image not a png: {image_url}")
+            if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
+                os.makedirs(library.overlay_folder, exist_ok=False)
+                logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
+            clean_image_name, _ = validate_filename(self.name)
+            image_path = os.path.join(library.overlay_folder, f"{clean_image_name}.png")
+            if os.path.exists(image_path):
+                os.remove(image_path)
+            with open(image_path, "wb") as handler:
+                handler.write(response.content)
+            while is_locked(image_path):
+                time.sleep(1)
+            return image_path
+
+        if not self.name.startswith(("blur", "text")):
+            if "file" in self.data and self.data["file"]:
+                self.path = self.data["file"]
+            elif "git" in self.data and self.data["git"]:
+                self.path = get_and_save_image(f"{github_base}{self.data['git']}.png")
+            elif "repo" in self.data and self.data["repo"]:
+                self.path = get_and_save_image(f"{self.config.custom_repo}{self.data['repo']}.png")
+            elif "url" in self.data and self.data["url"]:
+                self.path = get_and_save_image(self.data["url"])
+
+        if self.name.startswith("blur"):
+            try:
+                match = re.search("\\(([^)]+)\\)", self.name)
+                if not match or 0 >= int(match.group(1)) > 100:
+                    raise ValueError
+                self.name = f"blur({match.group(1)})"
+            except ValueError:
+                logger.error(f"Overlay Error: failed to parse overlay blur name: {self.name} defaulting to blur(50)")
+                self.name = "blur(50)"
+        elif self.name.startswith("text"):
+            if not self.coordinates:
+                raise Failed(f"Overlay Error: overlay attribute's x_coordinate and y_coordinate are required when using text")
+            match = re.search("\\(([^)]+)\\)", self.name)
+            if not match:
+                raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
+            self.name = f"text({match.group(1)})"
+            if os.path.exists("Salma.otf"):
+                self.font_name = "Salma.otf"
+            if "font_size" in self.data and self.data["font_size"] is not None:
+                font_size = check_num(self.data["font_size"])
+                if font_size is None or font_size < 1:
+                    logger.error(f"Overlay Error: overlay font_size: {self.data['font_size']} invalid must be a greater than 0")
+                else:
+                    self.font_size = font_size
+            if "font" in self.data and self.data["font"]:
+                font = str(self.data["font"])
+                if not os.path.exists(font):
+                    fonts = get_system_fonts()
+                    if font not in fonts:
+                        raise Failed(f"Overlay Error: font: {font} not found. Options: {', '.join(fonts)}")
+                self.font_name = font
+                self.font = ImageFont.truetype(self.font_name, self.font_size)
+            if "font_color" in self.data and self.data["font_color"]:
+                try:
+                    color_str = self.data["font_color"]
+                    color_str = color_str if color_str.startswith("#") else f"#{color_str}"
+                    self.font_color = ImageColor.getcolor(color_str, "RGB")
+                except ValueError:
+                    logger.error(f"Overlay Error: overlay color: {self.data['color']} invalid")
+        else:
+            if "|" in self.name:
+                raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
+            if not self.path:
+                clean_name, _ = validate_filename(self.name)
+                self.path = os.path.join(library.overlay_folder, f"{clean_name}.png")
+            if not os.path.exists(self.path):
+                raise Failed(f"Overlay Error: Overlay Image not found at: {self.path}")
+            image_compare = None
+            if self.config.Cache:
+                _, image_compare, _ = self.config.Cache.query_image_map(self.name, f"{self.library.image_table_name}_overlays")
+            overlay_size = os.stat(self.path).st_size
+            self.updated = not image_compare or str(overlay_size) != str(image_compare)
+            try:
+                self.image = Image.open(self.path).convert("RGBA")
+                if self.config.Cache:
+                    self.config.Cache.update_image_map(self.name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
+            except OSError:
+                raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
 
     def get_overlay_compare(self):
         output = self.name
         if self.group:
             output += f"{self.group}{self.weight}"
         if self.coordinates:
-            output += str(self.coordinates)
-        if self.font:
-            output += f"{self.font}{self.font_size}"
+            output += f"{self.coordinates}{self.x_align}{self.y_align}"
+        if self.font_name:
+            output += f"{self.font_name}{self.font_size}"
         if self.font_color:
             output += str(self.font_color)
         return output
+
+    def get_coordinates(self, image_width, image_length, text=None):
+        if text:
+            _, _, width, height = ImageDraw.Draw(Image.new("RGB", (0, 0))).textbbox((0, 0), text, font=self.font)
+        else:
+            width, height = self.image.size
+        x_cord, y_cord = self.coordinates
+        if str(x_cord).endswith("%"):
+            x_cord = image_width * 0.01 * int(x_cord[:-1])
+        if str(y_cord).endswith("%"):
+            y_cord = image_length * 0.01 * int(y_cord[:-1])
+        if self.x_align == "right":
+            x_cord = image_width - width - x_cord
+        elif self.x_align == "center":
+            x_cord = (image_width / 2) - (width / 2) + x_cord
+        if self.x_align == "bottom":
+            y_cord = image_length - height - y_cord
+        elif self.x_align == "center":
+            y_cord = (image_length / 2) - (height / 2) + y_cord
+        return x_cord, y_cord

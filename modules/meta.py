@@ -314,7 +314,6 @@ class MetadataFile(DataFile):
                         auto_list = {}
                         all_keys = []
                         dynamic_data = None
-                        logger.debug(exclude)
                         def _check_dict(check_dict):
                             for ck, cv in check_dict.items():
                                 all_keys.append(ck)
@@ -527,7 +526,7 @@ class MetadataFile(DataFile):
                         for template_name in template_names:
                             if template_name not in self.templates:
                                 raise Failed(f"Config Error: {map_name} template: {template_name} not found")
-                            if "<<value>>" in str(self.templates[template_name][0]) or f"<<{auto_type}>>" in str(self.templates[template_name][0]):
+                            if any([a in str(self.templates[template_name][0]) for a in ["<<value>>", "<<key>>", f"<<{auto_type}>>"]]):
                                 has_var = True
                         if not has_var:
                             raise Failed(f"Config Error: One {map_name} template: {template_names} is required to have the template variable <<value>>")

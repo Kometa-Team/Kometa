@@ -89,6 +89,6 @@ If you are unable to use the [Plex Meta Manager Discord Server](https://discord.
 
 ## IBRACORP Video Walkthrough
 
-[IBRACORP](https://ibracorp.io/) made a video walkthough for installing Plex Meta Manager on unRAID. While you might not be using unRAID the video goes over many key aspects of Plex Meta Manager and can be a great place to start learning how to use the script.
+[IBRACORP](https://ibracorp.io/) made a video walkthrough for installing Plex Meta Manager on unRAID. While you might not be using unRAID the video goes over many key aspects of Plex Meta Manager and can be a great place to start learning how to use the script.
 
 [![Plex Meta Manager](https://img.youtube.com/vi/dF69MNoot3w/0.jpg)](https://www.youtube.com/watch?v=dF69MNoot3w "Plex Meta Manager")

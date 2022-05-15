@@ -160,15 +160,17 @@ class Overlays:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
                     elif changed_image or overlay_change:
                         try:
+                            image_width = 1920 if isinstance(item, Episode) else 1000
+                            image_height = 1080 if isinstance(item, Episode) else 1500
+
                             new_poster = Image.open(poster.location if poster else has_original) \
-                                .convert("RGBA") \
-                                .resize((1920, 1080) if isinstance(item, Episode) else (1000, 1500), Image.ANTIALIAS)
+                                .convert("RGBA").resize((image_width, image_height), Image.ANTIALIAS)
                             if blur_num > 0:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
                             for over_name in normal_overlays:
                                 overlay = properties[over_name]
                                 if overlay.coordinates:
-                                    new_poster.paste(overlay.image, overlay.coordinates, overlay.image)
+                                    new_poster.paste(overlay.image, overlay.get_coordinates(image_width, image_height), overlay.image)
                                 else:
                                     new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
                                     new_poster.paste(overlay.image, (0, 0), overlay.image)
@@ -176,7 +178,6 @@ class Overlays:
                                 drawing = ImageDraw.Draw(new_poster)
                                 for over_name in text_names:
                                     overlay = properties[over_name]
-                                    font = ImageFont.truetype(overlay.font, overlay.font_size) if overlay.font else None
                                     text = over_name[5:-1]
                                     if text in ["audience_rating", "critic_rating", "user_rating"]:
                                         rating_type = text
@@ -187,7 +188,7 @@ class Overlays:
                                         text = getattr(item, actual)
                                         if self.config.Cache:
                                             self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
-                                    drawing.text(overlay.coordinates, str(text), font=font, fill=overlay.font_color)
+                                    drawing.text(overlay.get_coordinates(image_width, image_height, text=str(text)), str(text), font=overlay.font, fill=overlay.font_color)
                             temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             new_poster.save(temp, "PNG")
                             self.library.upload_poster(item, temp)
@@ -277,19 +278,6 @@ class Overlays:
                 for suppress_name in over_obj.suppress:
                     if suppress_name in properties and rk in properties[suppress_name].keys:
                         properties[suppress_name].keys.remove(rk)
-            if not overlay_name.startswith(("blur", "text")):
-                image_compare = None
-                if self.config.Cache:
-                    _, image_compare, _ = self.config.Cache.query_image_map(overlay_name, f"{self.library.image_table_name}_overlays")
-                overlay_size = os.stat(over_obj.path).st_size
-                over_obj.updated = not image_compare or str(overlay_size) != str(image_compare)
-                try:
-                    over_obj.image = Image.open(over_obj.path).convert("RGBA")
-                    if self.config.Cache:
-                        self.config.Cache.update_image_map(overlay_name, f"{self.library.image_table_name}_overlays", overlay_name, overlay_size)
-                except OSError:
-                    logger.error(f"Overlay Error: overlay image {over_obj.path} failed to load")
-                    properties.pop(overlay_name)
 
         for overlay_name, over_obj in properties.items():
             for over_key in over_obj.keys:
