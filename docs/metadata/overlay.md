@@ -14,14 +14,14 @@ These are the attributes which can be used within the Overlay File:
 |:--------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
 | [`templates`](templates)                                | contains definitions of templates that can be leveraged by multiple overlays                                       |
 | [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths) that point to external templates that can be leveraged by multiple overlays |
-| [`overlays`](#overlay-attributes)                       | contains definitions of overlays you wish to add                                                                   |
+| [`overlays`](#overlays-attributes)                      | contains definitions of overlays you wish to add                                                                   |
 
 * `overlays` is required in order to run the Overlay File.
 * Example Overlay Files can be found in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM)
 
-## Overlay Attributes
+## Overlays Attributes
 
-Each overlay requires its own section within the `overlays` attribute.
+Each overlay definition requires its own section within the `overlays` attribute.
 
 ```yaml
 overlays:
@@ -33,23 +33,21 @@ overlays:
     # ... builders, details, and filters for this overlay
 ```
 
-Each section must have the only required attribute, `overlay`.
+## Overlay
 
-### Overlay Name
+Each overlay definition needs to specify what overlay to use. This can happen in 3 ways.
 
-You can specify the Overlay Name in 3 ways.
-
-1. If there is no `overlay` attribute PMM will look in your `config/overlays` folder for a `.png` file named the same as the mapping name of the overlay definition.
+1. If there is no `overlay` attribute PMM will look in your `config/overlays` folder for a `.png` file named the same as the mapping name of the overlay definition. This example below would look for `IMDb Top 250.png`.
     ```yaml
     overlays:
       IMDb Top 250:
         imdb_chart: top_movies
     ```
    
-2. If the `overlay` attribute is given a string PMM will look in your `config/overlays` folder for a `.png` file named the same as the string given.
+2. If the `overlay` attribute is given a string PMM will look in your `config/overlays` folder for a `.png` file named the same as the string given. This example below would look for `IMDbTop.png`.
     ```yaml
     overlays:
-      overlay: IMDb Top 250
+      overlay: IMDbTop
       IMDb Top 250:
         imdb_chart: top_movies
     ```
@@ -67,6 +65,9 @@ You can specify the Overlay Name in 3 ways.
 | `weight`       | Weight of this overlay in its group. **`group` is required when using `weight`**                              | &#10060; |
 | `x_coordinate` | Top Left X Coordinate of this overlay. **`y_coordinate` is required when using `x_coordinate`**               | &#10060; |
 | `y_coordinate` | Top Left Y Coordinate of this overlay. **`x_coordinate` is required when using `y_coordinate`**               | &#10060; |
+| `font`         | System Font Filename or path to font file for the Text Overlay                                                | &#10060; |
+| `font_size`    | Font Size for the Text Overlay. **Value:** Integer greater than 0                                             | &#10060; |
+| `font_color`   | Font Color for the Text Overlay. **Value:** Color Hex Code. ex `#00FF00`                                      | &#10060; |
 
 * If `url`, `git`, and `repo` are all not defined then PMM will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
 * Only one overlay with the highest weight per group will be applied.
@@ -79,7 +80,7 @@ overlays:
     imdb_chart: top_movies
 ```
 
-#### Blurring Overlay
+### Blurring Overlay
 
 There is a special overlay named `blur` that when given as the overlay name will instead of finding the image will just blur the image instead.
 
@@ -95,7 +96,31 @@ overlays:
         resolution: 4K
 ```
 
-### Suppress Overlays
+### Text Overlay
+
+You can add text as an overlay using the special `text()` overlay name. Anything inside the parentheses will be added as an overlay onto the image. Ex `text(4K)` adds `4K` to the image.
+
+You can control the font, font size and font color using the `font`, `font_size`, and `font_color` overlay attributes.
+
+The `x_coordinate` and `y_coordinate` overlay attributes are required when using Text Overlays.
+
+You can add an items rating to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
+
+```yaml
+overlays:
+  audience_rating:
+    overlay:
+      name: text(audience_rating)
+      x_coordinate: 15
+      y_coordinate: 15
+      font: arial.ttf
+      font_size: 200
+    plex_all: true
+```
+
+**Note: This only adds the text you may want to also add an overlay banner in the same spot.**
+
+## Suppress Overlays
 
 You can add `suppress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.
 
@@ -121,7 +146,7 @@ overlays:
         hdr: true
 ```
 
-### Builders
+## Builders
 
 Builders use third-party services to source items for overlays. Multiple builders can be used in the same overlay from a variety of sources listed below.
 

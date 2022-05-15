@@ -465,7 +465,7 @@ class MetadataFile(DataFile):
                             if starting > ending:
                                 raise Failed(f"Config Error: {map_name} data ending must be greater than starting")
                             current = starting
-                            while starting <= ending:
+                            while current <= ending:
                                 all_keys.append(str(current))
                                 if str(current) not in exclude and current not in exclude:
                                     auto_list[str(current)] = str(current)
