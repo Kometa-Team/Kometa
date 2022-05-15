@@ -715,8 +715,8 @@ class ConfigFile:
                         logger.error("Config Error: operations must be a dictionary")
 
                 def error_check(attr, service):
+                    logger.error(f"Config Error: Operation {attr} cannot be {params[attr]} without a successful {service} Connection")
                     params[attr] = None
-                    logger.error(f"Config Error: {attr} cannot be {params[attr]} without a successful {service} Connection")
 
                 for mass_key in ["mass_genre_update", "mass_audience_rating_update", "mass_critic_rating_update", "mass_content_rating_update", "mass_originally_available_update"]:
                     if params[mass_key] == "omdb" and self.OMDb is None:

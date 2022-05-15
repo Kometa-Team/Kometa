@@ -439,7 +439,7 @@ class Plex(Library):
         if label:
             label_id = next((c.key for c in self.get_tags("label") if c.title == label), None)
             if label_id:
-                args = f"{args}&{label_id}"
+                args = f"{args}&label={label_id}"
             else:
                 return []
         return self.get_filter_items(args)

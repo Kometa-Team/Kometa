@@ -444,7 +444,7 @@ def run_libraries(config):
                         config.Cache.delete_list_ids(list_key)
                     list_key = config.Cache.update_list_cache("library", library.mapping_name, expired, 1)
                     config.Cache.update_list_ids(list_key, [(i.ratingKey, i.guid) for i in temp_items])
-            if not library.is_other and not library.is_music:
+            if not library.is_music:
                 logger.info("")
                 logger.separator(f"Mapping {library.name} Library", space=False, border=False)
                 logger.info("")

@@ -63,8 +63,10 @@ Each overlay definition needs to specify what overlay to use. This can happen in
 | `repo`         | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                        | &#10060; |
 | `group`        | Name of the Grouping for this overlay. **`weight` is required when using `group`**                            | &#10060; |
 | `weight`       | Weight of this overlay in its group. **`group` is required when using `weight`**                              | &#10060; |
-| `x_coordinate` | Top Left X Coordinate of this overlay. **`y_coordinate` is required when using `x_coordinate`**               | &#10060; |
-| `y_coordinate` | Top Left Y Coordinate of this overlay. **`x_coordinate` is required when using `y_coordinate`**               | &#10060; |
+| `x_coordinate` | X Coordinate of this overlay. Can be a %. **`y_coordinate` is required when using `x_coordinate`**            | &#10060; |
+| `x_align`      | Where the `x_coordinate` is calculated from. **Values:** `left`, `center`, `right`                            | &#10060; |
+| `y_coordinate` | Y Coordinate of this overlay. Can be a %. **`x_coordinate` is required when using `y_coordinate`**            | &#10060; |
+| `y_align`      | Where the `y_coordinate` is calculated from. **Values:** `top`, `center`, `bottom`                            | &#10060; |
 | `font`         | System Font Filename or path to font file for the Text Overlay                                                | &#10060; |
 | `font_size`    | Font Size for the Text Overlay. **Value:** Integer greater than 0                                             | &#10060; |
 | `font_color`   | Font Color for the Text Overlay. **Value:** Color Hex Code. ex `#00FF00`                                      | &#10060; |
@@ -106,6 +108,8 @@ The `x_coordinate` and `y_coordinate` overlay attributes are required when using
 
 You can add an items rating to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
 
+Default font `Salma.otf` provided by [Alifinart Studio](https://www.behance.net/alifinart)
+
 ```yaml
 overlays:
   audience_rating:
@@ -113,7 +117,7 @@ overlays:
       name: text(audience_rating)
       x_coordinate: 15
       y_coordinate: 15
-      font: arial.ttf
+      font: Salma.otf
       font_size: 200
     plex_all: true
 ```
