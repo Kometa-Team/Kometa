@@ -106,7 +106,9 @@ You can control the font, font size and font color using the `font`, `font_size`
 
 The `x_coordinate` and `y_coordinate` overlay attributes are required when using Text Overlays.
 
-You can add an items rating to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
+You can add an items rating number (`8.7`) to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
+
+You can add an items rating percentage (`87%`) to the image by using `text(audience_rating%)`, `text(critic_rating%)`, or `text(user_rating%)` 
 
 Default font `Salma.otf` provided by [Alifinart Studio](https://www.behance.net/alifinart)
 
