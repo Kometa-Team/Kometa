@@ -108,9 +108,9 @@ The `horizontal_offset` and `vertical_offset` overlay attributes are required wh
 
 You can add an items rating number (`8.7`) to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
 
-You can add an items rating percentage (`87%`) to the image by using `text(audience_rating%)`, `text(critic_rating%)`, or `text(user_rating%)` 
+You can add an items rating percentage (`87%`) to the image by using `text(audience_rating%)`, `text(critic_rating%)`, or `text(user_rating%)`
 
-Default font `Salma.otf` provided by [Alifinart Studio](https://www.behance.net/alifinart)
+PMM includes multiple fonts in the [`fonts` folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/fonts) which can be called using `fonts/fontname.ttf`
 
 ```yaml
 overlays:
@@ -119,7 +119,7 @@ overlays:
       name: text(audience_rating)
       horizontal_offset: 15
       vertical_offset: 15
-      font: Salma.otf
+      font: fonts/Roboto-Medium.ttf
       font_size: 200
     plex_all: true
 ```
