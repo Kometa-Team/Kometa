@@ -169,11 +169,9 @@ class Overlays:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
                             for over_name in normal_overlays:
                                 overlay = properties[over_name]
-                                if overlay.coordinates:
-                                    new_poster.paste(overlay.image, overlay.get_coordinates(image_width, image_height), overlay.image)
-                                else:
+                                if not overlay.has_coordinates():
                                     new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
-                                    new_poster.paste(overlay.image, (0, 0), overlay.image)
+                                new_poster.paste(overlay.image, overlay.get_coordinates(image_width, image_height), overlay.image)
                             if text_names:
                                 drawing = ImageDraw.Draw(new_poster)
                                 for over_name in text_names:
