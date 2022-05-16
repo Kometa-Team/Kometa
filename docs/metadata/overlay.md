@@ -54,22 +54,22 @@ Each overlay definition needs to specify what overlay to use. This can happen in
    
 3. Using a dictionary for more overlay location options.
 
-| Attribute      | Description                                                                                                   | Required |
-|:---------------|:--------------------------------------------------------------------------------------------------------------|:--------:|
-| `name`         | Name of the overlay. Each overlay name should be unique.                                                      | &#9989;  |
-| `file`         | Local location of the Overlay Image.                                                                          | &#10060; |
-| `url`          | URL of Overlay Image Online.                                                                                  | &#10060; |
-| `git`          | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image. | &#10060; |
-| `repo`         | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                        | &#10060; |
-| `group`        | Name of the Grouping for this overlay. **`weight` is required when using `group`**                            | &#10060; |
-| `weight`       | Weight of this overlay in its group. **`group` is required when using `weight`**                              | &#10060; |
-| `x_coordinate` | X Coordinate of this overlay. Can be a %. **`y_coordinate` is required when using `x_coordinate`**            | &#10060; |
-| `x_align`      | Where the `x_coordinate` is calculated from. **Values:** `left`, `center`, `right`                            | &#10060; |
-| `y_coordinate` | Y Coordinate of this overlay. Can be a %. **`x_coordinate` is required when using `y_coordinate`**            | &#10060; |
-| `y_align`      | Where the `y_coordinate` is calculated from. **Values:** `top`, `center`, `bottom`                            | &#10060; |
-| `font`         | System Font Filename or path to font file for the Text Overlay                                                | &#10060; |
-| `font_size`    | Font Size for the Text Overlay. **Value:** Integer greater than 0                                             | &#10060; |
-| `font_color`   | Font Color for the Text Overlay. **Value:** Color Hex Code. ex `#00FF00`                                      | &#10060; |
+| Attribute           | Description                                                                                                     | Required |
+|:--------------------|:----------------------------------------------------------------------------------------------------------------|:--------:|
+| `name`              | Name of the overlay. Each overlay name should be unique.                                                        | &#9989;  |
+| `file`              | Local location of the Overlay Image.                                                                            | &#10060; |
+| `url`               | URL of Overlay Image Online.                                                                                    | &#10060; |
+| `git`               | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image.   | &#10060; |
+| `repo`              | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                          | &#10060; |
+| `group`             | Name of the Grouping for this overlay. **`weight` is required when using `group`**                              | &#10060; |
+| `weight`            | Weight of this overlay in its group. **`group` is required when using `weight`**                                | &#10060; |
+| `horizontal_offset` | Horizontal Offset of this overlay. Can be a %. **`vertical_offset` is required when using `horizontal_offset`** | &#10060; |
+| `horizontal_align`  | Horizontal Alignment of the overlay. **Values:** `left`, `center`, `right`                                      | &#10060; |
+| `vertical_offset`   | Vertical Offset of this overlay. Can be a %. **`horizontal_offset` is required when using `vertical_offset`**   | &#10060; |
+| `vertical_align`    | Vertical Alignment of the overlay. **Values:** `top`, `center`, `bottom`                                        | &#10060; |
+| `font`              | System Font Filename or path to font file for the Text Overlay                                                  | &#10060; |
+| `font_size`         | Font Size for the Text Overlay. **Value:** Integer greater than 0                                               | &#10060; |
+| `font_color`        | Font Color for the Text Overlay. **Value:** Color Hex Code. ex `#00FF00`                                        | &#10060; |
 
 * If `url`, `git`, and `repo` are all not defined then PMM will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
 * Only one overlay with the highest weight per group will be applied.
@@ -104,7 +104,7 @@ You can add text as an overlay using the special `text()` overlay name. Anything
 
 You can control the font, font size and font color using the `font`, `font_size`, and `font_color` overlay attributes.
 
-The `x_coordinate` and `y_coordinate` overlay attributes are required when using Text Overlays.
+The `horizontal_offset` and `vertical_offset` overlay attributes are required when using Text Overlays.
 
 You can add an items rating number (`8.7`) to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
 
@@ -117,8 +117,8 @@ overlays:
   audience_rating:
     overlay:
       name: text(audience_rating)
-      x_coordinate: 15
-      y_coordinate: 15
+      horizontal_offset: 15
+      vertical_offset: 15
       font: Salma.otf
       font_size: 200
     plex_all: true

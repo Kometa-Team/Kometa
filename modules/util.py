@@ -838,7 +838,6 @@ class Overlay:
         self.group = None
         self.weight = None
         self.path = None
-        self.coordinates = None
         self.font = None
         self.font_name = None
         self.font_size = 12
@@ -864,54 +863,49 @@ class Overlay:
         if ("group" in self.data or "weight" in self.data) and (self.weight is None or not self.group):
             raise Failed(f"Overlay Error: overlay attribute's group and weight must be used together")
 
-        self.x_align = parse("Overlay", "x_align", self.data["x_align"], options=["left", "center", "right"]) if "x_align" in self.data else "left"
-        self.y_align = parse("Overlay", "y_align", self.data["y_align"], options=["top", "center", "bottom"]) if "y_align" in self.data else "top"
+        self.horizontal_align = parse("Overlay", "horizontal_align", self.data["horizontal_align"], options=["left", "center", "right"]) if "horizontal_align" in self.data else "left"
+        self.vertical_align = parse("Overlay", "vertical_align", self.data["vertical_align"], options=["top", "center", "bottom"]) if "vertical_align" in self.data else "top"
 
-        x_cord = None
-        if "x_coordinate" in self.data and self.data["x_coordinate"] is not None:
-            x_cord = self.data["x_coordinate"]
+        self.horizontal_offset = None
+        if "horizontal_offset" in self.data and self.data["horizontal_offset"] is not None:
+            x_off = self.data["horizontal_offset"]
             per = False
-            if str(x_cord).endswith("%"):
-                x_cord = x_cord[:-1]
+            if str(x_off).endswith("%"):
+                x_off = x_off[:-1]
                 per = True
-            x_cord = check_num(x_cord)
-            error = f"Overlay Error: overlay x_coordinate: {self.data['x_coordinate']} must be a number"
-            if x_cord is None:
+            x_off = check_num(x_off)
+            error = f"Overlay Error: overlay horizontal_offset: {self.data['horizontal_offset']} must be a number"
+            if x_off is None:
                 raise Failed(error)
-            if self.x_align != "center" and not per and x_cord < 0:
+            if self.horizontal_align != "center" and not per and x_off < 0:
                 raise Failed(f"{error} 0 or greater")
-            elif self.x_align != "center" and per and x_cord > 100:
+            elif self.horizontal_align != "center" and per and x_off > 100:
                 raise Failed(f"{error} between 0% and 100%")
-            elif self.x_align == "center" and per and (x_cord > 50 or x_cord < -50):
+            elif self.horizontal_align == "center" and per and (x_off > 50 or x_off < -50):
                 raise Failed(f"{error} between -50% and 50%")
-            if per:
-                x_cord = f"{x_cord}%"
+            self.horizontal_offset = f"{x_off}%" if per else x_off
 
-        y_cord = None
-        if "y_coordinate" in self.data and self.data["y_coordinate"] is not None:
-            y_cord = self.data["y_coordinate"]
+        self.vertical_offset = None
+        if "vertical_offset" in self.data and self.data["vertical_offset"] is not None:
+            y_off = self.data["vertical_offset"]
             per = False
-            if str(y_cord).endswith("%"):
-                y_cord = y_cord[:-1]
+            if str(y_off).endswith("%"):
+                y_off = y_off[:-1]
                 per = True
-            y_cord = check_num(y_cord)
-            error = f"Overlay Error: overlay y_coordinate: {self.data['y_coordinate']} must be a number"
-            if y_cord is None:
+            y_off = check_num(y_off)
+            error = f"Overlay Error: overlay vertical_offset: {self.data['vertical_offset']} must be a number"
+            if y_off is None:
                 raise Failed(error)
-            if self.y_align != "center" and not per and y_cord < 0:
+            if self.vertical_align != "center" and not per and y_off < 0:
                 raise Failed(f"{error} 0 or greater")
-            elif self.y_align != "center" and per and y_cord > 100:
+            elif self.vertical_align != "center" and per and y_off > 100:
                 raise Failed(f"{error} between 0% and 100%")
-            elif self.y_align == "center" and per and (y_cord > 50 or y_cord < -50):
+            elif self.vertical_align == "center" and per and (y_off > 50 or y_off < -50):
                 raise Failed(f"{error} between -50% and 50%")
-            if per:
-                y_cord = f"{y_cord}%"
+            self.vertical_offset = f"{y_off}%" if per else y_off
 
-        if ("x_coordinate" in self.data or "y_coordinate" in self.data) and (x_cord is None or y_cord is None):
-            raise Failed(f"Overlay Error: overlay x_coordinate and overlay y_coordinate must be used together")
-
-        if x_cord is not None or y_cord is not None:
-            self.coordinates = (x_cord, y_cord)
+        if ("horizontal_offset" in self.data or "vertical_offset" in self.data) and (self.horizontal_offset is None or self.vertical_offset is None):
+            raise Failed(f"Overlay Error: overlay horizontal_offset and overlay vertical_offset must be used together")
 
         def get_and_save_image(image_url):
             response = self.config.get(image_url)
@@ -952,8 +946,8 @@ class Overlay:
                 logger.error(f"Overlay Error: failed to parse overlay blur name: {self.name} defaulting to blur(50)")
                 self.name = "blur(50)"
         elif self.name.startswith("text"):
-            if not self.coordinates:
-                raise Failed(f"Overlay Error: overlay attribute's x_coordinate and y_coordinate are required when using text")
+            if not self.has_coordinates():
+                raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset are required when using text")
             match = re.search("\\(([^)]+)\\)", self.name)
             if not match:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
@@ -1005,30 +999,35 @@ class Overlay:
         output = self.name
         if self.group:
             output += f"{self.group}{self.weight}"
-        if self.coordinates:
-            output += f"{self.coordinates}{self.x_align}{self.y_align}"
+        if self.has_coordinates():
+            output += f"{self.horizontal_align}{self.horizontal_offset}{self.vertical_offset}{self.vertical_align}"
         if self.font_name:
             output += f"{self.font_name}{self.font_size}"
         if self.font_color:
             output += str(self.font_color)
         return output
 
-    def get_coordinates(self, image_width, image_length, text=None):
+    def has_coordinates(self):
+        return self.horizontal_offset is None or self.vertical_offset is None
+
+    def get_coordinates(self, image_width, image_height, text=None):
+        if not self.has_coordinates():
+            return 0, 0
         if text:
             _, _, width, height = ImageDraw.Draw(Image.new("RGB", (0, 0))).textbbox((0, 0), text, font=self.font)
         else:
             width, height = self.image.size
-        x_cord, y_cord = self.coordinates
-        if str(x_cord).endswith("%"):
-            x_cord = image_width * 0.01 * int(x_cord[:-1])
-        if str(y_cord).endswith("%"):
-            y_cord = image_length * 0.01 * int(y_cord[:-1])
-        if self.x_align == "right":
-            x_cord = image_width - width - x_cord
-        elif self.x_align == "center":
-            x_cord = (image_width / 2) - (width / 2) + x_cord
-        if self.x_align == "bottom":
-            y_cord = image_length - height - y_cord
-        elif self.x_align == "center":
-            y_cord = (image_length / 2) - (height / 2) + y_cord
+
+        def get_cord(value, image_value, over_value, align):
+            value = image_value * 0.01 * int(value[:-1]) if str(value).endswith("%") else value
+            if align in ["right", "bottom"]:
+                return image_value - over_value - value
+            elif align == "center":
+                return (image_value / 2) - (over_value / 2) + value
+            else:
+                return value
+
+        x_cord = get_cord(self.horizontal_offset, image_width, width, self.horizontal_align)
+        y_cord = get_cord(self.vertical_offset, image_height, height, self.vertical_align)
+
         return x_cord, y_cord
