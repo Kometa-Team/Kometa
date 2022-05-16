@@ -1008,7 +1008,7 @@ class Overlay:
         return output
 
     def has_coordinates(self):
-        return self.horizontal_offset is None or self.vertical_offset is None
+        return self.horizontal_offset is not None and self.vertical_offset is not None
 
     def get_coordinates(self, image_width, image_height, text=None):
         if not self.has_coordinates():

@@ -69,6 +69,9 @@ class Operations:
                 for k, v in self.library.anidb_map.items():
                     reverse_anidb[v] = k
 
+            if self.library.assets_for_all and not self.library.asset_directory:
+                logger.error("Asset Error: No Asset Directory for Assets For All")
+
             for i, item in enumerate(items, 1):
                 try:
                     item = self.library.reload(item)
@@ -78,7 +81,7 @@ class Operations:
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
                 current_labels = [la.tag for la in item.labels] if self.library.assets_for_all or self.library.mass_imdb_parental_labels else []
 
-                if self.library.assets_for_all and "Overlay" not in current_labels:
+                if self.library.assets_for_all and self.library.asset_directory and "Overlay" not in current_labels:
                     try:
                         poster, background, item_dir, name = self.library.find_item_assets(item)
                         if poster or background:
