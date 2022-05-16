@@ -1,6 +1,6 @@
 from json import JSONDecodeError
 from modules import util
-from modules.util import Failed
+from modules.util import Failed, YAML
 
 logger = util.logger
 
@@ -30,17 +30,38 @@ class Webhooks:
                         response = self.config.get(url, json=json, params=params)
                         if response.status_code < 500:
                             break
-            elif webhook.startswith("https://discord.com/api/webhooks"):
-                response = self.config.post(webhook, json=self.discord(json))
-            elif webhook.startswith("https://hooks.slack.com/services"):
-                response = self.config.post(webhook, json=self.slack(json))
             else:
+                if webhook.startswith("https://discord.com/api/webhooks"):
+                    json = self.discord(json)
+                elif webhook.startswith("https://hooks.slack.com/services"):
+                    json = self.slack(json)
                 response = self.config.post(webhook, json=json)
             if response:
                 try:
                     response_json = response.json()
                     if self.config.trace_mode:
                         logger.debug(f"Response: {response_json}")
+                    if webhook == "notifiarr" and self.notifiarr and response.status_code == 400:
+                        def remove_from_config(text, hook_cat):
+                            if response_json["details"]["response"] == text:
+                                yaml = YAML(self.config.config_path)
+                                changed = False
+                                if hook_cat in yaml.data and yaml.data["webhooks"][hook_cat]:
+                                    if isinstance(yaml.data["webhooks"][hook_cat], list) and "notifiarr" in yaml.data["webhooks"][hook_cat]:
+                                        changed = True
+                                        yaml.data["webhooks"][hook_cat].pop("notifiarr")
+                                    elif yaml.data["webhooks"][hook_cat] == "notifiarr":
+                                        changed = True
+                                        yaml.data["webhooks"][hook_cat] = None
+                                if changed:
+                                    yaml.save()
+                        remove_from_config("PMM updated trigger is not enabled", "changes")
+                        remove_from_config("PMM created trigger is not enabled", "changes")
+                        remove_from_config("PMM deleted trigger is not enabled", "changes")
+                        remove_from_config("PMM failure trigger is not enabled", "error")
+                        remove_from_config("PMM start/complete trigger is not enabled", "run_start")
+                        remove_from_config("PMM start/complete trigger is not enabled", "run_end")
+                        remove_from_config("PMM app updates trigger is not enabled", "version")
                     if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
                         raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
                     if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):

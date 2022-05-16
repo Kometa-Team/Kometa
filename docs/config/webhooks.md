@@ -2,6 +2,8 @@
 
 Configuring Webhooks is optional but can allow you to receive notifications when certain events happen.
 
+Discord and Slack Direct webhooks are supported just use the correct urls. 
+
 A `webhooks` mapping is in the root of the config file.
 
 Below is a `webhooks` mapping example and the full set of attributes:
