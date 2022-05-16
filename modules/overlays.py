@@ -6,7 +6,7 @@ from modules.util import Failed, NotScheduled
 from plexapi.audio import Album
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFilter
 
 logger = util.logger
 
@@ -178,7 +178,7 @@ class Overlays:
                                     overlay = properties[over_name]
                                     text = over_name[5:-1]
                                     if text in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
-                                        per = text[:-1] == "%"
+                                        per = text.endswith("%")
                                         rating_type = text[:-1] if per else text
 
                                         actual = plex.attribute_translation[rating_type]
