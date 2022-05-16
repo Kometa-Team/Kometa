@@ -823,7 +823,7 @@ class YAML:
 
     def save(self):
         if self.path:
-            with open(self.path, 'w') as fp:
+            with open(self.path, 'w', encoding="utf-8") as fp:
                 self.yaml.dump(self.data, fp)
 
 class Overlay:
