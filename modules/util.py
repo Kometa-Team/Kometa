@@ -952,8 +952,8 @@ class Overlay:
             if not match:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
-            if os.path.exists("Salma.otf"):
-                self.font_name = "Salma.otf"
+            if os.path.exists("fonts/Roboto-Medium.ttf"):
+                self.font_name = "fonts/Roboto-Medium.ttf"
             if "font_size" in self.data and self.data["font_size"] is not None:
                 font_size = check_num(self.data["font_size"])
                 if font_size is None or font_size < 1:
