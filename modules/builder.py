@@ -221,7 +221,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: allowed_library_types")
             if not self.data[methods["allowed_library_types"]]:
-                raise Failed(f"{self.Type} Error: allowed_library_types attribute is blank")
+                raise NotScheduled(f"Skipped because allowed_library_types has no library types")
             logger.debug(f"Value: {data[methods['allowed_library_types']]}")
             found_type = False
             for library_type in util.get_list(self.data[methods["allowed_library_types"]], lower=True):
@@ -446,24 +446,22 @@ class CollectionBuilder:
         elif self.library.is_show:      self.collection_level = "show"
         elif self.library.is_music:     self.collection_level = "artist"
         else:                           self.collection_level = "movie"
-        if "collection_level" in methods and not self.playlist:
+        if "collection_level" in methods and not self.library.is_movie and not self.playlist:
             logger.debug("")
             logger.debug("Validating Method: collection_level")
-            if self.library.is_movie:
-                raise Failed(f"{self.Type} Error: collection_level attribute only works for show and music libraries")
-            elif self.data[methods["collection_level"]] is None:
+            level = self.data[methods["collection_level"]]
+            if level is None:
                 raise Failed(f"{self.Type} Error: collection_level attribute is blank")
-            else:
-                logger.debug(f"Value: {self.data[methods['collection_level']]}")
-                if (self.library.is_show and self.data[methods["collection_level"]].lower() in plex.collection_level_show_options) or \
-                        (self.library.is_music and self.data[methods["collection_level"]].lower() in plex.collection_level_music_options):
-                    self.collection_level = self.data[methods["collection_level"]].lower()
+            logger.debug(f"Value: {level}")
+            level = level.lower()
+            if (self.library.is_show and level in plex.collection_level_show_options) or (self.library.is_music and level in plex.collection_level_music_options):
+                self.collection_level = level
+            elif (self.library.is_show and level != "show") or (self.library.is_music and level != "artist"):
+                if self.library.is_show:
+                    options = "\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)"
                 else:
-                    if self.library.is_show:
-                        options = "\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)"
-                    else:
-                        options = "\n\talbum (Collection at the Album Level)\n\ttrack (Collection at the Track Level)"
-                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid{options}")
+                    options = "\n\talbum (Collection at the Album Level)\n\ttrack (Collection at the Track Level)"
+                raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid{options}")
         self.parts_collection = self.collection_level in plex.collection_level_options
 
         if "tmdb_person" in methods:

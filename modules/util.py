@@ -884,6 +884,8 @@ class Overlay:
             elif self.horizontal_align == "center" and per and (x_off > 50 or x_off < -50):
                 raise Failed(f"{error} between -50% and 50%")
             self.horizontal_offset = f"{x_off}%" if per else x_off
+        if self.horizontal_offset is None and self.horizontal_align == "center":
+            self.horizontal_offset = 0
 
         self.vertical_offset = None
         if "vertical_offset" in self.data and self.data["vertical_offset"] is not None:
@@ -903,8 +905,10 @@ class Overlay:
             elif self.vertical_align == "center" and per and (y_off > 50 or y_off < -50):
                 raise Failed(f"{error} between -50% and 50%")
             self.vertical_offset = f"{y_off}%" if per else y_off
+        if self.vertical_offset is None and self.vertical_align == "center":
+            self.vertical_offset = 0
 
-        if ("horizontal_offset" in self.data or "vertical_offset" in self.data) and (self.horizontal_offset is None or self.vertical_offset is None):
+        if (self.horizontal_offset is not None or self.vertical_offset is not None) and (self.horizontal_offset is None or self.vertical_offset is None):
             raise Failed(f"Overlay Error: overlay horizontal_offset and overlay vertical_offset must be used together")
 
         def get_and_save_image(image_url):
@@ -1019,11 +1023,11 @@ class Overlay:
             width, height = self.image.size
 
         def get_cord(value, image_value, over_value, align):
-            value = image_value * 0.01 * int(value[:-1]) if str(value).endswith("%") else value
+            value = int(image_value * 0.01 * int(value[:-1])) if str(value).endswith("%") else value
             if align in ["right", "bottom"]:
                 return image_value - over_value - value
             elif align == "center":
-                return (image_value / 2) - (over_value / 2) + value
+                return int(image_value / 2) - int(over_value / 2) + value
             else:
                 return value
 
