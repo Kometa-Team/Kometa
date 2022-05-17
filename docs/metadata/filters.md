@@ -40,7 +40,7 @@ String filters can take multiple values **only as a list**.
 | `filepath`          | Uses the item's filepath to match        | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
 | `audio_track_title` | Uses the audio track titles to match     | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
 
-<sup>1</sup> Filters using the special `episodes`/`tracks` filters with the default percent.
+<sup>1</sup> Filters using the special `episodes`/`tracks` [filter](#special-filters) with the [default percent](details/setting).
 
 ## Tag Filters
 
@@ -82,7 +82,8 @@ Tag filters can take multiple values as a **list or a comma-separated string**.
 | `tmdb_keyword`<sup>2</sup>   | Uses the keyword from TMDb to match                                                                                                             | &#9989;  |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
 | `origin_country`<sup>2</sup> | Uses TMDb origin country [ISO 3166-1 alpha-2 codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) to match<br>Example: `origin_country: us` | &#10060; |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
 
-<sup>1</sup> Filters using the special `episodes` filter with the default percent.
+<sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/setting).
+
 <sup>2</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
 
 ## Boolean Filters
@@ -97,7 +98,7 @@ Boolean Filters have no modifiers.
 | `has_dolby_vision`  | Matches every item that has or does not have a dolby vision | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
 | `has_overlay`       | Matches every item that has or does not have an overlay     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#10060; |
 
-<sup>1</sup> Filters using the special `episodes` filter with the default percent.
+<sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/setting).
 
 ## Date Filters
 

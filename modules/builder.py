@@ -44,7 +44,7 @@ ignored_details = [
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
-    "file_theme", "minimum_items", "label", "album_sorting", "cache_builders", "tmdb_region"
+    "file_theme", "minimum_items", "label", "album_sorting", "cache_builders", "tmdb_region", "default_percent"
 ] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
@@ -145,18 +145,18 @@ custom_sort_builders = [
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays"]
 overlay_attributes = [
-     "filters", "limit", "show_missing", "save_report", "missing_only_released", "minimum_items", "cache_builders", "tmdb_region"
+     "filters", "limit", "show_missing", "save_report", "missing_only_released", "minimum_items", "cache_builders", "tmdb_region", "default_percent"
 ] + all_builders + overlay_only
 parts_collection_valid = [
      "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_filtering", "collection_mode", "label", "visible_library", "limit",
      "visible_home", "visible_shared", "show_missing", "save_report", "missing_only_released", "server_preroll", "changes_webhooks",
      "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "cache_builders",
-     "url_theme", "file_theme", "item_label"
+     "url_theme", "file_theme", "item_label", "default_percent"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_report",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
-    "server_preroll", "changes_webhooks", "minimum_items", "cache_builders"
+    "server_preroll", "changes_webhooks", "minimum_items", "cache_builders", "default_percent"
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
    "non_item_remove_label", "item_label", "collection_filtering", "item_lock_background", "item_lock_poster", "item_lock_title",
@@ -838,6 +838,8 @@ class CollectionBuilder:
             self.limit = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
         elif method_name == "cache_builders":
             self.details[method_name] = util.parse(self.Type, method_name, method_data, datatype="int", minimum=0)
+        elif method_name == "default_percent":
+            self.default_percent = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1, maximum=100)
         elif method_name == "server_preroll":
             self.server_preroll = util.parse(self.Type, method_name, method_data)
         elif method_name == "ignore_ids":
