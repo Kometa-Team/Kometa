@@ -27,6 +27,8 @@ I'm also assuming you are doing this on a computer, not through a NAS interface 
 
 You may want to take an hour to get familiar with Docker fundamentals with the [official tutorial](https://www.docker.com/101-tutorial/).
 
+DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the docker image [linuxserver.iopp will not work for this, for example]; don't change that paths, etc.
+
 ### Installing Docker.
 
 The Docker install is discussed here: [Installing Docker](https://docs.docker.com/engine/install/)
@@ -59,6 +61,10 @@ docker run --rm meisnate12/plex-meta-manager --run
 ```
 
 [This is going to fail with an error, don’t panic]
+
+### Important note on that command
+
+This tutorial uses the official image, and you should, too.  Don't change `meisnate12/plex-meta-manager` to the `linuxserver.io` image or any other; the lsio image specifically has idiosyncracies that will prevent the walkthrough from working.  The official image *will* behave exactly as documented below.  Other very possibly won't.
 
 You should see something like this:
 
