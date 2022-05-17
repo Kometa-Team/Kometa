@@ -840,8 +840,15 @@ class Overlay:
         self.path = None
         self.font = None
         self.font_name = None
-        self.font_size = 12
+        self.font_size = 36
         self.font_color = None
+        self.back_color = None
+        self.back_radius = None
+        self.back_line_width = None
+        self.back_line_color = None
+        self.back_padding = 0
+        self.back_height = None
+        self.back_width = None
         logger.debug("")
         logger.debug("Validating Method: overlay")
         logger.debug(f"Value: {self.data}")
@@ -855,16 +862,13 @@ class Overlay:
 
         if "group" in self.data and self.data["group"]:
             self.group = str(self.data["group"])
-        if "weight" in self.data and self.data["weight"] is not None:
-            pri = check_num(self.data["weight"])
-            if pri is None:
-                raise Failed(f"Overlay Error: overlay weight must be a number")
-            self.weight = pri
+        if "weight" in self.data:
+            self.weight = parse("Overlay", "weight", self.data["weight"], datatype="int", parent="overlay")
         if ("group" in self.data or "weight" in self.data) and (self.weight is None or not self.group):
             raise Failed(f"Overlay Error: overlay attribute's group and weight must be used together")
 
-        self.horizontal_align = parse("Overlay", "horizontal_align", self.data["horizontal_align"], options=["left", "center", "right"]) if "horizontal_align" in self.data else "left"
-        self.vertical_align = parse("Overlay", "vertical_align", self.data["vertical_align"], options=["top", "center", "bottom"]) if "vertical_align" in self.data else "top"
+        self.horizontal_align = parse("Overlay", "horizontal_align", self.data["horizontal_align"], parent="overlay", options=["left", "center", "right"]) if "horizontal_align" in self.data else "left"
+        self.vertical_align = parse("Overlay", "vertical_align", self.data["vertical_align"], parent="overlay", options=["top", "center", "bottom"]) if "vertical_align" in self.data else "top"
 
         self.horizontal_offset = None
         if "horizontal_offset" in self.data and self.data["horizontal_offset"] is not None:
@@ -908,8 +912,8 @@ class Overlay:
         if self.vertical_offset is None and self.vertical_align == "center":
             self.vertical_offset = 0
 
-        if (self.horizontal_offset is not None or self.vertical_offset is not None) and (self.horizontal_offset is None or self.vertical_offset is None):
-            raise Failed(f"Overlay Error: overlay horizontal_offset and overlay vertical_offset must be used together")
+        if (self.horizontal_offset is None and self.vertical_offset is not None) or (self.vertical_offset is None and self.horizontal_offset is not None):
+            raise Failed(f"Overlay Error: overlay attribute's  horizontal_offset and vertical_offset must be used together")
 
         def get_and_save_image(image_url):
             response = self.config.get(image_url)
@@ -958,12 +962,8 @@ class Overlay:
             self.name = f"text({match.group(1)})"
             if os.path.exists("fonts/Roboto-Medium.ttf"):
                 self.font_name = "fonts/Roboto-Medium.ttf"
-            if "font_size" in self.data and self.data["font_size"] is not None:
-                font_size = check_num(self.data["font_size"])
-                if font_size is None or font_size < 1:
-                    logger.error(f"Overlay Error: overlay font_size: {self.data['font_size']} invalid must be a greater than 0")
-                else:
-                    self.font_size = font_size
+            if "font_size" in self.data:
+                self.font_size = parse("Overlay", "font_size", self.data["font_size"], datatype="int", parent="overlay", default=self.font_size)
             if "font" in self.data and self.data["font"]:
                 font = str(self.data["font"])
                 if not os.path.exists(font):
@@ -972,13 +972,27 @@ class Overlay:
                         raise Failed(f"Overlay Error: font: {font} not found. Options: {', '.join(fonts)}")
                 self.font_name = font
                 self.font = ImageFont.truetype(self.font_name, self.font_size)
-            if "font_color" in self.data and self.data["font_color"]:
-                try:
-                    color_str = self.data["font_color"]
-                    color_str = color_str if color_str.startswith("#") else f"#{color_str}"
-                    self.font_color = ImageColor.getcolor(color_str, "RGB")
-                except ValueError:
-                    logger.error(f"Overlay Error: overlay color: {self.data['color']} invalid")
+            def color(attr):
+                if attr in self.data and self.data[attr]:
+                    try:
+                        return ImageColor.getcolor(self.data[attr], "RGBA")
+                    except ValueError:
+                        raise Failed(f"Overlay Error: overlay {attr}: {self.data[attr]} invalid")
+            self.font_color = color("font_color")
+            self.back_color = color("back_color")
+            if "back_radius" in self.data:
+                self.back_radius = parse("Overlay", "back_radius", self.data["back_radius"], datatype="int", parent="overlay")
+            if "back_line_width" in self.data:
+                self.back_line_width = parse("Overlay", "back_line_width", self.data["back_line_width"], datatype="int", parent="overlay")
+            self.back_line_color = color("back_line_color")
+            if "back_padding" in self.data:
+                self.back_padding = parse("Overlay", "back_padding", self.data["back_padding"], datatype="int", parent="overlay", default=self.back_padding)
+            if "back_width" in self.data:
+                self.back_width = parse("Overlay", "back_width", self.data["back_width"], datatype="int", parent="overlay")
+            if "back_height" in self.data:
+                self.back_height = parse("Overlay", "back_height", self.data["back_height"], datatype="int", parent="overlay")
+            if (self.back_width and not self.back_height) or (self.back_height and not self.back_width):
+                raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
         else:
             if "|" in self.name:
                 raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
@@ -1007,18 +1021,27 @@ class Overlay:
             output += f"{self.horizontal_align}{self.horizontal_offset}{self.vertical_offset}{self.vertical_align}"
         if self.font_name:
             output += f"{self.font_name}{self.font_size}"
-        if self.font_color:
-            output += str(self.font_color)
+        if self.back_width:
+            output += f"{self.back_width}{self.back_height}"
+        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
+            if value is not None:
+                output += f"{value}"
         return output
 
     def has_coordinates(self):
         return self.horizontal_offset is not None and self.vertical_offset is not None
 
+    def get_text_size(self, text):
+        return ImageDraw.Draw(Image.new("RGBA", (0, 0))).textbbox((0, 0), text, font=self.font, anchor='lt')
+
     def get_coordinates(self, image_width, image_height, text=None):
         if not self.has_coordinates():
             return 0, 0
-        if text:
-            _, _, width, height = ImageDraw.Draw(Image.new("RGB", (0, 0))).textbbox((0, 0), text, font=self.font)
+        if self.back_width:
+            width = self.back_width
+            height = self.back_height
+        elif text:
+            _, _, width, height = self.get_text_size(text)
         else:
             width, height = self.image.size
 
@@ -1031,7 +1054,5 @@ class Overlay:
             else:
                 return value
 
-        x_cord = get_cord(self.horizontal_offset, image_width, width, self.horizontal_align)
-        y_cord = get_cord(self.vertical_offset, image_height, height, self.vertical_align)
-
-        return x_cord, y_cord
+        return get_cord(self.horizontal_offset, image_width, width, self.horizontal_align), \
+               get_cord(self.vertical_offset, image_height, height, self.vertical_align)

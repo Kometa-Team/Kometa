@@ -30,14 +30,17 @@ String filters can take multiple values **only as a list**.
 
 ### Attribute
 
-| String Filter       | Description                              |  Movies  |  Shows   | Seasons  | Episodes | Artists  |  Albums  |  Track   |
-|:--------------------|:-----------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `title`             | Uses the title attribute to match        | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `summary`           | Uses the summary attribute to match      | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `studio`            | Uses the studio attribute to match       | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `record_label`      | Uses the record label attribute to match | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; |
-| `filepath`          | Uses the item's filepath to match        | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#9989;  | &#10060; | &#9989;  |
-| `audio_track_title` | Uses the audio track titles to match     | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#9989;  |
+| String Filter       | Description                              |  Movies  |        Shows        |       Seasons       | Episodes |       Artists       |       Albums        |  Track   |
+|:--------------------|:-----------------------------------------|:--------:|:-------------------:|:-------------------:|:--------:|:-------------------:|:-------------------:|:--------:|
+| `title`             | Uses the title attribute to match        | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
+| `summary`           | Uses the summary attribute to match      | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
+| `studio`            | Uses the studio attribute to match       | &#9989;  |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
+| `record_label`      | Uses the record label attribute to match | &#10060; |      &#10060;       |      &#10060;       | &#10060; |      &#10060;       |       &#9989;       | &#10060; |
+| `folder`            | Uses the item's folder to match          | &#10060; |       &#9989;       |      &#10060;       | &#10060; |       &#9989;       |      &#10060;       | &#10060; |
+| `filepath`          | Uses the item's filepath to match        | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
+| `audio_track_title` | Uses the audio track titles to match     | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
+
+<sup>1</sup> Filters using the special `episodes`/`tracks` filters with the default percent.
 
 ## Tag Filters
 
@@ -59,27 +62,28 @@ Tag filters can take multiple values as a **list or a comma-separated string**.
 
 ### Attribute
 
-| Tag Filters                  | Description                                                                                                                                     |  Movies  |  Shows   | Seasons  | Episodes | Artists  |  Albums  |  Track   |
-|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `actor`                      | Uses the actor tags to match                                                                                                                    | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `collection`                 | Uses the collection tags to match                                                                                                               | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `content_rating`             | Uses the content rating tags to match                                                                                                           | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `network`                    | Uses the network tags to match                                                                                                                  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `country`                    | Uses the country tags to match                                                                                                                  | &#9989;  | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; |
-| `director`                   | Uses the director tags to match                                                                                                                 | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `genre`                      | Uses the genre tags to match                                                                                                                    | &#9989;  | &#9989;  | &#10060; | &#10060; | &#9989;  | &#9989;  | &#10060; |
-| `label`                      | Uses the label tags to match                                                                                                                    | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; |
-| `producer`                   | Uses the actor tags to match                                                                                                                    | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `year`                       | Uses the year tag to match                                                                                                                      | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#9989;  |
-| `writer`                     | Uses the writer tags to match                                                                                                                   | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `resolution`                 | Uses the resolution tag to match                                                                                                                | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `audio_language`             | Uses the audio language tags to match                                                                                                           | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `subtitle_language`          | Uses the subtitle language tags to match                                                                                                        | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `tmdb_genre`<sup>1</sup>     | Uses the genre from TMDb to match                                                                                                               | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `tmdb_keyword`<sup>1</sup>   | Uses the keyword from TMDb to match                                                                                                             | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `origin_country`<sup>1</sup> | Uses TMDb origin country [ISO 3166-1 alpha-2 codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) to match<br>Example: `origin_country: us` | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| Tag Filters                  | Description                                                                                                                                     |  Movies  |        Shows        |       Seasons       | Episodes | Artists  |  Albums  |  Track   |
+|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:-------------------:|:-------------------:|:--------:|:--------:|:--------:|:--------:|
+| `actor`                      | Uses the actor tags to match                                                                                                                    | &#9989;  |       &#9989;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `collection`                 | Uses the collection tags to match                                                                                                               | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `content_rating`             | Uses the content rating tags to match                                                                                                           | &#9989;  |       &#9989;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `network`                    | Uses the network tags to match                                                                                                                  | &#10060; |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
+| `country`                    | Uses the country tags to match                                                                                                                  | &#9989;  |      &#10060;       |      &#10060;       | &#10060; | &#9989;  | &#10060; | &#10060; |
+| `director`                   | Uses the director tags to match                                                                                                                 | &#9989;  |      &#10060;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `genre`                      | Uses the genre tags to match                                                                                                                    | &#9989;  |       &#9989;       |      &#10060;       | &#10060; | &#9989;  | &#9989;  | &#10060; |
+| `label`                      | Uses the label tags to match                                                                                                                    | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `producer`                   | Uses the actor tags to match                                                                                                                    | &#9989;  |      &#10060;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `year`                       | Uses the year tag to match                                                                                                                      | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  | &#10060; | &#9989;  | &#9989;  |
+| `writer`                     | Uses the writer tags to match                                                                                                                   | &#9989;  |      &#10060;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `resolution`                 | Uses the resolution tag to match                                                                                                                | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `audio_language`             | Uses the audio language tags to match                                                                                                           | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `subtitle_language`          | Uses the subtitle language tags to match                                                                                                        | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `tmdb_genre`<sup>2</sup>     | Uses the genre from TMDb to match                                                                                                               | &#9989;  |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
+| `tmdb_keyword`<sup>2</sup>   | Uses the keyword from TMDb to match                                                                                                             | &#9989;  |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
+| `origin_country`<sup>2</sup> | Uses TMDb origin country [ISO 3166-1 alpha-2 codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) to match<br>Example: `origin_country: us` | &#10060; |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
 
-<sup>1</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
+<sup>1</sup> Filters using the special `episodes` filter with the default percent.
+<sup>2</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
 
 ## Boolean Filters
 
@@ -87,11 +91,13 @@ Boolean Filters have no modifiers.
 
 ### Attribute
 
-| Boolean Filters     | Description                                                 | Movies  |  Shows   | Seasons  | Episodes | Artists  |  Albums  |  Track   |
-|:--------------------|:------------------------------------------------------------|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `has_collection`    | Matches every item that has or does not have a collection   | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `has_dolby_vision`  | Matches every item that has or does not have a dolby vision | &#9989; | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `has_overlay`       | Matches every item that has or does not have an overlay     | &#9989; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| Boolean Filters     | Description                                                 | Movies  |        Shows        |       Seasons       | Episodes | Artists  |  Albums  |  Track   |
+|:--------------------|:------------------------------------------------------------|:-------:|:-------------------:|:-------------------:|:--------:|:--------:|:--------:|:--------:|
+| `has_collection`    | Matches every item that has or does not have a collection   | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `has_dolby_vision`  | Matches every item that has or does not have a dolby vision | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `has_overlay`       | Matches every item that has or does not have an overlay     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#10060; |
+
+<sup>1</sup> Filters using the special `episodes` filter with the default percent.
 
 ## Date Filters
 

@@ -343,8 +343,9 @@ def run_config(config):
         logger.info("")
         logger.info(f"{'Title':<27} | Run Time |")
         logger.info(f"{logger.separating_character * 27} | {logger.separating_character * 8} |")
-        for text, value in library_status[library.name].items():
-            logger.info(f"{text:<27} | {value:>8} |")
+        if library.name in library_status:
+            for text, value in library_status[library.name].items():
+                logger.info(f"{text:<27} | {value:>8} |")
         logger.info("")
         print_status(library.status)
     if playlist_status:
