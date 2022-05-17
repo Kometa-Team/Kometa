@@ -477,7 +477,8 @@ class Plex(Library):
             logger.ghost(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
         logger.info(f"Loaded {self.Plex._totalViewSize} {collection_level.capitalize()}s")
-        self._all_items = results
+        if collection_level in [None, "show", "artist", "movie"]:
+            self._all_items = results
         return results
 
     def upload_theme(self, collection, url=None, filepath=None):
