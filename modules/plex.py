@@ -1169,7 +1169,7 @@ class Plex(Library):
                 for media in item.media:
                     for part in media.parts:
                         values.extend([a.extendedDisplayTitle for a in part.audioStreams() if a.extendedDisplayTitle])
-            elif filter_attr == "filepath":
+            elif filter_attr in ["filepath", "folder"]:
                 values = [loc for loc in item.locations]
             else:
                 values = [getattr(item, filter_actual)]

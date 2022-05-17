@@ -54,25 +54,31 @@ Each overlay definition needs to specify what overlay to use. This can happen in
    
 3. Using a dictionary for more overlay location options.
 
-| Attribute           | Description                                                                                                     | Required |
-|:--------------------|:----------------------------------------------------------------------------------------------------------------|:--------:|
-| `name`              | Name of the overlay. Each overlay name should be unique.                                                        | &#9989;  |
-| `file`              | Local location of the Overlay Image.                                                                            | &#10060; |
-| `url`               | URL of Overlay Image Online.                                                                                    | &#10060; |
-| `git`               | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image.   | &#10060; |
-| `repo`              | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                          | &#10060; |
-| `group`             | Name of the Grouping for this overlay. **`weight` is required when using `group`**                              | &#10060; |
-| `weight`            | Weight of this overlay in its group. **`group` is required when using `weight`**                                | &#10060; |
-| `horizontal_offset` | Horizontal Offset of this overlay. Can be a %. **`vertical_offset` is required when using `horizontal_offset`** | &#10060; |
-| `horizontal_align`  | Horizontal Alignment of the overlay. **Values:** `left`, `center`, `right`                                      | &#10060; |
-| `vertical_offset`   | Vertical Offset of this overlay. Can be a %. **`horizontal_offset` is required when using `vertical_offset`**   | &#10060; |
-| `vertical_align`    | Vertical Alignment of the overlay. **Values:** `top`, `center`, `bottom`                                        | &#10060; |
-| `font`              | System Font Filename or path to font file for the Text Overlay                                                  | &#10060; |
-| `font_size`         | Font Size for the Text Overlay. **Value:** Integer greater than 0                                               | &#10060; |
-| `font_color`        | Font Color for the Text Overlay. **Value:** Color Hex Code. ex `#00FF00`                                        | &#10060; |
+| Attribute           | Description                                                                                                                                                                                          | Required |
+|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
+| `name`              | Name of the overlay. Each overlay name should be unique.                                                                                                                                             | &#9989;  |
+| `file`              | Local location of the Overlay Image.                                                                                                                                                                 | &#10060; |
+| `url`               | URL of Overlay Image Online.                                                                                                                                                                         | &#10060; |
+| `git`               | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image.                                                                                        | &#10060; |
+| `repo`              | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                                                                                                               | &#10060; |
+| `group`             | Name of the Grouping for this overlay. Only one overlay with the highest weight per group will be applied.<br>**`weight` is required when using `group`**<br>**Values:** group name                  | &#10060; |
+| `weight`            | Weight of this overlay in its group.<br>**`group` is required when using `weight`**<br>**Values:** Integer                                                                                           | &#10060; |
+| `horizontal_offset` | Horizontal Offset of this overlay. Can be a %.<br>**`vertical_offset` is required when using `horizontal_offset`**<br>**Value:** Integer 0 or greater or 1%-100%                                     | &#10060; |
+| `horizontal_align`  | Horizontal Alignment of the overlay.<br>**Values:** `left`, `center`, `right`                                                                                                                        | &#10060; |
+| `vertical_offset`   | Vertical Offset of this overlay. Can be a %.<br>**`horizontal_offset` is required when using `vertical_offset`**<br>**Value:** Integer 0 or greater or 1%-100%                                       | &#10060; |
+| `vertical_align`    | Vertical Alignment of the overlay.<br>**Values:** `top`, `center`, `bottom`                                                                                                                          | &#10060; |
+| `font`              | System Font Filename or path to font file for the Text Overlay.<br>**Value:** System Font Filename or path to font file                                                                              | &#10060; |
+| `font_size`         | Font Size for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                 | &#10060; |
+| `font_color`        | Font Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                                   | &#10060; |
+| `back_color`        | Backdrop Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                               | &#10060; |
+| `back_width`        | Backdrop Width for the Text Overlay. If `back_width` is not specified the Backdrop Sizes to the text<br>**`back_height` is required when using `back_width`**<br>**Value:** Integer greater than 0   | &#10060; |
+| `back_height`       | Backdrop Height for the Text Overlay. If `back_height` is not specified the Backdrop Sizes to the text<br>**`back_width` is required when using `back_height`**<br>**Value:** Integer greater than 0 | &#10060; |
+| `back_padding`      | Backdrop Padding for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                          | &#10060; |
+| `back_radius`       | Backdrop Radius for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                           | &#10060; |
+| `back_line_color`   | Backdrop Line Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                          | &#10060; |
+| `back_line_width`   | Backdrop Line Width for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                       | &#10060; |
 
 * If `url`, `git`, and `repo` are all not defined then PMM will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
-* Only one overlay with the highest weight per group will be applied.
 
 ```yaml
 overlays:

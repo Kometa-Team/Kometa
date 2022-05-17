@@ -1,4 +1,5 @@
 import re, secrets, time, webbrowser
+from json import JSONDecodeError
 from modules import util
 from modules.util import Failed, TimeoutExpired, YAML
 
@@ -158,11 +159,14 @@ class MyAnimeList:
         token = authorization["access_token"] if authorization else self.authorization["access_token"]
         if self.config.trace_mode:
             logger.debug(f"URL: {url}")
-        response = self.config.get_json(url, headers={"Authorization": f"Bearer {token}"})
-        if self.config.trace_mode:
-            logger.debug(f"Response: {response}")
-        if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
-        else:                           return response
+        try:
+            response = self.config.get_json(url, headers={"Authorization": f"Bearer {token}"})
+            if self.config.trace_mode:
+                logger.debug(f"Response: {response}")
+            if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
+            else:                           return response
+        except JSONDecodeError:
+            raise Failed(f"MyAnimeList Error: Connection Failed")
 
     def _jiken_request(self, url, params=None):
         data = self.config.get_json(f"{jiken_base_url}{url}", params=params)

@@ -70,18 +70,18 @@ discover_status = {
     "Ended": "ended", "Canceled": "canceled", "Pilot": "pilot"
 }
 filters_by_type = {
-    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays"],
+    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "filepath", "label", "audio_track_title"],
     "movie_show_season_episode_album_track": ["year"],
-    "movie_show_episode_artist_track": ["filepath"],
+    "movie_show_season_episode_artist_album": ["has_overlay"],
+    "movie_show_season_episode": ["resolution", "audio_language", "subtitle_language", "has_dolby_vision"],
     "movie_show_episode_album": ["release", "critic_rating", "history"],
     "movie_show_episode_track": ["duration"],
     "movie_show_artist_album": ["genre"],
     "movie_show_episode": ["actor", "content_rating", "audience_rating"],
-    "movie_show_album": ["label"],
-    "movie_episode_track": ["audio_track_title"],
-    "movie_show": ["studio", "original_language", "has_overlay", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword"],
-    "movie_episode": ["director", "producer", "writer", "resolution", "audio_language", "subtitle_language", "has_dolby_vision"],
+    "movie_show": ["studio", "original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword"],
+    "movie_episode": ["director", "producer", "writer"],
     "movie_artist": ["country"],
+    "show_artist": ["folder"],
     "show_season": ["episodes"],
     "artist_album": ["tracks"],
     "show": ["seasons", "tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired"],
@@ -101,7 +101,7 @@ tmdb_filters = [
     "original_language", "origin_country", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre",
     "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type", "tmdb_title"
 ]
-string_filters = ["title", "summary", "studio", "record_label", "filepath", "audio_track_title", "tmdb_title"]
+string_filters = ["title", "summary", "studio", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year", "origin_country",
@@ -225,10 +225,12 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['allowed_library_types']]}")
             found_type = False
             for library_type in util.get_list(self.data[methods["allowed_library_types"]], lower=True):
-                if library_type not in plex.library_types:
-                    raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: {', '.join(plex.library_types)}")
-                elif library_type == self.library.Plex.type:
+                if library_type == "true" or library_type == self.library.Plex.type:
                     found_type = True
+                elif library_type not in plex.library_types:
+                    raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: {', '.join(plex.library_types)}")
+                elif library_type == "false":
+                    raise NotScheduled(f"Skipped because allowed_library_types is false")
             if not found_type:
                 raise NotScheduled(f"Skipped because allowed_library_types {self.data[methods['allowed_library_types']]} doesn't match the library type: {self.library.Plex.type}")
 
@@ -340,6 +342,7 @@ class CollectionBuilder:
         self.schedule = ""
         self.limit = 0
         self.beginning_count = 0
+        self.default_percent = 50
         self.minimum = self.library.minimum_items
         self.tmdb_region = None
         self.ignore_ids = [i for i in self.library.ignore_ids]
@@ -1452,10 +1455,14 @@ class CollectionBuilder:
                 message = f"{self.Type} Error: {filter_final} is not a valid {self.collection_level} filter attribute"
             elif filter_final is None:
                 message = f"{self.Type} Error: {filter_final} filter attribute is blank"
-            elif filter_attr in tmdb_filters:
-                self.tmdb_filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
             else:
-                self.filters.append((filter_final, self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)))
+                final_data = self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)
+                if filter_attr in tmdb_filters:
+                    self.tmdb_filters.append((filter_final, final_data))
+                elif self.collection_level in ["show", "season", "artist", "album"] and filter_attr in ["filepath", "audio_track_title", "resolution", "audio_language", "subtitle_language", "has_dolby_vision"]:
+                    self.filters.append(("episodes" if self.collection_level in ["show", "season"] else "tracks", {filter_final: final_data, "percentage": self.default_percent}))
+                else:
+                    self.filters.append((filter_final, final_data))
             if message:
                 if validate:
                     raise Failed(message)
@@ -1878,7 +1885,7 @@ class CollectionBuilder:
             return util.get_list(data, upper=True)
         elif attribute in ["original_language", "tmdb_keyword"]:
             return util.get_list(data, lower=True)
-        elif attribute in ["filepath", "tmdb_genre"]:
+        elif attribute in ["tmdb_genre"]:
             return util.get_list(data)
         elif attribute == "history":
             try:
@@ -1965,14 +1972,14 @@ class CollectionBuilder:
             return util.parse(self.Type, attribute, data, datatype="bool")
         elif attribute in ["seasons", "episodes", "albums", "tracks"]:
             if isinstance(data, dict) and data:
-                percentage = 60
+                percentage = self.default_percent
                 if "percentage" in data:
                     if data["percentage"] is None:
-                        logger.warning(f"{self.Type} Warning: percentage filter attribute is blank using 60 as default")
+                        logger.warning(f"{self.Type} Warning: percentage filter attribute is blank using {self.default_percent} as default")
                     else:
                         maybe = util.check_num(data["percentage"])
                         if maybe < 0 or maybe > 100:
-                            logger.warning(f"{self.Type} Warning: percentage filter attribute must be a number 0-100 using 60 as default")
+                            logger.warning(f"{self.Type} Warning: percentage filter attribute must be a number 0-100 using {self.default_percent} as default")
                         else:
                             percentage = maybe
                 final_filters = {"percentage": percentage}

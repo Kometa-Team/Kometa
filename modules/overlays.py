@@ -41,30 +41,34 @@ class Overlays:
                             os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")
                         ])
 
-        if self.library.remove_overlays:
-            remove_overlays = self.get_overlay_items()
-            if self.library.is_show:
-                remove_overlays.extend(self.get_overlay_items(libtype="episode"))
-                remove_overlays.extend(self.get_overlay_items(libtype="season"))
-            elif self.library.is_music:
-                remove_overlays.extend(self.get_overlay_items(libtype="album"))
-
-            logger.info("")
-            if remove_overlays:
-                logger.separator(f"Removing Overlays for the {self.library.name} Library")
-                for i, item in enumerate(remove_overlays, 1):
-                    item_title = self.get_item_sort_title(item, atr="title")
-                    logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
-                    self.remove_overlay(item, item_title, "Overlay", [
-                        os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
-                        os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
-                    ])
-                logger.exorcise()
-            else:
-                logger.separator(f"No Overlays to Remove for the {self.library.name} Library")
-            logger.info("")
-        else:
+        key_to_overlays = {}
+        properties = None
+        if not self.library.remove_overlays:
             key_to_overlays, properties = self.compile_overlays()
+        ignore_list = [rk for rk in key_to_overlays]
+
+        remove_overlays = self.get_overlay_items(ignore=ignore_list)
+        if self.library.is_show:
+            remove_overlays.extend(self.get_overlay_items(libtype="episode", ignore=ignore_list))
+            remove_overlays.extend(self.get_overlay_items(libtype="season", ignore=ignore_list))
+        elif self.library.is_music:
+            remove_overlays.extend(self.get_overlay_items(libtype="album", ignore=ignore_list))
+
+        logger.info("")
+        if remove_overlays:
+            logger.separator(f"Removing Overlays for the {self.library.name} Library")
+            for i, item in enumerate(remove_overlays, 1):
+                item_title = self.get_item_sort_title(item, atr="title")
+                logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
+                self.remove_overlay(item, item_title, "Overlay", [
+                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
+                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
+                ])
+            logger.exorcise()
+        else:
+            logger.separator(f"No Overlays to Remove for the {self.library.name} Library")
+        logger.info("")
+        if not self.library.remove_overlays:
             logger.info("")
             logger.separator(f"Applying Overlays for the {self.library.name} Library")
             logger.info("")
@@ -164,7 +168,9 @@ class Overlays:
                             image_height = 1080 if isinstance(item, Episode) else 1500
 
                             new_poster = Image.open(poster.location if poster else has_original) \
-                                .convert("RGBA").resize((image_width, image_height), Image.ANTIALIAS)
+                                .convert("RGB").resize((image_width, image_height), Image.ANTIALIAS)
+                            overlay_image = Image.new('RGBA', new_poster.size, (255, 255, 255, 0))
+                            drawing = ImageDraw.Draw(overlay_image)
                             if blur_num > 0:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
                             for over_name in normal_overlays:
@@ -173,7 +179,6 @@ class Overlays:
                                     new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
                                 new_poster.paste(overlay.image, overlay.get_coordinates(image_width, image_height), overlay.image)
                             if text_names:
-                                drawing = ImageDraw.Draw(new_poster)
                                 for over_name in text_names:
                                     overlay = properties[over_name]
                                     text = over_name[5:-1]
@@ -190,7 +195,27 @@ class Overlays:
                                             self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
                                         if per:
                                             text = f"{int(text * 10)}%"
-                                    drawing.text(overlay.get_coordinates(image_width, image_height, text=str(text)), str(text), font=overlay.font, fill=overlay.font_color)
+                                    x_cord, y_cord = overlay.get_coordinates(image_width, image_height, text=str(text))
+                                    _, _, width, height = overlay.get_text_size(str(text))
+                                    if overlay.back_color:
+                                        cords = (
+                                            x_cord - overlay.back_padding,
+                                            y_cord - overlay.back_padding,
+                                            x_cord + (overlay.back_width if overlay.back_width else width) + overlay.back_padding,
+                                            y_cord + (overlay.back_height if overlay.back_height else height) + overlay.back_padding
+                                        )
+                                        if overlay.back_width:
+                                            x_cord = int(x_cord + (overlay.back_width - width) / 2)
+                                            y_cord = int(y_cord + (overlay.back_height - height) / 2)
+
+                                        if overlay.back_radius:
+                                            drawing.rounded_rectangle(cords, fill=overlay.back_color, outline=overlay.back_line_color,
+                                                                      width=overlay.back_line_width,  radius=overlay.back_radius)
+                                        else:
+                                            drawing.rectangle(cords, fill=overlay.back_color, outline=overlay.back_line_color,
+                                                              width=overlay.back_line_width)
+                                    drawing.text((x_cord, y_cord), str(text), font=overlay.font, fill=overlay.font_color, anchor='lt')
+                                new_poster.paste(overlay_image, (0, 0), overlay_image)
                             temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             new_poster.save(temp, "PNG")
                             self.library.upload_poster(item, temp)
