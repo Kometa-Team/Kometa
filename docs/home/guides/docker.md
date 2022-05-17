@@ -27,7 +27,7 @@ I'm also assuming you are doing this on a computer, not through a NAS interface 
 
 You may want to take an hour to get familiar with Docker fundamentals with the [official tutorial](https://www.docker.com/101-tutorial/).
 
-DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the docker image [linuxserver.iopp will not work for this, for example]; don't change that paths, etc.
+DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the docker image [`linuxserver.io` will not work for this, for example]; don't change the paths, etc.
 
 ### Installing Docker.
 
