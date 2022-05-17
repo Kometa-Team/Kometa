@@ -335,8 +335,6 @@ class Operations:
                                 new_rating = mdb_item.content_rating if mdb_item.content_rating else None
                             elif mdb_item and self.library.mass_content_rating_update == "mdb_commonsense":
                                 new_rating = mdb_item.commonsense if mdb_item.commonsense else None
-                            elif tmdb_item and self.library.mass_content_rating_update == "tmdb":
-                                new_rating = tmdb_item.content_rating if tmdb_item.content_rating else None
                             else:
                                 raise Failed
                             if new_rating is None:
