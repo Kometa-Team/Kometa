@@ -63,7 +63,7 @@ This is the recommended approach as it allows the user additional control over h
 1. Create a `waiter.cmd` file by opening the text editor (i.e. Notepad, TextEdit) and pasting the following code:
 
    ```batch
-   cd C:\User\USERNAMEHERE\Plex-Meta-Manager
+   cd C:\Users\USERNAMEHERE\Plex-Meta-Manager
    .\pmm-venv\Scripts\python .\plex_meta_manager.py
    ```
 * This will navigate to the PMM directory, then run PMM. At the scheduled time [as defined within Plex Meta Manager], PMM will process the Configuration File and will then wait until the next scheduled time.
@@ -90,11 +90,11 @@ This is the recommended approach as it allows the user additional control over h
 
    ![task-scheduler](task-scheduler/06-basic-task-04.png)
 
-7. Click "Browse", Navigate to the PMM directory and choose `waiter.cmd`, which was created in Step 1, then select "Open".
+7. Click "Browse", Navigate to the PMM directory and choose `waiter.cmd`, which was created in Step 1, then select "Open".  NOTE: Your path may vary from the illustration here; navigate to the file you created and saved in Step 1.
 
    ![task-scheduler](task-scheduler/06-basic-task-05.png)
 
-8. Copy the directory everything up to but not including `runner.cmd` from the "Program/Script" field, and paste it into the "Start in" field.  This is `C:\User\IEUser\Plex-Meta-Manager-1.15.1` in the example below, then select "next".
+8. Copy the directory everything up to but not including `runner.cmd` from the "Program/Script" field, and paste it into the "Start in" field.  This is `C:\User\IEUser\Plex-Meta-Manager-1.15.1` in the example below, then select "next".  NOTE: Your path may vary from the illustration or example.
 
    ![task-scheduler](task-scheduler/04-basic-task-06.png)
 
