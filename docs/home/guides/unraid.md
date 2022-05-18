@@ -5,7 +5,7 @@ To install a container from docker hub, you will need community applications - a
 
 ## Basic Installation
 
-1. Head to the `Apps` tab of unRAID (Community Applications), and search `plex-meta-manager` in the upper right search box. No results will show, because plex-meta-manager has not been added to community applications yet. No need to fear, however, because the pre-built docker container is on docker hub. Click `Click Here To Get More Results From DockerHub`.
+1. Head to the `Apps` tab of unRAID (Community Applications), and search `plex-meta-manager` in the upper right search box. There will be a couple of results shown, but you should ignore them ([Why?](alternative-docker.md)) and use the official image, which is on DockerHub. Click `Click Here To Get More Results From DockerHub`.
 
 2. Click the download icon on the `plex meta manager` container by `meisnate12`.
 
@@ -22,7 +22,7 @@ To install a container from docker hub, you will need community applications - a
   * If you wish to enable one-time [Run]([Run Commands & Environmental Variables Page](../environmental.md#run)), add `-r` to `Post Arguments` by enabling Advanced View in the top right of unRAID.
   * The Image below shows the above values in the unRAID WebUI.
   ![unRAID WebUI](unraid-webui.png)
-    
+
 4. Hit `Apply`, and allow unRAID to download the docker container.
 
 5. Navigate to the `Docker` tab in unRAID, and stop the `plex-meta-manager` container if it has auto-started.
@@ -44,11 +44,11 @@ Due to how unRAID handles docker containers, it can be a little confusing at fir
 4. Click the Terminal button in the upper right corner of the unRAID WebUI (`>_`)
 
 5. Run `docker exec -it plex-meta-manager /bin/bash`
-   
+
    Note: this name is case-sensitive.  If this gives you an error like "Error: No such container: plex-meta-manager"; check the container config to see if you've named it something like "Plex-Meta-Manager",  If that's the case, change the name in the command to match your container.
 
 6. Run `ls` to make sure you're in the same directory as `plex_meta_manager.py`. If you don't see the script, run `cd /`
-  
+
 7. Run `python plex_meta_manager.py -r`, and watch as the script comes to life.
 
 8. You'll now notice, as per the [configuration documentation](../../config/configuration) on these sources, the script will ask you to click a URL and return an input. Go ahead and do so in this terminal window.

@@ -8,6 +8,17 @@ This article will walk you through getting Plex-Meta-Manager [PMM] set up and ru
 4. Setting up a metadata file and creating a couple sample collections
 5. Creating a docker container that will keep running in the background
 
+The specific steps you will be taking:
+1. Verify that Docker is installed and install it if not
+2. Use `docker` to retrieve the PMM Docker image
+3. Create a directory for your config files and learn how to tell Docker to use it
+4. Gather two things that the script requires:
+   1. TMDB API Key
+   2. Plex URL and Token
+5. Then, iteratively:
+   1. use `docker` to run the image
+   2. use a text editor to modify a couple of text files until you have a working config file and a single working metadata file.
+
 ## Prerequisites.
 
 Anywhere you see
@@ -31,10 +42,13 @@ DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the d
 
 ### Installing Docker.
 
+To run Docker images, you need to have Docker installed.  It is not typically installed on new Mac, Linux, or Windows machines.
+
 The Docker install is discussed here: [Installing Docker](https://docs.docker.com/engine/install/)
 
 Once you have Docker installed, test it at the command line with:
 
+[type this into your terminal]
 ```
 docker run --rm hello-world
 ```
@@ -50,8 +64,12 @@ This message shows that your installation appears to be working correctly.
 
 ---
 
-The great thing about Docker is that all the setup you'd have to do to run PMM is already done inside docker image.
+#### Important note on Docker images
 
+This tutorial uses the official image, and you should, too.  Don't change `meisnate12/plex-meta-manager` to the `linuxserver.io` image or any other; the lsio image specifically has [idiosyncracies](alternative-docker.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Other very possibly won't.
+
+
+The great thing about Docker is that all the setup you'd have to do to run PMM is already done inside the docker image.
 
 That means we can just jump right into running it.  At the command prompt, type:
 
@@ -60,11 +78,7 @@ docker run --rm meisnate12/plex-meta-manager --run
 
 ```
 
-[This is going to fail with an error, don’t panic]
-
-### Important note on that command
-
-This tutorial uses the official image, and you should, too.  Don't change `meisnate12/plex-meta-manager` to the `linuxserver.io` image or any other; the lsio image specifically has idiosyncracies that will prevent the walkthrough from working.  The official image *will* behave exactly as documented below.  Other very possibly won't.
+This is going to fail with an error.  That's expected.
 
 You should see something like this:
 
@@ -93,6 +107,7 @@ PMM, inside that Docker container, can only see other things *inside the contain
 
 Go to your home directory and create a new directory:
 
+[type this into your terminal]
 ```
 cd ~
 mkdir plex-meta-manager
@@ -100,12 +115,14 @@ mkdir plex-meta-manager
 
 cd into that directory:
 
+[type this into your terminal]
 ```
 cd ~/plex-meta-manager
 ```
 
 get the full path:
 
+[type this into your terminal]
 ```
 pwd
 ```
@@ -138,17 +155,26 @@ This will display a full path:
   ```
 </details>
 
-You'll need to add this to the docker command every time you run it:
+You'll need to add this to the docker command every time you run it, like this:
 
-```
-docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-manager
-```
-as an example:
 
-```
-docker run --rm -it -v "/Users/mroche/plex-meta-manager:/config:rw" meisnate12/plex-meta-manager
-```
+<details>
+  <summary>Linux</summary>
+  <br />
 
+  ```
+  docker run --rm -it -v "/home/YOURUSERNAME/plex-meta-manager:/config:rw" meisnate12/plex-meta-manager
+  ```
+</details>
+
+<details>
+  <summary>Windows</summary>
+  <br />
+
+  ```
+  docker run --rm -it -v "C:\Users\YOURUSERNAME\plex-meta-manager:/config:rw" meisnate12/plex-meta-manager
+  ```
+</details>
 
 If you run that command now it will display a similar error to before, but without all the image loading:
 
@@ -203,12 +229,12 @@ First, make a copy of the template, then open the copy in an editor:
   <summary>OS X/Linux</summary>
   <br />
 
-  Get a copy of the template to edit:
+  Get a copy of the template to edit [type this into your terminal]:
   ```
   curl -fLvo config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
   ```
 
-  Open it in an editor:
+  Open it in an editor [type this into your terminal]:
   ```
   nano config.yml
   ```
@@ -222,6 +248,7 @@ First, make a copy of the template, then open the copy in an editor:
 
   Download the file `https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template` using a web browser or whatever means and save it in this directory as `config.yml`
 
+  [type this into your terminal]
   ```
   notepad config.yml
   ```
@@ -237,50 +264,54 @@ Scroll down a bit and update the three things you just collected; Plex URL, Plex
 
 ```yaml
 plex:                                           # Can be individually specified per library as well
-  url: http://bing.bang.boing                <<< ENTER YOUR PLEX URL
-  token: XXXXXXXXXXXXXXXXXXXX                <<< ENTER YOUR PLEX TOKEN
+  url: http://bing.bang.boing                <<< ENTER YOUR PLEX URL HERE
+  token: XXXXXXXXXXXXXXXXXXXX                <<< ENTER YOUR PLEX TOKEN HERE
   timeout: 60
   clean_bundles: false
   empty_trash: false
   optimize: false
 tmdb:
-  apikey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   <<< ENTER YOUR TMDb API
+  apikey: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   <<< ENTER YOUR TMDb API KEY HERE
   language: en
 ```
 
 Now scroll up and look at the top section:
 
 ```yaml
-libraries:                                      # Library mappings must have a colon (:) placed after them
-  Movies:
+## This file is a template remove the .template to use the file
+
+libraries:                                      # This is called out once within the config.yml file
+  Movies:                                       # Each library must match the Plex library name
     metadata_path:
-      - file: config/Movies.yml                 # You have to create this file the other is online
-      - git: meisnate12/MovieCharts
+      - file: config/Movies.yml                 # This is a local file on the system
+      - folder: config/Movies/                  # This is a local directory on the system
+      - git: meisnate12/MovieCharts             # This is a file within the GitHub Repository
   TV Shows:
     metadata_path:
-      - file: config/TV Shows.yml               # You have to create this file the other is online
-      - git: meisnate12/ShowCharts
+      - file: config/TVShows.yml
+      - folder: config/TV Shows/
+      - git: meisnate12/ShowCharts              # This points to the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   Anime:
     metadata_path:
-      - file: config/Anime.yml                  # You have to create this file the other is online
-      - git: meisnate12/AnimeCharts
+      - file: config/Anime.yml
+  Music:
+    metadata_path:
+      - file: config/Music.yml
 ```
 
+You will ultimately need an entry here for each of the libraries on which you want PMM to act.  Those top-level elements [Movies, TV Shows, Anime, Music] are names of libraries on your Plex server.
 
-You will ultimately need an entry here for each of the libraries on which you want PMM to act.  Those top-level elements [Movies, TV Shows, Anime] are names of libraries on your Plex server.
-
-For now, delete the “TV Shows” and “Anime” sections and change the name of the “Movies” section to something that is NOT included in your Plex.  I’m using “Movies-HIDDEN":
+For now, delete the “TV Shows”, “Anime”, and "Music" sections and change the name of the “Movies” section to “Movies-NOSUCHLIBRARY":
 
 ```yaml
 libraries:
-  Movies-HIDDEN:                          ## <<< CHANGE THIS LINE
+  Movies-NOSUCHLIBRARY:                         ## <<< CHANGE THIS LINE
     metadata_path:
       - file: config/Movies.yml
       - git: meisnate12/MovieCharts
 ```
 
-
-This is intended to cause an error, so bear with me.
+This is intended to cause an error.
 
 #### Testing the config file
 
@@ -298,12 +329,13 @@ Save the file:
   <summary>Windows</summary>
   <br />
 
-  If you're using `notepad`, type alt-`s` of choose `Save` from the `File` menu.
+  If you're using `notepad`, type alt-`s` or choose `Save` from the `File` menu.
 
 </details>
 
 Then run the script again:
 
+[type this into your terminal]
 ```
 docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-manager --run
 ```
@@ -323,18 +355,18 @@ I’ve removed some of the lines for space, but have left the important bits:
 ...
 | Connecting to Plex Libraries...
 ...
-| Connecting to Movies-HIDDEN Library...                                                             |
+| Connecting to Movies-NOSUCHLIBRARY Library...                                                      |
 ...
-| Plex Error: Plex Library Movies-HIDDEN not found                                                   |
-| Movies-HIDDEN Library Connection Failed                                                            |
+| Plex Error: Plex Library Movies-NOSUCHLIBRARY not found                                            |
+| Movies-NOSUCHLIBRARY Library Connection Failed                                                     |
 |====================================================================================================|
 | Plex Error: No Plex libraries were connected to                                                    |
 ...
 ```
 
-You can see there that PMM found its config file, was able to connect to TMDb, was able to connect to Plex, and then failed trying to read the “Movies-HIDDEN” library, which of course doesn’t exist.
+You can see there that PMM found its config file, was able to connect to TMDb, was able to connect to Plex, and then failed trying to read the “Movies-NOSUCHLIBRARY library, which of course doesn’t exist.
 
-Open the config file again and change "Movies-HIDDEN" [or whatever you used in the previous step] to reflect your Plex.  Also fix the name of the config file to match the library.  Then delete any lines that start with “git”.  Those are all sets of collections, and we just want to create a few as examples.
+Open the config file again and change "Movies-NOSUCHLIBRARY" to reflect your Plex.  Then delete any lines that start with “git”.  Those are all sets of collections, and we just want to create a few as examples.
 
 My Movies library is called “Main Movies", so mine looks like this:
 
@@ -342,10 +374,8 @@ My Movies library is called “Main Movies", so mine looks like this:
 libraries:
   Main Movies:                            ## <<< CHANGE THIS LINE
     metadata_path:
-      - file: config/Main Movies.yml      ## <<< CHANGE THIS LINE
+      - file: config/Movies.yml
 ```
-
-NOTE: the matching naming of Library and YML is not actually required, I'm doing it here for clarity.
 
 Save the file:
 
@@ -367,6 +397,7 @@ Save the file:
 
 Then run the script again:
 
+[type this into your terminal]
 ```
 docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-manager --run
 ```
@@ -380,9 +411,9 @@ $ docker run --rm -it -v "/Users/mroche/plex-meta-manager:/config:rw" meisnate12
 ...
 | Connecting to Main Movies Library...
 ...
-| Loading Metadata File: config/Main Movies.yml
+| Loading Metadata File: config/Movies.yml
 |
-| YAML Error: File Error: File does not exist config/Main Movies.yml
+| YAML Error: File Error: File does not exist config/Movies.yml
 ...
 | Metadata File Error: No valid metadata files found
 |
@@ -392,7 +423,7 @@ $ docker run --rm -it -v "/Users/mroche/plex-meta-manager:/config:rw" meisnate12
 
 PMM may start cataloging your movies at this point; you cna hit control-C to stop that if it's happening.
 
-We can see there that it connected to the Plex Library but failed to find that `Main Movies.yml` metadata file.
+We can see there that it connected to the Plex Library but failed to find that `Movies.yml` metadata file.
 
 So far so good.
 
@@ -400,7 +431,7 @@ So far so good.
 
 Now we have to set up that metadata file that PMM just complained about.
 
-This metadata file contains definitions of the actions you want PMM to take.  You can find lots of examples [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs):
+This metadata file contains definitions of the actions you want PMM to take; these can be things like creating collections or playlists, adding overlays, changing things like posters, etc.  You can find lots of examples [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs) and throughout the wiki.
 
 For now we’re going to create a few collections so you can watch the process work, then you’re on your own to create whatever others you want.
 
@@ -410,8 +441,9 @@ First, open the metadata file [this will create the file if it doesn't already e
   <summary>OS X/Linux</summary>
   <br />
 
+  [type this into your terminal]
   ```
-  nano "Main Movies.yml"
+  nano "Movies.yml"
   ```
 
 </details>
@@ -420,13 +452,12 @@ First, open the metadata file [this will create the file if it doesn't already e
   <summary>Windows</summary>
   <br />
 
+  [type this into your terminal]
   ```
-  notepad "Main Movies.yml"
+  notepad "Movies.yml"
   ```
 
 </details>
-
-[of course, that should be the file name you just entered in config.yml, if you changed it from the default]
 
 In this file, add the following, exactly as it is shown here:
 
@@ -459,12 +490,7 @@ I chose a letterboxd list for the last one since trakt requires authentication a
 
 This is going to create three collections.  One contains movies that feature Bill Murray.  One is up to 100 movies that came out in the 1980s sorted by popularity.  The last are movies that appear on a list of good endings according to Vulture.
 
-The first one is based on a template, so if you wanted to create a collection for another actor you just have to copy and edit those two lines [the ID comes from TMDb].  All the other config details come from the template.
-
-```yaml
-   Amy Adams:
-     template: {name:  Actor, person: 9273}
-```
+The first one is based on a template to illustrate that concept.  If you wanted to create a collection for another actor you just have to copy and edit those two lines [the ID comes from TMDb].  All the other config details come from the template.
 
 Save the file:
 
@@ -486,6 +512,7 @@ Save the file:
 
 Then run the script again:
 
+[type this into your terminal]
 ```
 docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-manager --run
 ```
@@ -493,7 +520,7 @@ docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-mana
 This time you should see that the metadata file gets loaded:
 
 ```
-| Loading Metadata File: config/Main Movies.yml
+| Loading Metadata File: config/Movies.yml
 | Metadata File Loaded Successfully
 ```
 
@@ -515,21 +542,13 @@ If you download any of the missing 22 movies on the Vulture list, running PMM wo
 
 ### What comes next:
 
-Delete these three collections if you want, from both Plex and the metadata file. If you add that “git” line you removed back into the config file:
+Delete these three collections if you want, from both Plex and the metadata file [`config/Movies.yml`].
 
-```yaml
-      - git: meisnate12/MovieCharts
-```
+Edit `Movies.yml` to reflect the actions you want PMM to perform on *your* libraries.
 
-then run PMM again, the script will add a whole bunch of new collections [which are defined in that file] you may be interested in.
+TV Shows and other libraries work the same way as you've seen above.  Create a section under `Libraries:` in the config.yml, create a metadata file, define collections, run the script.
 
-That line is a link into the github repo of examples I referred to above, so you can review what it contains there.  You can also add others from that repo using this same pattern.
-
-If you prefer to create your own, do that in the metadata file.
-
-TV Shows and other libraries work the same way.  Create a `Libraries:` section in the config.yml, create a metadata file, define collections, run the script.
-
-Investigate the rest of the wiki to learn about everything else Plex-Meta-Manager can do for you.
+Investigate the rest of the wiki to learn about everything Plex-Meta-Manager can do for you.
 
 ### Running the container in the background:
 
@@ -548,4 +567,4 @@ docker run -d \
 
 That will create a container that will run in the background until you explicitly stop it, surviving reboots, and waking up every morning at 3AM to process collections.
 
-There are of course other flags you can add, which are discussed elsewhere in the wiki, but this is the minimal command to create this container.
+There are of course [other flags you can add](../environmental.md), but this is the minimal command to create this container.
