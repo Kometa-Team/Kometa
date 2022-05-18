@@ -98,15 +98,11 @@ This is the recommended approach as it allows the user additional control over h
 
 8. Copy the directory everything up to but not including `waiter.cmd` from the "Program/Script" field, and paste it into the "Start in" field.  This is `C:\User\IEUser\Plex-Meta-Manager-1.15.1` in the example below, then select "next".  NOTE: Your path may vary from the illustration or example.
 
-   ![task-scheduler](task-scheduler/04-basic-task-06.png)
+   ![task-scheduler](task-scheduler/06-basic-task-06.png)
 
-9. Check "Open the properties dialog" if desired (not required) then select "Finish".
+9. Click "Finish".
 
-   ![task-scheduler](task-scheduler/04-basic-task-07.png)
-
-10. Click "Task Schedule Library" on the left. The PMM Run task should be visible.
-
-    ![task-scheduler](task-scheduler/04-basic-task-09.png)
+10. Click "Task Schedule Library" on the left. The "Background PMM" task should be visible.
 
 Plex Meta Manager will now launch at system startup, but will wait until the user-specified scheduled time before executing, and will then wait in the background for the next scheduled run.
 
