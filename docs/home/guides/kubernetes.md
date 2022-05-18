@@ -9,7 +9,7 @@ This article will walk you through getting Plex-Meta-Manager [PMM] set up and ru
 
 ## Prerequisites.
 
-This walk through assumes you are familiar with Kubernetes concepts and have an exiting cluster to deploy into.  If you 
+This walk through assumes you are familiar with Kubernetes concepts and have an exiting cluster to deploy into.  If you
 do not, but are interested, [minikube](https://minikube.sigs.k8s.io/docs/start/) is a great place to start.
 
 ## Creating the Kubernetes CronJob
@@ -20,10 +20,10 @@ Kubernetes manage the rest.
 Some parts of this to tweak to your needs:
 
 1. The namespace should be set to whatever you desire, in this example it runs in the `media` namespace.
-2. The schedule, in this example it runs at 00:00 UTC.  [https://crontab.guru/](https://crontab.guru/) is a good 
+2. The schedule, in this example it runs at 00:00 UTC.  [https://crontab.guru/](https://crontab.guru/) is a good
 site if you aren't sure on how to create a schedule.
 
-``` 
+```
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -85,7 +85,7 @@ This CronJob also requires
 
 The Persistent Volume Claim (PVC) can be as simple as:
 
-``` 
+```
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -104,18 +104,18 @@ spec:
 
 ## Creating the Config Maps
 
-In Kubernetes, configurations are managed via Config Maps.  So we deploy the configurations for PMM as config maps.  The 
+In Kubernetes, configurations are managed via Config Maps.  So we deploy the configurations for PMM as config maps.  The
 minimum requirement is the PMM config, but the example here assumes you have a separate config for movies and tv shows.
 
 ### PMM Config
 
-Here's a config map for the `config.yml` file for PMM.  Note there are many placeholders that will need update based on 
+Here's a config map for the `config.yml` file for PMM.  Note there are many placeholders that will need update based on
 your environment and needs.
 
 Follow the [Trakt Attributes](../../config/trakt) directions for generating the OAuth authorization
 values.
 
-``` 
+```
 apiVersion: v1
 data:
   config.yml: |
@@ -219,7 +219,7 @@ metadata:
 
 Config maps for collections (movies in this example) are more simple!
 
-``` 
+```
 apiVersion: v1
 data:
   movies.yaml: |
@@ -248,7 +248,7 @@ metadata:
 
 ### TV Config Map
 
-``` 
+```
 apiVersion: v1
 data:
   tv.yaml: |
@@ -266,7 +266,7 @@ data:
       Tautulli Most Popular:
         sync_mode: sync
         collection_order: custom
-        summary: The 10 most popular shows from Plex users 
+        summary: The 10 most popular shows from Plex users
         tautulli_popular:
           list_days: 180
           list_size: 10
@@ -278,16 +278,16 @@ metadata:
 
 ## Creating dynamic configuration files with an Init Container
 
-IMDb search results may include results for media which has not yet been released, resulting in a collection that is 
+IMDb search results may include results for media which has not yet been released, resulting in a collection that is
 incomplete.  In order to solve for this you can replace a static config map with a config file that is (re)generated when
-the cronjob starts each time.  This can be done by including an init container which renders a 
+the cronjob starts each time.  This can be done by including an init container which renders a
 [Jinja](https://jinja.palletsprojects.com/en/3.0.x/templates/) template to a file in the PVC.
 
 ### Including the Init Container in the Cron Job
 
 NOTE the environment value nameed `JINJA_DEST_FILE` is the resulting name of the generated config file.
 
-``` 
+```
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -364,12 +364,12 @@ spec:
 This example will (re)generate the IMBD list URL and include the current date as the end date for the `release_date` value.
 `https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=1980-01-01,{{ now().strftime('%Y-%m-%d') }}`
 
-`{{ now().strftime('%Y-%m-%d') }}` is the Jinja code, which when rendered will be replaced with the current date in 
-YYYY-MM-DD format.  `now()` is a special method defined in the Python code running in the init container to allow access 
-to the current date, so changing the output format is as simple as changing the string in `strftime` to your desired 
+`{{ now().strftime('%Y-%m-%d') }}` is the Jinja code, which when rendered will be replaced with the current date in
+YYYY-MM-DD format.  `now()` is a special method defined in the Python code running in the init container to allow access
+to the current date, so changing the output format is as simple as changing the string in `strftime` to your desired
 date/time format for your list source.
 
-``` 
+```
 apiVersion: v1
 data:
   tv.yaml: |
@@ -387,7 +387,7 @@ data:
       Tautulli Most Popular:
         sync_mode: sync
         collection_order: custom
-        summary: The 10 most popular shows from Plex users 
+        summary: The 10 most popular shows from Plex users
         tautulli_popular:
           list_days: 180
           list_size: 10
