@@ -151,6 +151,7 @@ method_alias = {
     "labels": "label",
     "collection_minimum": "minimum_items",
     "playlist_minimum": "minimum_items",
+    "save_missing": "save_report",
     "rating": "critic_rating",
     "show_user_rating": "user_rating",
     "video_resolution": "resolution",

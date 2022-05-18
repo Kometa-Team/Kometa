@@ -515,6 +515,13 @@ class MetadataFile(DataFile):
                         methods["key_name_override"] = methods.pop("pre_format_override")
                     title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "title_override" in methods else {}
                     key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "key_name_override" in methods else {}
+                    test_override = []
+                    for k, v in key_name_override.items():
+                        if v in test_override:
+                            logger.warning(f"Config Error: {v} can only be used once skipping {k}: {v}")
+                            key_name_override.pop(k)
+                        else:
+                            test_override.append(v)
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:

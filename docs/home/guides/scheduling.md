@@ -6,6 +6,8 @@ Whilst it is possible to have `python plex-meta-manager.py` running in an open w
 
 Instead, it is recommended to set an automated scheduling service so that Plex Meta Manager can run in the background when scheduled to without any visible impact to the user (other than the Plex libraries and playlists updating).
 
+**To control how individual parts of PMM are scheduled see the [Schedule detail](../../metadata/details/schedule)**
+
 ## Docker Run
 
 <details>

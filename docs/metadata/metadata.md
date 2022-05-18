@@ -122,7 +122,7 @@ dynamic_collections:
 
 ## Metadata Attributes
 
-Plex Meta Manager can automatically update items in Plex based on what's defined within the `metadata` attribute.
+Plex Meta Manager can automatically update items in Plex [Movie](metadata/movie), [Show](metadata/movie), and [Music](metadata/movie) Libraries based on what's defined within the `metadata` attribute.
 
 Each metadata requires its own section within the `metadata` attribute. Each item is defined by the mapping name which must be the same as the item name in the library unless an `alt_title` is specified.
 

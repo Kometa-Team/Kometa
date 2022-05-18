@@ -36,6 +36,7 @@ libraries:
       - git: meisnate12/ShowCharts
       - git: meisnate12/Networks
     overlay_path:
+      - remove_overlays: false
       - file: config/Overlays.yml
   TV Shows On Second Plex:
     library_name: TV Shows
@@ -120,6 +121,15 @@ plex:
 ### Metadata Path
 
 The `metadata_path` attribute is used to define [Metadata Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them. 
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_path:
+      - file: config/TV Shows.yml
+      - git: meisnate12/ShowCharts
+      - git: meisnate12/Networks
+```
 
 By default, when `metadata_path` is missing the script will look within the root PMM directory for a metadata file called `<MAPPING_NAME>.yml`. In this example, Plex Meta Manager will look for a file named `TV Shows.yml`.
 

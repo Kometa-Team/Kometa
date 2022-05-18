@@ -835,6 +835,7 @@ class Overlay:
         self.keys = []
         self.updated = False
         self.image = None
+        self.landscape = None
         self.group = None
         self.weight = None
         self.path = None
@@ -993,6 +994,16 @@ class Overlay:
                 self.back_height = parse("Overlay", "back_height", self.data["back_height"], datatype="int", parent="overlay")
             if (self.back_width and not self.back_height) or (self.back_height and not self.back_width):
                 raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
+            text = self.name[5:-1]
+            if text not in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
+                self.image = self.get_text_overlay(text, 1000, 1500)
+                self.landscape = self.get_text_overlay(text, 1920, 1080)
+
+
+
+
+
+
         else:
             if "|" in self.name:
                 raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
@@ -1012,6 +1023,29 @@ class Overlay:
                     self.config.Cache.update_image_map(self.name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
             except OSError:
                 raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
+
+    def get_text_overlay(self, text, image_width, image_height):
+        overlay_image = Image.new("RGBA", (image_width, image_height), (255, 255, 255, 0))
+        drawing = ImageDraw.Draw(overlay_image)
+        x_cord, y_cord = self.get_coordinates(image_width, image_height, text=str(text))
+        _, _, width, height = self.get_text_size(str(text))
+        if self.back_color:
+            cords = (
+                x_cord - self.back_padding,
+                y_cord - self.back_padding,
+                x_cord + (self.back_width if self.back_width else width) + self.back_padding,
+                y_cord + (self.back_height if self.back_height else height) + self.back_padding
+            )
+            if self.back_width:
+                x_cord = x_cord + (self.back_width - width) // 2
+                y_cord = y_cord + (self.back_height - height) // 2
+
+            if self.back_radius:
+                drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)
+            else:
+                drawing.rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width)
+        drawing.text((x_cord, y_cord), str(text), font=self.font, fill=self.font_color, anchor="lt")
+        return overlay_image
 
     def get_overlay_compare(self):
         output = self.name

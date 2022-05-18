@@ -127,6 +127,8 @@ class ConfigFile:
                 if "settings" in self.data["libraries"][library] and self.data["libraries"][library]["settings"]:
                     if "collection_minimum" in self.data["libraries"][library]["settings"]:
                         self.data["libraries"][library]["settings"]["minimum_items"] = self.data["libraries"][library]["settings"].pop("collection_minimum")
+                    if "save_missing" in self.data["libraries"][library]["settings"]:
+                        self.data["libraries"][library]["settings"]["save_report"] = self.data["libraries"][library]["settings"].pop("save_missing")
                 if "radarr" in self.data["libraries"][library] and self.data["libraries"][library]["radarr"]:
                     if "add" in self.data["libraries"][library]["radarr"]:
                         self.data["libraries"][library]["radarr"]["add_missing"] = self.data["libraries"][library]["radarr"].pop("add")
@@ -156,6 +158,8 @@ class ConfigFile:
                 temp["minimum_items"] = temp.pop("collection_minimum")
             if "playlist_sync_to_user" in temp:
                 temp["playlist_sync_to_users"] = temp.pop("playlist_sync_to_user")
+            if "save_missing" in temp:
+                temp["save_report"] = temp.pop("save_missing")
             self.data["settings"] = temp
         if "webhooks" in self.data:
             temp = self.data.pop("webhooks")
