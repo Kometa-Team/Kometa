@@ -96,7 +96,7 @@ This is the recommended approach as it allows the user additional control over h
 
    ![task-scheduler](task-scheduler/06-basic-task-05.png)
 
-8. Copy the directory everything up to but not including `runner.cmd` from the "Program/Script" field, and paste it into the "Start in" field.  This is `C:\User\IEUser\Plex-Meta-Manager-1.15.1` in the example below, then select "next".  NOTE: Your path may vary from the illustration or example.
+8. Copy the directory everything up to but not including `waiter.cmd` from the "Program/Script" field, and paste it into the "Start in" field.  This is `C:\User\IEUser\Plex-Meta-Manager-1.15.1` in the example below, then select "next".  NOTE: Your path may vary from the illustration or example.
 
    ![task-scheduler](task-scheduler/04-basic-task-06.png)
 
