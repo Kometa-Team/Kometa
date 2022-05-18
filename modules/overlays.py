@@ -169,8 +169,6 @@ class Overlays:
 
                             new_poster = Image.open(poster.location if poster else has_original) \
                                 .convert("RGB").resize((image_width, image_height), Image.ANTIALIAS)
-                            overlay_image = Image.new('RGBA', new_poster.size, (255, 255, 255, 0))
-                            drawing = ImageDraw.Draw(overlay_image)
                             if blur_num > 0:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
                             for over_name in normal_overlays:
@@ -178,43 +176,24 @@ class Overlays:
                                 if not overlay.has_coordinates():
                                     new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
                                 new_poster.paste(overlay.image, overlay.get_coordinates(image_width, image_height), overlay.image)
-                            if text_names:
-                                for over_name in text_names:
-                                    overlay = properties[over_name]
-                                    text = over_name[5:-1]
-                                    if text in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
-                                        per = text.endswith("%")
-                                        rating_type = text[:-1] if per else text
-
-                                        actual = plex.attribute_translation[rating_type]
-                                        if not hasattr(item, actual) or getattr(item, actual) is None:
-                                            logger.error(f"Overlay Error: No {rating_type} found")
-                                            continue
-                                        text = getattr(item, actual)
-                                        if self.config.Cache:
-                                            self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
-                                        if per:
-                                            text = f"{int(text * 10)}%"
-                                    x_cord, y_cord = overlay.get_coordinates(image_width, image_height, text=str(text))
-                                    _, _, width, height = overlay.get_text_size(str(text))
-                                    if overlay.back_color:
-                                        cords = (
-                                            x_cord - overlay.back_padding,
-                                            y_cord - overlay.back_padding,
-                                            x_cord + (overlay.back_width if overlay.back_width else width) + overlay.back_padding,
-                                            y_cord + (overlay.back_height if overlay.back_height else height) + overlay.back_padding
-                                        )
-                                        if overlay.back_width:
-                                            x_cord = int(x_cord + (overlay.back_width - width) / 2)
-                                            y_cord = int(y_cord + (overlay.back_height - height) / 2)
-
-                                        if overlay.back_radius:
-                                            drawing.rounded_rectangle(cords, fill=overlay.back_color, outline=overlay.back_line_color,
-                                                                      width=overlay.back_line_width,  radius=overlay.back_radius)
-                                        else:
-                                            drawing.rectangle(cords, fill=overlay.back_color, outline=overlay.back_line_color,
-                                                              width=overlay.back_line_width)
-                                    drawing.text((x_cord, y_cord), str(text), font=overlay.font, fill=overlay.font_color, anchor='lt')
+                            for over_name in text_names:
+                                overlay = properties[over_name]
+                                text = over_name[5:-1]
+                                if text in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
+                                    per = text.endswith("%")
+                                    rating_type = text[:-1] if per else text
+                                    actual = plex.attribute_translation[rating_type]
+                                    if not hasattr(item, actual) or getattr(item, actual) is None:
+                                        logger.warning(f"Overlay Warning: No {rating_type} found")
+                                        continue
+                                    text = getattr(item, actual)
+                                    if self.config.Cache:
+                                        self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
+                                    if per:
+                                        text = f"{int(text * 10)}%"
+                                    overlay_image = overlay.get_text_overlay(text, image_width, image_height)
+                                else:
+                                    overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.image
                                 new_poster.paste(overlay_image, (0, 0), overlay_image)
                             temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             new_poster.save(temp, "PNG")

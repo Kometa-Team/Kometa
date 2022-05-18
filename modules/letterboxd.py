@@ -11,27 +11,43 @@ class Letterboxd:
     def __init__(self, config):
         self.config = config
 
-    def _parse_list(self, list_url, language):
-        if self.config.trace_mode:
-            logger.debug(f"URL: {list_url}")
+    def _parse_page(self, list_url, language):
+        list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
         response = self.config.get_html(list_url, headers=util.header(language))
-        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
+        letterboxd_ids = response.xpath(
+            "//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
             slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-film-slug")
-            notes = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()") if list_url.endswith(("/detail", "/detail/")) else None
-            ratings = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']//span[contains(@class, 'rating')]/@class") if list_url.endswith(("/detail", "/detail/")) else None
-            years = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/h2/small/a/text()") if list_url.endswith(("/detail", "/detail/")) else None
+            comments = response.xpath(
+                f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()")
+            ratings = response.xpath(
+                f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']//span[contains(@class, 'rating')]/@class")
+            years = response.xpath(
+                f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/h2/small/a/text()")
             rating = None
             if ratings:
                 match = re.search("rated-(\\d+)", ratings[0])
                 if match:
                     rating = int(match.group(1))
-            items.append((letterboxd_id, slugs[0], int(years[0]) if years else None, notes[0] if notes else None, rating))
+            items.append((letterboxd_id, slugs[0],
+                          int(years[0]) if years else None,
+                          comments[0] if comments else None,
+                          rating
+                          ))
         next_url = response.xpath("//a[@class='next']/@href")
-        if len(next_url) > 0:
+        return items, next_url
+
+    def _parse_list(self, list_url, limit, language):
+        if self.config.trace_mode:
+            logger.debug(f"URL: {list_url}")
+        items, next_url = self._parse_page(list_url, language)
+        while len(next_url) > 0:
             time.sleep(2)
-            items.extend(self._parse_list(f"{base_url}{next_url[0]}", language))
+            new_items, next_url = self._parse_page(f"{base_url}{next_url[0]}", language)
+            items.extend(new_items)
+            if limit and len(items) >= limit:
+                return items[:limit]
         return items
 
     def _tmdb(self, letterboxd_url, language):
@@ -60,13 +76,14 @@ class Letterboxd:
             dict_methods = {dm.lower(): dm for dm in letterboxd_dict}
             final = {
                 "url": util.parse(err_type, "url", letterboxd_dict, methods=dict_methods, parent="letterboxd_list").strip(),
+                "limit": util.parse(err_type, "limit", letterboxd_dict, methods=dict_methods, datatype="int", parent="letterboxd_list", default=0) if "limit" in dict_methods else 0,
                 "note": util.parse(err_type, "note", letterboxd_dict, methods=dict_methods, parent="letterboxd_list") if "note" in dict_methods else None,
                 "rating": util.parse(err_type, "rating", letterboxd_dict, methods=dict_methods, datatype="int", parent="letterboxd_list", maximum=100, range_split="-") if "rating" in dict_methods else None,
                 "year": util.parse(err_type, "year", letterboxd_dict, methods=dict_methods, datatype="int", parent="letterboxd_list", minimum=1000, maximum=3000, range_split="-") if "year" in dict_methods else None
             }
             if not final["url"].startswith(base_url):
                 raise Failed(f"{err_type} Error: {final['url']} must begin with: {base_url}")
-            elif not self._parse_list(final["url"], language):
+            elif not self._parse_page(final["url"], language)[0]:
                 raise Failed(f"{err_type} Error: {final['url']} failed to parse")
             valid_lists.append(final)
         return valid_lists
@@ -74,7 +91,7 @@ class Letterboxd:
     def get_tmdb_ids(self, method, data, language):
         if method == "letterboxd_list":
             logger.info(f"Processing Letterboxd List: {data}")
-            items = self._parse_list(data["url"], language)
+            items = self._parse_list(data["url"], data["limit"], language)
             total_items = len(items)
             if total_items > 0:
                 ids = []
