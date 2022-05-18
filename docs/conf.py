@@ -123,6 +123,7 @@ html_theme_options = {
                 ("QNAP Walkthrough", "home/guides/qnap"),
                 ("unRAID Walkthrough", "home/guides/unraid"),
                 ("Kubernetes Walkthrough", "home/guides/kubernetes"),
+                ("Docker images", "home/guides/alternative-docker"),
             ]),
             ("Run Commands & Environment Variables", "home/environmental"),
             ("_divider", ),
