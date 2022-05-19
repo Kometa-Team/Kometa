@@ -128,6 +128,7 @@ html_theme_options = {
             ("Run Commands & Environment Variables", "home/environmental"),
             ("_divider", ),
             ("Configuration File", "config/configuration"),
+            ("Log Files", "home/logs"),
             ("Metadata Files", "metadata/metadata"),
             ("Overlay Files", "metadata/overlay"),
             ("Playlist Files", "metadata/playlist"),
