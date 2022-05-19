@@ -28,7 +28,7 @@ libraries:
 
 ## Customizing Configs
 
-Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` will be given to every template call in the file so they can effect how that file runs.
+Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` will be given to every template call in the file which allows them to affect how that file runs.
 
 ```yaml
 libraries:
@@ -85,7 +85,11 @@ libraries:
           ending: current_year
 ```
 
-### Example
+## Errors
+
+If there are collections being made that have configuration errors or missing posters please raise an Issue on the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs/issues/new/choose). 
+
+## Example Configuration File
 
 <details>
   <summary>Click to expand sample config.yml file:</summary>
@@ -111,13 +115,13 @@ libraries:
     - git: PMM/studio
     - git: PMM/subtitle_language
     - git: PMM/year
-    - git: PMM/movie/country_color               # Choose country_color or country_white
+    - git: PMM/movie/country
     - git: PMM/movie/decade
     - git: PMM/movie/director
     - git: PMM/movie/franchise
     - git: PMM/movie/multi-franchise
     - git: PMM/movie/producer
-    - git: PMM/movie/seasonal_section            # Choose seasonal or seasonal_section
+    - git: PMM/movie/seasonal
     - git: PMM/movie/streaming
     - git: PMM/movie/writer
     overlay_path:
@@ -137,7 +141,6 @@ libraries:
     - git: PMM/award/choice
     - git: PMM/award/golden
     - git: PMM/award/emmy
-    - git: PMM/award/golden
     - git: PMM/chart/old_show_chart
     - git: PMM/actor
     - git: PMM/audio_language
@@ -147,7 +150,7 @@ libraries:
     - git: PMM/studio
     - git: PMM/subtitle_language
     - git: PMM/year
-    - git: PMM/show/country_color                # Choose country_color or country_white
+    - git: PMM/show/country
     - git: PMM/show/decade
     - git: PMM/show/network
     - git: PMM/show/streaming

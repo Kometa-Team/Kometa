@@ -473,7 +473,7 @@ class Operations:
                 yaml.data["metadata"] = {}
             special_names = {}
             for mk, mv in yaml.data["metadata"].items():
-                if "title" in mv:
+                if mv and "title" in mv:
                     special_names[mv["title"]] = mk
                     if "year" in mv:
                         special_names[f"{mv['title']} ({mv['year']})"] = mk
