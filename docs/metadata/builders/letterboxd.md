@@ -11,11 +11,13 @@ No configuration is required for these builders.
 
 ## Letterboxd List
 
-Finds every movie in the Letterboxd List.
+Finds every movie in the Letterboxd List or [Letterboxd Films Search](https://letterboxd.com/films/).
 
-The expected input is a Letterboxd List URL. Multiple values are supported as either a list or a comma-separated string.
+The expected input is a Letterboxd List URL or Letterboxd Film Search URL. Multiple values are supported as either a list or a comma-separated string.
 
-The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
+
+Using the `limit` filter attribute is recommended when using a Letterboxd Film Search as the number of results returned could be very large.
 
 ```yaml
 collections:
@@ -36,10 +38,11 @@ collections:
     sync_mode: sync
 ```
 
-You can add 3 different filters directly to this builder.
+You can add different filters directly to this builder.
 
 | Filter Attribute | Description                                                                                        |
 |:-----------------|:---------------------------------------------------------------------------------------------------|
+| `limit`          | **Description:** Max number of items per returned<br>**Values:**  number greater than `1`          |
 | `rating`         | **Description:** Search for the specified rating range<br>**Values:**  range of int i.e. `80-100`  |
 | `year`           | **Description:** Search for the specified year range<br>**Values:**  range of int i.e. `1990-1999` |
 | `note`           | **Description:** Search for the specified value in the note<br>**Values:**  Any String             |

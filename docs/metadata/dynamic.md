@@ -898,7 +898,7 @@ default_template:
 * Create dynamic collections based on each genre found in the library (TV and Movies)
 * Amend the template to increase the limit from 50 to 100
 * Exclude the "Talk Show" genre
-* Name the collection Top [Genre] Movies or Top [Genre] Shows
+* Name the collection "Top [Genre] Movies" or "Top [Genre] Shows"
 
 ```yaml
 templates:
@@ -1024,7 +1024,7 @@ default_template:
 
 * Create dynamic collections based on each year found in the library (TV and Movies)
 * Use the `include` attribute to only show collections for years "2020", "2021" and "2022"
-* Name the collection "Best of (year)"
+* Name the collection "Best of [Year]"
 
 ```yaml
 dynamic_collections:
@@ -1082,7 +1082,7 @@ default_template:
 ### Example:
 
 * Create a collection for each decade found in the library (TV and Movies)
-* Name the collection Top [Decade] Movies
+* Name the collection "Top [Decade] Movies"
 * Rename the `2020` collection name to "Top 2020 Movies (so far)"
 
 ```yaml
@@ -1139,7 +1139,7 @@ default_template:
 #### Example:
 
 * Create a collection for the top movies from each country found in the library
-* Name the collection Top [Country] Cinema
+* Name the collection "Top [Country] Cinema"
 * The `key_name_override` attribute is used here in combination with the `title_format` to change the collection name from "France" which would be the default title, to "Top French Cinema"
 
 ```yaml
@@ -1483,7 +1483,7 @@ default_template:
 #### Example:
 
 * Create a collection for the top 100 items for each mood found in the Music library
-* Name the collection Top [Mood] Tracks
+* Name the collection "Top [Mood] Tracks"
 
 ```yaml
 templates:
@@ -1546,7 +1546,7 @@ default_template:
 #### Example:
 
 * Create a collection for the top 10 albums for each style found in the Music library
-* Name the collection Top [Style] Albums
+* Name the collection "Top [Style] Albums"
 
 ```yaml
 templates:
@@ -1621,14 +1621,39 @@ Creates a collection for each number defined.
   </tr>
 </table>
 
-### List
 
-Creates a collection for each item in the list defined .
+#### Example:
+
+* Create a collection for the Oscar Winner by Year for the last 5 years
+* Name the collection "Oscars Winners [Number]"
+
+```yaml
+templates:
+  Oscars:
+    summary: Academy Awards (Oscars) Winners for <<key>>
+    imdb_list: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=oscar_winner&sort=moviemeter,asc
+    sync_mode: sync
+    collection_order: custom
+dynamic_collections:
+  Oscars Winners Awards:
+    type: number
+    sync: true
+    data:
+      starting: current_year-5
+      ending: current_year
+    title_format: Oscars Winners <<key_name>>
+    template:
+      - Oscars
+```
+
+### Custom
+
+Creates a collection for each custom `key: key_name` pair defined.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
     <th><code>type</code> Option</th>
-    <td><code>list</code></td>
+    <td><code>custom</code></td>
   </tr>
   <tr>
     <th><code>data</code> Values</th>
@@ -1636,11 +1661,11 @@ Creates a collection for each item in the list defined .
   </tr>
   <tr>
     <th>Keys</th>
-    <td>String</td>
+    <td><code>key</code></td>
   </tr>
   <tr>
     <th>Key Names</th>
-    <td>String</td>
+    <td><code>key_name</code></td>
   </tr>
   <tr>
     <th>Default <code>title_format</code></th>
@@ -1651,6 +1676,44 @@ Creates a collection for each item in the list defined .
     <td><strong>None</strong></td>
   </tr>
 </table>
+
+#### Example:
+
+* Create a collection for the various Streaming Services
+* Name the collection "[Key Name] Movies"
+
+```yaml
+
+
+templates:
+  streaming:
+    cache_builders: 1
+    smart_label: release.desc
+    sync_mode: sync
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-movies
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/streaming/<<key_name_encoded>>.jpg
+
+dynamic_collections:
+  Streaming:
+    type: custom
+    data:
+      all-4: All 4
+      appletv: Apple TV+
+      bet: BET+
+      britbox: BritBox
+      disney: Disney+
+      hbo-max: HBO Max
+      hulu: Hulu
+      netflix: Netflix
+      now: NOW
+      paramount: Paramount+
+      peacock: Peacock
+      amazon-prime-video: Prime Video
+    title_format: <<key_name>> Movies
+    template:
+      - streaming
+      - shared
+```
 
 ## Exclude
 
