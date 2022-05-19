@@ -6,7 +6,7 @@ from plexapi.exceptions import NotFound, BadRequest
 
 logger = util.logger
 
-all_auto = ["genre", "number", "list"]
+all_auto = ["genre", "number", "custom"]
 ms_auto = [
     "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio",
     "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade"
@@ -164,6 +164,9 @@ class DataFile:
                     if "optional" in template:
                         if template["optional"]:
                             for op in util.get_list(template["optional"]):
+                                for k, v in variables.items():
+                                    if f"<<{k}>>" in op:
+                                        op = op.replace(f"<<{k}>>", str(v))
                                 if op not in default:
                                     optional.append(str(op))
                                     optional.append(f"{op}_encoded")
@@ -211,19 +214,26 @@ class DataFile:
                                     return var_value
                                 elif f"<<{var}>>" in str(og_txt):
                                     return str(og_txt).replace(f"<<{var}>>", str(var_value))
-                                else:
-                                    return og_txt
 
                             for option in optional:
                                 if option not in variables and f"<<{option}>>" in str(final_data):
                                     raise Failed
-                            for variable, variable_data in variables.items():
-                                if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                    final_data = scan_text(final_data, variable, variable_data.replace(",", ""))
-                                elif variable != "name":
-                                    final_data = scan_text(final_data, variable, variable_data)
+                            clean = False
+                            while not clean:
+                                clean = True
+                                for variable, variable_data in variables.items():
+                                    var_data = None
+                                    if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                        var_data = scan_text(final_data, variable, variable_data.replace(",", ""))
+                                    elif variable != "name":
+                                        var_data = scan_text(final_data, variable, variable_data)
+                                    if var_data:
+                                        final_data = var_data
+                                        clean = False
                             for dm, dd in default.items():
-                                final_data = scan_text(final_data, dm, dd)
+                                default_data = scan_text(final_data, dm, dd)
+                                if default_data:
+                                    final_data = default_data
                         return final_data
 
                     for method_name, attr_data in template.items():
@@ -469,13 +479,13 @@ class MetadataFile(DataFile):
                                 if str(current) not in exclude and current not in exclude:
                                     auto_list[str(current)] = str(current)
                                 current += increment
-                        elif auto_type == "list":
+                        elif auto_type == "custom":
                             if "data" not in methods:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
-                            for list_item in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="strlist"):
-                                all_keys.append(list_item)
-                                if list_item not in exclude:
-                                    auto_list[list_item] = list_item
+                            for k, v in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="strdict").items():
+                                all_keys.append(k)
+                                if k not in exclude and v not in exclude:
+                                    auto_list[k] = v
                         elif auto_type == "trakt_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
                             for option in dynamic_data:
