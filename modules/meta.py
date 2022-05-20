@@ -148,16 +148,17 @@ class DataFile:
                         if not isinstance(template["default"], dict):
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
                         for dv in template["default"]:
+                            final_key = dv
                             for k, v in variables.items():
-                                if f"<<{k}>>" in dv:
-                                    dv = dv.replace(f"<<{k}>>", str(v))
-                            if dv not in optional:
+                                if f"<<{k}>>" in final_key:
+                                    final_key = final_key.replace(f"<<{k}>>", str(v))
+                            if final_key not in optional:
                                 final_value = template["default"][dv]
                                 for key, value in variables.items():
                                     if f"<<{key}>>" in str(final_value):
                                         final_value = str(final_value).replace(f"<<{key}>>", str(value))
-                                default[dv] = final_value
-                                default[f"{dv}_encoded"] = requests.utils.quote(str(final_value))
+                                default[final_key] = final_value
+                                default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
 
                     if "optional" in template:
                         if template["optional"]:
@@ -217,19 +218,17 @@ class DataFile:
                                 else:
                                     return og_txt
 
-                            for option in optional:
-                                if option not in variables and f"<<{option}>>" in str(final_data):
-                                    raise Failed
                             for i in range(2):
+                                for option in optional:
+                                    if option not in variables and f"<<{option}>>" in str(final_data):
+                                        raise Failed
                                 for variable, variable_data in variables.items():
                                     if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
                                         final_data = scan_text(final_data, variable, variable_data.replace(",", ""))
                                     elif variable != "name":
                                         final_data = scan_text(final_data, variable, variable_data)
                             for dm, dd in default.items():
-                                default_data = scan_text(final_data, dm, dd)
-                                if default_data:
-                                    final_data = default_data
+                                final_data = scan_text(final_data, dm, dd)
                         return final_data
 
                     for method_name, attr_data in template.items():
@@ -588,7 +587,7 @@ class MetadataFile(DataFile):
                     logger.debug(f"Other Name: {other_name}")
                     logger.debug(f"Keys (Title)")
                     for key, value in auto_list.items():
-                        logger.info(f"  - {key}{'' if key == value else f' ({value})'}")
+                        logger.debug(f"  - {key}{'' if key == value else f' ({value})'}")
 
                     used_keys = []
                     for key, value in auto_list.items():
@@ -632,7 +631,9 @@ class MetadataFile(DataFile):
                             if collection_title in sync:
                                 sync.pop(collection_title)
                             self.collections[collection_title] = col
-                    if other_name:
+                    if other_name and not other_keys:
+                        logger.warning(f"Config Warning: Other Collection {other_name} not needed")
+                    elif other_name:
                         og_other = {
                             "value": other_keys, "included_keys": include, "used_keys": used_keys,
                             auto_type: other_keys, "key_name": other_name, "key": "other"
@@ -939,7 +940,7 @@ class MetadataFile(DataFile):
                     if self.edit_tags("label", season, season_dict, season_methods):
                         updated = True
                     finish_edit(season, f"Season: {season_id}")
-                    self.library.item_images(season, season_dict, season_methods, asset_location=asset_location, top_item=item,
+                    self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
                                              title=f"{item.title} Season {season.seasonNumber}",
                                              image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}")
                     logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -976,7 +977,7 @@ class MetadataFile(DataFile):
                                     if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                         updated = True
                                 finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
-                                self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location, top_item=item,
+                                self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
                                                          title=f"{item.title} {episode.seasonEpisode.upper()}",
                                                          image_name=episode.seasonEpisode.upper())
                                 logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -1016,7 +1017,7 @@ class MetadataFile(DataFile):
                         if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                             updated = True
                     finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
-                    self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location, top_item=item,
+                    self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
                                              title=f"{item.title} {episode.seasonEpisode.upper()}",
                                              image_name=episode.seasonEpisode.upper())
                     logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -1056,7 +1057,7 @@ class MetadataFile(DataFile):
                         if self.edit_tags(tag_edit, album, album_dict, album_methods):
                             updated = True
                     finish_edit(album, f"Album: {title}")
-                    self.library.item_images(album, album_dict, album_methods, asset_location=asset_location, top_item=item,
+                    self.library.item_images(album, album_dict, album_methods, asset_location=asset_location,
                                              title=f"{item.title} Album {album.title}", image_name=album.title)
                     logger.info(f"Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 

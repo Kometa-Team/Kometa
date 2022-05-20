@@ -888,7 +888,7 @@ class Plex(Library):
                 logger.info(final)
         return final
 
-    def item_images(self, item, group, alias, asset_location=None, top_item=None, title=None, image_name=None):
+    def item_images(self, item, group, alias, asset_location=None, title=None, image_name=None):
         if title is None:
             title = item.title
         posters, backgrounds = util.get_image_dicts(group, alias)
