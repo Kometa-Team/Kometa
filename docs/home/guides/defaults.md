@@ -136,7 +136,6 @@ libraries:
     - git: PMM/overlays/streaming
     - git: PMM/overlays/video_format
   TV Shows:
-    missing_path: config/missing/TV_missing
     metadata_path:
     - git: PMM/award/choice
     - git: PMM/award/golden

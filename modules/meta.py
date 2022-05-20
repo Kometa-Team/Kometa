@@ -143,23 +143,21 @@ class DataFile:
 
                     default = {}
                     if "default" in template:
-                        if template["default"]:
-                            if isinstance(template["default"], dict):
-                                for dv in template["default"]:
-                                    if str(dv) not in optional:
-                                        if template["default"][dv] is not None:
-                                            final_value = template["default"][dv]
-                                            for key, value in variables.items():
-                                                if f"<<{key}>>" in str(final_value):
-                                                    final_value = str(final_value).replace(f"<<{key}>>", str(value))
-                                            default[dv] = final_value
-                                            default[f"{dv}_encoded"] = requests.utils.quote(str(final_value))
-                                        else:
-                                            raise Failed(f"{self.data_type} Error: template default sub-attribute {dv} is blank")
-                            else:
-                                raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
-                        else:
+                        if not template["default"]:
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
+                        if not isinstance(template["default"], dict):
+                            raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
+                        for dv in template["default"]:
+                            for k, v in variables.items():
+                                if f"<<{k}>>" in dv:
+                                    dv = dv.replace(f"<<{k}>>", str(v))
+                            if dv not in optional:
+                                final_value = template["default"][dv]
+                                for key, value in variables.items():
+                                    if f"<<{key}>>" in str(final_value):
+                                        final_value = str(final_value).replace(f"<<{key}>>", str(value))
+                                default[dv] = final_value
+                                default[f"{dv}_encoded"] = requests.utils.quote(str(final_value))
 
                     if "optional" in template:
                         if template["optional"]:
@@ -210,26 +208,24 @@ class DataFile:
                         else:
                             final_data = _data
                             def scan_text(og_txt, var, var_value):
-                                if str(og_txt) == f"<<{var}>>":
+                                if og_txt is None:
+                                    return og_txt
+                                elif str(og_txt) == f"<<{var}>>":
                                     return var_value
                                 elif f"<<{var}>>" in str(og_txt):
                                     return str(og_txt).replace(f"<<{var}>>", str(var_value))
+                                else:
+                                    return og_txt
 
                             for option in optional:
                                 if option not in variables and f"<<{option}>>" in str(final_data):
                                     raise Failed
-                            clean = False
-                            while not clean:
-                                clean = True
+                            for i in range(2):
                                 for variable, variable_data in variables.items():
-                                    var_data = None
                                     if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                        var_data = scan_text(final_data, variable, variable_data.replace(",", ""))
+                                        final_data = scan_text(final_data, variable, variable_data.replace(",", ""))
                                     elif variable != "name":
-                                        var_data = scan_text(final_data, variable, variable_data)
-                                    if var_data:
-                                        final_data = var_data
-                                        clean = False
+                                        final_data = scan_text(final_data, variable, variable_data)
                             for dm, dd in default.items():
                                 default_data = scan_text(final_data, dm, dd)
                                 if default_data:
@@ -238,9 +234,6 @@ class DataFile:
 
                     for method_name, attr_data in template.items():
                         if method_name not in data and method_name not in ["default", "optional", "move_collection_prefix", "move_prefix"]:
-                            if attr_data is None:
-                                logger.error(f"Template Error: template attribute {method_name} is blank")
-                                continue
                             if method_name in new_attributes:
                                 logger.warning(f"Template Warning: template attribute: {method_name} from {variables['name']} skipped")
                             else:

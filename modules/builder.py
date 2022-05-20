@@ -1967,7 +1967,7 @@ class CollectionBuilder:
             return smart_pair(final_years)
         elif (attribute in number_attributes + date_attributes + year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
                 or (attribute in plex.tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
-            return util.parse(self.Type, final, data, datatype="int")
+            return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
             return util.parse(self.Type, final, data, datatype="float", minimum=0, maximum=None if attribute == "duration" else 10)
         elif attribute in plex.boolean_attributes + boolean_filters:
