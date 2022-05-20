@@ -62,6 +62,11 @@ Click "Allow", and you will be taken to a page that will not load.  That's fine 
 ![Localhost Failure](localhost-fail.png)
 
 Copy the URL, which will be `localhost/?code=BLAH` and paste it at the prompt.
+
+NOTE: If you do not see an error as above but instead get taken to some seemingly random website, you probably have a webserver running on your local computer, probably from some sort of tutorial if you don't recall having set one up.  For example, some Docker tutorials have you start up local web servers.
+
+You will need to stop that web server while you're doing this in order to grab that localhost URL.
+
 ```
 | URL: http://localhost/?code=BOING
 | Saving authorization information to /path/to/Plex-Meta-Manager/config/config.yml |
