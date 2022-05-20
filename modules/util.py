@@ -135,9 +135,9 @@ def get_image_dicts(group, alias):
         if attr in alias:
             if group[alias[attr]]:
                 if "poster" in attr:
-                    posters[attr] = ImageData(attr, group[alias[attr]], is_url="url" in attr)
+                    posters[attr] = group[alias[attr]]
                 else:
-                    backgrounds[attr] = ImageData(attr, group[alias[attr]], is_poster=False, is_url="url" in attr)
+                    backgrounds[attr] = group[alias[attr]]
             else:
                 logger.error(f"Metadata Error: {attr} attribute is blank")
     return posters, backgrounds
@@ -147,7 +147,7 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
     if image_name is None:
         image_name = image_type
     if images:
-        logger.debug(f"{len(images)} {image_type}s found:")
+        logger.debug(f"{len(images)} {image_type}{'s' if len(images) > 1 else ''} found:")
         for i in images:
             logger.debug(f"Method: {i} {image_type.capitalize()}: {images[i]}")
         is_url = True
