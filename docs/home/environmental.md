@@ -13,7 +13,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [Run](#run)                                           | `-r` or `--run`                    | `PMM_RUN`                |
 | [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests` | `PMM_TEST`               |
 | [Collections Only](#collections-only)                 | `-co` or `--collections-only`      | `PMM_COLLECTIONS_ONLY`   |
-| [Plsylists Only](#plsylists-only)                     | `-po` or `--plsylists-only`        | `PMM_PLAYLISTS_ONLY`     |
+| [Playlists Only](#playlists-only)                     | `-po` or `--playlists-only`        | `PMM_PLAYLISTS_ONLY`     |
 | [Operations](#operations)                             | `-op` or `--operations`            | `PMM_OPERATIONS`         |
 | [Overlays](#overlays)                                 | `-ov` or `--overlays`              | `PMM_OVERLAYS`           |
 | [Run Collections](#run-collections)                   | `-rc` or `--run-collections`       | `PMM_COLLECTIONS`        |
