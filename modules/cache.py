@@ -26,6 +26,7 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS omdb_data")
                 cursor.execute("DROP TABLE IF EXISTS omdb_data2")
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data")
+                cursor.execute("DROP TABLE IF EXISTS tvdb_data2")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guids_map (
                     key INTEGER PRIMARY KEY,
@@ -165,7 +166,7 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tvdb_data2 (
+                    """CREATE TABLE IF NOT EXISTS tvdb_data3 (
                     key INTEGER PRIMARY KEY,
                     tvdb_id INTEGER UNIQUE,
                     type TEXT,
@@ -574,7 +575,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM tvdb_data2 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
+                cursor.execute("SELECT * FROM tvdb_data3 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
                 row = cursor.fetchone()
                 if row:
                     tvdb_dict["tvdb_id"] = int(row["tvdb_id"]) if row["tvdb_id"] else 0
@@ -595,8 +596,8 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO tvdb_data2(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
-                update_sql = "UPDATE tvdb_data2 SET title = ?, summary = ?, poster_url = ?, background_url = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO tvdb_data3(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
+                update_sql = "UPDATE tvdb_data3 SET title = ?, summary = ?, poster_url = ?, background_url = ?, " \
                              "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
                 tvdb_date = f"{str(obj.release_date.year).zfill(4)}-{str(obj.release_date.month).zfill(2)}-{str(obj.release_date.day).zfill(2)}" if obj.release_date else None
                 cursor.execute(update_sql, (
