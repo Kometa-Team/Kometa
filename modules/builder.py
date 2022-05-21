@@ -786,7 +786,11 @@ class CollectionBuilder:
 
     def _poster(self, method_name, method_data):
         if method_name == "url_poster":
-            self.posters[method_name] = method_data
+            image_response = self.config.get(method_data)
+            if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
+                logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
+            else:
+                self.posters[method_name] = method_data
         elif method_name == "tmdb_poster":
             self.posters[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_url
         elif method_name == "tmdb_profile":
@@ -801,7 +805,11 @@ class CollectionBuilder:
 
     def _background(self, method_name, method_data):
         if method_name == "url_background":
-            self.backgrounds[method_name] = method_data
+            image_response = self.config.get(method_data)
+            if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
+                logger.warning(f"{self.Type} Warning: No Background Found at {method_data}")
+            else:
+                self.backgrounds[method_name] = method_data
         elif method_name == "tmdb_background":
             self.backgrounds[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).backdrop_url
         elif method_name == "tvdb_background":

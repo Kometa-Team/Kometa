@@ -263,20 +263,20 @@ No number search can take multiple values.
 
 | Number Search         | Description                                                                                 | Movie<br>Libraries | Show<br>Libraries | Music<br>Libraries |
 |:----------------------|:--------------------------------------------------------------------------------------------|:------------------:|:-----------------:|:------------------:|
-| `duration`            | Uses the duration attribute to match using minutes<br>**Minimum:** `1`                      |      &#9989;       |     &#10060;      |      &#10060;      |
-| `plays`               | Uses the plays attribute to match<br>**Minimum:** `1`                                       |      &#9989;       |      &#9989;      |      &#10060;      |
-| `episode_plays`       | Uses the Episode's plays attribute to match<br>**Minimum:** `1`                             |      &#10060;      |      &#9989;      |      &#10060;      |
+| `duration`            | Uses the duration attribute to match using minutes<br>**Minimum:** `0`                      |      &#9989;       |     &#10060;      |      &#10060;      |
+| `plays`               | Uses the plays attribute to match<br>**Minimum:** `0`                                       |      &#9989;       |      &#9989;      |      &#10060;      |
+| `episode_plays`       | Uses the Episode's plays attribute to match<br>**Minimum:** `0`                             |      &#10060;      |      &#9989;      |      &#10060;      |
 | `critic_rating`       | Uses the critic rating attribute to match<br>**Range:** `0.0` - `10.0`                      |      &#9989;       |      &#9989;      |      &#10060;      |
 | `audience_rating`     | Uses the audience rating attribute to match<br>**Range:** `0.0` - `10.0`                    |      &#9989;       |      &#9989;      |      &#10060;      |
 | `user_rating`         | Uses the user rating attribute to match<br>**Range:** `0.0` - `10.0`                        |      &#9989;       |      &#9989;      |      &#10060;      |
 | `episode_user_rating` | Uses the user rating attribute of the show's episodes to match<br>**Range:** `0.0` - `10.0` |      &#10060;      |      &#9989;      |      &#10060;      |
-| `year`                | Uses the year attribute to match<br>**Minimum:** `1`                                        |      &#9989;       |      &#9989;      |      &#10060;      |
-| `episode_year`        | Uses the Episode's year attribute to match<br>**Minimum:** `1`                              |      &#10060;      |      &#9989;      |      &#10060;      |
-| `album_year`          | Uses the Album's year attribute to match<br>**Minimum:** `1`                                |      &#10060;      |     &#10060;      |      &#9989;       |
-| `album_decade`        | Uses the Album's decade attribute to match<br>**Minimum:** `1`                              |      &#10060;      |     &#10060;      |      &#9989;       |
-| `album_plays`         | Uses the Album's plays attribute to match<br>**Minimum:** `1`                               |      &#10060;      |     &#10060;      |      &#9989;       |
-| `track_plays`         | Uses the Track's plays attribute to match<br>**Minimum:** `1`                               |      &#10060;      |     &#10060;      |      &#9989;       |
-| `track_skips`         | Uses the Track's skips attribute to match<br>**Minimum:** `1`                               |      &#10060;      |     &#10060;      |      &#9989;       |
+| `year`                | Uses the year attribute to match<br>**Minimum:** `0`                                        |      &#9989;       |      &#9989;      |      &#10060;      |
+| `episode_year`        | Uses the Episode's year attribute to match<br>**Minimum:** `0`                              |      &#10060;      |      &#9989;      |      &#10060;      |
+| `album_year`          | Uses the Album's year attribute to match<br>**Minimum:** `0`                                |      &#10060;      |     &#10060;      |      &#9989;       |
+| `album_decade`        | Uses the Album's decade attribute to match<br>**Minimum:** `0`                              |      &#10060;      |     &#10060;      |      &#9989;       |
+| `album_plays`         | Uses the Album's plays attribute to match<br>**Minimum:** `0`                               |      &#10060;      |     &#10060;      |      &#9989;       |
+| `track_plays`         | Uses the Track's plays attribute to match<br>**Minimum:** `0`                               |      &#10060;      |     &#10060;      |      &#9989;       |
+| `track_skips`         | Uses the Track's skips attribute to match<br>**Minimum:** `0`                               |      &#10060;      |     &#10060;      |      &#9989;       |
 | `artist_user_rating`  | Uses the Artist's user rating attribute to match<br>**Range:** `0.0` - `10.0`               |      &#10060;      |     &#10060;      |      &#9989;       |
 | `album_user_rating`   | Uses the Album's user rating attribute to match<br>**Range:** `0.0` - `10.0`                |      &#10060;      |     &#10060;      |      &#9989;       |
 | `album_critic_rating` | Uses the Album's critic rating attribute to match<br>**Range:** `0.0` - `10.0`              |      &#10060;      |     &#10060;      |      &#9989;       |

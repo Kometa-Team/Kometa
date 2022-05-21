@@ -47,6 +47,8 @@ Each file has a comment block at the top showing the available `template_variabl
 #         Created by Yozora, Bullmoose20, & Sohjiro         #
 #############################################################
 #  Call this from your config.yml (Movie or Show)           #
+#  If nothing is specified these are the defaults           #
+#                                                           #
 #    metadata_path:                                         #
 #      - git: PMM/genre                                     #
 #        template_variables:                                #

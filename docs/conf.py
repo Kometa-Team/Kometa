@@ -133,7 +133,7 @@ html_theme_options = {
             ("Overlay Files", "metadata/overlay"),
             ("Playlist Files", "metadata/playlist"),
             ("_divider", ),
-            ("PMM Default Config Files", "home/guides/defaults"),
+            ("Default Configs and Overlays", "home/guides/defaults"),
             ("Scheduling Guide", "home/guides/scheduling"),
             ("Image Asset Directory Guide", "home/guides/assets"),
             ("Formula 1 Metadata Guide", "home/guides/formula"),
