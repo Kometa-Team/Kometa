@@ -213,7 +213,7 @@ def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=Tr
     elif isinstance(data, list):    list_data = data
     elif isinstance(data, dict):    return [data]
     elif split is False:            list_data = [str(data)]
-    else:                           list_data = str(data).split(split)
+    else:                           list_data = [s.strip() for s in str(data).split(split)]
 
     def get_str(input_data):
         return str(input_data).strip() if trim else str(input_data)
