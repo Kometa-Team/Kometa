@@ -131,7 +131,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`style`](#style)                             | Create a collection for each style found in the library                                                     |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`number`](#number)                           | Creates a collection for each number defined                                                                |    &#9989;     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| [`list`](#list)                               | Creates a collection for each item in the list defined                                                      |    &#9989;     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| [`custom`](#custom)                           | Creates a collection for each custom `key: key_name` pair defined.                                          |    &#9989;     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
 
 ### TMDb Collection
 
@@ -1079,7 +1079,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for each decade found in the library (TV and Movies)
 * Name the collection "Top [Decade] Movies"

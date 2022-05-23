@@ -26,6 +26,12 @@ libraries:
     - git: PMM/overlays/ratings
 ```
 
+## Overlays
+
+The default set of overlays are a combination of Positional Overlays and Text Overlays. Here is an image of all the different spots on an image the default overlays will place images.
+
+   ![](overlays.png)
+
 ## Customizing Configs
 
 Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` will be given to every template call in the file which allows them to affect how that file runs.
@@ -61,7 +67,6 @@ Each file has a comment block at the top showing the available `template_variabl
 #          # Sets the value at the start of the sort title  #
 #          collection_section: "06"                         #
 #############################################################
-
 ```
  
 Each of these when passed will change how the collection runs slightly. 
@@ -69,7 +74,6 @@ Each of these when passed will change how the collection runs slightly.
 * `sort_by` Sets how the collection is sorted
 * `collection_mode` Sets the collection mode of the collection 
 * `collection_section` Sets the value at the start of the sort title
-
 
 **In addition to the defined `template_variables` each file in the PMM Folder has access to the `radarr_add_missing` and `sonarr_add_missing` template variables and for dynamic collections most attributes can be passed as template variables**
 

@@ -1,4 +1,4 @@
-## Metadata Files
+# Metadata Files
 
 Metadata files are used to create and maintain collections and metadata within the Plex libraries on the server.
 

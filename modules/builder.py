@@ -786,7 +786,7 @@ class CollectionBuilder:
 
     def _poster(self, method_name, method_data):
         if method_name == "url_poster":
-            image_response = self.config.get(method_data)
+            image_response = self.config.get(method_data, headers=util.header())
             if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
                 logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
             else:
@@ -805,7 +805,7 @@ class CollectionBuilder:
 
     def _background(self, method_name, method_data):
         if method_name == "url_background":
-            image_response = self.config.get(method_data)
+            image_response = self.config.get(method_data, headers=util.header())
             if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
                 logger.warning(f"{self.Type} Warning: No Background Found at {method_data}")
             else:
