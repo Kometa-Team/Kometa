@@ -56,6 +56,16 @@ Each overlay definition needs to specify what overlay to use. This can happen in
    
 3. Using a dictionary for more overlay location options.
 
+```yaml
+overlays:
+  IMDb Top 250:
+    overlay:
+      name: IMDb Top 250
+    imdb_chart: top_movies
+```
+
+There are many attributes available when using overlays to edit how they work.
+
 | Attribute           | Description                                                                                                                                                                                          | Required |
 |:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
 | `name`              | Name of the overlay. Each overlay name should be unique.                                                                                                                                             | &#9989;  |
@@ -81,14 +91,6 @@ Each overlay definition needs to specify what overlay to use. This can happen in
 | `back_line_width`   | Backdrop Line Width for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                       | &#10060; |
 
 * If `url`, `git`, and `repo` are all not defined then PMM will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
-
-```yaml
-overlays:
-  IMDb Top 250:
-    overlay:
-      name: IMDb Top 250
-    imdb_chart: top_movies
-```
 
 ### Non-Positional Image Overlay
 
@@ -125,9 +127,13 @@ overlays:
     overlay:
       name: blur(50)
     plex_search:
+      type: episodes
       all:
         resolution: 4K
 ```
+
+   ![](blur.png)
+
 
 ### Text Overlay
 
@@ -142,6 +148,8 @@ The `horizontal_offset` and `vertical_offset` overlay attributes are required wh
 You can add an items rating number (`8.7`) to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
 
 You can add an items rating percentage (`87%`) to the image by using `text(audience_rating%)`, `text(critic_rating%)`, or `text(user_rating%)`
+
+You can use the `mass_audience_rating_update` or `mass_critic_rating_update` [Library Operation](../config/operations) to update your plex ratings to various services like `tmdb`, `imdb`, `mdb`, `metacritic`, `letterboxd` and many more.
 
 PMM includes multiple fonts in the [`fonts` folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/fonts) which can be called using `fonts/fontname.ttf`
 
@@ -224,7 +232,7 @@ These filter media items added to the collection by any of the Builders.
 
 * [Filters](filters)
 
-## Example
+## Examples
 
 ### Example Overlay File
 
