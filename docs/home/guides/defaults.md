@@ -1,4 +1,4 @@
-# Plex Meta Manager Default Collections & Overlays
+# Default Collections & Overlays
 
 There is a default set of Metadata and Overlay Files located in the [PMM Folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM) in the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Repository.
 
@@ -28,9 +28,35 @@ libraries:
 
 ## Overlays
 
-The default set of overlays are a combination of Positional Overlays and Text Overlays. Here is an image of all the different spots on an image the default overlays will place images.
+The default set of overlays are a combination of Positional Overlays and Text Overlays.
+
+<details>
+  <summary>Click to expand to see all the different spots on an image the default overlays will be.</summary>
 
    ![](overlays.png)
+
+</details>
+
+### Example Poster Overlays
+
+![](movie-overlays.png)
+
+
+### Example Episode Overlays
+
+![](episode-overlays.png)
+
+## Separators
+
+By default, most metadata files use separators to denote different sections of collection like actor collections vs studio collections.
+
+![](separators.png)
+
+* You can turn these off using [Custom Configs](#customizing-configs)
+
+## Collection Section Order
+
+Almost every default metadata file has a `collection_section` attribute. These attributes determine the order of the various sections and can be set using [Custom Configs](#customizing-configs). 
 
 ## Customizing Configs
 
@@ -93,7 +119,7 @@ libraries:
 
 ## Errors
 
-If there are collections being made that have configuration errors or missing posters please raise an Issue on the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs/issues/new/choose). 
+If there are collections being made that have configuration errors or missing posters please either bring it up in our Discord or raise an Issue on the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs/issues/new/choose). 
 
 ## Example Configuration File
 
