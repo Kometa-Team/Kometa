@@ -6,7 +6,7 @@ from modules.util import Failed, NotScheduled
 from plexapi.audio import Album
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageFilter
 
 logger = util.logger
 

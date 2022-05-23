@@ -4,9 +4,11 @@ Overlay files are used to create and maintain overlays within the Plex libraries
 
 Overlays and templates are defined within one or more Overlay files, which are linked to libraries in the [Libraries Attribute](../config/libraries.md#overlay-path) within the [Configuration File](../config/configuration.md).
 
+All overlay coordinates assume 1000 x 1500 for Posters and 1920 x 1080 for Backgrounds and Title Cards.
+
 **To remove all overlays add `remove_overlays: true` to the `overlay_path` [Libraries Attribute](../config/libraries.md#remove-overlays).**
 
-**To change a single overlay original image either replace the image in the assets folder or remove the `Overlay` shared label and then PMM will overlay the new image**
+**To change a single overlay original image either remove the `Overlay` shared label and update the Image in Plex or replace the image in the assets folder and then PMM will overlay the new image**
 
 These are the attributes which can be used within the Overlay File:
 
@@ -88,6 +90,29 @@ overlays:
     imdb_chart: top_movies
 ```
 
+### Non-Positional Image Overlay
+
+Non-Positional overlays are images that are either 1000 x 1500 for Posters or 1920 x 1080 for Backgrounds and Title Cards.
+
+These Overlays should be mostly transparent and will just be completely merged with the base image.
+
+### Positional Image Overlay
+
+Positional overlays can be of any size and use `horizontal_offset`, `horizontal_align`, `vertical_offset`, and `vertical_align` to position the overlay on the image. 
+
+```yaml
+overlays:
+  IMDB-Top-250:
+    imdb_chart: top_movies
+    overlay:
+      name: IMDB-Top-250
+      repo: PMM/overlays/images/IMDB-Top-250
+      horizontal_offset: 0
+      horizontal_align: right
+      vertical_offset: 0
+      vertical_align: bottom
+```
+
 ### Blurring Overlay
 
 There is a special overlay named `blur` that when given as the overlay name will instead of finding the image will just blur the image instead.
@@ -110,6 +135,8 @@ You can add text as an overlay using the special `text()` overlay name. Anything
 
 You can control the font, font size and font color using the `font`, `font_size`, and `font_color` overlay attributes.
 
+You can control the backdrop of the text using the various `back_*` attributes.
+
 The `horizontal_offset` and `vertical_offset` overlay attributes are required when using Text Overlays.
 
 You can add an items rating number (`8.7`) to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
@@ -123,14 +150,18 @@ overlays:
   audience_rating:
     overlay:
       name: text(audience_rating)
-      horizontal_offset: 15
+      horizontal_offset: 225
+      horizontal_align: center
       vertical_offset: 15
-      font: fonts/Roboto-Medium.ttf
-      font_size: 200
-    plex_all: true
+      vertical_align: top
+      font: fonts/Inter-Medium.ttf
+      font_size: 63
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 150
+      back_height: 105
 ```
-
-**Note: This only adds the text you may want to also add an overlay banner in the same spot.**
 
 ## Suppress Overlays
 
