@@ -884,7 +884,7 @@ class Overlay:
                 raise Failed(error)
             if self.horizontal_align != "center" and not per and x_off < 0:
                 raise Failed(f"{error} 0 or greater")
-            elif self.horizontal_align != "center" and per and x_off > 100:
+            elif self.horizontal_align != "center" and per and (x_off > 100 or x_off < 0):
                 raise Failed(f"{error} between 0% and 100%")
             elif self.horizontal_align == "center" and per and (x_off > 50 or x_off < -50):
                 raise Failed(f"{error} between -50% and 50%")
@@ -905,7 +905,7 @@ class Overlay:
                 raise Failed(error)
             if self.vertical_align != "center" and not per and y_off < 0:
                 raise Failed(f"{error} 0 or greater")
-            elif self.vertical_align != "center" and per and y_off > 100:
+            elif self.vertical_align != "center" and per and (y_off > 100 or y_off < 0):
                 raise Failed(f"{error} between 0% and 100%")
             elif self.vertical_align == "center" and per and (y_off > 50 or y_off < -50):
                 raise Failed(f"{error} between -50% and 50%")
@@ -998,12 +998,6 @@ class Overlay:
             if text not in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
                 self.image = self.get_text_overlay(text, 1000, 1500)
                 self.landscape = self.get_text_overlay(text, 1920, 1080)
-
-
-
-
-
-
         else:
             if "|" in self.name:
                 raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
