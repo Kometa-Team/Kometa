@@ -227,10 +227,10 @@ class CollectionBuilder:
             for library_type in util.get_list(self.data[methods["allowed_library_types"]], lower=True):
                 if library_type == "true" or library_type == self.library.Plex.type:
                     found_type = True
-                elif library_type not in plex.library_types:
-                    raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: {', '.join(plex.library_types)}")
                 elif library_type == "false":
                     raise NotScheduled(f"Skipped because allowed_library_types is false")
+                elif library_type not in plex.library_types:
+                    raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: {', '.join(plex.library_types)}")
             if not found_type:
                 raise NotScheduled(f"Skipped because allowed_library_types {self.data[methods['allowed_library_types']]} doesn't match the library type: {self.library.Plex.type}")
 
