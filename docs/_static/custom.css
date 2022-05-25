@@ -173,3 +173,15 @@ p {
   background-color: #ac0ce3 !important;
   color: #FFFFFF !important;
 }
+a .logo {
+   display: block;
+}
+a:hover .logo {
+   display: none;
+}
+a .logo-hover {
+   display: none;
+}
+a:hover .logo-hover {
+   display: block;
+}
