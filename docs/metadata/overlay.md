@@ -75,9 +75,9 @@ There are many attributes available when using overlays to edit how they work.
 | `repo`              | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                                                                                                               | &#10060; |
 | `group`             | Name of the Grouping for this overlay. Only one overlay with the highest weight per group will be applied.<br>**`weight` is required when using `group`**<br>**Values:** group name                  | &#10060; |
 | `weight`            | Weight of this overlay in its group.<br>**`group` is required when using `weight`**<br>**Values:** Integer                                                                                           | &#10060; |
-| `horizontal_offset` | Horizontal Offset of this overlay. Can be a %.<br>**`vertical_offset` is required when using `horizontal_offset`**<br>**Value:** Integer 0 or greater or 1%-100%                                     | &#10060; |
+| `horizontal_offset` | Horizontal Offset of this overlay. Can be a %.<br>**`vertical_offset` is required when using `horizontal_offset`**<br>**Value:** Integer 0 or greater or 0%-100%                                     | &#10060; |
 | `horizontal_align`  | Horizontal Alignment of the overlay.<br>**Values:** `left`, `center`, `right`                                                                                                                        | &#10060; |
-| `vertical_offset`   | Vertical Offset of this overlay. Can be a %.<br>**`horizontal_offset` is required when using `vertical_offset`**<br>**Value:** Integer 0 or greater or 1%-100%                                       | &#10060; |
+| `vertical_offset`   | Vertical Offset of this overlay. Can be a %.<br>**`horizontal_offset` is required when using `vertical_offset`**<br>**Value:** Integer 0 or greater or 0%-100%                                       | &#10060; |
 | `vertical_align`    | Vertical Alignment of the overlay.<br>**Values:** `top`, `center`, `bottom`                                                                                                                          | &#10060; |
 | `font`              | System Font Filename or path to font file for the Text Overlay.<br>**Value:** System Font Filename or path to font file                                                                              | &#10060; |
 | `font_size`         | Font Size for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                 | &#10060; |
@@ -228,7 +228,7 @@ Only a few details can be used with overlays: `limit`, `show_missing`, `save_mis
 
 ## Filters
 
-These filter media items added to the collection by any of the Builders.
+These filter media items that would have an overlay applied by any of the Builders.
 
 * [Filters](filters)
 
