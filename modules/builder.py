@@ -220,9 +220,9 @@ class CollectionBuilder:
         if "allowed_library_types" in methods and not self.playlist:
             logger.debug("")
             logger.debug("Validating Method: allowed_library_types")
-            if not self.data[methods["allowed_library_types"]]:
+            if self.data[methods["allowed_library_types"]] is None:
                 raise NotScheduled(f"Skipped because allowed_library_types has no library types")
-            logger.debug(f"Value: {data[methods['allowed_library_types']]}")
+            logger.debug(f"Value: {self.data[methods['allowed_library_types']]}")
             found_type = False
             for library_type in util.get_list(self.data[methods["allowed_library_types"]], lower=True):
                 if library_type == "true" or library_type == self.library.Plex.type:

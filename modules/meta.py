@@ -199,6 +199,8 @@ class DataFile:
                                     final_data[sm] = check_data(_method, sd)
                                 except Failed:
                                     continue
+                            if not final_data:
+                                raise Failed
                         elif isinstance(_data, list):
                             final_data = []
                             for li in _data:
@@ -206,6 +208,8 @@ class DataFile:
                                     final_data.append(check_data(_method, li))
                                 except Failed:
                                     continue
+                            if not final_data:
+                                raise Failed
                         else:
                             final_data = _data
                             def scan_text(og_txt, var, var_value):

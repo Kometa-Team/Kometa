@@ -50,13 +50,18 @@ The default set of overlays are a combination of Positional Overlays and Text Ov
 
 By default, most metadata files use separators to denote different sections of collection like actor collections vs studio collections.
 
-![](separators.png)
+<details>
+  <summary>Click to expand to see an example of Separators.</summary>
 
-* You can turn these off using [Custom Configs](#customizing-configs)
+   ![](separators.jpg)
+
+</details>
+
+* Can  be turned off by [customizing your config](#customizing-configs)
 
 ## Collection Section Order
 
-Almost every default metadata file has a `collection_section` attribute. These attributes determine the order of the various sections and can be set using [Custom Configs](#customizing-configs). 
+Almost every default metadata file has a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
 
 ## Customizing Configs
 
