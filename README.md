@@ -1,4 +1,4 @@
-# <img width="80px" src="https://metamanager.wiki/en/latest/_static/pmm.png" alt="PMM"> Plex Meta Manager
+# <img src="https://metamanager.wiki/en/latest/_static/logo-full.png" alt="PMM">
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/meisnate12/Plex-Meta-Manager?style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/releases)
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/meisnate12/plex-meta-manager?label=docker&sort=semver&style=plastic)](https://hub.docker.com/r/meisnate12/plex-meta-manager)

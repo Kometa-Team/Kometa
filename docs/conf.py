@@ -88,8 +88,8 @@ html_theme = "bootstrap"
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 # (Optional) Logo. Should be small enough to fit the navbar (ideally 24x24).
 # Path should be relative to the ``_static`` files directory.
-html_logo = "pmm.png"
-html_favicon = "pmm.png"
+html_logo = "_static/logo-white.png"
+html_favicon = "_static/favicon.png"
 
 html_copy_source = False
 html_show_sourcelink = False
@@ -98,9 +98,6 @@ html_show_sourcelink = False
 # theme further.
 
 html_theme_options = {
-    # Navigation bar title. (Default: ``project`` value)
-    #'navbar_title': "Demo",
-
     # Tab name for entire site. (Default: "Site")
     'navbar_site_name': "Table of Contents",
 

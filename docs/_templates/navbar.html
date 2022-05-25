@@ -7,13 +7,16 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="{{ pathto(master_doc) }}">
+        <a class="navbar-brand" href="{{ pathto(master_doc) }}" style="padding: 12px;">
           {%- block sidebarlogo %}
-            {%- if logo %}<span><img src="{{ pathto('_static/' + logo, 1) }}"></span>{%- endif %}
+            {%- if logo %}
+              <span>
+                <img src="{{ pathto('_static/' + logo, 1) }}" class="logo">
+                <img src="{{ pathto('_static/alt-' + logo, 1) }}" class="logo-hover">
+              </span>
+            {%- endif %}
           {%- endblock %}
-          {% if theme_navbar_title -%}{{ theme_navbar_title|e }}{%- else -%}{{ project|e }}{%- endif -%}
         </a>
-        <span class="navbar-text navbar-version pull-left"><b>{{ version|e }}</b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
