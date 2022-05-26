@@ -1,4 +1,4 @@
-# Default Collections & Overlays
+# Default Metadata & Overlays Files
 
 There is a default set of Metadata and Overlay Files located in the [PMM Folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM) in the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Repository.
 
@@ -143,7 +143,14 @@ libraries:
     - git: PMM/award/other
     - git: PMM/award/spirit
     - git: PMM/award/sundance
-    - git: PMM/chart/old_movie_chart
+    - git: PMM/chart/anilist
+    - git: PMM/chart/basic
+    - git: PMM/chart/imdb
+    - git: PMM/chart/myanimelist
+    - git: PMM/chart/other
+    - git: PMM/chart/tautulli
+    - git: PMM/chart/tmdb
+    - git: PMM/chart/trakt
     - git: PMM/actor
     - git: PMM/audio_language
     - git: PMM/movie/content_rating_us           # Choose content_rating_uk or content_rating_us
@@ -156,7 +163,7 @@ libraries:
     - git: PMM/movie/decade
     - git: PMM/movie/director
     - git: PMM/movie/franchise
-    - git: PMM/movie/multi-franchise
+    - git: PMM/movie/universe
     - git: PMM/movie/producer
     - git: PMM/movie/seasonal
     - git: PMM/movie/streaming
@@ -177,7 +184,14 @@ libraries:
     - git: PMM/award/choice
     - git: PMM/award/golden
     - git: PMM/award/emmy
-    - git: PMM/chart/old_show_chart
+    - git: PMM/chart/anilist
+    - git: PMM/chart/basic
+    - git: PMM/chart/imdb
+    - git: PMM/chart/myanimelist
+    - git: PMM/chart/other
+    - git: PMM/chart/tautulli
+    - git: PMM/chart/tmdb
+    - git: PMM/chart/trakt
     - git: PMM/actor
     - git: PMM/audio_language
     - git: PMM/show/content_rating_us            # Choose content_rating_uk or content_rating_us
@@ -192,7 +206,7 @@ libraries:
     - git: PMM/show/streaming
     overlay_path:
     - remove_overlays: false
-    - git: PMM/overlays/audio_codec      
+    - git: PMM/overlays/audio_codec
     - git: PMM/overlays/audio_codec
       template_variables:
         overlay_level: episode
