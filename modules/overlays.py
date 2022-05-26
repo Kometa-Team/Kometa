@@ -179,9 +179,10 @@ class Overlays:
                             for over_name in text_names:
                                 overlay = properties[over_name]
                                 text = over_name[5:-1]
-                                if text in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
+                                if text in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%", "#"]]:
                                     per = text.endswith("%")
-                                    rating_type = text[:-1] if per else text
+                                    flat = text.endswith("#")
+                                    rating_type = text[:-1] if per or flat else text
                                     actual = plex.attribute_translation[rating_type]
                                     if not hasattr(item, actual) or getattr(item, actual) is None:
                                         logger.warning(f"Overlay Warning: No {rating_type} found")
@@ -191,6 +192,8 @@ class Overlays:
                                         self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
                                     if per:
                                         text = f"{int(text * 10)}%"
+                                    if flat and str(text).endswith(".0"):
+                                        text = str(text)[:-2]
                                     overlay_image = overlay.get_text_overlay(text, image_width, image_height)
                                 else:
                                     overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.image

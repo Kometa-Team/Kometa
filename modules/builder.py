@@ -49,8 +49,8 @@ details = [
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
                          poster_details + background_details + summary_details + string_details
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
-item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_refresh"] + item_false_details
-item_details = ["non_item_remove_label", "item_label", "item_radarr_tag", "item_sonarr_tag", "item_overlay", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
+item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh"] + item_false_details
+item_details = ["non_item_remove_label", "item_label", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync", "radarr_taglist", "sonarr_taglist"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_folder", "radarr_monitor",
@@ -160,7 +160,7 @@ playlist_attributes = [
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
 music_attributes = [
    "non_item_remove_label", "item_label", "collection_filtering", "item_lock_background", "item_lock_poster", "item_lock_title",
-   "item_refresh", "item_refresh_delay", "plex_search", "plex_all", "filters"
+   "item_assets", "item_refresh", "item_refresh_delay", "plex_search", "plex_all", "filters"
 ] + details + summary_details + poster_details + background_details
 
 class CollectionBuilder:
@@ -906,38 +906,6 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: Cannot use {method_name} and {method_name}.remove together")
             self.item_details[method_name] = util.get_list(method_data, lower=True)
             self.item_details["apply_tags"] = method_mod[1:] if method_mod else ""
-        elif method_name == "item_overlay":
-            if isinstance(method_data, dict):
-                if "name" not in method_data or not method_data["name"]:
-                    raise Failed(f"{self.Type} Error: item_overlay must have the name attribute")
-                if "git" in method_data and method_data["git"]:
-                    url = f"https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/{method_data['git']}.png"
-                elif "url" in method_data and method_data["url"]:
-                    url = method_data["url"]
-                else:
-                    raise Failed(f"{self.Type} Error: item_overlay must have either the git or url attribute")
-                name = method_data["name"]
-                response = self.config.get(url)
-                if response.status_code >= 400:
-                    raise Failed(f"{self.Type} Error: Overlay Image not found at: {url}")
-                overlay_dir = os.path.join(self.config.default_dir, "overlays", name)
-                if not os.path.exists(overlay_dir) or not os.path.isdir(overlay_dir):
-                    os.makedirs(overlay_dir, exist_ok=False)
-                    logger.info(f"Creating Overlay Folder found at: {overlay_dir}")
-                overlay = os.path.join(overlay_dir, "overlay.png")
-                with open(overlay, "wb") as handler:
-                    handler.write(response.content)
-                while util.is_locked(overlay):
-                    time.sleep(1)
-            else:
-                overlay = os.path.join(self.config.default_dir, "overlays", method_data, "overlay.png")
-                name = method_data
-            if not os.path.exists(overlay):
-                raise Failed(f"{self.Type} Error: {name} overlay image not found at {overlay}")
-            if name in self.library.overlays_old:
-                raise Failed("Each Overlay can only be used once per Library")
-            self.library.overlays_old.append(name)
-            self.item_details[method_name] = name
         elif method_name == "item_refresh_delay":
             self.item_details[method_name] = util.parse(self.Type, method_name, method_data, datatype="int", default=0, minimum=0)
         elif method_name in item_bool_details:
@@ -2327,6 +2295,8 @@ class CollectionBuilder:
         tmdb_paths = []
         tvdb_paths = []
         for item in self.items:
+            if "item_assets" in self.item_details and self.library.asset_directory and "Overlay" not in [la.tag for la in item.labels]:
+                self.library.find_and_upload_assets(item)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
             if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:

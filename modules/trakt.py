@@ -218,6 +218,7 @@ class Trakt:
                 raise Failed(f"({response.status_code}) {response.reason}")
             json_data = response.json()
             if self.config.trace_mode:
+                logger.debug(f"Headers: {response.headers}")
                 logger.debug(f"Response: {json_data}")
             if isinstance(json_data, dict):
                 return json_data

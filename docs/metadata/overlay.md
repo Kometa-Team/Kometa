@@ -145,9 +145,11 @@ You can control the backdrop of the text using the various `back_*` attributes.
 
 The `horizontal_offset` and `vertical_offset` overlay attributes are required when using Text Overlays.
 
-You can add an items rating number (`8.7`) to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
+You can add an items rating number (`8.7`, `9.0`) to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
 
-You can add an items rating percentage (`87%`) to the image by using `text(audience_rating%)`, `text(critic_rating%)`, or `text(user_rating%)`
+You can add an items rating number removing `.0` as needed (`8.7`, `9`) to the image by using `text(audience_rating#)`, `text(critic_rating#)`, or `text(user_rating#)` 
+
+You can add an items rating percentage (`87%`, `90%`) to the image by using `text(audience_rating%)`, `text(critic_rating%)`, or `text(user_rating%)`
 
 You can use the `mass_audience_rating_update` or `mass_critic_rating_update` [Library Operation](../config/operations) to update your plex ratings to various services like `tmdb`, `imdb`, `mdb`, `metacritic`, `letterboxd` and many more.
 
