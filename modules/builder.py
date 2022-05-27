@@ -40,7 +40,7 @@ ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "suppress_overlays",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "collection_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection",
-    "allowed_library_types"
+    "allowed_library_types", "delete_playlist"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
@@ -289,9 +289,9 @@ class CollectionBuilder:
 
             if "delete_playlist" in methods:
                 logger.debug("")
-                logger.debug("Validating Method: delete_not_scheduled")
-                logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
-                if util.parse(self.Type, "delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False):
+                logger.debug("Validating Method: delete_playlist")
+                logger.debug(f"Value: {data[methods['delete_playlist']]}")
+                if util.parse(self.Type, "delete_playlist", self.data, datatype="bool", methods=methods, default=False):
                     self.obj = self.library.get_playlist(self.name)
                     logger.info(self.delete())
         else:
@@ -571,10 +571,10 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Warning: collection_order attribute is blank")
             else:
                 test_sort = self.data[methods["collection_order"]]
-        elif "collection_order" not in methods and not self.playlist and self.build_collection and self.library.default_collection_order and not self.smart:
+        elif "collection_order" not in methods and not self.playlist and not self.blank_collection and self.build_collection and self.library.default_collection_order and not self.smart:
             test_sort = self.library.default_collection_order
             logger.warning("")
-            logger.warning(f"{self.Type} Warning: collection_order not found using library default_collection_order: {self.library.default_collection_order}")
+            logger.warning(f"{self.Type} Warning: collection_order not found using library default_collection_order: {test_sort}")
         self.custom_sort = self.playlist
         if test_sort:
             if self.smart:
