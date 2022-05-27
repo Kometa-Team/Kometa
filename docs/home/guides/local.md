@@ -241,14 +241,17 @@ This walkthrough is going to use a "virtual environment", since that provides a 
   <br />
 
   [type this into your terminal]
+
   ```
   python -m venv pmm-venv
   ```
 
   If you see:
+
   ```
   Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases.
   ```
+
   You apparently didn't check the “Add to path” checkbox above under [installing Python](#installing-python).  "Repair" your Python install and check "add python to environment variables".
 </details>
 
@@ -280,6 +283,7 @@ That will create the virtual environment, and then you need to activate it:
   <summary>OS X/Linux</summary>
   <br />
   [type this into your terminal]
+
   ```
   source pmm-venv/bin/activate
   ```
@@ -289,10 +293,12 @@ That will create the virtual environment, and then you need to activate it:
   <summary>Windows</summary>
   <br />
   [type this into your terminal]
+
   ```
   .\pmm-venv\Scripts\activate
   ```
   If you see something like this:
+
   ```powershell
   .\pmm-venv\Scripts\activate : File C:\Users\mroche\Plex-Meta-Manager\pmm-venv\Scripts\Activate.ps1 cannot be loaded because running scripts is disabled on this system. For more information, see about_Execution_Policies at https:/go.microsoft.com/fwlink LinkID=135170.
   At line:1 char:1
@@ -301,7 +307,8 @@ That will create the virtual environment, and then you need to activate it:
       + CategoryInfo          : SecurityError: (:) [], PSSecurityException
       + FullyQualifiedErrorId : UnauthorizedAccess
   ```
-  You apparently skipped the "enable scripts in Powershell" step above under [installing Python](#installing-python) for Windows.
+  
+You apparently skipped the "enable scripts in Powershell" step above under [installing Python](#installing-python) for Windows.
 
   You will need to take care of that before moving on.  Follow the instructions [here](https://windowsloop.com/enable-powershell-scripts-execution-windows-10).
 
@@ -328,7 +335,7 @@ Note that the prompt now shows the name of the virtual environment.  You may not
 
 ---
 
-An advantage of doing this in a venv is that in the event something goes wrong with this part of the setup, you can delete that pmm-venv directory and do the setup again.
+An advantage of doing this in a virutal environment is that in the event something goes wrong with this part of the setup, you can delete that pmm-venv directory and do the setup again.
 
 **IMPORTANT: In the future, when you want to run the script, you will need to do this "activation" step every time.  Not the venv creation, just the activation**:
 
@@ -336,6 +343,7 @@ An advantage of doing this in a venv is that in the event something goes wrong w
   <summary>OS X/Linux</summary>
   <br />
   [type this into your terminal]
+
   ```
   source pmm-venv/bin/activate
   ```
@@ -345,6 +353,7 @@ An advantage of doing this in a venv is that in the event something goes wrong w
   <summary>Windows</summary>
   <br />
   [type this into your terminal]
+
   ```
   .\pmm-venv\Scripts\activate
   ```
@@ -550,6 +559,7 @@ This is intended to cause an error for illustration that you will then fix.
 Save the file [in nano that would be cntl-x, y, return], then run the script again:
 
 [type this into your terminal]
+
 ```shell
 python plex_meta_manager.py -r
 ```
@@ -591,6 +601,7 @@ libraries:
 Save the file and run the script again:
 
 [type this into your terminal]
+
 ```
 python plex_meta_manager.py -r
 ```
@@ -634,6 +645,7 @@ First, open the metadata file [this will create the file if it doesn't already e
   <summary>OS X/Linux</summary>
   <br />
   [type this into your terminal]
+
   ```
   nano "config\Movies.yml"
   ```
@@ -644,6 +656,7 @@ First, open the metadata file [this will create the file if it doesn't already e
   <summary>Windows</summary>
   <br />
   [type this into your terminal]
+
   ```
   notepad "config\Movies.yml"
   ```
@@ -686,6 +699,7 @@ The first one is based on a template to illustrate that concept.  If you wanted 
 Save the file and run the script again.
 
 [type this into your terminal]
+
 ```
 python plex_meta_manager.py -r
 ```
@@ -724,6 +738,7 @@ Investigate the rest of the wiki to learn about everything Plex-Meta-Manager can
 When you are done, deactivate the virtual environment:
 
 [type this into your terminal]
+
 ```
 deactivate
 ```
@@ -737,6 +752,7 @@ deactivate
   <br />
 
   [type this into your terminal]
+
   ```
   cd /Users/mroche/Plex-Meta-Manager
   git pull
@@ -750,6 +766,7 @@ deactivate
   <br />
 
   [type this into your terminal]
+
   ```
   cd C:\Users\mroche\Plex-Meta-Manager
   git pull
@@ -765,6 +782,7 @@ deactivate
   <br />
 
   [type this into your terminal]
+
   ```
   cd /Users/mroche/Plex-Meta-Manager
   git checkout develop
@@ -779,6 +797,7 @@ deactivate
   <br />
 
   [type this into your terminal]
+
   ```
   cd C:\Users\mroche\Plex-Meta-Manager
   git checkout develop
@@ -795,6 +814,7 @@ deactivate
   <br />
 
   [type this into your terminal]
+
   ```
   cd /Users/mroche/Plex-Meta-Manager
   git checkout nightly
@@ -825,6 +845,7 @@ deactivate
   <br />
 
   [type this into your terminal]
+
   ```
   cd /Users/mroche/Plex-Meta-Manager
   git checkout master
@@ -839,6 +860,7 @@ deactivate
   <br />
 
   [type this into your terminal]
+
   ```
   cd C:\Users\mroche\Plex-Meta-Manager
   git checkout master
