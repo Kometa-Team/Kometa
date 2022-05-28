@@ -1,7 +1,7 @@
 import os, re, time
 from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
-from modules.util import Failed, NotScheduled, NotScheduledRange, Overlay
+from modules.util import Failed, NotScheduled, NotScheduledRange, Overlay, Deleted
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
@@ -293,7 +293,7 @@ class CollectionBuilder:
                 logger.debug(f"Value: {data[methods['delete_playlist']]}")
                 if util.parse(self.Type, "delete_playlist", self.data, datatype="bool", methods=methods, default=False):
                     self.obj = self.library.get_playlist(self.name)
-                    logger.info(self.delete())
+                    raise Deleted(self.delete())
         else:
             self.libraries.append(self.library)
 
@@ -2576,18 +2576,23 @@ class CollectionBuilder:
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
     def delete(self):
-        output = ""
+        if self.playlist:
+            output = f"Deleting {self.Type} {self.obj.title}"
+            output += f"\n{self.Type} {'deleted' if self.obj else 'not found'} on {self.library.account.username}"
+        elif self.obj:
+            output = f"{self.Type} {self.obj.title} deleted"
+        else:
+            output = ""
         if self.obj:
             self.library.query(self.obj.delete)
-            output = f"{self.Type} {self.obj.title} deleted"
-            if self.playlist:
-                if self.valid_users:
-                    for user in self.valid_users:
-                        try:
-                            self.library.delete_user_playlist(self.obj.title, user)
-                            output += f"\nPlaylist {self.obj.title} deleted on User {user}"
-                        except NotFound:
-                            output += f"\nPlaylist {self.obj.title} not found on User {user}"
+
+        if self.playlist and self.valid_users:
+            for user in self.valid_users:
+                try:
+                    self.library.delete_user_playlist(self.obj.title, user)
+                    output += f"\nPlaylist deleted on User {user}"
+                except NotFound:
+                    output += f"\nPlaylist not found on User {user}"
         return output
 
     def sync_playlist(self):

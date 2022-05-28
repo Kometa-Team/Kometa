@@ -112,7 +112,7 @@ from modules import util
 util.logger = logger
 from modules.builder import CollectionBuilder
 from modules.config import ConfigFile
-from modules.util import Failed, NotScheduled
+from modules.util import Failed, NotScheduled, Deleted
 
 def my_except_hook(exctype, value, tb):
     for _line in traceback.format_exception(etype=exctype, value=value, tb=tb):
@@ -816,6 +816,8 @@ def run_playlists(config):
 
                 builder.send_notifications(playlist=True)
 
+            except Deleted as e:
+                logger.info(e)
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
