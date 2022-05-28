@@ -417,6 +417,7 @@ class Plex(Library):
         self.type = self.Plex.type.capitalize()
         self._users = []
         self._all_items = []
+        self._account = None
         self.agent = self.Plex.agent
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
@@ -615,7 +616,7 @@ class Plex(Library):
     def users(self):
         if not self._users:
             users = []
-            for user in self.PlexServer.myPlexAccount().users():
+            for user in self.account.users():
                 if self.PlexServer.machineIdentifier in [s.machineIdentifier for s in user.servers]:
                     users.append(user.title)
             self._users = users
@@ -623,6 +624,12 @@ class Plex(Library):
 
     def delete_user_playlist(self, title, user):
         self.PlexServer.switchUser(user).playlist(title).delete()
+
+    @property
+    def account(self):
+        if self._account is None:
+            self._account = self.PlexServer.myPlexAccount()
+        return self._account
 
     def playlist_report(self):
         playlists = {}
@@ -634,7 +641,7 @@ class Plex(Library):
                     playlists[playlist.title].append(username)
             except requests.exceptions.ConnectionError:
                 pass
-        scan_user(self.PlexServer, self.PlexServer.myPlexAccount().title)
+        scan_user(self.PlexServer, self.account.title)
         for user in self.users:
             scan_user(self.PlexServer.switchUser(user), user)
         return playlists

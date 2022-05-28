@@ -21,6 +21,9 @@ class TimeoutExpired(Exception):
 class Failed(Exception):
     pass
 
+class Deleted(Exception):
+    pass
+
 class NotScheduled(Exception):
     pass
 
