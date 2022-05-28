@@ -302,7 +302,7 @@ class Trakt:
         return data
 
     def sync_list(self, slug, ids):
-        current_ids = self._list(slug, urlparse=False)
+        current_ids = self._list(slug, urlparse=False, fail=False)
 
         def read_result(data, obj_type, result_type, result_str=None):
             result_str = result_str if result_str else result_type.capitalize()
@@ -365,14 +365,17 @@ class Trakt:
     def build_user_url(self, user, name):
         return f"{base_url.replace('api.', '')}/users/{user}/lists/{name}"
 
-    def _list(self, data, urlparse=True, trakt_ids=False):
+    def _list(self, data, urlparse=True, trakt_ids=False, fail=True):
         try:
             url = requests.utils.urlparse(data).path if urlparse else f"/users/me/lists/{data}"
             items = self._request(f"{url}/items")
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
         if len(items) == 0:
-            raise Failed(f"Trakt Error: List {data} is empty")
+            if fail:
+                raise Failed(f"Trakt Error: List {data} is empty")
+            else:
+                return []
         return self._parse(items, trakt_ids=trakt_ids)
 
     def _userlist(self, list_type, user, is_movie, sort_by=None):

@@ -44,7 +44,7 @@ def get_dict(attribute, attr_data, check_list=None, make_str=False):
                         new_name = f'"{str(_name)}"' if make_str or not isinstance(_name, int) else _name
                         logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {new_name}")
                     elif _data is None:
-                        logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} has no data")
+                        continue
                     elif not isinstance(_data, dict):
                         logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
                     elif attribute == "templates":
