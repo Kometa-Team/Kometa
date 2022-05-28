@@ -627,10 +627,13 @@ class Plex(Library):
     def playlist_report(self):
         playlists = {}
         def scan_user(server, username):
-            for playlist in server.playlists():
-                if playlist.title not in playlists:
-                    playlists[playlist.title] = []
-                playlists[playlist.title].append(username)
+            try:
+                for playlist in server.playlists():
+                    if playlist.title not in playlists:
+                        playlists[playlist.title] = []
+                    playlists[playlist.title].append(username)
+            except requests.exceptions.ConnectionError:
+                pass
         scan_user(self.PlexServer, self.PlexServer.myPlexAccount().title)
         for user in self.users:
             scan_user(self.PlexServer.switchUser(user), user)
@@ -1313,9 +1316,11 @@ class Plex(Library):
                         attrs.append(media.videoResolution)
                     for part in media.parts:
                         if filter_attr == "audio_language":
-                            attrs.extend([a.language for a in part.audioStreams()])
+                            for a in part.audioStreams():
+                                attrs.extend([a.language, a.tag, a.languageCode])
                         if filter_attr == "subtitle_language":
-                            attrs.extend([s.language for s in part.subtitleStreams()])
+                            for s in part.subtitleStreams():
+                                attrs.extend([s.language, s.tag, s.languageCode])
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
             elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer",

@@ -234,6 +234,8 @@ class MyLogger:
                     msg = msg.replace(secret, "(redacted)")
             if "HTTPConnectionPool" in msg:
                 msg = re.sub("HTTPConnectionPool\\((.*?)\\)", "HTTPConnectionPool(redacted)", msg)
+            if "HTTPSConnectionPool" in msg:
+                msg = re.sub("HTTPSConnectionPool\\((.*?)\\)", "HTTPSConnectionPool(redacted)", msg)
             try:
                 if not _srcfile:
                     raise ValueError
