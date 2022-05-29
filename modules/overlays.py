@@ -175,7 +175,10 @@ class Overlays:
                                 overlay = properties[over_name]
                                 if not overlay.has_coordinates():
                                     new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
-                                new_poster.paste(overlay.image, overlay.get_coordinates(image_width, image_height), overlay.image)
+                                    overlay_image = overlay.image
+                                else:
+                                    overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.image
+                                new_poster.paste(overlay_image, (0, 0), overlay_image)
                             for over_name in text_names:
                                 overlay = properties[over_name]
                                 text = over_name[5:-1]
@@ -194,7 +197,7 @@ class Overlays:
                                         text = f"{int(text * 10)}%"
                                     if flat and str(text).endswith(".0"):
                                         text = str(text)[:-2]
-                                    overlay_image = overlay.get_text_overlay(text, image_width, image_height)
+                                    overlay_image = overlay.get_overlay_image(str(text), image_width, image_height)
                                 else:
                                     overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.image
                                 new_poster.paste(overlay_image, (0, 0), overlay_image)
