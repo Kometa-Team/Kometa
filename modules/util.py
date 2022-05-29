@@ -846,13 +846,6 @@ class Overlay:
         self.font_name = None
         self.font_size = 36
         self.font_color = None
-        self.back_color = None
-        self.back_radius = None
-        self.back_line_width = None
-        self.back_line_color = None
-        self.back_padding = 0
-        self.back_height = None
-        self.back_width = None
         logger.debug("")
         logger.debug("Validating Method: overlay")
         logger.debug(f"Value: {self.data}")
@@ -917,7 +910,25 @@ class Overlay:
             self.vertical_offset = 0
 
         if (self.horizontal_offset is None and self.vertical_offset is not None) or (self.vertical_offset is None and self.horizontal_offset is not None):
-            raise Failed(f"Overlay Error: overlay attribute's  horizontal_offset and vertical_offset must be used together")
+            raise Failed(f"Overlay Error: overlay attribute's  must be used together")
+
+        def color(attr):
+            if attr in self.data and self.data[attr]:
+                try:
+                    return ImageColor.getcolor(self.data[attr], "RGBA")
+                except ValueError:
+                    raise Failed(f"Overlay Error: overlay {attr}: {self.data[attr]} invalid")
+        self.back_color = color("back_color")
+        self.back_radius = parse("Overlay", "back_radius", self.data["back_radius"], datatype="int", parent="overlay") if "back_radius" in self.data else None
+        self.back_line_width = parse("Overlay", "back_line_width", self.data["back_line_width"], datatype="int", parent="overlay") if "back_line_width" in self.data else None
+        self.back_line_color = color("back_line_color")
+        self.back_padding = parse("Overlay", "back_padding", self.data["back_padding"], datatype="int", parent="overlay", default=0) if "back_padding" in self.data else 0
+        self.back_width = parse("Overlay", "back_width", self.data["back_width"], datatype="int", parent="overlay") if "back_width" in self.data else None
+        self.back_height = parse("Overlay", "back_height", self.data["back_height"], datatype="int", parent="overlay") if "back_height" in self.data else None
+        if (self.back_width and not self.back_height) or (self.back_height and not self.back_width):
+            raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
+        if (self.back_color or self.back_line_color) and not self.has_coordinates():
+            raise Failed(f"Overlay Error: horizontal_offset and vertical_offset are required when using a backdrop")
 
         def get_and_save_image(image_url):
             response = self.config.get(image_url)
@@ -976,31 +987,16 @@ class Overlay:
                         raise Failed(f"Overlay Error: font: {font} not found. Options: {', '.join(fonts)}")
                 self.font_name = font
                 self.font = ImageFont.truetype(self.font_name, self.font_size)
-            def color(attr):
-                if attr in self.data and self.data[attr]:
-                    try:
-                        return ImageColor.getcolor(self.data[attr], "RGBA")
-                    except ValueError:
-                        raise Failed(f"Overlay Error: overlay {attr}: {self.data[attr]} invalid")
-            self.font_color = color("font_color")
-            self.back_color = color("back_color")
-            if "back_radius" in self.data:
-                self.back_radius = parse("Overlay", "back_radius", self.data["back_radius"], datatype="int", parent="overlay")
-            if "back_line_width" in self.data:
-                self.back_line_width = parse("Overlay", "back_line_width", self.data["back_line_width"], datatype="int", parent="overlay")
-            self.back_line_color = color("back_line_color")
-            if "back_padding" in self.data:
-                self.back_padding = parse("Overlay", "back_padding", self.data["back_padding"], datatype="int", parent="overlay", default=self.back_padding)
-            if "back_width" in self.data:
-                self.back_width = parse("Overlay", "back_width", self.data["back_width"], datatype="int", parent="overlay")
-            if "back_height" in self.data:
-                self.back_height = parse("Overlay", "back_height", self.data["back_height"], datatype="int", parent="overlay")
-            if (self.back_width and not self.back_height) or (self.back_height and not self.back_width):
-                raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
+            self.font_color = None
+            if "font_color" in self.data and self.data["font_color"]:
+                try:
+                    self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
+                except ValueError:
+                    raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
             text = self.name[5:-1]
             if text not in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
-                self.image = self.get_text_overlay(text, 1000, 1500)
-                self.landscape = self.get_text_overlay(text, 1920, 1080)
+                self.image = self.get_overlay_image(text, 1000, 1500)
+                self.landscape = self.get_overlay_image(text, 1920, 1080)
         else:
             if "|" in self.name:
                 raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
@@ -1015,18 +1011,23 @@ class Overlay:
             overlay_size = os.stat(self.path).st_size
             self.updated = not image_compare or str(overlay_size) != str(image_compare)
             try:
-                self.image = Image.open(self.path).convert("RGBA")
+                temp_image = Image.open(self.path).convert("RGBA")
+                self.image = self.get_overlay_image(temp_image, 1000, 1500)
+                self.landscape = self.get_overlay_image(temp_image, 1920, 1080)
                 if self.config.Cache:
                     self.config.Cache.update_image_map(self.name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
             except OSError:
                 raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
 
-    def get_text_overlay(self, text, image_width, image_height):
+    def get_overlay_image(self, text, image_width, image_height):
         overlay_image = Image.new("RGBA", (image_width, image_height), (255, 255, 255, 0))
         drawing = ImageDraw.Draw(overlay_image)
-        x_cord, y_cord = self.get_coordinates(image_width, image_height, text=str(text))
-        _, _, width, height = self.get_text_size(str(text))
-        if self.back_color:
+        if isinstance(text, str):
+            _, _, width, height = self.get_text_size(text)
+        else:
+            width, height = text.size
+        x_cord, y_cord = self.get_coordinates(image_width, image_height, width, height)
+        if self.back_color or self.back_line_color:
             cords = (
                 x_cord - self.back_padding,
                 y_cord - self.back_padding,
@@ -1041,7 +1042,10 @@ class Overlay:
                 drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)
             else:
                 drawing.rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width)
-        drawing.text((x_cord, y_cord), str(text), font=self.font, fill=self.font_color, anchor="lt")
+        if isinstance(text, str):
+            drawing.text((x_cord, y_cord), text, font=self.font, fill=self.font_color, anchor="lt")
+        else:
+            overlay_image.paste(text, (x_cord, y_cord), text)
         return overlay_image
 
     def get_overlay_compare(self):
@@ -1065,16 +1069,12 @@ class Overlay:
     def get_text_size(self, text):
         return ImageDraw.Draw(Image.new("RGBA", (0, 0))).textbbox((0, 0), text, font=self.font, anchor='lt')
 
-    def get_coordinates(self, image_width, image_height, text=None):
+    def get_coordinates(self, image_width, image_height, width, height):
         if not self.has_coordinates():
             return 0, 0
         if self.back_width:
             width = self.back_width
             height = self.back_height
-        elif text:
-            _, _, width, height = self.get_text_size(text)
-        else:
-            width, height = self.image.size
 
         def get_cord(value, image_value, over_value, align):
             value = int(image_value * 0.01 * int(value[:-1])) if str(value).endswith("%") else value
