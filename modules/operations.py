@@ -439,17 +439,20 @@ class Operations:
                 map_key, attrs = self.library.get_locked_attributes(item, titles)
                 if map_key in special_names:
                     map_key = special_names[map_key]
-                og_dict = yaml.data["metadata"][map_key] if map_key in yaml.data["metadata"] and yaml.data["metadata"][map_key] else {}
+                og_dict = yaml.data["metadata"][map_key] if map_key in yaml.data["metadata"] and yaml.data["metadata"][map_key] and isinstance(yaml.data["metadata"][map_key], dict) else {}
                 if attrs or (self.library.metadata_backup["add_blank_entries"] and not og_dict):
-                    def get_dict(attrs_dict):
-                        return {ak: get_dict(av) if isinstance(av, dict) else av for ak, av in attrs_dict.items()}
+
                     def loop_dict(looping, dest_dict):
                         if not looping:
                             return None
                         for lk, lv in looping.items():
-                            dest_dict[lk] = loop_dict(lv, dest_dict[lk] if lk in dest_dict and dest_dict[lk] else {}) if isinstance(lv, dict) else lv
+                            if isinstance(lv, dict) and lk in dest_dict and dest_dict[lk] and isinstance(dest_dict[lk], dict):
+                                dest_dict[lk] = loop_dict(lv, dest_dict[lk])
+                            else:
+                                dest_dict[lk] = lv
                         return dest_dict
-                    yaml.data["metadata"][map_key] = loop_dict(get_dict(attrs), og_dict)
+
+                    yaml.data["metadata"][map_key] = loop_dict(attrs, og_dict)
             logger.exorcise()
             yaml.save()
             logger.info(f"{len(yaml.data['metadata'])} {self.library.type.capitalize()}{'s' if len(yaml.data['metadata']) > 1 else ''} Backed Up")
