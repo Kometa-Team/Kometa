@@ -184,8 +184,8 @@ class DataFile:
                             prefix = template["move_collection_prefix"]
                         if prefix:
                             for op in util.get_list(prefix):
-                                if variables[name_var].startswith(op):
-                                    sort_name = f"{variables[name_var][len(op):]}, {op}"
+                                if variables[name_var].startswith(f"{op} "):
+                                    sort_name = f"{variables[name_var][len(op):].lstrip()}, {op}"
                                     break
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
