@@ -223,6 +223,7 @@ This walkthrough is going to use a "virtual environment", since that provides a 
   ```
 
   If you see an error like:
+
   ```
   Error: Command '['/home/mroche/Plex-Meta-Manager/pmm-venv/bin/python3', '-Im', 'ensurepip', '--upgrade', '--default-pip']' returned non-zero exit status 1.
   ```
@@ -230,6 +231,7 @@ This walkthrough is going to use a "virtual environment", since that provides a 
 
   On Linux [which is the one platform where this was seen at this point]:
   [type this into your terminal]
+
   ```
   sudo apt-get install python3.9-venv
   ```
@@ -457,6 +459,7 @@ First, make a copy of the template.  This is going to create a copy of the base 
   <summary>OS X/Linux</summary>
   <br />
   [type this into your terminal]
+
   ```
   cp config/config.yml.template config/config.yml
   ```
@@ -466,6 +469,7 @@ First, make a copy of the template.  This is going to create a copy of the base 
   <summary>Windows</summary>
   <br />
   [type this into your terminal]
+
   ```
   copy .\config\config.yml.template .\config\config.yml
   ```
@@ -479,6 +483,7 @@ Now open the copy in an editor:
   <summary>OS X/Linux</summary>
   <br />
   [type this into your terminal]
+
   ```
   nano config/config.yml
   ```
@@ -490,6 +495,7 @@ Now open the copy in an editor:
   <summary>Windows</summary>
   <br />
   [type this into your terminal]
+
   ```
   notepad .\config\config.yml
   ```
@@ -829,6 +835,7 @@ deactivate
   <br />
 
   [type this into your terminal]
+
   ```
   cd C:\Users\mroche\Plex-Meta-Manager
   git checkout develop
