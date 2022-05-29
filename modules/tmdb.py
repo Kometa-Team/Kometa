@@ -214,11 +214,11 @@ class TMDb:
                 except Failed:                  raise Failed(f"TMDb Error: No Movie or Collection found for TMDb ID {tmdb_id}")
         else:                           return self.get_show(tmdb_id)
 
-    def get_movie(self, tmdb_id):
-        return TMDbMovie(self, tmdb_id)
+    def get_movie(self, tmdb_id, ignore_cache=False):
+        return TMDbMovie(self, tmdb_id, ignore_cache=ignore_cache)
 
-    def get_show(self, tmdb_id):
-        return TMDbShow(self, tmdb_id)
+    def get_show(self, tmdb_id, ignore_cache=False):
+        return TMDbShow(self, tmdb_id, ignore_cache=ignore_cache)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_season(self, tmdb_id, season_number, partial=None):

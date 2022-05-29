@@ -417,6 +417,7 @@ class Plex(Library):
         self.type = self.Plex.type.capitalize()
         self._users = []
         self._all_items = []
+        self._account = None
         self.agent = self.Plex.agent
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
@@ -615,7 +616,7 @@ class Plex(Library):
     def users(self):
         if not self._users:
             users = []
-            for user in self.PlexServer.myPlexAccount().users():
+            for user in self.account.users():
                 if self.PlexServer.machineIdentifier in [s.machineIdentifier for s in user.servers]:
                     users.append(user.title)
             self._users = users
@@ -624,14 +625,23 @@ class Plex(Library):
     def delete_user_playlist(self, title, user):
         self.PlexServer.switchUser(user).playlist(title).delete()
 
+    @property
+    def account(self):
+        if self._account is None:
+            self._account = self.PlexServer.myPlexAccount()
+        return self._account
+
     def playlist_report(self):
         playlists = {}
         def scan_user(server, username):
-            for playlist in server.playlists():
-                if playlist.title not in playlists:
-                    playlists[playlist.title] = []
-                playlists[playlist.title].append(username)
-        scan_user(self.PlexServer, self.PlexServer.myPlexAccount().title)
+            try:
+                for playlist in server.playlists():
+                    if playlist.title not in playlists:
+                        playlists[playlist.title] = []
+                    playlists[playlist.title].append(username)
+            except requests.exceptions.ConnectionError:
+                pass
+        scan_user(self.PlexServer, self.account.title)
         for user in self.users:
             scan_user(self.PlexServer.switchUser(user), user)
         return playlists
@@ -1313,9 +1323,11 @@ class Plex(Library):
                         attrs.append(media.videoResolution)
                     for part in media.parts:
                         if filter_attr == "audio_language":
-                            attrs.extend([a.language for a in part.audioStreams()])
+                            for a in part.audioStreams():
+                                attrs.extend([a.language, a.tag, a.languageCode])
                         if filter_attr == "subtitle_language":
-                            attrs.extend([s.language for s in part.subtitleStreams()])
+                            for s in part.subtitleStreams():
+                                attrs.extend([s.language, s.tag, s.languageCode])
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
             elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer",

@@ -112,7 +112,7 @@ from modules import util
 util.logger = logger
 from modules.builder import CollectionBuilder
 from modules.config import ConfigFile
-from modules.util import Failed, NotScheduled
+from modules.util import Failed, NotScheduled, Deleted
 
 def my_except_hook(exctype, value, tb):
     for _line in traceback.format_exception(etype=exctype, value=value, tb=tb):
@@ -203,7 +203,7 @@ def start(attrs):
     logger.debug("")
     logger.separator(f"Starting {start_type}Run")
     config = None
-    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     try:
         config = ConfigFile(default_dir, attrs)
     except Exception as e:
@@ -211,7 +211,7 @@ def start(attrs):
         logger.critical(e)
     else:
         try:
-            stats = run_config(config)
+            stats = run_config(config, stats)
         except Exception as e:
             config.notify(e)
             logger.stacktrace()
@@ -231,7 +231,7 @@ def start(attrs):
     logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
     logger.remove_main_handler()
 
-def run_config(config):
+def run_config(config, stats):
     library_status = run_libraries(config)
 
     playlist_status = {}
@@ -354,7 +354,6 @@ def run_config(config):
         logger.info("")
         print_status(playlist_status)
 
-    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     stats["added"] += amount_added
     for library in config.libraries:
         stats["created"] += library.stats["created"]
@@ -817,6 +816,8 @@ def run_playlists(config):
 
                 builder.send_notifications(playlist=True)
 
+            except Deleted as e:
+                logger.info(e)
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
