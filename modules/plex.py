@@ -375,13 +375,13 @@ track_sorts = {
     "random": "random"
 }
 sort_types = {
-    "movies": ("title.asc", 1, movie_sorts),
-    "shows": ("title.asc", 2, show_sorts),
-    "seasons": ("season.asc", 3, season_sorts),
-    "episodes": ("title.asc", 4, episode_sorts),
-    "artists": ("title.asc", 8, artist_sorts),
-    "albums": ("title.asc", 9, album_sorts),
-    "tracks": ("title.asc", 10, track_sorts)
+    "movie": ("title.asc", 1, movie_sorts),
+    "show": ("title.asc", 2, show_sorts),
+    "season": ("season.asc", 3, season_sorts),
+    "episode": ("title.asc", 4, episode_sorts),
+    "artist": ("title.asc", 8, artist_sorts),
+    "album": ("title.asc", 9, album_sorts),
+    "track": ("title.asc", 10, track_sorts)
 }
 
 class Plex(Library):
@@ -996,6 +996,8 @@ class Plex(Library):
         if not item_asset_directory:
             if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
                 starting = item.show() if isinstance(item, (Episode, Season)) else item
+                if not starting.locations:
+                    raise Failed(f"Asset Warning: No video filepath found fo {item.title}")
                 path_test = str(starting.locations[0])
                 if not os.path.dirname(path_test):
                     path_test = path_test.replace("\\", "/")

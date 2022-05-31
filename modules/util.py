@@ -780,22 +780,26 @@ def check_time(message, end=False):
         logger.debug(f"{message}: {current_time - previous_time}")
     previous_time = None if end else current_time
 
+system_fonts = []
 def get_system_fonts():
-    dirs = []
-    if sys.platform == "win32":
-        windir = os.environ.get("WINDIR")
-        if windir:
-            dirs.append(os.path.join(windir, "fonts"))
-    elif sys.platform in ("linux", "linux2"):
-        lindirs = os.environ.get("XDG_DATA_DIRS", "")
-        if not lindirs:
-            lindirs = "/usr/share"
-        dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
-    elif sys.platform == "darwin":
-        dirs += ["/Library/Fonts", "/System/Library/Fonts", os.path.expanduser("~/Library/Fonts")]
-    else:
-        return dirs
-    return [n for d in dirs for _, _, ns in os.walk(d) for n in ns]
+    global system_fonts
+    if not system_fonts:
+        dirs = []
+        if sys.platform == "win32":
+            windir = os.environ.get("WINDIR")
+            if windir:
+                dirs.append(os.path.join(windir, "fonts"))
+        elif sys.platform in ("linux", "linux2"):
+            lindirs = os.environ.get("XDG_DATA_DIRS", "")
+            if not lindirs:
+                lindirs = "/usr/share"
+            dirs += [os.path.join(lindir, "fonts") for lindir in lindirs.split(":")]
+        elif sys.platform == "darwin":
+            dirs += ["/Library/Fonts", "/System/Library/Fonts", os.path.expanduser("~/Library/Fonts")]
+        else:
+            return dirs
+        system_fonts = [n for d in dirs for _, _, ns in os.walk(d) for n in ns]
+    return system_fonts
 
 class YAML:
     def __init__(self, path=None, input_data=None, check_empty=False, create=False):
@@ -975,8 +979,7 @@ class Overlay:
             if not match:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
-            if os.path.exists("fonts/Roboto-Medium.ttf"):
-                self.font_name = "fonts/Roboto-Medium.ttf"
+            self.font_name = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fonts", "Roboto-Medium.ttf")
             if "font_size" in self.data:
                 self.font_size = parse("Overlay", "font_size", self.data["font_size"], datatype="int", parent="overlay", default=self.font_size)
             if "font" in self.data and self.data["font"]:

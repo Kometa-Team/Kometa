@@ -77,13 +77,14 @@ like Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collec
 
 Inside the base attribute you can use any search below or nest more `any` or `all`. You can have as many nested `any` or `all` next to each other as you want. If using multiple `any` or `all` you will have to do so in the form of a list.  
 
+**Note: To search by `season`, `episode`, `album`, or `track` you must use the `collection_level` [Detail](../details/metadata) to change the type of items the collection holds.**
+
 There are a couple other attributes you can have at the top level only along with the base attribute are:
 
 ## Special Attributes
 
 | Attribute  | Description & Values                                                                                                                                                                                                                                                                                                                                  |
 |:-----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `type`     | **Description:** The Type of items inside this collection/playlist.<br>**Default:**<table class="clearTable"><tr><td>`movies` for Movies Libraries</td></tr><tr><td>`shows` for Show Libraries</td></tr><tr><td>`artists` for Music Libraries</td></tr></table>**Values:** `movies`, `shows`, `seasons`, `episodes`, `artists`, `albums`, or `tracks` |
 | `limit`    | **Description:** The max number of item for the search.<br>**Default:** `all`<br>**Values:** `all` or a number greater than 0                                                                                                                                                                                                                         |
 | `sort_by`  | **Description:** This will control how the filter is sorted in your library.<br>**Default:** `random`<br>**Values:** Any sort options for your search type in the [Sorts Options Table](#sort-options)                                                                                                                                                |
 | `validate` | **Description:** Determines if a collection/playlist will fail on a validation error<br>**Default:** `true`<br>**Values**: `true` or `false`                                                                                                                                                                                                          |
