@@ -915,10 +915,6 @@ class Plex(Library):
         poster = util.pick_image(title, posters, self.prioritize_assets, self.download_url_assets, asset_location, image_name=image_name)
         background = util.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location,
                                      is_poster=False, image_name=f"{image_name}_background" if image_name else image_name)
-        if poster and poster.attribute == "asset_directory":
-            poster = None
-        if background and background.attribute == "asset_directory":
-            background = None
         if poster or background:
             self.upload_images(item, poster=poster, background=background)
         return asset_location
@@ -985,7 +981,7 @@ class Plex(Library):
             file_name = item.title
         elif isinstance(item, Season):
             prefix = f"{item.parentTitle} Season {item.seasonNumber}'s "
-            file_name = f"Season{'0' if item.seasonNumber < 10 else ''}{item.seasonNumber}"
+            file_name = f"Season{'0' if not item.seasonNumber or item.seasonNumber < 10 else ''}{item.seasonNumber}"
         elif isinstance(item, Episode):
             prefix = f"{item.grandparentTitle} {item.seasonEpisode.upper()}'s "
             file_name = item.seasonEpisode.upper()
