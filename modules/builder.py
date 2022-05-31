@@ -5,6 +5,7 @@ from modules.util import Failed, NotScheduled, NotScheduledRange, Overlay, Delet
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
+from requests.exceptions import ConnectionError
 from urllib.parse import quote
 
 logger = util.logger
@@ -787,11 +788,13 @@ class CollectionBuilder:
 
     def _poster(self, method_name, method_data):
         if method_name == "url_poster":
-            image_response = self.config.get(method_data, headers=util.header())
-            if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
-                logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
-            else:
+            try:
+                image_response = self.config.get(method_data, headers=util.header())
+                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
+                    raise ConnectionError
                 self.posters[method_name] = method_data
+            except ConnectionError:
+                logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
         elif method_name == "tmdb_poster":
             self.posters[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_url
         elif method_name == "tmdb_profile":
@@ -806,11 +809,13 @@ class CollectionBuilder:
 
     def _background(self, method_name, method_data):
         if method_name == "url_background":
-            image_response = self.config.get(method_data, headers=util.header())
-            if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
-                logger.warning(f"{self.Type} Warning: No Background Found at {method_data}")
-            else:
+            try:
+                image_response = self.config.get(method_data, headers=util.header())
+                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
+                    raise ConnectionError
                 self.backgrounds[method_name] = method_data
+            except ConnectionError:
+                logger.warning(f"{self.Type} Warning: No Background Found at {method_data}")
         elif method_name == "tmdb_background":
             self.backgrounds[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).backdrop_url
         elif method_name == "tvdb_background":
