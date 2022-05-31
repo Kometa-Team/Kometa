@@ -454,17 +454,18 @@ class CollectionBuilder:
             logger.debug("Validating Method: collection_level")
             level = self.data[methods["collection_level"]]
             if level is None:
-                raise Failed(f"{self.Type} Error: collection_level attribute is blank")
-            logger.debug(f"Value: {level}")
-            level = level.lower()
-            if (self.library.is_show and level in plex.collection_level_show_options) or (self.library.is_music and level in plex.collection_level_music_options):
-                self.collection_level = level
-            elif (self.library.is_show and level != "show") or (self.library.is_music and level != "artist"):
-                if self.library.is_show:
-                    options = "\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)"
-                else:
-                    options = "\n\talbum (Collection at the Album Level)\n\ttrack (Collection at the Track Level)"
-                raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid{options}")
+                logger.error(f"{self.Type} Error: collection_level attribute is blank")
+            else:
+                logger.debug(f"Value: {level}")
+                level = level.lower()
+                if (self.library.is_show and level in plex.collection_level_show_options) or (self.library.is_music and level in plex.collection_level_music_options):
+                    self.collection_level = level
+                elif (self.library.is_show and level != "show") or (self.library.is_music and level != "artist"):
+                    if self.library.is_show:
+                        options = "\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)"
+                    else:
+                        options = "\n\talbum (Collection at the Album Level)\n\ttrack (Collection at the Track Level)"
+                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid{options}")
         self.parts_collection = self.collection_level in plex.collection_level_options
 
         if "tmdb_person" in methods:
@@ -1232,19 +1233,15 @@ class CollectionBuilder:
         elif method_name in ["plex_search", "plex_collectionless"]:
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
-                new_dictionary = {}
                 if method_name == "plex_search":
-                    type_override = f"{self.collection_level}s" if self.collection_level in plex.collection_level_options else None
-                    new_dictionary = self.build_filter("plex_search", dict_data, type_override=type_override)
+                    self.builders.append((method_name, self.build_filter("plex_search", dict_data)))
                 elif method_name == "plex_collectionless":
                     prefix_list = util.parse(self.Type, "exclude_prefix", dict_data, datatype="list", methods=dict_methods) if "exclude_prefix" in dict_methods else []
                     exact_list = util.parse(self.Type, "exclude", dict_data, datatype="list", methods=dict_methods) if "exclude" in dict_methods else []
                     if len(prefix_list) == 0 and len(exact_list) == 0:
                         raise Failed(f"{self.Type} Error: you must have at least one exclusion")
                     exact_list.append(self.name)
-                    new_dictionary["exclude_prefix"] = prefix_list
-                    new_dictionary["exclude"] = exact_list
-                self.builders.append((method_name, new_dictionary))
+                    self.builders.append((method_name, {"exclude_prefix": prefix_list, "exclude": exact_list}))
         else:
             self.builders.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
 
@@ -1670,7 +1667,7 @@ class CollectionBuilder:
         if self.details["save_report"] is True and filtered_items:
             self.library.add_filtered(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in filtered_items], self.library.is_movie)
 
-    def build_filter(self, method, plex_filter, display=False, default_sort=None, type_override=None):
+    def build_filter(self, method, plex_filter, display=False, default_sort=None):
         if display:
             logger.info("")
             logger.info(f"Validating Method: {method}")
@@ -1686,24 +1683,18 @@ class CollectionBuilder:
         if "any" in filter_alias and "all" in filter_alias:
             raise Failed(f"{self.Type} Error: Cannot have more then one base")
 
-        if type_override:
-            sort_type = type_override
-        elif "type" in filter_alias and self.library.is_show:
-            if plex_filter[filter_alias["type"]] not in ["shows", "seasons", "episodes"]:
-                raise Failed(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either shows, season, or episodes")
-            sort_type = plex_filter[filter_alias["type"]]
-        elif "type" in filter_alias and self.library.is_music:
-            if plex_filter[filter_alias["type"]] not in ["artists", "albums", "tracks"]:
-                raise Failed(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid, must be either artists, albums, or tracks")
-            sort_type = plex_filter[filter_alias["type"]]
-        elif self.library.is_show:
-            sort_type = "shows"
-        elif self.library.is_music:
-            sort_type = "artists"
+        if self.collection_level == "item":
+            if self.library.is_show:
+                sort_type = "show"
+            elif self.library.is_music:
+                sort_type = "artist"
+            else:
+                sort_type = "movie"
         else:
-            sort_type = "movies"
+            sort_type = self.collection_level
+
         ms = method.split("_")
-        filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()[:-1]} {ms[1].capitalize()}\n"
+        filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()} {ms[1].capitalize()}\n"
         type_default_sort, type_key, sorts = plex.sort_types[sort_type]
 
         sort = default_sort if default_sort else type_default_sort
