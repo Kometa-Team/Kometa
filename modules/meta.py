@@ -270,7 +270,6 @@ class MetadataFile(DataFile):
         else:
             logger.info("")
             logger.separator(f"Loading Metadata {file_type}: {path}")
-            logger.info("")
             data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
