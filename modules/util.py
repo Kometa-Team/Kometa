@@ -314,10 +314,10 @@ def regex_first_int(data, id_type, default=None):
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
 def validate_filename(filename):
-    if is_valid_filename(filename):
+    if is_valid_filename(str(filename)):
         return filename, None
     else:
-        mapping_name = sanitize_filename(filename)
+        mapping_name = sanitize_filename(str(filename))
         return mapping_name, f"Log Folder Name: {filename} is invalid using {mapping_name}"
 
 def item_title(item):
@@ -1015,8 +1015,8 @@ class Overlay:
             self.updated = not image_compare or str(overlay_size) != str(image_compare)
             try:
                 temp_image = Image.open(self.path).convert("RGBA")
-                self.image = self.get_overlay_image(temp_image, 1000, 1500)
-                self.landscape = self.get_overlay_image(temp_image, 1920, 1080)
+                self.image = self.get_overlay_image(temp_image, 1000, 1500) if self.has_coordinates() else temp_image
+                self.landscape = self.get_overlay_image(temp_image, 1920, 1080) if self.has_coordinates() else temp_image
                 if self.config.Cache:
                     self.config.Cache.update_image_map(self.name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
             except OSError:

@@ -590,7 +590,6 @@ class ConfigFile:
                 logger.separator(f"{display_name} Configuration")
                 logger.info("")
                 logger.info(f"Connecting to {display_name} Library...")
-                logger.info("")
 
                 params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
                 params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
@@ -803,7 +802,6 @@ class ConfigFile:
                     logger.info("")
                     logger.separator("Scanning Metadata and Overlay Files", space=False, border=False)
                     library.scan_files(self.operations_only, self.overlays_only, self.collection_only)
-                    logger.info("")
                     if not library.metadata_files and not library.overlay_files and not library.library_operation and not self.playlist_files:
                         raise Failed("Config Error: No valid metadata files, overlay files, playlist files, or library operations found")
                 except Failed as e:

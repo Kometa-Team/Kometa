@@ -67,6 +67,8 @@ Almost every default metadata file has a `collection_section` attribute. These a
 
 Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` will be given to every template call in the file which allows them to affect how that file runs.
 
+This example changes the ratings overlay to work on episodes.
+
 ```yaml
 libraries:
   TV Shows:
@@ -120,6 +122,20 @@ libraries:
         data:
           starting: current_year-10
           ending: current_year
+```
+
+Or maybe you want to change the number of actor collections made using PMM/actor.
+
+```yaml
+libraries:
+  Movies:
+    overlay_path:
+    - git: PMM/actor
+      template_variables:
+        collection_mode: hide
+        data:
+          depth: 5
+          limit: 50
 ```
 
 ## Errors
