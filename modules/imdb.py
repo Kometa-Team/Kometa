@@ -22,6 +22,7 @@ base_url = "https://www.imdb.com"
 urls = {
     "lists": f"{base_url}/list/ls",
     "searches": f"{base_url}/search/title/",
+    "title_text_searches": f"{base_url}/search/title-text/",
     "keyword_searches": f"{base_url}/search/keyword/",
     "filmography_searches": f"{base_url}/filmosearch/"
 }
@@ -71,6 +72,9 @@ class IMDb:
         elif imdb_url.startswith(urls["searches"]):
             xpath_total = "//div[@class='desc']/span/text()"
             per_page = 250
+        elif imdb_url.startswith(urls["title_text_searches"]):
+            xpath_total = "//div[@class='desc']/span/text()"
+            per_page = 50
         else:
             xpath_total = "//div[@class='desc']/text()"
             per_page = 50
@@ -112,6 +116,8 @@ class IMDb:
             logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
             if search_url:
                 params["count"] = remainder if i == num_of_pages else item_count # noqa
+                params["start"] = start_num # noqa
+            elif imdb_base.startswith(urls["title_text_searches"]):
                 params["start"] = start_num # noqa
             else:
                 params["page"] = i # noqa

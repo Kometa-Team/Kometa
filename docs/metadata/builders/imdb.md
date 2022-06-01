@@ -49,7 +49,7 @@ collections:
 
 ## IMDb List
 
-Finds every item in an IMDb List, [IMDb Keyword Search](https://www.imdb.com/search/keyword/), or [IMDb Title Search](https://www.imdb.com/search/title/).
+Finds every item in an IMDb List, [Keyword Search](https://www.imdb.com/search/keyword/), [Title Search](https://www.imdb.com/search/title/), or [Topic Search](https://www.imdb.com/search/title-text/).
 
 The expected input is an IMDb List URL or IMDb Search URL. Multiple values are supported as a list only a comma-separated string will not work.
 
