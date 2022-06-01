@@ -1027,7 +1027,7 @@ class Plex(Library):
                     break
             if not item_asset_directory:
                 extra = ""
-                if self.create_asset_folders and self.asset_folders:
+                if self.create_asset_folders and self.asset_folders and asset_directory:
                     item_asset_directory = os.path.join(asset_directory[0], folder_name)
                     os.makedirs(item_asset_directory, exist_ok=True)
                     extra = f"\nAsset Directory Created: {item_asset_directory}"
