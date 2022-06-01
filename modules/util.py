@@ -380,13 +380,18 @@ def time_window(tw):
     else:
         return tw
 
-def load_files(files_to_load, method, schedule=None):
+def load_files(files_to_load, method, schedule=None, lib_vars=None):
     files = []
+    if not lib_vars:
+        lib_vars = {}
     for file in get_list(files_to_load, split=False):
         if isinstance(file, dict):
             temp_vars = {}
             if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
                 temp_vars = file["template_variables"]
+            for k, v in lib_vars.items():
+                if k not in temp_vars:
+                    temp_vars[k] = v
             asset_directory = []
             if "asset_directory" in file and file["asset_directory"]:
                 for asset_path in get_list(file["asset_directory"], split=False):

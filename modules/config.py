@@ -730,16 +730,20 @@ class ConfigFile:
                 if self.Trakt is None and params["mass_trakt_rating_update"]:
                     error_check("mass_trakt_rating_update", "Trakt")
 
+                lib_vars = {}
+                if "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):
+                    lib_vars = lib["template_variables"]
+
                 try:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
                             raise Failed("Config Error: metadata_path attribute is blank")
-                        files = util.load_files(lib["metadata_path"], "metadata_path", schedule=(current_time, self.run_hour, self.ignore_schedules))
+                        files = util.load_files(lib["metadata_path"], "metadata_path", schedule=(current_time, self.run_hour, self.ignore_schedules), lib_vars=lib_vars)
                         if not files:
                             raise Failed("Config Error: No Paths Found for metadata_path")
                         params["metadata_path"] = files
                     elif os.path.exists(os.path.join(default_dir, f"{library_name}.yml")):
-                        params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), {}, None)]
+                        params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), lib_vars, None)]
                     else:
                         params["metadata_path"] = []
                     params["default_dir"] = default_dir
@@ -761,7 +765,7 @@ class ConfigFile:
                         try:
                             if not lib["overlay_path"]:
                                 raise Failed("Config Error: overlay_path attribute is blank")
-                            files = util.load_files(lib["overlay_path"], "overlay_path")
+                            files = util.load_files(lib["overlay_path"], "overlay_path", lib_vars=lib_vars)
                             if not files:
                                 raise Failed("Config Error: No Paths Found for overlay_path")
                             for file in util.get_list(lib["overlay_path"], split=False):
