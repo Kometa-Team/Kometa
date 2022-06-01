@@ -71,7 +71,7 @@ class MyAnimeList:
             for data in self._jiken_request("genres/anime")["data"]:
                 self._genres[data["name"]] = int(data["mal_id"])
                 self._genres[data["name"].lower()] = int(data["mal_id"])
-                self._genres[data["mal_id"]] = int(data["mal_id"])
+                self._genres[str(data["mal_id"])] = int(data["mal_id"])
                 self._genres[int(data["mal_id"])] = data["name"]
         return self._genres
 
@@ -81,7 +81,7 @@ class MyAnimeList:
             for data in self._jiken_request("producers")["data"]:
                 self._studios[data["name"]] = int(data["mal_id"])
                 self._studios[data["name"].lower()] = int(data["mal_id"])
-                self._studios[data["mal_id"]] = int(data["mal_id"])
+                self._studios[str(data["mal_id"])] = int(data["mal_id"])
                 self._studios[int(data["mal_id"])] = data["name"]
         return self._studios
 

@@ -1180,17 +1180,17 @@ class CollectionBuilder:
                         final_text += f"\nStatus: {final_attributes['status']}"
                     if "genre" in dict_methods:
                         genre_list = util.parse(self.Type, "genre", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
-                        final_genres = [self.config.MyAnimeList.genres[g] for g in genre_list if g in self.config.MyAnimeList.genres]
+                        final_genres = [str(self.config.MyAnimeList.genres[g]) for g in genre_list if g in self.config.MyAnimeList.genres]
                         final_attributes["genres"] = ",".join(final_genres)
                         final_text += f"\nGenre: {' or '.join([self.config.MyAnimeList.genres[g] for g in final_genres])}"
                     if "genre.not" in dict_methods:
                         genre_list = util.parse(self.Type, "genre.not", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
-                        final_genres = [self.config.MyAnimeList.genres[g] for g in genre_list if g in self.config.MyAnimeList.genres]
+                        final_genres = [str(self.config.MyAnimeList.genres[g]) for g in genre_list if g in self.config.MyAnimeList.genres]
                         final_attributes["genres_exclude"] = ",".join(final_genres)
                         final_text += f"\nNot Genre: {' or '.join([self.config.MyAnimeList.genres[g] for g in final_genres])}"
                     if "studio" in dict_methods:
                         studio_list = util.parse(self.Type, "studio", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
-                        final_studios = [self.config.MyAnimeList.studios[s] for s in studio_list if s in self.config.MyAnimeList.studios]
+                        final_studios = [str(self.config.MyAnimeList.studios[s]) for s in studio_list if s in self.config.MyAnimeList.studios]
                         final_attributes["producers"] = ",".join(final_studios)
                         final_text += f"\nStudio: {' or '.join([self.config.MyAnimeList.studios[s] for s in final_studios])}"
                     if "content_rating" in dict_methods:
