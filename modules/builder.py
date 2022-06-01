@@ -1851,7 +1851,25 @@ class CollectionBuilder:
     def validate_attribute(self, attribute, modifier, final, data, validate, plex_search=False):
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if plex_search else list_to_pair
-        if modifier == ".regex" and not plex_search:
+        if attribute in plex.tag_attributes and modifier in [".regex"]:
+            _, names = self.library.get_search_choices(attribute, title=not plex_search, name_pairs=True)
+            valid_list = []
+            used = []
+            for reg in util.validate_regex(data, self.Type, validate=validate):
+                for name, key in names:
+                    if name not in used and re.compile(reg).search(name):
+                        used.append(name)
+                        valid_list.append((name, key) if plex_search else key)
+            if not valid_list:
+                error = f"Plex Error: {attribute}: No matches found with regex pattern {data}"
+                if self.details["show_options"]:
+                    error += f"\nOptions: {names}"
+                if validate:
+                    raise Failed(error)
+                else:
+                    logger.error(error)
+            return valid_list
+        elif modifier == ".regex":
             return util.validate_regex(data, self.Type, validate=validate)
         elif attribute in plex.string_attributes + string_filters and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
@@ -1873,22 +1891,6 @@ class CollectionBuilder:
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_types.items()])
         elif attribute == "tmdb_status":
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_status.items()])
-        elif attribute in plex.tag_attributes and modifier in [".regex"]:
-            _, names = self.library.get_search_choices(attribute, title=not plex_search, name_pairs=True)
-            valid_list = []
-            used = []
-            if plex_search and modifier == ".regex":
-                for reg in util.validate_regex(data, self.Type, validate=validate):
-                    for name, key in names:
-                        if name not in used and re.compile(reg).search(name):
-                            valid_list.append((name, key) if plex_search else key)
-            if not valid_list:
-                error = f"Plex Error: {attribute}: No matches found with regex pattern {data}"
-                if validate:
-                    raise Failed(error)
-                else:
-                    logger.error(error)
-            return valid_list
         elif attribute in plex.tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []

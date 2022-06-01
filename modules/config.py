@@ -787,7 +787,7 @@ class ConfigFile:
                                             raise NotScheduled(f"{err}\n\nOverlays not scheduled to run")
                             params["overlay_path"] = files
                         except NotScheduled as e:
-                            logger.error(e)
+                            logger.info(e)
                             params["overlay_path"] = []
                             params["remove_overlays"] = False
 
@@ -802,6 +802,7 @@ class ConfigFile:
                         "optimize": check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
                     }
                     library = Plex(self, params)
+                    logger.info("")
                     logger.info(f"{display_name} Library Connection Successful")
                     logger.info("")
                     logger.separator("Scanning Metadata and Overlay Files", space=False, border=False)
