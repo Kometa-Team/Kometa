@@ -285,7 +285,7 @@ def run_config(config, stats):
                         logger.info("")
                         logger.separator(f"{library.name} Library Run Again")
                         logger.info("")
-                        library.map_guids()
+                        library.map_guids(library.cache_items())
                         for builder in library.run_again:
                             logger.info("")
                             logger.separator(f"{builder.name} Collection in {library.name}")
