@@ -119,16 +119,16 @@ class Operations:
                             batch_display += f"\n{self.library.edit_tags('label', item, add_tags=add_labels, remove_tags=remove_labels, do_print=False)}"
                     except Failed:
                         pass
-
-                path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
-                if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
-                    path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
-                    path = path[:-1] if path.endswith(('/', '\\')) else path
-                    radarr_adds.append((tmdb_id, path))
-                if self.library.Sonarr and self.library.sonarr_add_all_existing and tvdb_id:
-                    path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
-                    path = path[:-1] if path.endswith(("/", "\\")) else path
-                    sonarr_adds.append((tvdb_id, path))
+                if item.locations:
+                    path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
+                    if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
+                        path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
+                        path = path[:-1] if path.endswith(('/', '\\')) else path
+                        radarr_adds.append((tmdb_id, path))
+                    if self.library.Sonarr and self.library.sonarr_add_all_existing and tvdb_id:
+                        path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
+                        path = path[:-1] if path.endswith(("/", "\\")) else path
+                        sonarr_adds.append((tvdb_id, path))
 
                 tmdb_item = None
                 if any([o == "tmdb" for o in self.library.meta_operations]):
