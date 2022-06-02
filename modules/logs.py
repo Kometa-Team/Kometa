@@ -103,7 +103,7 @@ class MyLogger:
         self._logger.removeHandler(self.playlists_handler)
 
     def add_collection_handler(self, library_key, collection_key):
-        collection_dir = os.path.join(self.log_dir, library_key, COLLECTION_DIR, collection_key)
+        collection_dir = os.path.join(self.log_dir, str(library_key), COLLECTION_DIR, str(collection_key))
         os.makedirs(collection_dir, exist_ok=True)
         if library_key not in self.collection_handlers:
             self.collection_handlers[library_key] = {}
