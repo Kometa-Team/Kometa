@@ -164,21 +164,24 @@ class Overlays:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
                     elif changed_image or overlay_change:
                         try:
-                            image_width = 1920 if isinstance(item, Episode) else 1000
-                            image_height = 1080 if isinstance(item, Episode) else 1500
+                            canvas_width = 1920 if isinstance(item, Episode) else 1000
+                            canvas_height = 1080 if isinstance(item, Episode) else 1500
 
                             new_poster = Image.open(poster.location if poster else has_original) \
-                                .convert("RGB").resize((image_width, image_height), Image.ANTIALIAS)
+                                .convert("RGB").resize((canvas_width, canvas_height), Image.ANTIALIAS)
                             if blur_num > 0:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
                             for over_name in normal_overlays:
                                 overlay = properties[over_name]
-                                if not overlay.has_coordinates():
-                                    new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
-                                    overlay_image = overlay.image
+                                if overlay.has_coordinates():
+                                    if overlay.portrait is not None:
+                                        overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.portrait
+                                        new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                    overlay_box = overlay.landscape_box if isinstance(item, Episode) else overlay.portrait_box
+                                    new_poster.paste(overlay.image, overlay_box, overlay.image)
                                 else:
-                                    overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.image
-                                new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                    new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
+                                    new_poster.paste(overlay.image, (0, 0), overlay.image)
                             for over_name in text_names:
                                 overlay = properties[over_name]
                                 text = over_name[5:-1]
@@ -197,9 +200,9 @@ class Overlays:
                                         text = f"{int(text * 10)}%"
                                     if flat and str(text).endswith(".0"):
                                         text = str(text)[:-2]
-                                    overlay_image = overlay.get_overlay_image(str(text), image_width, image_height)
+                                    overlay_image = overlay.get_overlay_image(str(text), (canvas_width, canvas_height))
                                 else:
-                                    overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.image
+                                    overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.portrait
                                 new_poster.paste(overlay_image, (0, 0), overlay_image)
                             temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             new_poster.save(temp, "PNG")
