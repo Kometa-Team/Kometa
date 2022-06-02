@@ -731,7 +731,7 @@ class ConfigFile:
                     error_check("mass_trakt_rating_update", "Trakt")
 
                 lib_vars = {}
-                if "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):
+                if lib and "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):
                     lib_vars = lib["template_variables"]
 
                 try:

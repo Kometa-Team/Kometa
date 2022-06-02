@@ -25,6 +25,8 @@ search_translation = {
     "network": "show.network",
     "critic_rating": "rating",
     "audience_rating": "audienceRating",
+    "episode_critic_rating": "episode.rating",
+    "episode_audience_rating": "episode.audienceRating",
     "user_rating": "userRating",
     "episode_user_rating": "episode.userRating",
     "content_rating": "contentRating",
@@ -239,6 +241,8 @@ show_only_searches = [
     "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
     "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
     "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
+    "episode_critic_rating.gt", "episode_critic_rating.gte", "episode_critic_rating.lt", "episode_critic_rating.lte",
+    "episode_audience_rating.gt", "episode_audience_rating.gte", "episode_audience_rating.lt", "episode_audience_rating.lte",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
 ]
@@ -258,8 +262,8 @@ date_modifiers = ["", ".not", ".before", ".after"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
 number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips"] + year_attributes
 float_attributes = [
-    "user_rating", "episode_user_rating", "critic_rating", "audience_rating", "duration",
-    "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
+    "user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating",
+    "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
 ]
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
@@ -779,6 +783,8 @@ class Plex(Library):
                     logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
             logger.info(f"Processing {data[1]}")
+            if self.config.trace_mode:
+                logger.debug(data[2])
             items = self.get_filter_items(data[2])
         elif method == "plex_collectionless":
             good_collections = []
