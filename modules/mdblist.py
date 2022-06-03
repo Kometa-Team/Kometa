@@ -158,8 +158,8 @@ class Mdblist:
                     sort_by = mdb_dict[dict_methods["sort_by"]].lower()
             valid_lists.append({"url": mdb_url, "limit": list_count, "sort_by": sort_by})
         return valid_lists
-        
-    def get_imdb_ids(self, method, data):
+
+    def get_tmdb_ids(self, method, data):
         if method == "mdblist_list":
             logger.info(f"Processing Mdblist.com List: {data['url']}")
             logger.info(f"Sort By: {data['sort_by']}")
@@ -176,7 +176,11 @@ class Mdblist:
                 response = self.config.get_json(url_base, headers=headers, params=params)
                 if "error" in response:
                     raise Failed(f"Mdblist Error: Invalid Response {response}")
-                return [(i["imdb_id"], "imdb") for i in response]
+                results = []
+                for item in response:
+                    if item["mediatype"] in ["movie", "show"]:
+                        results.append((item["id"], "tmdb" if item["mediatype"] == "movie" else "tmdb_show"))
+                return results
             except JSONDecodeError:
                 raise Failed(f"Mdblist Error: Invalid Response")
         else:
