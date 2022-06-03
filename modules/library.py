@@ -18,6 +18,7 @@ class Library(ABC):
         self.Notifiarr = None
         self.collections = []
         self.metadatas = []
+        self.queue_names = []
         self.metadata_files = []
         self.overlay_files = []
         self.movie_map = {}
@@ -132,7 +133,9 @@ class Library(ABC):
         if not operations_only and not collection_only:
             for file_type, overlay_file, temp_vars, asset_directory in self.overlay_path:
                 try:
-                    self.overlay_files.append(OverlayFile(self.config, self, file_type, overlay_file, temp_vars, asset_directory))
+                    overlay_obj = OverlayFile(self.config, self, file_type, overlay_file, temp_vars, asset_directory)
+                    self.overlay_files.append(overlay_obj)
+                    self.queue_names.extend([q for q in overlay_obj.queues])
                 except Failed as e:
                     logger.error(e)
 

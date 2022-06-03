@@ -842,6 +842,61 @@ class YAML:
 portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
 
+def parse_cords(data, parent, required=False):
+    horizontal_align = parse("Overlay", "horizontal_align", data["horizontal_align"], parent=parent,
+                             options=["left", "center", "right"]) if "horizontal_align" in data else "left"
+    vertical_align = parse("Overlay", "vertical_align", data["vertical_align"], parent=parent,
+                           options=["top", "center", "bottom"]) if "vertical_align" in data else "top"
+
+    horizontal_offset = None
+    if "horizontal_offset" in data and data["horizontal_offset"] is not None:
+        x_off = data["horizontal_offset"]
+        per = False
+        if str(x_off).endswith("%"):
+            x_off = x_off[:-1]
+            per = True
+        x_off = check_num(x_off)
+        error = f"Overlay Error: {parent} horizontal_offset: {data['horizontal_offset']} must be a number"
+        if x_off is None:
+            raise Failed(error)
+        if horizontal_align != "center" and not per and x_off < 0:
+            raise Failed(f"{error} 0 or greater")
+        elif horizontal_align != "center" and per and (x_off > 100 or x_off < 0):
+            raise Failed(f"{error} between 0% and 100%")
+        elif horizontal_align == "center" and per and (x_off > 50 or x_off < -50):
+            raise Failed(f"{error} between -50% and 50%")
+        horizontal_offset = f"{x_off}%" if per else x_off
+    if horizontal_offset is None and horizontal_align == "center":
+        horizontal_offset = 0
+    if required and horizontal_offset is None:
+        raise Failed(f"Overlay Error: {parent} horizontal_offset is required")
+
+    vertical_offset = None
+    if "vertical_offset" in data and data["vertical_offset"] is not None:
+        y_off = data["vertical_offset"]
+        per = False
+        if str(y_off).endswith("%"):
+            y_off = y_off[:-1]
+            per = True
+        y_off = check_num(y_off)
+        error = f"Overlay Error: {parent} vertical_offset: {data['vertical_offset']} must be a number"
+        if y_off is None:
+            raise Failed(error)
+        if vertical_align != "center" and not per and y_off < 0:
+            raise Failed(f"{error} 0 or greater")
+        elif vertical_align != "center" and per and (y_off > 100 or y_off < 0):
+            raise Failed(f"{error} between 0% and 100%")
+        elif vertical_align == "center" and per and (y_off > 50 or y_off < -50):
+            raise Failed(f"{error} between -50% and 50%")
+        vertical_offset = f"{y_off}%" if per else y_off
+    if vertical_offset is None and vertical_align == "center":
+        vertical_offset = 0
+    if required and vertical_offset is None:
+        raise Failed(f"Overlay Error: {parent} vertical_offset is required")
+
+    return horizontal_align, horizontal_offset, vertical_align, vertical_offset
+
+
 class Overlay:
     def __init__(self, config, library, overlay_data, suppress):
         self.config = config
@@ -856,6 +911,7 @@ class Overlay:
         self.portrait = None
         self.portrait_box = None
         self.group = None
+        self.queue = None
         self.weight = None
         self.path = None
         self.font = None
@@ -875,55 +931,17 @@ class Overlay:
 
         if "group" in self.data and self.data["group"]:
             self.group = str(self.data["group"])
+        if "queue" in self.data and self.data["queue"]:
+            self.queue = str(self.data["queue"])
         if "weight" in self.data:
-            self.weight = parse("Overlay", "weight", self.data["weight"], datatype="int", parent="overlay")
-        if ("group" in self.data or "weight" in self.data) and (self.weight is None or not self.group):
-            raise Failed(f"Overlay Error: overlay attribute's group and weight must be used together")
-
-        self.horizontal_align = parse("Overlay", "horizontal_align", self.data["horizontal_align"], parent="overlay", options=["left", "center", "right"]) if "horizontal_align" in self.data else "left"
-        self.vertical_align = parse("Overlay", "vertical_align", self.data["vertical_align"], parent="overlay", options=["top", "center", "bottom"]) if "vertical_align" in self.data else "top"
-
-        self.horizontal_offset = None
-        if "horizontal_offset" in self.data and self.data["horizontal_offset"] is not None:
-            x_off = self.data["horizontal_offset"]
-            per = False
-            if str(x_off).endswith("%"):
-                x_off = x_off[:-1]
-                per = True
-            x_off = check_num(x_off)
-            error = f"Overlay Error: overlay horizontal_offset: {self.data['horizontal_offset']} must be a number"
-            if x_off is None:
-                raise Failed(error)
-            if self.horizontal_align != "center" and not per and x_off < 0:
-                raise Failed(f"{error} 0 or greater")
-            elif self.horizontal_align != "center" and per and (x_off > 100 or x_off < 0):
-                raise Failed(f"{error} between 0% and 100%")
-            elif self.horizontal_align == "center" and per and (x_off > 50 or x_off < -50):
-                raise Failed(f"{error} between -50% and 50%")
-            self.horizontal_offset = f"{x_off}%" if per else x_off
-        if self.horizontal_offset is None and self.horizontal_align == "center":
-            self.horizontal_offset = 0
-
-        self.vertical_offset = None
-        if "vertical_offset" in self.data and self.data["vertical_offset"] is not None:
-            y_off = self.data["vertical_offset"]
-            per = False
-            if str(y_off).endswith("%"):
-                y_off = y_off[:-1]
-                per = True
-            y_off = check_num(y_off)
-            error = f"Overlay Error: overlay vertical_offset: {self.data['vertical_offset']} must be a number"
-            if y_off is None:
-                raise Failed(error)
-            if self.vertical_align != "center" and not per and y_off < 0:
-                raise Failed(f"{error} 0 or greater")
-            elif self.vertical_align != "center" and per and (y_off > 100 or y_off < 0):
-                raise Failed(f"{error} between 0% and 100%")
-            elif self.vertical_align == "center" and per and (y_off > 50 or y_off < -50):
-                raise Failed(f"{error} between -50% and 50%")
-            self.vertical_offset = f"{y_off}%" if per else y_off
-        if self.vertical_offset is None and self.vertical_align == "center":
-            self.vertical_offset = 0
+            self.weight = parse("Overlay", "weight", self.data["weight"], datatype="int", parent="overlay", minimum=0)
+        if "group" in self.data and (self.weight is None or not self.group):
+            raise Failed(f"Overlay Error: overlay attribute's group requires the weight attribute")
+        elif "queue" in self.data and (self.weight is None or not self.queue):
+            raise Failed(f"Overlay Error: overlay attribute's queue requires the weight attribute")
+        elif self.group and self.queue:
+            raise Failed(f"Overlay Error: overlay attribute's group and queue cannot be used together")
+        self.horizontal_align, self.horizontal_offset, self.vertical_align, self.vertical_offset = parse_cords(self.data, "overlay")
 
         if (self.horizontal_offset is None and self.vertical_offset is not None) or (self.vertical_offset is None and self.horizontal_offset is not None):
             raise Failed(f"Overlay Error: overlay attribute's  must be used together")
@@ -946,7 +964,8 @@ class Overlay:
             raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
         elif back_width >= 0 and back_height >= 0:
             self.back_box = (back_width, back_height)
-        if (self.back_color or self.back_line_color) and not self.has_coordinates():
+        self.has_back = True if self.back_color or self.back_line_color else False
+        if self.has_back and not self.has_coordinates():
             raise Failed(f"Overlay Error: horizontal_offset and vertical_offset are required when using a backdrop")
 
         def get_and_save_image(image_url):
@@ -1013,8 +1032,8 @@ class Overlay:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
             text = self.name[5:-1]
             if text not in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
-                self.portrait = self.get_backdrop(portrait_dim, text=text)
-                self.landscape = self.get_backdrop(landscape_dim, text=text)
+                self.portrait, _ = self.get_backdrop(portrait_dim, text=text)
+                self.landscape, _ = self.get_backdrop(landscape_dim, text=text)
         else:
             if "|" in self.name:
                 raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
@@ -1038,16 +1057,16 @@ class Overlay:
             except OSError:
                 raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
 
-    def get_backdrop(self, canvas_box, box=None, text=None):
+    def get_backdrop(self, canvas_box, box=None, text=None, new_cords=None):
         overlay_image = None
         if text is not None:
             _, _, width, height = self.get_text_size(text)
             box = (width, height)
-        x_cord, y_cord = self.get_coordinates(canvas_box, box)
-        if text is not None or self.back_color or self.back_line_color:
+        x_cord, y_cord = self.get_coordinates(canvas_box, box, new_cords=new_cords)
+        if text is not None or self.has_back:
             overlay_image = Image.new("RGBA", canvas_box, (255, 255, 255, 0))
             drawing = ImageDraw.Draw(overlay_image)
-            if self.back_color or self.back_line_color:
+            if self.has_back:
                 cords = (
                     x_cord - self.back_padding,
                     y_cord - self.back_padding,
@@ -1088,8 +1107,8 @@ class Overlay:
     def get_text_size(self, text):
         return ImageDraw.Draw(Image.new("RGBA", (0, 0))).textbbox((0, 0), text, font=self.font, anchor='lt')
 
-    def get_coordinates(self, canvas_box, box):
-        if not self.has_coordinates():
+    def get_coordinates(self, canvas_box, box, new_cords=None):
+        if new_cords is None and not self.has_coordinates():
             return 0, 0
         if self.back_box:
             box = self.back_box
@@ -1103,5 +1122,11 @@ class Overlay:
             else:
                 return value
 
-        return get_cord(self.horizontal_offset, canvas_box[0], box[0], self.horizontal_align), \
-               get_cord(self.vertical_offset, canvas_box[1], box[1], self.vertical_align)
+        if new_cords is None:
+            ho = self.horizontal_offset
+            ha = self.horizontal_align
+            vo = self.vertical_offset
+            va = self.vertical_align
+        else:
+            ha, ho, va, vo = new_cords
+        return get_cord(ho, canvas_box[0], box[0], ha), get_cord(vo, canvas_box[1], box[1], va)
