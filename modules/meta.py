@@ -88,10 +88,13 @@ class DataFile:
             if response.status_code >= 400:
                 raise Failed(f"URL Error: No file found at {content_path}")
             yaml = YAML(input_data=response.content, check_empty=True)
-        elif os.path.exists(os.path.abspath(file_path)):
-            yaml = YAML(path=os.path.abspath(file_path), check_empty=True)
         else:
-            raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
+            if not file_path.endswith(".yml"):
+                file_path = f"{file_path}.yml"
+            if os.path.exists(os.path.abspath(file_path)):
+                yaml = YAML(path=os.path.abspath(file_path), check_empty=True)
+            else:
+                raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
         return yaml.data
 
     def apply_template(self, name, data, template_call):
@@ -1190,6 +1193,7 @@ class OverlayFile(DataFile):
         data = self.load_file(self.type, self.path)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)
+        self.queues = get_dict("queues", data, library.queue_names)
         self.external_templates(data)
         if not self.overlays:
             raise Failed("YAML Error: overlays attribute is required")

@@ -10,6 +10,8 @@ from PIL import Image, ImageFilter
 
 logger = util.logger
 
+special_text_overlays = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%", "#"]]
+
 class Overlays:
     def __init__(self, config, library):
         self.config = config
@@ -42,9 +44,10 @@ class Overlays:
                         ])
 
         key_to_overlays = {}
+        queues = {}
         properties = None
         if not self.library.remove_overlays:
-            key_to_overlays, properties = self.compile_overlays()
+            key_to_overlays, properties, queues = self.compile_overlays()
         ignore_list = [rk for rk in key_to_overlays]
 
         remove_overlays = self.get_overlay_items(ignore=ignore_list)
@@ -87,17 +90,26 @@ class Overlays:
 
                     compare_names = {properties[ov].get_overlay_compare(): ov for ov in over_names}
                     blur_num = 0
-                    text_names = []
-                    normal_overlays = []
+                    applied_names = []
+                    queue_overlays = {}
                     for over_name in over_names:
                         if over_name.startswith("blur"):
                             blur_test = int(re.search("\\(([^)]+)\\)", over_name).group(1))
                             if blur_test > blur_num:
                                 blur_num = blur_test
-                        elif over_name.startswith("text"):
-                            text_names.append(over_name)
+                        elif properties[over_name].queue:
+                            if properties[over_name].queue not in queue_overlays:
+                                queue_overlays[properties[over_name].queue] = {}
+                            queue_overlays[properties[over_name].queue][properties[over_name].weight] = properties[over_name]
                         else:
-                            normal_overlays.append(over_name)
+                            applied_names.append(over_name)
+
+                    for over_name in applied_names:
+                        overlay = properties[over_name]
+                        if overlay.queue:
+                            if overlay.queue not in queue_overlays:
+                                queue_overlays[overlay.queue] = {}
+                            queue_overlays[overlay.queue][overlay.weight] = over_name
 
                     overlay_change = False if has_overlay else True
                     if not overlay_change:
@@ -110,10 +122,12 @@ class Overlays:
                             if compare_name not in overlay_compare or properties[original_name].updated:
                                 overlay_change = True
 
-                    if text_names and self.config.Cache:
-                        for over_name in text_names:
-                            rating_type = over_name[5:-1]
-                            if rating_type in ["audience_rating", "critic_rating", "user_rating"]:
+                    if self.config.Cache:
+                        for over_name in over_names:
+                            if over_name in special_text_overlays:
+                                rating_type = over_name[5:-1]
+                                if rating_type.endswith(("%", "#")):
+                                    rating_type = rating_type[:-1]
                                 cache_rating = self.config.Cache.query_overlay_ratings(item.ratingKey, rating_type)
                                 actual = plex.attribute_translation[rating_type]
                                 if not hasattr(item, actual) or getattr(item, actual) is None:
@@ -171,39 +185,79 @@ class Overlays:
                                 .convert("RGB").resize((canvas_width, canvas_height), Image.ANTIALIAS)
                             if blur_num > 0:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
-                            for over_name in normal_overlays:
+
+                            for over_name in applied_names:
                                 overlay = properties[over_name]
-                                if overlay.has_coordinates():
-                                    if overlay.portrait is not None:
+                                if over_name.startswith("text"):
+                                    text = over_name[5:-1]
+                                    if text in special_text_overlays:
+                                        per = text.endswith("%")
+                                        flat = text.endswith("#")
+                                        rating_type = text[:-1] if per or flat else text
+                                        actual = plex.attribute_translation[rating_type]
+                                        if not hasattr(item, actual) or getattr(item, actual) is None:
+                                            logger.warning(f"Overlay Warning: No {rating_type} found")
+                                            continue
+                                        text = getattr(item, actual)
+                                        if self.config.Cache:
+                                            self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
+                                        if per:
+                                            text = f"{int(text * 10)}%"
+                                        if flat and str(text).endswith(".0"):
+                                            text = str(text)[:-2]
+
+                                        overlay_image, _ = overlay.get_backdrop((canvas_width, canvas_height), text=str(text))
+                                    else:
                                         overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.portrait
+                                    new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                else:
+                                    if overlay.has_coordinates():
+                                        if overlay.portrait is not None:
+                                            overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.portrait
+                                            new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                        overlay_box = overlay.landscape_box if isinstance(item, Episode) else overlay.portrait_box
+                                        new_poster.paste(overlay.image, overlay_box, overlay.image)
+                                    else:
+                                        new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
+                                        new_poster.paste(overlay.image, (0, 0), overlay.image)
+
+                            for queue, weights in queue_overlays.items():
+                                if queue not in queues:
+                                    logger.error(f"Overlay Error: no queue {queue} found")
+                                    continue
+                                cords = queues[queue]
+                                sorted_weights = sorted(weights.items(), reverse=True)
+                                for o, cord in enumerate(cords):
+                                    if len(sorted_weights) <= o:
+                                        break
+                                    over_name = sorted_weights[o][1]
+                                    overlay = properties[over_name]
+                                    if over_name.startswith("text"):
+                                        text = over_name[5:-1]
+                                        if text in special_text_overlays:
+                                            per = text.endswith("%")
+                                            flat = text.endswith("#")
+                                            rating_type = text[:-1] if per or flat else text
+                                            actual = plex.attribute_translation[rating_type]
+                                            if not hasattr(item, actual) or getattr(item, actual) is None:
+                                                logger.warning(f"Overlay Warning: No {rating_type} found")
+                                                continue
+                                            text = getattr(item, actual)
+                                            if self.config.Cache:
+                                                self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
+                                            if per:
+                                                text = f"{int(text * 10)}%"
+                                            if flat and str(text).endswith(".0"):
+                                                text = str(text)[:-2]
+                                        overlay_image, _ = overlay.get_backdrop((canvas_width, canvas_height), text=str(text), new_cords=cord)
                                         new_poster.paste(overlay_image, (0, 0), overlay_image)
-                                    overlay_box = overlay.landscape_box if isinstance(item, Episode) else overlay.portrait_box
-                                    new_poster.paste(overlay.image, overlay_box, overlay.image)
-                                else:
-                                    new_poster = new_poster.resize(overlay.image.size, Image.ANTIALIAS)
-                                    new_poster.paste(overlay.image, (0, 0), overlay.image)
-                            for over_name in text_names:
-                                overlay = properties[over_name]
-                                text = over_name[5:-1]
-                                if text in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%", "#"]]:
-                                    per = text.endswith("%")
-                                    flat = text.endswith("#")
-                                    rating_type = text[:-1] if per or flat else text
-                                    actual = plex.attribute_translation[rating_type]
-                                    if not hasattr(item, actual) or getattr(item, actual) is None:
-                                        logger.warning(f"Overlay Warning: No {rating_type} found")
-                                        continue
-                                    text = getattr(item, actual)
-                                    if self.config.Cache:
-                                        self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
-                                    if per:
-                                        text = f"{int(text * 10)}%"
-                                    if flat and str(text).endswith(".0"):
-                                        text = str(text)[:-2]
-                                    overlay_image = overlay.get_backdrop((canvas_width, canvas_height), text=str(text))
-                                else:
-                                    overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.portrait
-                                new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                    else:
+                                        if overlay.has_back:
+                                            overlay_image, overlay_box = overlay.get_backdrop((canvas_width, canvas_height), box=overlay.image.size, new_cords=cord)
+                                            new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                        else:
+                                            overlay_box = (cord[1], cord[3])
+                                        new_poster.paste(overlay.image, overlay_box, overlay.image)
                             temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             new_poster.save(temp, "PNG")
                             self.library.upload_poster(item, temp)
@@ -243,8 +297,16 @@ class Overlays:
         properties = {}
         overlay_groups = {}
         key_to_overlays = {}
+        queues = {}
 
         for overlay_file in self.library.overlay_files:
+            for k, v in overlay_file.queues.items():
+                if not isinstance(v, list):
+                    raise Failed(f"Overlay Error: Queue: {k} must be a list")
+                try:
+                    queues[k] = [util.parse_cords(q, f"{k} queue", required=True) for q in v]
+                except Failed as e:
+                    logger.error(e)
             for k, v in overlay_file.overlays.items():
                 try:
                     builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
@@ -317,7 +379,7 @@ class Overlays:
                     for v in gv:
                         if final != v:
                             key_to_overlays[over_key][1].remove(v)
-        return key_to_overlays, properties
+        return key_to_overlays, properties, queues
 
     def find_poster_url(self, item):
         try:
