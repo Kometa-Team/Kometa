@@ -97,10 +97,6 @@ class Overlays:
                             blur_test = int(re.search("\\(([^)]+)\\)", over_name).group(1))
                             if blur_test > blur_num:
                                 blur_num = blur_test
-                        elif properties[over_name].queue:
-                            if properties[over_name].queue not in queue_overlays:
-                                queue_overlays[properties[over_name].queue] = {}
-                            queue_overlays[properties[over_name].queue][properties[over_name].weight] = properties[over_name]
                         else:
                             applied_names.append(over_name)
 
