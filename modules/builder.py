@@ -2077,9 +2077,9 @@ class CollectionBuilder:
             try:
                 if item is None:
                     if is_movie:
-                        item = self.config.TMDb.get_movie(item_id)
+                        item = self.config.TMDb.get_movie(item_id, ignore_cache=True)
                     else:
-                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True))
+                        item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True), ignore_cache=True)
                 if check_released:
                     date_to_check = item.release_date if is_movie else item.first_air_date
                     if not date_to_check or date_to_check > self.current_time:
