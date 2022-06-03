@@ -200,7 +200,7 @@ class Overlays:
                                         text = f"{int(text * 10)}%"
                                     if flat and str(text).endswith(".0"):
                                         text = str(text)[:-2]
-                                    overlay_image = overlay.get_overlay_image(str(text), (canvas_width, canvas_height))
+                                    overlay_image = overlay.get_backdrop((canvas_width, canvas_height), text=str(text))
                                 else:
                                     overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.portrait
                                 new_poster.paste(overlay_image, (0, 0), overlay_image)
