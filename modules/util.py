@@ -1013,8 +1013,8 @@ class Overlay:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
             text = self.name[5:-1]
             if text not in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
-                self.portrait = self.get_backdrop(text, portrait_dim)
-                self.landscape = self.get_backdrop(text, landscape_dim)
+                self.portrait = self.get_backdrop(portrait_dim, text=text)
+                self.landscape = self.get_backdrop(landscape_dim, text=text)
         else:
             if "|" in self.name:
                 raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
@@ -1031,14 +1031,14 @@ class Overlay:
             try:
                 self.image = Image.open(self.path).convert("RGBA")
                 if self.has_coordinates():
-                    self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, self.image.size)
-                    self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, self.image.size)
+                    self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.image.size)
+                    self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.image.size)
                 if self.config.Cache:
                     self.config.Cache.update_image_map(self.name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
             except OSError:
                 raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
 
-    def get_backdrop(self, canvas_box, box, text=None):
+    def get_backdrop(self, canvas_box, box=None, text=None):
         overlay_image = None
         if text is not None:
             _, _, width, height = self.get_text_size(text)
@@ -1066,36 +1066,6 @@ class Overlay:
             if text is not None:
                 drawing.text((x_cord, y_cord), text, font=self.font, fill=self.font_color, anchor="lt")
         return overlay_image, (x_cord, y_cord)
-
-    def get_overlay_image(self, text, canvas_box):
-        overlay_image = Image.new("RGBA", canvas_box, (255, 255, 255, 0))
-        drawing = ImageDraw.Draw(overlay_image)
-        if isinstance(text, str):
-            _, _, width, height = self.get_text_size(text)
-            box = (width, height)
-        else:
-            box = text.size
-        x_cord, y_cord = self.get_coordinates(canvas_box, box)
-        if self.back_color or self.back_line_color:
-            cords = (
-                x_cord - self.back_padding,
-                y_cord - self.back_padding,
-                x_cord + (self.back_box[0] if self.back_box else box[0]) + self.back_padding,
-                y_cord + (self.back_box[1] if self.back_box else box[1]) + self.back_padding
-            )
-            if self.back_box:
-                x_cord = x_cord + (self.back_box[0] - box[0]) // 2
-                y_cord = y_cord + (self.back_box[1] - box[1]) // 2
-
-            if self.back_radius:
-                drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)
-            else:
-                drawing.rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width)
-        if isinstance(text, str):
-            drawing.text((x_cord, y_cord), text, font=self.font, fill=self.font_color, anchor="lt")
-        else:
-            overlay_image.paste(text, (x_cord, y_cord), text)
-        return overlay_image
 
     def get_overlay_compare(self):
         output = self.name
