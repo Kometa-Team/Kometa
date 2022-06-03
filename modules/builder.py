@@ -1483,7 +1483,7 @@ class CollectionBuilder:
         elif "reciperr" in method or "stevenlu" in method:
             ids = self.config.Reciperr.get_imdb_ids(method, value)
         elif "mdblist" in method:
-            ids = self.config.Mdblist.get_imdb_ids(method, value)
+            ids = self.config.Mdblist.get_tmdb_ids(method, value)
         elif "tmdb" in method:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
         elif "trakt" in method:
