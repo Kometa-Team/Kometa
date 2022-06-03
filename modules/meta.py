@@ -45,7 +45,7 @@ def get_dict(attribute, attr_data, check_list=None, make_str=False):
                         logger.warning(f"Config Warning: Skipping duplicate {attribute[:-1] if attribute[-1] == 's' else attribute}: {new_name}")
                     elif _data is None:
                         continue
-                    elif not isinstance(_data, dict):
+                    elif attribute != "queues" and not isinstance(_data, dict):
                         logger.warning(f"Config Warning: {attribute[:-1] if attribute[-1] == 's' else attribute}: {_name} must be a dictionary")
                     elif attribute == "templates":
                         new_dict[str(_name)] = (_data, {})
@@ -1167,7 +1167,6 @@ class MetadataFile(DataFile):
                 else:
                     logger.warning(f"Ergast Error: No Round: {season.seasonNumber} for Season {f1_season}")
 
-
 class PlaylistFile(DataFile):
     def __init__(self, config, file_type, path, temp_vars, asset_directory):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
@@ -1181,7 +1180,6 @@ class PlaylistFile(DataFile):
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info(f"Playlist File Loaded Successfully")
-
 
 class OverlayFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
