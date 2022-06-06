@@ -172,6 +172,7 @@ libraries:
     - git: PMM/movie/content_rating_us           # Choose content_rating_uk or content_rating_us
     - git: PMM/genre
     - git: PMM/resolution_standards              # Choose resolution_standards or resolution
+    - git: PMM/streaming
     - git: PMM/studio
     - git: PMM/subtitle_language
     - git: PMM/year
@@ -182,7 +183,6 @@ libraries:
     - git: PMM/movie/universe
     - git: PMM/movie/producer
     - git: PMM/movie/seasonal
-    - git: PMM/movie/streaming
     - git: PMM/movie/writer
     overlay_path:
     - remove_overlays: false
@@ -213,13 +213,13 @@ libraries:
     - git: PMM/show/content_rating_us            # Choose content_rating_uk or content_rating_us
     - git: PMM/genre
     - git: PMM/resolution_standards              # Choose resolution_standards or resolution
+    - git: PMM/streaming
     - git: PMM/studio
     - git: PMM/subtitle_language
     - git: PMM/year
     - git: PMM/show/country
     - git: PMM/show/decade
     - git: PMM/show/network
-    - git: PMM/show/streaming
     overlay_path:
     - remove_overlays: false
     - git: PMM/overlays/audio_codec
