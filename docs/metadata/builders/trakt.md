@@ -102,7 +102,6 @@ collections:
         limit: 30
       - chart: popular
         limit: 30
-    collection_order: custom
     sync_mode: sync
 ```
 
