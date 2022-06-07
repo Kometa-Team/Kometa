@@ -106,7 +106,7 @@ Specify the time of day that Plex Meta Manager will run.
   </tr>
   <tr>
     <th>Default Value</th>
-    <td colspan="2"><code>03:00</code></td>
+    <td colspan="2"><code>05:00</code></td>
   </tr>
   <tr>
     <th>Available Values</th>

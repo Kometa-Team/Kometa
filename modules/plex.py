@@ -530,6 +530,10 @@ class Plex(Library):
         collection.sortUpdate(sort=data)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def item_labels(self, item):
+        return item.labels
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item, force=False):
         is_full = False
         cached_item = item
@@ -640,9 +644,10 @@ class Plex(Library):
         def scan_user(server, username):
             try:
                 for playlist in server.playlists():
-                    if playlist.title not in playlists:
-                        playlists[playlist.title] = []
-                    playlists[playlist.title].append(username)
+                    if isinstance(playlist, Playlist):
+                        if playlist.title not in playlists:
+                            playlists[playlist.title] = []
+                        playlists[playlist.title].append(username)
             except requests.exceptions.ConnectionError:
                 pass
         scan_user(self.PlexServer, self.account.title)
@@ -1244,7 +1249,7 @@ class Plex(Library):
             if filter_attr == "has_collection":
                 filter_check = len(item.collections) > 0
             elif filter_attr == "has_overlay":
-                for label in item.labels:
+                for label in self.item_labels(item):
                     if label.tag.lower().endswith(" overlay") or label.tag.lower() == "overlay":
                         filter_check = True
                         break

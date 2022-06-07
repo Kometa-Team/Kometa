@@ -16,6 +16,7 @@ These are the attributes which can be used within the Overlay File:
 |:--------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
 | [`templates`](templates)                                | contains definitions of templates that can be leveraged by multiple overlays                                       |
 | [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths) that point to external templates that can be leveraged by multiple overlays |
+| [`queues`](#overlay-queues)                             | contains the positional attributes of queues                                                                       |
 | [`overlays`](#overlays-attributes)                      | contains definitions of overlays you wish to add                                                                   |
 
 * `overlays` is required in order to run the Overlay File.
@@ -66,29 +67,30 @@ overlays:
 
 There are many attributes available when using overlays to edit how they work.
 
-| Attribute           | Description                                                                                                                                                                                          | Required |
-|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
-| `name`              | Name of the overlay. Each overlay name should be unique.                                                                                                                                             | &#9989;  |
-| `file`              | Local location of the Overlay Image.                                                                                                                                                                 | &#10060; |
-| `url`               | URL of Overlay Image Online.                                                                                                                                                                         | &#10060; |
-| `git`               | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image.                                                                                        | &#10060; |
-| `repo`              | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                                                                                                               | &#10060; |
-| `group`             | Name of the Grouping for this overlay. Only one overlay with the highest weight per group will be applied.<br>**`weight` is required when using `group`**<br>**Values:** group name                  | &#10060; |
-| `weight`            | Weight of this overlay in its group.<br>**`group` is required when using `weight`**<br>**Values:** Integer                                                                                           | &#10060; |
-| `horizontal_offset` | Horizontal Offset of this overlay. Can be a %.<br>**`vertical_offset` is required when using `horizontal_offset`**<br>**Value:** Integer 0 or greater or 0%-100%                                     | &#10060; |
-| `horizontal_align`  | Horizontal Alignment of the overlay.<br>**Values:** `left`, `center`, `right`                                                                                                                        | &#10060; |
-| `vertical_offset`   | Vertical Offset of this overlay. Can be a %.<br>**`horizontal_offset` is required when using `vertical_offset`**<br>**Value:** Integer 0 or greater or 0%-100%                                       | &#10060; |
-| `vertical_align`    | Vertical Alignment of the overlay.<br>**Values:** `top`, `center`, `bottom`                                                                                                                          | &#10060; |
-| `font`              | System Font Filename or path to font file for the Text Overlay.<br>**Value:** System Font Filename or path to font file                                                                              | &#10060; |
-| `font_size`         | Font Size for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                 | &#10060; |
-| `font_color`        | Font Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                                   | &#10060; |
-| `back_color`        | Backdrop Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                               | &#10060; |
-| `back_width`        | Backdrop Width for the Text Overlay. If `back_width` is not specified the Backdrop Sizes to the text<br>**`back_height` is required when using `back_width`**<br>**Value:** Integer greater than 0   | &#10060; |
-| `back_height`       | Backdrop Height for the Text Overlay. If `back_height` is not specified the Backdrop Sizes to the text<br>**`back_width` is required when using `back_height`**<br>**Value:** Integer greater than 0 | &#10060; |
-| `back_padding`      | Backdrop Padding for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                          | &#10060; |
-| `back_radius`       | Backdrop Radius for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                           | &#10060; |
-| `back_line_color`   | Backdrop Line Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                          | &#10060; |
-| `back_line_width`   | Backdrop Line Width for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                       | &#10060; |
+| Attribute                  | Description                                                                                                                                                                                                                                                                         | Required |
+|:---------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
+| `name`                     | Name of the overlay. Each overlay name should be unique.                                                                                                                                                                                                                            | &#9989;  |
+| `file`                     | Local location of the Overlay Image.                                                                                                                                                                                                                                                | &#10060; |
+| `url`                      | URL of Overlay Image Online.                                                                                                                                                                                                                                                        | &#10060; |
+| `git`                      | Location in the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) of the Overlay Image.                                                                                                                                                                       | &#10060; |
+| `repo`                     | Location in the [Custom Repo](../config/settings.md#custom-repo) of the Overlay Image.                                                                                                                                                                                              | &#10060; |
+| [`group`](#overlay-groups) | Name of the Grouping for this overlay. Only one overlay with the highest weight per group will be applied.<br>**`weight` is required when using `group`**<br>**Values:** group name                                                                                                 | &#10060; |
+| [`queue`](#overlay-queues) | Name of the Queue for this overlay. Define `queue` positions using the `queues` attribute at the top level of an Overlay File. Overlay with the highest weight is applied to the first position and so on.<br>**`weight` is required when using `queue`**<br>**Values:** queue name | &#10060; |
+| `weight`                   | Weight of this overlay in its group or queue.<br>**`group` or `queue` is required when using `weight`**<br>**Values:** Integer 0 or greater                                                                                                                                         | &#10060; |
+| `horizontal_offset`        | Horizontal Offset of this overlay. Can be a %.<br>**`vertical_offset` is required when using `horizontal_offset`**<br>**Value:** Integer 0 or greater or 0%-100%                                                                                                                    | &#10060; |
+| `horizontal_align`         | Horizontal Alignment of the overlay.<br>**Values:** `left`, `center`, `right`                                                                                                                                                                                                       | &#10060; |
+| `vertical_offset`          | Vertical Offset of this overlay. Can be a %.<br>**`horizontal_offset` is required when using `vertical_offset`**<br>**Value:** Integer 0 or greater or 0%-100%                                                                                                                      | &#10060; |
+| `vertical_align`           | Vertical Alignment of the overlay.<br>**Values:** `top`, `center`, `bottom`                                                                                                                                                                                                         | &#10060; |
+| `font`                     | System Font Filename or path to font file for the Text Overlay.<br>**Value:** System Font Filename or path to font file                                                                                                                                                             | &#10060; |
+| `font_size`                | Font Size for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                                | &#10060; |
+| `font_color`               | Font Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                                                                                                                  | &#10060; |
+| `back_color`               | Backdrop Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                                                                                                              | &#10060; |
+| `back_width`               | Backdrop Width for the Text Overlay. If `back_width` is not specified the Backdrop Sizes to the text<br>**`back_height` is required when using `back_width`**<br>**Value:** Integer greater than 0                                                                                  | &#10060; |
+| `back_height`              | Backdrop Height for the Text Overlay. If `back_height` is not specified the Backdrop Sizes to the text<br>**`back_width` is required when using `back_height`**<br>**Value:** Integer greater than 0                                                                                | &#10060; |
+| `back_padding`             | Backdrop Padding for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                         | &#10060; |
+| `back_radius`              | Backdrop Radius for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                          | &#10060; |
+| `back_line_color`          | Backdrop Line Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                                                                                                         | &#10060; |
+| `back_line_width`          | Backdrop Line Width for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                      | &#10060; |
 
 * If `url`, `git`, and `repo` are all not defined then PMM will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
 
@@ -108,7 +110,7 @@ overlays:
     imdb_chart: top_movies
     overlay:
       name: IMDB-Top-250
-      repo: PMM/overlays/images/IMDB-Top-250
+      git: PMM/overlays/images/IMDB-Top-250
       horizontal_offset: 0
       horizontal_align: right
       vertical_offset: 0
@@ -133,7 +135,6 @@ overlays:
 ```
 
    ![](blur.png)
-
 
 ### Text Overlay
 
@@ -170,6 +171,89 @@ overlays:
       back_color: "#00000099"
       back_radius: 30
       back_width: 150
+      back_height: 105
+```
+
+### Overlay Groups
+
+Overlay groups are defined by the name given to the `group` attribute. Only one overlay with the highest weight per group will be applied.
+
+This is an example where the Multi-Audio overlay will be applied over the Dual-Audio overlay for every item found by both. 
+
+```yaml
+overlays:
+  Dual-Audio:
+    overlay:
+      name: Dual-Audio
+      git: PMM/overlays/images/Dual-Audio
+      group: audio_language
+      weight: 10
+      horizontal_offset: 0
+      horizontal_align: center
+      vertical_offset: 15
+      vertical_align: bottom
+    plex_all: true
+    filters:
+      audio_language.count_gt: 1
+  Multi-Audio:
+    overlay:
+      name: Multi-Audio
+      git: PMM/overlays/images/Multi-Audio
+      group: audio_language
+      weight: 20
+      horizontal_offset: 0
+      horizontal_align: center
+      vertical_offset: 15
+      vertical_align: bottom
+    plex_all: true
+    filters:
+      audio_language.count_gt: 2
+```
+
+### Overlay Queues
+
+Overlay queues are defined by the name given to the `queue` attribute. The overlay with the highest weight is put into the first queue position, then the second highest is placed in the second queue position and so on. 
+
+You can define the queue positions by using the `queues` attribute at the top level of an Overlay File. You can define as many positions as you want. 
+
+```yaml
+queues:
+  custom_queue_name:
+    - horizontal_offset: 300        # This is the first position
+      horizontal_align: center
+      vertical_offset: 1375
+      vertical_align: top
+    - horizontal_offset: 300        # This is the second position
+      horizontal_align: center
+      vertical_offset: 1250
+      vertical_align: top
+      
+overlays:
+  IMDb:
+    imdb_chart: popular_movies
+    overlay:
+      name: text(IMDb Popular)
+      queue: custom_queue_name
+      weight: 20
+      font: fonts/Inter-Medium.ttf
+      font_size: 65
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 380
+      back_height: 105
+  TMDb:
+    tmdb_popular: 100
+    overlay:
+      name: text(TMDb Popular)
+      queue: custom_queue_name
+      weight: 10
+      font: fonts/Inter-Medium.ttf
+      font_size: 65
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 400
       back_height: 105
 ```
 
