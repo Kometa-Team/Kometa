@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-db", "--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-tr", "--trace", dest="trace", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
-parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 03:00) (comma-separated list)", default="03:00", type=str)
+parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 03:00) (comma-separated list)", default="05:00", type=str)
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="Run ignoring collection schedules", action="store_true", default=False)
@@ -530,7 +530,7 @@ def run_collection(config, library, metadata, requested_collections):
         else:
             collection_log_name, output_str = util.validate_filename(mapping_name)
         logger.add_collection_handler(library.mapping_name, collection_log_name)
-        library.status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+        library.status[str(mapping_name)] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
             builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str)
@@ -568,21 +568,21 @@ def run_collection(config, library, metadata, requested_collections):
                 if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
-                    library.status[mapping_name]["added"] = items_added
+                    library.status[str(mapping_name)]["added"] = items_added
                     library.stats["unchanged"] += items_unchanged
-                    library.status[mapping_name]["unchanged"] = items_unchanged
+                    library.status[str(mapping_name)]["unchanged"] = items_unchanged
                     items_removed = 0
                     if builder.sync:
                         items_removed = builder.sync_collection()
                         library.stats["removed"] += items_removed
-                        library.status[mapping_name]["removed"] = items_removed
+                        library.status[str(mapping_name)]["removed"] = items_removed
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     radarr_add, sonarr_add = builder.run_missing()
                     library.stats["radarr"] += radarr_add
-                    library.status[mapping_name]["radarr"] += radarr_add
+                    library.status[str(mapping_name)]["radarr"] += radarr_add
                     library.stats["sonarr"] += sonarr_add
-                    library.status[mapping_name]["sonarr"] += sonarr_add
+                    library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
             valid = True
             if builder.build_collection and not builder.blank_collection and (
@@ -598,7 +598,7 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.info(builder.delete())
                     library.stats["deleted"] += 1
                     delete_status = f"Deleted; {delete_status}"
-                library.status[mapping_name]["status"] = delete_status
+                library.status[str(mapping_name)]["status"] = delete_status
 
             run_item_details = True
             if valid and builder.build_collection and (builder.builders or builder.smart_url or builder.blank_collection):
@@ -606,10 +606,10 @@ def run_collection(config, library, metadata, requested_collections):
                     builder.load_collection()
                     if builder.created:
                         library.stats["created"] += 1
-                        library.status[mapping_name]["status"] = "Created"
+                        library.status[str(mapping_name)]["status"] = "Created"
                     elif items_added > 0 or items_removed > 0:
                         library.stats["modified"] += 1
-                        library.status[mapping_name]["status"] = "Modified"
+                        library.status[str(mapping_name)]["status"] = "Modified"
                 except Failed:
                     logger.stacktrace()
                     run_item_details = False
@@ -619,9 +619,9 @@ def run_collection(config, library, metadata, requested_collections):
                     details_list = builder.update_details()
                     if details_list:
                         pre = ""
-                        if library.status[mapping_name]["status"] != "Unchanged":
-                            pre = f"{library.status[mapping_name]['status']} and "
-                        library.status[mapping_name]["status"] = f"{pre}Updated {', '.join(details_list)}"
+                        if library.status[str(mapping_name)]["status"] != "Unchanged":
+                            pre = f"{library.status[str(mapping_name)]['status']} and "
+                        library.status[str(mapping_name)]["status"] = f"{pre}Updated {', '.join(details_list)}"
 
             if builder.server_preroll is not None:
                 library.set_server_preroll(builder.server_preroll)
@@ -651,25 +651,25 @@ def run_collection(config, library, metadata, requested_collections):
             logger.info(e)
             if str(e).endswith("and was deleted"):
                 library.stats["deleted"] += 1
-                library.status[mapping_name]["status"] = "Deleted Not Scheduled"
+                library.status[str(mapping_name)]["status"] = "Deleted Not Scheduled"
             elif str(e).startswith("Skipped because allowed_library_types"):
-                library.status[mapping_name]["status"] = "Skipped Invalid Library Type"
+                library.status[str(mapping_name)]["status"] = "Skipped Invalid Library Type"
             else:
-                library.status[mapping_name]["status"] = "Not Scheduled"
+                library.status[str(mapping_name)]["status"] = "Not Scheduled"
         except Failed as e:
             library.notify(e, collection=mapping_name)
             logger.stacktrace()
             logger.error(e)
-            library.status[mapping_name]["status"] = "PMM Failure"
-            library.status[mapping_name]["errors"].append(e)
+            library.status[str(mapping_name)]["status"] = "PMM Failure"
+            library.status[str(mapping_name)]["errors"].append(e)
         except Exception as e:
             library.notify(f"Unknown Error: {e}", collection=mapping_name)
             logger.stacktrace()
             logger.error(f"Unknown Error: {e}")
-            library.status[mapping_name]["status"] = "Unknown Error"
-            library.status[mapping_name]["errors"].append(e)
+            library.status[str(mapping_name)]["status"] = "Unknown Error"
+            library.status[str(mapping_name)]["errors"].append(e)
         collection_run_time = str(datetime.now() - collection_start).split('.')[0]
-        library.status[mapping_name]["run_time"] = collection_run_time
+        library.status[str(mapping_name)]["run_time"] = collection_run_time
         logger.info("")
         logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {collection_run_time}")
         logger.remove_collection_handler(library.mapping_name, collection_log_name)
