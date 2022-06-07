@@ -945,7 +945,7 @@ class Overlay:
         self.horizontal_align, self.horizontal_offset, self.vertical_align, self.vertical_offset = parse_cords(self.data, "overlay")
 
         if (self.horizontal_offset is None and self.vertical_offset is not None) or (self.vertical_offset is None and self.horizontal_offset is not None):
-            raise Failed(f"Overlay Error: overlay attribute's  must be used together")
+            raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset must be used together")
 
         def color(attr):
             if attr in self.data and self.data[attr]:
@@ -966,7 +966,7 @@ class Overlay:
         elif back_width >= 0 and back_height >= 0:
             self.back_box = (back_width, back_height)
         self.has_back = True if self.back_color or self.back_line_color else False
-        if self.has_back and not self.has_coordinates():
+        if self.has_back and not self.has_coordinates() and not self.queue:
             raise Failed(f"Overlay Error: horizontal_offset and vertical_offset are required when using a backdrop")
 
         def get_and_save_image(image_url):

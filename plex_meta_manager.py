@@ -1,4 +1,5 @@
-import argparse, os, sys, time, traceback, uuid
+import argparse, os, sys, time, uuid
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 
 try:
@@ -18,7 +19,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-db", "--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-tr", "--trace", dest="trace", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
-parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 03:00) (comma-separated list)", default="05:00", type=str)
+parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)", default="05:00", type=str)
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="Run ignoring collection schedules", action="store_true", default=False)
@@ -115,8 +116,10 @@ from modules.config import ConfigFile
 from modules.util import Failed, NotScheduled, Deleted
 
 def my_except_hook(exctype, value, tb):
-    for _line in traceback.format_exception(etype=exctype, value=value, tb=tb):
-        logger.critical(_line)
+    if issubclass(exctype, KeyboardInterrupt):
+        sys.__excepthook__(exctype, value, tb)
+    else:
+        logger.critical("Uncaught Exception", exc_info=(exctype, value, tb))
 
 sys.excepthook = my_except_hook
 
@@ -143,6 +146,10 @@ if not uuid_num:
         handle.write(str(uuid_num))
 
 plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = str(uuid_num)
+
+def process(attrs):
+    with ProcessPoolExecutor(max_workers=1) as executor:
+        executor.submit(start, *[attrs])
 
 def start(attrs):
     logger.add_main_handler()
@@ -845,54 +852,55 @@ def run_playlists(config):
             logger.remove_playlist_handler(playlist_log_name)
     return status, stats
 
-try:
-    if run or test or collections or libraries or metadata_files or resume:
-        start({
-            "config_file": config_file,
-            "test": test,
-            "delete": delete,
-            "ignore_schedules": ignore_schedules,
-            "collections": collections,
-            "libraries": libraries,
-            "metadata_files": metadata_files,
-            "library_first": library_first,
-            "resume": resume,
-            "trace": trace
-        })
-    else:
-        times_to_run = util.get_list(times)
-        valid_times = []
-        for time_to_run in times_to_run:
-            try:
-                valid_times.append(datetime.strftime(datetime.strptime(time_to_run, "%H:%M"), "%H:%M"))
-            except ValueError:
-                if time_to_run:
-                    raise Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format between 00:00-23:59")
-                else:
-                    raise Failed(f"Argument Error: blank time argument")
-        for time_to_run in valid_times:
-            schedule.every().day.at(time_to_run).do(start, {"config_file": config_file, "time": time_to_run, "delete": delete, "library_first": library_first, "trace": trace})
-        while True:
-            schedule.run_pending()
-            if not no_countdown:
-                current_time = datetime.now().strftime("%H:%M")
-                seconds = None
-                og_time_str = ""
-                for time_to_run in valid_times:
-                    new_seconds = (datetime.strptime(time_to_run, "%H:%M") - datetime.strptime(current_time, "%H:%M")).total_seconds()
-                    if new_seconds < 0:
-                        new_seconds += 86400
-                    if (seconds is None or new_seconds < seconds) and new_seconds > 0:
-                        seconds = new_seconds
-                        og_time_str = time_to_run
-                if seconds is not None:
-                    hours = int(seconds // 3600)
-                    minutes = int((seconds % 3600) // 60)
-                    time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
-                    time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                    logger.ghost(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
-                else:
-                    logger.error(f"Time Error: {valid_times}")
-            time.sleep(60)
-except KeyboardInterrupt:
-    logger.separator("Exiting Plex Meta Manager")
+if __name__ == "__main__":
+    try:
+        if run or test or collections or libraries or metadata_files or resume:
+            process({
+                "config_file": config_file,
+                "test": test,
+                "delete": delete,
+                "ignore_schedules": ignore_schedules,
+                "collections": collections,
+                "libraries": libraries,
+                "metadata_files": metadata_files,
+                "library_first": library_first,
+                "resume": resume,
+                "trace": trace
+            })
+        else:
+            times_to_run = util.get_list(times)
+            valid_times = []
+            for time_to_run in times_to_run:
+                try:
+                    valid_times.append(datetime.strftime(datetime.strptime(time_to_run, "%H:%M"), "%H:%M"))
+                except ValueError:
+                    if time_to_run:
+                        raise Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format between 00:00-23:59")
+                    else:
+                        raise Failed(f"Argument Error: blank time argument")
+            for time_to_run in valid_times:
+                schedule.every().day.at(time_to_run).do(process, {"config_file": config_file, "time": time_to_run, "delete": delete, "library_first": library_first, "trace": trace})
+            while True:
+                schedule.run_pending()
+                if not no_countdown:
+                    current_time = datetime.now().strftime("%H:%M")
+                    seconds = None
+                    og_time_str = ""
+                    for time_to_run in valid_times:
+                        new_seconds = (datetime.strptime(time_to_run, "%H:%M") - datetime.strptime(current_time, "%H:%M")).total_seconds()
+                        if new_seconds < 0:
+                            new_seconds += 86400
+                        if (seconds is None or new_seconds < seconds) and new_seconds > 0:
+                            seconds = new_seconds
+                            og_time_str = time_to_run
+                    if seconds is not None:
+                        hours = int(seconds // 3600)
+                        minutes = int((seconds % 3600) // 60)
+                        time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
+                        time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
+                        logger.ghost(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
+                    else:
+                        logger.error(f"Time Error: {valid_times}")
+                time.sleep(60)
+    except KeyboardInterrupt:
+        logger.separator("Exiting Plex Meta Manager")

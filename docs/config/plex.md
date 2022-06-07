@@ -24,6 +24,8 @@ plex:
 | `empty_trash`   | Runs Empty Trash on the Server after all Metadata Files are run        |  false  | &#10060; |
 | `optimize`      | Runs Optimize on the Server after all Metadata Files are run           |  false  | &#10060; |
 
+* **Do Not Use the Plex Token found in Plex's Preferences.xml file**
+
 * This script can be run on a remote Plex server, but be sure that the `url` provided is publicly addressable, and it's recommended to use `HTTPS`.
 
 * If you need help finding your Plex authentication token, please see Plex's [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
