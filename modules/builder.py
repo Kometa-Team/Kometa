@@ -2434,9 +2434,13 @@ class CollectionBuilder:
                 self.obj.editContentRating(self.details["content_rating"])
                 batch_display += f"\nContent Rating | {self.details['content_rating']}"
 
-            add_tags = self.details["label"] if "label" in self.details else None
+            add_tags = self.details["label"] if "label" in self.details else []
             remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
             sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
+            if sync_tags:
+                sync_tags.append("PMM")
+            else:
+                add_tags.append("PMM")
             tag_results = self.library.edit_tags('label', self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, do_print=False)[28:]
             if tag_results:
                 batch_display += f"\n{tag_results}"

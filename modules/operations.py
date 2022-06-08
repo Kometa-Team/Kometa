@@ -360,11 +360,12 @@ class Operations:
             logger.info("")
         unmanaged_collections = []
         for col in self.library.get_all_collections():
+            labels = [la.tag for la in self.library.item_labels(col)]
             if (self.library.delete_collections_with_less and col.childCount < self.library.delete_collections_with_less) \
-                or (self.library.delete_unmanaged_collections and col.title not in self.library.collections):
+                or (self.library.delete_unmanaged_collections and "PMM" not in labels):
                 self.library.query(col.delete)
                 logger.info(f"{col.title} Deleted")
-            elif col.title not in self.library.collections:
+            elif "PMM" not in labels:
                 unmanaged_collections.append(col)
 
         if self.library.show_unmanaged and len(unmanaged_collections) > 0:
