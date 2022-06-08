@@ -1008,7 +1008,7 @@ class Overlay:
                 logger.error(f"Overlay Error: failed to parse overlay blur name: {self.name} defaulting to blur(50)")
                 self.name = "blur(50)"
         elif self.name.startswith("text"):
-            if not self.has_coordinates():
+            if not self.has_coordinates() and not self.queue:
                 raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset are required when using text")
             match = re.search("\\(([^)]+)\\)", self.name)
             if not match:
