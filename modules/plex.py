@@ -794,22 +794,21 @@ class Plex(Library):
         elif method == "plex_collectionless":
             good_collections = []
             logger.info(f"Processing Plex Collectionless")
-            logger.info("Collections Excluded")
+            logger.info("")
             for col in self.get_all_collections():
                 keep_collection = True
                 for pre in data["exclude_prefix"]:
                     if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
                         keep_collection = False
-                        logger.info(f"{col.title} excluded by prefix match {pre}")
+                        logger.info(f"Excluded by Prefix Match: {col.title}")
                         break
                 if keep_collection:
                     for ext in data["exclude"]:
                         if col.title == ext or (col.titleSort and col.titleSort == ext):
                             keep_collection = False
-                            logger.info(f"{col.title} excluded by exact match")
+                            logger.info(f"Excluded by Exact Match: {col.title}")
                             break
                 if keep_collection:
-                    logger.info(f"Collection Passed: {col.title}")
                     good_collections.append(col)
             logger.info("")
             logger.info("Collections Not Excluded (Items in these collections are not added to Collectionless)")
@@ -819,6 +818,7 @@ class Plex(Library):
             all_items = self.get_all()
             for i, item in enumerate(all_items, 1):
                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
+                self.reload(item)
                 add_item = True
                 for collection in item.collections:
                     if collection.id in collection_indexes:
