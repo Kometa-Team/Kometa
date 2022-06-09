@@ -97,14 +97,13 @@ class Overlays:
                             if blur_test > blur_num:
                                 blur_num = blur_test
                         else:
-                            applied_names.append(over_name)
-
-                    for over_name in applied_names:
-                        overlay = properties[over_name]
-                        if overlay.queue:
-                            if overlay.queue not in queue_overlays:
-                                queue_overlays[overlay.queue] = {}
-                            queue_overlays[overlay.queue][overlay.weight] = over_name
+                            overlay = properties[over_name]
+                            if overlay.queue:
+                                if overlay.queue not in queue_overlays:
+                                    queue_overlays[overlay.queue] = {}
+                                queue_overlays[overlay.queue][overlay.weight] = over_name
+                            else:
+                                applied_names.append(over_name)
 
                     overlay_change = False if has_overlay else True
                     if not overlay_change:
