@@ -1,4 +1,4 @@
-import math, re, time
+import csv, gzip, math, os, re, requests, shutil, time
 from modules import util
 from modules.util import Failed
 from urllib.parse import urlparse, parse_qs
@@ -30,6 +30,9 @@ urls = {
 class IMDb:
     def __init__(self, config):
         self.config = config
+        self._ratings = None
+        self._genres = None
+        self._episode_ratings = None
 
     def validate_imdb_lists(self, err_type, imdb_lists, language):
         valid_lists = []
@@ -185,3 +188,71 @@ class IMDb:
             return [(_i, "imdb") for _i in self._ids_from_chart(data)]
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
+
+    def _interface(self, interface):
+        gz = os.path.join(self.config.default_dir, f"title.{interface}.tsv.gz")
+        tsv = os.path.join(self.config.default_dir, f"title.{interface}.tsv")
+
+        if os.path.exists(gz):
+            os.remove(gz)
+        if os.path.exists(tsv):
+            os.remove(tsv)
+
+        with requests.get(f"https://datasets.imdbws.com/title.{interface}.tsv.gz", stream=True) as r:
+            r.raise_for_status()
+            total_length = r.headers.get('content-length')
+            if total_length is not None:
+                total_length = int(total_length)
+            dl = 0
+            with open(gz, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    dl += len(chunk)
+                    f.write(chunk)
+                    logger.ghost(f"Downloading IMDb Interface: {dl / total_length * 100:6.2f}%")
+                logger.exorcise()
+
+        with open(tsv, "wb") as f_out:
+            with gzip.open(gz, "rb") as f_in:
+                shutil.copyfileobj(f_in, f_out)
+
+        with open(tsv, "r") as t:
+            if interface == "ratings":
+                return {line[0]: line[1] for line in csv.reader(t, delimiter="\t")}
+            elif interface == "basics":
+                return {line[0]: str(line[-1]).split(",") for line in csv.reader(tsv, delimiter="\t")}
+            else:
+                return [line for line in csv.reader(t, delimiter="\t")]
+
+    @property
+    def ratings(self):
+        if self._ratings is None:
+            self._ratings = self._interface("ratings")
+        return self._ratings
+
+    @property
+    def genres(self):
+        if self._genres is None:
+            self._genres = self._interface("basics")
+        return self._genres
+
+    @property
+    def episode_ratings(self):
+        if self._episode_ratings is None:
+            self._episode_ratings = {}
+            for imdb_id, parent_id, season_num, episode_num in self._interface("episode"):
+                if imdb_id not in self.ratings:
+                    continue
+                if parent_id not in self._episode_ratings:
+                    self._episode_ratings[parent_id] = {}
+                if season_num not in self._episode_ratings[parent_id]:
+                    self._episode_ratings[parent_id][season_num] = {}
+                self._episode_ratings[parent_id][season_num][episode_num] = self.ratings[imdb_id]
+        return self._episode_ratings
+
+    def get_rating(self, imdb_id):
+        return self.ratings[imdb_id] if imdb_id in self.ratings else None
+
+    def get_episode_rating(self, imdb_id, season_num, episode_num):
+        if imdb_id not in self.episode_ratings or season_num not in self.episode_ratings[imdb_id] or episode_num not in self.episode_ratings[imdb_id][season_num]:
+            return None
+        return self.episode_ratings[imdb_id][season_num][episode_num]

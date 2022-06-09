@@ -33,12 +33,14 @@ from retrying import retry
 logger = util.logger
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
-mass_genre_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Tag Metadata"}
+mass_genre_options = {"tmdb": "Use TMDb Metadata", "imdb": "Use IMDb Rating", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Tag Metadata"}
 mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
 mass_available_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Metadata"}
 imdb_label_options = {"with_none": "Add IMDb Parental Labels including None", "without_none": "Add IMDb Parental Labels including None"}
+mass_episode_rating_options = {"tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating"}
 mass_rating_options = {
     "tmdb": "Use TMDb Rating",
+    "imdb": "Use IMDb Rating",
     "omdb": "Use IMDb Rating through OMDb",
     "mdb": "Use MdbList Average Score",
     "mdb_imdb": "Use IMDb Rating through MDbList",
@@ -584,6 +586,9 @@ class ConfigFile:
                     "mass_originally_available_update": None,
                     "mass_imdb_parental_labels": None,
                     "remove_title_parentheses": None,
+                    "mass_episode_audience_rating_update": None,
+                    "mass_episode_critic_rating_update": None,
+                    "mass_episode_user_rating_update": None,
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -652,6 +657,14 @@ class ConfigFile:
                             params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
                         if "mass_critic_rating_update" in lib["operations"]:
                             params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
+                        if "mass_user_rating_update" in lib["operations"]:
+                            params["mass_user_rating_update"] = check_for_attribute(lib["operations"], "mass_user_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
+                        if "mass_episode_audience_rating_update" in lib["operations"]:
+                            params["mass_episode_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_episode_audience_rating_update", test_list=mass_episode_rating_options, default_is_none=True, save=False)
+                        if "mass_episode_critic_rating_update" in lib["operations"]:
+                            params["mass_episode_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_episode_critic_rating_update", test_list=mass_episode_rating_options, default_is_none=True, save=False)
+                        if "mass_episode_user_rating_update" in lib["operations"]:
+                            params["mass_episode_user_rating_update"] = check_for_attribute(lib["operations"], "mass_episode_user_rating_update", test_list=mass_episode_rating_options, default_is_none=True, save=False)
                         if "mass_content_rating_update" in lib["operations"]:
                             params["mass_content_rating_update"] = check_for_attribute(lib["operations"], "mass_content_rating_update", test_list=mass_content_options, default_is_none=True, save=False)
                         if "mass_originally_available_update" in lib["operations"]:
