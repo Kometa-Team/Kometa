@@ -560,10 +560,8 @@ class CollectionBuilder:
         if self.smart_url and self.smart_label_collection:
             raise Failed(f"{self.Type} Error: smart_filter is not compatible with smart_label")
 
-        if self.parts_collection:
-            for x in ["smart_label", "smart_filter", "smart_url"]:
-                if x in methods:
-                    raise Failed(f"{self.Type} Error: {x} is not compatible with collection_level: {self.collection_level}")
+        if self.parts_collection and "smart_url" in methods:
+            raise Failed(f"{self.Type} Error: smart_url is not compatible with collection_level: {self.collection_level}")
 
         self.smart = self.smart_url or self.smart_label_collection
 
@@ -1788,7 +1786,10 @@ class CollectionBuilder:
                         elif attr in plex.date_attributes and modifier in ["", ".not"]:
                             last_text = "is not in the last" if modifier == ".not" else "is in the last"
                             last_mod = "%3E%3E" if modifier == "" else "%3C%3C"
-                            results, display_add = build_url_arg(f"-{validation}d", mod=last_mod, arg_s=f"{validation} Days", mod_s=last_text)
+                            search_mod = validation[-1]
+                            if search_mod == "o":
+                                validation = f"{validation[:-1]}mon"
+                            results, display_add = build_url_arg(f"-{validation}", mod=last_mod, arg_s=f"{validation} {plex.date_sub_mods[search_mod]}", mod_s=last_text)
                         elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
                             results, display_add = build_url_arg(validation * 60000)
                         elif attr in plex.boolean_attributes:
@@ -1939,7 +1940,14 @@ class CollectionBuilder:
             for value in values:
                 final_years.append(util.parse(self.Type, final, value, datatype="int"))
             return smart_pair(final_years)
-        elif (attribute in number_attributes + date_attributes + year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
+        elif attribute in date_attributes and modifier in ["", ".not"]:
+            search_mod = None
+            if plex_search and data and str(data)[-1] in ["s", "m", "h", "d", "w", "o", "y"]:
+                search_mod = str(data)[-1]
+                data = str(data)[:-1]
+            search_data = util.parse(self.Type, final, data, datatype="int", minimum=0)
+            return f"{search_data}{search_mod}" if plex_search else search_data
+        elif (attribute in number_attributes + year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
                 or (attribute in plex.tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
