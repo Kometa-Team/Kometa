@@ -250,7 +250,7 @@ class Overlays:
                                             overlay_image, overlay_box = overlay.get_backdrop((canvas_width, canvas_height), box=overlay.image.size, new_cords=cord)
                                             new_poster.paste(overlay_image, (0, 0), overlay_image)
                                         else:
-                                            overlay_box = (cord[1], cord[3])
+                                            overlay_box = overlay.get_coordinates((canvas_width, canvas_height), box=overlay.image.size, new_cords=cord)
                                         new_poster.paste(overlay.image, overlay_box, overlay.image)
                             temp = os.path.join(self.library.overlay_folder, f"temp.png")
                             new_poster.save(temp, "PNG")
