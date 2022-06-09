@@ -1941,7 +1941,7 @@ class CollectionBuilder:
                 final_years.append(util.parse(self.Type, final, value, datatype="int"))
             return smart_pair(final_years)
         elif attribute in date_attributes and modifier in ["", ".not"]:
-            search_mod = None
+            search_mod = "d"
             if plex_search and data and str(data)[-1] in ["s", "m", "h", "d", "w", "o", "y"]:
                 search_mod = str(data)[-1]
                 data = str(data)[:-1]
