@@ -3,7 +3,6 @@ from datetime import datetime
 from modules import plex, util
 from modules.builder import CollectionBuilder
 from modules.util import Failed, NotScheduled
-from plexapi.audio import Album
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
 from PIL import Image, ImageFilter
@@ -37,7 +36,7 @@ class Overlays:
                     logger.separator(f"Removing {old_overlay.title}")
                     logger.info("")
                     for i, item in enumerate(label_items, 1):
-                        item_title = self.get_item_sort_title(item, atr="title")
+                        item_title = self.library.get_item_sort_title(item, atr="title")
                         logger.ghost(f"Restoring {old_overlay.title}: {i}/{len(label_items)} {item_title}")
                         self.remove_overlay(item, item_title, old_overlay.title, [
                             os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")
@@ -61,7 +60,7 @@ class Overlays:
         if remove_overlays:
             logger.separator(f"Removing Overlays for the {self.library.name} Library")
             for i, item in enumerate(remove_overlays, 1):
-                item_title = self.get_item_sort_title(item, atr="title")
+                item_title = self.library.get_item_sort_title(item, atr="title")
                 logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
                 self.remove_overlay(item, item_title, "Overlay", [
                     os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
@@ -75,9 +74,9 @@ class Overlays:
             logger.info("")
             logger.separator(f"Applying Overlays for the {self.library.name} Library")
             logger.info("")
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.get_item_sort_title(io[1][0])), 1):
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
                 try:
-                    item_title = self.get_item_sort_title(item, atr="title")
+                    item_title = self.library.get_item_sort_title(item, atr="title")
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item_title}")
                     image_compare = None
                     overlay_compare = None
@@ -278,16 +277,6 @@ class Overlays:
         logger.separator(f"Finished {self.library.name} Library Overlays\nOverlays Run Time: {overlay_run_time}")
         return overlay_run_time
 
-    def get_item_sort_title(self, item_to_sort, atr="titleSort"):
-        if isinstance(item_to_sort, Album):
-            return f"{getattr(item_to_sort.artist(), atr)} Album {getattr(item_to_sort, atr)}"
-        elif isinstance(item_to_sort, Season):
-            return f"{getattr(item_to_sort.show(), atr)} Season {item_to_sort.seasonNumber}"
-        elif isinstance(item_to_sort, Episode):
-            return f"{getattr(item_to_sort.show(), atr)} {item_to_sort.seasonEpisode.upper()}"
-        else:
-            return getattr(item_to_sort, atr)
-
     def compile_overlays(self):
         key_to_item = {}
         properties = {}
@@ -334,7 +323,7 @@ class Overlays:
                             if item.ratingKey not in properties[builder.overlay.name].keys:
                                 properties[builder.overlay.name].keys.append(item.ratingKey)
                     if added_titles:
-                        logger.debug(f"{len(added_titles)} Titles Found: {[self.get_item_sort_title(a, atr='title') for a in added_titles]}")
+                        logger.debug(f"{len(added_titles)} Titles Found: {[self.library.get_item_sort_title(a, atr='title') for a in added_titles]}")
                     logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay.name}")
                 except NotScheduled as e:
                     logger.info(e)

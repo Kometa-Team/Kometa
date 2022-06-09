@@ -2,8 +2,6 @@ import os, re
 from datetime import datetime
 from modules import plex, util
 from modules.util import Failed, YAML
-from plexapi.audio import Artist
-from plexapi.video import Show
 
 logger = util.logger
 
@@ -23,6 +21,10 @@ class Operations:
         logger.debug(f"Mass Genre Update: {self.library.mass_genre_update}")
         logger.debug(f"Mass Audience Rating Update: {self.library.mass_audience_rating_update}")
         logger.debug(f"Mass Critic Rating Update: {self.library.mass_critic_rating_update}")
+        logger.debug(f"Mass User Rating Update: {self.library.mass_user_rating_update}")
+        logger.debug(f"Mass Episode Audience Rating Update: {self.library.mass_episode_audience_rating_update}")
+        logger.debug(f"Mass Episode Critic Rating Update: {self.library.mass_episode_critic_rating_update}")
+        logger.debug(f"Mass Episode User Rating Update: {self.library.mass_episode_user_rating_update}")
         logger.debug(f"Mass Content Rating Update: {self.library.mass_content_rating_update}")
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
@@ -136,21 +138,18 @@ class Operations:
 
                 omdb_item = None
                 if any([o == "omdb" for o in self.library.meta_operations]):
-                    if self.config.OMDb.limit is False:
-                        if tmdb_id and not imdb_id:
-                            imdb_id = self.config.Convert.tmdb_to_imdb(tmdb_id)
-                        elif tvdb_id and not imdb_id:
-                            imdb_id = self.config.Convert.tvdb_to_imdb(tvdb_id)
-                        if imdb_id:
-                            try:
-                                omdb_item = self.config.OMDb.get_omdb(imdb_id)
-                            except Failed as e:
-                                logger.error(str(e))
-                            except Exception:
-                                logger.error(f"IMDb ID: {imdb_id}")
-                                raise
-                        else:
-                            logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
+                    if self.config.OMDb.limit is not False:
+                        logger.error("Daily OMDb Limit Reached")
+                    elif not imdb_id:
+                        logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
+                    else:
+                        try:
+                            omdb_item = self.config.OMDb.get_omdb(imdb_id)
+                        except Failed as e:
+                            logger.error(str(e))
+                        except Exception:
+                            logger.error(f"IMDb ID: {imdb_id}")
+                            raise
 
                 tvdb_item = None
                 if any([o == "tvdb" for o in self.library.meta_operations]):
@@ -200,6 +199,8 @@ class Operations:
                 def get_rating(attribute):
                     if tmdb_item and attribute == "tmdb":
                         return tmdb_item.vote_average
+                    elif imdb_id and attribute == "imdb":
+                        return self.config.imdb.get_rating(imdb_id)
                     elif omdb_item and attribute == "omdb":
                         return omdb_item.imdb_rating
                     elif mdb_item and attribute == "mdb":
@@ -233,6 +234,8 @@ class Operations:
                         if self.library.mass_genre_update:
                             if tmdb_item and self.library.mass_genre_update == "tmdb":
                                 new_genres = tmdb_item.genres
+                            elif imdb_id and self.library.mass_genre_update == "imdb" and imdb_id in self.config.imdb.genres:
+                                new_genres = self.config.imdb.genres[imdb_id]
                             elif omdb_item and self.library.mass_genre_update == "omdb":
                                 new_genres = omdb_item.genres
                             elif tvdb_item and self.library.mass_genre_update == "tvdb":
@@ -276,7 +279,18 @@ class Operations:
                             logger.info(f"{item.title[:25]:<25} | No Rating Found")
                         elif str(item.rating) != str(new_rating):
                             item.editField("rating", new_rating)
-                            batch_display += f"{item.title[:25]:<25} | Critic Rating | {new_rating}"
+                            batch_display += f"\n{item.title[:25]:<25} | Critic Rating | {new_rating}"
+                    except Failed:
+                        pass
+
+                if self.library.mass_user_rating_update:
+                    try:
+                        new_rating = get_rating(self.library.mass_user_rating_update)
+                        if new_rating is None:
+                            logger.info(f"{item.title[:25]:<25} | No Rating Found")
+                        elif str(item.userRating) != str(new_rating):
+                            item.editField("userRating", new_rating)
+                            batch_display += f"\n{item.title[:25]:<25} | User Rating | {new_rating}"
                     except Failed:
                         pass
 
@@ -327,6 +341,62 @@ class Operations:
                         pass
 
                 item.saveEdits()
+                logger.info(batch_display)
+
+                episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
+
+                if any([x is not None for x in episode_ops]):
+
+                    if any([x == "imdb" for x in episode_ops]) and not imdb_id:
+                        logger.info(f"{item.title[:25]:<25} | No IMDb ID for Guid: {item.guid}")
+
+                    for ep in item.episodes():
+                        ep.batchEdits()
+                        item_title = self.library.get_item_sort_title(ep, atr="title")
+
+                        def get_episode_rating(attribute):
+                            if tmdb_id and attribute == "tmdb":
+                                try:
+                                    return self.config.TMDb.get_episode(tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average
+                                except Failed as er:
+                                    logger.error(er)
+                            elif imdb_id and attribute == "imdb":
+                                return self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
+                            else:
+                                raise Failed
+
+                        if self.library.mass_episode_audience_rating_update:
+                            try:
+                                new_rating = get_episode_rating(self.library.mass_episode_audience_rating_update)
+                                if new_rating is None:
+                                    logger.info(f"{item_title[:25]:<25} | No Rating Found")
+                                elif str(ep.audienceRating) != str(new_rating):
+                                    ep.editField("audienceRating", new_rating)
+                                    logger.info(f"\n{item_title[:25]:<25} | Audience Rating | {new_rating}")
+                            except Failed:
+                                pass
+
+                        if self.library.mass_episode_critic_rating_update:
+                            try:
+                                new_rating = get_episode_rating(self.library.mass_episode_critic_rating_update)
+                                if new_rating is None:
+                                    logger.info(f"{item_title[:25]:<25} | No Rating Found")
+                                elif str(ep.rating) != str(new_rating):
+                                    ep.editField("rating", new_rating)
+                                    logger.info(f"{item_title[:25]:<25} | Critic Rating | {new_rating}")
+                            except Failed:
+                                pass
+
+                        if self.library.mass_episode_user_rating_update:
+                            try:
+                                new_rating = get_episode_rating(self.library.mass_episode_user_rating_update)
+                                if new_rating is None:
+                                    logger.info(f"{item_title[:25]:<25} | No Rating Found")
+                                elif str(ep.userRating) != str(new_rating):
+                                    ep.editField("userRating", new_rating)
+                                    logger.info(f"{item_title[:25]:<25} | User Rating | {new_rating}")
+                            except Failed:
+                                pass
 
             if self.library.Radarr and self.library.radarr_add_all_existing:
                 try:
