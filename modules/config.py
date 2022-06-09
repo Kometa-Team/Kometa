@@ -586,6 +586,7 @@ class ConfigFile:
                     "mass_originally_available_update": None,
                     "mass_imdb_parental_labels": None,
                     "remove_title_parentheses": None,
+                    "mass_user_rating_update": None,
                     "mass_episode_audience_rating_update": None,
                     "mass_episode_critic_rating_update": None,
                     "mass_episode_user_rating_update": None,
