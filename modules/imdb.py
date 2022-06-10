@@ -217,11 +217,18 @@ class IMDb:
 
         with open(tsv, "r") as t:
             if interface == "ratings":
-                return {line[0]: line[1] for line in csv.reader(t, delimiter="\t")}
+                data = {line[0]: line[1] for line in csv.reader(t, delimiter="\t")}
             elif interface == "basics":
-                return {line[0]: str(line[-1]).split(",") for line in csv.reader(tsv, delimiter="\t")}
+                data = {line[0]: str(line[-1]).split(",") for line in csv.reader(tsv, delimiter="\t")}
             else:
-                return [line for line in csv.reader(t, delimiter="\t")]
+                data = [line for line in csv.reader(t, delimiter="\t")]
+
+        if os.path.exists(gz):
+            os.remove(gz)
+        if os.path.exists(tsv):
+            os.remove(tsv)
+
+        return data
 
     @property
     def ratings(self):

@@ -89,7 +89,7 @@ class Operations:
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
                 item.batchEdits()
-                batch_display = "Batch Edits"
+                batch_display = ""
 
                 if self.library.remove_title_parentheses:
                     if not any([f.name == "title" and f.locked for f in item.fields]) and item.title.endswith(")"):
@@ -341,7 +341,8 @@ class Operations:
                         pass
 
                 item.saveEdits()
-                logger.info(batch_display)
+                if batch_display:
+                    logger.info(f"Batch Edits{batch_display}")
 
                 episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
 

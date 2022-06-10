@@ -815,14 +815,14 @@ class Plex(Library):
             logger.info("Collections Not Excluded (Items in these collections are not added to Collectionless)")
             for col in good_collections:
                 logger.info(col.title)
-            collection_indexes = [c.index for c in good_collections]
+            logger.info("")
+            collection_indexes = [c.title for c in good_collections]
             all_items = self.get_all()
             for i, item in enumerate(all_items, 1):
                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
-                self.reload(item)
                 add_item = True
                 for collection in item.collections:
-                    if collection.id in collection_indexes:
+                    if collection.tag in collection_indexes:
                         add_item = False
                         break
                 if add_item:

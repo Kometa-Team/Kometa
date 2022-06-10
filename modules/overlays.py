@@ -101,6 +101,8 @@ class Overlays:
                             if overlay.queue:
                                 if overlay.queue not in queue_overlays:
                                     queue_overlays[overlay.queue] = {}
+                                if overlay.weight in queue_overlays[overlay.queue]:
+                                    raise Failed("Overlay Error: Overlays in a queue cannot have the same weight")
                                 queue_overlays[overlay.queue][overlay.weight] = over_name
                             else:
                                 applied_names.append(over_name)
@@ -170,7 +172,7 @@ class Overlays:
                     poster_compare = None
                     if poster is None and has_original is None:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
-                    elif changed_image or overlay_change:
+                    elif self.library.reapply_overlay or changed_image or overlay_change:
                         try:
                             canvas_width = 1920 if isinstance(item, Episode) else 1000
                             canvas_height = 1080 if isinstance(item, Episode) else 1500

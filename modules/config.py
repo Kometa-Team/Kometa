@@ -775,6 +775,7 @@ class ConfigFile:
 
                     params["overlay_path"] = []
                     params["remove_overlays"] = False
+                    params["reapply_overlay"] = False
                     if lib and "overlay_path" in lib:
                         try:
                             if not lib["overlay_path"]:
@@ -787,6 +788,8 @@ class ConfigFile:
                                     if ("remove_overlays" in file and file["remove_overlays"] is True) \
                                         or ("revert_overlays" in file and file["revert_overlays"] is True):
                                         params["remove_overlays"] = True
+                                    if "reapply_overlay" in file and file["reapply_overlay"] is True:
+                                        params["reapply_overlay"] = True
                                     if "schedule" in file and file["schedule"]:
                                         logger.debug(f"Value: {file['schedule']}")
                                         err = None
