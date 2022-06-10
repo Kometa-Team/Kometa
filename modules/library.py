@@ -92,6 +92,7 @@ class Library(ABC):
         self.update_blank_track_titles = params["update_blank_track_titles"]
         self.remove_title_parentheses = params["remove_title_parentheses"]
         self.remove_overlays = params["remove_overlays"]
+        self.reapply_overlay = params["reapply_overlay"]
         self.mass_collection_mode = params["mass_collection_mode"]
         self.metadata_backup = params["metadata_backup"]
         self.genre_mapper = params["genre_mapper"]
