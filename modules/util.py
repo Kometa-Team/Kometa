@@ -1024,7 +1024,16 @@ class Overlay:
                     if font not in fonts:
                         raise Failed(f"Overlay Error: font: {font} not found. Options: {', '.join(fonts)}")
                 self.font_name = font
-                self.font = ImageFont.truetype(self.font_name, self.font_size)
+            self.font = ImageFont.truetype(self.font_name, self.font_size)
+            if "font_style" in self.data and self.data["font_style"]:
+                try:
+                    variation_names = [n.decode("utf-8") for n in self.font.get_variation_names()]
+                    if self.data["font_style"] in variation_names:
+                        self.font.set_variation_by_name(self.data["font_style"])
+                    else:
+                        raise Failed(f"Overlay Error: Font Style {self.data['font_style']} not found. Options: {','.join(variation_names)}")
+                except OSError:
+                    logger.warning(f"Overlay Warning: font: {self.font} does not have variations")
             self.font_color = None
             if "font_color" in self.data and self.data["font_color"]:
                 try:

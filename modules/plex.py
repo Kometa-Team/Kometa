@@ -910,12 +910,12 @@ class Plex(Library):
                 logger.info(final)
         return final
 
-    def item_images(self, item, group, alias, asset_location=None, title=None, image_name=None):
+    def item_images(self, item, group, alias, asset_location=None, title=None, image_name=None, folder_name=None):
         if title is None:
             title = item.title
         posters, backgrounds = util.get_image_dicts(group, alias)
         try:
-            asset_poster, asset_background, item_dir, _ = self.find_item_assets(item, item_asset_directory=asset_location)
+            asset_poster, asset_background, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location)
             if asset_poster:
                 posters["asset_directory"] = asset_poster
             if asset_background:
@@ -929,7 +929,7 @@ class Plex(Library):
                                      is_poster=False, image_name=f"{image_name}_background" if image_name else image_name)
         if poster or background:
             self.upload_images(item, poster=poster, background=background)
-        return asset_location
+        return asset_location, folder_name
 
     def find_and_upload_assets(self, item):
         try:
@@ -945,7 +945,7 @@ class Plex(Library):
                 found_season = False
                 found_episode = False
                 for season in self.query(item.seasons):
-                    season_poster, season_background, _, _ = self.find_item_assets(season, item_asset_directory=item_dir)
+                    season_poster, season_background, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
                     if season_poster:
                         found_season = True
                     elif self.show_missing_season_assets and season.seasonNumber > 0:
@@ -954,7 +954,7 @@ class Plex(Library):
                         self.upload_images(season, poster=season_poster, background=season_background)
                     for episode in self.query(season.episodes):
                         if episode.seasonEpisode:
-                            episode_poster, episode_background, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir)
+                            episode_poster, episode_background, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                             if episode_poster or episode_background:
                                 found_episode = True
                                 self.upload_images(episode, poster=episode_poster, background=episode_background)
@@ -966,7 +966,7 @@ class Plex(Library):
                 missing_assets = ""
                 found_album = False
                 for album in self.query(item.albums):
-                    album_poster, album_background, _, _ = self.find_item_assets(album, item_asset_directory=item_dir)
+                    album_poster, album_background, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, folder_name=name)
                     if album_poster or album_background:
                         found_album = True
                     elif self.show_missing_season_assets:
@@ -979,10 +979,9 @@ class Plex(Library):
             if self.show_missing_assets:
                 logger.warning(e)
 
-    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None):
+    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
         poster = None
         background = None
-        folder_name = None
 
         if asset_directory is None:
             asset_directory = self.asset_directory
@@ -1015,9 +1014,10 @@ class Plex(Library):
             else:
                 folder_name, _ = util.validate_filename(item)
 
-            if not self.asset_folders:
-                file_name = folder_name if file_name == "poster" else f"{folder_name}_{file_name}"
+        if not self.asset_folders:
+            file_name = folder_name if file_name == "poster" else f"{folder_name}_{file_name}"
 
+        if not item_asset_directory:
             for ad in asset_directory:
                 if self.asset_folders:
                     if os.path.isdir(os.path.join(ad, folder_name)):
