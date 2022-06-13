@@ -936,7 +936,7 @@ class Plex(Library):
             poster, background, item_dir, name = self.find_item_assets(item)
             if poster or background:
                 self.upload_images(item, poster=poster, background=background)
-            elif self.show_missing_assets:
+            elif self.show_missing_assets and self.asset_folders:
                 logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
 
             if isinstance(item, Show):
@@ -1039,11 +1039,15 @@ class Plex(Library):
                     break
             if not item_asset_directory:
                 extra = ""
-                if self.create_asset_folders and self.asset_folders and asset_directory:
-                    item_asset_directory = os.path.join(asset_directory[0], folder_name)
-                    os.makedirs(item_asset_directory, exist_ok=True)
-                    extra = f"\nAsset Directory Created: {item_asset_directory}"
-                raise Failed(f"Asset Warning: Unable to find asset {'folder' if self.asset_folders else 'file'}: '{folder_name if self.asset_folders else file_name}{extra}'")
+                if self.asset_folders:
+                    if self.create_asset_folders and asset_directory:
+                        item_asset_directory = os.path.join(asset_directory[0], folder_name)
+                        os.makedirs(item_asset_directory, exist_ok=True)
+                        extra = f"\nAsset Directory Created: {item_asset_directory}"
+                        raise Failed(f"Asset Warning: Unable to find asset folder: '{folder_name}{extra}'")
+                else:
+                    logger.error(f"Asset Warning: Unable to find asset file: '{file_name}{extra}'")
+                    return None, None, item_asset_directory, folder_name
 
         poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")
         background_filter = os.path.join(item_asset_directory, "background.*" if file_name == "poster" else f"{file_name}_background.*")

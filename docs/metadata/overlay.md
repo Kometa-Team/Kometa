@@ -129,8 +129,8 @@ overlays:
   blur:
     overlay:
       name: blur(50)
+    collection_level: episode
     plex_search:
-      type: episodes
       all:
         resolution: 4K
 ```
