@@ -149,18 +149,18 @@ class Library(ABC):
                 except Failed as e:
                     logger.error(e)
 
-    def upload_images(self, item, poster=None, background=None):
-        image = None
-        image_compare = None
+    def upload_images(self, item, poster=None, background=None, overlay=False):
         poster_uploaded = False
-        if self.config.Cache:
-            image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
-
         if poster is not None:
             try:
-                if image_compare and str(poster.compare) != str(image_compare):
-                    image = None
-                if image is None or image != item.thumb:
+                image_compare = None
+                if self.config.Cache:
+                    _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+                if not image_compare or str(poster.compare) != str(image_compare):
+                    test = [la.tag for la in self.item_labels(item)]
+                    if overlay and "Overlay" in test:
+                        item.removeLabel("Overlay")
+                        item.saveEdits()
                     self._upload_image(item, poster)
                     poster_uploaded = True
                     logger.info(f"Detail: {poster.attribute} updated {poster.message}")
@@ -173,12 +173,10 @@ class Library(ABC):
         background_uploaded = False
         if background is not None:
             try:
-                image = None
+                image_compare = None
                 if self.config.Cache:
-                    image, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds")
-                    if str(background.compare) != str(image_compare):
-                        image = None
-                if image is None or image != item.art:
+                    _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds")
+                if not image_compare or str(background.compare) != str(image_compare):
                     self._upload_image(item, background)
                     background_uploaded = True
                     logger.info(f"Detail: {background.attribute} updated {background.message}")
@@ -187,12 +185,11 @@ class Library(ABC):
             except Failed:
                 logger.stacktrace()
                 logger.error(f"Detail: {background.attribute} failed to update {background.message}")
-
         if self.config.Cache:
             if poster_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, item.thumb, poster.compare if poster else "")
+                self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, "", poster.compare if poster else "")
             if background_uploaded:
-                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", item.art, background.compare)
+                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", "", background.compare)
 
         return poster_uploaded, background_uploaded
 
@@ -221,6 +218,10 @@ class Library(ABC):
 
     @abstractmethod
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True):
+        pass
+
+    @abstractmethod
+    def item_labels(self, item):
         pass
 
     @abstractmethod

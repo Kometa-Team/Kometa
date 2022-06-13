@@ -711,7 +711,7 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"SELECT * FROM {table_name} WHERE rating_key = ?", (rating_key,))
                 row = cursor.fetchone()
-                if row and row["location"]:
+                if row:
                     return row["location"], row["compare"], row["overlay"]
         return None, None, None
 

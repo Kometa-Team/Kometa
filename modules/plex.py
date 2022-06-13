@@ -928,7 +928,7 @@ class Plex(Library):
         background = util.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location,
                                      is_poster=False, image_name=f"{image_name}_background" if image_name else image_name)
         if poster or background:
-            self.upload_images(item, poster=poster, background=background)
+            self.upload_images(item, poster=poster, background=background, overlay=True)
         return asset_location, folder_name
 
     def find_and_upload_assets(self, item):
