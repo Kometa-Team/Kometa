@@ -83,7 +83,7 @@ class Operations:
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
                 current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.assets_for_all or self.library.mass_imdb_parental_labels else []
 
-                if self.library.assets_for_all and self.library.asset_directory and "Overlay" not in current_labels:
+                if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels)
 
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
