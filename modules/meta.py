@@ -136,10 +136,16 @@ class DataFile:
                     template, temp_vars = self.templates[template_name]
 
                     for temp_key, temp_value in temp_vars.items():
-                        variables[temp_key] = temp_value
+                        if temp_value is None:
+                            optional.append(str(temp_key))
+                        else:
+                            variables[temp_key] = temp_value
 
                     for temp_key, temp_value in self.temp_vars.items():
-                        variables[temp_key] = temp_value
+                        if temp_value is None:
+                            optional.append(str(temp_key))
+                        else:
+                            variables[temp_key] = temp_value
 
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))

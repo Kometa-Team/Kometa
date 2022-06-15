@@ -149,6 +149,8 @@ class Trakt:
         }
         logger.secret(token)
         response = self.config.get(f"{base_url}/users/settings", headers=headers)
+        if response.status_code == 423:
+            raise Failed("Trakt Error: Account is Locked please Contact Trakt Support")
         return response.status_code == 200
 
     def _refresh(self):
