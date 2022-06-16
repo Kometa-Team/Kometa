@@ -488,7 +488,9 @@ def is_date_filter(value, modifier, data, final, current_time):
     return False
 
 def is_number_filter(value, modifier, data):
-    return value is None or (modifier == ".gt" and value <= data) \
+    return value is None or (modifier == "" and value == data) \
+            or (modifier == ".not" and value != data) \
+            or (modifier == ".gt" and value <= data) \
             or (modifier == ".gte" and value < data) \
             or (modifier == ".lt" and value >= data) \
             or (modifier == ".lte" and value > data)

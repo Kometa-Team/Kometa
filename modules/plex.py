@@ -120,6 +120,13 @@ modifier_translation = {
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": ""
 }
 attribute_translation = {
+    "aspect": "aspectRatio",
+    "channels": "audioChannels",
+    "audio_codec": "audioCodec",
+    "audio_profile ": "audioProfile",
+    "video_codec": "videoCodec",
+    "video_profile": "videoProfile",
+    "resolution": "videoResolution",
     "record_label": "studio",
     "actor": "actors",
     "audience_rating": "audienceRating",
@@ -1257,6 +1264,11 @@ class Plex(Library):
                 for media in item.media:
                     for part in media.parts:
                         values.extend([a.extendedDisplayTitle for a in part.audioStreams() if a.extendedDisplayTitle])
+            elif filter_attr in ["audio_codec", "audio_profile", "video_codec", "video_profile"]:
+                for media in item.media:
+                    attr = getattr(media, filter_actual)
+                    if attr and attr not in values:
+                        values.append(attr)
             elif filter_attr in ["filepath", "folder"]:
                 values = [loc for loc in item.locations]
             else:
@@ -1322,12 +1334,20 @@ class Plex(Library):
                     failures += 1
                 if failures > failure_threshold:
                     return False
-        elif modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
+        elif filter_attr in builder.number_filters or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
             divider = 60000 if filter_attr == "duration" else 1
             test_number = []
-            if filter_attr == "resolution":
+            if filter_attr in ["resolution", "audio_codec", "audio_profile", "video_codec", "video_profile"]:
                 for media in item.media:
-                    test_number.append(media.videoResolution)
+                    attr = getattr(media, filter_actual)
+                    if attr and attr not in test_number:
+                        test_number.append(attr)
+            elif filter_attr in ["channels", "height", "width", "aspect"]:
+                test_number = 0
+                for media in item.media:
+                    attr = getattr(media, filter_actual)
+                    if attr and attr > test_number:
+                        test_number = attr
             elif filter_attr == "audio_language":
                 for media in item.media:
                     for part in media.parts:
