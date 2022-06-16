@@ -939,6 +939,8 @@ class Plex(Library):
         return asset_location, folder_name
 
     def find_and_upload_assets(self, item, current_labels):
+        item_dir = None
+        name = None
         try:
             poster, background, item_dir, name = self.find_item_assets(item)
             if "Overlay" not in current_labels:
@@ -948,13 +950,16 @@ class Plex(Library):
                     logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
                 else:
                     logger.warning(f"Asset Warning: {name} has an Overlay and will be updated when overlays are run")
-
-            if isinstance(item, Show):
-                missing_seasons = ""
-                missing_episodes = ""
-                found_season = False
-                found_episode = False
-                for season in self.query(item.seasons):
+        except Failed as e:
+            if self.show_missing_assets:
+                logger.warning(e)
+        if isinstance(item, Show):
+            missing_seasons = ""
+            missing_episodes = ""
+            found_season = False
+            found_episode = False
+            for season in self.query(item.seasons):
+                try:
                     season_poster, season_background, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
                     if season_poster:
                         found_season = True
@@ -962,7 +967,11 @@ class Plex(Library):
                         missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
                     if season_poster or season_background and "Overlay" not in [la.tag for la in self.item_labels(season)]:
                         self.upload_images(season, poster=season_poster, background=season_background)
-                    for episode in self.query(season.episodes):
+                except Failed as e:
+                    if self.show_missing_assets:
+                        logger.warning(e)
+                for episode in self.query(season.episodes):
+                    try:
                         if episode.seasonEpisode:
                             episode_poster, episode_background, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                             if episode_poster or episode_background:
@@ -971,12 +980,16 @@ class Plex(Library):
                                     self.upload_images(episode, poster=episode_poster, background=episode_background)
                             elif self.show_missing_episode_assets:
                                 missing_episodes += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
-                if (found_season and missing_seasons) or (found_episode and missing_episodes):
-                    logger.info(f"Missing Posters for {item.title}{missing_seasons}{missing_episodes}")
-            if isinstance(item, Artist):
-                missing_assets = ""
-                found_album = False
-                for album in self.query(item.albums):
+                    except Failed as e:
+                        if self.show_missing_assets:
+                            logger.warning(e)
+            if (found_season and missing_seasons) or (found_episode and missing_episodes):
+                logger.info(f"Missing Posters for {item.title}{missing_seasons}{missing_episodes}")
+        if isinstance(item, Artist):
+            missing_assets = ""
+            found_album = False
+            for album in self.query(item.albums):
+                try:
                     album_poster, album_background, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, folder_name=name)
                     if album_poster or album_background:
                         found_album = True
@@ -984,11 +997,11 @@ class Plex(Library):
                         missing_assets += f"\nMissing Album {album.title} Poster"
                     if album_poster or album_background:
                         self.upload_images(album, poster=album_poster, background=album_background)
-                if self.show_missing_season_assets and found_album and missing_assets:
-                    logger.info(f"Missing Album Posters for {item.title}{missing_assets}")
-        except Failed as e:
-            if self.show_missing_assets:
-                logger.warning(e)
+                except Failed as e:
+                    if self.show_missing_assets:
+                        logger.warning(e)
+            if self.show_missing_season_assets and found_album and missing_assets:
+                logger.info(f"Missing Album Posters for {item.title}{missing_assets}")
 
     def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
         poster = None
