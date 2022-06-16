@@ -260,6 +260,8 @@ class IMDb:
         return self.ratings[imdb_id] if imdb_id in self.ratings else None
 
     def get_episode_rating(self, imdb_id, season_num, episode_num):
+        season_num = str(season_num)
+        episode_num = str(episode_num)
         if imdb_id not in self.episode_ratings or season_num not in self.episode_ratings[imdb_id] or episode_num not in self.episode_ratings[imdb_id][season_num]:
             return None
         return self.episode_ratings[imdb_id][season_num][episode_num]
