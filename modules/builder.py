@@ -70,11 +70,15 @@ discover_status = {
     "Returning Series": "returning", "Planned": "planned", "In Production": "production",
     "Ended": "ended", "Canceled": "canceled", "Pilot": "pilot"
 }
+sub_filters = [
+    "filepath", "audio_track_title", "resolution", "audio_language", "subtitle_language", "has_dolby_vision",
+    "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile"
+]
 filters_by_type = {
     "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "filepath", "label", "audio_track_title"],
     "movie_show_season_episode_album_track": ["year"],
     "movie_show_season_episode_artist_album": ["has_overlay"],
-    "movie_show_season_episode": ["resolution", "audio_language", "subtitle_language", "has_dolby_vision"],
+    "movie_show_season_episode": ["resolution", "audio_language", "subtitle_language", "has_dolby_vision", "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile"],
     "movie_show_episode_album": ["release", "critic_rating", "history"],
     "movie_show_episode_track": ["duration"],
     "movie_show_artist_album": ["genre"],
@@ -105,15 +109,18 @@ tmdb_filters = [
 string_filters = ["title", "summary", "studio", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
-    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year", "origin_country",
-    "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre"
+    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
+    "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre",
+    "audio_codec", "audio_profile", "video_codec", "video_profile"
 ]
 tag_modifiers = ["", ".not", ".regex", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_overlay", "has_dolby_vision"]
 date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired"]
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
-number_filters = ["year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration"]
-number_modifiers = [".gt", ".gte", ".lt", ".lte"]
+number_filters = [
+    "year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration",
+    "channels", "height", "width", "aspect"]
+number_modifiers = ["", ".not", ".gt", ".gte", ".lt", ".lte"]
 special_filters = [
     "history", "episodes", "seasons", "albums", "tracks", "original_language", "original_language.not",
     "tmdb_status", "tmdb_status.not", "tmdb_type", "tmdb_type.not"
@@ -125,7 +132,10 @@ all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in number_filters for m in number_modifiers]
 date_attributes = plex.date_attributes + ["first_episode_aired", "last_episode_aired"]
 year_attributes = plex.year_attributes + ["tmdb_year"]
-number_attributes = plex.number_attributes + ["tmdb_vote_count"]
+number_attributes = plex.number_attributes + ["channels", "height", "width"]
+tag_attributes = plex.tag_attributes + ["audio_codec", "audio_profile", "video_codec", "video_profile"]
+float_attributes = plex.float_attributes + ["aspect"]
+boolean_attributes = plex.boolean_attributes + boolean_filters
 smart_invalid = ["collection_order", "collection_level"]
 smart_only = ["collection_filtering"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_report", "smart_label"] + radarr_details + sonarr_details
@@ -1437,7 +1447,7 @@ class CollectionBuilder:
                 final_data = self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)
                 if filter_attr in tmdb_filters:
                     self.tmdb_filters.append((filter_final, final_data))
-                elif self.collection_level in ["show", "season", "artist", "album"] and filter_attr in ["filepath", "audio_track_title", "resolution", "audio_language", "subtitle_language", "has_dolby_vision"]:
+                elif self.collection_level in ["show", "season", "artist", "album"] and filter_attr in sub_filters:
                     self.filters.append(("episodes" if self.collection_level in ["show", "season"] else "tracks", {filter_final: final_data, "percentage": self.default_percent}))
                 else:
                     self.filters.append((filter_final, final_data))
@@ -1852,7 +1862,7 @@ class CollectionBuilder:
     def validate_attribute(self, attribute, modifier, final, data, validate, plex_search=False):
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if plex_search else list_to_pair
-        if attribute in plex.tag_attributes and modifier in [".regex"]:
+        if attribute in tag_attributes and modifier in [".regex"]:
             _, names = self.library.get_search_choices(attribute, title=not plex_search, name_pairs=True)
             valid_list = []
             used = []
@@ -1892,7 +1902,7 @@ class CollectionBuilder:
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_types.items()])
         elif attribute == "tmdb_status":
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in discover_status.items()])
-        elif attribute in plex.tag_attributes and modifier in ["", ".not"]:
+        elif attribute in tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
                 for value in util.get_list(data):
@@ -1948,11 +1958,11 @@ class CollectionBuilder:
             search_data = util.parse(self.Type, final, data, datatype="int", minimum=0)
             return f"{search_data}{search_mod}" if plex_search else search_data
         elif (attribute in number_attributes + year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
-                or (attribute in plex.tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
+                or (attribute in tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return util.parse(self.Type, final, data, datatype="int", minimum=0)
-        elif attribute in plex.float_attributes and modifier in [".gt", ".gte", ".lt", ".lte"]:
+        elif attribute in float_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
             return util.parse(self.Type, final, data, datatype="float", minimum=0, maximum=None if attribute == "duration" else 10)
-        elif attribute in plex.boolean_attributes + boolean_filters:
+        elif attribute in boolean_attributes:
             return util.parse(self.Type, attribute, data, datatype="bool")
         elif attribute in ["seasons", "episodes", "albums", "tracks"]:
             if isinstance(data, dict) and data:
