@@ -157,10 +157,11 @@ class Library(ABC):
                 if self.config.Cache:
                     _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
                 if not image_compare or str(poster.compare) != str(image_compare):
-                    test = [la.tag for la in self.item_labels(item)]
-                    if overlay and "Overlay" in test:
-                        item.removeLabel("Overlay")
-                        item.saveEdits()
+                    if hasattr(item, "labels"):
+                        test = [la.tag for la in self.item_labels(item)]
+                        if overlay and "Overlay" in test:
+                            item.removeLabel("Overlay")
+                            item.saveEdits()
                     self._upload_image(item, poster)
                     poster_uploaded = True
                     logger.info(f"Detail: {poster.attribute} updated {poster.message}")

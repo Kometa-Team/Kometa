@@ -1070,7 +1070,8 @@ class Plex(Library):
                         extra = f"\nAsset Directory Created: {item_asset_directory}"
                     raise Failed(f"Asset Warning: Unable to find asset folder: '{folder_name}{extra}'")
                 else:
-                    logger.error(f"Asset Warning: Unable to find asset file: '{file_name}'")
+                    if self.assets_for_all and self.show_missing_assets:
+                        logger.warning(f"Asset Warning: Unable to find asset file: '{file_name}'")
                     return None, None, item_asset_directory, folder_name
 
         poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")

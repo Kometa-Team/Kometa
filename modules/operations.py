@@ -341,7 +341,7 @@ class Operations:
                         pass
 
                 item.saveEdits()
-                if batch_display:
+                if len(batch_display) > 0:
                     logger.info(f"Batch Edits{batch_display}")
 
                 episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
