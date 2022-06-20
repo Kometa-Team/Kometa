@@ -948,12 +948,12 @@ class Plex(Library):
                     self.upload_images(item, poster=poster, background=background)
                 elif self.show_missing_assets and self.asset_folders:
                     logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
-                else:
+                elif self.show_missing_assets:
                     logger.warning(f"Asset Warning: {name} has an Overlay and will be updated when overlays are run")
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)
-        if isinstance(item, Show):
+        if isinstance(item, Show) and ((self.asset_folders and item_dir) or not self.asset_folders):
             missing_seasons = ""
             missing_episodes = ""
             found_season = False

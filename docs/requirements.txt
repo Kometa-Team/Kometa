@@ -2,3 +2,4 @@ myst-parser
 sphinx_bootstrap_theme
 sphinx_inline_tabs
 sphinx-copybutton
+sphinx-reredirects
