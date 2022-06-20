@@ -45,7 +45,8 @@ extensions = [
     'sphinx.ext.todo',
     'myst_parser',
     'sphinx_inline_tabs',
-    'sphinx_copybutton'
+    'sphinx_copybutton',
+    'sphinx_reredirects'
 ]
 
 source_suffix = ['.rst', '.md']
@@ -93,6 +94,12 @@ html_favicon = "_static/favicon.png"
 
 html_copy_source = False
 html_show_sourcelink = False
+
+# Redirect URLs
+# "<source>": "<target>"
+redirects = {
+     "redact": "https://regex101.com/r/DMo1DQ/latest"
+}
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.
@@ -142,6 +149,7 @@ html_theme_options = {
         ]),
         ("_menu", "Config", [
             ("Configuration File", "config/configuration"),
+            ("Redacting Your Config", "redact"),
             ("_divider", ),
             ("Libraries/Playlists", "config/libraries"),
             ("Path Types", "config/paths"),

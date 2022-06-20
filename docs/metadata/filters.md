@@ -30,17 +30,20 @@ String filters can take multiple values **only as a list**.
 
 ### Attribute
 
-| String Filter       | Description                              |  Movies  |        Shows        |       Seasons       | Episodes |       Artists       |       Albums        |  Track   |
-|:--------------------|:-----------------------------------------|:--------:|:-------------------:|:-------------------:|:--------:|:-------------------:|:-------------------:|:--------:|
-| `title`             | Uses the title attribute to match        | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
-| `summary`           | Uses the summary attribute to match      | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
-| `studio`            | Uses the studio attribute to match       | &#9989;  |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
-| `record_label`      | Uses the record label attribute to match | &#10060; |      &#10060;       |      &#10060;       | &#10060; |      &#10060;       |       &#9989;       | &#10060; |
-| `folder`            | Uses the item's folder to match          | &#10060; |       &#9989;       |      &#10060;       | &#10060; |       &#9989;       |      &#10060;       | &#10060; |
-| `filepath`          | Uses the item's filepath to match        | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
-| `audio_track_title` | Uses the audio track titles to match     | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
+| String Filter            | Description                              |  Movies  |        Shows        |       Seasons       | Episodes |       Artists       |       Albums        |  Track   |
+|:-------------------------|:-----------------------------------------|:--------:|:-------------------:|:-------------------:|:--------:|:-------------------:|:-------------------:|:--------:|
+| `title`                  | Uses the title attribute to match        | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
+| `tmdb_title`<sup>2</sup> | Uses the title from TMDb to match        | &#9989;  |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
+| `summary`                | Uses the summary attribute to match      | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
+| `studio`                 | Uses the studio attribute to match       | &#9989;  |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
+| `record_label`           | Uses the record label attribute to match | &#10060; |      &#10060;       |      &#10060;       | &#10060; |      &#10060;       |       &#9989;       | &#10060; |
+| `folder`                 | Uses the item's folder to match          | &#10060; |       &#9989;       |      &#10060;       | &#10060; |       &#9989;       |      &#10060;       | &#10060; |
+| `filepath`               | Uses the item's filepath to match        | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
+| `audio_track_title`      | Uses the audio track titles to match     | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
 
 <sup>1</sup> Filters using the special `episodes`/`tracks` [filter](#special-filters) with the [default percent](details/setting).
+
+<sup>2</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
 
 ## Tag Filters
 
