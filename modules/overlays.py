@@ -130,9 +130,12 @@ class Overlays:
                                     overlay_change = True
 
                     try:
-                        poster, _, item_dir, _ = self.library.find_item_assets(item)
+                        poster, _, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all and self.library.show_missing_assets:
-                            logger.warning(f"Asset Warning: No poster found in the assets folder '{item_dir}'")
+                            if self.config.asset_folders:
+                                logger.warning(f"Asset Warning: No poster found in the assets folder '{item_dir}'")
+                            else:
+                                logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders")
                     except Failed as e:
                         if self.library.assets_for_all and self.library.show_missing_assets:
                             logger.warning(e)
