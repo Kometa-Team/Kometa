@@ -1791,7 +1791,7 @@ class CollectionBuilder:
                                 results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                     else:
                         validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, plex_search=True)
-                        if validation is not False and not validation:
+                        if validation is not False and validation != 0 and not validation:
                             continue
                         elif attr in plex.date_attributes and modifier in ["", ".not"]:
                             last_text = "is not in the last" if modifier == ".not" else "is in the last"
