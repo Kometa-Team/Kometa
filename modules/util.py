@@ -93,6 +93,7 @@ parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in pare
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 previous_time = None
 start_time = None
+special_text_overlays = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%", "#"]]
 
 def make_ordinal(n):
     return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
@@ -921,6 +922,8 @@ class Overlay:
         self.font_name = None
         self.font_size = 36
         self.font_color = None
+        self.addon_offset = None
+        self.addon_align = None
         logger.debug("")
         logger.debug("Validating Method: overlay")
         logger.debug(f"Value: {self.data}")
@@ -990,7 +993,7 @@ class Overlay:
                 time.sleep(1)
             return image_path
 
-        if not self.name.startswith(("blur", "text")):
+        if not self.name.startswith("blur"):
             if "file" in self.data and self.data["file"]:
                 self.path = self.data["file"]
             elif "git" in self.data and self.data["git"]:
@@ -1000,7 +1003,9 @@ class Overlay:
             elif "url" in self.data and self.data["url"]:
                 self.path = get_and_save_image(self.data["url"])
 
-        if self.name.startswith("blur"):
+        if "|" in self.name:
+            raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
+        elif self.name.startswith("blur"):
             try:
                 match = re.search("\\(([^)]+)\\)", self.name)
                 if not match or 0 >= int(match.group(1)) > 100:
@@ -1012,6 +1017,22 @@ class Overlay:
         elif self.name.startswith("text"):
             if not self.has_coordinates() and not self.queue:
                 raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset are required when using text")
+            if self.path:
+                if not os.path.exists(self.path):
+                    raise Failed(f"Overlay Error: Text Overlay Addon Image not found at: {self.path}")
+                self.addon_offset = parse("Overlay", "addon_offset", self.data["addon_offset"], datatype="int", parent="overlay") if "addon_offset" in self.data else 0
+                self.addon_align = parse("Overlay", "addon_align", self.data["addon_align"], parent="overlay", options=["left", "right", "top", "bottom"]) if "addon_align" in self.data else "left"
+                image_compare = None
+                if self.config.Cache:
+                    _, image_compare, _ = self.config.Cache.query_image_map(self.name, f"{self.library.image_table_name}_overlays")
+                overlay_size = os.stat(self.path).st_size
+                self.updated = not image_compare or str(overlay_size) != str(image_compare)
+                try:
+                    self.image = Image.open(self.path).convert("RGBA")
+                    if self.config.Cache:
+                        self.config.Cache.update_image_map(self.name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
+                except OSError:
+                    raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
             match = re.search("\\(([^)]+)\\)", self.name)
             if not match:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
@@ -1043,12 +1064,11 @@ class Overlay:
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
             text = self.name[5:-1]
-            if text not in [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%"]]:
-                self.portrait, _ = self.get_backdrop(portrait_dim, text=text)
-                self.landscape, _ = self.get_backdrop(landscape_dim, text=text)
+            if text not in special_text_overlays:
+                box = self.image.size if self.image else None
+                self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=text)
+                self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=text)
         else:
-            if "|" in self.name:
-                raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
             if not self.path:
                 clean_name, _ = validate_filename(self.name)
                 self.path = os.path.join(library.overlay_folder, f"{clean_name}.png")
@@ -1071,9 +1091,20 @@ class Overlay:
 
     def get_backdrop(self, canvas_box, box=None, text=None, new_cords=None):
         overlay_image = None
+        width = None
+        height = None
+        box_width = None
+        box_height = None
         if text is not None:
             _, _, width, height = self.get_text_size(text)
-            box = (width, height)
+            if box is not None:
+                box_width, box_height = box
+                if self.addon_align in ["left", "right"]:
+                    box = (width + box_width + self.addon_offset, height if height > box_height else box_height)
+                else:
+                    box = (width if width > box_width else box_width, height + box_height + self.addon_offset)
+            else:
+                box = (width, height)
         x_cord, y_cord = self.get_coordinates(canvas_box, box, new_cords=new_cords)
         if text is not None or self.has_back:
             overlay_image = Image.new("RGBA", canvas_box, (255, 255, 255, 0))
@@ -1094,8 +1125,40 @@ class Overlay:
                 else:
                     drawing.rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width)
 
+            a_x_cord = None
+            a_y_cord = None
+            if box_width:
+                if self.addon_align == "left":
+                    a_x_cord = x_cord
+                    x_cord = a_x_cord + box_width + self.addon_offset
+                elif self.addon_align == "right":
+                    a_x_cord = x_cord + box_width + self.addon_offset
+                elif width == box_width:
+                    a_x_cord = x_cord
+                elif width < box_width:
+                    a_x_cord = x_cord
+                    x_cord = x_cord + ((box_width - width) / 2)
+                else:
+                    a_x_cord = x_cord + ((box_width - width) / 2)
+
+                if self.addon_align == "top":
+                    a_y_cord = y_cord
+                    y_cord = a_y_cord + box_height + self.addon_offset
+                elif self.addon_align == "bottom":
+                    a_y_cord = y_cord + box_height + self.addon_offset
+                elif height == box_height:
+                    a_y_cord = y_cord
+                elif height < box_height:
+                    a_y_cord = y_cord
+                    y_cord = y_cord + ((box_height - height) / 2)
+                else:
+                    a_y_cord = y_cord + ((box_height - height) / 2)
+
             if text is not None:
                 drawing.text((x_cord, y_cord), text, font=self.font, fill=self.font_color, anchor="lt")
+            if a_x_cord is not None:
+                x_cord = a_x_cord
+                y_cord = a_y_cord
         return overlay_image, (x_cord, y_cord)
 
     def get_overlay_compare(self):

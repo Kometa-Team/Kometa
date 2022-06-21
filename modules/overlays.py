@@ -9,8 +9,6 @@ from PIL import Image, ImageFilter
 
 logger = util.logger
 
-special_text_overlays = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%", "#"]]
-
 class Overlays:
     def __init__(self, config, library):
         self.config = config
@@ -120,7 +118,7 @@ class Overlays:
 
                     if self.config.Cache:
                         for over_name in over_names:
-                            if over_name in special_text_overlays:
+                            if over_name in util.special_text_overlays:
                                 rating_type = over_name[5:-1]
                                 if rating_type.endswith(("%", "#")):
                                     rating_type = rating_type[:-1]
@@ -182,30 +180,40 @@ class Overlays:
                             if blur_num > 0:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
 
+                            def get_text(text):
+                                text = text[5:-1]
+                                if text in util.special_text_overlays:
+                                    per = text.endswith("%")
+                                    flat = text.endswith("#")
+                                    text_rating_type = text[:-1] if per or flat else text
+                                    text_actual = plex.attribute_translation[text_rating_type]
+                                    if not hasattr(item, text_actual) or getattr(item, text_actual) is None:
+                                        raise Failed(f"Overlay Warning: No {text_rating_type} found")
+                                    text = getattr(item, text_actual)
+                                    if self.config.Cache:
+                                        self.config.Cache.update_overlay_ratings(item.ratingKey, text_rating_type, text)
+                                    if per:
+                                        text = f"{int(text * 10)}%"
+                                    if flat and str(text).endswith(".0"):
+                                        text = str(text)[:-2]
+                                return str(text)
+
                             for over_name in applied_names:
                                 overlay = properties[over_name]
                                 if over_name.startswith("text"):
-                                    text = over_name[5:-1]
-                                    if text in special_text_overlays:
-                                        per = text.endswith("%")
-                                        flat = text.endswith("#")
-                                        rating_type = text[:-1] if per or flat else text
-                                        actual = plex.attribute_translation[rating_type]
-                                        if not hasattr(item, actual) or getattr(item, actual) is None:
-                                            logger.warning(f"Overlay Warning: No {rating_type} found")
+                                    if over_name[5:-1] in util.special_text_overlays:
+                                        image_box = overlay.image.size if overlay.image else None
+                                        try:
+                                            overlay_image, addon_box = overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(over_name))
+                                        except Failed as e:
+                                            logger.warning(e)
                                             continue
-                                        text = getattr(item, actual)
-                                        if self.config.Cache:
-                                            self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
-                                        if per:
-                                            text = f"{int(text * 10)}%"
-                                        if flat and str(text).endswith(".0"):
-                                            text = str(text)[:-2]
-
-                                        overlay_image, _ = overlay.get_backdrop((canvas_width, canvas_height), text=str(text))
+                                        new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                        if overlay.image:
+                                            new_poster.paste(overlay.image, addon_box, overlay.image)
                                     else:
                                         overlay_image = overlay.landscape if isinstance(item, Episode) else overlay.portrait
-                                    new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                        new_poster.paste(overlay_image, (0, 0), overlay_image)
                                 else:
                                     if overlay.has_coordinates():
                                         if overlay.portrait is not None:
@@ -229,24 +237,15 @@ class Overlays:
                                     over_name = sorted_weights[o][1]
                                     overlay = properties[over_name]
                                     if over_name.startswith("text"):
-                                        text = over_name[5:-1]
-                                        if text in special_text_overlays:
-                                            per = text.endswith("%")
-                                            flat = text.endswith("#")
-                                            rating_type = text[:-1] if per or flat else text
-                                            actual = plex.attribute_translation[rating_type]
-                                            if not hasattr(item, actual) or getattr(item, actual) is None:
-                                                logger.warning(f"Overlay Warning: No {rating_type} found")
-                                                continue
-                                            text = getattr(item, actual)
-                                            if self.config.Cache:
-                                                self.config.Cache.update_overlay_ratings(item.ratingKey, rating_type, text)
-                                            if per:
-                                                text = f"{int(text * 10)}%"
-                                            if flat and str(text).endswith(".0"):
-                                                text = str(text)[:-2]
-                                        overlay_image, _ = overlay.get_backdrop((canvas_width, canvas_height), text=str(text), new_cords=cord)
+                                        image_box = overlay.image.size if overlay.image else None
+                                        try:
+                                            overlay_image, addon_box = overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(over_name), new_cords=cord)
+                                        except Failed as e:
+                                            logger.warning(e)
+                                            continue
                                         new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                        if overlay.image:
+                                            new_poster.paste(overlay.image, addon_box, overlay.image)
                                     else:
                                         if overlay.has_back:
                                             overlay_image, overlay_box = overlay.get_backdrop((canvas_width, canvas_height), box=overlay.image.size, new_cords=cord)
