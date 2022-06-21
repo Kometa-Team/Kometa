@@ -825,6 +825,7 @@ def run_playlists(config):
 
             except Deleted as e:
                 logger.info(e)
+                status[mapping_name]["status"] = "Deleted"
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
