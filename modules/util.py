@@ -93,7 +93,7 @@ parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in pare
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 previous_time = None
 start_time = None
-special_text_overlays = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%", "#"]]
+special_text_overlays = [f"text({a}{s})" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%", "#"]]
 
 def make_ordinal(n):
     return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
@@ -902,9 +902,10 @@ def parse_cords(data, parent, required=False):
 
 
 class Overlay:
-    def __init__(self, config, library, overlay_data, suppress):
+    def __init__(self, config, library, mapping_name, overlay_data, suppress):
         self.config = config
         self.library = library
+        self.mapping_name = mapping_name
         self.data = overlay_data
         self.suppress = suppress
         self.keys = []
@@ -924,16 +925,14 @@ class Overlay:
         self.font_color = None
         self.addon_offset = None
         self.addon_align = None
+
         logger.debug("")
         logger.debug("Validating Method: overlay")
         logger.debug(f"Value: {self.data}")
         if not isinstance(self.data, dict):
             self.data = {"name": str(self.data)}
             logger.warning(f"Overlay Warning: No overlay attribute using mapping name {self.data} as the overlay name")
-
-        if "name" not in self.data or not self.data["name"]:
-            raise Failed(f"Overlay Error: overlay must have the name attribute")
-        self.name = str(self.data["name"])
+        self.name = str(self.data["name"]) if "name" in self.data and self.data["name"] else self.mapping_name
 
         if "group" in self.data and self.data["group"]:
             self.group = str(self.data["group"])
@@ -1024,13 +1023,13 @@ class Overlay:
                 self.addon_align = parse("Overlay", "addon_align", self.data["addon_align"], parent="overlay", options=["left", "right", "top", "bottom"]) if "addon_align" in self.data else "left"
                 image_compare = None
                 if self.config.Cache:
-                    _, image_compare, _ = self.config.Cache.query_image_map(self.name, f"{self.library.image_table_name}_overlays")
+                    _, image_compare, _ = self.config.Cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
                 overlay_size = os.stat(self.path).st_size
                 self.updated = not image_compare or str(overlay_size) != str(image_compare)
                 try:
                     self.image = Image.open(self.path).convert("RGBA")
                     if self.config.Cache:
-                        self.config.Cache.update_image_map(self.name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
+                        self.config.Cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
                 except OSError:
                     raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
             match = re.search("\\(([^)]+)\\)", self.name)
@@ -1063,11 +1062,10 @@ class Overlay:
                     self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
-            text = self.name[5:-1]
-            if text not in special_text_overlays:
+            if self.name not in special_text_overlays:
                 box = self.image.size if self.image else None
-                self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=text)
-                self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=text)
+                self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
+                self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])
         else:
             if not self.path:
                 clean_name, _ = validate_filename(self.name)
@@ -1076,7 +1074,7 @@ class Overlay:
                 raise Failed(f"Overlay Error: Overlay Image not found at: {self.path}")
             image_compare = None
             if self.config.Cache:
-                _, image_compare, _ = self.config.Cache.query_image_map(self.name, f"{self.library.image_table_name}_overlays")
+                _, image_compare, _ = self.config.Cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
             overlay_size = os.stat(self.path).st_size
             self.updated = not image_compare or str(overlay_size) != str(image_compare)
             try:
@@ -1085,7 +1083,7 @@ class Overlay:
                     self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.image.size)
                     self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.image.size)
                 if self.config.Cache:
-                    self.config.Cache.update_image_map(self.name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
+                    self.config.Cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
             except OSError:
                 raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
 
@@ -1162,7 +1160,7 @@ class Overlay:
         return overlay_image, (x_cord, y_cord)
 
     def get_overlay_compare(self):
-        output = self.name
+        output = f"{self.mapping_name}|{self.name}"
         if self.group:
             output += f"{self.group}{self.weight}"
         if self.has_coordinates():
@@ -1171,7 +1169,7 @@ class Overlay:
             output += f"{self.font_name}{self.font_size}"
         if self.back_box:
             output += f"{self.back_box[0]}{self.back_box[1]}"
-        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
+        for value in [self.addon_align, self.addon_offset, self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
             if value is not None:
                 output += f"{value}"
         return output
