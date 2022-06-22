@@ -118,8 +118,9 @@ class Overlays:
 
                     if self.config.Cache:
                         for over_name in over_names:
-                            if over_name in util.special_text_overlays:
-                                rating_type = over_name[5:-1]
+                            overlay = properties[over_name]
+                            if overlay.name in util.special_text_overlays:
+                                rating_type = overlay.name[5:-1]
                                 if rating_type.endswith(("%", "#")):
                                     rating_type = rating_type[:-1]
                                 cache_rating = self.config.Cache.query_overlay_ratings(item.ratingKey, rating_type)
@@ -132,7 +133,7 @@ class Overlays:
                     try:
                         poster, _, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all and self.library.show_missing_assets:
-                            if self.config.asset_folders:
+                            if self.library.asset_folders:
                                 logger.warning(f"Asset Warning: No poster found in the assets folder '{item_dir}'")
                             else:
                                 logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders")
@@ -185,7 +186,7 @@ class Overlays:
 
                             def get_text(text):
                                 text = text[5:-1]
-                                if text in util.special_text_overlays:
+                                if f"text({text})" in util.special_text_overlays:
                                     per = text.endswith("%")
                                     flat = text.endswith("#")
                                     text_rating_type = text[:-1] if per or flat else text
@@ -203,11 +204,11 @@ class Overlays:
 
                             for over_name in applied_names:
                                 overlay = properties[over_name]
-                                if over_name.startswith("text"):
-                                    if over_name[5:-1] in util.special_text_overlays:
+                                if overlay.name.startswith("text"):
+                                    if overlay.name in util.special_text_overlays:
                                         image_box = overlay.image.size if overlay.image else None
                                         try:
-                                            overlay_image, addon_box = overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(over_name))
+                                            overlay_image, addon_box = overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(overlay.name))
                                         except Failed as e:
                                             logger.warning(e)
                                             continue
@@ -239,10 +240,10 @@ class Overlays:
                                         break
                                     over_name = sorted_weights[o][1]
                                     overlay = properties[over_name]
-                                    if over_name.startswith("text"):
+                                    if overlay.name.startswith("text"):
                                         image_box = overlay.image.size if overlay.image else None
                                         try:
-                                            overlay_image, addon_box = overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(over_name), new_cords=cord)
+                                            overlay_image, addon_box = overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(overlay.name), new_cords=cord)
                                         except Failed as e:
                                             logger.warning(e)
                                             continue
@@ -302,8 +303,9 @@ class Overlays:
 
                     logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
 
-                    if builder.overlay.name not in properties:
-                        properties[builder.overlay.name] = builder.overlay
+                    if builder.overlay.mapping_name in properties:
+                        raise Failed(f"Overlay Error: Overlay {builder.overlay.mapping_name} already exists ")
+                    properties[builder.overlay.mapping_name] = builder.overlay
 
                     for method, value in builder.builders:
                         logger.debug("")
@@ -323,11 +325,11 @@ class Overlays:
                         for item in builder.added_items:
                             key_to_item[item.ratingKey] = item
                             added_titles.append(item)
-                            if item.ratingKey not in properties[builder.overlay.name].keys:
-                                properties[builder.overlay.name].keys.append(item.ratingKey)
+                            if item.ratingKey not in properties[builder.overlay.mapping_name].keys:
+                                properties[builder.overlay.mapping_name].keys.append(item.ratingKey)
                     if added_titles:
                         logger.debug(f"{len(added_titles)} Titles Found: {[self.library.get_item_sort_title(a, atr='title') for a in added_titles]}")
-                    logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay.name}")
+                    logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay.mapping_name}")
                 except NotScheduled as e:
                     logger.info(e)
                 except Failed as e:

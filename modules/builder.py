@@ -260,7 +260,7 @@ class CollectionBuilder:
                     suppress = util.get_list(data[methods["suppress_overlays"]])
                 else:
                     logger.error(f"Overlay Error: suppress_overlays attribute is blank")
-            self.overlay = Overlay(config, library, overlay_data, suppress)
+            self.overlay = Overlay(config, library, self.mapping_name, overlay_data, suppress)
 
         self.sync_to_users = None
         self.valid_users = []
@@ -1775,7 +1775,7 @@ class CollectionBuilder:
                     error = f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
                     error = f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries"
-                elif _data is not False and not _data:
+                elif _data is not False and _data != 0 and not _data:
                     error = f"{self.Type} Error: {final_attr} {method} attribute is blank"
                 else:
                     if final_attr.startswith(("any", "all")):
