@@ -88,12 +88,13 @@ There are many attributes available when using overlays to edit how they work.
 | `back_color`               | Backdrop Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                                                                                                              | &#10060; |
 | `back_width`               | Backdrop Width for the Text Overlay. If `back_width` is not specified the Backdrop Sizes to the text<br>**`back_height` is required when using `back_width`**<br>**Value:** Integer greater than 0                                                                                  | &#10060; |
 | `back_height`              | Backdrop Height for the Text Overlay. If `back_height` is not specified the Backdrop Sizes to the text<br>**`back_width` is required when using `back_height`**<br>**Value:** Integer greater than 0                                                                                | &#10060; |
+| `back_align`               | Alignment for the Text Overlay inside the backdrop. If `back_align` is not specified the Backdrop Centers the text<br>**`back_width` and `back_height` are required when using `back_align`**<br>**Values:** `left`, `right`, `center`, `top`, `bottom`                             | &#10060; |
 | `back_padding`             | Backdrop Padding for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                         | &#10060; |
 | `back_radius`              | Backdrop Radius for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                          | &#10060; |
 | `back_line_color`          | Backdrop Line Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                                                                                                         | &#10060; |
 | `back_line_width`          | Backdrop Line Width for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                      | &#10060; |
 | `addon_offset`             | Text Addon Image Offset from the text.<br>**`addon_offset` Only works with text overlays**<br>**Value:** Integer 0 or greater                                                                                                                                                       | &#10060; |
-| `addon_align`              | Text Addon Image Alignment in relation to the text.<br>**`addon_align` Only works with text overlays**<br>**Values:** `left`, `right`, `top`, `bottom`                                                                                                                              | &#10060; |
+| `addon_position`           | Text Addon Image Alignment in relation to the text.<br>**`addon_position` Only works with text overlays**<br>**Values:** `left`, `right`, `top`, `bottom`                                                                                                                           | &#10060; |
 
 * If `url`, `git`, and `repo` are all not defined then PMM will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
 
@@ -178,7 +179,7 @@ overlays:
 ```
 
 You can add an image to accompany the text by specifying the image location using `file`, `url`, `git`, or `repo`. 
-Then you can use `addon_offset` to control the space between the text and the image and `addon_align` to control which side of the text the image will be 
+Then you can use `addon_offset` to control the space between the text and the image and `addon_position` to control which side of the text the image will be 
 
 ```yaml
 overlays:
@@ -196,8 +197,8 @@ overlays:
       back_radius: 30
       back_width: 300
       back_height: 105
-      git: PMM/overlay/images/raw/IMDB_Rating
-      addon_align: left
+      git: PMM/overlays/images/raw/IMDB_Rating
+      addon_position: left
       addon_offset: 25
 ```
 
