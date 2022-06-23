@@ -61,13 +61,12 @@ class MyAnimeList:
         if not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
-        self._genres = None
-        self._studios = None
+        self._genres = {}
+        self._studios = {}
 
     @property
     def genres(self):
         if not self._genres:
-            self._genres = {}
             for data in self._jiken_request("genres/anime")["data"]:
                 self._genres[data["name"]] = int(data["mal_id"])
                 self._genres[data["name"].lower()] = int(data["mal_id"])

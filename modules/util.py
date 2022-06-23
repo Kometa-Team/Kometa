@@ -923,8 +923,8 @@ class Overlay:
         self.font_name = None
         self.font_size = 36
         self.font_color = None
-        self.addon_offset = None
-        self.addon_align = None
+        self.addon_offset = 0
+        self.addon_position = None
 
         logger.debug("")
         logger.debug("Validating Method: overlay")
@@ -962,11 +962,14 @@ class Overlay:
         self.back_line_width = parse("Overlay", "back_line_width", self.data["back_line_width"], datatype="int", parent="overlay") if "back_line_width" in self.data else None
         self.back_line_color = color("back_line_color")
         self.back_padding = parse("Overlay", "back_padding", self.data["back_padding"], datatype="int", parent="overlay", default=0) if "back_padding" in self.data else 0
+        self.back_align = parse("Overlay", "back_align", self.data["back_align"], parent="overlay", default="center", options=["left", "right", "center", "top", "bottom"]) if "back_align" in self.data else "center"
         self.back_box = None
         back_width = parse("Overlay", "back_width", self.data["back_width"], datatype="int", parent="overlay", minimum=0) if "back_width" in self.data else -1
         back_height = parse("Overlay", "back_height", self.data["back_height"], datatype="int", parent="overlay", minimum=0) if "back_height" in self.data else -1
         if (back_width >= 0 and back_height < 0) or (back_height >= 0 and back_width < 0):
             raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
+        if self.back_align != "center" and (back_width < 0 or back_height < 0):
+            raise Failed(f"Overlay Error: overlay attribute back_align only works when back_width and back_height are used")
         elif back_width >= 0 and back_height >= 0:
             self.back_box = (back_width, back_height)
         self.has_back = True if self.back_color or self.back_line_color else False
@@ -1020,7 +1023,7 @@ class Overlay:
                 if not os.path.exists(self.path):
                     raise Failed(f"Overlay Error: Text Overlay Addon Image not found at: {self.path}")
                 self.addon_offset = parse("Overlay", "addon_offset", self.data["addon_offset"], datatype="int", parent="overlay") if "addon_offset" in self.data else 0
-                self.addon_align = parse("Overlay", "addon_align", self.data["addon_align"], parent="overlay", options=["left", "right", "top", "bottom"]) if "addon_align" in self.data else "left"
+                self.addon_position = parse("Overlay", "addon_position", self.data["addon_position"], parent="overlay", options=["left", "right", "top", "bottom"]) if "addon_position" in self.data else "left"
                 image_compare = None
                 if self.config.Cache:
                     _, image_compare, _ = self.config.Cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
@@ -1089,75 +1092,107 @@ class Overlay:
 
     def get_backdrop(self, canvas_box, box=None, text=None, new_cords=None):
         overlay_image = None
-        width = None
-        height = None
-        box_width = None
-        box_height = None
+        text_width = None
+        text_height = None
+        image_width, image_height = box if box else (None, None)
         if text is not None:
-            _, _, width, height = self.get_text_size(text)
-            if box is not None:
-                box_width, box_height = box
-                if self.addon_align in ["left", "right"]:
-                    box = (width + box_width + self.addon_offset, height if height > box_height else box_height)
-                else:
-                    box = (width if width > box_width else box_width, height + box_height + self.addon_offset)
+            _, _, text_width, text_height = self.get_text_size(text)
+            if image_width is not None and self.addon_position in ["left", "right"]:
+                box = (text_width + image_width + self.addon_offset, text_height if text_height > image_height else image_height)
+            elif image_width is not None:
+                box = (text_width if text_width > image_width else image_width, text_height + image_height + self.addon_offset)
             else:
-                box = (width, height)
-        x_cord, y_cord = self.get_coordinates(canvas_box, box, new_cords=new_cords)
+                box = (text_width, text_height)
+        box_width, box_height = box
+        back_width, back_height = self.back_box if self.back_box else (None, None)
+        start_x, start_y = self.get_coordinates(canvas_box, box, new_cords=new_cords)
+        main_x = start_x
+        main_y = start_y
         if text is not None or self.has_back:
             overlay_image = Image.new("RGBA", canvas_box, (255, 255, 255, 0))
             drawing = ImageDraw.Draw(overlay_image)
             if self.has_back:
                 cords = (
-                    x_cord - self.back_padding,
-                    y_cord - self.back_padding,
-                    x_cord + (self.back_box[0] if self.back_box else box[0]) + self.back_padding,
-                    y_cord + (self.back_box[1] if self.back_box else box[1]) + self.back_padding
+                    start_x - self.back_padding,
+                    start_y - self.back_padding,
+                    start_x + (back_width if self.back_box else box_width) + self.back_padding,
+                    start_y + (back_height if self.back_box else box_height) + self.back_padding
                 )
-                if self.back_box:
-                    x_cord = x_cord + (self.back_box[0] - box[0]) // 2
-                    y_cord = y_cord + (self.back_box[1] - box[1]) // 2
-
                 if self.back_radius:
                     drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)
                 else:
                     drawing.rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width)
 
-            a_x_cord = None
-            a_y_cord = None
-            if box_width:
-                if self.addon_align == "left":
-                    a_x_cord = x_cord
-                    x_cord = a_x_cord + box_width + self.addon_offset
-                elif self.addon_align == "right":
-                    a_x_cord = x_cord + box_width + self.addon_offset
-                elif width == box_width:
-                    a_x_cord = x_cord
-                elif width < box_width:
-                    a_x_cord = x_cord
-                    x_cord = x_cord + ((box_width - width) / 2)
+            if self.back_box:
+                if self.back_align == "left":
+                    main_x = start_x
+                elif self.back_align == "right":
+                    main_x = start_x + back_width - (text_width if text is not None else image_width)
+                elif self.back_align == "top":
+                    main_y = start_y
+                elif self.back_align == "bottom":
+                    main_y = start_y + back_height - (text_height if text is not None else image_height)
                 else:
-                    a_x_cord = x_cord + ((box_width - width) / 2)
+                    main_x = start_x + (back_width - box_width) // 2
+                    main_y = start_y + (back_height - box_width) // 2
 
-                if self.addon_align == "top":
-                    a_y_cord = y_cord
-                    y_cord = a_y_cord + box_height + self.addon_offset
-                elif self.addon_align == "bottom":
-                    a_y_cord = y_cord + box_height + self.addon_offset
-                elif height == box_height:
-                    a_y_cord = y_cord
-                elif height < box_height:
-                    a_y_cord = y_cord
-                    y_cord = y_cord + ((box_height - height) / 2)
+            addon_x = None
+            addon_y = None
+            if text is not None and image_width:
+                addon_x = main_x
+                addon_y = main_y
+                if self.addon_position == "left":
+                    if self.back_align == "left":
+                        main_x = start_x + self.addon_offset
+                    elif self.back_align == "right":
+                        addon_x = start_x + back_width - self.addon_offset
+                    else:
+                        main_x = addon_x + image_width + self.addon_offset
+                elif self.addon_position == "right":
+                    if self.back_align == "left":
+                        addon_x = start_x + self.addon_offset
+                    elif self.back_align == "right":
+                        addon_x = start_x + back_width - image_width
+                        main_x = start_x + back_width - self.addon_offset
+                    else:
+                        addon_x = main_x + text_width + self.addon_offset
+                elif text_width == image_width:
+                    addon_x = main_x
+                elif text_width < image_width:
+                    addon_x = main_x
+                    main_x = main_x + ((image_width - text_width) / 2)
                 else:
-                    a_y_cord = y_cord + ((box_height - height) / 2)
+                    addon_x = main_x + ((image_width - text_width) / 2)
+
+                if self.addon_position == "top":
+                    if self.back_align == "top":
+                        main_y = start_y + self.addon_offset
+                    elif self.back_align == "bottom":
+                        addon_y = start_y + back_height - self.addon_offset
+                    else:
+                        main_y = addon_y + image_height + self.addon_offset
+                elif self.addon_position == "bottom":
+                    if self.back_align == "top":
+                        addon_y = start_y + self.addon_offset
+                    elif self.back_align == "bottom":
+                        addon_y = start_y + back_height - image_height
+                        main_y = start_y + back_height - self.addon_offset
+                    else:
+                        addon_y = main_y + text_height + self.addon_offset
+                elif text_height == image_height:
+                    addon_y = main_y
+                elif text_height < image_height:
+                    addon_y = main_y
+                    main_y = main_y + ((image_height - text_height) / 2)
+                else:
+                    addon_y = main_y + ((image_height - text_height) / 2)
 
             if text is not None:
-                drawing.text((x_cord, y_cord), text, font=self.font, fill=self.font_color, anchor="lt")
-            if a_x_cord is not None:
-                x_cord = a_x_cord
-                y_cord = a_y_cord
-        return overlay_image, (x_cord, y_cord)
+                drawing.text((main_x, main_y), text, font=self.font, fill=self.font_color, anchor="lt")
+            if addon_x is not None:
+                main_x = addon_x
+                main_y = addon_y
+        return overlay_image, (main_x, main_y)
 
     def get_overlay_compare(self):
         output = f"{self.mapping_name}|{self.name}"
@@ -1169,7 +1204,9 @@ class Overlay:
             output += f"{self.font_name}{self.font_size}"
         if self.back_box:
             output += f"{self.back_box[0]}{self.back_box[1]}"
-        for value in [self.addon_align, self.addon_offset, self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
+        if self.addon_position is not None:
+            output += f"{self.addon_position}{self.addon_offset}"
+        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
             if value is not None:
                 output += f"{value}"
         return output
