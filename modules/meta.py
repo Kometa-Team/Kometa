@@ -1195,7 +1195,7 @@ class OverlayFile(DataFile):
         logger.info("")
         logger.info(f"Loading Overlay {file_type}: {path}")
         data = self.load_file(self.type, self.path)
-        self.overlays = get_dict("overlays", data, library.overlay_names)
+        self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)
         self.queues = get_dict("queues", data, library.queue_names)
         self.external_templates(data)

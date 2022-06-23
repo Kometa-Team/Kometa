@@ -260,7 +260,7 @@ class CollectionBuilder:
                     suppress = util.get_list(data[methods["suppress_overlays"]])
                 else:
                     logger.error(f"Overlay Error: suppress_overlays attribute is blank")
-            self.overlay = Overlay(config, library, self.mapping_name, overlay_data, suppress)
+            self.overlay = Overlay(config, library, overlay_data, suppress)
 
         self.sync_to_users = None
         self.valid_users = []

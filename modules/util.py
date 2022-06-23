@@ -902,10 +902,9 @@ def parse_cords(data, parent, required=False):
 
 
 class Overlay:
-    def __init__(self, config, library, mapping_name, overlay_data, suppress):
+    def __init__(self, config, library, overlay_data, suppress):
         self.config = config
         self.library = library
-        self.mapping_name = mapping_name
         self.data = overlay_data
         self.suppress = suppress
         self.keys = []
@@ -932,7 +931,20 @@ class Overlay:
         if not isinstance(self.data, dict):
             self.data = {"name": str(self.data)}
             logger.warning(f"Overlay Warning: No overlay attribute using mapping name {self.data} as the overlay name")
-        self.name = str(self.data["name"]) if "name" in self.data and self.data["name"] else self.mapping_name
+        if "name" not in self.data or not self.data["name"]:
+            raise Failed(f"Overlay Error: overlay must have the name attribute")
+        self.name = str(self.data["name"])
+        if self.name not in library.overlay_names:
+            library.overlay_names.append(self.name)
+            self.mapping_name = self.name
+        else:
+            name_count = 1
+            test_name = f"{self.name} ({name_count})"
+            while test_name in library.overlay_names:
+                name_count += 1
+                test_name = f"{self.name} ({name_count})"
+            library.overlay_names.append(test_name)
+            self.mapping_name = test_name
 
         if "group" in self.data and self.data["group"]:
             self.group = str(self.data["group"])
@@ -1195,7 +1207,7 @@ class Overlay:
         return overlay_image, (main_x, main_y)
 
     def get_overlay_compare(self):
-        output = f"{self.mapping_name}|{self.name}"
+        output = f"{self.name}"
         if self.group:
             output += f"{self.group}{self.weight}"
         if self.has_coordinates():
