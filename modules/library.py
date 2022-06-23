@@ -145,7 +145,6 @@ class Library(ABC):
             for file_type, overlay_file, temp_vars, asset_directory in self.overlay_path:
                 try:
                     overlay_obj = OverlayFile(self.config, self, file_type, overlay_file, temp_vars, asset_directory)
-                    self.overlay_names.extend([p for p in overlay_obj.overlays])
                     self.overlay_files.append(overlay_obj)
                     self.queue_names.extend([q for q in overlay_obj.queues])
                 except Failed as e:
