@@ -1146,7 +1146,7 @@ class Overlay:
                     main_y = start_y + back_height - (text_height if text is not None else image_height)
                 else:
                     main_x = start_x + (back_width - box_width) // 2
-                    main_y = start_y + (back_height - box_width) // 2
+                    main_y = start_y + (back_height - box_height) // 2
 
             addon_x = None
             addon_y = None
