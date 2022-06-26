@@ -131,12 +131,14 @@ class Overlays:
                                     overlay_change = True
 
                     try:
-                        poster, _, item_dir, name = self.library.find_item_assets(item)
+                        poster, background, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all and self.library.show_missing_assets:
                             if self.library.asset_folders:
                                 logger.warning(f"Asset Warning: No poster found in the assets folder '{item_dir}'")
                             else:
                                 logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders")
+                        if background:
+                            self.library.upload_images(item, background=background)
                     except Failed as e:
                         if self.library.assets_for_all and self.library.show_missing_assets:
                             logger.warning(e)
@@ -174,7 +176,7 @@ class Overlays:
                     poster_compare = None
                     if poster is None and has_original is None:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
-                    elif self.library.reapply_overlay or changed_image or overlay_change:
+                    elif self.library.reapply_overlays or changed_image or overlay_change:
                         try:
                             canvas_width = 1920 if isinstance(item, Episode) else 1000
                             canvas_height = 1080 if isinstance(item, Episode) else 1500

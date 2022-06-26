@@ -197,7 +197,7 @@ Library template variables to be applied to every Metadata and Overlay file run.
 ```yaml
 libraries:
   Movies:
-    template_variable:
+    template_variables:
       collection_mode: true
 ```
 
