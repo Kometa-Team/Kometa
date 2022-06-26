@@ -73,9 +73,15 @@ class DataFile:
     def get_file_name(self):
         data = f"{util.github_base}{self.path}.yml" if self.type == "GIT" else self.path
         if "/" in data:
-            return data[data.rfind("/") + 1:-4]
+            if data.endswith(".yml"):
+                return data[data.rfind("/") + 1:-4]
+            else:
+                return data[data.rfind("/") + 1:]
         elif "\\" in data:
-            return data[data.rfind("\\") + 1:-4]
+            if data.endswith(".yml"):
+                return data[data.rfind("\\") + 1:-4]
+            else:
+                return data[data.rfind("\\") + 1:]
         else:
             return data
 

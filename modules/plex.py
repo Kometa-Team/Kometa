@@ -117,7 +117,7 @@ show_translation = {
 }
 modifier_translation = {
     "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
-    ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": ""
+    ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": "", ".rated": ""
 }
 attribute_translation = {
     "aspect": "aspectRatio",
@@ -248,9 +248,9 @@ show_only_searches = [
     "episode_air_date.before", "episode_air_date.after",
     "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
     "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
-    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte",
-    "episode_critic_rating.gt", "episode_critic_rating.gte", "episode_critic_rating.lt", "episode_critic_rating.lte",
-    "episode_audience_rating.gt", "episode_audience_rating.gte", "episode_audience_rating.lt", "episode_audience_rating.lte",
+    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte", "episode_user_rating.rated",
+    "episode_critic_rating.gt", "episode_critic_rating.gte", "episode_critic_rating.lt", "episode_critic_rating.lte", "episode_critic_rating.rated",
+    "episode_audience_rating.gt", "episode_audience_rating.gte", "episode_audience_rating.lt", "episode_audience_rating.lte", "episode_audience_rating.rated",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
 ]
@@ -269,11 +269,12 @@ date_attributes = [
 date_modifiers = ["", ".not", ".before", ".after"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
 number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips"] + year_attributes
+number_modifiers = [".gt", ".gte", ".lt", ".lte"]
 float_attributes = [
     "user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating",
     "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
 ]
-number_modifiers = [".gt", ".gte", ".lt", ".lte"]
+float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
@@ -287,7 +288,8 @@ searches = boolean_attributes + \
                [f"{f}{m}" for f in string_attributes for m in string_modifiers] + \
                [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"] + \
                [f"{f}{m}" for f in date_attributes for m in date_modifiers] + \
-               [f"{f}{m}" for f in number_attributes + float_attributes for m in number_modifiers if f not in no_not_mods]
+               [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods] + \
+               [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" and m != ".rated"]
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
 movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",

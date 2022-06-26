@@ -70,7 +70,7 @@ class Overlays:
         logger.info("")
         if not self.library.remove_overlays:
             logger.info("")
-            logger.separator(f"Applying Overlays for the {self.library.name} Library")
+            logger.separator(f"{'Re-' if self.library.reapply_overlays else ''}Applying Overlays for the {self.library.name} Library")
             logger.info("")
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
                 try:
