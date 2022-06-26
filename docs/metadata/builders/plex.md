@@ -247,7 +247,7 @@ No date search can take multiple values.
 
 ## Number Searches
 
-Number searches must use `.gt`, `.gte`, `.lt`, or `.lte` as a modifier.
+Number searches must use `.gt`, `.gte`, `.lt`, or `.lte` as a modifier only the rating searches can use `.rated`.
 
 No number search can take multiple values.
 
@@ -259,6 +259,9 @@ No number search can take multiple values.
 | `.gte`          | Matches every item where the number attribute is greater than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5` |         N/A         |
 | `.lt`           | Matches every item where the number attribute is less than the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`                |   `is less than`    |
 | `.lte`          | Matches every item where the number attribute is less than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`    |         N/A         |
+| `.rated`        | Matches every item either rated or not rated<br>**Format:** `true` or `false`                                                                           |         N/A         |
+
+* `.rated` only works for rating searches
 
 ### Number Attributes
 

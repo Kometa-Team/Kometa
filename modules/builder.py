@@ -1802,6 +1802,8 @@ class CollectionBuilder:
                             results, display_add = build_url_arg(f"-{validation}", mod=last_mod, arg_s=f"{validation} {plex.date_sub_mods[search_mod]}", mod_s=last_text)
                         elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
                             results, display_add = build_url_arg(validation * 60000)
+                        elif modifier == ".rated":
+                            results, display_add = build_url_arg(-1, mod="%3D" if validation else "!%3D", arg_s="Rated", mod_s="is" if validation else "is not")
                         elif attr in plex.boolean_attributes:
                             bool_mod = "" if validation else "!"
                             bool_arg = "true" if validation else "false"
@@ -1962,7 +1964,7 @@ class CollectionBuilder:
             return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif attribute in float_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
             return util.parse(self.Type, final, data, datatype="float", minimum=0, maximum=None if attribute == "duration" else 10)
-        elif attribute in boolean_attributes:
+        elif attribute in boolean_attributes or (attribute in float_attributes and modifier in [".rated"]):
             return util.parse(self.Type, attribute, data, datatype="bool")
         elif attribute in ["seasons", "episodes", "albums", "tracks"]:
             if isinstance(data, dict) and data:

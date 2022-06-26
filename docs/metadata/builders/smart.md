@@ -215,7 +215,7 @@ No date filter can take multiple values.
 
 ## Number Filters
 
-Number filters must use `.gt`, `.gte`, `.lt`, or `.lte` as a modifier.
+Number filters must use `.gt`, `.gte`, `.lt`, or `.lte` as a modifier only the rating filters can use `.rated`.
 
 No number filter can take multiple values.
 
@@ -227,6 +227,9 @@ No number filter can take multiple values.
 | `.gte`          | Matches every item where the number attribute is greater than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5` |         N/A         |
 | `.lt`           | Matches every item where the number attribute is less than the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`                |   `is less than`    |
 | `.lte`          | Matches every item where the number attribute is less than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`    |         N/A         |
+| `.rated`        | Matches every item either rated or not rated<br>**Format:** `true` or `false`                                                                           |         N/A         |
+
+* `.rated` only works for rating filters
 
 ### Number Attributes
 
