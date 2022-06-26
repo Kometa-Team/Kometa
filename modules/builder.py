@@ -2311,8 +2311,9 @@ class CollectionBuilder:
         tmdb_paths = []
         tvdb_paths = []
         for item in self.items:
-            if "item_assets" in self.item_details and self.library.asset_directory and "Overlay" not in [la.tag for la in self.library.item_labels(item)]:
-                self.library.find_and_upload_assets(item)
+            current_labels = [la.tag for la in self.library.item_labels(item)]
+            if "item_assets" in self.item_details and self.library.asset_directory and "Overlay" not in current_labels:
+                self.library.find_and_upload_assets(item, current_labels)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
             if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:

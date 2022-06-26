@@ -386,7 +386,7 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
-                                if tmdb_item and tmdb_item.collection_id:
+                                if tmdb_item and tmdb_item.collection_id and tmdb_item.collection_name:
                                     all_keys.append(str(tmdb_item.collection_id))
                                     if str(tmdb_item.collection_id) not in exclude and tmdb_item.collection_name not in exclude:
                                         auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
