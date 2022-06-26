@@ -441,12 +441,12 @@ class Trakt:
                         final_dict["time_period"] = util.parse(err_type, "time_period", trakt_dict, methods=dict_methods, parent=method_name, default="weekly", options=periods)
                     if "query" in dict_methods:
                         final_dict["query"] = util.parse(err_type, "query", trakt_dict, methods=dict_methods, parent=method_name)
-                    if "year" in dict_methods:
+                    if "years" in dict_methods:
                         try:
-                            if trakt_dict[dict_methods["year"]] and len(str(trakt_dict[dict_methods["year"]])) == 4:
-                                final_dict["year"] = util.parse(err_type, "year", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=1000, maximum=3000)
+                            if trakt_dict[dict_methods["years"]] and len(str(trakt_dict[dict_methods["years"]])) == 4:
+                                final_dict["years"] = util.parse(err_type, "years", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=1000, maximum=3000)
                             else:
-                                final_dict["year"] = util.parse(err_type, "year", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=1000, maximum=3000, range_split="-")
+                                final_dict["years"] = util.parse(err_type, "years", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=1000, maximum=3000, range_split="-")
                         except Failed:
                             raise Failed(f"{err_type} Error: trakt_chart year attribute must be either a 4 digit year or a range of two 4 digit year with a '-' i.e. 1950 or 1950-1959")
                     if "runtimes" in dict_methods:
@@ -493,7 +493,7 @@ class Trakt:
             params = {"limit": data["limit"]}
             chart_limit = f"{data['limit']} {data['time_period'].capitalize()}" if data["time_period"] else data["limit"]
             logger.info(f"Processing {pretty}: {chart_limit} {data['chart'].capitalize()} {media_type}{'' if data == 1 else 's'}")
-            for attr in ["query", "year", "runtimes", "ratings", "genres", "languages", "countries", "certifications", "networks", "status"]:
+            for attr in ["query", "years", "runtimes", "ratings", "genres", "languages", "countries", "certifications", "networks", "status"]:
                 if attr in data:
                     logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")
                     values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]
