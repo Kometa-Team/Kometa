@@ -121,7 +121,7 @@ class Overlays:
                             overlay = properties[over_name]
                             if overlay.name in util.special_text_overlays:
                                 rating_type = overlay.name[5:-1]
-                                if rating_type.endswith(("%", "#")):
+                                if rating_type.endswith(tuple(util.rating_mods)):
                                     rating_type = rating_type[:-1]
                                 cache_rating = self.config.Cache.query_overlay_ratings(item.ratingKey, rating_type)
                                 actual = plex.attribute_translation[rating_type]
@@ -189,18 +189,17 @@ class Overlays:
                             def get_text(text):
                                 text = text[5:-1]
                                 if f"text({text})" in util.special_text_overlays:
-                                    per = text.endswith("%")
-                                    flat = text.endswith("#")
-                                    text_rating_type = text[:-1] if per or flat else text
+                                    rating_code = text[-1:]
+                                    text_rating_type = text[:-1] if rating_code in util.rating_mods else text
                                     text_actual = plex.attribute_translation[text_rating_type]
                                     if not hasattr(item, text_actual) or getattr(item, text_actual) is None:
                                         raise Failed(f"Overlay Warning: No {text_rating_type} found")
                                     text = getattr(item, text_actual)
                                     if self.config.Cache:
                                         self.config.Cache.update_overlay_ratings(item.ratingKey, text_rating_type, text)
-                                    if per:
-                                        text = f"{int(text * 10)}%"
-                                    if flat and str(text).endswith(".0"):
+                                    if rating_code in ["%", "0"]:
+                                        text = f"{int(text * 10)}{'%' if rating_code == '%' else ''}"
+                                    if rating_code == "#" and str(text).endswith(".0"):
                                         text = str(text)[:-2]
                                 return str(text)
 
@@ -306,7 +305,7 @@ class Overlays:
                     logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
 
                     if builder.overlay.mapping_name in properties:
-                        raise Failed(f"Overlay Error: Overlay {builder.overlay.mapping_name} already exists ")
+                        raise Failed(f"Overlay Error: Overlay {builder.overlay.mapping_name} already exists")
                     properties[builder.overlay.mapping_name] = builder.overlay
 
                     for method, value in builder.builders:

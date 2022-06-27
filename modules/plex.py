@@ -289,7 +289,7 @@ searches = boolean_attributes + \
                [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"] + \
                [f"{f}{m}" for f in date_attributes for m in date_modifiers] + \
                [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods] + \
-               [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" and m != ".rated"]
+               [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
 movie_sorts = {
     "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
