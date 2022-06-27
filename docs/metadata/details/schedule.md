@@ -68,16 +68,17 @@ collections:
 
 The scheduling options are:
 
-| Name    | Description                                                                                      | Format                | Example                           |
-|:--------|:-------------------------------------------------------------------------------------------------|:----------------------|:----------------------------------|
-| Hourly  | Update only when the script is run in that hour                                                  | hourly(Hour of Day)   | `hourly(17)`                      |
-| Daily   | Update once a day                                                                                | daily                 | `daily`                           |
-| Weekly  | Update once a week on the specified day                                                          | weekly(Day of Week)   | `weekly(sunday)`                  |
-| Monthly | Update once a month on the specified day                                                         | monthly(Day of Month) | `monthly(1)`                      |
-| Yearly  | Update once a year on the specified day                                                          | yearly(MM/DD)         | `yearly(01/30)`                   |
-| Range   | Updates whenever the date is within the range                                                    | range(MM/DD-MM/DD)    | `range(12/01-12/31)`              |
-| Never   | Never updates                                                                                    | never                 | `never`                           |
-| All     | Requires that all comma separated scheduling options inside its brackets be meet in order to run | all[Options]          | `all[weekly(sunday), hourly(17)]` |
+| Name         | Description                                                                                      | Format                | Example                           |
+|:-------------|:-------------------------------------------------------------------------------------------------|:----------------------|:----------------------------------|
+| Hourly       | Update only when the script is run in that hour                                                  | hourly(Hour of Day)   | `hourly(17)`                      |
+| Daily        | Update once a day                                                                                | daily                 | `daily`                           |
+| Weekly       | Update once a week on the specified day                                                          | weekly(Day of Week)   | `weekly(sunday)`                  |
+| Monthly      | Update once a month on the specified day                                                         | monthly(Day of Month) | `monthly(1)`                      |
+| Yearly       | Update once a year on the specified day                                                          | yearly(MM/DD)         | `yearly(01/30)`                   |
+| Range        | Updates whenever the date is within the range                                                    | range(MM/DD-MM/DD)    | `range(12/01-12/31)`              |
+| Never        | Never updates                                                                                    | never                 | `never`                           |
+| Non Existing | Updates if it doesn't exist                                                                      | non_existing          | `non_existing`                    |
+| All          | Requires that all comma separated scheduling options inside its brackets be meet in order to run | all[Options]          | `all[weekly(sunday), hourly(17)]` |
 
 * `daily` is the default when `schedule` isn't specified.
 * You can run the script multiple times per day but using the `--time` command line argument detailed on the [Run Commands & Environmental Variables Page](../../home/environmental.md#time-to-run).
