@@ -156,6 +156,8 @@ You can add an items rating number removing `.0` as needed (`8.7`, `9`) to the i
 
 You can add an items rating percentage (`87%`, `90%`) to the image by using `text(audience_rating%)`, `text(critic_rating%)`, or `text(user_rating%)`
 
+You can add an items rating out of 100 (`87`, `90`) to the image by using `text(audience_rating0)`, `text(critic_rating0)`, or `text(user_rating0)`
+
 You can use the `mass_audience_rating_update` or `mass_critic_rating_update` [Library Operation](../config/operations) to update your plex ratings to various services like `tmdb`, `imdb`, `mdb`, `metacritic`, `letterboxd` and many more.
 
 PMM includes multiple fonts in the [`fonts` folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/fonts) which can be called using `fonts/fontname.ttf`

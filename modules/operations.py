@@ -200,7 +200,7 @@ class Operations:
                     if tmdb_item and attribute == "tmdb":
                         return tmdb_item.vote_average
                     elif imdb_id and attribute == "imdb":
-                        return self.config.imdb.get_rating(imdb_id)
+                        return self.config.IMDb.get_rating(imdb_id)
                     elif omdb_item and attribute == "omdb":
                         return omdb_item.imdb_rating
                     elif mdb_item and attribute == "mdb":
@@ -234,8 +234,8 @@ class Operations:
                         if self.library.mass_genre_update:
                             if tmdb_item and self.library.mass_genre_update == "tmdb":
                                 new_genres = tmdb_item.genres
-                            elif imdb_id and self.library.mass_genre_update == "imdb" and imdb_id in self.config.imdb.genres:
-                                new_genres = self.config.imdb.genres[imdb_id]
+                            elif imdb_id and self.library.mass_genre_update == "imdb" and imdb_id in self.config.IMDb.genres:
+                                new_genres = self.config.IMDb.genres[imdb_id]
                             elif omdb_item and self.library.mass_genre_update == "omdb":
                                 new_genres = omdb_item.genres
                             elif tvdb_item and self.library.mass_genre_update == "tvdb":

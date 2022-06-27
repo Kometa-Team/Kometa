@@ -93,7 +93,8 @@ parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in pare
 github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 previous_time = None
 start_time = None
-special_text_overlays = [f"text({a}{s})" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "%", "#"]]
+rating_mods = ["0", "%", "#"]
+special_text_overlays = [f"text({a}{s})" for a in ["audience_rating", "critic_rating", "user_rating"] for s in [""] + rating_mods]
 
 def make_ordinal(n):
     return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
@@ -902,9 +903,10 @@ def parse_cords(data, parent, required=False):
 
 
 class Overlay:
-    def __init__(self, config, library, overlay_data, suppress):
+    def __init__(self, config, library, original_mapping_name, overlay_data, suppress):
         self.config = config
         self.library = library
+        self.original_mapping_name = original_mapping_name
         self.data = overlay_data
         self.suppress = suppress
         self.keys = []
@@ -934,15 +936,15 @@ class Overlay:
         if "name" not in self.data or not self.data["name"]:
             raise Failed(f"Overlay Error: overlay must have the name attribute")
         self.name = str(self.data["name"])
-        if self.name not in library.overlay_names:
-            library.overlay_names.append(self.name)
-            self.mapping_name = self.name
+        if self.original_mapping_name not in library.overlay_names:
+            library.overlay_names.append(self.original_mapping_name)
+            self.mapping_name = self.original_mapping_name
         else:
             name_count = 1
-            test_name = f"{self.name} ({name_count})"
+            test_name = f"{self.original_mapping_name} ({name_count})"
             while test_name in library.overlay_names:
                 name_count += 1
-                test_name = f"{self.name} ({name_count})"
+                test_name = f"{self.original_mapping_name} ({name_count})"
             library.overlay_names.append(test_name)
             self.mapping_name = test_name
 
