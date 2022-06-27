@@ -1803,7 +1803,7 @@ class CollectionBuilder:
                         elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
                             results, display_add = build_url_arg(validation * 60000)
                         elif modifier == ".rated":
-                            results, display_add = build_url_arg(-1, mod="%3D" if validation else "!%3D", arg_s="Rated", mod_s="is" if validation else "is not")
+                            results, display_add = build_url_arg(-1, mod="!" if validation else "", arg_s="Rated", mod_s="is" if validation else "is not")
                         elif attr in plex.boolean_attributes:
                             bool_mod = "" if validation else "!"
                             bool_arg = "true" if validation else "false"
