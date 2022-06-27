@@ -1,7 +1,7 @@
 import os, re, time
 from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
-from modules.util import Failed, NotScheduled, NotScheduledRange, Overlay, Deleted
+from modules.util import Failed, NonExisting, NotScheduled, NotScheduledRange, Overlay, Deleted
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
@@ -368,6 +368,7 @@ class CollectionBuilder:
         self.collection_poster = None
         self.collection_background = None
         self.exists = False
+        self.non_existing = False
         self.created = False
         self.deleted = False
 
@@ -396,6 +397,8 @@ class CollectionBuilder:
                 err = None
                 try:
                     util.schedule_check("schedule", self.data[methods["schedule"]], self.current_time, self.config.run_hour)
+                except NonExisting as e:
+                    self.non_existing = str(e)
                 except NotScheduledRange as e:
                     err = e
                 except NotScheduled as e:
@@ -771,6 +774,9 @@ class CollectionBuilder:
             self.obj = None
             self.sync = False
             self.run_again = False
+        if self.non_existing is not False and self.obj:
+            raise NotScheduled(self.non_existing)
+
         logger.info("")
         logger.info("Validation Successful")
 

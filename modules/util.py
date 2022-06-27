@@ -24,6 +24,9 @@ class Failed(Exception):
 class Deleted(Exception):
     pass
 
+class NonExisting(Exception):
+    pass
+
 class NotScheduled(Exception):
     pass
 
@@ -526,6 +529,7 @@ def check_day(_m, _d):
 
 def schedule_check(attribute, data, current_time, run_hour, is_all=False):
     range_collection = False
+    non_existing = False
     all_check = 0
     schedules_run = 0
     next_month = current_time.replace(day=28) + timedelta(days=4)
@@ -553,6 +557,9 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 continue
         elif run_time.startswith(("day", "daily")):
             all_check += 1
+        elif run_time.startswith("non_existing"):
+            all_check += 1
+            non_existing = True
         elif run_time == "never":
             schedule_str += f"\nNever scheduled to run"
         elif run_time.startswith(("hour", "week", "month", "year", "range")):
@@ -624,7 +631,9 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
     if is_all:
         schedule_str.replace("\n", "\n\t")
     if (all_check == 0 and not is_all) or (is_all and schedules_run != all_check):
-        if range_collection:
+        if non_existing:
+            raise NonExisting(schedule_str)
+        elif range_collection:
             raise NotScheduledRange(schedule_str)
         else:
             raise NotScheduled(schedule_str)
