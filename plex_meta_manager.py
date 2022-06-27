@@ -90,7 +90,7 @@ screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 
-if collections or metadata_files:
+if collections:
     collection_only = True
 
 if screen_width < 90 or screen_width > 300:
