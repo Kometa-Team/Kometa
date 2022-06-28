@@ -1284,9 +1284,10 @@ class Plex(Library):
                     if attr and attr not in values:
                         values.append(attr)
             elif filter_attr in ["filepath", "folder"]:
-                values = [loc for loc in item.locations]
+                values = [loc for loc in item.locations if loc]
             else:
-                values = [getattr(item, filter_actual)]
+                test_value = getattr(item, filter_actual)
+                values = [test_value] if test_value else []
             if util.is_string_filter(values, modifier, filter_data):
                 return False
         elif filter_attr in builder.boolean_filters:
