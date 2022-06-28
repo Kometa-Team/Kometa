@@ -183,6 +183,7 @@ class CollectionBuilder:
         self.library = library
         self.libraries = []
         self.playlist = library is None
+        self.playlist_summary = None
         self.overlay = overlay
         methods = {m.lower(): m for m in self.data}
         if self.playlist:
@@ -2436,15 +2437,17 @@ class CollectionBuilder:
         else:                                               summary = None
 
         if self.playlist:
-            if summary and str(summary[1]) != str(self.obj.summary):
-                try:
-                    self.obj.edit(summary=str(summary[1]))
-                    logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
-                    logger.info("Details: have been updated")
-                    updated_details.append("Metadata")
-                except NotFound:
-                    logger.error("Details: Failed to Update Please delete the collection and run again")
-                logger.info("")
+            if summary:
+                self.playlist_summary = summary
+                if str(summary[1]) != str(self.obj.summary):
+                    try:
+                        self.obj.edit(summary=str(summary[1]))
+                        logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
+                        logger.info("Details: have been updated")
+                        updated_details.append("Metadata")
+                    except NotFound:
+                        logger.error("Details: Failed to Update Please delete the collection and run again")
+                    logger.info("")
         else:
             self.obj.batchEdits()
 
@@ -2634,7 +2637,14 @@ class CollectionBuilder:
                     self.library.delete_user_playlist(self.obj.title, user)
                 except NotFound:
                     pass
-                self.obj.copyToUser(user)
+                new_playlist = self.obj.copyToUser(user)
+
+                if self.collection_poster:
+                    self.library._upload_image(new_playlist, self.collection_poster)
+                if self.collection_background:
+                    self.library._upload_image(new_playlist, self.collection_background)
+                if self.playlist_summary:
+                    new_playlist.edit(summary=self.playlist_summary)
                 logger.info(f"Playlist: {self.name} synced to {user}")
 
     def send_notifications(self, playlist=False):
