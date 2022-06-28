@@ -313,7 +313,9 @@ class Operations:
                                 new_rating = item.contentRating
                             if new_rating in self.library.content_rating_mapper:
                                 new_rating = self.library.content_rating_mapper[new_rating]
-                        if str(item.contentRating) != str(new_rating):
+                        if not new_rating:
+                            logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
+                        elif str(item.contentRating) != str(new_rating):
                             item.editContentRating(new_rating)
                             batch_display += f"\n{item.title[:25]:<25} | Content Rating | {new_rating}"
                     except Failed:
@@ -332,7 +334,7 @@ class Operations:
                             new_date = anidb_item.released
                         else:
                             raise Failed
-                        if new_date is None:
+                        if not new_date:
                             logger.info(f"{item.title[:25]:<25} | No Originally Available Date Found")
                         elif str(item.originallyAvailableAt) != str(new_date):
                             item.editOriginallyAvailable(new_date)
