@@ -37,7 +37,7 @@ I am assuming you do not have any of these tools already installed.  When writin
 This walkthrough involves typing commands into a command window.  On Mac OS X or Linux, you can use your standard terminal window, whether that's the builtin Terminal app or something like iTerm.  On Windows, you should use PowerShell.  There are other options for command windows in Windows, but if you want this to work as written, which I assume is the case since you've read this far, you should use Powershell.
 
 IMPORTANT:
-This walkthrough is assumign you are doing the entire process on the same platfrom.  You're installing PMM and editing files on a single Linux, Windows, or OS X machine.  It doesn't account for situations like running PMM on a Linux machine while editing files on your Windows box.
+This walkthrough is assuming you are doing the entire process on the same platform; i.e. you're installing PMM and editing its config files on a single Linux, Windows, or OS X machine.  It doesn't account for situations like running PMM on a Linux machine while editing the config files on your Windows box.
 
 ### Starting up your terminal.
 
