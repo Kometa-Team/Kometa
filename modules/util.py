@@ -1211,11 +1211,11 @@ class Overlay:
                     addon_y = main_y + ((image_height - text_height) / 2)
 
             if text is not None:
-                drawing.text((main_x, main_y), text, font=self.font, fill=self.font_color, anchor="lt")
+                drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color, anchor="lt")
             if addon_x is not None:
                 main_x = addon_x
                 main_y = addon_y
-        return overlay_image, (main_x, main_y)
+        return overlay_image, (int(main_x), int(main_y))
 
     def get_overlay_compare(self):
         output = f"{self.name}"
