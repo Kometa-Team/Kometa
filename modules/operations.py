@@ -5,6 +5,12 @@ from modules.util import Failed, YAML
 
 logger = util.logger
 
+meta_operations = [
+    "mass_audience_rating_update", "mass_user_rating_update", "mass_critic_rating_update",
+    "mass_episode_audience_rating_update", "mass_episode_user_rating_update", "mass_episode_critic_rating_update",
+    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update"
+]
+
 class Operations:
     def __init__(self, config, library):
         self.config = config
@@ -28,7 +34,6 @@ class Operations:
         logger.debug(f"Mass Content Rating Update: {self.library.mass_content_rating_update}")
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
-        logger.debug(f"Mass Trakt Rating Update: {self.library.mass_trakt_rating_update}")
         logger.debug(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
         logger.debug(f"Split Duplicates: {self.library.split_duplicates}")
         logger.debug(f"Radarr Add All Existing: {self.library.radarr_add_all_existing}")
@@ -64,7 +69,7 @@ class Operations:
             items = self.library.get_all()
             radarr_adds = []
             sonarr_adds = []
-            trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie) if self.library.mass_trakt_rating_update else []
+            trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie) if any([o == "trakt_user" for o in self.library.meta_operations]) else []
 
             reverse_anidb = {}
             if self.library.mass_genre_update == "anidb":
@@ -96,20 +101,6 @@ class Operations:
                         new_title = re.sub(" \\(\\w+\\)$", "", item.title)
                         item.editTitle(new_title)
                         batch_display += f"\n{item.title[:25]:<25} | Title | {new_title}"
-
-                if self.library.mass_trakt_rating_update:
-                    try:
-                        if self.library.is_movie and tmdb_id in trakt_ratings:
-                            new_rating = trakt_ratings[tmdb_id]
-                        elif self.library.is_show and tvdb_id in trakt_ratings:
-                            new_rating = trakt_ratings[tvdb_id]
-                        else:
-                            raise Failed
-                        if str(item.userRating) != str(new_rating):
-                            self.library.query_data(item.rate, new_rating)
-                            logger.info(f"{item.title[:25]:<25} | User Rating | {new_rating}")
-                    except Failed:
-                        pass
 
                 if self.library.mass_imdb_parental_labels:
                     try:
@@ -198,35 +189,42 @@ class Operations:
 
                 def get_rating(attribute):
                     if tmdb_item and attribute == "tmdb":
-                        return tmdb_item.vote_average
+                        found_rating = tmdb_item.vote_average
                     elif imdb_id and attribute == "imdb":
-                        return self.config.IMDb.get_rating(imdb_id)
+                        found_rating = self.config.IMDb.get_rating(imdb_id)
+                    elif attribute == "trakt_user" and self.library.is_movie and tmdb_id in trakt_ratings:
+                        found_rating = trakt_ratings[tmdb_id]
+                    elif attribute == "trakt_user" and self.library.is_show and tvdb_id in trakt_ratings:
+                        found_rating = trakt_ratings[tvdb_id]
                     elif omdb_item and attribute == "omdb":
-                        return omdb_item.imdb_rating
+                        found_rating = omdb_item.imdb_rating
                     elif mdb_item and attribute == "mdb":
-                        return mdb_item.score / 10 if mdb_item.score else None
+                        found_rating = mdb_item.score / 10 if mdb_item.score else None
                     elif mdb_item and attribute == "mdb_imdb":
-                        return mdb_item.imdb_rating if mdb_item.imdb_rating else None
+                        found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
                     elif mdb_item and attribute == "mdb_metacritic":
-                        return mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
+                        found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
                     elif mdb_item and attribute == "mdb_metacriticuser":
-                        return mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
+                        found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
                     elif mdb_item and attribute == "mdb_trakt":
-                        return mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
+                        found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
                     elif mdb_item and attribute == "mdb_tomatoes":
-                        return mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
+                        found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
                     elif mdb_item and attribute == "mdb_tomatoesaudience":
-                        return mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
+                        found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
                     elif mdb_item and attribute == "mdb_tmdb":
-                        return mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
+                        found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
                     elif mdb_item and attribute == "mdb_letterboxd":
-                        return mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                        found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
                     elif anidb_item and attribute == "anidb_rating":
-                        return anidb_item.rating
+                        found_rating = anidb_item.rating
                     elif anidb_item and attribute == "anidb_average":
-                        return anidb_item.average
+                        found_rating = anidb_item.average
                     else:
+                        found_rating = None
+                    if found_rating is None:
                         raise Failed
+                    return found_rating
 
                 if self.library.mass_genre_update or self.library.genre_mapper:
                     try:
@@ -264,35 +262,29 @@ class Operations:
                 if self.library.mass_audience_rating_update:
                     try:
                         new_rating = get_rating(self.library.mass_audience_rating_update)
-                        if new_rating is None:
-                            logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                        elif str(item.audienceRating) != str(new_rating):
+                        if str(item.audienceRating) != str(new_rating):
                             item.editField("audienceRating", new_rating)
                             batch_display += f"\n{item.title[:25]:<25} | Audience Rating | {new_rating}"
                     except Failed:
-                        pass
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
 
                 if self.library.mass_critic_rating_update:
                     try:
                         new_rating = get_rating(self.library.mass_critic_rating_update)
-                        if new_rating is None:
-                            logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                        elif str(item.rating) != str(new_rating):
+                        if str(item.rating) != str(new_rating):
                             item.editField("rating", new_rating)
                             batch_display += f"\n{item.title[:25]:<25} | Critic Rating | {new_rating}"
                     except Failed:
-                        pass
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
 
                 if self.library.mass_user_rating_update:
                     try:
                         new_rating = get_rating(self.library.mass_user_rating_update)
-                        if new_rating is None:
-                            logger.info(f"{item.title[:25]:<25} | No Rating Found")
-                        elif str(item.userRating) != str(new_rating):
+                        if str(item.userRating) != str(new_rating):
                             item.editField("userRating", new_rating)
                             batch_display += f"\n{item.title[:25]:<25} | User Rating | {new_rating}"
                     except Failed:
-                        pass
+                        logger.info(f"{item.title[:25]:<25} | No Rating Found")
 
                 if self.library.mass_content_rating_update or self.library.content_rating_mapper:
                     try:
@@ -306,8 +298,6 @@ class Operations:
                                 new_rating = mdb_item.commonsense if mdb_item.commonsense else None
                             else:
                                 raise Failed
-                            if new_rating is None:
-                                logger.info(f"{item.title[:25]:<25} | No Content Rating Found")
                         if self.library.content_rating_mapper:
                             if new_rating is None:
                                 new_rating = item.contentRating
