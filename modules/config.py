@@ -1,7 +1,7 @@
 import base64, os, requests
 from datetime import datetime
 from lxml import html
-from modules import util, radarr, sonarr
+from modules import util, radarr, sonarr, operations
 from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
@@ -41,6 +41,7 @@ mass_episode_rating_options = {"tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rati
 mass_rating_options = {
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
+    "trakt_user": "Use Trakt User Rating",
     "omdb": "Use IMDb Rating through OMDb",
     "mdb": "Use MdbList Average Score",
     "mdb_imdb": "Use IMDb Rating through MDbList",
@@ -673,7 +674,7 @@ class ConfigFile:
                         if "mass_imdb_parental_labels" in lib["operations"]:
                             params["mass_imdb_parental_labels"] = check_for_attribute(lib["operations"], "mass_imdb_parental_labels", test_list=imdb_label_options, default_is_none=True, save=False)
                         if "mass_trakt_rating_update" in lib["operations"]:
-                            params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False)
+                            params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
                         if "split_duplicates" in lib["operations"]:
                             params["split_duplicates"] = check_for_attribute(lib["operations"], "split_duplicates", var_type="bool", default=False, save=False)
                         if "radarr_add_all_existing" in lib["operations"]:
@@ -731,18 +732,23 @@ class ConfigFile:
                     else:
                         logger.error("Config Error: operations must be a dictionary")
 
+                if params["mass_trakt_rating_update"]:
+                    if params["mass_user_rating_update"]:
+                        logger.error("Config Error: User Rating is already being set by mass_user_rating_update")
+                    else:
+                        params["mass_user_rating_update"] = "trakt_user"
+
                 def error_check(attr, service):
                     logger.error(f"Config Error: Operation {attr} cannot be {params[attr]} without a successful {service} Connection")
                     params[attr] = None
 
-                for mass_key in ["mass_genre_update", "mass_audience_rating_update", "mass_critic_rating_update", "mass_content_rating_update", "mass_originally_available_update"]:
+                for mass_key in operations.meta_operations:
                     if params[mass_key] == "omdb" and self.OMDb is None:
                         error_check(mass_key, "OMDb")
                     if params[mass_key] and params[mass_key].startswith("mdb") and not self.Mdblist.has_key:
-                        error_check(mass_key, "MdbList API")
-
-                if self.Trakt is None and params["mass_trakt_rating_update"]:
-                    error_check("mass_trakt_rating_update", "Trakt")
+                        error_check(mass_key, "MdbList")
+                    if params[mass_key] and params[mass_key].startswith("trakt") and self.Trakt is None:
+                        error_check(mass_key, "Trakt")
 
                 lib_vars = {}
                 if lib and "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):

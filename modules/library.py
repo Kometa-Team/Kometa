@@ -1,6 +1,6 @@
 import os
 from abc import ABC, abstractmethod
-from modules import util
+from modules import util, operations
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.util import Failed, YAML
@@ -85,7 +85,6 @@ class Library(ABC):
         self.mass_content_rating_update = params["mass_content_rating_update"]
         self.mass_originally_available_update = params["mass_originally_available_update"]
         self.mass_imdb_parental_labels = params["mass_imdb_parental_labels"]
-        self.mass_trakt_rating_update = params["mass_trakt_rating_update"]
         self.radarr_add_all_existing = params["radarr_add_all_existing"]
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
         self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
@@ -111,14 +110,12 @@ class Library(ABC):
                                        or self.mass_audience_rating_update or self.mass_critic_rating_update or self.mass_user_rating_update \
                                        or self.mass_episode_audience_rating_update or self.mass_episode_critic_rating_update or self.mass_episode_user_rating_update \
                                        or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_imdb_parental_labels \
-                                       or self.mass_trakt_rating_update or self.genre_mapper or self.content_rating_mapper \
+                                       or self.genre_mapper or self.content_rating_mapper \
                                        or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
         self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
                                  or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False
-        self.meta_operations = [self.mass_genre_update, self.mass_audience_rating_update, self.mass_critic_rating_update,
-                                self.mass_user_rating_update, self.mass_episode_audience_rating_update, self.mass_episode_critic_rating_update,
-                                self.mass_episode_user_rating_update, self.mass_content_rating_update, self.mass_originally_available_update]
+        self.meta_operations = [getattr(self, o) for o in operations.meta_operations]
 
         if self.asset_directory:
             logger.info("")
