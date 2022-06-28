@@ -79,7 +79,7 @@ class ConfigFile:
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
-        self.requested_metadata_files = [mf[:-4] if str(mf).endswith(".yml") else mf for mf in util.get_list(attrs["metadata_files"])] if "metadata_files" in attrs else None
+        self.requested_metadata_files = [mf[:-4] if str(mf).endswith(".yml") else mf for mf in util.get_list(attrs["metadata_files"])] if "metadata_files" in attrs and attrs["metadata_files"] else None
         self.resume_from = attrs["resume"] if "resume" in attrs else None
         self.collection_only = attrs["collection_only"] if "collection_only" in attrs else False
         self.operations_only = attrs["operations_only"] if "operations_only" in attrs else False
