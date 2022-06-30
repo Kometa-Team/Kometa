@@ -132,11 +132,14 @@ class Overlays:
 
                     try:
                         poster, background, item_dir, name = self.library.find_item_assets(item)
-                        if not poster and self.library.assets_for_all and self.library.show_missing_assets:
-                            if self.library.asset_folders:
-                                logger.warning(f"Asset Warning: No poster found in the assets folder '{item_dir}'")
-                            else:
-                                logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders")
+                        if not poster and self.library.assets_for_all:
+                            if (isinstance(item, Episode) and self.library.show_missing_episode_assets) or \
+                                    (isinstance(item, Season) and self.library.show_missing_season_assets) or \
+                                    (not isinstance(item, (Episode, Season)) and self.library.show_missing_assets):
+                                if self.library.asset_folders:
+                                    logger.warning(f"Asset Warning: No poster found for '{item_title}' in the assets folder '{item_dir}'")
+                                else:
+                                    logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders")
                         if background:
                             self.library.upload_images(item, background=background)
                     except Failed as e:
