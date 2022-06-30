@@ -159,7 +159,8 @@ class Library(ABC):
                         test = [la.tag for la in self.item_labels(item)]
                         if overlay and "Overlay" in test:
                             item.removeLabel("Overlay")
-                            item.saveEdits()
+                            if isinstance(item._edits, dict):
+                                item.saveEdits()
                     self._upload_image(item, poster)
                     poster_uploaded = True
                     logger.info(f"Detail: {poster.attribute} updated {poster.message}")

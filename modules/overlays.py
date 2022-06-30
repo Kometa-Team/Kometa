@@ -90,20 +90,20 @@ class Overlays:
                     applied_names = []
                     queue_overlays = {}
                     for over_name in over_names:
-                        if over_name.startswith("blur"):
-                            blur_test = int(re.search("\\(([^)]+)\\)", over_name).group(1))
+                        overlay = properties[over_name]
+                        if overlay.name.startswith("blur"):
+                            logger.info(over_name)
+                            blur_test = int(re.search("\\(([^)]+)\\)", overlay.name).group(1))
                             if blur_test > blur_num:
                                 blur_num = blur_test
+                        elif overlay.queue:
+                            if overlay.queue not in queue_overlays:
+                                queue_overlays[overlay.queue] = {}
+                            if overlay.weight in queue_overlays[overlay.queue]:
+                                raise Failed("Overlay Error: Overlays in a queue cannot have the same weight")
+                            queue_overlays[overlay.queue][overlay.weight] = over_name
                         else:
-                            overlay = properties[over_name]
-                            if overlay.queue:
-                                if overlay.queue not in queue_overlays:
-                                    queue_overlays[overlay.queue] = {}
-                                if overlay.weight in queue_overlays[overlay.queue]:
-                                    raise Failed("Overlay Error: Overlays in a queue cannot have the same weight")
-                                queue_overlays[overlay.queue][overlay.weight] = over_name
-                            else:
-                                applied_names.append(over_name)
+                            applied_names.append(over_name)
 
                     overlay_change = False if has_overlay else True
                     if not overlay_change:
