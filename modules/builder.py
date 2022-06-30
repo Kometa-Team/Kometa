@@ -183,7 +183,6 @@ class CollectionBuilder:
         self.library = library
         self.libraries = []
         self.playlist = library is None
-        self.playlist_summary = None
         self.overlay = overlay
         methods = {m.lower(): m for m in self.data}
         if self.playlist:
@@ -2438,7 +2437,6 @@ class CollectionBuilder:
 
         if self.playlist:
             if summary:
-                self.playlist_summary = summary
                 if str(summary[1]) != str(self.obj.summary):
                     try:
                         self.obj.edit(summary=str(summary[1]))
@@ -2638,13 +2636,6 @@ class CollectionBuilder:
                 except NotFound:
                     pass
                 new_playlist = self.obj.copyToUser(user)
-
-                if self.collection_poster:
-                    self.library._upload_image(new_playlist, self.collection_poster)
-                if self.collection_background:
-                    self.library._upload_image(new_playlist, self.collection_background)
-                if self.playlist_summary:
-                    new_playlist.edit(summary=self.playlist_summary)
                 logger.info(f"Playlist: {self.name} synced to {user}")
 
     def send_notifications(self, playlist=False):
