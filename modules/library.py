@@ -240,7 +240,6 @@ class Library(ABC):
         self._add_to_file("Filtered", collection, items, is_movie)
 
     def _add_to_file(self, file_type, collection, items, is_movie):
-        logger.info(items)
         if collection not in self.report_data:
             self.report_data[collection] = {}
         parts = isinstance(items[0], str)

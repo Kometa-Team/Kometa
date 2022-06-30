@@ -5,6 +5,7 @@ from datetime import datetime
 try:
     import plexapi, requests, schedule
     from modules.logs import MyLogger
+    from plexapi import server
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
 except ModuleNotFoundError:
@@ -395,6 +396,7 @@ def run_libraries(config):
         try:
             logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout
+            os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
             logger.separator(f"{library.name} Library")
 

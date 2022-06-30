@@ -409,6 +409,8 @@ class Plex(Library):
         logger.secret(self.token)
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
+            plexapi.server.TIMEOUT = self.timeout
+            os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
         except Unauthorized:
             raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:

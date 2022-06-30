@@ -1226,7 +1226,7 @@ class Overlay:
         if self.font_name:
             output += f"{self.font_name}{self.font_size}"
         if self.back_box:
-            output += f"{self.back_box[0]}{self.back_box[1]}"
+            output += f"{self.back_box[0]}{self.back_box[1]}{self.back_align}"
         if self.addon_position is not None:
             output += f"{self.addon_position}{self.addon_offset}"
         for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
