@@ -41,6 +41,7 @@ search_sorts = ["mal_id", "title", "type", "rating", "start_date", "end_date", "
 search_combos = [f"{s}.{d}" for s in search_sorts for d in ["desc", "asc"]]
 base_url = "https://api.myanimelist.net/v2/"
 jiken_base_url = "https://api.jikan.moe/v4/"
+uni_code_verifier = "k_UHwN_eHAPQVXiceC-rYGkozKqrJmKxPUIUOBIKo1noq_4XGRVCViP_dGcwB-fkPql8f56mmWj5aWCa2HDeugf6sRvnc9Rjhbb1vKGYLY0IwWsDNXRqXdksaVGJthux"
 urls = {
     "oauth_token": "https://myanimelist.net/v1/oauth2/token",
     "oauth_authorize": "https://myanimelist.net/v1/oauth2/authorize",
@@ -55,6 +56,7 @@ class MyAnimeList:
         self.config = config
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
+        self.localhost_url = params["localhost_url"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
         logger.secret(self.client_secret)
@@ -85,17 +87,21 @@ class MyAnimeList:
         return self._studios
 
     def _authorization(self):
-        code_verifier = secrets.token_urlsafe(100)[:128]
-        url = f"{urls['oauth_authorize']}?response_type=code&client_id={self.client_id}&code_challenge={code_verifier}"
-        logger.info("")
-        logger.info(f"Navigate to: {url}")
-        logger.info("")
-        logger.info("Login and click the Allow option. You will then be redirected to a localhost")
-        logger.info("url that most likely won't load, which is fine. Copy the URL and paste it below")
-        webbrowser.open(url, new=2)
-        try:                                url = util.logger_input("URL").strip()
-        except TimeoutExpired:              raise Failed("Input Timeout: URL required.")
-        if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
+        if self.localhost_url:
+            code_verifier = uni_code_verifier
+            url = self.localhost_url
+        else:
+            code_verifier = secrets.token_urlsafe(100)[:128]
+            url = f"{urls['oauth_authorize']}?response_type=code&client_id={self.client_id}&code_challenge={code_verifier}"
+            logger.info("")
+            logger.info(f"Navigate to: {url}")
+            logger.info("")
+            logger.info("Login and click the Allow option. You will then be redirected to a localhost")
+            logger.info("url that most likely won't load, which is fine. Copy the URL and paste it below")
+            webbrowser.open(url, new=2)
+            try:                                url = util.logger_input("URL").strip()
+            except TimeoutExpired:              raise Failed("Input Timeout: URL required.")
+            if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
         match = re.search("code=([^&]+)", str(url))
         if not match:
             raise Failed("MyAnimeList Error: Invalid URL")
