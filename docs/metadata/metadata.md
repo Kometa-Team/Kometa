@@ -129,15 +129,15 @@ Each metadata requires its own section within the `metadata` attribute. Each ite
 ```yaml
 metadata:
   Godzilla vs. Mechagodzilla II:
-    # ... details to change for this itwm
+    # ... details to change for this item
   Godzilla vs. Megaguirus:
-    # ... details to change for this itwm
+    # ... details to change for this item
   Godzilla vs. Megalon:
-    # ... details to change for this itwm
+    # ... details to change for this item
   Halloween (Rob Zombie):
-    # ... details to change for this itwm
+    # ... details to change for this item
   etc:
-    # ... details to change for this itwm
+    # ... details to change for this item
 ```
 
 ### Title & Year

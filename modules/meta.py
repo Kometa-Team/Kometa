@@ -237,17 +237,19 @@ class DataFile:
                                 else:
                                     return og_txt
 
-                            for i in range(2):
-                                for option in optional:
-                                    if option not in variables and f"<<{option}>>" in str(final_data):
-                                        raise Failed
-                                for variable, variable_data in variables.items():
-                                    if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                        final_data = scan_text(final_data, variable, variable_data.replace(",", ""))
-                                    elif variable != "name":
-                                        final_data = scan_text(final_data, variable, variable_data)
-                            for dm, dd in default.items():
-                                final_data = scan_text(final_data, dm, dd)
+                            for i in range(4):
+                                if i == 2:
+                                    for dm, dd in default.items():
+                                        final_data = scan_text(final_data, dm, dd)
+                                else:
+                                    for option in optional:
+                                        if option not in variables and f"<<{option}>>" in str(final_data):
+                                            raise Failed
+                                    for variable, variable_data in variables.items():
+                                        if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                            final_data = scan_text(final_data, variable, variable_data.replace(",", ""))
+                                        elif variable != "name":
+                                            final_data = scan_text(final_data, variable, variable_data)
                         return final_data
 
                     for method_name, attr_data in template.items():

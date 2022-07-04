@@ -460,6 +460,7 @@ class ConfigFile:
                     self.MyAnimeList = MyAnimeList(self, {
                         "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="mal", throw=True),
+                        "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
                         "config_path": self.config_path,
                         "authorization": self.data["mal"]["authorization"] if "authorization" in self.data["mal"] else None
                     })

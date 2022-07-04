@@ -748,6 +748,9 @@ class CollectionBuilder:
             self.details["collection_mode"] = "hide"
             self.sync = True
 
+        if self.smart_url:
+            self.sync = False
+
         self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.details["save_report"]
                                                           or (self.library.Radarr and self.radarr_details["add_missing"])
                                                           or (self.library.Sonarr and self.sonarr_details["add_missing"]))
@@ -2635,7 +2638,7 @@ class CollectionBuilder:
                     self.library.delete_user_playlist(self.obj.title, user)
                 except NotFound:
                     pass
-                new_playlist = self.obj.copyToUser(user)
+                self.obj.copyToUser(user)
                 logger.info(f"Playlist: {self.name} synced to {user}")
 
     def send_notifications(self, playlist=False):
