@@ -345,6 +345,7 @@ class Operations:
 
                     for ep in item.episodes():
                         ep.batchEdits()
+                        batch_display = ""
                         item_title = self.library.get_item_sort_title(ep, atr="title")
 
                         def get_episode_rating(attribute):
@@ -365,7 +366,7 @@ class Operations:
                                     logger.info(f"{item_title[:25]:<25} | No Rating Found")
                                 elif str(ep.audienceRating) != str(new_rating):
                                     ep.editField("audienceRating", new_rating)
-                                    logger.info(f"\n{item_title[:25]:<25} | Audience Rating | {new_rating}")
+                                    batch_display += f"\n{item_title[:25]:<25} | Audience Rating | {new_rating}"
                             except Failed:
                                 pass
 
@@ -376,7 +377,7 @@ class Operations:
                                     logger.info(f"{item_title[:25]:<25} | No Rating Found")
                                 elif str(ep.rating) != str(new_rating):
                                     ep.editField("rating", new_rating)
-                                    logger.info(f"{item_title[:25]:<25} | Critic Rating | {new_rating}")
+                                    batch_display += f"\n{item_title[:25]:<25} | Critic Rating | {new_rating}"
                             except Failed:
                                 pass
 
@@ -387,9 +388,13 @@ class Operations:
                                     logger.info(f"{item_title[:25]:<25} | No Rating Found")
                                 elif str(ep.userRating) != str(new_rating):
                                     ep.editField("userRating", new_rating)
-                                    logger.info(f"{item_title[:25]:<25} | User Rating | {new_rating}")
+                                    batch_display += f"\n{item_title[:25]:<25} | User Rating | {new_rating}"
                             except Failed:
                                 pass
+
+                        item.saveEdits()
+                        if len(batch_display) > 0:
+                            logger.info(f"Batch Edits{batch_display}")
 
             if self.library.Radarr and self.library.radarr_add_all_existing:
                 try:

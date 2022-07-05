@@ -656,7 +656,7 @@ First, open the metadata file [this will create the file if it doesn't already e
   [type this into your terminal]
 
   ```
-  nano "config\Movies.yml"
+  nano "config/Movies.yml"
   ```
 
 </details>
