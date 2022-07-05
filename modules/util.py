@@ -1149,9 +1149,11 @@ class Overlay:
             if self.back_box:
                 if self.back_align == "left":
                     main_x = start_x
+                    main_y = start_y + (back_height - box_height) // 2
                 elif self.back_align == "right":
                     main_x = start_x + back_width - (text_width if text is not None else image_width)
                 elif self.back_align == "top":
+                    main_x = start_x + (back_width - box_width) // 2
                     main_y = start_y
                 elif self.back_align == "bottom":
                     main_y = start_y + back_height - (text_height if text is not None else image_height)

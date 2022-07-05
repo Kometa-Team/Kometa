@@ -268,7 +268,7 @@ class Overlays:
                             self.library.reload(item, force=True)
                             poster_compare = poster.compare if poster else item.thumb
                             logger.info(f"{item_title[:60]:<60} | Overlays Applied: {', '.join(over_names)}")
-                        except (OSError, BadRequest) as e:
+                        except (OSError, BadRequest, SyntaxError) as e:
                             logger.stacktrace()
                             raise Failed(f"{item_title[:60]:<60} | Overlay Error: {e}")
                     elif self.library.show_asset_not_needed:
