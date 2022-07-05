@@ -1148,13 +1148,11 @@ class Overlay:
 
             if self.back_box:
                 if self.back_align == "left":
-                    main_x = start_x
                     main_y = start_y + (back_height - box_height) // 2
                 elif self.back_align == "right":
                     main_x = start_x + back_width - (text_width if text is not None else image_width)
                 elif self.back_align == "top":
                     main_x = start_x + (back_width - box_width) // 2
-                    main_y = start_y
                 elif self.back_align == "bottom":
                     main_y = start_y + back_height - (text_height if text is not None else image_height)
                 else:
@@ -1181,13 +1179,10 @@ class Overlay:
                         main_x = start_x + back_width - self.addon_offset
                     else:
                         addon_x = main_x + text_width + self.addon_offset
-                elif text_width == image_width:
-                    addon_x = main_x
                 elif text_width < image_width:
-                    addon_x = main_x
                     main_x = main_x + ((image_width - text_width) / 2)
-                else:
-                    addon_x = main_x + ((image_width - text_width) / 2)
+                elif text_width > image_width:
+                    addon_x = main_x + ((text_width - image_width) / 2)
 
                 if self.addon_position == "top":
                     if self.back_align == "top":
@@ -1204,13 +1199,10 @@ class Overlay:
                         main_y = start_y + back_height - self.addon_offset
                     else:
                         addon_y = main_y + text_height + self.addon_offset
-                elif text_height == image_height:
-                    addon_y = main_y
                 elif text_height < image_height:
-                    addon_y = main_y
                     main_y = main_y + ((image_height - text_height) / 2)
-                else:
-                    addon_y = main_y + ((image_height - text_height) / 2)
+                elif text_height > image_height:
+                    addon_y = main_y + ((text_height - image_height) / 2)
 
             if text is not None:
                 drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color, anchor="lt")
