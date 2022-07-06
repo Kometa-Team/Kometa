@@ -156,7 +156,15 @@ class DataFile:
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 
+                    conditional = {}
                     default = {}
+                    def add_default(d_key, d_value):
+                        for v_key, v_value in variables.items():
+                            if f"<<{v_key}>>" in str(d_value):
+                                d_value = str(d_value).replace(f"<<{v_key}>>", str(v_value))
+                        default[d_key] = d_value
+                        default[f"{d_key}_encoded"] = requests.utils.quote(str(d_value))
+
                     if "default" in template:
                         if not template["default"]:
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
@@ -169,11 +177,25 @@ class DataFile:
                                     final_key = final_key.replace(f"<<{k}>>", str(v))
                             if final_key not in optional:
                                 final_value = template["default"][dv]
-                                for key, value in variables.items():
-                                    if f"<<{key}>>" in str(final_value):
-                                        final_value = str(final_value).replace(f"<<{key}>>", str(value))
-                                default[final_key] = final_value
-                                default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
+                                if isinstance(final_value, dict):
+                                    if "variable" not in final_value:
+                                        raise Failed(f"{self.data_type} Error: variable sub-attribute required when the default variable is a dictionary")
+                                    if "default" not in final_value:
+                                        raise Failed(f"{self.data_type} Error: default sub-attribute required when the default variable is a dictionary")
+                                    if "values" not in final_value:
+                                        raise Failed(f"{self.data_type} Error: values sub-attribute required when the default variable is a dictionary")
+                                    conditional[final_key] = final_value
+                                else:
+                                    add_default(final_key, final_value)
+
+                    for con, con_data in conditional.items():
+                        final_value = con_data["default"]
+                        if con_data["variable"] in variables:
+                            if variables[con_data["variable"]] in con_data["values"]:
+                                final_value = con_data["values"][variables[con_data["variable"]]]
+                        elif con_data["variable"] in default and default[con_data["variable"]] in con_data["values"]:
+                            final_value = con_data["values"][variables[con_data["variable"]]]
+                        add_default(con, final_value)
 
                     if "optional" in template:
                         if template["optional"]:
