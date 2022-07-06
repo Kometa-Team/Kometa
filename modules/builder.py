@@ -2472,7 +2472,7 @@ class CollectionBuilder:
                 sync_tags.append("PMM")
             else:
                 add_tags.append("PMM")
-            tag_results = self.library.edit_tags('label', self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, do_print=False)[28:]
+            tag_results = self.library.edit_tags('label', self.obj, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags, do_print=False)
             if tag_results:
                 batch_display += f"\n{tag_results}"
 
