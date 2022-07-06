@@ -180,8 +180,6 @@ class DataFile:
                                 if isinstance(final_value, dict):
                                     if "variable" not in final_value:
                                         raise Failed(f"{self.data_type} Error: variable sub-attribute required when the default variable is a dictionary")
-                                    if "default" not in final_value:
-                                        raise Failed(f"{self.data_type} Error: default sub-attribute required when the default variable is a dictionary")
                                     if "values" not in final_value:
                                         raise Failed(f"{self.data_type} Error: values sub-attribute required when the default variable is a dictionary")
                                     conditional[final_key] = final_value
@@ -189,13 +187,19 @@ class DataFile:
                                     add_default(final_key, final_value)
 
                     for con, con_data in conditional.items():
-                        final_value = con_data["default"]
-                        if con_data["variable"] in variables:
-                            if variables[con_data["variable"]] in con_data["values"]:
-                                final_value = con_data["values"][variables[con_data["variable"]]]
-                        elif con_data["variable"] in default and default[con_data["variable"]] in con_data["values"]:
-                            final_value = con_data["values"][variables[con_data["variable"]]]
-                        add_default(con, final_value)
+                        con_var = con_data["variable"]
+                        for k, v in variables.items():
+                            if f"<<{k}>>" in con_var:
+                                con_var = con_var.replace(f"<<{k}>>", str(v))
+                        if con_var in variables and variables[con_var] in con_data["values"]:
+                            add_default(con, con_data["values"][variables[con_var]])
+                        elif con_var not in variables and con_var in default and default[con_var] in con_data["values"]:
+                            add_default(con, con_data["values"][default[con_var]])
+                        elif "default" in con_data:
+                            add_default(con, con_data["default"])
+                        else:
+                            optional.append(str(con))
+                            optional.append(f"{con}_encoded")
 
                     if "optional" in template:
                         if template["optional"]:
@@ -259,8 +263,8 @@ class DataFile:
                                 else:
                                     return og_txt
 
-                            for i in range(4):
-                                if i == 2:
+                            for i in range(6):
+                                if i == 2 or i == 4:
                                     for dm, dd in default.items():
                                         final_data = scan_text(final_data, dm, dd)
                                 else:
