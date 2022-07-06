@@ -392,7 +392,7 @@ class Operations:
                             except Failed:
                                 pass
 
-                        item.saveEdits()
+                        ep.saveEdits()
                         if len(batch_display) > 0:
                             logger.info(f"Batch Edits{batch_display}")
 
