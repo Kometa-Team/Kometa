@@ -919,7 +919,7 @@ class Plex(Library):
             final = f"{obj.title[:25]:<25} | {attr_display} | {display}" if display else display
             if do_print and final:
                 logger.info(final)
-        return final
+        return final[28:] if final else final
 
     def item_images(self, item, group, alias, asset_location=None, title=None, image_name=None, folder_name=None):
         if title is None:
