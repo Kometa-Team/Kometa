@@ -190,6 +190,7 @@ libraries:
     - git: PMM/overlays/audio_language
     - git: PMM/overlays/direct_play
     - git: PMM/overlays/imdb_top_250
+    - git: PMM/overlays/rt_cert_fresh
     - git: PMM/overlays/ratings
     - git: PMM/overlays/resolution
     - git: PMM/overlays/special_release
