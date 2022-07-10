@@ -5,6 +5,7 @@ from datetime import datetime
 try:
     import plexapi, requests, schedule
     from modules.logs import MyLogger
+    from PIL import ImageFile
     from plexapi import server
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
@@ -147,6 +148,7 @@ if not uuid_num:
         handle.write(str(uuid_num))
 
 plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = str(uuid_num)
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
