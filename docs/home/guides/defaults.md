@@ -190,6 +190,7 @@ libraries:
     - git: PMM/overlays/audio_language
     - git: PMM/overlays/direct_play
     - git: PMM/overlays/imdb_top_250
+	- git: PMM/overlays/rt_cert_fresh
     - git: PMM/overlays/ratings
     - git: PMM/overlays/resolution
     - git: PMM/overlays/special_release
@@ -241,6 +242,20 @@ libraries:
       template_variables:
         overlay_level: episode
     - git: PMM/overlays/direct_play
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/imdb_top_250
+    - git: PMM/overlays/imdb_top_250
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/imdb_top_250
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/rt_cert_fresh
+    - git: PMM/overlays/rt_cert_fresh
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/rt_cert_fresh
       template_variables:
         overlay_level: season
     - git: PMM/overlays/ratings
