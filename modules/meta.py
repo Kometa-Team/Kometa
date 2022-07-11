@@ -156,7 +156,6 @@ class DataFile:
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 
-                    conditional = {}
                     default = {}
                     def add_default(d_key, d_value):
                         for v_key, v_value in variables.items():
@@ -164,6 +163,15 @@ class DataFile:
                                 d_value = str(d_value).replace(f"<<{v_key}>>", str(v_value))
                         default[d_key] = d_value
                         default[f"{d_key}_encoded"] = requests.utils.quote(str(d_value))
+
+                    def small_var_check(var_check):
+                        for var_k, var_v in variables.items():
+                            if f"<<{var_k}>>" in str(var_check):
+                                var_check = str(var_check).replace(f"<<{var_k}>>", str(var_v))
+                        for var_k, var_v in default.items():
+                            if f"<<{var_k}>>" in str(var_check):
+                                var_check = str(var_check).replace(f"<<{var_k}>>", str(var_v))
+                        return var_check
 
                     if "default" in template:
                         if not template["default"]:
@@ -177,14 +185,7 @@ class DataFile:
                                     final_key = final_key.replace(f"<<{k}>>", str(v))
                             if final_key not in optional:
                                 final_value = template["default"][dv]
-                                if isinstance(final_value, dict):
-                                    if "variable" not in final_value:
-                                        raise Failed(f"{self.data_type} Error: variable sub-attribute required when the default variable is a dictionary")
-                                    if "values" not in final_value:
-                                        raise Failed(f"{self.data_type} Error: values sub-attribute required when the default variable is a dictionary")
-                                    conditional[final_key] = final_value
-                                else:
-                                    add_default(final_key, final_value)
+                                add_default(final_key, final_value)
 
                     if "optional" in template:
                         if template["optional"]:
@@ -208,9 +209,7 @@ class DataFile:
                         for con_key, con_value in template["conditionals"].items():
                             if not isinstance(con_value, dict):
                                 raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
-                            for k, v in variables.items():
-                                if f"<<{k}>>" in con_key:
-                                    con_key = con_key.replace(f"<<{k}>>", str(v))
+                            con_key = small_var_check(con_key)
                             if con_key in variables:
                                 continue
                             if "conditions" not in con_value:
@@ -227,19 +226,21 @@ class DataFile:
                                 if "value" not in condition:
                                     raise Failed(f"{self.data_type} Error: each condition must have a result value")
                                 condition_passed = True
-                                for var_key, var_value in condition:
+                                for var_key, var_value in condition.items():
                                     if var_key == "value":
                                         continue
-                                    for k, v in variables.items():
-                                        if f"<<{k}>>" in var_key:
-                                            var_key = var_key.replace(f"<<{k}>>", str(v))
-                                        if f"<<{k}>>" in str(var_value):
-                                            var_value = str(var_value).replace(f"<<{k}>>", str(v))
-                                    if var_key not in variables or \
-                                            (not isinstance(var_value, list) and variables[var_key] != var_value) or \
-                                            (isinstance(var_value, list) and variables[var_key] not in var_value):
-                                        condition_passed = False
-                                        break
+                                    var_key = small_var_check(var_key)
+                                    var_value = small_var_check(var_value)
+                                    if var_key in variables:
+                                        if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
+                                            (not isinstance(var_value, list) and variables[var_key] != var_value):
+                                            condition_passed = False
+                                            break
+                                    elif var_key in default:
+                                        if (isinstance(var_value, list) and default[var_key] not in var_value) or \
+                                            (not isinstance(var_value, list) and default[var_key] != var_value):
+                                            condition_passed = False
+                                            break
                                 if condition_passed:
                                     condition_found = True
                                     variables[con_key] = condition["value"]
