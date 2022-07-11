@@ -5,7 +5,7 @@ from plexapi.exceptions import BadRequest
 
 logger = util.logger
 
-anime_lists_url = "https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-list-full.json"
+anime_lists_url = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Anime-IDs/master/pmm_anime_ids.json"
 
 class Convert:
     def __init__(self, config):
@@ -17,20 +17,20 @@ class Convert:
         self._anidb_to_tvdb = {}
         self._imdb_to_anidb = {}
         self._tvdb_to_anidb = {}
-        for anime_id in self.config.get_json(anime_lists_url):
-            if "anidb_id" in anime_id:
-                self._anidb_ids[anime_id["anidb_id"]] = anime_id
-                if "mal_id" in anime_id:
-                    self._mal_to_anidb[int(anime_id["mal_id"])] = int(anime_id["anidb_id"])
-                if "anilist_id" in anime_id:
-                    self._anilist_to_anidb[int(anime_id["anilist_id"])] = int(anime_id["anidb_id"])
-                if "imdb_id" in anime_id and str(anime_id["imdb_id"]).startswith("tt"):
-                    self._anidb_to_imdb[int(anime_id["anidb_id"])] = util.get_list(anime_id["imdb_id"])
-                    for im_id in util.get_list(anime_id["imdb_id"]):
-                        self._imdb_to_anidb[im_id] = int(anime_id["anidb_id"])
-                if "thetvdb_id" in anime_id:
-                    self._anidb_to_tvdb[int(anime_id["anidb_id"])] = int(anime_id["thetvdb_id"])
-                    self._tvdb_to_anidb[int(anime_id["thetvdb_id"])] = int(anime_id["anidb_id"])
+        self._anidb_ids = self.config.get_json(anime_lists_url)
+        for anidb_id, ids in self._anidb_ids.items():
+            anidb_id = int(anidb_id)
+            if "mal_id" in ids:
+                self._mal_to_anidb[int(ids["mal_id"])] = anidb_id
+            if "anilist_id" in ids:
+                self._anilist_to_anidb[int(ids["anilist_id"])] = anidb_id
+            if "imdb_id" in ids and str(ids["imdb_id"]).startswith("tt"):
+                self._anidb_to_imdb[anidb_id] = util.get_list(ids["imdb_id"])
+                for im_id in util.get_list(ids["imdb_id"]):
+                    self._imdb_to_anidb[im_id] = anidb_id
+            if "thetvdb_id" in ids:
+                self._anidb_to_tvdb[anidb_id] = int(ids["tvdb_id"])
+                self._tvdb_to_anidb[int(ids["tvdb_id"])] = anidb_id
 
     def imdb_to_anidb(self, imdb_id):
         if imdb_id in self._imdb_to_anidb:
