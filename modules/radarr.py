@@ -221,6 +221,7 @@ class Radarr:
 
     def get_tmdb_ids(self, method, data):
         ids = []
+        allowed = [t.id for t in self.api.all_tags() if t.label.lower() in data] if method == "radarr_taglist" else []
         for movie in self.api.all_movies():
             append = False
             if method == "radarr_all":
@@ -228,7 +229,7 @@ class Radarr:
             elif method == "radarr_taglist":
                 if data:
                     for tag in movie.tags:
-                        if tag.label.lower() in data:
+                        if tag.id in allowed:
                             append = True
                             break
                 elif not movie.tags:
