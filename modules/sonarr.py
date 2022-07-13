@@ -247,6 +247,7 @@ class Sonarr:
 
     def get_tvdb_ids(self, method, data):
         ids = []
+        allowed = [t.id for t in self.api.all_tags() if t.label.lower() in data] if method == "sonarr_taglist" else []
         for series in self.api.all_series():
             append = False
             if method == "sonarr_all":
@@ -254,7 +255,7 @@ class Sonarr:
             elif method == "sonarr_taglist":
                 if data:
                     for tag in series.tags:
-                        if tag.label.lower() in data:
+                        if tag.id in allowed:
                             append = True
                             break
                 elif not series.tags:

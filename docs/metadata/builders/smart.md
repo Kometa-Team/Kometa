@@ -60,33 +60,34 @@ There are a couple other attributes you can have at the top level only along wit
 
 ## Sort Options
 
-| Sort Option                                     | Description                                 |  Movies  |  Shows   | Seasons  | Episodes | Artists  |  Albums  |  Tracks  |
-|:------------------------------------------------|:--------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `title.asc`<br>`title.desc`                     | Sort by Title                               | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `season.asc`<br>`season.desc`                   | Sort by Season                              | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; |
-| `show.asc`<br>`show.desc`                       | Sort by Show                                | &#10060; | &#10060; | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `album_artist.asc`<br>`album_artist.desc`       | Sort by Album Artist                        | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  | &#9989;  |
-| `artist.asc`<br>`artist.desc`                   | Sort by Artist                              | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  |
-| `album.asc`<br>`album.desc`                     | Sort by Album                               | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  |
-| `year.asc`<br>`year.desc`                       | Sort by Year                                | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
-| `release.asc`<br>`release.desc`                 | Sort by Release Date (Originally Available) | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
-| `critic_rating.asc`<br>`critic_rating.desc`     | Sort by Critic Rating                       | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
-| `audience_rating.asc`<br>`audience_rating.desc` | Sort by Audience Rating                     | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `user_rating.asc`<br>`user_rating.desc`         | Sort by User Rating                         | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `content_rating.asc`<br>`content_rating.desc`   | Sort by Content Rating                      | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `duration.asc`<br>`duration.desc`               | Sort by Duration                            | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#9989;  |
-| `progress.asc`<br>`progress.desc`               | Sort by Progress                            | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `played.asc`<br>`played.desc`                   | Sort by Date Last Played                    | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  | &#9989;  | &#9989;  |
-| `plays.asc`<br>`plays.desc`                     | Sort by Number of Plays                     | &#9989;  | &#10060; | &#10060; | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `unplayed.asc`<br>`unplayed.desc`               | Sort by Unplayed                            | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `episode_added.asc`<br>`episode_added.desc`     | Sort by Last Episode Date Added             | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `added.asc`<br>`added.desc`                     | Sort by Date Added                          | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `viewed.asc`<br>`viewed.desc`                   | Sort by Date Last Viewed                    | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `rated.asc`<br>`rated.desc`                     | Sort by Date Last Rated                     | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  |
-| `popularity.asc`<br>`popularity.desc`           | Sort by Popularity                          | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  |
-| `resolution.asc`<br>`resolution.desc`           | Sort by Resolution                          | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `bitrate.asc`<br>`bitrate.desc`                 | Sort by Bitrate                             | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#9989;  |
-| `random`                                        | Sort by Random                              | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| Sort Option                                     | Description                                         |  Movies  |  Shows   | Seasons  | Episodes | Artists  |  Albums  |  Tracks  |
+|:------------------------------------------------|:----------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| `title.asc`<br>`title.desc`                     | Sort by Title                                       | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `season.asc`<br>`season.desc`                   | Sort by Season                                      | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; |
+| `show.asc`<br>`show.desc`                       | Sort by Show                                        | &#10060; | &#10060; | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `album_artist.asc`<br>`album_artist.desc`       | Sort by Album Artist                                | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  | &#9989;  |
+| `artist.asc`<br>`artist.desc`                   | Sort by Artist                                      | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  |
+| `album.asc`<br>`album.desc`                     | Sort by Album                                       | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  |
+| `year.asc`<br>`year.desc`                       | Sort by Year                                        | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
+| `release.asc`<br>`release.desc`                 | Sort by Release Date (Originally Available)         | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
+| `episode_release.asc`<br>`episode_release.desc` | Sort by Episode Release Date (Originally Available) | &#10060; | &#9989;  | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `critic_rating.asc`<br>`critic_rating.desc`     | Sort by Critic Rating                               | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
+| `audience_rating.asc`<br>`audience_rating.desc` | Sort by Audience Rating                             | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `user_rating.asc`<br>`user_rating.desc`         | Sort by User Rating                                 | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `content_rating.asc`<br>`content_rating.desc`   | Sort by Content Rating                              | &#9989;  | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `duration.asc`<br>`duration.desc`               | Sort by Duration                                    | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#9989;  |
+| `progress.asc`<br>`progress.desc`               | Sort by Progress                                    | &#10060; | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `played.asc`<br>`played.desc`                   | Sort by Date Last Played                            | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  | &#9989;  | &#9989;  |
+| `plays.asc`<br>`plays.desc`                     | Sort by Number of Plays                             | &#9989;  | &#10060; | &#10060; | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `unplayed.asc`<br>`unplayed.desc`               | Sort by Unplayed                                    | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `episode_added.asc`<br>`episode_added.desc`     | Sort by Last Episode Date Added                     | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `added.asc`<br>`added.desc`                     | Sort by Date Added                                  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `viewed.asc`<br>`viewed.desc`                   | Sort by Date Last Viewed                            | &#9989;  | &#9989;  | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `rated.asc`<br>`rated.desc`                     | Sort by Date Last Rated                             | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  |
+| `popularity.asc`<br>`popularity.desc`           | Sort by Popularity                                  | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; | &#9989;  |
+| `resolution.asc`<br>`resolution.desc`           | Sort by Resolution                                  | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `bitrate.asc`<br>`bitrate.desc`                 | Sort by Bitrate                                     | &#9989;  | &#10060; | &#10060; | &#9989;  | &#10060; | &#10060; | &#9989;  |
+| `random`                                        | Sort by Random                                      | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
 
 ## Filters
 

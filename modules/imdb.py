@@ -215,11 +215,11 @@ class IMDb:
             with gzip.open(gz, "rb") as f_in:
                 shutil.copyfileobj(f_in, f_out)
 
-        with open(tsv, "r") as t:
+        with open(tsv, "r", encoding="utf-8") as t:
             if interface == "ratings":
                 data = {line[0]: line[1] for line in csv.reader(t, delimiter="\t")}
             elif interface == "basics":
-                data = {line[0]: str(line[-1]).split(",") for line in csv.reader(tsv, delimiter="\t")}
+                data = {line[0]: str(line[-1]).split(",") for line in csv.reader(t, delimiter="\t")}
             else:
                 data = [line for line in csv.reader(t, delimiter="\t")]
 

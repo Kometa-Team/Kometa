@@ -28,7 +28,7 @@ class Convert:
                 self._anidb_to_imdb[anidb_id] = util.get_list(ids["imdb_id"])
                 for im_id in util.get_list(ids["imdb_id"]):
                     self._imdb_to_anidb[im_id] = anidb_id
-            if "thetvdb_id" in ids:
+            if "tvdb_id" in ids:
                 self._anidb_to_tvdb[anidb_id] = int(ids["tvdb_id"])
                 self._tvdb_to_anidb[int(ids["tvdb_id"])] = anidb_id
 
@@ -61,7 +61,7 @@ class Convert:
                     ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
             elif anidb_id in self._anidb_to_tvdb:
                 ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
-            elif anidb_id in self._anidb_ids:
+            elif str(anidb_id) in self._anidb_ids:
                 logger.warning(f"Convert Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
             else:
                 logger.warning(f"Convert Error: AniDB ID: {anidb_id} not found")

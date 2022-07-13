@@ -1,6 +1,6 @@
 import math, operator, os, re, requests
 from datetime import datetime
-from modules import plex, ergast, util
+from modules import plex, ergast, overlay, util
 from modules.util import Failed, YAML
 from plexapi.exceptions import NotFound, BadRequest
 
@@ -71,7 +71,7 @@ class DataFile:
         self.templates = {}
 
     def get_file_name(self):
-        data = f"{util.github_base}{self.path}.yml" if self.type == "GIT" else self.path
+        data = f"{self.config.GitHub.configs_url}{self.path}.yml" if self.type == "GIT" else self.path
         if "/" in data:
             if data.endswith(".yml"):
                 return data[data.rfind("/") + 1:-4]
@@ -89,7 +89,7 @@ class DataFile:
         if file_type in ["URL", "Git", "Repo"]:
             if file_type == "Repo" and not self.config.custom_repo:
                 raise Failed("Config Error: No custom_repo defined")
-            content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else util.github_base}{file_path}.yml"
+            content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else self.config.GitHub.configs_url}{file_path}.yml"
             response = self.config.get(content_path)
             if response.status_code >= 400:
                 raise Failed(f"URL Error: No file found at {content_path}")
@@ -137,6 +137,7 @@ class DataFile:
                         variables[name_var] = str(name)
 
                     variables["library_type"] = self.library.type.lower() if self.library else "items"
+                    variables["library_name"] = self.library.name
 
                     template_name = variables["name"]
                     template, temp_vars = self.templates[template_name]
