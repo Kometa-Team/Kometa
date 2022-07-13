@@ -256,7 +256,9 @@ class Operations:
                                 else:
                                     mapped_genres.append(genre)
                             new_genres = mapped_genres
-                        batch_display += f"\n{self.library.edit_tags('genre', item, sync_tags=new_genres, do_print=False)}"
+                        temp_display = self.library.edit_tags('genre', item, sync_tags=new_genres, do_print=False)
+                        if temp_display:
+                            batch_display += f"\n{temp_display}"
                     except Failed:
                         pass
 

@@ -137,6 +137,7 @@ class DataFile:
                         variables[name_var] = str(name)
 
                     variables["library_type"] = self.library.type.lower() if self.library else "items"
+                    variables["library_name"] = self.library.name
 
                     template_name = variables["name"]
                     template, temp_vars = self.templates[template_name]
