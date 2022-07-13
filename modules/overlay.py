@@ -7,7 +7,6 @@ logger = util.logger
 
 portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
-github_base = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs/master/"
 rating_mods = ["0", "%", "#"]
 special_text_overlays = [f"text({a}{s})" for a in ["audience_rating", "critic_rating", "user_rating"] for s in [""] + rating_mods]
 
@@ -177,7 +176,7 @@ class Overlay:
             if "file" in self.data and self.data["file"]:
                 self.path = self.data["file"]
             elif "git" in self.data and self.data["git"]:
-                self.path = get_and_save_image(f"{github_base}{self.data['git']}.png")
+                self.path = get_and_save_image(f"{self.config.GitHub.configs_url}{self.data['git']}.png")
             elif "repo" in self.data and self.data["repo"]:
                 self.path = get_and_save_image(f"{self.config.custom_repo}{self.data['repo']}.png")
             elif "url" in self.data and self.data["url"]:

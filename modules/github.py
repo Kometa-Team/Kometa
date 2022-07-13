@@ -1,14 +1,15 @@
 import re
 from modules import util
-from modules.util import Failed
 
 logger = util.logger
 
 base_url = "https://api.github.com/repos/meisnate12/Plex-Meta-Manager"
+configs_raw_url = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs"
 
 class GitHub:
     def __init__(self, config):
         self.config = config
+        self._configs_url = None
 
     def latest_release_notes(self):
         response = self.config.get_json(f"{base_url}/releases/latest")
@@ -27,4 +28,16 @@ class GitHub:
                 break
             commits.append(message)
         return "\n".join(commits)
-        
+
+    @property
+    def configs_url(self):
+        if self._configs_url is None:
+            try:
+                config_tags = [r["ref"][10:] for r in self.config.get_json(f"{base_url}-Configs/git/refs/tags")]
+            except TypeError:
+                config_tags = []
+            if self.config.version[1] in config_tags:
+                self._configs_url = f"{configs_raw_url}/{self.config.version[1]}/"
+            else:
+                self._configs_url = f"{configs_raw_url}/master/"
+        return self._configs_url
