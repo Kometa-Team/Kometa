@@ -1,7 +1,8 @@
 import os, re, time
 from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
-from modules.util import Failed, NonExisting, NotScheduled, NotScheduledRange, Overlay, Deleted
+from modules.util import Failed, NonExisting, NotScheduled, NotScheduledRange, Deleted
+from modules.overlay import Overlay
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Movie, Show, Season, Episode
