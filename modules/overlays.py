@@ -2,7 +2,6 @@ import os, re, time
 from datetime import datetime
 from modules import plex, util, overlay
 from modules.builder import CollectionBuilder
-from modules.overlay import Overlay
 from modules.util import Failed, NotScheduled
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
