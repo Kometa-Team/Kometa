@@ -74,7 +74,7 @@ class MyLogger:
         handler.setFormatter(logging.Formatter(text))
 
     def add_main_handler(self):
-        self.main_handler = self._get_handler(self.main_log, count=10)
+        self.main_handler = self._get_handler(self.main_log, count=9)
         self.main_handler.addFilter(fmt_filter)
         self._logger.addHandler(self.main_handler)
 

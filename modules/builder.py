@@ -1725,7 +1725,7 @@ class CollectionBuilder:
             if plex_filter[filter_alias["sort_by"]] is None:
                 raise Failed(f"{self.Type} Error: sort_by attribute is blank")
             if plex_filter[filter_alias["sort_by"]] not in sorts:
-                raise Failed(f"{self.Type} Error: sort_by: {plex_filter[filter_alias['sort_by']]} is invalid")
+                raise Failed(f"{self.Type} Error: sort_by: {plex_filter[filter_alias['sort_by']]} is invalid. Options: {', '.join(sorts)}")
             sort = plex_filter[filter_alias["sort_by"]]
         filter_details += f"Sort By: {sort}\n"
 
