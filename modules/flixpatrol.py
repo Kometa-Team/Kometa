@@ -69,7 +69,7 @@ class FlixPatrol:
         elif list_url.startswith(tuple([v for k, v in urls.items()])):
             flixpatrol_urls = self._request(
                 list_url, language,
-                f"//a[@class='flex group' and .//span[.='{'Movie' if is_movie else 'TV Show'}']]/@href"
+                f"//a[contains(@class, 'flex group') and .//span[.='{'Movie' if is_movie else 'TV Show'}']]/@href"
             )
         return flixpatrol_urls if limit == 0  else flixpatrol_urls[:limit]
 
