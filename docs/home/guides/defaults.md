@@ -193,6 +193,9 @@ libraries:
     - git: PMM/overlays/mc_must_see
 	- git: PMM/overlays/rt_cert_fresh
     - git: PMM/overlays/ratings
+      template_variables:
+        rating1: critic
+        rating1_image: rt_tomato
     - git: PMM/overlays/resolution
     - git: PMM/overlays/special_release
     - git: PMM/overlays/streaming
@@ -267,12 +270,14 @@ libraries:
       template_variables:
         overlay_level: season
     - git: PMM/overlays/ratings
+      template_variables:
+        rating2: audience
+        rating2_image: imdb
     - git: PMM/overlays/ratings
       template_variables:
+        rating2: audience
+        rating2_image: imdb
         overlay_level: episode
-    - git: PMM/overlays/ratings
-      template_variables:
-        overlay_level: season
     - git: PMM/overlays/resolution
     - git: PMM/overlays/resolution
       template_variables:
