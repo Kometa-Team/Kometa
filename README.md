@@ -66,13 +66,19 @@ Some example collections that can be created are:
 
 Below are some user-curated collections which have been created by Plex Meta Manager.
 
-![Movie Preview](https://metamanager.wiki/en/latest/_images/movie-preview.png)
+![Movie Collection Preview](https://metamanager.wiki/en/latest/_images/movie-collection-preview.png)
 
-![Show Preview](https://metamanager.wiki/en/latest/_images/show-preview.png)
+![Movie Library Preview](https://metamanager.wiki/en/latest/_images/movie-library-preview.png)
+
+![Show Collection Preview](https://metamanager.wiki/en/latest/_images/show-collection-preview.png)
+
+![Show Library Preview](https://metamanager.wiki/en/latest/_images/show-collection-preview.png)
+
+## Default and User Submitted Metadata/Overlay Files
+
+The overlays and collection built in the images above can be easily added to any plex by using the [PMM Defaults](https://metamanager.wiki/en/latest/home/guides/defaults.html). These Files were created by the PMM team to make it easier than ever to have customized collections and overlays.
 
 To see user submitted Metadata configuration files, and you to even add your own, go to the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
-
-Plex Meta Manager can manage the metadata fields for movies, shows, seasons, episodes, artists, albums, tracks, and collections, which can allow you to have a full backup of your customizations in case of a database loss.
 
 ## Discord Support Server
 Before posting on GitHub about an enhancement, error, or configuration question please visit the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB). we have a dedicated support thread system so that your query can be dealt with efficiently by our team and community.
@@ -89,6 +95,6 @@ If you are unable to use the [Plex Meta Manager Discord Server](https://discord.
 
 ## IBRACORP Video Walkthrough
 
-[IBRACORP](https://ibracorp.io/) made a video walkthrough for installing Plex Meta Manager on unRAID. While you might not be using unRAID the video goes over many key aspects of Plex Meta Manager and can be a great place to start learning how to use the script.
+[IBRACORP](https://ibracorp.io/) made a video walkthrough for installing Plex Meta Manager on unRAID.  While you might not be using unRAID the video goes over many key aspects of Plex Meta Manager and can be a great place to start learning how to use the script. Please note, since the making of the video, some significant changes have been made to Plex Meta Manager 1.17 and beyond so always reference the wiki for the latest details.
 
 [![Plex Meta Manager](https://img.youtube.com/vi/dF69MNoot3w/0.jpg)](https://www.youtube.com/watch?v=dF69MNoot3w "Plex Meta Manager")

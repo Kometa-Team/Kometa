@@ -246,7 +246,7 @@ def run_config(config, stats):
 
     playlist_status = {}
     playlist_stats = {}
-    if (config.playlist_files or config.general["playlist_report"]) and not overlays_only and not operations_only and not collection_only:
+    if (config.playlist_files or config.general["playlist_report"]) and not overlays_only and not operations_only and not collection_only and not config.requested_metadata_files:
         logger.add_playlists_handler()
         if config.playlist_files:
             playlist_status, playlist_stats = run_playlists(config)
@@ -462,11 +462,15 @@ def run_libraries(config):
                 library.map_guids(temp_items)
             library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
 
-            if config.library_first and not config.test_mode and not collection_only and not playlist_only:
-                if not overlays_only and library.library_operation:
-                    library_status[library.name]["Library Operations"] = library.Operations.run_operations()
-                if not operations_only and (library.overlay_files or library.remove_overlays):
-                    library_status[library.name]["Library Overlays"] = library.Overlays.run_overlays()
+            def run_operations_and_overlays():
+                if not config.test_mode and not collection_only and not playlist_only and not config.requested_metadata_files:
+                    if not overlays_only and library.library_operation:
+                        library_status[library.name]["Library Operations"] = library.Operations.run_operations()
+                    if not operations_only and (library.overlay_files or library.remove_overlays):
+                        library_status[library.name]["Library Overlays"] = library.Overlays.run_overlays()
+
+            if config.library_first:
+                run_operations_and_overlays()
 
             if not operations_only and not overlays_only and not playlist_only:
                 time_start = datetime.now()
@@ -497,11 +501,8 @@ def run_libraries(config):
                         logger.re_add_library_handler(library.mapping_name)
                 library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
 
-            if not config.library_first and not config.test_mode and not collection_only and not playlist_only:
-                if not overlays_only and library.library_operation:
-                    library_status[library.name]["Library Operations"] = library.Operations.run_operations()
-                if not operations_only and (library.overlay_files or library.remove_overlays):
-                    library_status[library.name]["Library Overlays"] = library.Overlays.run_overlays()
+            if not config.library_first:
+                run_operations_and_overlays()
 
             logger.remove_library_handler(library.mapping_name)
         except Exception as e:

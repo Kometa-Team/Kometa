@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from modules import util, operations
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
-from modules.util import Failed, YAML
+from modules.util import Failed, NotScheduled, YAML
 
 logger = util.logger
 
@@ -138,6 +138,9 @@ class Library(ABC):
                     self.metadata_files.append(meta_obj)
                 except Failed as e:
                     logger.error(e)
+                except NotScheduled as e:
+                    logger.info("")
+                    logger.separator(f"Skipping {e} Metadata File")
         if not operations_only and not collection_only:
             for file_type, overlay_file, temp_vars, asset_directory in self.overlay_path:
                 try:

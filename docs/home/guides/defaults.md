@@ -191,7 +191,7 @@ libraries:
     - git: PMM/overlays/direct_play
     - git: PMM/overlays/imdb_top_250
     - git: PMM/overlays/mc_must_see
-	- git: PMM/overlays/rt_cert_fresh
+    - git: PMM/overlays/rt_cert_fresh
     - git: PMM/overlays/ratings
       template_variables:
         rating1: critic

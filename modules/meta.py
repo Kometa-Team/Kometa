@@ -1,7 +1,7 @@
 import math, operator, os, re, requests
 from datetime import datetime
-from modules import plex, ergast, overlay, util
-from modules.util import Failed, YAML
+from modules import plex, ergast, util
+from modules.util import Failed, NotScheduled, YAML
 from plexapi.exceptions import NotFound, BadRequest
 
 logger = util.logger
@@ -137,7 +137,7 @@ class DataFile:
                         variables[name_var] = str(name)
 
                     variables["library_type"] = self.library.type.lower() if self.library else "items"
-                    variables["library_name"] = self.library.name
+                    variables["library_name"] = self.library.name if self.library else "playlist"
 
                     template_name = variables["name"]
                     template, temp_vars = self.templates[template_name]
@@ -347,6 +347,9 @@ class DataFile:
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
+        metadata_name = self.get_file_name()
+        if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
+            raise NotScheduled(metadata_name)
         self.data_type = "Collection"
         self.library = library
         if file_type == "Data":
