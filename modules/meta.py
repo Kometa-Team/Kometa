@@ -103,7 +103,7 @@ class DataFile:
                 raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
         return yaml.data
 
-    def apply_template(self, name, data, template_call):
+    def apply_template(self, name, mapping_name, data, template_call):
         if not self.templates:
             raise Failed(f"{self.data_type} Error: No templates found")
         elif not template_call:
@@ -132,6 +132,11 @@ class DataFile:
                         variables.pop(remove_variable)
                         optional.append(str(remove_variable))
 
+                    template, temp_vars = self.templates[variables["name"]]
+
+                    if not name and "name" in template:
+                        name = template["name"]
+
                     name_var = f"{self.data_type.lower()}_name"
                     if name_var not in variables:
                         variables[name_var] = str(name)
@@ -139,8 +144,6 @@ class DataFile:
                     variables["library_type"] = self.library.type.lower() if self.library else "items"
                     variables["library_name"] = self.library.name if self.library else "playlist"
 
-                    template_name = variables["name"]
-                    template, temp_vars = self.templates[template_name]
 
                     for temp_key, temp_value in temp_vars.items():
                         if temp_value is None:
