@@ -129,6 +129,10 @@ Below are some user-curated collections which have been created by Plex Meta Man
 
 ![Show Library Preview](home/show-collection-preview.png)
 
+## Default and User Metadata/Overlay Files
+
+The overlays and collection built in the images above can be easily added to any plex by using the [PMM Defaults](home/guides/defaults). These Files were created by the PMM team to make it easier than ever to have customized collections and overlays.
+
 To see user submitted Metadata configuration files, and you to even add your own, go to the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
 
 Plex Meta Manager can manage the metadata fields for movies, shows, seasons, episodes, artists, albums, tracks, and collections, which can allow you to have a full backup of your customizations in case of a database loss.
