@@ -2488,8 +2488,10 @@ class CollectionBuilder:
 
             advance_update = False
             if "collection_mode" in self.details:
-                if int(self.obj.collectionMode) not in plex.collection_mode_keys \
+                if (self.blank_collection and self.created) or int(self.obj.collectionMode) not in plex.collection_mode_keys \
                         or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:
+                    if self.blank_collection and self.created:
+                        self.library.collection_mode_query(self.obj, "default")
                     self.library.collection_mode_query(self.obj, self.details["collection_mode"])
                     logger.info(f"Collection Mode | {self.details['collection_mode']}")
                     advance_update = True
