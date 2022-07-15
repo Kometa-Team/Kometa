@@ -225,7 +225,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {self.data[methods['name']]}")
             self.name = str(self.data[methods["name"]])
         else:
-            self.name = None
+            self.name = self.mapping_name
 
         if "allowed_library_types" in methods and not self.playlist:
             logger.debug("")
