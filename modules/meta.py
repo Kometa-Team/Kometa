@@ -136,14 +136,12 @@ class DataFile:
 
                     if not name and "name" in template:
                         name = template["name"]
+                    elif not name:
+                        name = mapping_name
 
-                    name_var = f"{self.data_type.lower()}_name"
-                    if name_var not in variables:
-                        variables[name_var] = str(name)
-
+                    variables[f"{self.data_type.lower()}_name"] = str(name)
                     variables["library_type"] = self.library.type.lower() if self.library else "items"
                     variables["library_name"] = self.library.name if self.library else "playlist"
-
 
                     for temp_key, temp_value in temp_vars.items():
                         if temp_value is None:
