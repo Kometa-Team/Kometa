@@ -268,7 +268,7 @@ def logger_input(prompt, timeout=60):
     else:                                   raise SystemError("Input Timeout not supported on this system")
 
 def header(language="en-US,en;q=0.5"):
-    return {"Accept-Language": "eng" if language == "default" else language, "User-Agent": "Mozilla/5.0"}
+    return {"Accept-Language": "eng" if language == "default" else language, "User-Agent": "Mozilla/5.0 Firefox/102.0"}
 
 def alarm_handler(signum, frame):
     raise TimeoutExpired

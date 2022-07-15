@@ -199,7 +199,7 @@ class ConfigFile:
         if "trakt" in self.data:                       self.data["trakt"] = self.data.pop("trakt")
         if "mal" in self.data:                         self.data["mal"] = self.data.pop("mal")
 
-        def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True):
+        def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True, int_min=0):
             endline = ""
             if parent is not None:
                 if data and parent in data:
@@ -232,7 +232,7 @@ class ConfigFile:
                 if isinstance(data[attribute], bool):                               return data[attribute]
                 else:                                                               message = f"{text} must be either true or false"
             elif var_type == "int":
-                if isinstance(data[attribute], int) and data[attribute] >= 0:       return data[attribute]
+                if isinstance(data[attribute], int) and data[attribute] >= int_min: return data[attribute]
                 else:                                                               message = f"{text} must an integer >= 0"
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
@@ -288,7 +288,7 @@ class ConfigFile:
 
         self.general = {
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
-            "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60),
+            "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
             "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
@@ -391,7 +391,7 @@ class ConfigFile:
                 self.TMDb = TMDb(self, {
                     "apikey": check_for_attribute(self.data, "apikey", parent="tmdb", throw=True),
                     "language": check_for_attribute(self.data, "language", parent="tmdb", default="en"),
-                    "expiration": check_for_attribute(self.data, "cache_expiration", parent="tmdb", var_type="int", default=60)
+                    "expiration": check_for_attribute(self.data, "cache_expiration", parent="tmdb", var_type="int", default=60, int_min=1)
                 })
                 region = check_for_attribute(self.data, "region", parent="tmdb", test_list=self.TMDb.iso_3166_1, default_is_none=True)
                 self.TMDb.region = str(region).upper() if region else region
@@ -407,7 +407,7 @@ class ConfigFile:
                 try:
                     self.OMDb = OMDb(self, {
                         "apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True),
-                        "expiration": check_for_attribute(self.data, "cache_expiration", parent="omdb", var_type="int", default=60)
+                        "expiration": check_for_attribute(self.data, "cache_expiration", parent="omdb", var_type="int", default=60, int_min=1)
                     })
                 except Failed as e:
                     logger.error(e)
@@ -423,7 +423,7 @@ class ConfigFile:
                 try:
                     self.Mdblist.add_key(
                         check_for_attribute(self.data, "apikey", parent="mdblist", throw=True),
-                        check_for_attribute(self.data, "cache_expiration", parent="mdblist", var_type="int", default=60)
+                        check_for_attribute(self.data, "cache_expiration", parent="mdblist", var_type="int", default=60, int_min=1)
                     )
                     logger.info("Mdblist Connection Successful")
                 except Failed as e:
