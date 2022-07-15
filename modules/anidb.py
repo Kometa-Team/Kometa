@@ -82,7 +82,7 @@ class AniDB:
 
     def _popular(self):
         response = self._request(urls["popular"])
-        return util.get_int_list(response.xpath("//td[@class='name anime']/a/@href"), "AniDB ID")
+        return util.get_int_list(response.xpath("//td[@class='thumb anime']/a/@href"), "AniDB ID")
 
     def _relations(self, anidb_id):
         response = self._request(f"{urls['anime']}/{anidb_id}{urls['relation']}")

@@ -202,32 +202,30 @@ class CollectionBuilder:
 
         logger.separator(f"Validating {self.mapping_name} Attributes", space=False, border=False)
 
-        if "name" in methods:
-            name = self.data[methods["name"]]
-        elif f"{self.type}_name" in methods:
+        if f"{self.type}_name" in methods:
             logger.warning(f"Config Warning: Running {self.type}_name as name")
-            name = self.data[methods[f"{self.type}_name"]]
-        else:
-            name = None
-
-        if name:
-            logger.debug("")
-            logger.debug("Validating Method: name")
-            if not name:
-                raise Failed(f"{self.Type} Error: name attribute is blank")
-            logger.debug(f"Value: {name}")
-            self.name = str(name)
-        else:
-            self.name = str(self.mapping_name)
+            self.data["name"] = self.data[methods[f"{self.type}_name"]]
+            methods["name"] = "name"
 
         if "template" in methods:
             logger.debug("")
             logger.debug("Validating Method: template")
-            new_attributes = self.metadata.apply_template(self.name, self.data, self.data[methods["template"]])
+            name = self.data[methods["name"]] if "name" in methods else None
+            new_attributes = self.metadata.apply_template(name, self.mapping_name, self.data, self.data[methods["template"]])
             for attr in new_attributes:
                 if attr.lower() not in methods:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
+
+        if "name" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: name")
+            if not self.data[methods["name"]]:
+                raise Failed(f"{self.Type} Error: name attribute is blank")
+            logger.debug(f"Value: {self.data[methods['name']]}")
+            self.name = str(self.data[methods["name"]])
+        else:
+            self.name = self.mapping_name
 
         if "allowed_library_types" in methods and not self.playlist:
             logger.debug("")
@@ -506,6 +504,7 @@ class CollectionBuilder:
                             try:
                                 results = self.config.TMDb.search_people(tmdb_person)
                                 if results:
+                                    valid_names.append(tmdb_person)
                                     valid_names.append(results[0].name)
                                     if results[0].biography:
                                         self.summaries["tmdb_person"] = results[0].biography
@@ -2489,8 +2488,10 @@ class CollectionBuilder:
 
             advance_update = False
             if "collection_mode" in self.details:
-                if int(self.obj.collectionMode) not in plex.collection_mode_keys \
+                if (self.blank_collection and self.created) or int(self.obj.collectionMode) not in plex.collection_mode_keys \
                         or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:
+                    if self.blank_collection and self.created:
+                        self.library.collection_mode_query(self.obj, "default")
                     self.library.collection_mode_query(self.obj, self.details["collection_mode"])
                     logger.info(f"Collection Mode | {self.details['collection_mode']}")
                     advance_update = True
