@@ -139,7 +139,8 @@ class DataFile:
                     elif not name:
                         name = mapping_name
 
-                    variables[f"{self.data_type.lower()}_name"] = str(name)
+                    name_var = f"{self.data_type.lower()}_name"
+                    variables[name_var] = str(name)
                     variables["library_type"] = self.library.type.lower() if self.library else "items"
                     variables["library_name"] = self.library.name if self.library else "playlist"
 
