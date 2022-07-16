@@ -30,11 +30,9 @@ plex:
 
 * If you need help finding your Plex authentication token, please see Plex's [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
 
-# Other examples:
+# Multi-Plex Instance Setup:
 
-Specifying a second Plex server for a specific library:
-
-In this example we have two Plex servers [with the same libraries] and want to add the same collections to each.  The second Plex is less responsive, so it needs a higher timeout than the primary one.
+The below config.yml extract details how to set up multiple Plex servers within the one PMM instance, in this example there are two plex servers which are receiving the same Metadata File:
 
 ```yaml
 libraries:
@@ -59,3 +57,9 @@ plex:
   optimize: false
 ...
 ```
+
+The `plex` instance at the bottom is the "global" plex server.  unless otherwise specified, any connection to plex is assumed to to using that plex server. The first "Movies" library entry is on the global `plex` server.
+
+The "Movies_on_Second_Plex" library is found on the second plex server. Note that this library has its own plex section that lists the attributes that differ from the global plex instance, namely the `URL`, `token` and `timeout`.  The library on the second server is also called "Movies", but since you can't have two keys (in this scenario, libraries) with the same name, it is named Movies_on_Second_Plex in the config.yml, and the `library_name:` attribute contains the name of the library on the actual plex server.
+
+
