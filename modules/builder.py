@@ -505,7 +505,6 @@ class CollectionBuilder:
                                 results = self.config.TMDb.search_people(tmdb_person)
                                 if results:
                                     valid_names.append(tmdb_person)
-                                    valid_names.append(results[0].name)
                                     if results[0].biography:
                                         self.summaries["tmdb_person"] = results[0].biography
                                     if results[0].profile_url:

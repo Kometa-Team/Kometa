@@ -101,10 +101,11 @@ collections:
 
 ## Special Template Attributes
 
-There are three attributes unique to `templates`; `default`, `optional`, and `move_prefix`.
+There are some attributes unique to `templates`; `default`, `optional`, `conditionals`, and `move_prefix`.
 
 * `default` can set default values for template variables to be used if they're not specified in the call.
 * `optional` can specify variables that if not specified on the template call will cause any attribute using one of those variables to be ignored in the template. You can make any template variable optional per collection by setting it to `null`.
+* `conditionals` can specify variables based on conditions set by the user. See more [here](#conditionals)
 * `move_prefix` can be given a list or comma-separated string of prefixes to move to the end of the collection/playlist name for sorting.
     i.e. If you have `move_prefix: The` and a collection is called `The Avengers` then `<<collection_name>>` is replaced with `Avengers, The` instead of `The Avengers` for that collection.
 
@@ -114,6 +115,41 @@ Every template call is given these template variables.
 * Either `<<collection_sort>>` or `<<playlist_sort>>` which is the name of the definition after `move_prefix` is applied.
 * `<<library_type>>` which is the library type
 * All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. `<<collection_name_encoded>>`
+
+### Conditionals 
+
+Each conditional is identified by its mapping name and has one required attribute; `conditions` and one optional attribute; `default`.
+
+`default` is the default value for the variable when no condition is met. If default is not specified the variable becomes an optional variable.
+
+`conditions` is a list of sets of conditions where if all conditions are met then the variable will be the `value` specified in that condition.
+
+Each set of conditions must have the `value` attribute which is the value of the variable if the condition is met. 
+
+All other attribute pairs in the set of conditions will check a variable of the attribute key and see if the variable is the attribute value or in the list of attribute values.
+
+Here's an example from the [PMM default ratings file](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/overlays/ratings.yml).
+
+```yaml
+templates:
+  Rating:
+    conditionals:
+      rating1_horizontal_offset:
+        default: 30             # If no condition sets below are meet
+        conditions:
+          - side: [top, bottom]
+            rating2: none
+            rating3: none
+            value: 0            # If side is 'top' or 'bottom' and rating2 is 'none' and rating3 is 'none'
+          - side: [top, bottom]
+            rating2: none
+            value: -165         # If side is 'top' or 'bottom' and rating2 is 'none' and no previous conditions are meet
+          - side: [top, bottom]
+            rating3: none
+            value: -165         # If side is 'top' or 'bottom' rating3 is 'none' and no previous conditions are meet
+          - side: [top, bottom]
+            value: -335         # If side is 'top' or 'bottom' and no previous conditions are meet
+```
 
 ## Advance Example
 
