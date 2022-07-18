@@ -339,6 +339,7 @@ class Overlays:
                 except Failed as e:
                     logger.stacktrace()
                     logger.error(e)
+                    logger.info("")
 
         for overlay_name, over_obj in properties.items():
             if over_obj.group:

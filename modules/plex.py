@@ -845,13 +845,12 @@ class Plex(Library):
             logger.info(f"Processed {len(all_items)} {self.type}s")
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
-        if len(items) > 0:
-            ids = [(item.ratingKey, "ratingKey") for item in items]
-            logger.debug("")
-            logger.debug(f"{len(ids)} Keys Found: {ids}")
-            return ids
-        else:
-            raise Failed("Plex Error: No Items found in Plex")
+        if not items:
+            raise NonExisting("Plex Error: No Items found in your Plex Search")
+        ids = [(item.ratingKey, "ratingKey") for item in items]
+        logger.debug("")
+        logger.debug(f"{len(ids)} Keys Found: {ids}")
+        return ids
 
     def get_collection_items(self, collection, smart_label_collection):
         if smart_label_collection:

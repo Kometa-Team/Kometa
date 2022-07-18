@@ -1614,7 +1614,7 @@ default_template:
 ```yaml
 templates:
   style collection:
-    collection_level: albums
+    collection_level: album
     smart_filter:
       limit: 10
       sort_by: plays.desc

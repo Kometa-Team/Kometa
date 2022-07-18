@@ -2493,6 +2493,9 @@ class CollectionBuilder:
                         or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:
                     if self.blank_collection and self.created:
                         self.library.collection_mode_query(self.obj, "default")
+                        logger.info(f"Collection Mode | default")
+                        self.library.collection_mode_query(self.obj, "hide")
+                        logger.info(f"Collection Mode | hide")
                     self.library.collection_mode_query(self.obj, self.details["collection_mode"])
                     logger.info(f"Collection Mode | {self.details['collection_mode']}")
                     advance_update = True
