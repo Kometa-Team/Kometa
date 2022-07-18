@@ -220,7 +220,7 @@ class DataFile:
                                 raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
                             final_key = small_var_check(con_key)
                             if final_key != con_key:
-                                logger.debug(f"Conditional Variable: {final_key}")
+                                logger.debug(f"Variable: {final_key}")
                             if final_key in variables:
                                 continue
                             if "conditions" not in con_value:
@@ -237,7 +237,7 @@ class DataFile:
                                 if "value" not in condition:
                                     raise Failed(f"{self.data_type} Error: each condition must have a result value")
                                 condition_passed = True
-                                for var_key, var_value in condition.items():
+                                for i, (var_key, var_value) in enumerate(condition.items(), 1):
                                     if var_key == "value":
                                         continue
                                     var_key = small_var_check(var_key)
@@ -245,28 +245,28 @@ class DataFile:
                                     if var_key in variables:
                                         if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and variables[var_key] != var_value):
-                                            logger.debug(f"Condition Failed: {variables[var_key]} {'not in' if isinstance(var_value, list) else '!='} {var_value}")
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" {"not in" if isinstance(var_value, list) else "is not"} {var_value}')
                                             condition_passed = False
                                             break
                                     elif var_key in default:
                                         if (isinstance(var_value, list) and default[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and default[var_key] != var_value):
-                                            logger.debug(f"Condition Failed: {default[var_key]} {'not in' if isinstance(var_value, list) else '!='} {var_value}")
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" {"not in" if isinstance(var_value, list) else "is not"} {var_value}')
                                             condition_passed = False
                                             break
                                     else:
-                                        logger.debug(f"Condition Failed: {var_key} is not a variable provided or a default")
+                                        logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
                                         condition_passed = False
                                         break
                                 if condition_passed:
-                                    logger.debug(f"Conditional Variable: {final_key} = {condition['value']}")
+                                    logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
                                     condition_found = True
                                     variables[final_key] = condition["value"]
                                     variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
                                     break
                             if not condition_found:
                                 if "default" in con_value:
-                                    logger.debug(f"Conditional Variable: {final_key} = {con_value['default']}")
+                                    logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
                                     variables[final_key] = con_value["default"]
                                     variables[f"{final_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
                                 else:
@@ -297,6 +297,7 @@ class DataFile:
                     logger.debug(f"Defaults: {default}")
                     logger.debug("")
                     logger.debug(f"Optional: {optional}")
+                    logger.debug("")
 
                     def check_for_var(_method, _data):
                         def scan_text(og_txt, var, actual_value):
@@ -356,6 +357,8 @@ class DataFile:
                                     new_attributes[new_name] = check_data(new_name, attr_data)
                             except Failed:
                                 continue
+            logger.debug(f"Final Template Attributes: {new_attributes}")
+            logger.debug("")
             return new_attributes
 
     def external_templates(self, data):
@@ -480,6 +483,8 @@ class MetadataFile(DataFile):
                             if library.is_music:
                                 final_var = auto_type if auto_type.startwith("album") else f"artist_{auto_type}"
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {final_var: f"<<value>>"}}}
+                                if auto_type.startwith("album"):
+                                    default_template["collection_level"] = "album"
                                 default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startwith('album') else '<<library_type>>'}s"
                             elif auto_type == "resolution":
                                 default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}
