@@ -209,7 +209,6 @@ class CollectionBuilder:
 
         if "template" in methods:
             logger.debug("")
-            logger.debug("Validating Method: template")
             name = self.data[methods["name"]] if "name" in methods else None
             new_attributes = self.metadata.apply_template(name, self.mapping_name, self.data, self.data[methods["template"]])
             for attr in new_attributes:

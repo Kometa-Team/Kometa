@@ -846,7 +846,7 @@ class Plex(Library):
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if not items:
-            raise NonExisting("Plex Error: No Items found in your Plex Search")
+            raise Failed("Plex Error: No Items found in Plex")
         ids = [(item.ratingKey, "ratingKey") for item in items]
         logger.debug("")
         logger.debug(f"{len(ids)} Keys Found: {ids}")
