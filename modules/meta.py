@@ -112,7 +112,6 @@ class DataFile:
         elif not template_call:
             raise Failed(f"{self.data_type} Error: template attribute is blank")
         else:
-            logger.debug(f"Value: {template_call}")
             new_attributes = {}
             for variables in util.get_list(template_call, split=False):
                 if not isinstance(variables, dict):
@@ -126,6 +125,9 @@ class DataFile:
                 elif not isinstance(self.templates[variables["name"]][0], dict):
                     raise Failed(f"{self.data_type} Error: template {variables['name']} is not a dictionary")
                 else:
+                    logger.debug(f"Template {variables['name']}")
+                    logger.debug(f"Call: {variables}")
+
                     remove_variables = []
                     for tm in variables:
                         if variables[tm] is None:
@@ -204,7 +206,8 @@ class DataFile:
                                     optional.append(str(op))
                                     optional.append(f"{op}_encoded")
                                 else:
-                                    logger.warning(f"Template Warning: variable {op} cannot be optional if it has a default")
+                                    logger.debug("")
+                                    logger.debug(f"Template Warning: variable {op} cannot be optional if it has a default")
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute optional is blank")
 
@@ -231,13 +234,13 @@ class DataFile:
                             if not isinstance(conditions, list):
                                 raise Failed(f"{self.data_type} Error: conditions sub-attribute must be a list or dictionary")
                             condition_found = False
-                            for condition in conditions:
+                            for i, condition in enumerate(conditions, 1):
                                 if not isinstance(condition, dict):
                                     raise Failed(f"{self.data_type} Error: each condition must be a dictionary")
                                 if "value" not in condition:
                                     raise Failed(f"{self.data_type} Error: each condition must have a result value")
                                 condition_passed = True
-                                for i, (var_key, var_value) in enumerate(condition.items(), 1):
+                                for var_key, var_value in condition.items():
                                     if var_key == "value":
                                         continue
                                     var_key = small_var_check(var_key)
@@ -245,13 +248,19 @@ class DataFile:
                                     if var_key in variables:
                                         if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and variables[var_key] != var_value):
-                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" {"not in" if isinstance(var_value, list) else "is not"} {var_value}')
+                                            if isinstance(var_value, list):
+                                                logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
+                                            else:
+                                                logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is not "{var_value}"')
                                             condition_passed = False
                                             break
                                     elif var_key in default:
                                         if (isinstance(var_value, list) and default[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and default[var_key] != var_value):
-                                            logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" {"not in" if isinstance(var_value, list) else "is not"} {var_value}')
+                                            if isinstance(var_value, list):
+                                                logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
+                                            else:
+                                                logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" is not "{var_value}"')
                                             condition_passed = False
                                             break
                                     else:
@@ -280,7 +289,8 @@ class DataFile:
                         if "move_prefix" in template:
                             prefix = template["move_prefix"]
                         elif "move_collection_prefix" in template:
-                            logger.warning(f"{self.data_type} Error: template sub-attribute move_collection_prefix will run as move_prefix")
+                            logger.debuf("")
+                            logger.debug(f"{self.data_type} Warning: template sub-attribute move_collection_prefix will run as move_prefix")
                             prefix = template["move_collection_prefix"]
                         if prefix:
                             for op in util.get_list(prefix):
@@ -297,7 +307,6 @@ class DataFile:
                     logger.debug(f"Defaults: {default}")
                     logger.debug("")
                     logger.debug(f"Optional: {optional}")
-                    logger.debug("")
 
                     def check_for_var(_method, _data):
                         def scan_text(og_txt, var, actual_value):
@@ -352,11 +361,13 @@ class DataFile:
                             try:
                                 new_name = check_for_var(method_name, method_name)
                                 if new_name in new_attributes:
+                                    logger.info("")
                                     logger.warning(f"Template Warning: template attribute: {new_name} from {variables['name']} skipped")
                                 else:
                                     new_attributes[new_name] = check_data(new_name, attr_data)
                             except Failed:
                                 continue
+            logger.debug("")
             logger.debug(f"Final Template Attributes: {new_attributes}")
             logger.debug("")
             return new_attributes
