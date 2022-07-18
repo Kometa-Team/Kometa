@@ -1,25 +1,41 @@
 # Knowledgebase/FAQ
 
+This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://discord.gg/NfH6mGFuAB).
+
+### Locating Log Files
+The meta.log file can be found within the `logs` folder of your Plex Meta Manager config folder [right next to `config.yml`].
+`meta.log` is the most recent run of Plex Meta Manager, `meta.log.1` is the previous run, `meta.log.2` is the run before that, so on and so forth.
+
+### Reading Log Files
+
 Wondering how to troubleshoot Plex Meta Manager and how to read through the meta.log?
 
-**Using a text editor like [Notepad ++](https://notepad-plus-plus.org/downloads/) is very handy for this**
+**Using a text editor like [Visual Studio Code](https://code.visualstudio.com/) or [Sublime Text](https://www.sublimetext.com/) is recommended**
 
-In all cases, the first steps you will want to do is open up the [`meta.log`](#meta.log-location) with your text editor and perform these three steps:
+In all cases, the first step is to open the [`meta.log`](#meta.log-location) with your text editor and perform these steps:
 
-1. Check the version of Plex Meta Manager you are running and determine if you are running the latest [`version`](#plex-meta-manager-version). The [`most recent versions`](https://metamanager.wiki/en/latest/) can be found on the home page of the wiki for the latest, develop, and nightly branches. If not, [`upgrade`](https://metamanager.wiki/en/nightly/home/guides/local.html?highlight=upgrade#i-want-to-update-to-the-latest-version-of-pmm)
+1. Check that you are running the latest [`version`](#plex-meta-manager-version) of your branch. Your current version can be found in the `meta.log` file either below the Plex Meta Manager ASCII art, or at the end of the run. If you are not on the latest version of your branch, you will see `Newest Version: X.X.X` below this. Ensure you [`upgrade`](https://metamanager.wiki/en/nightly/home/guides/local.html?highlight=upgrade#i-want-to-update-to-the-latest-version-of-pmm) to the latest version of Plex Meta Manager.
 2. When scanning your meta.log file, search for `[CRITICAL]` items first as these will definitely need to be fixed
 3. Scan your meta.log file for `[ERROR]` and make a note of the content of the full line to start your search below on how to resolve
 
-### meta.log Location
-The meta.log location: You can find your `meta.log` file within the `logs` folder of your Plex Meta Manager config folder [right next to `config.yml`].
 
 ### Plex Meta Manager Version
 Checking the version: You will find that in your [`meta.log`](#meta.log-location) around the 8th-10th line and will look something like this:
 ```
 |                                 |
-|     Version: 1.17.0-develop50   |
+|     Version: 1.17.1-develop10   |
 |=================================|
 ```
+If you are not on the latest version of your branch, you will see Newest Version: X.X.X below this. Ensure you upgrade to the latest version of Plex Meta Manager.
+```
+|                                       |
+|     Version: 1.17.1-develop10         |
+|     Newest Version: 1.17.1-develop20  |
+|=======================================|
+```
+
+### Understanding Common Errors
+There are five main event types that you need to be aware of when understanding the log files, detailed below:
 
 | Type         | Short Info            | Description                                                               | Recommendation                                                                                        |
 |:-------------|:----------------------|:--------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------|
@@ -29,7 +45,10 @@ Checking the version: You will find that in your [`meta.log`](#meta.log-location
 | `[ERROR]`    | Error Log             | Error message that in MOST cases requires action on your part to resolve  | Read the error message, look for the message below and try recommendations                            |
 | `[CRITICAL]` | Critical Log          | Critical messaage requiring you to fix it for PMM to run properly         | Read the critical message and take appropriate action. look for message below and try recommendations |
 
+
 ### ERROR
+This table details examples of the most commonly-seen `[ERROR]` events and what they mean for the user.
+
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `[ERROR]`    | `Playlist Error: Library: XYZ not defined`                        | Plex library XYZ is not found                                                    | Ensure that your config file has defined the proper library name as found in Plex                                                                                                                                                                                                                                                                                                                                                              |
@@ -43,6 +62,8 @@ Checking the version: You will find that in your [`meta.log`](#meta.log-location
 | `[ERROR]`    | `Collection Error: trakt_list requires Trakt to be configured`    | You are using a builder that has not been configured yet.                        | Review the meta.log for more information on what went wrong. Refer to the wiki for details on how to set this up (in this case Trakt)                                                                                                                                                                                                                                                                                                          |
 
 ### WARNING
+This table details examples of the most commonly-seen `[WARNING]` events and what they mean for the user.
+
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `[WARNING]`  | `Convert Error: No TVDb ID Found for TMDb ID: 15733`              | Online sources are missing information                                           | These sorts of errors indicate that the thing can't be cross-referenced between sites. For example, at the time of that error, the TMDb record for "The Two Mrs. Grenvilles" [ID 15733] didn't contain a TVDb ID. This could be because the record just hasn't been updated, or because "The Two Mrs. Grenvilles" isn't listed on TVDB. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.    |
@@ -51,16 +72,22 @@ Checking the version: You will find that in your [`meta.log`](#meta.log-location
 | `[WARNING]`  | `Convert Error: AniDB ID not found for MyAnimeList ID: 36838`     | Online sources are missing information                                           | These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.    |
 
 ### CRITICAL
+This table details examples of the most commonly-seen `[CRITICAL]` events and what they mean for the user.
+
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `[CRITICAL]` | `Failed to Connect to https://api.themoviedb.org/3`               | Current step PMM was on made an API call to TMDb, but it aborted and moved on    | Determine if TMDb was offline and not replying to api requests. Try again and see if it fails again or not.                                                                                 |                                                                                                                                                                                                                                                  |
 
 ### INFO
+This table details examples of the most commonly-seen `[INFO]` events and what they mean for the user.
+
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `[INFO]`     | `Detail: TMDb_person updated poster to [URL]`                     | Person image was downloaded from TMDb                                            | May require you to update the people poster image to your style or request it in the style of the PMM defaults people posters                                                                                                                                                                                                                                                                                                                  |
 
 ### DEBUG
+This table details examples of the most commonly-seen `[DEBUG]` events and what they mean for the user.
+
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `[DEBUG]`    |                                                                   |                                                                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                |
