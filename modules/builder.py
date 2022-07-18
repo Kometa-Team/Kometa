@@ -200,7 +200,7 @@ class CollectionBuilder:
             logger.info(extra)
             logger.info("")
 
-        logger.separator(f"Validating {self.mapping_name} Attributes", space=False, border=False)
+        logger.separator(f"Building Definition From Templates", space=False, border=False)
 
         if f"{self.type}_name" in methods:
             logger.warning(f"Config Warning: Running {self.type}_name as name")
@@ -216,6 +216,8 @@ class CollectionBuilder:
                 if attr.lower() not in methods:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
+
+        logger.separator(f"Validating {self.mapping_name} Attributes", space=False, border=False)
 
         if "name" in methods:
             logger.debug("")

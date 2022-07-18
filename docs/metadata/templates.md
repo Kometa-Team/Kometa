@@ -112,8 +112,10 @@ There are some attributes unique to `templates`; `default`, `optional`, `conditi
 Every template call is given these template variables.
 
 * Either `<<collection_name>>`, `<<playlist_name>>`, or `<<overlay_name>>` which is the name of the definition.
+* `<<mapping_name>>` is the original mapping name for the definition in the YAML file.
 * Either `<<collection_sort>>` or `<<playlist_sort>>` which is the name of the definition after `move_prefix` is applied.
 * `<<library_type>>` which is the library type
+* `<<library_name>>` which is the name of the library
 * All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. `<<collection_name_encoded>>`
 
 ### Conditionals 

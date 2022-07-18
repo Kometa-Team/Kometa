@@ -129,7 +129,8 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`studio`](#studio)                           | Create a collection for each studio found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`network`](#network)                         | Create a collection for each network found in the library                                                   |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
-| [`style`](#style)                             | Create a collection for each style found in the library                                                     |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
+| [`style`](#style)                             | Create a collection for each artist style found in the library                                              |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
+| [`album_style`](#album-style)                 | Create a collection for each album style found in the library                                               |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`number`](#number)                           | Creates a collection for each number defined                                                                |    &#9989;     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
 | [`custom`](#custom)                           | Creates a collection for each custom `key: key_name` pair defined.                                          |    &#9989;     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
 
@@ -1503,7 +1504,7 @@ dynamic_collections:
 
 ### Style
 
-Create a collection for each style found in the library.
+Create a collection for each artist style found in the library.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -1545,8 +1546,8 @@ default_template:
 
 #### Example:
 
-* Create a collection for the top 10 albums for each style found in the Music library
-* Name the collection "Top [Style] Albums"
+* Create a collection for the top 10 artists for each style found in the Music library
+* Name the collection "Top [Style] Artists"
 
 ```yaml
 templates:
@@ -1554,12 +1555,74 @@ templates:
     smart_filter:
       limit: 10
       sort_by: plays.desc
-      type: albums
+      all:
+        artist_style: <<value>>
+dynamic_collections:
+  Styles:         # mapping name does not matter just needs to be unique
+    type: style
+    title_format: Top <<key_name>> <<library_type>>
+    template: style collection
+```
+
+### Album Style
+
+Create a collection for each album style found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>album_style</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Style</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Style</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Most Played &lt;&lt;key_name&gt;&gt; Albums</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: plays.desc
+    any:
+      album_style: <<value>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for the top 10 albums for each style found in the Music library
+* Name the collection "Top [Style] Albums"
+
+```yaml
+templates:
+  style collection:
+    collection_level: albums
+    smart_filter:
+      limit: 10
+      sort_by: plays.desc
       all:
         album_style: <<value>>
 dynamic_collections:
   Styles:         # mapping name does not matter just needs to be unique
-    type: style
+    type: album_style
     title_format: Top <<key_name>> Albums
     template: style collection
 ```
