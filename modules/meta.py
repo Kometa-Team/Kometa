@@ -21,7 +21,10 @@ dynamic_attributes = [
     "type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix",
     "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name"
 ]
-auto_type_translation = {"content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage"}
+auto_type_translation = {
+    "content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage",
+    "album_style": "album.style"
+}
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
     "origin_country": {"plex_all": True, "filters": {"origin_country": "<<value>>"}},
@@ -211,10 +214,14 @@ class DataFile:
                         if not isinstance(template["conditionals"], dict):
                             raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
                         for con_key, con_value in template["conditionals"].items():
+                            logger.debug("")
+                            logger.debug(f"Conditional: {con_key}")
                             if not isinstance(con_value, dict):
                                 raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
-                            con_key = small_var_check(con_key)
-                            if con_key in variables:
+                            final_key = small_var_check(con_key)
+                            if final_key != con_key:
+                                logger.debug(f"Variable: {final_key}")
+                            if final_key in variables:
                                 continue
                             if "conditions" not in con_value:
                                 raise Failed(f"{self.data_type} Error: conditions sub-attribute required for conditionals")
@@ -230,7 +237,7 @@ class DataFile:
                                 if "value" not in condition:
                                     raise Failed(f"{self.data_type} Error: each condition must have a result value")
                                 condition_passed = True
-                                for var_key, var_value in condition.items():
+                                for i, (var_key, var_value) in enumerate(condition.items(), 1):
                                     if var_key == "value":
                                         continue
                                     var_key = small_var_check(var_key)
@@ -238,25 +245,34 @@ class DataFile:
                                     if var_key in variables:
                                         if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and variables[var_key] != var_value):
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" {"not in" if isinstance(var_value, list) else "is not"} {var_value}')
                                             condition_passed = False
                                             break
                                     elif var_key in default:
                                         if (isinstance(var_value, list) and default[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and default[var_key] != var_value):
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" {"not in" if isinstance(var_value, list) else "is not"} {var_value}')
                                             condition_passed = False
                                             break
+                                    else:
+                                        logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
+                                        condition_passed = False
+                                        break
                                 if condition_passed:
+                                    logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
                                     condition_found = True
-                                    variables[con_key] = condition["value"]
-                                    variables[f"{con_key}_encoded"] = requests.utils.quote(str(condition["value"]))
+                                    variables[final_key] = condition["value"]
+                                    variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
                                     break
                             if not condition_found:
                                 if "default" in con_value:
-                                    variables[con_key] = con_value["default"]
-                                    variables[f"{con_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
+                                    logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
+                                    variables[final_key] = con_value["default"]
+                                    variables[f"{final_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
                                 else:
-                                    optional.append(str(con_key))
-                                    optional.append(f"{con_key}_encoded")
+                                    logger.debug(f"Conditional Variable: {final_key} added as optional variable")
+                                    optional.append(str(final_key))
+                                    optional.append(f"{final_key}_encoded")
 
                     sort_name = None
                     if "move_prefix" in template or "move_collection_prefix" in template:
@@ -274,6 +290,14 @@ class DataFile:
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
                     variables[f"{self.data_type.lower()}_sort"] = sort_name if sort_name else variables[name_var]
+
+                    logger.debug("")
+                    logger.debug(f"Variables: {variables}")
+                    logger.debug("")
+                    logger.debug(f"Defaults: {default}")
+                    logger.debug("")
+                    logger.debug(f"Optional: {optional}")
+                    logger.debug("")
 
                     def check_for_var(_method, _data):
                         def scan_text(og_txt, var, actual_value):
@@ -333,6 +357,8 @@ class DataFile:
                                     new_attributes[new_name] = check_data(new_name, attr_data)
                             except Failed:
                                 continue
+            logger.debug(f"Final Template Attributes: {new_attributes}")
+            logger.debug("")
             return new_attributes
 
     def external_templates(self, data):
@@ -434,7 +460,7 @@ class MetadataFile(DataFile):
                             auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
                             default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": f"<<value>>"}}}
                             default_title_format = "Best <<library_type>>s of <<key_name>>"
-                        elif auto_type in ["genre", "mood", "style", "country", "studio", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                        elif auto_type in ["genre", "mood", "style", "album_style", "country", "studio", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                             if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
                                 tags = library.get_tags(f"episode.{search_tag}")
@@ -455,8 +481,11 @@ class MetadataFile(DataFile):
                                 all_keys = [str(i.title) for i in tags]
                                 auto_list = {str(i.title): i.title for i in tags if str(i.title) not in exclude}
                             if library.is_music:
-                                default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {f"artist_{auto_type}": f"<<value>>"}}}
-                                default_title_format = "Most Played <<key_name>> <<library_type>>s"
+                                final_var = auto_type if auto_type.startwith("album") else f"artist_{auto_type}"
+                                default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {final_var: f"<<value>>"}}}
+                                if auto_type.startwith("album"):
+                                    default_template["collection_level"] = "album"
+                                default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startwith('album') else '<<library_type>>'}s"
                             elif auto_type == "resolution":
                                 default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}
                                 default_title_format = "<<key_name>> <<library_type>>s"
