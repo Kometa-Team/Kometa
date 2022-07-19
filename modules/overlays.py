@@ -2,7 +2,7 @@ import os, re, time
 from datetime import datetime
 from modules import plex, util, overlay
 from modules.builder import CollectionBuilder
-from modules.util import Failed, NotScheduled
+from modules.util import Failed, NonExisting, NotScheduled
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
 from PIL import Image, ImageFilter
@@ -315,7 +315,16 @@ class Overlays:
                         logger.debug("")
                         logger.debug(f"Builder: {method}: {value}")
                         logger.info("")
-                        builder.filter_and_save_items(builder.gather_ids(method, value))
+                        try:
+                            builder.filter_and_save_items(builder.gather_ids(method, value))
+                        except NonExisting as e:
+                            if builder.ignore_blank_results:
+                                logger.warning(e)
+                            else:
+                                raise Failed(e)
+
+                    if not builder.added_items and builder.ignore_blank_results:
+                        raise NonExisting(f"Overlay Warning: No items found")
 
                     if builder.filters or builder.tmdb_filters:
                         logger.info("")
@@ -336,6 +345,8 @@ class Overlays:
                     logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay.mapping_name}")
                 except NotScheduled as e:
                     logger.info(e)
+                except NonExisting as e:
+                    logger.warning(e)
                 except Failed as e:
                     logger.stacktrace()
                     logger.error(e)

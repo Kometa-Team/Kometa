@@ -115,7 +115,7 @@ from modules import util
 util.logger = logger
 from modules.builder import CollectionBuilder
 from modules.config import ConfigFile
-from modules.util import Failed, NotScheduled, Deleted
+from modules.util import Failed, NonExisting, NotScheduled, Deleted
 
 def my_except_hook(exctype, value, tb):
     if issubclass(exctype, KeyboardInterrupt):
@@ -568,7 +568,16 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.debug("")
                     logger.debug(f"Builder: {method}: {value}")
                     logger.info("")
-                    builder.filter_and_save_items(builder.gather_ids(method, value))
+                    try:
+                        builder.filter_and_save_items(builder.gather_ids(method, value))
+                    except NonExisting as e:
+                        if builder.ignore_blank_results:
+                            logger.warning(e)
+                        else:
+                            raise Failed(e)
+
+                if not builder.added_items and builder.ignore_blank_results:
+                    raise NonExisting(f"Overlay Warning: No items found")
 
                 if builder.filters or builder.tmdb_filters:
                     logger.info("")
@@ -659,6 +668,9 @@ def run_collection(config, library, metadata, requested_collections):
             if builder.run_again and (len(builder.run_again_movies) > 0 or len(builder.run_again_shows) > 0):
                 library.run_again.append(builder)
 
+        except NonExisting as e:
+            logger.warning(e)
+            library.status[str(mapping_name)]["status"] = "Ignored"
         except NotScheduled as e:
             logger.info(e)
             if str(e).endswith("and was deleted"):
