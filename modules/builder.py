@@ -439,6 +439,13 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['build_collection']]}")
             self.build_collection = util.parse(self.Type, "build_collection", self.data, datatype="bool", methods=methods, default=True)
 
+        self.ignore_blank_results = False
+        if "ignore_blank_results" in methods and not self.playlist:
+            logger.debug("")
+            logger.debug("Validating Method: ignore_blank_results")
+            logger.debug(f"Value: {data[methods['ignore_blank_results']]}")
+            self.ignore_blank_results = util.parse(self.Type, "ignore_blank_results", self.data, datatype="bool", methods=methods, default=True)
+
         self.blank_collection = False
         if "blank_collection" in methods and not self.playlist and not self.overlay:
             logger.debug("")
