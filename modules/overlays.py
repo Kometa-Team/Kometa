@@ -323,9 +323,6 @@ class Overlays:
                             else:
                                 raise Failed(e)
 
-                    if not builder.added_items and builder.ignore_blank_results:
-                        raise NonExisting(f"Overlay Warning: No items found")
-
                     if builder.filters or builder.tmdb_filters:
                         logger.info("")
                         for filter_key, filter_value in builder.filters:
@@ -342,11 +339,11 @@ class Overlays:
                                 properties[builder.overlay.mapping_name].keys.append(item.ratingKey)
                     if added_titles:
                         logger.debug(f"{len(added_titles)} Titles Found: {[self.library.get_item_sort_title(a, atr='title') for a in added_titles]}")
-                    logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay.mapping_name}")
+                        logger.info(f"{len(added_titles)} Items found for {builder.overlay.mapping_name} Overlay")
+                    else:
+                        logger.warning(f"No Items found for {builder.overlay.mapping_name} Overlay")
                 except NotScheduled as e:
                     logger.info(e)
-                except NonExisting as e:
-                    logger.warning(e)
                 except Failed as e:
                     logger.stacktrace()
                     logger.error(e)
