@@ -93,6 +93,7 @@ class Library(ABC):
         self.remove_title_parentheses = params["remove_title_parentheses"]
         self.remove_overlays = params["remove_overlays"]
         self.reapply_overlays = params["reapply_overlays"]
+        self.reset_overlays = params["reset_overlays"]
         self.mass_collection_mode = params["mass_collection_mode"]
         self.metadata_backup = params["metadata_backup"]
         self.genre_mapper = params["genre_mapper"]
