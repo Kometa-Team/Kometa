@@ -1033,7 +1033,12 @@ class Plex(Library):
 
         if not item_asset_directory:
             if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
-                starting = item.show() if isinstance(item, (Episode, Season)) else item
+                if isinstance(item, (Episode, Season)):
+                    starting = item.show()
+                elif isinstance(item, (Album, Track)):
+                    starting = item.artist()
+                else:
+                    starting = item
                 if not starting.locations:
                     raise Failed(f"Asset Warning: No video filepath found fo {item.title}")
                 path_test = str(starting.locations[0])
