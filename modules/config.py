@@ -55,6 +55,7 @@ mass_rating_options = {
     "anidb_rating": "Use AniDB Rating",
     "anidb_average": "Use AniDB Average"
 }
+reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
 
 class ConfigFile:
     def __init__(self, default_dir, attrs):
@@ -783,6 +784,7 @@ class ConfigFile:
                     params["overlay_path"] = []
                     params["remove_overlays"] = False
                     params["reapply_overlays"] = False
+                    params["reset_overlays"] = None
                     if lib and "overlay_path" in lib:
                         try:
                             if not lib["overlay_path"]:
@@ -799,6 +801,15 @@ class ConfigFile:
                                     if ("reapply_overlays" in file and file["reapply_overlays"] is True) \
                                         or ("reapply_overlay" in file and file["reapply_overlay"] is True):
                                         params["reapply_overlays"] = True
+                                    if "reset_overlays" in file or "reset_overlay" in file:
+                                        attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"
+                                        if file[attr] and file[attr] in reset_overlay_options:
+                                            params["reset_overlays"] = file[attr]
+                                        else:
+                                            final_text = f"Config Error: reset_overlays attribute {file[attr]} invalid. Options: "
+                                            for option, description in reset_overlay_options.items():
+                                                final_text = f"{final_text}\n    {option} ({description})"
+                                            logger.error(final_text)
                                     if "schedule" in file and file["schedule"]:
                                         logger.debug(f"Value: {file['schedule']}")
                                         err = None

@@ -898,7 +898,7 @@ class MetadataFile(DataFile):
                             item = self.library.search_item(alt_title)
 
                 if item is None:
-                    logger.error(f"Skipping {mapping_name}: Item {mapping_name} not found")
+                    logger.error(f"Skipping {mapping_name}: Item {title} not found")
                     continue
             if not isinstance(item, list):
                 item = [item]

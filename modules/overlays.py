@@ -153,14 +153,19 @@ class Overlays:
                         if image_compare and str(poster.compare) != str(image_compare):
                             changed_image = True
                     elif has_overlay:
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
+                        if self.library.reset_overlays is not None:
+                            if self.library.reset_overlays == "tmdb":
+                                new_backup = self.find_poster_url(item)
+                            else:
+                                posters = item.posters()
+                                if posters:
+                                    new_backup = posters[0]
+                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
                         elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
                         else:
                             new_backup = self.find_poster_url(item)
-                            if new_backup is None:
-                                new_backup = item.posterUrl
                     else:
                         new_backup = item.posterUrl
                     if new_backup:

@@ -154,7 +154,7 @@ libraries:
 
 #### Remove Overlays
 
-You can remove overlays from a library by adding `remove_overlays: true` to `overlay_path`.
+You can remove overlays from a library by adding `remove_overlays: true` to `overlay_path`. This will remove all overlays when run and not generate new ones.
 
 ```yaml
 libraries:
@@ -166,7 +166,33 @@ libraries:
       - file: config/Overlays.yml
 ```
 
-* This will remove all overlays when run and not generate new ones.
+#### Reapply Overlays 
+
+You can reapply overlays from a library by adding `reapply_overlays: true` to `overlay_path`. This will reapply overlays to every item in your library.
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_path:
+      - file: config/TV Shows.yml
+    overlay_path:
+      - reapply_overlays: true
+      - file: config/Overlays.yml
+```
+
+#### Reset Overlays 
+
+You can reset overlays from a library by adding `reset_overlays` to `overlay_path` and setting it to either `tmdb` or `plex` depending on where you want to source the images from. This will use the reset image when overlaying items in your library.
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_path:
+      - file: config/TV Shows.yml
+    overlay_path:
+      - reset_overlays: plex
+      - file: config/Overlays.yml
+```
 
 ### Report Path
 
