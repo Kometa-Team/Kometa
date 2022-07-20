@@ -2,7 +2,7 @@ import os, re, time
 from datetime import datetime
 from modules import plex, util, overlay
 from modules.builder import CollectionBuilder
-from modules.util import Failed, NotScheduled
+from modules.util import Failed, NonExisting, NotScheduled
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
 from PIL import Image, ImageFilter
@@ -153,14 +153,19 @@ class Overlays:
                         if image_compare and str(poster.compare) != str(image_compare):
                             changed_image = True
                     elif has_overlay:
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
+                        if self.library.reset_overlays is not None:
+                            if self.library.reset_overlays == "tmdb":
+                                new_backup = self.find_poster_url(item)
+                            else:
+                                posters = item.posters()
+                                if posters:
+                                    new_backup = posters[0]
+                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
                         elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
                         else:
                             new_backup = self.find_poster_url(item)
-                            if new_backup is None:
-                                new_backup = item.posterUrl
                     else:
                         new_backup = item.posterUrl
                     if new_backup:
@@ -311,18 +316,25 @@ class Overlays:
                         raise Failed(f"Overlay Error: Overlay {builder.overlay.mapping_name} already exists")
                     properties[builder.overlay.mapping_name] = builder.overlay
 
-                    for method, value in builder.builders:
-                        logger.debug("")
-                        logger.debug(f"Builder: {method}: {value}")
-                        logger.info("")
-                        builder.filter_and_save_items(builder.gather_ids(method, value))
-
                     if builder.filters or builder.tmdb_filters:
                         logger.info("")
                         for filter_key, filter_value in builder.filters:
                             logger.info(f"Collection Filter {filter_key}: {filter_value}")
                         for filter_key, filter_value in builder.tmdb_filters:
                             logger.info(f"Collection Filter {filter_key}: {filter_value}")
+
+                    for method, value in builder.builders:
+                        logger.debug("")
+                        logger.debug(f"Builder: {method}: {value}")
+                        logger.info("")
+                        try:
+                            builder.filter_and_save_items(builder.gather_ids(method, value))
+                        except NonExisting as e:
+                            if builder.ignore_blank_results:
+                                logger.warning("")
+                                logger.warning(e)
+                            else:
+                                raise Failed(e)
 
                     added_titles = []
                     if builder.added_items:
@@ -333,7 +345,10 @@ class Overlays:
                                 properties[builder.overlay.mapping_name].keys.append(item.ratingKey)
                     if added_titles:
                         logger.debug(f"{len(added_titles)} Titles Found: {[self.library.get_item_sort_title(a, atr='title') for a in added_titles]}")
-                    logger.info(f"{len(added_titles) if added_titles else 'No'} Items found for {builder.overlay.mapping_name}")
+                        logger.info(f"{len(added_titles)} Items found for {builder.overlay.mapping_name} Overlay")
+                    else:
+                        logger.warning(f"No Items found for {builder.overlay.mapping_name} Overlay")
+                    logger.info("")
                 except NotScheduled as e:
                     logger.info(e)
                 except Failed as e:
