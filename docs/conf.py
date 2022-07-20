@@ -130,6 +130,7 @@ html_theme_options = {
                 ("Docker images", "home/guides/alternative-docker"),
             ]),
             ("Run Commands & Environment Variables", "home/environmental"),
+            ("Knowledgebase/FAQ", "kb/kb"),
             ("_divider", ),
             ("Configuration File", "config/configuration"),
             ("Log Files", "home/logs"),
