@@ -172,7 +172,9 @@ class Overlays:
                         changed_image = True
                         image_response = self.config.get(new_backup)
                         if image_response.status_code >= 400:
-                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: Poster Download Failed")
+                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: Image Download Failed")
+                        if image_response.headers[""] not in ["image/png", "image/jpeg"]:
+                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: Image Not JPG or PNG")
                         i_ext = "jpg" if image_response.headers["Content-Type"] == "image/jpeg" else "png"
                         backup_image_path = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.{i_ext}")
                         with open(backup_image_path, "wb") as handler:
@@ -361,10 +363,6 @@ class Overlays:
                 if over_obj.group not in overlay_groups:
                     overlay_groups[over_obj.group] = {}
                 overlay_groups[over_obj.group][overlay_name] = over_obj.weight
-            for rk in over_obj.keys:
-                for suppress_name in over_obj.suppress:
-                    if suppress_name in properties and rk in properties[suppress_name].keys:
-                        properties[suppress_name].keys.remove(rk)
 
         for overlay_name, over_obj in properties.items():
             for over_key in over_obj.keys:
@@ -389,6 +387,10 @@ class Overlays:
                     for v in gv:
                         if final != v:
                             key_to_overlays[over_key][1].remove(v)
+            for over_name in over_names:
+                for suppress_name in properties[over_name].suppress:
+                    if suppress_name in over_names:
+                        key_to_overlays[over_key][1].remove(suppress_name)
         return key_to_overlays, properties, queues
 
     def find_poster_url(self, item):
