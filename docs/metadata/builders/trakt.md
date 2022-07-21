@@ -173,3 +173,24 @@ collections:
     collection_order: custom
     sync_mode: sync
 ```
+
+## Syncing Plex Collections to Trakt Lists
+
+A combination of PMM settings/attributes can be utilized to create a collection via PMM and then sync them to a blank or existing Trakt List.
+
+NOTE: You must either create an empty Trakt list or specify an existing Trakt list which you have write access to.
+
+```yaml
+collections:
+  My Favouite Movies:
+    sync_to_trakt_list: myfilms
+    # trakt_list: https://trakt.tv/users/plexmetamanager/lists/myfilms  OPTIONAL TWO-WAY SYNC
+    plex_search:
+      any:
+        rating.gte: 8
+        sort_by: user_rating.desc
+```
+
+In this example, PMM will generate a Plex collection with any films that I have rated 8.0 or above (using the `plex_search`). The `sync_to_trakt_list` will take those films and then sync them to my `myfilms` Trakt list.
+
+I can optionally also enable the `trakt_list` to create a two-way sync between Plex and Trakt. This allows me to add films to the Trakt list that I want in my Plex collection, and then sync them to Plex.
