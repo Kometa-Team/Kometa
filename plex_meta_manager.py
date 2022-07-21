@@ -442,17 +442,17 @@ def run_libraries(config):
             temp_items = None
             list_key = None
             expired = None
-            if config.Cache and cache_libraries:
+            if config.Cache:
                 list_key, expired = config.Cache.query_list_cache("library", library.mapping_name, 1)
-                if list_key and expired is False:
+                if cache_libraries and list_key and expired is False:
                     logger.info(f"Library: {library.mapping_name} loaded from Cache")
                     temp_items = config.Cache.query_list_ids(list_key)
 
             if not temp_items:
                 temp_items = library.cache_items()
-                if config.Cache:
-                    if list_key:
-                        config.Cache.delete_list_ids(list_key)
+                if config.Cache and list_key:
+                    config.Cache.delete_list_ids(list_key)
+                if config.Cache and cache_libraries:
                     list_key = config.Cache.update_list_cache("library", library.mapping_name, expired, 1)
                     config.Cache.update_list_ids(list_key, [(i.ratingKey, i.guid) for i in temp_items])
             if not library.is_music:
