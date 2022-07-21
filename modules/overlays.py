@@ -173,7 +173,7 @@ class Overlays:
                         image_response = self.config.get(new_backup)
                         if image_response.status_code >= 400:
                             raise Failed(f"{item_title[:60]:<60} | Overlay Error: Image Download Failed")
-                        if image_response.headers[""] not in ["image/png", "image/jpeg"]:
+                        if image_response.headers["Content-Type"] not in ["image/png", "image/jpeg"]:
                             raise Failed(f"{item_title[:60]:<60} | Overlay Error: Image Not JPG or PNG")
                         i_ext = "jpg" if image_response.headers["Content-Type"] == "image/jpeg" else "png"
                         backup_image_path = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.{i_ext}")
