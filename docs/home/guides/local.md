@@ -70,7 +70,7 @@ Use the Start menu to open PowerShell.  This will be the window into which you t
 
 ### Installing Python.
 
-In order to run a Python script. the first thing you'll need is a Python interpreter.  THis is typically already present on Linux and Mac, but will probably have to be installed on Windows.
+In order to run a Python script. the first thing you'll need is a Python interpreter.  This is typically already present on Linux and Mac, but will probably have to be installed on Windows.
 
 First let's check if it's installed already [type this into your terminal]:
 

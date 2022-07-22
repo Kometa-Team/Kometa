@@ -1,12 +1,157 @@
-# Knowledgebase/FAQ
+# Frequently Asked Questions & Knowledgebase
 
 This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://discord.gg/NfH6mGFuAB).
+
+## Frequently Asked Questions
+
+This sections aims to answer the most commonly asked questions that users have.
+
+### "How do I update to the latest version of Plex Meta Manager?"
+
+<details>
+  <summary>OS X/Linux</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  cd /Users/mroche/Plex-Meta-Manager
+  git pull
+  source pmm-venv/bin/activate
+  python -m pip install -r requirements.txt
+  ```
+</details>
+
+<details>
+  <summary>Windows</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  cd C:\Users\mroche\Plex-Meta-Manager
+  git pull
+  .\pmm-venv\Scripts\activate
+  python -m pip install -r requirements.txt
+  ```
+</details>
+
+<details>
+  <summary>Docker</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  docker pull meisnate12/plex-meta-manager
+  ```
+</details>
+
+### "How do I switch to the develop branch?"
+
+<details>
+  <summary>OS X/Linux</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  cd /Users/mroche/Plex-Meta-Manager
+  git checkout develop
+  git pull
+  source pmm-venv/bin/activate
+  python -m pip install -r requirements.txt
+  ```
+</details>
+
+<details>
+  <summary>Windows</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  cd C:\Users\mroche\Plex-Meta-Manager
+  git checkout develop
+  git pull
+  .\pmm-venv\Scripts\activate
+  python -m pip install -r requirements.txt
+  ```
+</details>
+
+### "How do I switch to the nightly branch"
+
+<details>
+  <summary>OS X/Linux</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  cd /Users/mroche/Plex-Meta-Manager
+  git checkout nightly
+  git pull
+  source pmm-venv/bin/activate
+  python -m pip install -r requirements.txt
+  ```
+</details>
+
+<details>
+  <summary>Windows</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  cd C:\Users\mroche\Plex-Meta-Manager
+  git checkout nightly
+  git pull
+  .\pmm-venv\Scripts\activate
+  python -m pip install -r requirements.txt
+  ```
+</details>
+
+### "How do I switch back to the master branch?"
+
+<details>
+  <summary>OS X/Linux</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  cd /Users/mroche/Plex-Meta-Manager
+  git checkout master
+  git pull
+  source pmm-venv/bin/activate
+  python -m pip install -r requirements.txt
+  ```
+</details>
+
+<details>
+  <summary>Windows</summary>
+  <br />
+
+  [type this into your terminal]
+
+  ```
+  cd C:\Users\mroche\Plex-Meta-Manager
+  git checkout master
+  git pull
+  .\pmm-venv\Scripts\activate
+  python -m pip install -r requirements.txt
+  ```
+</details>
+
+## Knowledgebase
+
+This section aims to provide some guidance on the most common issues that we see.
 
 ### Locating Log Files
 The meta.log file can be found within the `logs` folder of your Plex Meta Manager config folder [right next to `config.yml`].
 `meta.log` is the most recent run of Plex Meta Manager, `meta.log.1` is the previous run, `meta.log.2` is the run before that, so on and so forth.
 
-### Reading Log Files
+### Basic Log File Troubleshooting
 
 Wondering how to troubleshoot Plex Meta Manager and how to read through the meta.log?
 
@@ -19,7 +164,7 @@ In all cases, the first step is to open the [`meta.log`](#meta.log-location) wit
 3. Scan your meta.log file for `[ERROR]` and make a note of the content of the full line to start your search below on how to resolve
 
 
-### Plex Meta Manager Version
+### Checking Plex Meta Manager Version
 Checking the version: You will find that in your [`meta.log`](#meta.log-location) around the 8th-10th line and will look something like this:
 ```
 |                                 |
@@ -34,7 +179,7 @@ If you are not on the latest version of your branch, you will see Newest Version
 |=======================================|
 ```
 
-### Understanding Common Errors
+### Understanding Log File Event Types
 There are five main event types that you need to be aware of when understanding the log files, detailed below:
 
 | Type         | Short Info            | Description                                                               | Recommendation                                                                                        |
@@ -46,8 +191,18 @@ There are five main event types that you need to be aware of when understanding 
 | `[CRITICAL]` | Critical Log          | Critical messaage requiring you to fix it for PMM to run properly         | Read the critical message and take appropriate action. look for message below and try recommendations |
 
 
-### ERROR
-This table details examples of the most commonly-seen `[ERROR]` events and what they mean for the user.
+### Common Log File Messages
+
+This section aims to explain some of the commonly seen event messages that are produced in the logs.
+
+#### CRITICAL
+This table details examples of the most commonly-seen `[CRITICAL]` events and what they mean for the user.
+
+| Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+|:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `[CRITICAL]` | `Failed to Connect to https://api.themoviedb.org/3`               | Current step PMM was on made an API call to TMDb, but it aborted and moved on    | Determine if TMDb was offline and not replying to api requests. Try again and see if it fails again or not.                                                                                 |                                                                                                                                                                                                                                                  |
+
+#### ERROR
 
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -61,7 +216,7 @@ This table details examples of the most commonly-seen `[ERROR]` events and what 
 | `[ERROR]`    | `Input Failed`                                                    | A token or password is no longer valid for an online source of information       | Review the meta.log for more information                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `[ERROR]`    | `Collection Error: trakt_list requires Trakt to be configured`    | You are using a builder that has not been configured yet.                        | Review the meta.log for more information on what went wrong. Refer to the wiki for details on how to set this up (in this case Trakt)                                                                                                                                                                                                                                                                                                          |
 
-### WARNING
+#### WARNING
 This table details examples of the most commonly-seen `[WARNING]` events and what they mean for the user.
 
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -71,21 +226,14 @@ This table details examples of the most commonly-seen `[WARNING]` events and wha
 | `[WARNING]`  | `Convert Error: No TVDb ID or IMDb ID found for AniDB ID: 14719`  | Online sources are missing information                                           | These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.    |
 | `[WARNING]`  | `Convert Error: AniDB ID not found for MyAnimeList ID: 36838`     | Online sources are missing information                                           | These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.    |
 
-### CRITICAL
-This table details examples of the most commonly-seen `[CRITICAL]` events and what they mean for the user.
-
-| Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-|:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `[CRITICAL]` | `Failed to Connect to https://api.themoviedb.org/3`               | Current step PMM was on made an API call to TMDb, but it aborted and moved on    | Determine if TMDb was offline and not replying to api requests. Try again and see if it fails again or not.                                                                                 |                                                                                                                                                                                                                                                  |
-
-### INFO
+#### INFO
 This table details examples of the most commonly-seen `[INFO]` events and what they mean for the user.
 
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:-------------|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `[INFO]`     | `Detail: TMDb_person updated poster to [URL]`                     | Person image was downloaded from TMDb                                            | May require you to update the people poster image to your style or request it in the style of the PMM defaults people posters                                                                                                                                                                                                                                                                                                                  |
 
-### DEBUG
+#### DEBUG
 This table details examples of the most commonly-seen `[DEBUG]` events and what they mean for the user.
 
 | Type         | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                 |
