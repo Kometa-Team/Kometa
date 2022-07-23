@@ -492,11 +492,11 @@ class MetadataFile(DataFile):
                                 all_keys = [str(i.title) for i in tags]
                                 auto_list = {str(i.title): i.title for i in tags if str(i.title) not in exclude}
                             if library.is_music:
-                                final_var = auto_type if auto_type.startwith("album") else f"artist_{auto_type}"
+                                final_var = auto_type if auto_type.startswith("album") else f"artist_{auto_type}"
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {final_var: f"<<value>>"}}}
-                                if auto_type.startwith("album"):
+                                if auto_type.startswith("album"):
                                     default_template["collection_level"] = "album"
-                                default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startwith('album') else '<<library_type>>'}s"
+                                default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startswith('album') else '<<library_type>>'}s"
                             elif auto_type == "resolution":
                                 default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}
                                 default_title_format = "<<key_name>> <<library_type>>s"
