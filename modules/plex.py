@@ -128,6 +128,7 @@ attribute_translation = {
     "video_profile": "videoProfile",
     "resolution": "videoResolution",
     "record_label": "studio",
+    "similar_artist": "similar",
     "actor": "actors",
     "audience_rating": "audienceRating",
     "collection": "collections",
