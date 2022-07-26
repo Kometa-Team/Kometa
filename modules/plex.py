@@ -140,13 +140,21 @@ attribute_translation = {
     "label": "labels",
     "producer": "producers",
     "release": "originallyAvailableAt",
+    "originally_available": "originallyAvailableAt",
     "added": "addedAt",
     "last_played": "lastViewedAt",
     "plays": "viewCount",
     "user_rating": "userRating",
     "writer": "writers",
     "mood": "moods",
-    "style": "styles"
+    "style": "styles",
+    "season_episode": "seasonEpisode",
+    "episode": "episodeNumber",
+    "season": "seasonNumber",
+    "original_title": "originalTitle",
+    "runtime": "duration",
+    "season_title": "parentTitle",
+    "episode_count": "leafCount"
 }
 method_alias = {
     "actors": "actor", "role": "actor", "roles": "actor",

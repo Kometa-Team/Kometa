@@ -1,4 +1,5 @@
 import os, re, time
+from datetime import datetime
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 from modules import util
 from modules.util import Failed
@@ -7,8 +8,12 @@ logger = util.logger
 
 portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
-rating_mods = ["0", "%", "#"]
-special_text_overlays = [f"text({a}{s})" for a in ["audience_rating", "critic_rating", "user_rating"] for s in [""] + rating_mods]
+rating_special_text = [f"text({a})" for a in ["audience_rating", "critic_rating", "user_rating"]]
+value_overlays = ["title", "show_title", "season_title", "original_title", "episode_count", "content_rating"]
+special_overlays = ["season_episode", "runtime", "originally_available"]
+special_text_overlays = [f"text({a})" for a in value_overlays + special_overlays] + rating_special_text
+old_special_text = [f"text({a}{s})" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["0", "%", "#"]]
+all_special_text = special_text_overlays + old_special_text
 
 def parse_cords(data, parent, required=False):
     horizontal_align = util.parse("Overlay", "horizontal_align", data["horizontal_align"], parent=parent,
@@ -66,12 +71,13 @@ def parse_cords(data, parent, required=False):
 
 
 class Overlay:
-    def __init__(self, config, library, original_mapping_name, overlay_data, suppress):
+    def __init__(self, config, library, original_mapping_name, overlay_data, suppress, level):
         self.config = config
         self.library = library
         self.original_mapping_name = original_mapping_name
         self.data = overlay_data
         self.suppress = suppress
+        self.level = level
         self.keys = []
         self.updated = False
         self.image = None
@@ -89,6 +95,7 @@ class Overlay:
         self.font_color = None
         self.addon_offset = 0
         self.addon_position = None
+        self.text_overlay_format = None
 
         logger.debug("")
         logger.debug("Validating Method: overlay")
@@ -242,7 +249,53 @@ class Overlay:
                     self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
-            if self.name not in special_text_overlays:
+
+            if self.name in all_special_text:
+                if self.name.startswith("text(critic") and self.level == "season":
+                    raise Failed("Overlay Error: collection_level season doesn't have critic_ratings")
+                elif self.name.startswith("text(audience") and self.level == "season":
+                    raise Failed("Overlay Error: collection_level season doesn't have audience_ratings")
+                elif self.name in ["text(season_episode)", "text(show_title)"] and self.level not in ["season", "episode"]:
+                    raise Failed(f"Overlay Error: {self.name[5:-1]} only works with collection_level season and episode")
+                elif self.name == "text(runtime)" and self.level not in ["movie", "episode"]:
+                    raise Failed("Overlay Error: runtime only works with movies and collection_level: episode")
+                elif self.name == "text(season_title)" and self.level != "episode":
+                    raise Failed("Overlay Error: season_title only works with collection_level: episode")
+                elif self.name == "text(original_title)" and self.level not in ["movie", "show"]:
+                    raise Failed("Overlay Error: original_title only works with movies and shows")
+                elif self.name == "text(episode_count)" and self.level not in ["show", "season"]:
+                    raise Failed("Overlay Error: episode_count only works with shows and collection_level: season")
+                elif self.name == ["text(content_rating)", "text(originally_available)"] and self.level == "season":
+                    raise Failed(f"Overlay Error: {self.name[5:-1]} only works with movies, shows, and collection_level: episode")
+                elif self.name in old_special_text:
+                    self.text_overlay_format = "<<value#>>" if self.name[-2] == "#" else f"<<value%>>{''  if self.name[-2] == '0' else '%'}"
+                    self.name = f"{self.name[:-2]})"
+                elif "text_format" in self.data and self.data["text_format"]:
+                    if self.name in rating_special_text and not any((f"<<value{m}>>" in self.data["text_format"] for m in ["", "#", "%"])):
+                        raise Failed("Overlay Error: text_format must have the value variable")
+                    elif self.name == "text(season_episode)" and self.level == "season" and not any((f"<<season{m}>>" in self.data["text_format"] for m in ["", "W", "0", "00"])):
+                        raise Failed("Overlay Error: text_format must have the season variable")
+                    elif self.name == "text(season_episode)" and self.level == "episode" and not any((f"<<{a}{m}>>" in self.data["text_format"] for a in ["season", "episode"] for m in ["", "W", "0", "00"])):
+                        raise Failed("Overlay Error: text_format must have the season or episode variable")
+                    elif self.name == "text(runtime)" and not any((f"<<value{m}>>" in self.data["text_format"] for m in ["", "M", "H"])):
+                        raise Failed("Overlay Error: text_format must have the value variable")
+                    elif self.name == "text(originally_available)":
+                        match = re.search("<<value\\[(.+)]>>", self.data["text_format"])
+                        if not match and "<<value>>" not in self.data["text_format"]:
+                            raise Failed("Overlay Error: text_format must have the value variable")
+                        if match:
+                            try:
+                                datetime.now().strftime(match.group(1))
+                            except ValueError:
+                                raise Failed("Overlay Error: text_format date format not valid")
+                    elif self.name[5:-1] in value_overlays and "<<value>>" not in self.data["text_format"]:
+                        raise Failed("Overlay Error: text_format must have the value variable")
+                    self.text_overlay_format = self.data["text_format"]
+                elif self.name == "text(season_episode)":
+                    self.text_overlay_format = "S<<season0>>" if self.level == "season" else "S<<season0>>E<<episode0>>"
+                else:
+                    self.text_overlay_format = "<<value>>"
+            else:
                 box = self.image.size if self.image else None
                 self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
                 self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])
@@ -377,7 +430,7 @@ class Overlay:
             output += f"{self.back_box[0]}{self.back_box[1]}{self.back_align}"
         if self.addon_position is not None:
             output += f"{self.addon_position}{self.addon_offset}"
-        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
+        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width, self.text_overlay_format]:
             if value is not None:
                 output += f"{value}"
         return output

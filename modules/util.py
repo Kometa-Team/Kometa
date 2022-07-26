@@ -1,5 +1,6 @@
 import glob, logging, os, re, requests, ruamel.yaml, signal, sys, time
 from datetime import datetime, timedelta
+from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -94,12 +95,6 @@ parental_values = ["None", "Mild", "Moderate", "Severe"]
 parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in parental_values]
 previous_time = None
 start_time = None
-
-def make_ordinal(n):
-    return f"{n}{'th' if 11 <= (n % 100) <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]}"
-
-def add_zero(number):
-    return str(number) if len(str(number)) > 1 else f"0{number}"
 
 def current_version(version, nightly=False):
     if nightly:
@@ -329,7 +324,7 @@ def item_title(item):
         else:
             return f"{item.parentTitle} Season {item.index}: {item.title}"
     elif isinstance(item, Episode):
-        text = f"{item.grandparentTitle} S{add_zero(item.parentIndex)}E{add_zero(item.index)}"
+        text = f"{item.grandparentTitle} S{item.parentIndex:02}E{item.index:02}"
         if f"Season {item.parentIndex}" == item.parentTitle:
             return f"{text}: {item.title}"
         else:
@@ -567,7 +562,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             if run_time.startswith("hour"):
                 try:
                     if 0 <= int(param) <= 23:
-                        schedule_str += f"\nScheduled to run on the {make_ordinal(int(param))} hour"
+                        schedule_str += f"\nScheduled to run on the {num2words(param, to='ordinal_num')} hour"
                         if run_hour == int(param):
                             all_check += 1
                     else:
@@ -585,9 +580,8 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             elif run_time.startswith("month"):
                 try:
                     if 1 <= int(param) <= 31:
-                        schedule_str += f"\nScheduled monthly on the {make_ordinal(int(param))}"
-                        if current_time.day == int(param) or (
-                                current_time.day == last_day.day and int(param) > last_day.day):
+                        schedule_str += f"\nScheduled monthly on the {num2words(param, to='ordinal_num')}"
+                        if current_time.day == int(param) or (current_time.day == last_day.day and int(param) > last_day.day):
                             all_check += 1
                     else:
                         raise ValueError
@@ -599,9 +593,8 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                         opt = param.split("/")
                         month = int(opt[0])
                         day = int(opt[1])
-                        schedule_str += f"\nScheduled yearly on {pretty_months[month]} {make_ordinal(day)}"
-                        if current_time.month == month and (current_time.day == day or (
-                                current_time.day == last_day.day and day > last_day.day)):
+                        schedule_str += f"\nScheduled yearly on {pretty_months[month]} {num2words(day, to='ordinal_num')}"
+                        if current_time.month == month and (current_time.day == day or (current_time.day == last_day.day and day > last_day.day)):
                             all_check += 1
                     else:
                         raise ValueError
@@ -619,7 +612,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
                 end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
                 range_collection = True
-                schedule_str += f"\nScheduled between {pretty_months[month_start]} {make_ordinal(day_start)} and {pretty_months[month_end]} {make_ordinal(day_end)}"
+                schedule_str += f"\nScheduled between {pretty_months[month_start]} {num2words(day_start, to='ordinal_num')} and {pretty_months[month_end]} {num2words(day_end, to='ordinal_num')}"
                 if start <= check <= end if start < end else (check <= end or check >= start):
                     all_check += 1
         else:

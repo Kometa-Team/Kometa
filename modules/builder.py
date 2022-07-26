@@ -245,6 +245,29 @@ class CollectionBuilder:
             if not found_type:
                 raise NotScheduled(f"Skipped because allowed_library_types {self.data[methods['allowed_library_types']]} doesn't match the library type: {self.library.Plex.type}")
 
+        if self.playlist:               self.collection_level = "item"
+        elif self.library.is_show:      self.collection_level = "show"
+        elif self.library.is_music:     self.collection_level = "artist"
+        else:                           self.collection_level = "movie"
+        if "collection_level" in methods and not self.library.is_movie and not self.playlist:
+            logger.debug("")
+            logger.debug("Validating Method: collection_level")
+            level = self.data[methods["collection_level"]]
+            if level is None:
+                logger.error(f"{self.Type} Error: collection_level attribute is blank")
+            else:
+                logger.debug(f"Value: {level}")
+                level = level.lower()
+                if (self.library.is_show and level in plex.collection_level_show_options) or (self.library.is_music and level in plex.collection_level_music_options):
+                    self.collection_level = level
+                elif (self.library.is_show and level != "show") or (self.library.is_music and level != "artist"):
+                    if self.library.is_show:
+                        options = "\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)"
+                    else:
+                        options = "\n\talbum (Collection at the Album Level)\n\ttrack (Collection at the Track Level)"
+                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid{options}")
+        self.parts_collection = self.collection_level in plex.collection_level_options
+
         if self.overlay:
             if "overlay" in methods:
                 overlay_data = data[methods["overlay"]]
@@ -260,7 +283,7 @@ class CollectionBuilder:
                     suppress = util.get_list(data[methods["suppress_overlays"]])
                 else:
                     logger.error(f"Overlay Error: suppress_overlays attribute is blank")
-            self.overlay = Overlay(config, library, str(self.mapping_name), overlay_data, suppress)
+            self.overlay = Overlay(config, library, str(self.mapping_name), overlay_data, suppress, self.collection_level)
 
         self.sync_to_users = None
         self.valid_users = []
@@ -465,29 +488,6 @@ class CollectionBuilder:
                     logger.warning(f"Collection Warning: {self.data[methods['sync_mode']]} sync_mode invalid using general: {self.library.sync_mode}")
                 else:
                     self.sync = self.data[methods["sync_mode"]].lower() == "sync"
-
-        if self.playlist:               self.collection_level = "item"
-        elif self.library.is_show:      self.collection_level = "show"
-        elif self.library.is_music:     self.collection_level = "artist"
-        else:                           self.collection_level = "movie"
-        if "collection_level" in methods and not self.library.is_movie and not self.playlist:
-            logger.debug("")
-            logger.debug("Validating Method: collection_level")
-            level = self.data[methods["collection_level"]]
-            if level is None:
-                logger.error(f"{self.Type} Error: collection_level attribute is blank")
-            else:
-                logger.debug(f"Value: {level}")
-                level = level.lower()
-                if (self.library.is_show and level in plex.collection_level_show_options) or (self.library.is_music and level in plex.collection_level_music_options):
-                    self.collection_level = level
-                elif (self.library.is_show and level != "show") or (self.library.is_music and level != "artist"):
-                    if self.library.is_show:
-                        options = "\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)"
-                    else:
-                        options = "\n\talbum (Collection at the Album Level)\n\ttrack (Collection at the Track Level)"
-                    raise Failed(f"{self.Type} Error: {self.data[methods['collection_level']]} collection_level invalid{options}")
-        self.parts_collection = self.collection_level in plex.collection_level_options
 
         if "tmdb_person" in methods:
             logger.debug("")
@@ -2498,10 +2498,10 @@ class CollectionBuilder:
                 if (self.blank_collection and self.created) or int(self.obj.collectionMode) not in plex.collection_mode_keys \
                         or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:
                     if self.blank_collection and self.created:
-                        self.library.collection_mode_query(self.obj, "default")
-                        logger.info(f"Collection Mode | default")
                         self.library.collection_mode_query(self.obj, "hide")
                         logger.info(f"Collection Mode | hide")
+                        self.library.collection_mode_query(self.obj, "default")
+                        logger.info(f"Collection Mode | default")
                     self.library.collection_mode_query(self.obj, self.details["collection_mode"])
                     logger.info(f"Collection Mode | {self.details['collection_mode']}")
                     advance_update = True
