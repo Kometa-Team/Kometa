@@ -229,7 +229,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, collection_level=None, load=False):
+    def get_all(self, builder_level=None, load=False):
         pass
 
     def add_additions(self, collection, items, is_movie):

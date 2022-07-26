@@ -55,7 +55,7 @@ class Operations:
                 logger.info(f"{item.title[:25]:<25} | Splitting")
 
         if self.library.update_blank_track_titles:
-            tracks = self.library.get_all(collection_level="track")
+            tracks = self.library.get_all(builder_level="track")
             num_edited = 0
             for i, track in enumerate(tracks, 1):
                 logger.ghost(f"Processing Track: {i}/{len(tracks)} {track.title}")

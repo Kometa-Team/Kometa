@@ -495,7 +495,7 @@ class MetadataFile(DataFile):
                                 final_var = auto_type if auto_type.startswith("album") else f"artist_{auto_type}"
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {final_var: f"<<value>>"}}}
                                 if auto_type.startswith("album"):
-                                    default_template["collection_level"] = "album"
+                                    default_template["builder_level"] = "album"
                                 default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startswith('album') else '<<library_type>>'}s"
                             elif auto_type == "resolution":
                                 default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}

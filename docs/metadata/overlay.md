@@ -133,7 +133,7 @@ overlays:
   blur:
     overlay:
       name: blur(50)
-    collection_level: episode
+    builder_level: episode
     plex_search:
       all:
         resolution: 4K
@@ -177,12 +177,12 @@ The final text can be formatted using the `text_format` attribute and the format
 
 The available options are:
 
-| Attribute                  | Requirements                         | Format Variables                                                                                                                                                                                                                                                                   |
+| Attribute                  | Notes                                | Format Variables                                                                                                                                                                                                                                                                   |
 |:---------------------------|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | text(audience_rating)      | Doesnt work with Seasons             | `<<value>>` -> ratings (`8.7`, `9.0`)<br>`<<value%>>` -> rating out of 100 (`87`, `90`)<br>`<<value#>>` -> rating removing `.0` as needed (`8.7`, `9`)                                                                                                                             |
 | text(critic_rating)        | Doesnt work with Seasons             | `<<value>>` -> ratings (`8.7`, `9.0`)<br>`<<value%>>` -> rating out of 100 (`87`, `90`)<br>`<<value#>>` -> rating removing `.0` as needed (`8.7`, `9`)                                                                                                                             |
 | text(user_rating)          |                                      | `<<value>>` -> ratings (`8.7`, `9.0`)<br>`<<value%>>` -> rating out of 100 (`87`, `90`)<br>`<<value#>>` -> rating removing `.0` as needed (`8.7`, `9`)                                                                                                                             |
-| text(title)                | &#9989;                              | `<<value>>` -> Title of the Item                                                                                                                                                                                                                                                   |
+| text(title)                |                                      | `<<value>>` -> Title of the Item                                                                                                                                                                                                                                                   |
 | text(show_title)           | Doesnt work with Movies and Shows    | `<<value>>` -> Title of the Item's Show                                                                                                                                                                                                                                            |
 | text(season_title)         | Only works with Episodes             | `<<value>>` -> Title of the Item's Season                                                                                                                                                                                                                                          |
 | text(original_title)       | Only works with Movies and Shows     | `<<value>>` -> Original Title of the Item                                                                                                                                                                                                                                          |

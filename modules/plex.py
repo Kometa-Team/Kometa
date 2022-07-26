@@ -216,9 +216,9 @@ collection_mode_options = {
     "hide_items": "hideItems", "hideitems": "hideItems",
     "show_items": "showItems", "showitems": "showItems"
 }
-collection_level_show_options = ["episode", "season"]
-collection_level_music_options = ["album", "track"]
-collection_level_options = collection_level_show_options + collection_level_music_options
+builder_level_show_options = ["episode", "season"]
+builder_level_music_options = ["album", "track"]
+builder_level_options = builder_level_show_options + builder_level_music_options
 collection_mode_keys = {-1: "default", 0: "hide", 1: "hideItems", 2: "showItems"}
 collection_order_keys = {0: "release", 1: "alpha", 2: "custom"}
 item_advance_keys = {
@@ -490,16 +490,16 @@ class Plex(Library):
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
-    def get_all(self, collection_level=None, load=False):
-        if load and collection_level in [None, "show", "artist", "movie"]:
+    def get_all(self, builder_level=None, load=False):
+        if load and builder_level in [None, "show", "artist", "movie"]:
             self._all_items = []
-        if self._all_items and collection_level in [None, "show", "artist", "movie"]:
+        if self._all_items and builder_level in [None, "show", "artist", "movie"]:
             return self._all_items
-        collection_type = collection_level if collection_level else self.Plex.TYPE
-        if not collection_level:
-            collection_level = self.type
-        logger.info(f"Loading All {collection_level.capitalize()}s from Library: {self.name}")
-        key = f"/library/sections/{self.Plex.key}/all?includeGuids=1&type={utils.searchType(collection_type)}"
+        builder_type = builder_level if builder_level else self.Plex.TYPE
+        if not builder_level:
+            builder_level = self.type
+        logger.info(f"Loading All {builder_level.capitalize()}s from Library: {self.name}")
+        key = f"/library/sections/{self.Plex.key}/all?includeGuids=1&type={utils.searchType(builder_type)}"
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
         results = []
@@ -507,8 +507,8 @@ class Plex(Library):
             results.extend(self.fetchItems(key, container_start, container_size))
             logger.ghost(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
             container_start += container_size
-        logger.info(f"Loaded {self.Plex._totalViewSize} {collection_level.capitalize()}s")
-        if collection_level in [None, "show", "artist", "movie"]:
+        logger.info(f"Loaded {self.Plex._totalViewSize} {builder_level.capitalize()}s")
+        if builder_level in [None, "show", "artist", "movie"]:
             self._all_items = results
         return results
 
@@ -802,7 +802,7 @@ class Plex(Library):
         items = []
         if method == "plex_all":
             logger.info(f"Processing Plex All {data.capitalize()}s")
-            items = self.get_all(collection_level=data)
+            items = self.get_all(builder_level=data)
         elif method == "plex_pilots":
             logger.info(f"Processing Plex Pilot {data.capitalize()}s")
             items = []

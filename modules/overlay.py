@@ -252,21 +252,21 @@ class Overlay:
 
             if self.name in all_special_text:
                 if self.name.startswith("text(critic") and self.level == "season":
-                    raise Failed("Overlay Error: collection_level season doesn't have critic_ratings")
+                    raise Failed("Overlay Error: builder_level season doesn't have critic_ratings")
                 elif self.name.startswith("text(audience") and self.level == "season":
-                    raise Failed("Overlay Error: collection_level season doesn't have audience_ratings")
+                    raise Failed("Overlay Error: builder_level season doesn't have audience_ratings")
                 elif self.name in ["text(season_episode)", "text(show_title)"] and self.level not in ["season", "episode"]:
-                    raise Failed(f"Overlay Error: {self.name[5:-1]} only works with collection_level season and episode")
+                    raise Failed(f"Overlay Error: {self.name[5:-1]} only works with builder_level season and episode")
                 elif self.name == "text(runtime)" and self.level not in ["movie", "episode"]:
-                    raise Failed("Overlay Error: runtime only works with movies and collection_level: episode")
+                    raise Failed("Overlay Error: runtime only works with movies and builder_level: episode")
                 elif self.name == "text(season_title)" and self.level != "episode":
-                    raise Failed("Overlay Error: season_title only works with collection_level: episode")
+                    raise Failed("Overlay Error: season_title only works with builder_level: episode")
                 elif self.name == "text(original_title)" and self.level not in ["movie", "show"]:
                     raise Failed("Overlay Error: original_title only works with movies and shows")
                 elif self.name == "text(episode_count)" and self.level not in ["show", "season"]:
-                    raise Failed("Overlay Error: episode_count only works with shows and collection_level: season")
+                    raise Failed("Overlay Error: episode_count only works with shows and builder_level: season")
                 elif self.name == ["text(content_rating)", "text(originally_available)"] and self.level == "season":
-                    raise Failed(f"Overlay Error: {self.name[5:-1]} only works with movies, shows, and collection_level: episode")
+                    raise Failed(f"Overlay Error: {self.name[5:-1]} only works with movies, shows, and builder_level: episode")
                 elif self.name in old_special_text:
                     self.text_overlay_format = "<<value#>>" if self.name[-2] == "#" else f"<<value%>>{''  if self.name[-2] == '0' else '%'}"
                     self.name = f"{self.name[:-2]})"

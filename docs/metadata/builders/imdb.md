@@ -112,7 +112,7 @@ You can also find episodes using `imdb_list` like so.
 collections:
   The Simpsons Top 100 Episodes:
     collection_order: custom
-    collection_level: episode
+    builder_level: episode
     sync_mode: sync
     imdb_list:
       url: https://www.imdb.com/search/title/?series=tt0096697&sort=user_rating,desc
