@@ -204,7 +204,7 @@ class Overlays:
                                         actual_attr = "seasonNumber"
                                     elif full_text == "show_title":
                                         actual_attr = "parentTitle" if text_overlay.level == "season" else "grandparentTitle"
-                                    elif full_text in plex.attribute_translation[full_text]:
+                                    elif full_text in plex.attribute_translation:
                                         actual_attr = plex.attribute_translation[full_text]
                                     else:
                                         actual_attr = full_text
@@ -241,7 +241,7 @@ class Overlays:
                                             season = actual_value
                                             episode = None
                                         else:
-                                            season, episode = actual_value[1:].split("E")
+                                            season, episode = actual_value.upper()[1:].split("E")
                                         for attr, attr_val in [("season", season), ("episode", episode)]:
                                             if attr_val and f"<<{attr}>>" in full_text:
                                                 full_text = full_text.replace(f"<<{attr}>>", attr_val)

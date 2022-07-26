@@ -46,7 +46,7 @@ like Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collec
 
 Inside the base attribute you can use any filter below or nest more `any` or `all`. You can have as many nested `any` or `all` next to each other as you want. If using multiple `any` or `all` you will have to do so in the form of a list.  
 
-**Note: To search by `season`, `episode`, `album`, or `track` you must use the `collection_level` [Detail](../details/metadata) to change the type of items the collection holds.**
+**Note: To search by `season`, `episode`, `album`, or `track` you must use the `builder_level` [Detail](../details/metadata) to change the type of items the collection holds.**
 
 There are a couple other attributes you can have at the top level only along with the base attribute are:
 
