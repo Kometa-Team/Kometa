@@ -93,6 +93,7 @@ There are many attributes available when using overlays to edit how they work.
 | `back_radius`              | Backdrop Radius for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                          | &#10060; |
 | `back_line_color`          | Backdrop Line Color for the Text Overlay.<br>**Value:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`.                                                                                                                                                         | &#10060; |
 | `back_line_width`          | Backdrop Line Width for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                      | &#10060; |
+| `text_format`              | Text Format for Special Text Overlays.<br>**`text_format` Only works with text overlays**<br>**Value:** Integer 0 or greater                                                                                                                                                        | &#10060; |
 | `addon_offset`             | Text Addon Image Offset from the text.<br>**`addon_offset` Only works with text overlays**<br>**Value:** Integer 0 or greater                                                                                                                                                       | &#10060; |
 | `addon_position`           | Text Addon Image Alignment in relation to the text.<br>**`addon_position` Only works with text overlays**<br>**Values:** `left`, `right`, `top`, `bottom`                                                                                                                           | &#10060; |
 
@@ -150,23 +151,57 @@ You can control the backdrop of the text using the various `back_*` attributes.
 
 The `horizontal_offset` and `vertical_offset` overlay attributes are required when using Text Overlays.
 
-You can add an items rating number (`8.7`, `9.0`) to the image by using `text(audience_rating)`, `text(critic_rating)`, or `text(user_rating)` 
-
-You can add an items rating number removing `.0` as needed (`8.7`, `9`) to the image by using `text(audience_rating#)`, `text(critic_rating#)`, or `text(user_rating#)` 
-
-You can add an items rating percentage (`87%`, `90%`) to the image by using `text(audience_rating%)`, `text(critic_rating%)`, or `text(user_rating%)`
-
-You can add an items rating out of 100 (`87`, `90`) to the image by using `text(audience_rating0)`, `text(critic_rating0)`, or `text(user_rating0)`
-
-You can use the `mass_audience_rating_update` or `mass_critic_rating_update` [Library Operation](../config/operations) to update your plex ratings to various services like `tmdb`, `imdb`, `mdb`, `metacritic`, `letterboxd` and many more.
-
 PMM includes multiple fonts in the [`fonts` folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/fonts) which can be called using `fonts/fontname.ttf`
 
 ```yaml
 overlays:
   audience_rating:
     overlay:
+      name: text(Direct Play)
+      horizontal_offset: 0
+      horizontal_align: center
+      vertical_offset: 150
+      vertical_align: bottom
+      font: fonts/Inter-Medium.ttf
+      font_size: 63
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_radius: 30
+```
+
+#### Special Text Overlays
+
+You can use the item's metadata to determine the text. 
+
+The final text can be formatted using the `text_format` attribute and the format variables.
+
+The available options are:
+
+| Attribute                  | Requirements                         | Format Variables                                                                                                                                                                                                                                                                   |
+|:---------------------------|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| text(audience_rating)      | Doesnt work with Seasons             | `<<value>>` -> ratings (`8.7`, `9.0`)<br>`<<value%>>` -> rating out of 100 (`87`, `90`)<br>`<<value#>>` -> rating removing `.0` as needed (`8.7`, `9`)                                                                                                                             |
+| text(critic_rating)        | Doesnt work with Seasons             | `<<value>>` -> ratings (`8.7`, `9.0`)<br>`<<value%>>` -> rating out of 100 (`87`, `90`)<br>`<<value#>>` -> rating removing `.0` as needed (`8.7`, `9`)                                                                                                                             |
+| text(user_rating)          |                                      | `<<value>>` -> ratings (`8.7`, `9.0`)<br>`<<value%>>` -> rating out of 100 (`87`, `90`)<br>`<<value#>>` -> rating removing `.0` as needed (`8.7`, `9`)                                                                                                                             |
+| text(title)                | &#9989;                              | `<<value>>` -> Title of the Item                                                                                                                                                                                                                                                   |
+| text(show_title)           | Doesnt work with Movies and Shows    | `<<value>>` -> Title of the Item's Show                                                                                                                                                                                                                                            |
+| text(season_title)         | Only works with Episodes             | `<<value>>` -> Title of the Item's Season                                                                                                                                                                                                                                          |
+| text(original_title)       | Only works with Movies and Shows     | `<<value>>` -> Original Title of the Item                                                                                                                                                                                                                                          |
+| text(episode_count)        | Only works with Shows and Seasons    | `<<value>>` -> Number of Episodes in the Show or Season                                                                                                                                                                                                                            |
+| text(content_rating)       | Doesnt work with Seasons             | `<<value>>` -> Content Rating of the Item                                                                                                                                                                                                                                          |
+| text(season_episode)       | Only works with Seasons and Episodes | `<<season>>` -> Season Number<br>`<<season0>` -> Season Number With 10s Padding<br>`<<season00>>` -> Season Number With 100s Padding<br>`<<episode>>` -> Episode Number<br>`<<episode0>` -> Episode Number With 10s Padding<br>`<<episode00>>` -> Episode Number With 100s Padding |
+| text(runtime)              | Doesnt work with Shows and Seasons   | `<<value>>` -> Runtime of the Item in minutes<br>`<<valueH>>` -> Hours in runtime of the Item<br>`<<valueM>>` -> Minutes remaining in the hour in the runtime of the Item                                                                                                          |
+| text(originally_available) | Doesnt work with Seasons             | `<<value>>` -> Original Available Date of the Item<br>`<<value[DATE_FORMAT_STRING]>>` -> Original Available Date of the Item in the given format. [Format Options](https://strftime.org/)                                                                                          |
+
+Note: You can use the `mass_audience_rating_update` or `mass_critic_rating_update` [Library Operation](../config/operations) to update your plex ratings to various services like `tmdb`, `imdb`, `mdb`, `metacritic`, `letterboxd` and many more.
+
+##### Example
+I want to have the audience_rating display with a `%` out of 100 vs 0.0-10.0.
+```yaml
+overlays:
+  audience_rating:
+    overlay:
       name: text(audience_rating)
+      text_format: <<value%>>%
       horizontal_offset: 225
       horizontal_align: center
       vertical_offset: 15
@@ -176,12 +211,17 @@ overlays:
       font_color: "#FFFFFF"
       back_color: "#00000099"
       back_radius: 30
-      back_width: 150
+      back_width: 300
       back_height: 105
 ```
 
-You can add an image to accompany the text by specifying the image location using `file`, `url`, `git`, or `repo`. 
-Then you can use `addon_offset` to control the space between the text and the image and `addon_position` to control which side of the text the image will be 
+#### Text Addon Images
+
+You can add an image to accompany the text by specifying the image location using `file`, `url`, `git`, or `repo`.
+
+Use `addon_offset` to control the space between the text and the image.
+
+Use `addon_position` to control which side of the text the image will be located on. 
 
 ```yaml
 overlays:

@@ -39,7 +39,10 @@ mal:
 11. You should see `Successfully registered.` followed by a link that says `Return to list` click this link.
 12. On this page Click the `Edit` button next to the application you just created.
 13. Record the `Client ID` and `Client Secret` found on the application page.
-14. Go to this URL but replace `CLIENT_ID` with your Client ID `https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id=CLIENT_ID&code_challenge=k_UHwN_eHAPQVXiceC-rYGkozKqrJmKxPUIUOBIKo1noq_4XGRVCViP_dGcwB-fkPql8f56mmWj5aWCa2HDeugf6sRvnc9Rjhbb1vKGYLY0IwWsDNXRqXdksaVGJthux`
+14. Go to this URL but replace `CLIENT_ID` with your Client ID 
+    ```
+    https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id=CLIENT_ID&code_challenge=k_UHwN_eHAPQVXiceC-rYGkozKqrJmKxPUIUOBIKo1noq_4XGRVCViP_dGcwB-fkPql8f56mmWj5aWCa2HDeugf6sRvnc9Rjhbb1vKGYLY0IwWsDNXRqXdksaVGJthux
+    ```
 15. You should see a page that looks like this 
     ![MAL Details](mal.png)
     Click "Allow"

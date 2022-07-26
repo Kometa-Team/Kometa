@@ -115,9 +115,9 @@ The available attributes for editing shows, seasons, and episodes are as follows
 |:-----------------------|:--------------------------------------------------------------|:--------:|:--------:|:--------:|
 | `title`                | Text to change Title                                          | &#10060; | &#9989;  | &#9989;  |
 | `sort_title`           | Text to change Sort Title                                     | &#9989;  | &#10060; | &#9989;  |
-| `original_title`       | Text to change Original Title                                 | &#9989;  | &#10060; | &#9989;  |
+| `original_title`       | Text to change Original Title                                 | &#9989;  | &#10060; | &#10060; |
 | `originally_available` | Date to change Originally Available<br>**Format:** YYYY-MM-DD | &#9989;  | &#10060; | &#9989;  |
-| `content_rating`       | Text to change Content Rating                                 | &#9989;  | &#10060; | &#10060; |
+| `content_rating`       | Text to change Content Rating                                 | &#9989;  | &#10060; | &#9989;  |
 | `user_rating`          | Number to change User Rating                                  | &#9989;  | &#9989;  | &#9989;  |
 | `audience_rating`      | Number to change Audience Rating                              | &#9989;  | &#10060; | &#9989;  |
 | `critic_rating`        | Number to change Critic Rating                                | &#9989;  | &#10060; | &#9989;  |
