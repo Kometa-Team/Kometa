@@ -260,7 +260,6 @@ class CollectionBuilder:
         if level and not self.library.is_movie and not self.playlist:
             logger.debug("")
             logger.debug("Validating Method: builder_level")
-            level = self.data[methods["builder_level"]]
             if level is None:
                 logger.error(f"{self.Type} Error: builder_level attribute is blank")
             else:
@@ -1670,6 +1669,20 @@ class CollectionBuilder:
                         item = self.fetch_item(rk)
                         if self.playlist and isinstance(item, (Show, Season)):
                             items.extend(item.episodes())
+                        elif self.builder_level == "movie" and not isinstance(item, Movie):
+                            logger.info(f"Item: {item} is not an Movie")
+                        elif self.builder_level == "show" and not isinstance(item, Show):
+                            logger.info(f"Item: {item} is not an Show")
+                        elif self.builder_level == "episode" and not isinstance(item, Episode):
+                            logger.info(f"Item: {item} is not an Episode")
+                        elif self.builder_level == "season" and not isinstance(item, Season):
+                            logger.info(f"Item: {item} is not a Season")
+                        elif self.builder_level == "artist" and not isinstance(item, Artist):
+                            logger.info(f"Item: {item} is not an Artist")
+                        elif self.builder_level == "album" and not isinstance(item, Album):
+                            logger.info(f"Item: {item} is not an Album")
+                        elif self.builder_level == "track" and not isinstance(item, Track):
+                            logger.info(f"Item: {item} is not a Track")
                         else:
                             items.append(item)
                     except Failed as e:

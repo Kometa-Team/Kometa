@@ -120,17 +120,21 @@ class Overlays:
                     if self.config.Cache:
                         for over_name in over_names:
                             current_overlay = properties[over_name]
-                            if current_overlay.name in overlay.special_text_overlays:
-                                data_type = current_overlay.name[5:-1]
-                                actual = plex.attribute_translation[data_type] if data_type in plex.attribute_translation[data_type] else data_type
-                                cache_value = self.config.Cache.query_overlay_special_text(item.ratingKey, data_type)
-                                if cache_value is None or not hasattr(item, actual) or getattr(item, actual) is None:
-                                    continue
-                                if current_overlay.name in overlay.rating_special_text:
-                                    cache_value = float(cache_value)
-                                if getattr(item, actual) != cache_value:
-                                    overlay_change = True
+                            if current_overlay.name == "text(special_text)":
+                                for cache_key, cache_value in self.config.Cache.query_overlay_special_text(item.ratingKey).items():
+                                    actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation[cache_key] else cache_key
+                                    if cache_value is None or not hasattr(item, actual) or getattr(item, actual) is None:
+                                        continue
+                                    if cache_key in overlay.float_vars:
+                                        cache_value = float(cache_value)
+                                    if cache_key in overlay.int_vars:
+                                        cache_value = int(cache_value)
 
+                                    if cache_key in overlay.date_vars:
+                                        if getattr(item, actual).strftime("%Y-%m-%d") != cache_value:
+                                            overlay_change = True
+                                    elif getattr(item, actual) != cache_value:
+                                        overlay_change = True
                     try:
                         poster, background, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all:
@@ -199,64 +203,71 @@ class Overlays:
 
                             def get_text(text_overlay):
                                 full_text = text_overlay.name[5:-1]
-                                if text_overlay.name in overlay.special_text_overlays:
-                                    if full_text == "season_episode" and text_overlay.level == "season":
-                                        actual_attr = "seasonNumber"
-                                    elif full_text == "show_title":
-                                        actual_attr = "parentTitle" if text_overlay.level == "season" else "grandparentTitle"
-                                    elif full_text in plex.attribute_translation:
-                                        actual_attr = plex.attribute_translation[full_text]
-                                    else:
-                                        actual_attr = full_text
-                                    if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
-                                        raise Failed(f"Overlay Warning: No {full_text} found")
-                                    actual_value = getattr(item, actual_attr)
-                                    if self.config.Cache:
-                                        self.config.Cache.update_overlay_special_text(item.ratingKey, full_text, actual_value)
-                                    full_text = str(text_overlay.text_overlay_format)
-                                    if text_overlay.name in overlay.value_overlays + overlay.rating_special_text + ["text(originally_available)"] and "<<value>>" in full_text:
-                                        full_text = full_text.replace("<<value>>", actual_value)
-                                    if text_overlay.name in overlay.rating_special_text:
-                                        if "<<value%>>" in full_text:
-                                            full_text = full_text.replace("<<value%>>", f"{int(actual_value * 10)}%")
-                                        if "<<value0>>" in full_text:
-                                            full_text = full_text.replace("<<value0>>", f"{int(actual_value * 10)}")
-                                        if "<<value#>>" in full_text:
-                                            full_text = full_text.replace("<<value#>>", str(actual_value)[:-2] if str(actual_value).endswith(".0") else actual_value)
-                                    elif text_overlay.name == "text(originally_available)":
-                                        if "<<value>>" in full_text:
-                                            full_text = full_text.replace("<<value>>", actual_value.strftime("%Y-%m-%d"))
-                                        match = re.search("<<value\\[(.+)]>>", full_text)
-                                        if match:
-                                            full_text = re.sub("<<value\\[(.+)]>>", str(actual_value.strftime(match.group(1))), full_text)
-                                    elif text_overlay.name == "text(runtime)":
-                                        if "<<value>>" in full_text:
-                                            full_text = full_text.replace("<<value>>", actual_value / 60000)
-                                        if "<<valueH>>" in full_text:
-                                            full_text = full_text.replace("<<valueH>>", (actual_value / 60000) // 60)
-                                        if "<<valueM>>" in full_text:
-                                            full_text = full_text.replace("<<valueM>>", (actual_value / 60000) % 60)
-                                    elif text_overlay.name == "text(season_episode)":
-                                        if text_overlay.level == "season":
-                                            season = actual_value
-                                            episode = None
+                                if full_text == "special_text":
+                                    full_text = text_overlay.special_text
+                                    for format_var in overlay.vars_by_type[text_overlay.level]:
+                                        if f"<<{format_var}" in full_text and format_var == "originally_available[":
+                                            mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)
+                                            format_var = "originally_available"
+                                        elif f"<<{format_var}>>" in full_text and format_var.endswith("00"):
+                                            mod = "00"
+                                            format_var = format_var[:-2]
+                                        elif f"<<{format_var}>>" in full_text and format_var.endswith(("%", "#", "H", "M", "0")):
+                                            mod = format_var[-1]
+                                            format_var = format_var[:-1]
+                                        elif f"<<{format_var}>>" in full_text:
+                                            mod = ""
                                         else:
-                                            season, episode = actual_value.upper()[1:].split("E")
-                                        for attr, attr_val in [("season", season), ("episode", episode)]:
-                                            if attr_val and f"<<{attr}>>" in full_text:
-                                                full_text = full_text.replace(f"<<{attr}>>", attr_val)
-                                            if attr_val and f"<<{attr}W>>" in full_text:
-                                                full_text = full_text.replace(f"<<{attr}W>>", num2words(int(attr_val)))
-                                            if attr_val and f"<<{attr}0>>" in full_text:
-                                                full_text = full_text.replace(f"<<{attr}0>>", f"{int(attr_val):02}")
-                                            if attr_val and f"<<{attr}00>>" in full_text:
-                                                full_text = full_text.replace(f"<<{attr}00>>", f"{int(attr_val):03}")
+                                            continue
+                                        if format_var == "show_title":
+                                            actual_attr = "parentTitle" if text_overlay.level == "season" else "grandparentTitle"
+                                        elif format_var in plex.attribute_translation:
+                                            actual_attr = plex.attribute_translation[format_var]
+                                        else:
+                                            actual_attr = format_var
+                                        if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
+                                            logger.warning(f"Overlay Warning: No {full_text} found")
+                                            continue
+                                        actual_value = getattr(item, actual_attr)
+                                        if self.config.Cache:
+                                            cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
+                                            self.config.Cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
+                                        sub_value = None
+                                        if format_var == "originally_available":
+                                            if mod:
+                                                sub_value = "<<originally_available\\[(.+)]>>"
+                                                final_value = actual_value.strftime(mod)
+                                            else:
+                                                final_value = actual_value.strftime("%Y-%m-%d")
+                                        elif format_var == "runtime":
+                                            if mod == "H":
+                                                final_value = (actual_value / 60000) // 60
+                                            elif mod == "M":
+                                                final_value = (actual_value / 60000) % 60
+                                            else:
+                                                final_value = actual_value / 60000
+                                        elif mod == "%":
+                                            final_value = int(actual_value * 10)
+                                        elif mod == "#":
+                                            final_value = str(actual_value)[:-2] if str(actual_value).endswith(".0") else actual_value
+                                        elif mod == "W":
+                                            final_value = num2words(int(actual_value))
+                                        elif mod == "0":
+                                            final_value = f"{int(actual_value):02}"
+                                        elif mod == "00":
+                                            final_value = f"{int(actual_value):03}"
+                                        else:
+                                            final_value = actual_value
+                                        if sub_value:
+                                            full_text = re.sub(sub_value, str(final_value), full_text)
+                                        else:
+                                            full_text = full_text.replace(f"<<{format_var}{mod}>>", str(final_value))
                                 return str(full_text)
 
                             for over_name in applied_names:
                                 current_overlay = properties[over_name]
                                 if current_overlay.name.startswith("text"):
-                                    if current_overlay.name in overlay.special_text_overlays:
+                                    if current_overlay.name == "text(special_text)":
                                         image_box = current_overlay.image.size if current_overlay.image else None
                                         try:
                                             overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay))

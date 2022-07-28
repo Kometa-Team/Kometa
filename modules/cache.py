@@ -867,16 +867,16 @@ class Cache:
                                    [(r.name, r.date.strftime("%Y-%m-%d") if r.date else None,
                                      expiration_date.strftime("%Y-%m-%d"), r.season, r.round) for r in races])
 
-    def query_overlay_special_text(self, rating_key, data_type):
-        rating = None
+    def query_overlay_special_text(self, rating_key):
+        attrs = {}
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM overlay_special_text WHERE rating_key = ? AND type = ?", (rating_key, data_type))
-                row = cursor.fetchone()
-                if row:
-                    rating = row["text"]
-        return rating
+                cursor.execute("SELECT * FROM overlay_special_text WHERE rating_key = ?", (rating_key, ))
+                for row in cursor.fetchall():
+                    if row:
+                        attrs[row["type"]] = row["text"]
+        return attrs
 
     def update_overlay_special_text(self, rating_key, data_type, text):
         with sqlite3.connect(self.cache_path) as connection:
