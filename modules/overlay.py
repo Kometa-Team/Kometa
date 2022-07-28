@@ -8,12 +8,43 @@ logger = util.logger
 
 portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
-rating_special_text = [f"text({a})" for a in ["audience_rating", "critic_rating", "user_rating"]]
-value_overlays = ["title", "show_title", "season_title", "original_title", "episode_count", "content_rating"]
-special_overlays = ["season_episode", "runtime", "originally_available"]
-special_text_overlays = [f"text({a})" for a in value_overlays + special_overlays] + rating_special_text
-old_special_text = [f"text({a}{s})" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["0", "%", "#"]]
-all_special_text = special_text_overlays + old_special_text
+old_special_text2 = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
+float_vars = ["audience_rating", "critic_rating", "user_rating"]
+int_vars = ["runtime", "season_number", "episode_number", "episode_count"]
+date_vars = ["originally_available"]
+types_for_var = {
+    "movie_show_season_episode_artist_album": ["user_rating", "title"],
+    "movie_show_episode_album": ["critic_rating", "originally_available"],
+    "movie_show_episode": ["audience_rating", "content_rating"],
+    "movie_show": ["original_title"],
+    "movie_episode": ["runtime"],
+    "season_episode": ["show_title", "season_number"],
+    "show_season": ["episode_count"],
+    "episode": ["season_title", "episode_number"]
+}
+var_mods = {
+    "title": [""],
+    "content_rating": [""],
+    "original_title": [""],
+    "show_title": [""],
+    "season_title": [""],
+    "user_rating": ["", "%", "#"],
+    "critic_rating": ["", "%", "#"],
+    "audience_rating": ["", "%", "#"],
+    "originally_available": ["", "["],
+    "runtime": ["", "H", "M"],
+    "season_number": ["", "W", "0", "00"],
+    "episode_number": ["", "W", "0", "00"],
+    "episode_count": ["", "W", "0", "00"],
+}
+vars_by_type = {
+    "movie": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "movie" in check],
+    "show": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "show" in check],
+    "season": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "season" in check],
+    "episode": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "episode" in check],
+    "artist": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "artist" in check],
+    "album": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "album" in check],
+}
 
 def parse_cords(data, parent, required=False):
     horizontal_align = util.parse("Overlay", "horizontal_align", data["horizontal_align"], parent=parent,
@@ -95,7 +126,7 @@ class Overlay:
         self.font_color = None
         self.addon_offset = 0
         self.addon_position = None
-        self.text_overlay_format = None
+        self.special_text = None
 
         logger.debug("")
         logger.debug("Validating Method: overlay")
@@ -223,6 +254,7 @@ class Overlay:
             if not match:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
+            text = f"{match.group(1)}"
             self.font_name = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fonts", "Roboto-Medium.ttf")
             if "font_size" in self.data:
                 self.font_size = util.parse("Overlay", "font_size", self.data["font_size"], datatype="int", parent="overlay", default=self.font_size)
@@ -249,52 +281,23 @@ class Overlay:
                     self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
+            if text in old_special_text2:
+                text_mod = text[-1] if text[-1] in ["0", "%", "#"] else None
+                text = text if text_mod is None else text[:-1]
+                self.special_text = f"<<{text}#>>" if text_mod == "#" else f"<<{text}%>>{''  if text_mod == '0' else '%'}"
+                self.name = "text(special_text)"
+            elif self.name == "text(special_text)":
+                if "special_text" not in self.data or not self.data["special_text"]:
+                    raise Failed("Overlay Error: text(special_text) requires the special_text attribute")
+                if "<<originally_available[" in self.data["special_text"]:
+                    match = re.search("<<originally_available\\[(.+)]>>", self.data["special_text"])
+                    if match:
+                        try:
+                            datetime.now().strftime(match.group(1))
+                        except ValueError:
+                            raise Failed("Overlay Error: originally_available date format not valid")
+                self.special_text = self.data["special_text"]
 
-            if self.name in all_special_text:
-                if self.name.startswith("text(critic") and self.level == "season":
-                    raise Failed("Overlay Error: builder_level season doesn't have critic_ratings")
-                elif self.name.startswith("text(audience") and self.level == "season":
-                    raise Failed("Overlay Error: builder_level season doesn't have audience_ratings")
-                elif self.name in ["text(season_episode)", "text(show_title)"] and self.level not in ["season", "episode"]:
-                    raise Failed(f"Overlay Error: {self.name[5:-1]} only works with builder_level season and episode")
-                elif self.name == "text(runtime)" and self.level not in ["movie", "episode"]:
-                    raise Failed("Overlay Error: runtime only works with movies and builder_level: episode")
-                elif self.name == "text(season_title)" and self.level != "episode":
-                    raise Failed("Overlay Error: season_title only works with builder_level: episode")
-                elif self.name == "text(original_title)" and self.level not in ["movie", "show"]:
-                    raise Failed("Overlay Error: original_title only works with movies and shows")
-                elif self.name == "text(episode_count)" and self.level not in ["show", "season"]:
-                    raise Failed("Overlay Error: episode_count only works with shows and builder_level: season")
-                elif self.name == ["text(content_rating)", "text(originally_available)"] and self.level == "season":
-                    raise Failed(f"Overlay Error: {self.name[5:-1]} only works with movies, shows, and builder_level: episode")
-                elif self.name in old_special_text:
-                    self.text_overlay_format = "<<value#>>" if self.name[-2] == "#" else f"<<value%>>{''  if self.name[-2] == '0' else '%'}"
-                    self.name = f"{self.name[:-2]})"
-                elif "text_format" in self.data and self.data["text_format"]:
-                    if self.name in rating_special_text and not any((f"<<value{m}>>" in self.data["text_format"] for m in ["", "#", "%"])):
-                        raise Failed("Overlay Error: text_format must have the value variable")
-                    elif self.name == "text(season_episode)" and self.level == "season" and not any((f"<<season{m}>>" in self.data["text_format"] for m in ["", "W", "0", "00"])):
-                        raise Failed("Overlay Error: text_format must have the season variable")
-                    elif self.name == "text(season_episode)" and self.level == "episode" and not any((f"<<{a}{m}>>" in self.data["text_format"] for a in ["season", "episode"] for m in ["", "W", "0", "00"])):
-                        raise Failed("Overlay Error: text_format must have the season or episode variable")
-                    elif self.name == "text(runtime)" and not any((f"<<value{m}>>" in self.data["text_format"] for m in ["", "M", "H"])):
-                        raise Failed("Overlay Error: text_format must have the value variable")
-                    elif self.name == "text(originally_available)":
-                        match = re.search("<<value\\[(.+)]>>", self.data["text_format"])
-                        if not match and "<<value>>" not in self.data["text_format"]:
-                            raise Failed("Overlay Error: text_format must have the value variable")
-                        if match:
-                            try:
-                                datetime.now().strftime(match.group(1))
-                            except ValueError:
-                                raise Failed("Overlay Error: text_format date format not valid")
-                    elif self.name[5:-1] in value_overlays and "<<value>>" not in self.data["text_format"]:
-                        raise Failed("Overlay Error: text_format must have the value variable")
-                    self.text_overlay_format = self.data["text_format"]
-                elif self.name == "text(season_episode)":
-                    self.text_overlay_format = "S<<season0>>" if self.level == "season" else "S<<season0>>E<<episode0>>"
-                else:
-                    self.text_overlay_format = "<<value>>"
             else:
                 box = self.image.size if self.image else None
                 self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
@@ -430,7 +433,7 @@ class Overlay:
             output += f"{self.back_box[0]}{self.back_box[1]}{self.back_align}"
         if self.addon_position is not None:
             output += f"{self.addon_position}{self.addon_offset}"
-        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width, self.text_overlay_format]:
+        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width, self.special_text]:
             if value is not None:
                 output += f"{value}"
         return output
