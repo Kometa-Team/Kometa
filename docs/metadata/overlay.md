@@ -169,38 +169,38 @@ overlays:
       back_radius: 30
 ```
 
-#### Special Text Overlays
+#### Special Text Variables
 
-You can use the item's metadata to determine the text. You set the `name` to `text(special_text)` and then use the `special_text` attribute to format the text.
+You can use the item's metadata to determine the text by adding Special Text Variables to you text Overlay.
 
 There are multiple Special Text Variables that can be used when formatting the text. The variables are defined like so `<<name>>` and some can have modifiers like so `<<name$>>` where `$` is the modifier. The available options are:
 
-| Special Text Variables & Mods                                                                                                                                                                                                                      |  Movies  |  Shows   | Seasons  | Episodes |
-|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|
-| `<<audience_rating>>`: audience rating (`8.7`, `9.0`)<br>`<<audience_rating%>>`: audience rating out of 100 (`87`, `90`)<br>`<<audience_rating#>>`: audience rating removing `.0` as needed (`8.7`, `9`)                                           | &#9989;  | &#9989;  | &#10060; | &#9989;  |
-| `<<critic_rating>>`: critic rating (`8.7`, `9.0`)<br>`<<critic_rating%>>`: critic rating out of 100 (`87`, `90`)<br>`<<critic_rating#>>`: critic rating removing `.0` as needed (`8.7`, `9`)                                                       | &#9989;  | &#9989;  | &#10060; | &#9989;  |
-| `<<user_rating>>`: user rating (`8.7`, `9.0`)<br>`<<user_rating%>>`: user rating out of 100 (`87`, `90`)<br>`<<user_rating#>>`: user rating removing `.0` as needed (`8.7`, `9`)                                                                   | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `<<title>>`: Title of the Item                                                                                                                                                                                                                     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `<<show_title>>`: Title of the Item's Show                                                                                                                                                                                                         | &#10060; | &#10060; | &#9989;  | &#9989;  |
-| `<<season_title>>`: Title of the Item's Season                                                                                                                                                                                                     | &#10060; | &#10060; | &#10060; | &#9989;  |
-| `<<original_title>>`: Original Title of the Item                                                                                                                                                                                                   | &#9989;  | &#9989;  | &#10060; | &#10060; |
-| `<<content_rating>>`: Content Rating of the Item                                                                                                                                                                                                   | &#9989;  | &#9989;  | &#10060; | &#9989;  |
-| `<<episode_count>>`: Number of Episodes (`1`)<br>`<<episode_countW>`: Number of Episodes As Words (`One`)<br>`<<episode_count0>`: Number of Episodes With 10s Padding (`01`)<br>`<<episode_count00>`: Number of Episodes With 100s Padding (`001`) | &#10060; | &#9989;  | &#9989;  | &#10060; |
-| `<<season_number>>`: Season Number (`1`)<br>`<<season_numberW>`: Season Number As Words (`One`)<br>`<<season_number0>`: Season Number With 10s Padding (`01`)<br>`<<season_number00>`: Season Number With 100s Padding (`001`)                     | &#10060; | &#10060; | &#9989;  | &#9989;  |
-| `<<episode_number>>`: Episode Number (`1`)<br>`<<episode_numberW>`: Episode Number As Words (`One`)<br>`<<episode_number0>`: Episode Number With 10s Padding (`01`)<br>`<<episode_number00>`: Episode Number With 100s Padding (`001`)             | &#10060; | &#10060; | &#10060; | &#9989;  |
-| `<<runtime>>`: Runtime of the Item in minutes`<<runtimeH>>`: Hours in runtime of the Item<br>`<<runtimeM>>`: Minutes remaining in the hour in the runtime of the Item                                                                              | &#9989;  | &#10060; | &#10060; | &#9989;  |
-| `<<originally_available>>`: Original Available Date of the Item`<<originally_available[FORMAT]>>`: Original Available Date of the Item in the given format. [Format Options](https://strftime.org/)                                                | &#9989;  | &#9989;  | &#10060; | &#9989;  |
+| Special Text Variables & Mods                                                                                                                                                                                                                         |  Movies  |  Shows   | Seasons  | Episodes |
+|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|
+| `<<audience_rating>>`: audience rating (`8.7`, `9.0`)<br>`<<audience_rating%>>`: audience rating out of 100 (`87`, `90`)<br>`<<audience_rating#>>`: audience rating removing `.0` as needed (`8.7`, `9`)                                              | &#9989;  | &#9989;  | &#10060; | &#9989;  |
+| `<<critic_rating>>`: critic rating (`8.7`, `9.0`)<br>`<<critic_rating%>>`: critic rating out of 100 (`87`, `90`)<br>`<<critic_rating#>>`: critic rating removing `.0` as needed (`8.7`, `9`)                                                          | &#9989;  | &#9989;  | &#10060; | &#9989;  |
+| `<<user_rating>>`: user rating (`8.7`, `9.0`)<br>`<<user_rating%>>`: user rating out of 100 (`87`, `90`)<br>`<<user_rating#>>`: user rating removing `.0` as needed (`8.7`, `9`)                                                                      | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `<<title>>`: Title of the Item                                                                                                                                                                                                                        | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `<<show_title>>`: Title of the Item's Show                                                                                                                                                                                                            | &#10060; | &#10060; | &#9989;  | &#9989;  |
+| `<<season_title>>`: Title of the Item's Season                                                                                                                                                                                                        | &#10060; | &#10060; | &#10060; | &#9989;  |
+| `<<original_title>>`: Original Title of the Item                                                                                                                                                                                                      | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| `<<content_rating>>`: Content Rating of the Item                                                                                                                                                                                                      | &#9989;  | &#9989;  | &#10060; | &#9989;  |
+| `<<episode_count>>`: Number of Episodes (`1`)<br>`<<episode_countW>>`: Number of Episodes As Words (`One`)<br>`<<episode_count0>>`: Number of Episodes With 10s Padding (`01`)<br>`<<episode_count00>>`: Number of Episodes With 100s Padding (`001`) | &#10060; | &#9989;  | &#9989;  | &#10060; |
+| `<<season_number>>`: Season Number (`1`)<br>`<<season_numberW>>`: Season Number As Words (`One`)<br>`<<season_number0>>`: Season Number With 10s Padding (`01`)<br>`<<season_number00>>`: Season Number With 100s Padding (`001`)                     | &#10060; | &#10060; | &#9989;  | &#9989;  |
+| `<<episode_number>>`: Episode Number (`1`)<br>`<<episode_numberW>>`: Episode Number As Words (`One`)<br>`<<episode_number0>>`: Episode Number With 10s Padding (`01`)<br>`<<episode_number00>>`: Episode Number With 100s Padding (`001`)             | &#10060; | &#10060; | &#10060; | &#9989;  |
+| `<<runtime>>`: Complete Runtime of the Item in minutes (`150`)<br>`<<runtimeH>>`: Hours in runtime of the Item (`2`)<br>`<<runtimeM>>`: Minutes remaining in the hour in the runtime of the Item (`30`)                                               | &#9989;  | &#10060; | &#10060; | &#9989;  |
+| `<<originally_available>>`: Original Available Date of the Item<br>`<<originally_available[FORMAT]>>`: Original Available Date of the Item in the given format. [Format Options](https://strftime.org/)                                               | &#9989;  | &#9989;  | &#10060; | &#9989;  |
 
 Note: You can use the `mass_audience_rating_update` or `mass_critic_rating_update` [Library Operation](../config/operations) to update your plex ratings to various services like `tmdb`, `imdb`, `mdb`, `metacritic`, `letterboxd` and many more.
 
 ##### Example
+
 I want to have the audience_rating display with a `%` out of 100 vs 0.0-10.0.
 ```yaml
 overlays:
   audience_rating:
     overlay:
-      name: text(special_text)
-      special_text: <<audience_rating%>>%
+      name: text(<<audience_rating%>>%)
       horizontal_offset: 225
       horizontal_align: center
       vertical_offset: 15
@@ -213,6 +213,39 @@ overlays:
       back_width: 300
       back_height: 105
 ```
+
+I want to add `S##E##` to all my episode images.
+```yaml
+overlays:
+  text_content_rating:
+    builder_level: episode
+    overlay:
+      name: text(S<<season_number0>>E<<episode_number0>>)
+      horizontal_align: center
+      vertical_offset: 15
+      vertical_align: top
+      font: fonts/Inter-Medium.ttf
+      font_size: 63
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 300
+      back_height: 105
+    plex_all: true
+```
+
+##### Common Special Text Uses
+These are some commonly-used examples of Special Text overlays:
+
+| Special Text                                                      | Example Output     |
+|:------------------------------------------------------------------|--------------------|
+| `name: text(S<<season_number0>>E<<episode_number0>>)`             | S01E01             |
+| `name: text(Season <<season_number>> Episode <<episode_number>>)` | Season 1 Episode 1 |
+| `name: text(Season <<season_number>>)`                            | Season 1           |
+| `name: text(Episode <<episode_number>>)`                          | Episode 1          |
+| `name: text(Runtime: <<runtime>>m)`                               | Runtime: 90m       |
+| `name: text(Runtime: <<runtimeH>>h <<runtimeM>>m)`                | Runtime: 1h 30m    |
+
 
 #### Text Addon Images
 

@@ -120,9 +120,9 @@ class Overlays:
                     if self.config.Cache:
                         for over_name in over_names:
                             current_overlay = properties[over_name]
-                            if current_overlay.name == "text(special_text)":
+                            if current_overlay.name.startswith("text"):
                                 for cache_key, cache_value in self.config.Cache.query_overlay_special_text(item.ratingKey).items():
-                                    actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation[cache_key] else cache_key
+                                    actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
                                     if cache_value is None or not hasattr(item, actual) or getattr(item, actual) is None:
                                         continue
                                     if cache_key in overlay.float_vars:
@@ -203,65 +203,63 @@ class Overlays:
 
                             def get_text(text_overlay):
                                 full_text = text_overlay.name[5:-1]
-                                if full_text == "special_text":
-                                    full_text = text_overlay.special_text
-                                    for format_var in overlay.vars_by_type[text_overlay.level]:
-                                        if f"<<{format_var}" in full_text and format_var == "originally_available[":
-                                            mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)
-                                            format_var = "originally_available"
-                                        elif f"<<{format_var}>>" in full_text and format_var.endswith("00"):
-                                            mod = "00"
-                                            format_var = format_var[:-2]
-                                        elif f"<<{format_var}>>" in full_text and format_var.endswith(("%", "#", "H", "M", "0")):
-                                            mod = format_var[-1]
-                                            format_var = format_var[:-1]
-                                        elif f"<<{format_var}>>" in full_text:
-                                            mod = ""
+                                for format_var in overlay.vars_by_type[text_overlay.level]:
+                                    if f"<<{format_var}" in full_text and format_var == "originally_available[":
+                                        mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)
+                                        format_var = "originally_available"
+                                    elif f"<<{format_var}>>" in full_text and format_var.endswith("00"):
+                                        mod = "00"
+                                        format_var = format_var[:-2]
+                                    elif f"<<{format_var}>>" in full_text and format_var.endswith(("%", "#", "H", "M", "0")):
+                                        mod = format_var[-1]
+                                        format_var = format_var[:-1]
+                                    elif f"<<{format_var}>>" in full_text:
+                                        mod = ""
+                                    else:
+                                        continue
+                                    if format_var == "show_title":
+                                        actual_attr = "parentTitle" if text_overlay.level == "season" else "grandparentTitle"
+                                    elif format_var in plex.attribute_translation:
+                                        actual_attr = plex.attribute_translation[format_var]
+                                    else:
+                                        actual_attr = format_var
+                                    if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
+                                        logger.warning(f"Overlay Warning: No {full_text} found")
+                                        continue
+                                    actual_value = getattr(item, actual_attr)
+                                    if self.config.Cache:
+                                        cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
+                                        self.config.Cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
+                                    sub_value = None
+                                    if format_var == "originally_available":
+                                        if mod:
+                                            sub_value = "<<originally_available\\[(.+)]>>"
+                                            final_value = actual_value.strftime(mod)
                                         else:
-                                            continue
-                                        if format_var == "show_title":
-                                            actual_attr = "parentTitle" if text_overlay.level == "season" else "grandparentTitle"
-                                        elif format_var in plex.attribute_translation:
-                                            actual_attr = plex.attribute_translation[format_var]
+                                            final_value = actual_value.strftime("%Y-%m-%d")
+                                    elif format_var == "runtime":
+                                        if mod == "H":
+                                            final_value = int((actual_value / 60000) // 60)
+                                        elif mod == "M":
+                                            final_value = int((actual_value / 60000) % 60)
                                         else:
-                                            actual_attr = format_var
-                                        if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
-                                            logger.warning(f"Overlay Warning: No {full_text} found")
-                                            continue
-                                        actual_value = getattr(item, actual_attr)
-                                        if self.config.Cache:
-                                            cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
-                                            self.config.Cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
-                                        sub_value = None
-                                        if format_var == "originally_available":
-                                            if mod:
-                                                sub_value = "<<originally_available\\[(.+)]>>"
-                                                final_value = actual_value.strftime(mod)
-                                            else:
-                                                final_value = actual_value.strftime("%Y-%m-%d")
-                                        elif format_var == "runtime":
-                                            if mod == "H":
-                                                final_value = (actual_value / 60000) // 60
-                                            elif mod == "M":
-                                                final_value = (actual_value / 60000) % 60
-                                            else:
-                                                final_value = actual_value / 60000
-                                        elif mod == "%":
-                                            final_value = int(actual_value * 10)
-                                        elif mod == "#":
-                                            final_value = str(actual_value)[:-2] if str(actual_value).endswith(".0") else actual_value
-                                        elif mod == "W":
-                                            final_value = num2words(int(actual_value))
-                                        elif mod == "0":
-                                            final_value = f"{int(actual_value):02}"
-                                        elif mod == "00":
-                                            final_value = f"{int(actual_value):03}"
-                                        else:
-                                            final_value = actual_value
-                                        if sub_value:
-                                            full_text = re.sub(sub_value, str(final_value), full_text)
-                                        else:
-                                            full_text = full_text.replace(f"<<{format_var}{mod}>>", str(final_value))
+                                            final_value = int(actual_value / 60000)
+                                    elif mod == "%":
+                                        final_value = int(actual_value * 10)
+                                    elif mod == "#":
+                                        final_value = str(actual_value)[:-2] if str(actual_value).endswith(".0") else actual_value
+                                    elif mod == "W":
+                                        final_value = num2words(int(actual_value))
+                                    elif mod == "0":
+                                        final_value = f"{int(actual_value):02}"
+                                    elif mod == "00":
+                                        final_value = f"{int(actual_value):03}"
+                                    else:
+                                        final_value = actual_value
+                                    if sub_value:
+                                        full_text = re.sub(sub_value, str(final_value), full_text)
+                                    else:
+                                        full_text = full_text.replace(f"<<{format_var}{mod}>>", str(final_value))
                                 return str(full_text)
 
                             for over_name in applied_names:
