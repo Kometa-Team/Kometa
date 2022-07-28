@@ -171,7 +171,7 @@ overlays:
 
 #### Special Text Variables
 
-You can use the item's metadata to determine the text by adding Special Text Variables to you text Overlay.
+You can use the item's metadata to determine the text by adding Special Text Variables to your text Overlay.
 
 There are multiple Special Text Variables that can be used when formatting the text. The variables are defined like so `<<name>>` and some can have modifiers like so `<<name$>>` where `$` is the modifier. The available options are:
 
@@ -235,6 +235,7 @@ overlays:
 ```
 
 ##### Common Special Text Uses
+
 These are some commonly-used examples of Special Text overlays:
 
 | Special Text                                                      | Example Output     |
@@ -245,7 +246,6 @@ These are some commonly-used examples of Special Text overlays:
 | `name: text(Episode <<episode_number>>)`                          | Episode 1          |
 | `name: text(Runtime: <<runtime>>m)`                               | Runtime: 90m       |
 | `name: text(Runtime: <<runtimeH>>h <<runtimeM>>m)`                | Runtime: 1h 30m    |
-
 
 #### Text Addon Images
 

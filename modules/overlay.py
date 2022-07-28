@@ -8,7 +8,7 @@ logger = util.logger
 
 portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
-old_special_text2 = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
+old_special_text = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
 float_vars = ["audience_rating", "critic_rating", "user_rating"]
 int_vars = ["runtime", "season_number", "episode_number", "episode_count"]
 date_vars = ["originally_available"]
@@ -281,7 +281,7 @@ class Overlay:
                     self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
-            if text in old_special_text2:
+            if text in old_special_text:
                 text_mod = text[-1] if text[-1] in ["0", "%", "#"] else None
                 text = text if text_mod is None else text[:-1]
                 self.name = f"text(<<{text}#>>)" if text_mod == "#" else f"text(<<{text}%>>{''  if text_mod == '0' else '%'})"

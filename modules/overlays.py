@@ -265,7 +265,7 @@ class Overlays:
                             for over_name in applied_names:
                                 current_overlay = properties[over_name]
                                 if current_overlay.name.startswith("text"):
-                                    if current_overlay.name == "text(special_text)":
+                                    if "<<" in current_overlay.name:
                                         image_box = current_overlay.image.size if current_overlay.image else None
                                         try:
                                             overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay))
