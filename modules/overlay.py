@@ -284,20 +284,14 @@ class Overlay:
             if text in old_special_text2:
                 text_mod = text[-1] if text[-1] in ["0", "%", "#"] else None
                 text = text if text_mod is None else text[:-1]
-                self.special_text = f"<<{text}#>>" if text_mod == "#" else f"<<{text}%>>{''  if text_mod == '0' else '%'}"
-                self.name = "text(special_text)"
-            elif self.name == "text(special_text)":
-                if "special_text" not in self.data or not self.data["special_text"]:
-                    raise Failed("Overlay Error: text(special_text) requires the special_text attribute")
-                if "<<originally_available[" in self.data["special_text"]:
-                    match = re.search("<<originally_available\\[(.+)]>>", self.data["special_text"])
-                    if match:
-                        try:
-                            datetime.now().strftime(match.group(1))
-                        except ValueError:
-                            raise Failed("Overlay Error: originally_available date format not valid")
-                self.special_text = self.data["special_text"]
-
+                self.name = f"text(<<{text}#>>)" if text_mod == "#" else f"text(<<{text}%>>{''  if text_mod == '0' else '%'})"
+            if "<<originally_available[" in text:
+                match = re.search("<<originally_available\\[(.+)]>>", text)
+                if match:
+                    try:
+                        datetime.now().strftime(match.group(1))
+                    except ValueError:
+                        raise Failed("Overlay Error: originally_available date format not valid")
             else:
                 box = self.image.size if self.image else None
                 self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
@@ -433,7 +427,7 @@ class Overlay:
             output += f"{self.back_box[0]}{self.back_box[1]}{self.back_align}"
         if self.addon_position is not None:
             output += f"{self.addon_position}{self.addon_offset}"
-        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width, self.special_text]:
+        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
             if value is not None:
                 output += f"{value}"
         return output
