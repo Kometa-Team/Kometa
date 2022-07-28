@@ -191,7 +191,8 @@ method_alias = {
     "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
     "collection_changes_webhooks": "changes_webhooks",
     "radarr_add": "radarr_add_missing", "sonarr_add": "sonarr_add_missing",
-    "trakt_recommended_personal": "trakt_recommendations"
+    "trakt_recommended_personal": "trakt_recommendations",
+    "collection_level": "builder_level", "overlay_level": "builder_level",
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
 date_sub_mods = {"s": "Seconds", "m": "Minutes", "h": "Hours", "d": "Days", "w": "Weeks", "o": "Months", "y": "Years"}
