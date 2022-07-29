@@ -150,6 +150,17 @@ cd Plex-Meta-Manager
 
 **NOTE: The rest of this walkthrough assumes you are staying in this directory in this terminal/Powershell window.**
 
+**IMPORTANT: In the future, when you want to run PMM at teh command line, you have to be in this directory.**
+
+When you open a command window to run PMM, the first step will always be:
+
+```
+cd ~
+cd Plex-Meta-Manager
+```
+
+There are parts of the code that are assuming and expecting that you will be in this directory when you run PMM [the fonts used in overlays are one example].  Be sure that you are always in this directory when you run PMM.
+
 <details>
   <summary>What did that do?</summary>
   <br />
@@ -171,6 +182,7 @@ cd Plex-Meta-Manager
   ```
 
   This moves into the directory that was created by the `clone` command.
+
 
 </details>
 
