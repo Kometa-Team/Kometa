@@ -27,6 +27,7 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS omdb_data2")
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data")
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data2")
+                cursor.execute("DROP TABLE IF EXISTS overlay_ratings")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guids_map (
                     key INTEGER PRIMARY KEY,
@@ -246,11 +247,11 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS overlay_ratings (
+                    """CREATE TABLE IF NOT EXISTS overlay_special_text (
                     key INTEGER PRIMARY KEY,
                     rating_key INTEGER,
                     type TEXT,
-                    rating REAL)"""
+                    text TEXT)"""
                 )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
@@ -866,20 +867,20 @@ class Cache:
                                    [(r.name, r.date.strftime("%Y-%m-%d") if r.date else None,
                                      expiration_date.strftime("%Y-%m-%d"), r.season, r.round) for r in races])
 
-    def query_overlay_ratings(self, rating_key, rating_type):
-        rating = None
+    def query_overlay_special_text(self, rating_key):
+        attrs = {}
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM overlay_ratings WHERE rating_key = ? AND type = ?", (rating_key, rating_type))
-                row = cursor.fetchone()
-                if row:
-                    rating = row["rating"]
-        return rating
+                cursor.execute("SELECT * FROM overlay_special_text WHERE rating_key = ?", (rating_key, ))
+                for row in cursor.fetchall():
+                    if row:
+                        attrs[row["type"]] = row["text"]
+        return attrs
 
-    def update_overlay_ratings(self, rating_key, rating_type, rating):
+    def update_overlay_special_text(self, rating_key, data_type, text):
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO overlay_ratings(rating_key, type) VALUES(?, ?)", (rating_key, rating_type))
-                cursor.execute("UPDATE overlay_ratings SET rating = ? WHERE rating_key = ? AND type = ?", (rating, rating_key, rating_type))
+                cursor.execute("INSERT OR IGNORE INTO overlay_special_text(rating_key, type) VALUES(?, ?)", (rating_key, data_type))
+                cursor.execute("UPDATE overlay_special_text SET text = ? WHERE rating_key = ? AND type = ?", (text, rating_key, data_type))

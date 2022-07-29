@@ -318,8 +318,8 @@ class DataFile:
                                 return str(og_txt).replace(f"<<{var}>>", str(actual_value))
                             else:
                                 return og_txt
-                        for i in range(6):
-                            if i == 2 or i == 4:
+                        for i_check in range(6):
+                            if i_check == 2 or i_check == 4:
                                 for dm, dd in default.items():
                                     _data = scan_text(_data, dm, dd)
                             else:
@@ -492,11 +492,11 @@ class MetadataFile(DataFile):
                                 all_keys = [str(i.title) for i in tags]
                                 auto_list = {str(i.title): i.title for i in tags if str(i.title) not in exclude}
                             if library.is_music:
-                                final_var = auto_type if auto_type.startwith("album") else f"artist_{auto_type}"
+                                final_var = auto_type if auto_type.startswith("album") else f"artist_{auto_type}"
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {final_var: f"<<value>>"}}}
-                                if auto_type.startwith("album"):
-                                    default_template["collection_level"] = "album"
-                                default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startwith('album') else '<<library_type>>'}s"
+                                if auto_type.startswith("album"):
+                                    default_template["builder_level"] = "album"
+                                default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startswith('album') else '<<library_type>>'}s"
                             elif auto_type == "resolution":
                                 default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}
                                 default_title_format = "<<key_name>> <<library_type>>s"
@@ -1103,6 +1103,7 @@ class MetadataFile(DataFile):
                                 episode.batchEdits()
                                 add_edit("title", episode, episode_dict, episode_methods)
                                 add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
+                                add_edit("content_rating", episode, episode_dict, episode_methods, key="contentRating")
                                 add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
                                 add_edit("audience_rating", episode, episode_dict, episode_methods, key="audienceRating", var_type="float")
                                 add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")
@@ -1143,6 +1144,7 @@ class MetadataFile(DataFile):
                     episode.batchEdits()
                     add_edit("title", episode, episode_dict, episode_methods)
                     add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
+                    add_edit("content_rating", episode, episode_dict, episode_methods, key="contentRating")
                     add_edit("critic_rating", episode, episode_dict, episode_methods, key="rating", var_type="float")
                     add_edit("audience_rating", episode, episode_dict, episode_methods, key="audienceRating", var_type="float")
                     add_edit("user_rating", episode, episode_dict, episode_methods, key="userRating", var_type="float")

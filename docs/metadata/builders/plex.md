@@ -27,12 +27,12 @@ collections:
 
 ## Plex Pilots
 
-Gets the first episode of every show in your library. This Only works with `collection_level: episode`
+Gets the first episode of every show in your library. This only works with `builder_level: episode`
 
 ```yaml
 collection:
   Pilots:
-    collection_level: episode
+    builder_level: episode
     plex_pilots: true
 ```
 
@@ -77,7 +77,7 @@ like Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collec
 
 Inside the base attribute you can use any search below or nest more `any` or `all`. You can have as many nested `any` or `all` next to each other as you want. If using multiple `any` or `all` you will have to do so in the form of a list.  
 
-**Note: To search by `season`, `episode`, `album`, or `track` you must use the `collection_level` [Detail](../details/metadata) to change the type of items the collection holds.**
+**Note: To search by `season`, `episode`, `album`, or `track` you must use the `builder_level` [Detail](../details/metadata) to change the type of items the collection holds.**
 
 There are a couple other attributes you can have at the top level only along with the base attribute are:
 
@@ -383,7 +383,7 @@ Here's an example of an episode collection using `plex_search`.
  collections:
    Top 100 Simpsons Episodes:
      collection_order: custom
-     collection_level: episode
+     builder_level: episode
      plex_search:
        type: episodes
        sort_by: audience_rating.desc

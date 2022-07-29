@@ -1,4 +1,5 @@
 import os, re, time
+from datetime import datetime
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 from modules import util
 from modules.util import Failed
@@ -7,8 +8,43 @@ logger = util.logger
 
 portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
-rating_mods = ["0", "%", "#"]
-special_text_overlays = [f"text({a}{s})" for a in ["audience_rating", "critic_rating", "user_rating"] for s in [""] + rating_mods]
+old_special_text = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
+float_vars = ["audience_rating", "critic_rating", "user_rating"]
+int_vars = ["runtime", "season_number", "episode_number", "episode_count"]
+date_vars = ["originally_available"]
+types_for_var = {
+    "movie_show_season_episode_artist_album": ["user_rating", "title"],
+    "movie_show_episode_album": ["critic_rating", "originally_available"],
+    "movie_show_episode": ["audience_rating", "content_rating"],
+    "movie_show": ["original_title"],
+    "movie_episode": ["runtime"],
+    "season_episode": ["show_title", "season_number"],
+    "show_season": ["episode_count"],
+    "episode": ["season_title", "episode_number"]
+}
+var_mods = {
+    "title": [""],
+    "content_rating": [""],
+    "original_title": [""],
+    "show_title": [""],
+    "season_title": [""],
+    "user_rating": ["", "%", "#"],
+    "critic_rating": ["", "%", "#"],
+    "audience_rating": ["", "%", "#"],
+    "originally_available": ["", "["],
+    "runtime": ["", "H", "M"],
+    "season_number": ["", "W", "0", "00"],
+    "episode_number": ["", "W", "0", "00"],
+    "episode_count": ["", "W", "0", "00"],
+}
+vars_by_type = {
+    "movie": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "movie" in check],
+    "show": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "show" in check],
+    "season": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "season" in check],
+    "episode": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "episode" in check],
+    "artist": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "artist" in check],
+    "album": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "album" in check],
+}
 
 def parse_cords(data, parent, required=False):
     horizontal_align = util.parse("Overlay", "horizontal_align", data["horizontal_align"], parent=parent,
@@ -66,12 +102,13 @@ def parse_cords(data, parent, required=False):
 
 
 class Overlay:
-    def __init__(self, config, library, original_mapping_name, overlay_data, suppress):
+    def __init__(self, config, library, original_mapping_name, overlay_data, suppress, level):
         self.config = config
         self.library = library
         self.original_mapping_name = original_mapping_name
         self.data = overlay_data
         self.suppress = suppress
+        self.level = level
         self.keys = []
         self.updated = False
         self.image = None
@@ -89,6 +126,7 @@ class Overlay:
         self.font_color = None
         self.addon_offset = 0
         self.addon_position = None
+        self.special_text = None
 
         logger.debug("")
         logger.debug("Validating Method: overlay")
@@ -216,6 +254,7 @@ class Overlay:
             if not match:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
+            text = f"{match.group(1)}"
             self.font_name = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fonts", "Roboto-Medium.ttf")
             if "font_size" in self.data:
                 self.font_size = util.parse("Overlay", "font_size", self.data["font_size"], datatype="int", parent="overlay", default=self.font_size)
@@ -242,7 +281,18 @@ class Overlay:
                     self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
-            if self.name not in special_text_overlays:
+            if text in old_special_text:
+                text_mod = text[-1] if text[-1] in ["0", "%", "#"] else None
+                text = text if text_mod is None else text[:-1]
+                self.name = f"text(<<{text}#>>)" if text_mod == "#" else f"text(<<{text}%>>{''  if text_mod == '0' else '%'})"
+            if "<<originally_available[" in text:
+                match = re.search("<<originally_available\\[(.+)]>>", text)
+                if match:
+                    try:
+                        datetime.now().strftime(match.group(1))
+                    except ValueError:
+                        raise Failed("Overlay Error: originally_available date format not valid")
+            else:
                 box = self.image.size if self.image else None
                 self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
                 self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])

@@ -1,6 +1,6 @@
 import re, requests
 from modules import util
-from modules.util import Failed
+from modules.util import Failed, NonExisting
 from plexapi.exceptions import BadRequest
 
 logger = util.logger
@@ -277,8 +277,8 @@ class Convert:
                     anidb_id = self._mal_to_anidb[int(check_id)]
                 else:
                     raise Failed(f"AniDB ID not found for MyAnimeList ID: {check_id}")
-            elif item_type == "local":                      raise Failed("No match in Plex")
-            else:                                           raise Failed(f"Agent {item_type} not supported")
+            elif item_type == "local":                      raise NonExisting("No match in Plex")
+            else:                                           raise NonExisting(f"Agent {item_type} not supported")
 
             if anidb_id:
                 if anidb_id in self._anidb_to_imdb:
@@ -344,6 +344,9 @@ class Convert:
                 raise Failed(f"No ID to convert")
         except Failed as e:
             logger.info(f'Mapping Error | {item.guid:<46} | {e} for "{item.title}"')
+        except NonExisting as e:
+            if not library.is_other:
+                logger.info(f'Mapping Error | {item.guid:<46} | {e} for "{item.title}"')
         except BadRequest:
             logger.stacktrace()
             logger.info(f'Mapping Error | {item.guid:<46} | Bad Request for "{item.title}"')
