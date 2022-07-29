@@ -312,7 +312,7 @@ See the cron section below.
    A command you could use for this:
 
    ```
-   /path/to/plex-meta-manager/pmm-venv/bin/python /path/to/plex-meta-manager/plex_meta_manager.py --config /path/to/plex-meta-manager/config/config.yml --run
+   cd /path/to/plex-meta-manager && pmm-venv/bin/python plex_meta_manager.py --config config/config.yml --run
    ```
 
    NOTE: This is assuming you created the `pmm-venv` virtual environment as described in the [Local Walkthrough](local)
