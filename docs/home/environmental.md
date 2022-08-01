@@ -12,6 +12,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [Time to Run](#time-to-run)                           | `-t` or `--time`                   | `PMM_TIME`               |
 | [Run](#run)                                           | `-r` or `--run`                    | `PMM_RUN`                |
 | [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests` | `PMM_TEST`               |
+| [Timeout](#timeout)                                   | `-ti` or `--timeout`               | `PMM_TIMEOUT`            |
 | [Collections Only](#collections-only)                 | `-co` or `--collections-only`      | `PMM_COLLECTIONS_ONLY`   |
 | [Playlists Only](#playlists-only)                     | `-po` or `--playlists-only`        | `PMM_PLAYLISTS_ONLY`     |
 | [Operations](#operations)                             | `-op` or `--operations`            | `PMM_OPERATIONS`         |
@@ -211,6 +212,45 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 </details>
 
+### Timeout
+
+Change the main Plex Meta Manager timeout.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #222;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-ti</code> or <code>--timeout</code></td>
+    <td><code>PMM_TIMEOUT</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--timeout 360</code></td>
+    <td><code>PMM_TIMEOUT=360</code></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Local Environment</summary>
+
+```shell
+python plex_meta_manager.py ---timeout 360
+```
+
+</details>
+<details>
+  <summary>Docker Environment</summary>
+
+```shell
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager ---timeout 360
+```
+
+</details>
+
 ### Collections Only
 
 Only run collection metadata/YAML files, skip library operations, overlays, and collections/metadata.
@@ -221,6 +261,7 @@ Only run collection metadata/YAML files, skip library operations, overlays, and 
     <th>Shell</th>
     <th>Environment</th>
   </tr>
+
   <tr>
     <th>Flags</th>
     <td><code>-co</code> or <code>--collections-only</code></td>

@@ -36,6 +36,7 @@ class MDbObj:
         self.tomatoesaudience_rating = None
         self.tmdb_rating = None
         self.letterboxd_rating = None
+        self.myanimelist_rating = None
         for rating in data["ratings"]:
             if rating["source"] == "imdb":
                 self.imdb_rating = util.check_num(rating["value"], is_int=False)
