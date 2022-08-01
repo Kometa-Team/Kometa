@@ -53,6 +53,8 @@ class MDbObj:
                 self.tmdb_rating = util.check_num(rating["value"])
             elif rating["source"] == "letterboxd":
                 self.letterboxd_rating = util.check_num(rating["value"], is_int=False)
+            elif rating["source"] == "myanimelist":
+                self.myanimelist_rating = util.check_num(rating["value"], is_int=False)
         self.content_rating = data["certification"]
         self.commonsense = data["commonsense"]
 
@@ -78,7 +80,7 @@ class Mdblist:
     def has_key(self):
         return self.apikey is not None
 
-    def _request(self, imdb_id=None, tmdb_id=None, is_movie=True, ignore_cache=False):
+    def _request(self, imdb_id=None, tmdb_id=None, tvdb_id=None, is_movie=True, ignore_cache=False):
         params = {"apikey": self.apikey}
         if imdb_id:
             params["i"] = imdb_id
@@ -87,8 +89,12 @@ class Mdblist:
             params["tm"] = tmdb_id
             params["m"] = "movie" if is_movie else "show"
             key = f"{'tm' if is_movie else 'ts'}{tmdb_id}"
+        elif tvdb_id:
+            params["tv"] = tvdb_id
+            params["m"] = "movie" if is_movie else "show"
+            key = f"{'tvm' if is_movie else 'tvs'}{tmdb_id}"
         else:
-            raise Failed("MdbList Error: Either IMDb ID or TMDb ID and TMDb Type Required")
+            raise Failed("MdbList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type Required")
         expired = None
         if self.config.Cache and not ignore_cache:
             mdb_dict, expired = self.config.Cache.query_mdb(key, self.expiration)
@@ -110,8 +116,8 @@ class Mdblist:
     def get_imdb(self, imdb_id):
         return self._request(imdb_id=imdb_id)
 
-    def get_series(self, tmdb_id):
-        return self._request(tmdb_id=tmdb_id, is_movie=False)
+    def get_series(self, tvdb_id):
+        return self._request(tvdb_id=tvdb_id, is_movie=False)
 
     def get_movie(self, tmdb_id):
         return self._request(tmdb_id=tmdb_id, is_movie=True)

@@ -23,6 +23,7 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS tmdb_to_tvdb_map")
                 cursor.execute("DROP TABLE IF EXISTS imdb_map")
                 cursor.execute("DROP TABLE IF EXISTS mdb_data")
+                cursor.execute("DROP TABLE IF EXISTS mdb_data2")
                 cursor.execute("DROP TABLE IF EXISTS omdb_data")
                 cursor.execute("DROP TABLE IF EXISTS omdb_data2")
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data")
@@ -93,7 +94,7 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mdb_data2 (
+                    """CREATE TABLE IF NOT EXISTS mdb_data3 (
                     key INTEGER PRIMARY KEY,
                     key_id TEXT UNIQUE,
                     title TEXT,
@@ -112,6 +113,7 @@ class Cache:
                     tomatoesaudience_rating INTEGER,
                     tmdb_rating INTEGER,
                     letterboxd_rating REAL,
+                    myanimelist_rating REAL,
                     commonsense TEXT,
                     certification TEXT,
                     expiration_date TEXT)"""
@@ -422,7 +424,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM mdb_data2 WHERE key_id = ?", (key_id,))
+                cursor.execute("SELECT * FROM mdb_data3 WHERE key_id = ?", (key_id,))
                 row = cursor.fetchone()
                 if row:
                     mdb_dict["title"] = row["title"] if row["title"] else None
@@ -443,7 +445,8 @@ class Cache:
                         {"source": "tomatoes", "value": row["tomatoes_rating"] if row["tomatoes_rating"] else None},
                         {"source": "tomatoesaudience", "value": row["tomatoesaudience_rating"] if row["tomatoesaudience_rating"] else None},
                         {"source": "tmdb", "value": row["tmdb_rating"] if row["tmdb_rating"] else None},
-                        {"source": "letterboxd", "value": row["letterboxd_rating"] if row["letterboxd_rating"] else None}
+                        {"source": "letterboxd", "value": row["letterboxd_rating"] if row["letterboxd_rating"] else None},
+                        {"source": "myanimelist_rating", "value": row["myanimelist_rating"] if row["myanimelist_rating"] else None}
                     ]
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
@@ -455,16 +458,16 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO mdb_data2(key_id) VALUES(?)", (key_id,))
-                update_sql = "UPDATE mdb_data2 SET title = ?, year = ?, released = ?, type = ?, imdbid = ?, traktid = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO mdb_data3(key_id) VALUES(?)", (key_id,))
+                update_sql = "UPDATE mdb_data3 SET title = ?, year = ?, released = ?, type = ?, imdbid = ?, traktid = ?, " \
                              "tmdbid = ?, score = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, " \
                              "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, " \
-                             "letterboxd_rating = ?, certification = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
+                             "letterboxd_rating = ?, myanimelist_rating = ?, certification = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
                 cursor.execute(update_sql, (
                     mdb.title, mdb.year, mdb.released.strftime("%Y-%m-%d") if mdb.released else None, mdb.type,
                     mdb.imdbid, mdb.traktid, mdb.tmdbid, mdb.score, mdb.imdb_rating, mdb.metacritic_rating,
                     mdb.metacriticuser_rating, mdb.trakt_rating, mdb.tomatoes_rating, mdb.tomatoesaudience_rating,
-                    mdb.tmdb_rating, mdb.letterboxd_rating, mdb.content_rating, mdb.commonsense,
+                    mdb.tmdb_rating, mdb.letterboxd_rating, mdb.myanimelist_rating, mdb.content_rating, mdb.commonsense,
                     expiration_date.strftime("%Y-%m-%d"), key_id
                 ))
 

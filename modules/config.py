@@ -52,6 +52,7 @@ mass_rating_options = {
     "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDbList",
     "mdb_tmdb": "Use TMDb Rating through MDbList",
     "mdb_letterboxd": "Use Letterboxd Rating through MDbList",
+    "mdb_myanimelist": "Use MyAnimeList Rating through MDbList",
     "anidb_rating": "Use AniDB Rating",
     "anidb_average": "Use AniDB Average"
 }

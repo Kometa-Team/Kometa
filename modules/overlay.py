@@ -263,7 +263,7 @@ class Overlay:
                 if not os.path.exists(font):
                     fonts = util.get_system_fonts()
                     if font not in fonts:
-                        raise Failed(f"Overlay Error: font: {font} not found. Options: {', '.join(fonts)}")
+                        raise Failed(f"Overlay Error: font: {os.path.abspath(font)} not found. Options: {', '.join(fonts)}")
                 self.font_name = font
             self.font = ImageFont.truetype(self.font_name, self.font_size)
             if "font_style" in self.data and self.data["font_style"]:
