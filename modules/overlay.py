@@ -284,7 +284,10 @@ class Overlay:
             if text in old_special_text:
                 text_mod = text[-1] if text[-1] in ["0", "%", "#"] else None
                 text = text if text_mod is None else text[:-1]
-                self.name = f"text(<<{text}#>>)" if text_mod == "#" else f"text(<<{text}%>>{''  if text_mod == '0' else '%'})"
+                if text_mod is None:
+                    self.name = f"text(<<{text}>>)"
+                else:
+                    self.name = f"text(<<{text}#>>)" if text_mod == "#" else f"text(<<{text}%>>{''  if text_mod == '0' else '%'})"
             if "<<originally_available[" in text:
                 match = re.search("<<originally_available\\[(.+)]>>", text)
                 if match:
