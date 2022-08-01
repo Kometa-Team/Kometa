@@ -22,6 +22,7 @@ parser.add_argument("-db", "--debug", dest="debug", help=argparse.SUPPRESS, acti
 parser.add_argument("-tr", "--trace", dest="trace", help=argparse.SUPPRESS, action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)", default="05:00", type=str)
+parser.add_argument("-ti", "--timeout", dest="timeout", help="PMM Global Timeout (Default: 180)", default=180, type=int)
 parser.add_argument("-re", "--resume", dest="resume", help="Resume collection run from a specific collection", type=str)
 parser.add_argument("-r", "--run", dest="run", help="Run without the scheduler", action="store_true", default=False)
 parser.add_argument("-is", "--ignore-schedules", dest="ignore_schedules", help="Run ignoring collection schedules", action="store_true", default=False)
@@ -89,6 +90,7 @@ no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
 read_only_config = get_arg("PMM_READ_ONLY_CONFIG", args.read_only_config, arg_bool=True)
 divider = get_arg("PMM_DIVIDER", args.divider)
 screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
+timeout = get_arg("PMM_TIMEOUT", args.timeout, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 
@@ -124,6 +126,15 @@ def my_except_hook(exctype, value, tb):
         logger.critical("Uncaught Exception", exc_info=(exctype, value, tb))
 
 sys.excepthook = my_except_hook
+
+old_send = requests.Session.send
+
+def new_send(*send_args, **kwargs):
+    if kwargs.get("timeout", None) is None:
+        kwargs["timeout"] = timeout
+    return old_send(*send_args, **kwargs)
+
+requests.Session.send = new_send
 
 version = ("Unknown", "Unknown", 0)
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) as handle:
