@@ -173,11 +173,23 @@ class Operations:
                 mdb_item = None
                 if any([o and o.startswith("mdb") for o in self.library.meta_operations]):
                     if self.config.Mdblist.limit is False:
-                        if tmdb_id and not imdb_id:
-                            imdb_id = self.config.Convert.tmdb_to_imdb(tmdb_id)
-                        elif tvdb_id and not imdb_id:
-                            imdb_id = self.config.Convert.tvdb_to_imdb(tvdb_id)
-                        if imdb_id:
+                        if tmdb_id:
+                            try:
+                                mdb_item = self.config.Mdblist.get_movie(tmdb_id)
+                            except Failed as e:
+                                logger.error(str(e))
+                            except Exception:
+                                logger.error(f"TMDb ID: {tmdb_id}")
+                                raise
+                        elif tvdb_id:
+                            try:
+                                mdb_item = self.config.Mdblist.get_series(tvdb_id)
+                            except Failed as e:
+                                logger.error(str(e))
+                            except Exception:
+                                logger.error(f"TVDb ID: {tvdb_id}")
+                                raise
+                        elif imdb_id:
                             try:
                                 mdb_item = self.config.Mdblist.get_imdb(imdb_id)
                             except Failed as e:
@@ -186,7 +198,7 @@ class Operations:
                                 logger.error(f"IMDb ID: {imdb_id}")
                                 raise
                         else:
-                            logger.info(f"No IMDb ID for Guid: {item.guid}")
+                            logger.info(f"No TMDb ID, TVDb ID, or IMDb ID for Guid: {item.guid}")
 
                 def get_rating(attribute):
                     if tmdb_item and attribute == "tmdb":
@@ -217,6 +229,8 @@ class Operations:
                         found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
                     elif mdb_item and attribute == "mdb_letterboxd":
                         found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                    elif mdb_item and attribute == "mdb_myanimelist":
+                        found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
                     elif anidb_item and attribute == "anidb_rating":
                         found_rating = anidb_item.rating
                     elif anidb_item and attribute == "anidb_average":
