@@ -509,9 +509,10 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
                                 tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
-                                if tmdb_item and tmdb_item.collection_id and tmdb_item.collection_name and str(tmdb_item.collection_id) not in exclude and tmdb_item.collection_name not in exclude:
+                                if tmdb_item and tmdb_item.collection_id and tmdb_item.collection_name:
                                     all_keys.append(str(tmdb_item.collection_id))
-                                    auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
+                                    if str(tmdb_item.collection_id) not in exclude and tmdb_item.collection_name not in exclude:
+                                        auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
                             logger.exorcise()
                         elif auto_type == "original_language":
                             all_items = library.get_all()
@@ -636,7 +637,7 @@ class MetadataFile(DataFile):
                                 auto_list[add_key] = add_key
                                 addons[add_key] = final_keys
                             else:
-                                logger.warning(f"Config Error: {add_key} Custom Key must have at least one Key")
+                                logger.warning(f"Config Warning: {add_key} Custom Key must have at least one Key")
                     title_format = default_title_format
                     if "title_format" in self.temp_vars:
                         title_format = util.parse("Config", "title_format", self.temp_vars["title_format"], parent="template_variable", default=default_title_format)
@@ -654,7 +655,7 @@ class MetadataFile(DataFile):
                     test_override = []
                     for k, v in key_name_override.items():
                         if v in test_override:
-                            logger.warning(f"Config Error: {v} can only be used once skipping {k}: {v}")
+                            logger.warning(f"Config Warning: {v} can only be used once skipping {k}: {v}")
                             key_name_override.pop(k)
                         else:
                             test_override.append(v)
@@ -741,7 +742,7 @@ class MetadataFile(DataFile):
                                     key_name = key_name[:-len(suffix)].strip()
                         key_value = [key] if key in all_keys else []
                         if key in addons:
-                            key_value.extend([a for a in addons[key] if a in all_keys and a != key])
+                            key_value.extend([a for a in addons[key] if (a in all_keys or auto_type == "custom") and a != key])
                         used_keys.extend(key_value)
                         og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
