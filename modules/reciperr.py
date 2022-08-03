@@ -26,11 +26,14 @@ class Reciperr:
         return valid_lists
 
     def get_imdb_ids(self, method, data):
+        name = "StevenLu" if method == "stevenlu_popular" else "Reciperr"
+        logger.info(f"Processing {name} Movies")
         if method == "reciperr_list":
-            logger.info(f"Processing Reciperr Movies")
-            return [(i["imdb_id"], "imdb") for i in self._request(data)]
+            ids = [(i["imdb_id"], "imdb") for i in self._request(data)]
         elif method == "stevenlu_popular":
-            logger.info(f"Processing StevenLu Popular Movies")
-            return [(i["imdb_id"], "imdb") for i in self._request(stevenlu_url, name="StevenLu")]
+            ids = [(i["imdb_id"], "imdb") for i in self._request(stevenlu_url, name="StevenLu")]
         else:
-            raise Failed(f"Reciperr Error: Method {method} not supported")
+            raise Failed(f"Config Error: Method {method} not supported")
+        if not ids:
+            raise Failed(f"{name} Error: No IDs found.")
+        return ids
