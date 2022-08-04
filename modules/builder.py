@@ -1896,6 +1896,8 @@ class CollectionBuilder:
         else:
             raise Failed(f"{self.Type} Error: No Filter Created")
 
+        if display:
+            logger.debug(f"Smart URL: {filter_url}")
         return type_key, filter_details, filter_url
 
     def validate_attribute(self, attribute, modifier, final, data, validate, plex_search=False):
