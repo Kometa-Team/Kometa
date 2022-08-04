@@ -24,6 +24,7 @@ class Operations:
         logger.debug(f"Assets For All: {self.library.assets_for_all}")
         logger.debug(f"Delete Collections With Less: {self.library.delete_collections_with_less}")
         logger.debug(f"Delete Unmanaged Collections: {self.library.delete_unmanaged_collections}")
+        logger.debug(f"Show Unmanaged Collections: {self.library.show_unmanaged}")
         logger.debug(f"Mass Genre Update: {self.library.mass_genre_update}")
         logger.debug(f"Mass Audience Rating Update: {self.library.mass_audience_rating_update}")
         logger.debug(f"Mass Critic Rating Update: {self.library.mass_critic_rating_update}")
