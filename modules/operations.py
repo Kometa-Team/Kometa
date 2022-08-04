@@ -446,7 +446,9 @@ class Operations:
             logger.separator(f"Deleting All {unmanaged}Collections{print_suffix}", space=False, border=False)
             logger.info("")
         unmanaged_collections = []
-        for col in self.library.get_all_collections():
+        all_collections = self.library.get_all_collections()
+        for i, col in enumerate(all_collections, 1):
+            logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
             labels = [la.tag for la in self.library.item_labels(col)]
             if (self.library.delete_collections_with_less and col.childCount < self.library.delete_collections_with_less) \
                 or (self.library.delete_unmanaged_collections and "PMM" not in labels):

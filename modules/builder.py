@@ -1956,23 +1956,21 @@ class CollectionBuilder:
                 final_values = util.get_list(data, trim=False)
             search_choices, names = self.library.get_search_choices(attribute, title=not plex_search)
             valid_list = []
-            for value in final_values:
-                if str(value).lower() in search_choices:
-                    if plex_search:
-                        valid_list.append((value, search_choices[str(value).lower()]))
-                    else:
-                        valid_list.append(search_choices[str(value).lower()])
+            for fvalue in final_values:
+                if str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
+                    valid_value = search_choices[str(fvalue) if str(fvalue) in search_choices else str(fvalue).lower()]
+                    valid_list.append((fvalue, valid_value) if plex_search else valid_value)
                 else:
                     actor_id = None
                     if attribute in ["actor", "director", "producer", "writer"]:
-                        actor_id = self.library.get_actor_id(value)
+                        actor_id = self.library.get_actor_id(fvalue)
                         if actor_id:
                             if plex_search:
-                                valid_list.append((value, actor_id))
+                                valid_list.append((fvalue, actor_id))
                             else:
                                 valid_list.append(actor_id)
                     if not actor_id:
-                        error = f"Plex Error: {attribute}: {value} not found"
+                        error = f"Plex Error: {attribute}: {fvalue} not found"
                         if self.details["show_options"]:
                             error += f"\nOptions: {names}"
                         if validate:
@@ -2421,6 +2419,7 @@ class CollectionBuilder:
     def load_collection(self):
         if self.obj is None and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
+            logger.debug(f"Smart Collection Created: {self.smart_url}")
         elif self.obj is None and self.blank_collection:
             self.library.create_blank_collection(self.name)
         elif self.smart_label_collection:
