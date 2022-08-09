@@ -103,6 +103,7 @@ class Mdblist:
                 return MDbObj(mdb_dict)
         if self.config.trace_mode:
             logger.debug(f"ID: {key}")
+            logger.debug(f"Params: {params}")
         response = self.config.get_json(api_url, params=params)
         if "response" in response and response["response"] is False:
             if response["error"] == "API Limit Reached!":
@@ -166,12 +167,14 @@ class Mdblist:
             valid_lists.append({"url": mdb_url, "limit": list_count, "sort_by": sort_by})
         return valid_lists
 
-    def get_tmdb_ids(self, method, data):
+    def get_tmdb_ids(self, method, data, is_movie=None):
         if method == "mdblist_list":
             logger.info(f"Processing Mdblist.com List: {data['url']}")
             logger.info(f"Sort By: {data['sort_by']}")
             sort, direction = data["sort_by"].split(".")
             params = {"sort": sort, "sortorder": direction}
+            if is_movie is not None:
+                params["mediatype"] = "movie" if is_movie else "show"
             if data["limit"] > 0:
                 logger.info(f"Limit: {data['limit']} items")
                 params["limit"] = data["limit"]

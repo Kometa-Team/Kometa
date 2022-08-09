@@ -557,7 +557,9 @@ class MetadataFile(DataFile):
                             person_depth = util.parse("Config", "depth", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1)
                             person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
                             person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
-                            for i, item in enumerate(library.get_all(), 1):
+                            lib_all = library.get_all()
+                            for i, item in enumerate(lib_all, 1):
+                                logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.title}")
                                 try:
                                     item = self.library.reload(item)
                                     for person in getattr(item, f"{auto_type}s")[:person_depth]:

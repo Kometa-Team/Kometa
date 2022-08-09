@@ -173,13 +173,16 @@ class Sonarr:
             if len(exists) > 0:
                 upgrade_qp = []
                 for series in exists:
-                    logger.info(f"Already in Sonarr | {series.tvdbId:<7} | {series.title}")
-                    if series.qualityProfileId != qp.id:
+                    if series.qualityProfileId != qp.id and upgrade_existing:
                         upgrade_qp.append(series)
+                    else:
+                        logger.info(f"Already in Sonarr | {series.tvdbId:<7} | {series.title}")
                     if self.config.Cache:
                         self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
-                if upgrade_qp and upgrade_existing:
+                if upgrade_qp:
                     self.api.edit_multiple_series(upgrade_qp, quality_profile=qp)
+                    for series in upgrade_qp:
+                        logger.info(f"Quality Upgraded To {qp.name} | {series.tvdbId:<7} | {series.title}")
             if len(skipped) > 0:
                 for series in skipped:
                     logger.info(f"Skipped: In Cache | {series}")
