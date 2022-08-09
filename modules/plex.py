@@ -713,8 +713,9 @@ class Plex(Library):
         if len(test_items) < 1:
             raise Failed(f"Plex Error: No items for smart filter: {uri_args}")
 
-    def create_smart_collection(self, title, smart_type, uri_args):
-        self.test_smart_filter(uri_args)
+    def create_smart_collection(self, title, smart_type, uri_args, ignore_blank_results):
+        if not ignore_blank_results:
+            self.test_smart_filter(uri_args)
         args = {
             "type": smart_type,
             "title": title,

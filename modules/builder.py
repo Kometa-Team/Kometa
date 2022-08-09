@@ -2419,7 +2419,7 @@ class CollectionBuilder:
 
     def load_collection(self):
         if self.obj is None and self.smart_url:
-            self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url)
+            self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url, self.ignore_blank_results)
             logger.debug(f"Smart Collection Created: {self.smart_url}")
         elif self.obj is None and self.blank_collection:
             self.library.create_blank_collection(self.name)
@@ -2429,7 +2429,7 @@ class CollectionBuilder:
                     raise Failed
                 smart_type, _, self.smart_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
                 if not self.obj:
-                    self.library.create_smart_collection(self.name, smart_type, self.smart_url)
+                    self.library.create_smart_collection(self.name, smart_type, self.smart_url, self.ignore_blank_results)
             except Failed:
                 raise Failed(f"{self.Type} Error: Label: {self.name} was not added to any items in the Library")
         self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name)
