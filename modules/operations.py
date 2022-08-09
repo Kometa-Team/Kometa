@@ -174,15 +174,7 @@ class Operations:
                 mdb_item = None
                 if any([o and o.startswith("mdb") for o in self.library.meta_operations]):
                     if self.config.Mdblist.limit is False:
-                        if tmdb_id:
-                            try:
-                                mdb_item = self.config.Mdblist.get_movie(tmdb_id)
-                            except Failed as e:
-                                logger.error(str(e))
-                            except Exception:
-                                logger.error(f"TMDb ID: {tmdb_id}")
-                                raise
-                        elif tvdb_id:
+                        if self.library.is_show and tvdb_id and mdb_item is None:
                             try:
                                 mdb_item = self.config.Mdblist.get_series(tvdb_id)
                             except Failed as e:
@@ -190,7 +182,15 @@ class Operations:
                             except Exception:
                                 logger.error(f"TVDb ID: {tvdb_id}")
                                 raise
-                        elif imdb_id:
+                        if tmdb_id and mdb_item is None:
+                            try:
+                                mdb_item = self.config.Mdblist.get_movie(tmdb_id)
+                            except Failed as e:
+                                logger.error(str(e))
+                            except Exception:
+                                logger.error(f"TMDb ID: {tmdb_id}")
+                                raise
+                        if imdb_id and mdb_item is None:
                             try:
                                 mdb_item = self.config.Mdblist.get_imdb(imdb_id)
                             except Failed as e:
@@ -198,7 +198,7 @@ class Operations:
                             except Exception:
                                 logger.error(f"IMDb ID: {imdb_id}")
                                 raise
-                        else:
+                        if mdb_item is None:
                             logger.info(f"No TMDb ID, TVDb ID, or IMDb ID for Guid: {item.guid}")
 
                 def get_rating(attribute):

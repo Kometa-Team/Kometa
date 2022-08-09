@@ -1514,7 +1514,7 @@ class CollectionBuilder:
         elif "reciperr" in method or "stevenlu" in method:
             ids = self.config.Reciperr.get_imdb_ids(method, value)
         elif "mdblist" in method:
-            ids = self.config.Mdblist.get_tmdb_ids(method, value)
+            ids = self.config.Mdblist.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "tmdb" in method:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
         elif "trakt" in method:
@@ -2098,7 +2098,8 @@ class CollectionBuilder:
             self.library.add_additions(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_added], self.library.is_movie)
         logger.exorcise()
         logger.info("")
-        logger.info(f"{total} {self.builder_level.capitalize()}{'s' if total > 1 else ''} Processed")
+        item_label = f"{self.builder_level.capitalize()}{'s' if total > 1 else ''}"
+        logger.info(f"{total} {item_label} Processed {amount_added} {item_label} Added")
         return amount_added, amount_unchanged
 
     def sync_collection(self):
