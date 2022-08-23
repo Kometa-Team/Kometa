@@ -140,7 +140,10 @@ class Trakt:
         if response.status_code != 200:
             raise Failed(f"Trakt Error: ({response.status_code}) {response.reason}")
             #raise Failed("Trakt Error: Invalid trakt pin. If you're sure you typed it in correctly your client_id or client_secret may be invalid")
-        elif not self._save(response.json()):
+        response_json = response.json()
+        if self.config.trace_mode:
+            logger.debug(response_json)
+        if not self._save(response_json):
             raise Failed("Trakt Error: New Authorization Failed")
 
     def _check(self, authorization=None):
