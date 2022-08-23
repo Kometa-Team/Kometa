@@ -123,9 +123,12 @@ class Trakt:
             logger.info(f"Navigate to: {url}")
             logger.info("If you get an OAuth error your client_id or client_secret is invalid")
             webbrowser.open(url, new=2)
-            try:                                pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
-            except TimeoutExpired:              raise Failed("Input Timeout: Trakt pin required.")
-        if not pin:                         raise Failed("Trakt Error: Trakt pin required.")
+            try:
+                pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
+            except TimeoutExpired:
+                raise Failed("Input Timeout: Trakt pin required.")
+        if not pin:
+            raise Failed("Trakt Error: Trakt pin required.")
         json = {
             "code": pin,
             "client_id": self.client_id,
@@ -135,7 +138,8 @@ class Trakt:
         }
         response = self.config.post(f"{base_url}/oauth/token", json=json, headers={"Content-Type": "application/json"})
         if response.status_code != 200:
-            raise Failed("Trakt Error: Invalid trakt pin. If you're sure you typed it in correctly your client_id or client_secret may be invalid")
+            raise Failed(f"Trakt Error: ({response.status_code}) {response.reason}")
+            #raise Failed("Trakt Error: Invalid trakt pin. If you're sure you typed it in correctly your client_id or client_secret may be invalid")
         elif not self._save(response.json()):
             raise Failed("Trakt Error: New Authorization Failed")
 
@@ -151,10 +155,8 @@ class Trakt:
         response = self.config.get(f"{base_url}/users/settings", headers=headers)
         if response.status_code == 423:
             raise Failed("Trakt Error: Account is Locked please Contact Trakt Support")
-        if self.config.trace_mode:
-            logger.debug(f"Trakt Error Code: {response.status_code}")
-            logger.debug(f"Trakt Error Reason: {response.reason}")
-            logger.debug(f"Trakt Error JSON: {response.json()}")
+        if response.status_code != 200:
+            logger.debug(f"Trakt Error: ({response.status_code}) {response.reason}")
         return response.status_code == 200
 
     def _refresh(self):
