@@ -56,6 +56,7 @@ The Docker install is discussed here: [Installing Docker](https://docs.docker.co
 Once you have Docker installed, test it at the command line with:
 
 [type this into your terminal]
+
 ```
 docker run --rm hello-world
 ```
@@ -116,6 +117,7 @@ PMM, inside that Docker container, can only see other things *inside the contain
 Go to your home directory and create a new directory:
 
 [type this into your terminal]
+
 ```
 cd ~
 mkdir plex-meta-manager
@@ -124,6 +126,7 @@ mkdir plex-meta-manager
 cd into that directory and create another directory:
 
 [type this into your terminal]
+
 ```
 cd ~/plex-meta-manager
 mkdir config
@@ -132,6 +135,7 @@ mkdir config
 get the full path:
 
 [type this into your terminal]
+
 ```
 pwd
 ```
@@ -140,6 +144,7 @@ This will display a full path:
 
 ````{tab} Linux
 <br/>
+
 ```
 /home/YOURUSERNAME/plex-meta-manager
 ```
@@ -147,6 +152,7 @@ This will display a full path:
 ````
 ````{tab} OS X:
 <br/>
+
 ```
 /Users/YOURUSERNAME/plex-meta-manager
 ```
@@ -154,6 +160,7 @@ This will display a full path:
 ````
 ````{tab} Windows:
 <br/>
+
 ```
 C:\Users\YOURUSERNAME\plex-meta-manager
 ```
@@ -164,6 +171,7 @@ Add "config" onto the end of that to get the host path to your config directory,
 
 ````{tab} Linux
 <br/>
+
 ```
 /home/YOURUSERNAME/plex-meta-manager/config
 ```
@@ -171,6 +179,7 @@ Add "config" onto the end of that to get the host path to your config directory,
 ````
 ````{tab} OS X:
 <br/>
+
 ```
 /Users/YOURUSERNAME/plex-meta-manager/config
 ```
@@ -178,6 +187,7 @@ Add "config" onto the end of that to get the host path to your config directory,
 ````
 ````{tab} Windows:
 <br/>
+
 ```
 C:\Users\YOURUSERNAME\plex-meta-manager\config
 ```
@@ -188,6 +198,7 @@ You'll need to add this to the docker command every time you run it, like this:
 
 ````{tab} Linux
 <br/>
+
 ```
 docker run --rm -it -v "/home/YOURUSERNAME/plex-meta-manager/config:/config:rw" meisnate12/plex-meta-manager
 ```
@@ -195,6 +206,7 @@ docker run --rm -it -v "/home/YOURUSERNAME/plex-meta-manager/config:/config:rw" 
 ````
 ````{tab} OS X:
 <br/>
+
 ```
 docker run --rm -it -v "/Users/YOURUSERNAME/plex-meta-manager/config:/config:rw" meisnate12/plex-meta-manager
 ```
@@ -202,6 +214,7 @@ docker run --rm -it -v "/Users/YOURUSERNAME/plex-meta-manager/config:/config:rw"
 ````
 ````{tab} Windows:
 <br/>
+
 ```
 docker run --rm -it -v "C:\Users\YOURUSERNAME\plex-meta-manager\config:/config:rw" meisnate12/plex-meta-manager
 ```
@@ -272,6 +285,7 @@ First, make a copy of the template:
 ````{tab} Linux
 <br/>
 Get a copy of the template to edit [type this into your terminal]:
+
 ```
 curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
 ```
