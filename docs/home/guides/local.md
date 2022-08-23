@@ -528,7 +528,7 @@ Save the file:
 
 Then run the script again:
 
-```{include} wt/wt-run-docker.md
+```{include} wt/wt-run-shell.md
 ```
 
 ```{include} wt/wt-03.md
@@ -559,7 +559,7 @@ Save the file:
 
 Then run the script again:
 
-```{include} wt/wt-run-docker.md
+```{include} wt/wt-run-shell.md
 ```
 
 ```{include} wt/wt-06.md
