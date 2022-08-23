@@ -257,7 +257,7 @@ class CollectionBuilder:
                     logger.warning(f"Collection Warning: {level_attr} attribute will run as builder_level")
                 break
 
-        if level and not self.library.is_movie and not self.playlist:
+        if level and not self.playlist and not self.library.is_movie:
             logger.debug("")
             logger.debug("Validating Method: builder_level")
             if level is None:
@@ -1788,6 +1788,7 @@ class CollectionBuilder:
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
                     arg_key = plex.search_translation[attr] if attr in plex.search_translation else attr
+                    arg_key = f"{sort_type}.label" if arg_key == "label" and sort_type in ["season", "episode", "album", "track"] else arg_key
                     arg_key = plex.show_translation[arg_key] if self.library.is_show and arg_key in plex.show_translation else arg_key
                     if mod is None:
                         mod = plex.modifier_translation[modifier] if modifier in plex.modifier_translation else modifier

@@ -165,43 +165,33 @@ class DataFile:
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 
+                    def replace_var(input_item, search_dict):
+                        return_item = input_item
+                        for rk, rv in search_dict.items():
+                            if f"<<{rk}>>" in return_item:
+                                return_item = return_item.replace(f"<<{rk}>>", str(rv))
+                        return return_item
+
+                    ini_default = {}
                     default = {}
-                    def add_default(d_key, d_value):
-                        for v_key, v_value in variables.items():
-                            if f"<<{v_key}>>" in str(d_value):
-                                d_value = str(d_value).replace(f"<<{v_key}>>", str(v_value))
-                        default[d_key] = d_value
-                        default[f"{d_key}_encoded"] = requests.utils.quote(str(d_value))
-
-                    def small_var_check(var_check):
-                        for var_k, var_v in variables.items():
-                            if f"<<{var_k}>>" in str(var_check):
-                                var_check = str(var_check).replace(f"<<{var_k}>>", str(var_v))
-                        for var_k, var_v in default.items():
-                            if f"<<{var_k}>>" in str(var_check):
-                                var_check = str(var_check).replace(f"<<{var_k}>>", str(var_v))
-                        return var_check
-
                     if "default" in template:
                         if not template["default"]:
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
                         if not isinstance(template["default"], dict):
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
                         for dv in template["default"]:
-                            final_key = dv
-                            for k, v in variables.items():
-                                if f"<<{k}>>" in final_key:
-                                    final_key = final_key.replace(f"<<{k}>>", str(v))
-                            if final_key not in optional:
-                                final_value = template["default"][dv]
-                                add_default(final_key, final_value)
+                            ini_default[replace_var(dv, variables)] = replace_var(template["default"][dv], variables)
+                    for dkey, dvalue in ini_default.items():
+                        final_key = replace_var(dkey, ini_default)
+                        final_value = replace_var(dvalue, ini_default)
+                        if final_key not in optional:
+                            default[final_key] = final_value
+                            default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
 
                     if "optional" in template:
                         if template["optional"]:
                             for op in util.get_list(template["optional"]):
-                                for k, v in variables.items():
-                                    if f"<<{k}>>" in op:
-                                        op = op.replace(f"<<{k}>>", str(v))
+                                op = replace_var(op, variables)
                                 if op not in default:
                                     optional.append(str(op))
                                     optional.append(f"{op}_encoded")
@@ -221,7 +211,7 @@ class DataFile:
                             logger.debug(f"Conditional: {con_key}")
                             if not isinstance(con_value, dict):
                                 raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
-                            final_key = small_var_check(con_key)
+                            final_key = replace_var(replace_var(con_key, variables), default)
                             if final_key != con_key:
                                 logger.debug(f"Variable: {final_key}")
                             if final_key in variables:
@@ -243,11 +233,11 @@ class DataFile:
                                 for var_key, var_value in condition.items():
                                     if var_key == "value":
                                         continue
-                                    var_key = small_var_check(var_key)
-                                    var_value = small_var_check(var_value)
+                                    var_key = replace_var(replace_var(var_key, variables), default)
+                                    var_value = replace_var(replace_var(var_value, variables), default)
                                     if var_key in variables:
                                         if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and variables[var_key] != var_value):
+                                                (not isinstance(var_value, list) and variables[var_key] != var_value):
                                             if isinstance(var_value, list):
                                                 logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
                                             else:
@@ -256,7 +246,7 @@ class DataFile:
                                             break
                                     elif var_key in default:
                                         if (isinstance(var_value, list) and default[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and default[var_key] != var_value):
+                                                (not isinstance(var_value, list) and default[var_key] != var_value):
                                             if isinstance(var_value, list):
                                                 logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
                                             else:

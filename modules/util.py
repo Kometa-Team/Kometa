@@ -324,11 +324,11 @@ def item_title(item):
         else:
             return f"{item.parentTitle} Season {item.index}: {item.title}"
     elif isinstance(item, Episode):
-        text = f"{item.grandparentTitle} S{item.parentIndex:02}E{item.index:02}"
-        if f"Season {item.parentIndex}" == item.parentTitle:
-            return f"{text}: {item.title}"
-        else:
-            return f"{text}: {item.parentTitle}: {item.title}"
+        season = item.parentIndex if item.parentIndex else 0
+        episode = item.index if item.index else 0
+        show_title = item.grandparentTitle if item.grandparentTitle else ""
+        season_title = f"{item.parentTitle}: " if item.parentTitle and f"Season {season}" == item.parentTitle else ""
+        return f"{show_title} S{season:02}E{episode:02}: {season_title}{item.title if item.title else ''}"
     elif isinstance(item, Movie) and item.year:
         return f"{item.title} ({item.year})"
     elif isinstance(item, Album):
