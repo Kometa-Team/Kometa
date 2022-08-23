@@ -166,7 +166,7 @@ class DataFile:
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 
                     def replace_var(input_item, search_dict):
-                        return_item = input_item
+                        return_item = str(input_item)
                         for rk, rv in search_dict.items():
                             if f"<<{rk}>>" in return_item:
                                 return_item = return_item.replace(f"<<{rk}>>", str(rv))
