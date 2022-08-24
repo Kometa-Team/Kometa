@@ -1762,11 +1762,15 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: limit attribute is blank")
             elif str(plex_filter[filter_alias["limit"]]).lower() == "all":
                 filter_details += "Limit: all\n"
-            elif not isinstance(plex_filter[filter_alias["limit"]], int) or plex_filter[filter_alias["limit"]] < 1:
-                raise Failed(f"{self.Type} Error: limit attribute must be an integer greater than 0")
             else:
-                limit = plex_filter[filter_alias["limit"]]
-                filter_details += f"Limit: {limit}\n"
+                try:
+                    if int(plex_filter[filter_alias["limit"]]) < 1:
+                        raise ValueError
+                    else:
+                        limit = int(plex_filter[filter_alias["limit"]])
+                        filter_details += f"Limit: {limit}\n"
+                except ValueError:
+                    raise Failed(f"{self.Type} Error: limit attribute must be an integer greater than 0")
 
         validate = True
         if "validate" in filter_alias:
