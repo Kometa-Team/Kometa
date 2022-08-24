@@ -168,6 +168,8 @@ class DataFile:
                     def replace_var(input_item, search_dict):
                         return_item = str(input_item)
                         for rk, rv in search_dict.items():
+                            if f"<<{rk}>>" == return_item:
+                                return_item = rv
                             if f"<<{rk}>>" in return_item:
                                 return_item = return_item.replace(f"<<{rk}>>", str(rv))
                         return return_item
