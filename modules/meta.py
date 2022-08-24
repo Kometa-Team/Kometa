@@ -165,13 +165,16 @@ class DataFile:
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 
-                    def replace_var(input_item, search_dict):
-                        return_item = str(input_item)
-                        for rk, rv in search_dict.items():
-                            if f"<<{rk}>>" == return_item:
-                                return_item = rv
-                            if f"<<{rk}>>" in return_item:
-                                return_item = return_item.replace(f"<<{rk}>>", str(rv))
+                    def replace_var(input_item, search_dicts):
+                        if not isinstance(search_dicts, list):
+                            search_dicts = [search_dicts]
+                        return_item = input_item
+                        for search_dict in search_dicts:
+                            for rk, rv in search_dict.items():
+                                if f"<<{rk}>>" == str(return_item):
+                                    return_item = rv
+                                if f"<<{rk}>>" in str(return_item):
+                                    return_item = str(return_item).replace(f"<<{rk}>>", str(rv))
                         return return_item
 
                     ini_default = {}
@@ -213,7 +216,7 @@ class DataFile:
                             logger.debug(f"Conditional: {con_key}")
                             if not isinstance(con_value, dict):
                                 raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
-                            final_key = replace_var(replace_var(con_key, variables), default)
+                            final_key = replace_var(con_key, [variables, default])
                             if final_key != con_key:
                                 logger.debug(f"Variable: {final_key}")
                             if final_key in variables:
@@ -235,8 +238,8 @@ class DataFile:
                                 for var_key, var_value in condition.items():
                                     if var_key == "value":
                                         continue
-                                    var_key = replace_var(replace_var(var_key, variables), default)
-                                    var_value = replace_var(replace_var(var_value, variables), default)
+                                    var_key = replace_var(var_key, [variables, default])
+                                    var_value = replace_var(var_value, [variables, default])
                                     if var_key in variables:
                                         if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
                                                 (not isinstance(var_value, list) and variables[var_key] != var_value):
