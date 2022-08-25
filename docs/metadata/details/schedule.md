@@ -9,10 +9,10 @@ libraries:
     schedule: weekly(sunday)
     metadata_path:
       - file: config/Movies.yml
-      - git: meisnate12/MovieCharts
-      - git: meisnate12/Studios
-      - git: meisnate12/IMDBGenres
-      - git: meisnate12/People
+      - git: PMM/chart/imdb
+      - git: PMM/studio
+      - git: PMM/genre
+      - git: PMM/actor
     operations:
       mass_critic_rating_update: tmdb
 ```
@@ -24,13 +24,13 @@ libraries:
     metadata_path:
       - file: config/Movies.yml
         schedule: weekly(monday)
-      - git: meisnate12/MovieCharts
+      - git: PMM/chart/imdb
         schedule: weekly(tuesday)
-      - git: meisnate12/Studios
+      - git: PMM/studio
         schedule: weekly(wednesday)
-      - git: meisnate12/IMDBGenres
+      - git: PMM/genre
         schedule: weekly(thursday)
-      - git: meisnate12/People
+      - git: PMM/actor
         schedule: weekly(friday)
     overlay_path:
       - git: PMM/overlays/imdb
