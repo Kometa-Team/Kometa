@@ -103,7 +103,7 @@ libraries:
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - git: meisnate12/ShowCharts
+      - git: PMM/chart/tmdb
       - repo: charts
       - url: https://somewhere.com/PopularTV.yml
 ```
@@ -112,7 +112,7 @@ Within the above example, PMM will:
 
 * First, look within the root of the PMM directory (also known as `config/`) for a metadata file named `TVShows.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
 * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `TV Shows`, and then load any metadata files within that directory.
-* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `MovieCharts.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/meisnate12/MovieCharts.yml).
+* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `MovieCharts.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/chart/imdb.yml).
 * Then, look at the within the Custom Defined Repo for a file called `charts.yml`.
 * Finally, load the metadata file located at `https://somewhere.com/PopularTV.yml`
 
@@ -167,7 +167,7 @@ In this example, multiple `playlist_files` attribute path types are defined:
 playlist_files:
   - file: config/playlists.yml
   - folder: config/Playlists/
-  - git: meisnate12/Playlists
+  - git: PMM/playlist
   - repo: playlists
   - url: https://somewhere.com/Playlists.yml
 ```

@@ -8,7 +8,7 @@ Within each library, operations can be defined by using the `operations` attribu
 libraries:
   Movies:
     metadata_path:
-      - git: meisnate12/MovieCharts
+      - git: PMM/chart/imdb
     operations:
       mass_critic_rating_update: tmdb
       split_duplicates: true
