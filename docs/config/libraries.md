@@ -23,18 +23,18 @@ libraries:
   Movies:
     metadata_path:
       - file: config/Movies.yml
-      - git: meisnate12/MovieCharts
-      - git: meisnate12/Studios
-      - git: meisnate12/IMDBGenres
-      - git: meisnate12/People
+      - git: PMM/chart/imdb
+      - git: PMM/studio
+      - git: PMM/genre
+      - git: PMM/actor
     operations:
       mass_critic_rating_update: tmdb
       split_duplicates: true
   TV Shows:
     metadata_path:
       - file: config/TV Shows.yml
-      - git: meisnate12/ShowCharts
-      - git: meisnate12/Networks
+      - git: PMM/chart/tmdb
+      - git: PMM/show/network
     overlay_path:
       - remove_overlays: false
       - file: config/Overlays.yml
@@ -45,12 +45,12 @@ libraries:
       token: ####################
     metadata_path:
       - file: config/TV Shows.yml
-      - git: meisnate12/ShowCharts
-      - git: meisnate12/Networks
+      - git: PMM/chart/tmdb
+      - git: PMM/show/network
   Anime:
     metadata_path:
       - file: config/Anime.yml
-      - git: meisnate12/AnimeCharts
+      - git: PMM/chart/myanimelist
     radarr:
       url: http://192.168.1.45:7878
       token: ################################
@@ -121,15 +121,15 @@ plex:
 
 ### Metadata Path
 
-The `metadata_path` attribute is used to define [Metadata Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them. 
+The `metadata_path` attribute is used to define [Metadata Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them.
 
 ```yaml
 libraries:
   TV Shows:
     metadata_path:
       - file: config/TV Shows.yml
-      - git: meisnate12/ShowCharts
-      - git: meisnate12/Networks
+      - git: PMM/chart/tmdb
+      - git: PMM/show/network
 ```
 
 By default, when `metadata_path` is missing the script will look within the root PMM directory for a metadata file called `<MAPPING_NAME>.yml`. In this example, Plex Meta Manager will look for a file named `TV Shows.yml`.
@@ -141,7 +141,7 @@ libraries:
 
 ### Overlay Path
 
-The `overlay_path` attribute is used to define [Overlay Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them. 
+The `overlay_path` attribute is used to define [Overlay Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them.
 
 ```yaml
 libraries:
@@ -166,7 +166,7 @@ libraries:
       - file: config/Overlays.yml
 ```
 
-#### Reapply Overlays 
+#### Reapply Overlays
 
 You can reapply overlays from a library by adding `reapply_overlays: true` to `overlay_path`. This will reapply overlays to every item in your library.
 
@@ -180,7 +180,7 @@ libraries:
       - file: config/Overlays.yml
 ```
 
-#### Reset Overlays 
+#### Reset Overlays
 
 You can reset overlays from a library by adding `reset_overlays` to `overlay_path` and setting it to either `tmdb` or `plex` depending on where you want to source the images from. This will use the reset image when overlaying items in your library.
 
@@ -235,6 +235,6 @@ You can define Playlist Files by using `playlist_files` mapper by specifying the
 
 ```yaml
 playlist_files:
-  - file: config/playlists.yml       
-  - git: meisnate12/Playlists
+  - file: config/playlists.yml
+  - git: PMM/playlist
 ```
