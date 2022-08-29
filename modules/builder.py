@@ -143,7 +143,7 @@ smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show
 custom_sort_builders = [
     "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list", "trakt_chart", "trakt_userlist",
-    "tvdb_list", "imdb_chart", "imdb_list", "stevenlu_popular", "anidb_popular", "tmdb_upcoming", "tmdb_airing_today",
+    "tvdb_list", "imdb_chart", "imdb_list", "imdb_watchlist", "stevenlu_popular", "anidb_popular", "tmdb_upcoming", "tmdb_airing_today",
     "tmdb_on_the_air", "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
     "flixpatrol_url", "flixpatrol_demographics", "flixpatrol_popular", "flixpatrol_top", "trakt_recommendations",
@@ -1144,6 +1144,9 @@ class CollectionBuilder:
                     self.builders.append((method_name, value))
                 else:
                     raise Failed(f"{self.Type} Error: chart: {value} is invalid options are {[i for i in imdb.charts]}")
+        elif method_name == "imdb_watchlist":
+            for imdb_user in self.config.IMDb.validate_imdb_watchlists(self.Type, method_data, self.language):
+                self.builders.append((method_name, imdb_user))
 
     def _letterboxd(self, method_name, method_data):
         if method_name.startswith("letterboxd_list"):

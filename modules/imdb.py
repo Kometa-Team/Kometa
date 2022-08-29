@@ -1,11 +1,11 @@
-import csv, gzip, math, os, re, requests, shutil, time
+import csv, gzip, json, math, os, re, requests, shutil, time
 from modules import util
 from modules.util import Failed
 from urllib.parse import urlparse, parse_qs
 
 logger = util.logger
 
-builders = ["imdb_list", "imdb_id", "imdb_chart"]
+builders = ["imdb_list", "imdb_id", "imdb_chart", "imdb_watchlist"]
 movie_charts = ["box_office", "popular_movies", "top_movies", "top_english", "top_indian", "lowest_rated"]
 show_charts = ["popular_shows", "top_shows"]
 charts = {
@@ -67,6 +67,26 @@ class IMDb:
                 list_count = 0
             valid_lists.append({"url": imdb_url, "limit": list_count})
         return valid_lists
+
+    def validate_imdb_watchlists(self, err_type, users, language):
+        valid_users = []
+        for user in util.get_list(users):
+            user_id = None
+            if not user.startswith("ur"):
+                try:
+                    user_id = int(user[2:])
+                except ValueError:
+                    pass
+            if not user_id:
+                raise Failed(f"{err_type} Error: User {user} not in the format of 'ur########'")
+            if self._watchlist(user, language):
+                valid_users.append(user)
+        return valid_users
+
+    def _watchlist(self, user, language):
+        response = self.config.get_html(f"{base_url}/user/{user}/watchlist", headers=util.header(language))
+        group = response.xpath("//span[@class='ab_widget']/script[@type='text/javascript']/text()")
+        return [k for k in json.loads(str(group[0]).split("\n")[5][35:-2])["titles"]]
 
     def _total(self, imdb_url, language):
         if imdb_url.startswith(urls["lists"]):
@@ -186,6 +206,9 @@ class IMDb:
         elif method == "imdb_chart":
             logger.info(f"Processing IMDb Chart: {charts[data]}")
             return [(_i, "imdb") for _i in self._ids_from_chart(data)]
+        elif method == "imdb_watchlist":
+            logger.info(f"Processing IMDb Watchlist: {data}")
+            return [(_i, "imdb") for _i in self._watchlist(data, language)]
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
 
