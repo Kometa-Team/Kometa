@@ -2,11 +2,12 @@
 
 You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb).
 
-| Attribute                   | Description                                                                                                                                               | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
-|:----------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
-| [`imdb_id`](#imdb-id)       | Gets the movie/show specified.                                                                                                                            |      &#9989;      |     &#9989;      |               &#10060;               |
-| [`imdb_chart`](#imdb-chart) | Gets every movie/show in an IMDb Chart like [IMDb Top 250 Movies](https://www.imdb.com/chart/top).                                                        |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`imdb_list`](#imdb-list)   | Gets every movie/show in an IMDb List, [IMDb Keyword Search](https://www.imdb.com/search/keyword/), or [IMDb Search](https://www.imdb.com/search/title/). |      &#9989;      |     &#9989;      |               &#9989;                |
+| Attribute                           | Description                                                                                                                                               | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
+|:------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
+| [`imdb_id`](#imdb-id)               | Gets the movie/show specified.                                                                                                                            |      &#9989;      |     &#9989;      |               &#10060;               |
+| [`imdb_chart`](#imdb-chart)         | Gets every movie/show in an IMDb Chart like [IMDb Top 250 Movies](https://www.imdb.com/chart/top).                                                        |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`imdb_list`](#imdb-list)           | Gets every movie/show in an IMDb List, [IMDb Keyword Search](https://www.imdb.com/search/keyword/), or [IMDb Search](https://www.imdb.com/search/title/). |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`imdb_watchlist`](#imdb-watchlist) | Gets every movie/show in an IMDb User's Watchlist.                                                                                                        |      &#9989;      |     &#9989;      |               &#9989;                |
 
 ## IMDb ID
 
@@ -118,4 +119,36 @@ collections:
       url: https://www.imdb.com/search/title/?series=tt0096697&sort=user_rating,desc
       limit: 100
     summary: The top 100 Simpsons episodes by IMDb user rating
+```
+
+## IMDb Watchlist
+
+Finds every item in an IMDb User's Watchlist.
+
+The expected input is an IMDb User ID (example: `ur12345678`). Multiple values are supported as a list or as a comma-separated string.
+
+The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
+
+```yaml
+collections:
+  My Watch Watchlist:
+    imdb_warchlist: ur64054558
+    collection_order: custom
+    sync_mode: sync
+```
+```yaml
+collections:
+  My Friends Watchlists:
+    imdb_warchlist: ur64054558, ur12345678
+    collection_order: custom
+    sync_mode: sync
+```
+```yaml
+collections:
+  My Friends Watchlists:
+    imdb_warchlist: 
+      - ur64054558
+      - ur12345678
+    collection_order: custom
+    sync_mode: sync
 ```

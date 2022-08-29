@@ -244,8 +244,8 @@ These are some commonly-used examples of Special Text overlays:
 | `name: text(Season <<season_number>> Episode <<episode_number>>)` | Season 1 Episode 1 |
 | `name: text(Season <<season_number>>)`                            | Season 1           |
 | `name: text(Episode <<episode_number>>)`                          | Episode 1          |
-| `name: text(Runtime: <<runtime>>m)`                               | Runtime: 90m       |
-| `name: text(Runtime: <<runtimeH>>h <<runtimeM>>m)`                | Runtime: 1h 30m    |
+| `name: "text(Runtime: <<runtime>>m)"`                             | Runtime: 90m       |
+| `name: "text(Runtime: <<runtimeH>>h <<runtimeM>>m)"`              | Runtime: 1h 30m    |
 
 #### Text Addon Images
 

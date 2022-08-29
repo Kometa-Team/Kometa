@@ -27,7 +27,7 @@ To make a collection a Smart Label Collection, the `smart_label` attribute must 
           sort_by: release.desc
           all:
             label: <<smart_label>>
-            unplayed: True
+            unplayed: true
     ```
 
 This is extremely useful because smart collections don't follow normal show/hide rules and can eliminate the need to have [Plex Collectionless](plex.md#plex-collectionless) when used correctly. To fix the issue described in [Plex Collectionless](plex.md#plex-collectionless) you would make `Marvel Cinematic Universe` a Smart Label Collection and all other Marvel collection just normal collections, and they will show/hide all the movie properly.
