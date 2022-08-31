@@ -52,8 +52,8 @@ collectionless_details = ["collection_order", "plex_collectionless", "label", "l
                          poster_details + background_details + summary_details + string_details
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh"] + item_false_details
-item_details = ["non_item_remove_label", "item_label", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
-none_details = ["label.sync", "item_label.sync", "radarr_taglist", "sonarr_taglist"]
+item_details = ["non_item_remove_label", "item_label", "item_genre", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
+none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_folder", "radarr_monitor",
     "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag"
@@ -929,6 +929,12 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: Cannot use item_label and item_label.sync together")
             if "item_label.remove" in methods and "item_label.sync" in methods:
                 raise Failed(f"{self.Type} Error: Cannot use item_label.remove and item_label.sync together")
+            self.item_details[method_final] = util.get_list(method_data) if method_data else []
+        if method_name == "item_genre":
+            if "item_genre" in methods and "item_genre.sync" in methods:
+                raise Failed(f"{self.Type} Error: Cannot use item_genre and item_genre.sync together")
+            if "item_genre.remove" in methods and "item_genre.sync" in methods:
+                raise Failed(f"{self.Type} Error: Cannot use item_genre.remove and item_genre.sync together")
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name == "non_item_remove_label":
             if not method_data:
@@ -2350,6 +2356,10 @@ class CollectionBuilder:
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
 
+        add_genres = self.item_details["item_genres"] if "item_genres" in self.item_details else None
+        remove_genres = self.item_details["item_genres.remove"] if "item_genres.remove" in self.item_details else None
+        sync_genres = self.item_details["item_genres.sync"] if "item_genres.sync" in self.item_details else None
+
         if "non_item_remove_label" in self.item_details:
             rk_compare = [item.ratingKey for item in self.items]
             for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.builder_level):
@@ -2363,6 +2373,7 @@ class CollectionBuilder:
             if "item_assets" in self.item_details and self.library.asset_directory and "Overlay" not in current_labels:
                 self.library.find_and_upload_assets(item, current_labels)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+            self.library.edit_tags("genre", item, add_tags=add_genres, remove_tags=remove_genres, sync_tags=sync_genres)
             path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
             if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
                 path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
