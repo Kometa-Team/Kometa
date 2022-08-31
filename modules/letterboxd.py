@@ -12,29 +12,22 @@ class Letterboxd:
         self.config = config
 
     def _parse_page(self, list_url, language):
-        list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
+        if "ajax" not in list_url:
+            list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
         response = self.config.get_html(list_url, headers=util.header(language))
-        letterboxd_ids = response.xpath(
-            "//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
+        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
             slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-film-slug")
-            comments = response.xpath(
-                f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()")
-            ratings = response.xpath(
-                f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']//span[contains(@class, 'rating')]/@class")
-            years = response.xpath(
-                f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/h2/small/a/text()")
+            comments = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()")
+            ratings = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']//span[contains(@class, 'rating')]/@class")
+            years = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/h2/small/a/text()")
             rating = None
             if ratings:
                 match = re.search("rated-(\\d+)", ratings[0])
                 if match:
                     rating = int(match.group(1))
-            items.append((letterboxd_id, slugs[0],
-                          int(years[0]) if years else None,
-                          comments[0] if comments else None,
-                          rating
-                          ))
+            items.append((letterboxd_id, slugs[0], int(years[0]) if years else None, comments[0] if comments else None, rating))
         next_url = response.xpath("//a[@class='next']/@href")
         return items, next_url
 
