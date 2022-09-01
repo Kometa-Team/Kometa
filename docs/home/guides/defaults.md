@@ -30,21 +30,186 @@ libraries:
 
 The default set of overlays are a combination of Positional Overlays and Text Overlays.
 
-<details>
-  <summary>Click to expand to see all the different spots on an image the default overlays will be.</summary>
-
-   ![](overlays.png)
-
-</details>
-
 ### Example Poster Overlays
 
-![](movie-overlays.png)
+![](movie-overlays1-annotated.png)
+![](movie-overlays2-annotated.png)
+<details>
+  <summary>Click to expand sample config.yml Movies overlays section:</summary>
 
+```yaml
+libraries:
+  Movies:
+    overlay_path:
+    - remove_overlays: false
+    - reapply_overlay: true
+    - git: PMM/overlays/resolution                                       # 1
+    - git: PMM/overlays/audio_codec                                      # 2
+    - git: PMM/overlays/special_release                                  # 3
+    - git: PMM/overlays/ratings                                          # 4,5,6
+      template_variables:
+        rating1: user                                                    # 4 as this is user and mass_user_rating_update: mdb_tomatoes
+        rating1_image: rt_tomato                                         # 4 as this is user and mass_user_rating_update: mdb_tomatoes
+        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 4 local font accessible to PMM
+        rating1_font_size: 63                                            # 4 adjusted font size to fit rating
 
-### Example Episode Overlays
+        rating2: critic                                                  # 5 as this is critic and mass_critic_rating_update: imdb
+        rating2_image: imdb                                              # 5 as this is critic and mass_critic_rating_update: imdb
+        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 5 local font accessible to PMM
+        rating2_font_size: 70                                            # 5 adjusted font size to fit rating
 
-![](episode-overlays.png)
+        rating3: audience                                                # 6 as this is audience and mass_audience_rating_update: tmdb
+        rating3_image: tmdb                                              # 6 as this is audience and mass_audience_rating_update: tmdb
+        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 6 local font accessible to PMM
+        rating3_font_size: 70                                            # 6 adjusted font size to fit rating
+
+        horizontal_position: right                                       # the set of ratings is on the right of the poster
+    - git: PMM/overlays/streaming                                        # 7
+    - git: PMM/overlays/video_format                                     # 8
+    - git: PMM/overlays/audio_language                                   # 9
+    - git: PMM/overlays/oscars                                           # 10
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 40                                                       # Weight of 40 applies if more than 1 sash is applied in bottom right
+    - git: PMM/overlays/imdb_top_250                                     # 11
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 30                                                       # Weight of 30 applies if more than 1 sash is applied in bottom right
+    - git: PMM/overlays/rt_cert_fresh                                    # 12
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 20                                                       # Weight of 20 applies if more than 1 sash is applied in bottom right
+    - git: PMM/overlays/mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
+
+    operations:
+      mass_user_rating_update: mdb_tomatoes                              # 4 This operation will update the user rating in plex with Rotten Tomatoes ratings information
+      mass_critic_rating_update: imdb                                    # 5 This operation will update the critic rating in plex with IMDb ratings information
+      mass_audience_rating_update: tmdb                                  # 6 This operation will update the audience rating in plex with TMDb ratings information
+```
+</details>
+
+### Example TV Shows - Show Overlays
+
+![](tvshow-poster-annotated.png)
+<details>
+  <summary>Click to expand sample config.yml TV Shows overlays section for the Show Poster:</summary>
+
+```yaml
+libraries:
+  TV Shows:
+    overlay_path:
+    - remove_overlays: false
+    - reapply_overlay: true
+    - git: PMM/overlays/resolution                                       # 1
+    - git: PMM/overlays/audio_codec                                      # 2
+    - git: PMM/overlays/ratings                                          # 3,4,5
+      template_variables:           
+        rating1: user                                                    # 3 as this is user and mass_user_rating_update: mdb_tomatoes
+        rating1_image: rt_tomato                                         # 3 as this is user and mass_user_rating_update: mdb_tomatoes
+        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 3 local font accessible to PMM
+        rating1_font_size: 63                                            # 3 adjusted font size to fit rating
+
+        rating2: critic                                                  # 4 as this is critic and mass_critic_rating_update: imdb
+        rating2_image: imdb                                              # 4 as this is critic and mass_critic_rating_update: imdb
+        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 4 local font accessible to PMM
+        rating2_font_size: 70                                            # 4 adjusted font size to fit rating
+
+        rating3: audience                                                # 5 as this is audience and mass_audience_rating_update: tmdb
+        rating3_image: tmdb                                              # 5 as this is audience and mass_audience_rating_update: tmdb
+        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 5 local font accessible to PMM
+        rating3_font_size: 70                                            # 5 adjusted font size to fit rating
+
+        horizontal_position: right                                       # the set of ratings is on the right of the poster
+    - git: PMM/overlays/streaming                                        # 6
+    - git: PMM/overlays/video_format                                     # 7
+    - git: PMM/overlays/imdb_top_250                                     # 8
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 30                                                       # Weight of 30 applies if more than 1 sash is applied in bottom right
+    - git: PMM/overlays/rt_cert_fresh                                    # 9
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 20                                                       # Weight of 20 applies if more than 1 sash is applied in bottom right
+    - git: PMM/overlays/mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
+
+    operations:
+      mass_user_rating_update: mdb_tomatoes                              # 3 This operation will update the user rating in plex with Rotten Tomatoes ratings information
+      mass_critic_rating_update: imdb                                    # 4 This operation will update the critic rating in plex with IMDb ratings information
+      mass_audience_rating_update: tmdb                                  # 5 This operation will update the audience rating in plex with TMDb ratings information
+```
+</details>
+
+### Example TV Shows - Season Overlays
+
+![](tvshow-poster-season-annotated.png)
+<details>
+  <summary>Click to expand sample config.yml TV Shows overlays section for the Season Poster:</summary>
+  
+```yaml
+libraries:
+  TV Shows:
+    overlay_path:
+    - remove_overlays: false
+    - reapply_overlay: true
+    - git: PMM/overlays/resolution                                       # 1
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/audio_codec                                      # 2
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/video_format                                     # 3
+      template_variables:
+        overlay_level: season
+```
+</details>
+
+### Example TV Shows - Episode Overlays
+
+![](tvshow-poster-episode-annotated.png)
+<details>
+  <summary>Click to expand sample config.yml TV Shows overlays section for the Episode Poster:</summary>
+  
+```yaml
+libraries:
+  TV Shows:
+    overlay_path:
+    - remove_overlays: false
+    - reapply_overlay: true
+    - git: PMM/overlays/resolution                                       # 1
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/audio_codec                                      # 2
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/ratings                                          # 3,4
+      template_variables:
+
+        rating1: critic                                                  # 3 as this is critic and mass_critic_rating_update: imdb
+        rating1_image: imdb                                              # 3 as this is critic and mass_critic_rating_update: imdb
+        rating1_font: config/metadata/overlays/fonts/Impact.ttf          # 3 local font accessible to PMM
+        rating1_font_size: 70                                            # 3 adjusted font size to fit rating
+
+        rating2: audience                                                # 4 as this is audience and mass_audience_rating_update: tmdb
+        rating2_image: tmdb                                              # 4 as this is audience and mass_audience_rating_update: tmdb
+        rating2_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 4 local font accessible to PMM
+        rating2_font_size: 70                                            # 4 adjusted font size to fit rating
+
+        horizontal_position: right                                       # the set of ratings is on the right of the poster
+        overlay_level: episode
+    - git: PMM/overlays/video_format                                     # 5
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/episode_info                                     # 6
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/runtimes                                         # 7
+      template_variables:
+        overlay_level: episode
+
+    operations:
+      mass_episode_critic_rating_update: imdb                            # 3 This operation will update the episodes critic rating in plex with IMDb ratings information
+      mass_episode_audience_rating_update: tmdb                          # 4 This operation will update the episodes audience rating in plex with TMDb ratings information
+```
+</details>
 
 ## Separators
 
@@ -62,6 +227,54 @@ By default, most metadata files use separators to denote different sections of c
 ## Collection Section Order
 
 Almost every default metadata file has a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
+
+For example: `collection_section:01` translates to `sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"` and so for `genre.yml` if you have a `Fantasy` collection, plex is going to show `!06_Fantasy`
+
+This is the default PMM collection ordering:
+
+
+| Collection	                       | Order                  |
+|:-------------------------------------|------------------------|
+| `PMM/movie/seasonal.yml`             | collection_section: 00 |
+| `PMM/chart/anilist.yml`              | collection_section: 01 |
+| `PMM/chart/basic.yml`                | collection_section: 01 |
+| `PMM/chart/imdb.yml`                 | collection_section: 01 |
+| `PMM/chart/myanimelist.yml`          | collection_section: 01 |
+| `PMM/chart/other.yml`                | collection_section: 01 |
+| `PMM/chart/tautulli.yml`             | collection_section: 01 |
+| `PMM/chart/tmdb.yml`                 | collection_section: 01 |
+| `PMM/chart/trakt.yml`                | collection_section: 01 |
+| `PMM/movie/universe.yml`             | collection_section: 02 |
+| `PMM/streaming.yml`                  | collection_section: 03 |
+| `PMM/show/network.yml`               | collection_section: 04 |
+| `PMM/genre.yml`                      | collection_section: 06 |
+| `PMM/studio.yml`                     | collection_section: 07 |
+| `PMM/movie/country.yml`              | collection_section: 09 |
+| `PMM/show/country.yml`               | collection_section: 09 |
+| `PMM/audio_language.yml`             | collection_section: 10 |
+| `PMM/subtitle_language.yml`          | collection_section: 11 |
+| `PMM/movie/decade.yml`               | collection_section: 12 |
+| `PMM/show/decade.yml`                | collection_section: 12 |
+| `PMM/year.yml`                       | collection_section: 13 |
+| `PMM/content_rating_uk.yml`          | collection_section: 14 |
+| `PMM/movie/content_rating_us.yml`    | collection_section: 14 |
+| `PMM/show/content_rating_us.yml`     | collection_section: 14 |
+| `PMM/resolution.yml`                 | collection_section: 15 |
+| `PMM/resolution_standards.yml`       | collection_section: 15 |
+| `PMM/award/bafta.yml`                | collection_section: 16 |
+| `PMM/award/cannes.yml`               | collection_section: 16 |
+| `PMM/award/choice.yml`               | collection_section: 16 |
+| `PMM/award/emmy.yml`                 | collection_section: 16 |
+| `PMM/award/golden.yml`               | collection_section: 16 |
+| `PMM/award/oscars.yml`               | collection_section: 16 |
+| `PMM/award/other.yml`                | collection_section: 16 |
+| `PMM/award/separator.yml`            | collection_section: 16 |
+| `PMM/award/spirit.yml`               | collection_section: 16 |
+| `PMM/award/sundance.yml`             | collection_section: 16 |
+| `PMM/actor.yml`                      | collection_section: 17 |
+| `PMM/movie/director.yml`             | collection_section: 18 |
+| `PMM/movie/producer.yml`             | collection_section: 19 |
+| `PMM/movie/writer.yml`               | collection_section: 20 |
 
 ## Customizing Configs
 
@@ -136,6 +349,17 @@ libraries:
         data:
           depth: 5
           limit: 50
+```
+
+Or maybe you want to change the collection sort order of the genre collections using PMM/genre.
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+    - git: PMM/genre
+      template_variables:
+        collection_section: 11
 ```
 
 ## Errors
@@ -248,6 +472,9 @@ libraries:
     - git: PMM/overlays/direct_play
       template_variables:
         overlay_level: season
+    - git: PMM/overlays/episode_info
+      template_variables:
+        overlay_level: episode
     - git: PMM/overlays/imdb_top_250
     - git: PMM/overlays/imdb_top_250
       template_variables:
@@ -285,6 +512,9 @@ libraries:
     - git: PMM/overlays/resolution
       template_variables:
         overlay_level: season
+    - git: PMM/overlays/runtimes
+      template_variables:
+        overlay_level: episode
     - git: PMM/overlays/special_release
     - git: PMM/overlays/special_release
       template_variables:
