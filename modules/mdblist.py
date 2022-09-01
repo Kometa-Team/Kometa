@@ -188,6 +188,8 @@ class Mdblist:
             try:
                 response = self.config.get_json(url_base, headers=headers, params=params)
                 if "error" in response:
+                    if response["error"] == "empty":
+                        raise Failed(f"Mdblist Error: No Items Returned. Lists can take 24 hours to update so try again later.")
                     raise Failed(f"Mdblist Error: Invalid Response {response}")
                 results = []
                 for item in response:
