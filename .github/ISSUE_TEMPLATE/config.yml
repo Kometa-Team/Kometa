@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Fwature Requests
+    url: https://features.metamanager.wiki
+    about: Please use the features site to submit and vote on features.
   - name: Plex Meta Manager Wiki
     url: https://metamanager.wiki
     about: Please check the wiki to see if your question has already been answered.

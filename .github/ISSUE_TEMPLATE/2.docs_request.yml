@@ -1,6 +1,5 @@
 name: Wiki Request
 description: A request to update or improve Plex Meta Manager's wiki
-title: '[Docs]: '
 labels: ['status:not-yet-viewed', 'documentation']
 assignees: 'meisnate12'
 
