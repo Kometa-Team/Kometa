@@ -72,7 +72,7 @@ class IMDb:
         valid_users = []
         for user in util.get_list(users):
             user_id = None
-            if not user.startswith("ur"):
+            if user.startswith("ur"):
                 try:
                     user_id = int(user[2:])
                 except ValueError:
