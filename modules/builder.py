@@ -90,7 +90,7 @@ filters_by_type = {
     "show_artist": ["folder"],
     "show_season": ["episodes"],
     "artist_album": ["tracks"],
-    "show": ["seasons", "tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired"],
+    "show": ["seasons", "tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"],
     "artist": ["albums"],
     "album": ["record_label"]
 }
@@ -105,7 +105,7 @@ filters = {
 }
 tmdb_filters = [
     "original_language", "origin_country", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre",
-    "first_episode_aired", "last_episode_aired", "tmdb_status", "tmdb_type", "tmdb_title"
+    "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never", "tmdb_status", "tmdb_type", "tmdb_title"
 ]
 string_filters = ["title", "summary", "studio", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
@@ -116,7 +116,7 @@ tag_filters = [
 ]
 tag_modifiers = ["", ".not", ".regex", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_overlay", "has_dolby_vision"]
-date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired"]
+date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = [
     "year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration",
@@ -131,7 +131,7 @@ all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in tag_filters for m in tag_modifiers] + \
               [f"{f}{m}" for f in date_filters for m in date_modifiers] + \
               [f"{f}{m}" for f in number_filters for m in number_modifiers]
-date_attributes = plex.date_attributes + ["first_episode_aired", "last_episode_aired"]
+date_attributes = plex.date_attributes + ["first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]
 year_attributes = plex.year_attributes + ["tmdb_year"]
 number_attributes = plex.number_attributes + ["channels", "height", "width"]
 tag_attributes = plex.tag_attributes + ["audio_codec", "audio_profile", "video_codec", "video_profile"]
@@ -2169,12 +2169,16 @@ class CollectionBuilder:
                             raise Failed
                         if (modifier == ".not" and check_value in filter_data) or (modifier == "" and check_value not in filter_data):
                             return False
-                    elif filter_attr in ["first_episode_aired", "last_episode_aired"]:
+                    elif filter_attr in ["first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]:
                         tmdb_date = None
                         if filter_attr == "first_episode_aired":
                             tmdb_date = item.first_air_date
-                        elif filter_attr == "last_episode_aired":
+                        elif filter_attr in ["last_episode_aired", "last_episode_aired_or_never"]:
                             tmdb_date = item.last_air_date
+
+                            # tmdb_date is empty if never aired yet
+                            if tmdb_date is None and filter_attr == "last_episode_aired_or_never":
+                                return True
                         if util.is_date_filter(tmdb_date, modifier, filter_data, filter_final, self.current_time):
                             return False
                     elif modifier in [".gt", ".gte", ".lt", ".lte"]:
