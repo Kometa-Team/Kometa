@@ -125,13 +125,14 @@ Date filters can **NOT** take multiple values.
 
 ### Attribute
 
-| Date Filters                      | Description                                                     |  Movies  |  Shows  | Seasons  | Episodes | Artists  |  Albums  |  Track   |
-|:----------------------------------|:----------------------------------------------------------------|:--------:|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| `release`                         | Uses the release date attribute (originally available) to match | &#9989;  | &#9989; | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
-| `added`                           | Uses the date added attribute to match                          | &#9989;  | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `last_played`                     | Uses the date last played attribute to match                    | &#9989;  | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `first_episode_aired`<sup>1</sup> | Uses the first episode aired date to match                      | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
-| `last_episode_aired`<sup>1</sup>  | Uses the last episode aired date to match                       | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| Date Filters                              | Description                                                                    |  Movies  |  Shows  | Seasons  | Episodes | Artists  |  Albums  |  Track   |
+|:------------------------------------------|:-------------------------------------------------------------------------------|:--------:|:-------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| `release`                                 | Uses the release date attribute (originally available) to match                | &#9989;  | &#9989; | &#10060; | &#9989;  | &#10060; | &#9989;  | &#10060; |
+| `added`                                   | Uses the date added attribute to match                                         | &#9989;  | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `last_played`                             | Uses the date last played attribute to match                                   | &#9989;  | &#9989; | &#9989;  | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `first_episode_aired`<sup>1</sup>         | Uses the first episode aired date to match                                     | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `last_episode_aired`<sup>1</sup>          | Uses the last episode aired date to match                                      | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
+| `last_episode_aired_or_never`<sup>1</sup> | Similar to `last_episode_aired` but also includes those that haven't aired yet | &#10060; | &#9989; | &#10060; | &#10060; | &#10060; | &#10060; | &#10060; |
 
 <sup>1</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr.
 
