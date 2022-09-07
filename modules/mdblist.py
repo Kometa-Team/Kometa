@@ -93,7 +93,7 @@ class Mdblist:
         elif tvdb_id:
             params["tv"] = tvdb_id
             params["m"] = "movie" if is_movie else "show"
-            key = f"{'tvm' if is_movie else 'tvs'}{tmdb_id}"
+            key = f"{'tvm' if is_movie else 'tvs'}{tvdb_id}"
         else:
             raise Failed("MdbList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type Required")
         expired = None
