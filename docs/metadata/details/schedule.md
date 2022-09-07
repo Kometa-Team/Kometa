@@ -63,7 +63,7 @@ collections:
   Christmas Movies:
     imdb_list: https://www.imdb.com/list/ls000096828/
     sync_mode: sync
-    visible_home: range(12/01-12-31)
+    visible_home: range(12/01-12/31)
 ```
 
 The scheduling options are:
