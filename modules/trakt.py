@@ -141,8 +141,7 @@ class Trakt:
             raise Failed(f"Trakt Error: ({response.status_code}) {response.reason}")
             #raise Failed("Trakt Error: Invalid trakt pin. If you're sure you typed it in correctly your client_id or client_secret may be invalid")
         response_json = response.json()
-        if self.config.trace_mode:
-            logger.debug(response_json)
+        logger.trace(response_json)
         if not self._save(response_json):
             raise Failed("Trakt Error: New Authorization Failed")
 
@@ -210,12 +209,11 @@ class Trakt:
             params = {}
         pages = 1
         current = 1
-        if self.config.trace_mode:
-            logger.debug(f"URL: {base_url}{url}")
-            if params:
-                logger.debug(f"Params: {params}")
-            if json:
-                logger.debug(f"JSON: {json}")
+        logger.trace(f"URL: {base_url}{url}")
+        if params:
+            logger.trace(f"Params: {params}")
+        if json:
+            logger.trace(f"JSON: {json}")
         while current <= pages:
             if pages > 1:
                 params["page"] = current
@@ -228,9 +226,8 @@ class Trakt:
             if response.status_code >= 400:
                 raise Failed(f"({response.status_code}) {response.reason}")
             json_data = response.json()
-            if self.config.trace_mode:
-                logger.debug(f"Headers: {response.headers}")
-                logger.debug(f"Response: {json_data}")
+            logger.trace(f"Headers: {response.headers}")
+            logger.trace(f"Response: {json_data}")
             if isinstance(json_data, dict):
                 return json_data
             else:

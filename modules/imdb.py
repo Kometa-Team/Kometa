@@ -124,9 +124,8 @@ class IMDb:
         params.pop("start", None) # noqa
         params.pop("count", None) # noqa
         params.pop("page", None) # noqa
-        if self.config.trace_mode:
-            logger.debug(f"URL: {imdb_base}")
-            logger.debug(f"Params: {params}")
+        logger.trace(f"URL: {imdb_base}")
+        logger.trace(f"Params: {params}")
         search_url = imdb_base.startswith(urls["searches"])
         if limit < 1 or total < limit:
             limit = total

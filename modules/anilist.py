@@ -77,13 +77,11 @@ class AniList:
         return self._options
 
     def _request(self, query, variables, level=1):
-        if self.config.trace_mode:
-            logger.debug(f"Query: {query}")
-            logger.debug(f"Variables: {variables}")
+        logger.trace(f"Query: {query}")
+        logger.trace(f"Variables: {variables}")
         response = self.config.post(base_url, json={"query": query, "variables": variables})
         json_obj = response.json()
-        if self.config.trace_mode:
-            logger.debug(f"Response: {json_obj}")
+        logger.trace(f"Response: {json_obj}")
         if "errors" in json_obj:
             if json_obj['errors'][0]['message'] == "Too Many Requests.":
                 wait_time = int(response.headers["Retry-After"]) if "Retry-After" in response.headers else 0

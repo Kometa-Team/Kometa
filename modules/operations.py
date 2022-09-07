@@ -178,28 +178,28 @@ class Operations:
                             try:
                                 mdb_item = self.config.Mdblist.get_series(tvdb_id)
                             except Failed as e:
-                                logger.error(str(e))
+                                logger.trace(str(e))
                             except Exception:
-                                logger.error(f"TVDb ID: {tvdb_id}")
+                                logger.trace(f"TVDb ID: {tvdb_id}")
                                 raise
                         if tmdb_id and mdb_item is None:
                             try:
                                 mdb_item = self.config.Mdblist.get_movie(tmdb_id)
                             except Failed as e:
-                                logger.error(str(e))
+                                logger.trace(str(e))
                             except Exception:
-                                logger.error(f"TMDb ID: {tmdb_id}")
+                                logger.trace(f"TMDb ID: {tmdb_id}")
                                 raise
                         if imdb_id and mdb_item is None:
                             try:
                                 mdb_item = self.config.Mdblist.get_imdb(imdb_id)
                             except Failed as e:
-                                logger.error(str(e))
+                                logger.trace(str(e))
                             except Exception:
-                                logger.error(f"IMDb ID: {imdb_id}")
+                                logger.trace(f"IMDb ID: {imdb_id}")
                                 raise
                         if mdb_item is None:
-                            logger.info(f"No TMDb ID, TVDb ID, or IMDb ID for Guid: {item.guid}")
+                            logger.warning(f"No TMDb ID, TVDb ID, or IMDb ID for Guid: {item.guid}")
 
                 def get_rating(attribute):
                     if tmdb_item and attribute == "tmdb":

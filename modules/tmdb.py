@@ -331,8 +331,7 @@ class TMDb:
             for date_attr in date_methods:
                 if date_attr in attrs:
                     attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
-            if self.config.trace_mode:
-                logger.debug(f"Params: {attrs}")
+            logger.trace(f"Params: {attrs}")
             results = self.TMDb.discover_movies(**attrs) if is_movie else self.TMDb.discover_tv_shows(**attrs)
             amount = results.total_results if limit == 0 or results.total_results < limit else limit
             ids = [(i.id, result_type) for i in results.get_results(amount)]

@@ -91,9 +91,8 @@ class Sonarr:
             if series.path:
                 arr_paths[series.path[:-1].lower() if series.path.endswith(("/", "\\")) else series.path.lower()] = series.tvdbId
             arr_ids[series.tvdbId] = series
-        if self.config.trace_mode:
-            logger.debug(arr_paths)
-            logger.debug(arr_ids)
+        logger.trace(arr_paths)
+        logger.trace(arr_ids)
 
         added = []
         exists = []
@@ -136,8 +135,7 @@ class Sonarr:
                     invalid_root.append(item)
                     continue
                 show = self.api.get_series(tvdb_id=tvdb_id)
-                if self.config.trace_mode:
-                    logger.debug(f"Folder to Check: {folder}/{show.folder}")
+                logger.trace(f"Folder to Check: {folder}/{show.folder}")
                 if f"{folder}/{show.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{show.folder}"] = tvdb_id
                     continue
