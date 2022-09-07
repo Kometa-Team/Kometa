@@ -40,8 +40,7 @@ class FlixPatrol:
         self.config = config
 
     def _request(self, url, language, xpath):
-        if self.config.trace_mode:
-            logger.debug(f"URL: {url}")
+        logger.trace(f"URL: {url}")
         return self.config.get_html(url, headers=util.header(language)).xpath(xpath)
 
     def _tmdb(self, flixpatrol_url, language):

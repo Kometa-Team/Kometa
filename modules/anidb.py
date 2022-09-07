@@ -73,8 +73,7 @@ class AniDB:
             raise Failed("AniDB Error: Login failed")
 
     def _request(self, url, data=None):
-        if self.config.trace_mode:
-            logger.debug(f"URL: {url}")
+        logger.trace(f"URL: {url}")
         if data:
             return self.config.post_html(url, data=data, headers=util.header(self.language))
         else:

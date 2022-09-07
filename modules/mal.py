@@ -162,12 +162,10 @@ class MyAnimeList:
 
     def _request(self, url, authorization=None):
         token = authorization["access_token"] if authorization else self.authorization["access_token"]
-        if self.config.trace_mode:
-            logger.debug(f"URL: {url}")
+        logger.trace(f"URL: {url}")
         try:
             response = self.config.get_json(url, headers={"Authorization": f"Bearer {token}"})
-            if self.config.trace_mode:
-                logger.debug(f"Response: {response}")
+            logger.trace(f"Response: {response}")
             if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
             else:                           return response
         except JSONDecodeError:

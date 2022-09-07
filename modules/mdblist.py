@@ -101,9 +101,8 @@ class Mdblist:
             mdb_dict, expired = self.config.Cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
                 return MDbObj(mdb_dict)
-        if self.config.trace_mode:
-            logger.debug(f"ID: {key}")
-            logger.debug(f"Params: {params}")
+        logger.trace(f"ID: {key}")
+        logger.trace(f"Params: {params}")
         try:
             response = self.config.get_json(api_url, params=params)
         except JSONDecodeError:

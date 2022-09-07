@@ -224,8 +224,7 @@ class Overlays:
                                     else:
                                         actual_attr = format_var
                                     if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
-                                        logger.warning(f"Overlay Warning: No {full_text} found")
-                                        continue
+                                        raise Failed(f"Overlay Warning: No {full_text} found")
                                     actual_value = getattr(item, actual_attr)
                                     if self.config.Cache:
                                         cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value

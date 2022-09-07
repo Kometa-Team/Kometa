@@ -65,9 +65,8 @@ class Radarr:
             if movie.path:
                 arr_paths[movie.path[:-1].lower() if movie.path.endswith(("/", "\\")) else movie.path.lower()] = movie.tmdbId
             arr_ids[movie.tmdbId] = movie
-        if self.config.trace_mode:
-            logger.debug(arr_paths)
-            logger.debug(arr_ids)
+        logger.trace(arr_paths)
+        logger.trace(arr_ids)
 
         added = []
         exists = []
@@ -110,8 +109,7 @@ class Radarr:
                     invalid_root.append(item)
                     continue
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
-                if self.config.trace_mode:
-                    logger.debug(f"Folder to Check: {folder}/{movie.folder}")
+                logger.trace(f"Folder to Check: {folder}/{movie.folder}")
                 if f"{folder}/{movie.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{movie.folder}"] = tmdb_id
                     continue

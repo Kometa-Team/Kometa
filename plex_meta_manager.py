@@ -111,7 +111,7 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     print(f"Config Error: config not found at {os.path.abspath(default_dir)}")
     sys.exit(0)
 
-logger = MyLogger("Plex Meta Manager", default_dir, screen_width, divider[0], ignore_ghost, test or debug or trace)
+logger = MyLogger("Plex Meta Manager", default_dir, screen_width, divider[0], ignore_ghost, test or debug, trace)
 
 from modules import util
 util.logger = logger

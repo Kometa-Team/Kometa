@@ -60,6 +60,5 @@ class Tautulli:
         return rating_keys
 
     def _request(self, url):
-        if self.config.trace_mode:
-            logger.debug(f"Tautulli URL: {url}")
+        logger.trace(f"Tautulli URL: {url}")
         return self.config.get_json(url)

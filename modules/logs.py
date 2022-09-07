@@ -28,12 +28,13 @@ _srcfile = os.path.normcase(fmt_filter.__code__.co_filename)
 
 
 class MyLogger:
-    def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug):
+    def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug, is_trace):
         self.logger_name = logger_name
         self.default_dir = default_dir
         self.screen_width = screen_width
         self.separating_character = separating_character
         self.is_debug = is_debug
+        self.is_trace = is_trace
         self.ignore_ghost = ignore_ghost
         self.log_dir = os.path.join(default_dir, LOG_DIR)
         self.playlists_dir = os.path.join(self.log_dir, PLAYLIST_DIR)
@@ -136,7 +137,9 @@ class MyLogger:
         final_text = f"{text}{sep * side}{sep * side}" if left else f"{sep * side}{text}{sep * side}"
         return final_text
 
-    def separator(self, text=None, space=True, border=True, debug=False, side_space=True, left=False):
+    def separator(self, text=None, space=True, border=True, debug=False, trace=False, side_space=True, left=False):
+        if trace and not self.is_trace:
+            return None
         sep = " " if space else self.separating_character
         for handler in self._logger.handlers:
             self._formatter(handler, border=False)
@@ -148,10 +151,13 @@ class MyLogger:
         if text:
             text_list = text.split("\n")
             for t in text_list:
-                if debug:
-                    self.debug(f"|{sep}{self._centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
+                msg = f"|{sep}{self._centered(t, sep=sep, side_space=side_space, left=left)}{sep}|"
+                if trace:
+                    self.trace(msg)
+                elif debug:
+                    self.debug(msg)
                 else:
-                    self.info(f"|{sep}{self._centered(t, sep=sep, side_space=side_space, left=left)}{sep}|")
+                    self.info(msg)
             if border and debug:
                 self.debug(border_text)
             elif border:
@@ -174,6 +180,10 @@ class MyLogger:
         if self._logger.isEnabledFor(WARNING):
             self._log(WARNING, str(msg), args, **kwargs)
 
+    def trace(self, msg, *args, **kwargs):
+        if self.is_trace:
+            self._log(DEBUG, str(msg), args, **kwargs)
+
     def error(self, msg, *args, **kwargs):
         if self.save_errors:
             self.saved_errors.append(msg)
@@ -186,8 +196,11 @@ class MyLogger:
         if self._logger.isEnabledFor(CRITICAL):
             self._log(CRITICAL, str(msg), args, **kwargs)
 
-    def stacktrace(self):
-        self.debug(traceback.format_exc())
+    def stacktrace(self, trace=False):
+        if trace:
+            self.trace(traceback.format_exc())
+        else:
+            self.debug(traceback.format_exc())
 
     def _space(self, display_title):
         display_title = str(display_title)

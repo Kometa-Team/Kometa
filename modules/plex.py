@@ -817,8 +817,7 @@ class Plex(Library):
                     logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
             logger.info(f"Processing {data[1]}")
-            if self.config.trace_mode:
-                logger.debug(data[2])
+            logger.trace(data[2])
             items = self.get_filter_items(data[2])
         elif method == "plex_collectionless":
             good_collections = []

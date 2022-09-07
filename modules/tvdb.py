@@ -136,8 +136,7 @@ class TVDb:
             tvdb_id, expired = self.config.Cache.query_tvdb_map(tvdb_url, self.expiration)
         if tvdb_id and not expired and not is_movie:
             return tvdb_id, None, None
-        if self.config.trace_mode:
-            logger.debug(f"URL: {tvdb_url}")
+        logger.trace(f"URL: {tvdb_url}")
         try:
             response = self.get_request(tvdb_url)
         except ParserError:
@@ -176,8 +175,7 @@ class TVDb:
     def _ids_from_url(self, tvdb_url):
         ids = []
         tvdb_url = tvdb_url.strip()
-        if self.config.trace_mode:
-            logger.debug(f"URL: {tvdb_url}")
+        logger.trace(f"URL: {tvdb_url}")
         if tvdb_url.startswith((urls["list"], urls["alt_list"])):
             try:
                 response = self.config.get_html(tvdb_url, headers=util.header(self.language))
