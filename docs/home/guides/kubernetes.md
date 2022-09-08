@@ -149,7 +149,7 @@ data:
       show_options: false
       show_missing: true
       show_missing_assets: true
-      save_missing: true
+      save_report: true
       tvdb_language: eng
       ignore_ids:
       ignore_imdb_ids:

@@ -409,7 +409,7 @@ Builders use third-party services to source items for overlays. Multiple builder
 
 ## Details
 
-Only a few details can be used with overlays: `limit`, `show_missing`, `save_missing`, `missing_only_released`, `minimum_items`, `cache_builders`, `tmdb_region`
+Only a few details can be used with overlays: `limit`, `show_missing`, `save_report`, `missing_only_released`, `minimum_items`, `cache_builders`, `tmdb_region`
 
 * [Setting Details](details/setting)
 * [Metadata Details](details/metadata)
