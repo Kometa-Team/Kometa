@@ -141,7 +141,7 @@ smart_invalid = ["collection_order", "builder_level"]
 smart_only = ["collection_filtering"]
 smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_report", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
-    "plex_search", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
+    "plex_search", "plex_watchlist", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list", "trakt_chart", "trakt_userlist",
     "tvdb_list", "imdb_chart", "imdb_list", "imdb_watchlist", "stevenlu_popular", "anidb_popular", "tmdb_upcoming", "tmdb_airing_today",
     "tmdb_on_the_air", "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
@@ -1275,6 +1275,10 @@ class CollectionBuilder:
     def _plex(self, method_name, method_data):
         if method_name in ["plex_all", "plex_pilots"]:
             self.builders.append((method_name, self.builder_level))
+        elif method_name == "plex_watchlist":
+            if method_data not in plex.watchlist_sorts:
+                logger.warning(f"{self.Type} Warning: Watchlist sort: {method_data} invalid defaulting to added.asc")
+            self.builders.append((method_name, method_data if method_data in plex.watchlist_sorts else "added.asc"))
         elif method_name in ["plex_search", "plex_collectionless"]:
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -1498,7 +1502,7 @@ class CollectionBuilder:
                 logger.info(f"Builder: {method} loaded from Cache")
                 return self.config.Cache.query_list_ids(list_key)
         if "plex" in method:
-            ids = self.library.get_rating_keys(method, value)
+            ids = self.library.get_rating_keys(method, value, self.playlist)
         elif "tautulli" in method:
             ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
         elif "anidb" in method:

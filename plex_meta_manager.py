@@ -761,11 +761,13 @@ def run_playlists(config):
                 logger.debug("")
                 logger.debug(f"Builder: {method}: {value}")
                 logger.info("")
-                if "plex" in method:
+                if method == "plex_watchlist":
+                    ids = builder.libraries[0].get_rating_keys(method, value, True)
+                elif "plex" in method:
                     ids = []
                     for pl_library in builder.libraries:
                         try:
-                            ids.extend(pl_library.get_rating_keys(method, value))
+                            ids.extend(pl_library.get_rating_keys(method, value, True))
                         except Failed as e:
                             if builder.validate_builders:
                                 raise

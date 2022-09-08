@@ -18,7 +18,7 @@ from xml.etree.ElementTree import ParseError
 
 logger = util.logger
 
-builders = ["plex_all", "plex_pilots", "plex_collectionless", "plex_search"]
+builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
 search_translation = {
     "episode_title": "episode.title",
@@ -409,6 +409,12 @@ sort_types = {
     "artist": ("title.asc", 8, artist_sorts),
     "album": ("title.asc", 9, album_sorts),
     "track": ("title.asc", 10, track_sorts)
+}
+watchlist_sorts = {
+    "added.asc": "watchlistedAt:asc", "added.desc": "watchlistedAt:desc",
+    "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
+    "release.asc": "originallyAvailableAt:asc", "release.desc": "originallyAvailableAt:desc",
+    "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
 }
 
 class Plex(Library):
@@ -802,11 +808,70 @@ class Plex(Library):
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
 
-    def get_rating_keys(self, method, data):
+    def get_watchlist(self, sort=None, is_playlist=False):
+        if is_playlist:
+            libtype = None
+        elif self.is_movie:
+            libtype = "movie"
+        else:
+            libtype = "show"
+        watchlist = self.PlexServer.myPlexAccount().watchlist(sort=watchlist_sorts[sort], libtype=libtype)
+        ids = []
+        for item in watchlist:
+            tmdb_id = []
+            tvdb_id = []
+            imdb_id = []
+            if self.config.Cache:
+                cache_id, _, media_type, _ = self.config.Cache.query_guid_map(item.guid)
+                if cache_id:
+                    ids.append(("tmdb" if "movie" in media_type else "tvdb", cache_id))
+            try:
+                fin = False
+                for guid_tag in item.guids:
+                    url_parsed = requests.utils.urlparse(guid_tag.id)
+                    if url_parsed.scheme == "tvdb":
+                        if isinstance(item, Show):
+                            ids.append(("tvdb", int(url_parsed.netloc)))
+                            fin = True
+                    elif url_parsed.scheme == "imdb":
+                        imdb_id.append(url_parsed.netloc)
+                    elif url_parsed.scheme == "tmdb":
+                        if isinstance(item, Movie):
+                            ids.append(("tmdb", int(url_parsed.netloc)))
+                            fin = True
+                        tmdb_id.append(int(url_parsed.netloc))
+                    if fin:
+                        break
+                if fin:
+                    continue
+            except requests.exceptions.ConnectionError:
+                continue
+            if imdb_id and not tmdb_id:
+                for imdb in imdb_id:
+                    tmdb, tmdb_type = self.config.Convert.imdb_to_tmdb(imdb)
+                    if tmdb:
+                        tmdb_id.append(tmdb)
+            if tmdb_id and isinstance(item, Show) and not tvdb_id:
+                for tmdb in tmdb_id:
+                    tvdb = self.config.Convert.tmdb_to_tvdb(tmdb)
+                    if tvdb:
+                        tvdb_id.append(tvdb)
+            if isinstance(item, Show) and tvdb_id:
+                ids.extend([("tvdb", t_id) for t_id in tvdb_id])
+            if isinstance(item, Movie) and tmdb_id:
+                ids.extend([("tmdb", t_id) for t_id in tmdb_id])
+        logger.debug("")
+        logger.debug(f"{len(ids)} Keys Found: {ids}")
+        return ids
+
+    def get_rating_keys(self, method, data, is_playlist=False):
         items = []
         if method == "plex_all":
             logger.info(f"Processing Plex All {data.capitalize()}s")
             items = self.get_all(builder_level=data)
+        elif method == "plex_watchlist":
+            logger.info(f"Processing Plex Watchlist")
+            return self.get_watchlist(sort=data, is_playlist=is_playlist)
         elif method == "plex_pilots":
             logger.info(f"Processing Plex Pilot {data.capitalize()}s")
             items = []
