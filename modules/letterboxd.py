@@ -14,6 +14,7 @@ class Letterboxd:
     def _parse_page(self, list_url, language):
         if "ajax" not in list_url:
             list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
+        logger.trace(f"URL: {list_url}")
         response = self.config.get_html(list_url, headers=util.header(language))
         letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
         items = []
@@ -32,7 +33,6 @@ class Letterboxd:
         return items, next_url
 
     def _parse_list(self, list_url, limit, language):
-        logger.trace(f"URL: {list_url}")
         items, next_url = self._parse_page(list_url, language)
         while len(next_url) > 0:
             time.sleep(2)

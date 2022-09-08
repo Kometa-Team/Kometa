@@ -764,11 +764,23 @@ def run_playlists(config):
                 if "plex" in method:
                     ids = []
                     for pl_library in builder.libraries:
-                        ids.extend(pl_library.get_rating_keys(method, value))
+                        try:
+                            ids.extend(pl_library.get_rating_keys(method, value))
+                        except Failed as e:
+                            if builder.validate_builders:
+                                raise
+                            else:
+                                logger.error(e)
                 elif "tautulli" in method:
                     ids = []
                     for pl_library in builder.libraries:
-                        ids.extend(pl_library.Tautulli.get_rating_keys(value, True))
+                        try:
+                            ids.extend(pl_library.Tautulli.get_rating_keys(value, True))
+                        except Failed as e:
+                            if builder.validate_builders:
+                                raise
+                            else:
+                                logger.error(e)
                 else:
                     ids = builder.gather_ids(method, value)
 
