@@ -7,6 +7,7 @@ No configuration is required for these builders.
 | Attribute                                     | Description                                                              | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
 |:----------------------------------------------|:-------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
 | [`plex_all`](#plex-all)                       | Gets every movie/show in your library. Useful with [Filters](../filters) |      &#9989;      |     &#9989;      |               &#10060;               |
+| [`plex_watchlist`](#plex-watchlist)           | Gets every movie/show in your Watchlist.                                 |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`plex_pilots`](#plex-pilots)                 | Gets the first episode of every show in your library                     |     &#10060;      |     &#9989;      |               &#9989;                |
 | [`plex_collectionless`](#plex-collectionless) | Gets every movie/show that is not in a collection                        |      &#9989;      |     &#9989;      |               &#10060;               |
 | [`plex_search`](#plex-search)                 | Gets every movie/show based on the search parameters provided            |      &#9989;      |     &#9989;      |               &#9989;                |
@@ -23,6 +24,31 @@ collections:
     plex_all: true
     filters:
       rating.gte: 9
+```
+
+## Plex Watchlist
+
+Finds every item in your Watchlist.
+
+The expected input is the sort you want returned. It defaults to `added.asc`.
+
+### Sort Options
+
+| Sort Option                                 | Description                                 |
+|:--------------------------------------------|:--------------------------------------------|
+| `title.asc`<br>`title.desc`                 | Sort by Title                               |
+| `release.asc`<br>`release.desc`             | Sort by Release Date (Originally Available) |
+| `critic_rating.asc`<br>`critic_rating.desc` | Sort by Critic Rating                       |
+| `added.asc`<br>`added.desc`                 | Sort by Date Added to your Watchlist        |
+
+The `sync_mode: sync` and `collection_order: custom` Details are recommended.
+
+```yaml
+collections:
+  My Watchlist:
+    plex_watchlist: critic_rating.desc
+    collection_order: custom
+    sync_mode: sync
 ```
 
 ## Plex Pilots
