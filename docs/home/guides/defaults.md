@@ -80,6 +80,9 @@ libraries:
     - git: PMM/overlays/mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
       template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
         weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
+    - git: PMM/overlays/commonsense_selection                                     # NOT SHOWN, however would apply the "Commonsense Selected Families" sash in the bottom right
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 5                                                        # Weight of 5 applies if more than 1 sash is applied in bottom right
 
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 5 This operation will update the user rating in plex with Rotten Tomatoes ratings information
@@ -132,6 +135,9 @@ libraries:
     - git: PMM/overlays/mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
       template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
         weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
+    - git: PMM/overlays/commonsense_selection                                     # NOT SHOWN, however would apply the "Commonsense Selected Families" sash in the bottom right
+      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
+        weight: 5                                                        # Weight of 5 applies if more than 1 sash is applied in bottom right
 
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 4 This operation will update the user rating in plex with Rotten Tomatoes ratings information
@@ -278,6 +284,34 @@ This is the default PMM collection ordering:
 | `PMM/movie/producer.yml`             | collection_section: 19 |
 | `PMM/movie/writer.yml`               | collection_section: 20 |
 
+## Ratings Overlays
+
+By default for Movies in Plex, the `Ratings Source` dropdown (`#3`) below, can come from Rotten Tomatoes (and includes Critic Ratings and Audience Ratings) or IMDb (Audience Ratings). This only changes the tiny icons displayed and where Plex will retrieve the ratings from upon initial scan and import of the media metadata.
+
+**Plex Meta Manager can insert up to three ratings of your choice into the three spots regardless of what you choose in the `Advanced` tab of that Plex library**
+
+![](ratings_source.png)
+
+Plex has three available spots in the Plex DB to store ratings and thus Plex Meta Manager can be used to insert ratings sources of your choice into those spots. They are known as the User Rating (`#1`), Critic Rating (`#2`), and Audience Rating (`#3`). 
+
+**Note that the little icons cannot be changed and that the numbers next to the little icons are reflected in the poster ratings overlay**
+
+![](ratings_spot.png)
+
+To be able to insert the ratings you want, Plex Meta Manager operations need to be defined. In this example below, User ratings (`#1`) are being filled with Rotten Tomatoes Critics Ratings. Critic ratings (`#2`) are filled with IMDb, and Audience ratings (`#3`) are filled with TMDb.
+
+**mass_*_rating_update** sources can be found here: [operations](../../config/operations)
+
+![](ratings_operations.png)
+
+Finally, to show the ratings on the poster, the following was added to the `overlay_path` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
+
+![](ratings_overlay_path.png)
+
+
+
+
+
 ## Customizing Configs
 
 Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` will be given to every template call in the file which allows them to affect how that file runs.
@@ -381,11 +415,11 @@ libraries:
   LIBRARYNAME:
     metadata_path:
       - git: PMM/<file1>    # separator is disabled
-        template_varables:
+        template_variables:
           use_separator: false
       - git: PMM/<file2>    # separator is enabled by default
       - git: PMM/<file3>    # separator is disabled
-        template_varables:
+        template_variables:
           use_separator: false
 ```
 
@@ -444,6 +478,7 @@ libraries:
     - git: PMM/overlays/imdb_top_250
     - git: PMM/overlays/mc_must_see
     - git: PMM/overlays/rt_cert_fresh
+    - git: PMM/overlays/commonsense_selection
     - git: PMM/overlays/ratings
       template_variables:
         rating1: critic
@@ -529,6 +564,13 @@ libraries:
       template_variables:
         overlay_level: episode
     - git: PMM/overlays/rt_cert_fresh
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/commonsense_selection
+    - git: PMM/overlays/commonsense_selection
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/commonsense_selection
       template_variables:
         overlay_level: season
     - git: PMM/overlays/ratings

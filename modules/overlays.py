@@ -210,7 +210,7 @@ class Overlays:
                                     elif f"<<{format_var}>>" in full_text and format_var.endswith("00"):
                                         mod = "00"
                                         format_var = format_var[:-2]
-                                    elif f"<<{format_var}>>" in full_text and format_var.endswith(("%", "#", "H", "M", "0")):
+                                    elif f"<<{format_var}>>" in full_text and format_var.endswith(("%", "#", "H", "M", "0", "/")):
                                         mod = format_var[-1]
                                         format_var = format_var[:-1]
                                     elif f"<<{format_var}>>" in full_text:
@@ -253,6 +253,8 @@ class Overlays:
                                         final_value = f"{int(actual_value):02}"
                                     elif mod == "00":
                                         final_value = f"{int(actual_value):03}"
+                                    elif mod == "/":
+                                        final_value = f"{int(actual_value) / 2:.2f}"
                                     else:
                                         final_value = actual_value
                                     if sub_value:

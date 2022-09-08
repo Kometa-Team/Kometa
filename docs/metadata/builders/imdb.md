@@ -132,21 +132,21 @@ The `sync_mode: sync` and `collection_order: custom` Details are recommended sin
 ```yaml
 collections:
   My Watch Watchlist:
-    imdb_warchlist: ur64054558
+    imdb_watchlist: ur64054558
     collection_order: custom
     sync_mode: sync
 ```
 ```yaml
 collections:
   My Friends Watchlists:
-    imdb_warchlist: ur64054558, ur12345678
+    imdb_watchlist: ur64054558, ur12345678
     collection_order: custom
     sync_mode: sync
 ```
 ```yaml
 collections:
   My Friends Watchlists:
-    imdb_warchlist: 
+    imdb_watchlist: 
       - ur64054558
       - ur12345678
     collection_order: custom
