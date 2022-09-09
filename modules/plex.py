@@ -824,20 +824,21 @@ class Plex(Library):
             if self.config.Cache:
                 cache_id, _, media_type, _ = self.config.Cache.query_guid_map(item.guid)
                 if cache_id:
-                    ids.append(("tmdb" if "movie" in media_type else "tvdb", cache_id))
+                    ids.extend([(t_id, "tmdb" if "movie" in media_type else "tvdb") for t_id in cache_id])
+                    continue
             try:
                 fin = False
                 for guid_tag in item.guids:
                     url_parsed = requests.utils.urlparse(guid_tag.id)
                     if url_parsed.scheme == "tvdb":
                         if isinstance(item, Show):
-                            ids.append(("tvdb", int(url_parsed.netloc)))
+                            ids.append((int(url_parsed.netloc), "tvdb"))
                             fin = True
                     elif url_parsed.scheme == "imdb":
                         imdb_id.append(url_parsed.netloc)
                     elif url_parsed.scheme == "tmdb":
                         if isinstance(item, Movie):
-                            ids.append(("tmdb", int(url_parsed.netloc)))
+                            ids.append((int(url_parsed.netloc), "tmdb"))
                             fin = True
                         tmdb_id.append(int(url_parsed.netloc))
                     if fin:
@@ -857,11 +858,9 @@ class Plex(Library):
                     if tvdb:
                         tvdb_id.append(tvdb)
             if isinstance(item, Show) and tvdb_id:
-                ids.extend([("tvdb", t_id) for t_id in tvdb_id])
+                ids.extend([(t_id, "tvdb") for t_id in tvdb_id])
             if isinstance(item, Movie) and tmdb_id:
-                ids.extend([("tmdb", t_id) for t_id in tmdb_id])
-        logger.debug("")
-        logger.debug(f"{len(ids)} Keys Found: {ids}")
+                ids.extend([(t_id, "tmdb") for t_id in tmdb_id])
         return ids
 
     def get_rating_keys(self, method, data, is_playlist=False):
