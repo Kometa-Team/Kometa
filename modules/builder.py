@@ -1747,7 +1747,13 @@ class CollectionBuilder:
             raise Failed(f"{self.Type} Error: Cannot have more then one base")
 
         if self.builder_level == "item":
-            if self.library.is_show:
+            if "type" in filter_alias:
+                if plex_filter[filter_alias["type"]] is None:
+                    raise Failed(f"{self.Type} Error: type attribute is blank")
+                if plex_filter[filter_alias["type"]] not in plex.sort_types:
+                    raise Failed(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid. Options: {', '.join(plex.sort_types)}")
+                sort_type = plex_filter[filter_alias["type"]]
+            elif self.library.is_show:
                 sort_type = "show"
             elif self.library.is_music:
                 sort_type = "artist"
