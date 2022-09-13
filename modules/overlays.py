@@ -207,10 +207,10 @@ class Overlays:
                                     if f"<<{format_var}" in full_text and format_var == "originally_available[":
                                         mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)
                                         format_var = "originally_available"
-                                    elif f"<<{format_var}>>" in full_text and format_var.endswith((m for m in overlay.double_mods)):
+                                    elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.double_mods)):
                                         mod = format_var[-2:]
                                         format_var = format_var[:-2]
-                                    elif f"<<{format_var}>>" in full_text and format_var.endswith((m for m in overlay.single_mods)):
+                                    elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.single_mods)):
                                         mod = format_var[-1]
                                         format_var = format_var[:-1]
                                     elif f"<<{format_var}>>" in full_text:
