@@ -23,11 +23,11 @@ types_for_var = {
     "episode": ["season_title", "episode_number"]
 }
 var_mods = {
-    "title": [""],
-    "content_rating": [""],
-    "original_title": [""],
-    "show_title": [""],
-    "season_title": [""],
+    "title": ["", "U", "L", "T"],
+    "content_rating": ["", "U", "L", "T"],
+    "original_title": ["", "U", "L", "T"],
+    "show_title": ["", "U", "L", "T"],
+    "season_title": ["", "U", "L", "T"],
     "user_rating": ["", "%", "#", "/"],
     "critic_rating": ["", "%", "#", "/"],
     "audience_rating": ["", "%", "#", "/"],

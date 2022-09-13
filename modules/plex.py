@@ -815,7 +815,7 @@ class Plex(Library):
             libtype = "movie"
         else:
             libtype = "show"
-        watchlist = self.PlexServer.myPlexAccount().watchlist(sort=watchlist_sorts[sort], libtype=libtype)
+        watchlist = self.account.watchlist(sort=watchlist_sorts[sort], libtype=libtype)
         ids = []
         for item in watchlist:
             tmdb_id = []

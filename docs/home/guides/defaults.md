@@ -600,12 +600,6 @@ libraries:
       template_variables:
         overlay_level: season
     - git: PMM/overlays/streaming
-    - git: PMM/overlays/streaming
-      template_variables:
-        overlay_level: episode
-    - git: PMM/overlays/streaming
-      template_variables:
-        overlay_level: season
     - git: PMM/overlays/video_format
     - git: PMM/overlays/video_format
       template_variables:

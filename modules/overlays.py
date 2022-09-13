@@ -255,6 +255,12 @@ class Overlays:
                                         final_value = f"{int(actual_value):03}"
                                     elif mod == "/":
                                         final_value = f"{int(actual_value) / 2:.2f}"
+                                    elif mod == "U":
+                                        final_value = str(actual_value).upper()
+                                    elif mod == "L":
+                                        final_value = str(actual_value).lower()
+                                    elif mod == "U":
+                                        final_value = str(actual_value).title()
                                     else:
                                         final_value = actual_value
                                     if sub_value:
