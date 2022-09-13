@@ -23,11 +23,11 @@ types_for_var = {
     "episode": ["season_title", "episode_number"]
 }
 var_mods = {
-    "title": ["", "U", "L", "T"],
-    "content_rating": ["", "U", "L", "T"],
-    "original_title": ["", "U", "L", "T"],
-    "show_title": ["", "U", "L", "T"],
-    "season_title": ["", "U", "L", "T"],
+    "title": ["", "U", "L", "P"],
+    "content_rating": ["", "U", "L", "P"],
+    "original_title": ["", "U", "L", "P"],
+    "show_title": ["", "U", "L", "P"],
+    "season_title": ["", "U", "L", "P"],
     "user_rating": ["", "%", "#", "/"],
     "critic_rating": ["", "%", "#", "/"],
     "audience_rating": ["", "%", "#", "/"],
@@ -37,6 +37,8 @@ var_mods = {
     "episode_number": ["", "W", "0", "00"],
     "episode_count": ["", "W", "0", "00"],
 }
+single_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 1]))
+double_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 2]))
 vars_by_type = {
     "movie": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "movie" in check],
     "show": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "show" in check],
