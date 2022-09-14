@@ -796,11 +796,11 @@ class ConfigFile:
                             for file in util.get_list(lib["overlay_path"], split=False):
                                 if isinstance(file, dict):
                                     if ("remove_overlays" in file and file["remove_overlays"] is True) \
-                                        or ("remove_overlay" in file and file["remove_overlay"] is True) \
-                                        or ("revert_overlays" in file and file["revert_overlays"] is True):
+                                            or ("remove_overlay" in file and file["remove_overlay"] is True) \
+                                            or ("revert_overlays" in file and file["revert_overlays"] is True):
                                         params["remove_overlays"] = True
                                     if ("reapply_overlays" in file and file["reapply_overlays"] is True) \
-                                        or ("reapply_overlay" in file and file["reapply_overlay"] is True):
+                                            or ("reapply_overlay" in file and file["reapply_overlay"] is True):
                                         params["reapply_overlays"] = True
                                     if "reset_overlays" in file or "reset_overlay" in file:
                                         attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"

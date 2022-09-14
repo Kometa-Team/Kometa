@@ -295,11 +295,12 @@ class Overlays:
                                             logger.warning(e)
                                             continue
                                         new_poster.paste(overlay_image, (0, 0), overlay_image)
-                                        if current_overlay.image:
-                                            new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
                                     else:
                                         overlay_image = current_overlay.landscape if isinstance(item, Episode) else current_overlay.portrait
+                                        addon_box = current_overlay.landscape_box if isinstance(item, Episode) else current_overlay.portrait_box
                                         new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                    if current_overlay.image:
+                                        new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
                                 else:
                                     if current_overlay.has_coordinates():
                                         if current_overlay.portrait is not None:
