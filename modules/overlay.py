@@ -10,14 +10,14 @@ portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
 old_special_text = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
 float_vars = ["audience_rating", "critic_rating", "user_rating"]
-int_vars = ["runtime", "season_number", "episode_number", "episode_count"]
+int_vars = ["runtime", "season_number", "episode_number", "episode_count", "versions"]
 date_vars = ["originally_available"]
 types_for_var = {
     "movie_show_season_episode_artist_album": ["user_rating", "title"],
     "movie_show_episode_album": ["critic_rating", "originally_available"],
     "movie_show_episode": ["audience_rating", "content_rating"],
     "movie_show": ["original_title"],
-    "movie_episode": ["runtime"],
+    "movie_episode": ["runtime", "versions", "bitrate"],
     "season_episode": ["show_title", "season_number"],
     "show_season": ["episode_count"],
     "episode": ["season_title", "episode_number"]
@@ -28,6 +28,7 @@ var_mods = {
     "original_title": ["", "U", "L", "P"],
     "show_title": ["", "U", "L", "P"],
     "season_title": ["", "U", "L", "P"],
+    "bitrate": ["", "H", "L"],
     "user_rating": ["", "%", "#", "/"],
     "critic_rating": ["", "%", "#", "/"],
     "audience_rating": ["", "%", "#", "/"],
@@ -36,6 +37,7 @@ var_mods = {
     "season_number": ["", "W", "0", "00"],
     "episode_number": ["", "W", "0", "00"],
     "episode_count": ["", "W", "0", "00"],
+    "versions": ["", "W", "0", "00"],
 }
 single_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 1]))
 double_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 2]))
