@@ -153,7 +153,8 @@ attribute_translation = {
     "original_title": "originalTitle",
     "runtime": "duration",
     "season_title": "parentTitle",
-    "episode_count": "leafCount"
+    "episode_count": "leafCount",
+    "versions": "media"
 }
 method_alias = {
     "actors": "actor", "role": "actor", "roles": "actor",

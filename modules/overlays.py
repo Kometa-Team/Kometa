@@ -223,9 +223,24 @@ class Overlays:
                                         actual_attr = plex.attribute_translation[format_var]
                                     else:
                                         actual_attr = format_var
-                                    if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
-                                        raise Failed(f"Overlay Warning: No {full_text} found")
-                                    actual_value = getattr(item, actual_attr)
+                                    if format_var == "bitrate":
+                                        actual_value = None
+                                        for media in item.media:
+                                            current = int(media.bitrate)
+                                            if actual_value is None:
+                                                actual_value = current
+                                                if mod == "":
+                                                    break
+                                            elif mod == "H" and current > actual_value:
+                                                actual_value = current
+                                            elif mod == "L" and current < actual_value:
+                                                actual_value = current
+                                    else:
+                                        if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
+                                            raise Failed(f"Overlay Warning: No {full_text} found")
+                                        actual_value = getattr(item, actual_attr)
+                                        if format_var == "versions":
+                                            actual_value = len(actual_value)
                                     if self.config.Cache:
                                         cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
                                         self.config.Cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
