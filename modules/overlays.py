@@ -301,6 +301,9 @@ class Overlays:
                                         new_poster.paste(overlay_image, (0, 0), overlay_image)
                                     if current_overlay.image:
                                         new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
+                                elif current_overlay.name == "backdrop":
+                                    overlay_image = current_overlay.landscape if isinstance(item, Episode) else current_overlay.portrait
+                                    new_poster.paste(overlay_image, (0, 0), overlay_image)
                                 else:
                                     if current_overlay.has_coordinates():
                                         if current_overlay.portrait is not None:

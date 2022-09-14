@@ -132,6 +132,8 @@ class Overlay:
         self.stroke_width = 0
         self.addon_offset = 0
         self.addon_position = None
+        self.back_width = None
+        self.back_height = None
         self.special_text = None
 
         logger.debug("")
@@ -187,14 +189,16 @@ class Overlay:
         self.back_box = None
         back_width = util.parse("Overlay", "back_width", self.data["back_width"], datatype="int", parent="overlay", minimum=0) if "back_width" in self.data else -1
         back_height = util.parse("Overlay", "back_height", self.data["back_height"], datatype="int", parent="overlay", minimum=0) if "back_height" in self.data else -1
-        if (back_width >= 0 > back_height) or (back_height >= 0 > back_width):
+        if self.name == "backdrop":
+            self.back_box = (back_width, back_height)
+        elif (back_width >= 0 > back_height) or (back_height >= 0 > back_width):
             raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
-        if self.back_align != "center" and (back_width < 0 or back_height < 0):
+        elif self.back_align != "center" and (back_width < 0 or back_height < 0):
             raise Failed(f"Overlay Error: overlay attribute back_align only works when back_width and back_height are used")
         elif back_width >= 0 and back_height >= 0:
             self.back_box = (back_width, back_height)
         self.has_back = True if self.back_color or self.back_line_color else False
-        if self.has_back and not self.has_coordinates() and not self.queue:
+        if self.name != "backdrop" and self.has_back and not self.has_coordinates() and not self.queue:
             raise Failed(f"Overlay Error: horizontal_offset and vertical_offset are required when using a backdrop")
 
         def get_and_save_image(image_url):
@@ -216,7 +220,7 @@ class Overlay:
                 time.sleep(1)
             return image_path
 
-        if not self.name.startswith("blur"):
+        if not self.name.startswith(("blur", "backdrop")):
             if "file" in self.data and self.data["file"]:
                 self.path = self.data["file"]
             elif "git" in self.data and self.data["git"]:
@@ -310,6 +314,9 @@ class Overlay:
             box = self.image.size if self.image else None
             self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
             self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])
+        elif self.name.startswith("backdrop"):
+            self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.back_box)
+            self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.back_box)
         else:
             if not self.path:
                 clean_name, _ = util.validate_filename(self.name)
@@ -346,6 +353,10 @@ class Overlay:
                 box = (text_width, text_height)
         box_width, box_height = box
         back_width, back_height = self.back_box if self.back_box else (None, None)
+        if back_width == -1:
+            back_width = canvas_box[0]
+        if back_height == -1:
+            back_height = canvas_box[1]
         start_x, start_y = self.get_coordinates(canvas_box, box, new_cords=new_cords)
         main_x = start_x
         main_y = start_y
