@@ -1123,9 +1123,10 @@ class Plex(Library):
                     path_test = path_test.replace("\\", "/")
                 folder_name = os.path.basename(os.path.dirname(path_test) if isinstance(starting, Movie) else path_test)
             elif isinstance(item, (Collection, Playlist)):
-                folder_name, _ = util.validate_filename(item.title)
+                folder_name = item.title
             else:
-                folder_name, _ = util.validate_filename(item)
+                folder_name = item
+            folder_name, _ = util.validate_filename(folder_name)
 
         if not self.asset_folders:
             file_name = folder_name if file_name == "poster" else f"{folder_name}_{file_name}"
