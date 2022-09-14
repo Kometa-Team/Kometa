@@ -142,6 +142,22 @@ overlays:
 
    ![](blur.png)
 
+### Backdrop Overlay
+
+There is a special overlay named `backdrop` that when given as the overlay name will instead of finding the image will just apply the background instead.
+
+You can set the size of the backdrop with `back_width` and `back_height`. By Default, they will extend the length of the Image.
+
+```yaml
+overlays:
+  blur:
+    overlay:
+      name: backdrop
+      back_color: "#00000099"
+    builder_level: episode
+    plex_all: true
+```
+
 ### Text Overlay
 
 You can add text as an overlay using the special `text()` overlay name. Anything inside the parentheses will be added as an overlay onto the image. Ex `text(4K)` adds `4K` to the image.
