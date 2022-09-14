@@ -128,6 +128,8 @@ class Overlay:
         self.font_name = None
         self.font_size = 36
         self.font_color = None
+        self.stroke_color = None
+        self.stroke_width = 0
         self.addon_offset = 0
         self.addon_position = None
         self.special_text = None
@@ -279,12 +281,18 @@ class Overlay:
                         raise Failed(f"Overlay Error: Font Style {self.data['font_style']} not found. Options: {','.join(variation_names)}")
                 except OSError:
                     logger.warning(f"Overlay Warning: font: {self.font} does not have variations")
-            self.font_color = None
             if "font_color" in self.data and self.data["font_color"]:
                 try:
                     self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
+            if "stroke_size" in self.data:
+                self.stroke_size = util.parse("Overlay", "stroke_size", self.data["stroke_size"], datatype="int", parent="overlay", default=self.stroke_size)
+            if "stroke_color" in self.data and self.data["stroke_color"]:
+                try:
+                    self.stroke_color = ImageColor.getcolor(self.data["stroke_color"], "RGBA")
+                except ValueError:
+                    raise Failed(f"Overlay Error: overlay stroke_color: {self.data['stroke_color']} invalid")
             if text in old_special_text:
                 text_mod = text[-1] if text[-1] in ["0", "%", "#"] else None
                 text = text if text_mod is None else text[:-1]
@@ -416,7 +424,8 @@ class Overlay:
                     addon_y = main_y + ((text_height - image_height) / 2)
 
             if text is not None:
-                drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color, anchor="lt")
+                drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color,
+                             stroke_fill=self.stroke_color, stroke_width=self.stroke_width, anchor="lt")
             if addon_x is not None:
                 main_x = addon_x
                 main_y = addon_y
@@ -434,7 +443,8 @@ class Overlay:
             output += f"{self.back_box[0]}{self.back_box[1]}{self.back_align}"
         if self.addon_position is not None:
             output += f"{self.addon_position}{self.addon_offset}"
-        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width]:
+        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding,
+                      self.back_line_color, self.back_line_width, self.stroke_color, self.stroke_width]:
             if value is not None:
                 output += f"{value}"
         return output
