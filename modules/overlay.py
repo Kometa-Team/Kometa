@@ -187,7 +187,7 @@ class Overlay:
         self.back_box = None
         back_width = util.parse("Overlay", "back_width", self.data["back_width"], datatype="int", parent="overlay", minimum=0) if "back_width" in self.data else -1
         back_height = util.parse("Overlay", "back_height", self.data["back_height"], datatype="int", parent="overlay", minimum=0) if "back_height" in self.data else -1
-        if (back_width >= 0 and back_height < 0) or (back_height >= 0 and back_width < 0):
+        if (back_width >= 0 > back_height) or (back_height >= 0 > back_width):
             raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
         if self.back_align != "center" and (back_width < 0 or back_height < 0):
             raise Failed(f"Overlay Error: overlay attribute back_align only works when back_width and back_height are used")
@@ -286,8 +286,8 @@ class Overlay:
                     self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
-            if "stroke_size" in self.data:
-                self.stroke_size = util.parse("Overlay", "stroke_size", self.data["stroke_size"], datatype="int", parent="overlay", default=self.stroke_size)
+            if "stroke_width" in self.data:
+                self.stroke_width = util.parse("Overlay", "stroke_width", self.data["stroke_width"], datatype="int", parent="overlay", default=self.stroke_width)
             if "stroke_color" in self.data and self.data["stroke_color"]:
                 try:
                     self.stroke_color = ImageColor.getcolor(self.data["stroke_color"], "RGBA")
@@ -307,10 +307,9 @@ class Overlay:
                         datetime.now().strftime(match.group(1))
                     except ValueError:
                         raise Failed("Overlay Error: originally_available date format not valid")
-            else:
-                box = self.image.size if self.image else None
-                self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
-                self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])
+            box = self.image.size if self.image else None
+            self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
+            self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])
         else:
             if not self.path:
                 clean_name, _ = util.validate_filename(self.name)
