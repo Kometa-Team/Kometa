@@ -2370,9 +2370,9 @@ class CollectionBuilder:
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
 
-        add_genres = self.item_details["item_genres"] if "item_genres" in self.item_details else None
-        remove_genres = self.item_details["item_genres.remove"] if "item_genres.remove" in self.item_details else None
-        sync_genres = self.item_details["item_genres.sync"] if "item_genres.sync" in self.item_details else None
+        add_genres = self.item_details["item_genre"] if "item_genre" in self.item_details else None
+        remove_genres = self.item_details["item_genre.remove"] if "item_genre.remove" in self.item_details else None
+        sync_genres = self.item_details["item_genre.sync"] if "item_genre.sync" in self.item_details else None
 
         if "non_item_remove_label" in self.item_details:
             rk_compare = [item.ratingKey for item in self.items]
