@@ -119,6 +119,19 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS anidb_data (
+                    key INTEGER PRIMARY KEY,
+                    anidb_id INTEGER UNIQUE,
+                    main_title TEXT,
+                    titles TEXT,
+                    rating REAL,
+                    average REAL,
+                    score REAL,
+                    released TEXT,
+                    tags TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS tmdb_movie_data (
                     key INTEGER PRIMARY KEY,
                     tmdb_id INTEGER UNIQUE,
@@ -469,6 +482,41 @@ class Cache:
                     mdb.metacriticuser_rating, mdb.trakt_rating, mdb.tomatoes_rating, mdb.tomatoesaudience_rating,
                     mdb.tmdb_rating, mdb.letterboxd_rating, mdb.myanimelist_rating, mdb.content_rating, mdb.commonsense,
                     expiration_date.strftime("%Y-%m-%d"), key_id
+                ))
+
+    def query_anidb(self, anidb_id, expiration):
+        anidb_dict = {}
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM anidb_data WHERE anidb_id = ?", (anidb_id,))
+                row = cursor.fetchone()
+                if row:
+                    anidb_dict["main_title"] = row["main_title"]
+                    anidb_dict["titles"] = row["titles"] if row["titles"] else None
+                    anidb_dict["rating"] = row["rating"] if row["rating"] else None
+                    anidb_dict["average"] = row["average"] if row["average"] else None
+                    anidb_dict["score"] = row["score"] if row["score"] else None
+                    anidb_dict["released"] = row["released"] if row["released"] else None
+                    anidb_dict["tags"] = row["tags"] if row["tags"] else None
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    expired = time_between_insertion.days > expiration
+        return anidb_dict, expired
+
+    def update_anidb(self, expired, anidb_id, anidb, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO anidb_data(anidb_id) VALUES(?)", (anidb_id,))
+                update_sql = "UPDATE anidb_data SET main_title = ?, titles = ?, rating = ?, average = ?, score = ?, " \
+                             "released = ?, tags = ?, expiration_date = ? WHERE anidb_id = ?"
+                cursor.execute(update_sql, (
+                    anidb.main_title, str(anidb.titles), anidb.rating, anidb.average, anidb.score,
+                    anidb.released.strftime("%Y-%m-%d") if anidb.released else None, "|".join(anidb.tags),
+                    expiration_date.strftime("%Y-%m-%d"), anidb_id
                 ))
 
     def query_tmdb_movie(self, tmdb_id, expiration):
