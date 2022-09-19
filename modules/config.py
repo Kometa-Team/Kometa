@@ -472,11 +472,16 @@ class ConfigFile:
             else:
                 logger.warning("mal attribute not found")
 
-            self.AniDB = AniDB(self, check_for_attribute(self.data, "language", parent="anidb", default="en"))
+            self.AniDB = AniDB(self, {"language": check_for_attribute(self.data, "language", parent="anidb", default="en")})
             if "anidb" in self.data:
                 logger.separator()
                 logger.info("Connecting to AniDB...")
                 try:
+                    self.AniDB.authorize(
+                        check_for_attribute(self.data, "client", parent="anidb", throw=True),
+                        check_for_attribute(self.data, "version", parent="anidb", var_type="int", throw=True),
+                        check_for_attribute(self.data, "cache_expiration", parent="anidb", var_type="int", default=60, int_min=1)
+                    )
                     self.AniDB.login(
                         check_for_attribute(self.data, "username", parent="anidb", throw=True),
                         check_for_attribute(self.data, "password", parent="anidb", throw=True)
@@ -750,6 +755,8 @@ class ConfigFile:
                         error_check(mass_key, "OMDb")
                     if params[mass_key] and params[mass_key].startswith("mdb") and not self.Mdblist.has_key:
                         error_check(mass_key, "MdbList")
+                    if params[mass_key] and params[mass_key].startswith("anidb") and not self.AniDB.is_authorized:
+                        error_check(mass_key, "AniDB")
                     if params[mass_key] and params[mass_key].startswith("trakt") and self.Trakt is None:
                         error_check(mass_key, "Trakt")
 

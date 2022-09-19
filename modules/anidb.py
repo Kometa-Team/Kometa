@@ -1,4 +1,4 @@
-import time
+import json, time
 from datetime import datetime
 from modules import util
 from modules.util import Failed
@@ -7,6 +7,7 @@ logger = util.logger
 
 builders = ["anidb_id", "anidb_relation", "anidb_popular", "anidb_tag"]
 base_url = "https://anidb.net"
+api_url = "http://api.anidb.net:9001/httpapi"
 urls = {
     "anime": f"{base_url}/anime",
     "popular": f"{base_url}/latest/anime/popular/?h=1",
@@ -14,26 +15,37 @@ urls = {
     "tag": f"{base_url}/tag",
     "login": f"{base_url}/perl-bin/animedb.pl"
 }
-
 class AniDBObj:
-    def __init__(self, anidb, anidb_id, language):
-        self.anidb = anidb
+    def __init__(self, anidb, anidb_id, data):
+        self._anidb = anidb
         self.anidb_id = anidb_id
-        self.language = language
-        response = self.anidb._request(f"{urls['anime']}/{anidb_id}")
+        self._data = data
 
-        def parse_page(xpath, is_list=False, is_float=False, is_date=False, fail=False):
-            parse_results = response.xpath(xpath)
+        def _parse(attr, xpath, is_list=False, is_dict=False, is_float=False, is_date=False, fail=False):
             try:
+                if isinstance(data, dict):
+                    if is_list:
+                        return data[attr].split("|")
+                    elif is_dict:
+                        return json.loads(data[attr])
+                    elif is_float:
+                        return util.check_num(data[attr], is_int=False)
+                    elif is_date:
+                        return datetime.strptime(data[attr], "%Y-%m-%d")
+                    else:
+                        return data[attr]
+                parse_results = data.xpath(xpath)
                 if len(parse_results) > 0:
                     parse_results = [r.strip() for r in parse_results if len(r) > 0]
                 if parse_results:
                     if is_list:
                         return parse_results
+                    elif is_dict:
+                        return {ta.get("xml:lang"): ta.text_content() for ta in parse_results}
                     elif is_float:
                         return float(parse_results[0])
                     elif is_date:
-                        return datetime.strptime(parse_results[0], "%d.%m.%Y")
+                        return datetime.strptime(parse_results[0], "%Y-%m-%d")
                     else:
                         return parse_results[0]
             except (ValueError, TypeError):
@@ -42,26 +54,47 @@ class AniDBObj:
                 raise Failed(f"AniDB Error: No Anime Found for AniDB ID: {self.anidb_id}")
             elif is_list:
                 return []
-            elif is_float:
-                return 0
+            elif is_dict:
+                return {}
             else:
                 return None
 
-        self.official_title = parse_page(f"//th[text()='Main Title']/parent::tr/td/span/text()", fail=True)
-        self.title = parse_page(f"//th[text()='Official Title']/parent::tr/td/span/span/span[text()='{self.language}']/parent::span/parent::span/parent::td/label/text()")
-        self.rating = parse_page(f"//th[text()='Rating']/parent::tr/td/span/a/span/text()", is_float=True)
-        self.average = parse_page(f"//th[text()='Average']/parent::tr/td/span/a/span/text()", is_float=True)
-        self.released = parse_page(f"//th[text()='Year']/parent::tr/td/span/text()", is_date=True)
-        self.tags = [g.capitalize() for g in parse_page("//th/a[text()='Tags']/parent::th/parent::tr/td/span/a/span/text()", is_list=True)]
-        self.description = response.xpath(f"string(//div[@itemprop='description'])")
+        self.main_title = _parse("main_title", "//anime/titles/title[@type='main']/text()", fail=True)
+        self.titles = _parse("titles", "//anime/titles/title[@type='official']", is_dict=True)
+        self.official_title = self.titles[self._anidb.language] if self._anidb.language in self.titles else self.main_title
+        self.rating = _parse("rating", "//anime/ratings/permanent/text()", is_float=True)
+        self.average = _parse("average", "//anime/ratings/temporary/text()", is_float=True)
+        self.score = _parse("score", "//anime/ratings/review/text()", is_float=True)
+        self.released = _parse("released", "//anime/startdate/text()", is_date=True)
+        self.tags = _parse("tags", "//anime/tags/tag[@infobox='true']/name/text()", is_list=True)
 
 
 class AniDB:
-    def __init__(self, config, language):
+    def __init__(self, config, data):
         self.config = config
-        self.language = language
+        self.language = data["language"]
+        self.expiration = 60
+        self.client = None
+        self.version = None
         self.username = None
         self.password = None
+        self._delay = None
+
+    def authorize(self, client, version, expiration):
+        self.client = client
+        self.version = version
+        logger.secret(self.client)
+        self.expiration = expiration
+        try:
+            self.get_anime(69, ignore_cache=True)
+        except Failed:
+            self.client = None
+            self.version = None
+            raise
+
+    @property
+    def is_authorized(self):
+        return self.client is not None
 
     def login(self, username, password):
         self.username = username
@@ -72,12 +105,12 @@ class AniDB:
         if not self._request(urls["login"], data=data).xpath("//li[@class='sub-menu my']/@title"):
             raise Failed("AniDB Error: Login failed")
 
-    def _request(self, url, data=None):
+    def _request(self, url, params=None, data=None):
         logger.trace(f"URL: {url}")
         if data:
-            return self.config.post_html(url, data=data, headers=util.header(self.language))
+            return self.config.post_html(url, params=params, data=data, headers=util.header(self.language))
         else:
-            return self.config.get_html(url, headers=util.header(self.language))
+            return self.config.get_html(url, params=params, headers=util.header(self.language))
 
     def _popular(self):
         response = self._request(urls["popular"])
@@ -119,8 +152,28 @@ class AniDB:
             current_url = f"{base_url}{next_page_list[0]}"
         return anidb_ids[:limit]
 
-    def get_anime(self, anidb_id):
-        return AniDBObj(self, anidb_id, self.language)
+    def get_anime(self, anidb_id, ignore_cache=False):
+        expired = None
+        anidb_dict = None
+        if self.config.Cache and not ignore_cache:
+            anidb_dict, expired = self.config.Cache.query_anidb(anidb_id, self.expiration)
+        if expired or not anidb_dict:
+            time_check = time.time()
+            if self._delay is not None:
+                while time_check - self._delay < 2:
+                    time_check = time.time()
+            anidb_dict = self._request(api_url, params={
+                "client": self.client,
+                "clientver": self.version,
+                "protover": 1,
+                "request": "anime",
+                "aid": anidb_id
+            })
+            self._delay = time.time()
+        obj = AniDBObj(self, anidb_id, anidb_dict)
+        if self.config.Cache and not ignore_cache:
+            self.config.Cache.update_mdb(expired, anidb_id, obj, self.expiration)
+        return obj
 
     def get_anidb_ids(self, method, data):
         anidb_ids = []
