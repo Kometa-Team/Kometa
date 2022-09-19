@@ -762,6 +762,7 @@ class MetadataFile(DataFile):
                                 col["test"] = True
                             if collection_title in sync:
                                 sync.pop(collection_title)
+                            col_names.append(collection_title)
                             self.collections[collection_title] = col
                     if other_name and not other_keys:
                         logger.warning(f"Config Warning: Other Collection {other_name} not needed")
