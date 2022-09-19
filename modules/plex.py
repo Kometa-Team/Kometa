@@ -1451,6 +1451,8 @@ class Plex(Library):
                     attr = getattr(media, filter_actual)
                     if attr and attr > test_number:
                         test_number = attr
+            elif filter_attr == "versions":
+                test_number = len(item.media)
             elif filter_attr == "audio_language":
                 for media in item.media:
                     for part in media.parts:

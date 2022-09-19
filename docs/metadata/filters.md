@@ -155,20 +155,21 @@ Number filters can **NOT** take multiple values.
 
 ### Attribute
 
-| Number Filters                | Description                                                          | Movies  |        Shows        |       Seasons       | Episodes | Artists  |  Albums  |  Track   |
-|:------------------------------|:---------------------------------------------------------------------|:-------:|:-------------------:|:-------------------:|:--------:|:--------:|:--------:|:--------:|
-| `year`                        | Uses the year attribute to match<br>minimum: `1`                     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#10060; | &#9989;  | &#9989;  |
-| `tmdb_year`<sup>2</sup>       | Uses the year on TMDb to match<br>minimum: `1`                       | &#9989; |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
-| `critic_rating`               | Uses the critic rating attribute to match<br>`0.0` - `10.0`          | &#9989; |       &#9989;       |      &#10060;       | &#9989;  | &#10060; | &#9989;  | &#10060; |
-| `audience_rating`             | Uses the audience rating attribute to match<br> `0.0` - `10.0`       | &#9989; |       &#9989;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `user_rating`                 | Uses the user rating attribute to match<br>`0.0` - `10.0`            | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `tmdb_vote_count`<sup>2</sup> | Uses the tmdb vote count to match<br>minimum: `1`                    | &#9989; |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
-| `plays`                       | Uses the plays attribute to match<br>minimum: `1`                    | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `duration`                    | Uses the duration attribute to match using minutes<br>minimum: `0.0` | &#9989; |       &#9989;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#9989;  |
-| `channels`                    | Uses the audio channels attribute to match<br>minimum: `0`           | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `height`                      | Uses the height attribute to match<br>minimum: `0`                   | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `width`                       | Uses the width attribute to match<br>minimum: `0`                    | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `aspect`                      | Uses the aspect attribute to match<br>minimum: `0.0`                 | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
+| Number Filters                | Description                                                          | Movies  |        Shows        |       Seasons       | Episodes |       Artists       |       Albums        |  Track   |
+|:------------------------------|:---------------------------------------------------------------------|:-------:|:-------------------:|:-------------------:|:--------:|:-------------------:|:-------------------:|:--------:|
+| `year`                        | Uses the year attribute to match<br>minimum: `1`                     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |      &#10060;       |       &#9989;       | &#9989;  |
+| `tmdb_year`<sup>2</sup>       | Uses the year on TMDb to match<br>minimum: `1`                       | &#9989; |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
+| `critic_rating`               | Uses the critic rating attribute to match<br>`0.0` - `10.0`          | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |       &#9989;       | &#10060; |
+| `audience_rating`             | Uses the audience rating attribute to match<br> `0.0` - `10.0`       | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `user_rating`                 | Uses the user rating attribute to match<br>`0.0` - `10.0`            | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
+| `tmdb_vote_count`<sup>2</sup> | Uses the tmdb vote count to match<br>minimum: `1`                    | &#9989; |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
+| `plays`                       | Uses the plays attribute to match<br>minimum: `1`                    | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
+| `duration`                    | Uses the duration attribute to match using minutes<br>minimum: `0.0` | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |      &#10060;       | &#9989;  |
+| `channels`                    | Uses the audio channels attribute to match<br>minimum: `0`           | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `height`                      | Uses the height attribute to match<br>minimum: `0`                   | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `width`                       | Uses the width attribute to match<br>minimum: `0`                    | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `aspect`                      | Uses the aspect attribute to match<br>minimum: `0.0`                 | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `versions`                    | Uses the number of versions found to match<br>minimum: `0`           | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
 
 <sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/setting).
 

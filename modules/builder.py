@@ -73,10 +73,10 @@ discover_status = {
 }
 sub_filters = [
     "filepath", "audio_track_title", "resolution", "audio_language", "subtitle_language", "has_dolby_vision",
-    "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile"
+    "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile", "versions"
 ]
 filters_by_type = {
-    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "filepath", "label", "audio_track_title"],
+    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "filepath", "label", "audio_track_title", "versions"],
     "movie_show_season_episode_album_track": ["year"],
     "movie_show_season_episode_artist_album": ["has_overlay"],
     "movie_show_season_episode": ["resolution", "audio_language", "subtitle_language", "has_dolby_vision", "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile"],
@@ -120,7 +120,7 @@ date_filters = ["release", "added", "last_played", "first_episode_aired", "last_
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = [
     "year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration",
-    "channels", "height", "width", "aspect"]
+    "channels", "height", "width", "aspect", "versions"]
 number_modifiers = ["", ".not", ".gt", ".gte", ".lt", ".lte"]
 special_filters = [
     "history", "episodes", "seasons", "albums", "tracks", "original_language", "original_language.not",
