@@ -43,7 +43,9 @@ anidb:
 
 ![AniDB Add Client](anidb-2.png)
 
-6. Come up with and enter a unique to AniDB Client Name, select `HTTP API` in the API Dropdown, and put `1` for Version.
+6a. Come up with and enter a unique to AniDB Client Name
+6b. Select `HTTP API` in the API Dropdown
+6c. Put `1` for Version.
 
 ![AniDB Client Page](anidb-3.png)
 
