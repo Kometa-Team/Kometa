@@ -236,6 +236,8 @@ class Operations:
                         found_rating = anidb_item.rating
                     elif anidb_item and attribute == "anidb_average":
                         found_rating = anidb_item.average
+                    elif anidb_item and attribute == "anidb_score":
+                        found_rating = anidb_item.score
                     else:
                         found_rating = None
                     if found_rating is None:
@@ -255,7 +257,7 @@ class Operations:
                             elif tvdb_item and self.library.mass_genre_update == "tvdb":
                                 new_genres = tvdb_item.genres
                             elif anidb_item and self.library.mass_genre_update == "anidb":
-                                new_genres = anidb_item.tags
+                                new_genres = [str(t).title() for t in anidb_item.tags]
                             else:
                                 raise Failed
                             if not new_genres:
@@ -328,6 +330,23 @@ class Operations:
                             batch_display += f"\nContent Rating | {new_rating}"
                     except Failed:
                         pass
+
+                if self.library.mass_original_title_update:
+                    try:
+                        if anidb_item and self.library.mass_original_title_update == "anidb":
+                            new_original_title = anidb_item.main_title
+                        elif anidb_item and self.library.mass_original_title_update == "anidb_official":
+                            new_original_title = anidb_item.official_title
+                        else:
+                            raise Failed
+                        if not new_original_title:
+                            logger.info(f"No Original Title Found")
+                        elif str(item.originalTitle) != str(new_original_title):
+                            item.editOriginalTitle(new_original_title)
+                            batch_display += f"\nOriginal Title | {new_original_title}"
+                    except Failed:
+                        pass
+
                 if self.library.mass_originally_available_update:
                     try:
                         if omdb_item and self.library.mass_originally_available_update == "omdb":

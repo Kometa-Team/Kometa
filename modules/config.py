@@ -35,6 +35,7 @@ logger = util.logger
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 mass_genre_options = {"tmdb": "Use TMDb Metadata", "imdb": "Use IMDb Rating", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Tag Metadata"}
 mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
+mass_original_title_options = {"anidb": "Use AniDB Main Title", "anidb_official": "Use AniDB Official Title based on the language attribute in the config file"}
 mass_available_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Metadata"}
 imdb_label_options = {"with_none": "Add IMDb Parental Labels including None", "without_none": "Add IMDb Parental Labels including None"}
 mass_episode_rating_options = {"tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating"}
@@ -54,7 +55,8 @@ mass_rating_options = {
     "mdb_letterboxd": "Use Letterboxd Rating through MDbList",
     "mdb_myanimelist": "Use MyAnimeList Rating through MDbList",
     "anidb_rating": "Use AniDB Rating",
-    "anidb_average": "Use AniDB Average"
+    "anidb_average": "Use AniDB Average",
+    "anidb_score": "Use AniDB Review Dcore"
 }
 reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
 
@@ -592,6 +594,7 @@ class ConfigFile:
                     "metadata_backup": None,
                     "update_blank_track_titles": None,
                     "mass_content_rating_update": None,
+                    "mass_original_title_update": None,
                     "mass_originally_available_update": None,
                     "mass_imdb_parental_labels": None,
                     "remove_title_parentheses": None,
@@ -677,6 +680,8 @@ class ConfigFile:
                             params["mass_episode_user_rating_update"] = check_for_attribute(lib["operations"], "mass_episode_user_rating_update", test_list=mass_episode_rating_options, default_is_none=True, save=False)
                         if "mass_content_rating_update" in lib["operations"]:
                             params["mass_content_rating_update"] = check_for_attribute(lib["operations"], "mass_content_rating_update", test_list=mass_content_options, default_is_none=True, save=False)
+                        if "mass_original_title_update" in lib["operations"]:
+                            params["mass_original_title_update"] = check_for_attribute(lib["operations"], "mass_original_title_update", test_list=mass_original_title_options, default_is_none=True, save=False)
                         if "mass_originally_available_update" in lib["operations"]:
                             params["mass_originally_available_update"] = check_for_attribute(lib["operations"], "mass_originally_available_update", test_list=mass_available_options, default_is_none=True, save=False)
                         if "mass_imdb_parental_labels" in lib["operations"]:
