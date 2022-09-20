@@ -83,6 +83,7 @@ class Library(ABC):
         self.mass_episode_critic_rating_update = params["mass_episode_critic_rating_update"]
         self.mass_episode_user_rating_update = params["mass_episode_user_rating_update"]
         self.mass_content_rating_update = params["mass_content_rating_update"]
+        self.mass_original_title_update = params["mass_original_title_update"]
         self.mass_originally_available_update = params["mass_originally_available_update"]
         self.mass_imdb_parental_labels = params["mass_imdb_parental_labels"]
         self.radarr_add_all_existing = params["radarr_add_all_existing"]

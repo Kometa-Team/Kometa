@@ -184,7 +184,7 @@ html_theme_options = {
                 ("Editing TV Metadata", "metadata/metadata/show"),
                 ("Editing Music Metadata", "metadata/metadata/music"),
             ]),
-            ("_menu", "Metadata Builders", [
+            ("_menu", "Builders", [
                 ("Plex Builders", "metadata/builders/plex"),
                 ("Smart Builders", "metadata/builders/smart"),
                 ("TMDb Builders", "metadata/builders/tmdb"),
