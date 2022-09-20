@@ -208,15 +208,17 @@ class CollectionBuilder:
             methods["name"] = "name"
 
         if "template" in methods:
+            new_variables = {}
             if "variables" in methods:
                 logger.debug("")
                 logger.debug("Validating Method: variables")
                 if not isinstance(self.data[methods["variables"]], dict):
                     raise Failed(f"{self.Type} Error: variables must be a dictionary (key: value pairs)")
                 logger.trace(self.data[methods["variables"]])
+                new_variables = self.data[methods["variables"]]
             logger.debug("")
             name = self.data[methods["name"]] if "name" in methods else None
-            new_attributes = self.metadata.apply_template(name, self.mapping_name, self.data, self.data[methods["template"]], self.data[methods["variables"]])
+            new_attributes = self.metadata.apply_template(name, self.mapping_name, self.data, self.data[methods["template"]], new_variables)
             for attr in new_attributes:
                 if attr.lower() not in methods:
                     self.data[attr] = new_attributes[attr]
