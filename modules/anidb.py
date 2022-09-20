@@ -97,13 +97,13 @@ class AniDB:
         return self.client is not None
 
     def login(self, username, password):
-        self.username = username
-        self.password = password
-        logger.secret(self.username)
-        logger.secret(self.password)
-        data = {"show": "main", "xuser": self.username, "xpass": self.password, "xdoautologin": "on"}
+        logger.secret(username)
+        logger.secret(password)
+        data = {"show": "main", "xuser": username, "xpass": password, "xdoautologin": "on"}
         if not self._request(urls["login"], data=data).xpath("//li[@class='sub-menu my']/@title"):
             raise Failed("AniDB Error: Login failed")
+        self.username = username
+        self.password = password
 
     def _request(self, url, params=None, data=None):
         logger.trace(f"URL: {url}")
