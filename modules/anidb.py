@@ -25,7 +25,7 @@ class AniDBObj:
             try:
                 if isinstance(data, dict):
                     if is_list:
-                        return data[attr].split("|")
+                        return data[attr].split("|") if data[attr] else []
                     elif is_dict:
                         return json.loads(data[attr])
                     elif is_float:
