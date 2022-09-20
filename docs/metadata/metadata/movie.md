@@ -116,6 +116,7 @@ The available attributes for editing movies are as follows
 | Attribute              | Allowed Values                                                |
 |:-----------------------|:--------------------------------------------------------------|
 | `sort_title`           | Text to change Sort Title                                     |
+| `edition`              | Text to change Edition                                        |
 | `original_title`       | Text to change Original Title                                 |
 | `originally_available` | Date to change Originally Available<br>**Format:** YYYY-MM-DD |
 | `content_rating`       | Text to change Content Rating                                 |

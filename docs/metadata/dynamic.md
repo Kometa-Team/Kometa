@@ -127,6 +127,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`subtitle_language`](#subtitle-language)     | Create a collection for each subtitle language found in the library                                         |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`audio_language`](#audio-language)           | Create a collection for each audio language found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`studio`](#studio)                           | Create a collection for each studio found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`edition`](#edition)                         | Create a collection for each edition found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`network`](#network)                         | Create a collection for each network found in the library                                                   |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`style`](#style)                             | Create a collection for each artist style found in the library                                              |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
@@ -1376,6 +1377,67 @@ dynamic_collections:
     type: studio
     title_format: <<key_name>>
     template: studio collection
+```
+
+### Edition
+
+Create a collection for each edition found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>edition</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Editions</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Edition</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; &lt;&lt;library_type&gt;&gt;s</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.desc
+    any:
+      edition: <<value>>
+```
+
+</td>
+  </tr>
+</table>
+
+
+#### Example:
+
+* Create a collection for each edition found in a Movies library
+
+```yaml
+templates:
+  edition collection:
+    smart_filter:
+      sort_by: critic_rating.desc
+      all:
+        edition: <<value>>
+dynamic_collections:
+  Sditions:         # mapping name does not matter just needs to be unique
+    type: edition
+    title_format: <<key_name>>
+    template: edition collection
 ```
 
 ### Network

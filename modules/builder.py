@@ -22,7 +22,7 @@ show_only_builders = [
 ]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
-    "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
+    "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing", "item_edition",
     "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list", "radarr_all", "radarr_taglist"
 ]
 music_only_builders = ["item_album_sorting"]
@@ -52,8 +52,8 @@ collectionless_details = ["collection_order", "plex_collectionless", "label", "l
                          poster_details + background_details + summary_details + string_details
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh"] + item_false_details
-item_details = ["non_item_remove_label", "item_label", "item_genre", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
-none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist"]
+item_details = ["non_item_remove_label", "item_label", "item_genre", "item_edition", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
+none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_folder", "radarr_monitor",
     "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag"
@@ -936,6 +936,8 @@ class CollectionBuilder:
             if "item_genre.remove" in methods and "item_genre.sync" in methods:
                 raise Failed(f"{self.Type} Error: Cannot use item_genre.remove and item_genre.sync together")
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
+        elif method_name == "item_edition":
+            self.item_details[method_final] = str(method_data) if method_data else ""
         elif method_name == "non_item_remove_label":
             if not method_data:
                 raise Failed(f"{self.Type} Error: non_item_remove_label is blank")
@@ -2388,6 +2390,9 @@ class CollectionBuilder:
                 self.library.find_and_upload_assets(item, current_labels)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             self.library.edit_tags("genre", item, add_tags=add_genres, remove_tags=remove_genres, sync_tags=sync_genres)
+            if "item_edition" in self.item_details and item.editionTitle != self.item_details["item_edition"]:
+                self.library.query_data(item.editEditionTitle, self.item_details["item_edition"])
+                logger.info(f"{item.title[:25]:<25} | Edition | {self.item_details['item_edition']}")
             path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
             if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
                 path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)

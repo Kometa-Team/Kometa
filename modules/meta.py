@@ -12,7 +12,7 @@ ms_auto = [
     "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade"
 ]
 auto = {
-    "Movie": ["tmdb_collection", "country", "director", "producer", "writer"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer"] + all_auto + ms_auto,
     "Show": ["network", "origin_country"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
@@ -23,7 +23,7 @@ dynamic_attributes = [
 ]
 auto_type_translation = {
     "content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage",
-    "album_style": "album.style"
+    "album_style": "album.style", "edition": "editionTitle"
 }
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
@@ -466,7 +466,7 @@ class MetadataFile(DataFile):
                             auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
                             default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": f"<<value>>"}}}
                             default_title_format = "Best <<library_type>>s of <<key_name>>"
-                        elif auto_type in ["genre", "mood", "style", "album_style", "country", "studio", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                        elif auto_type in ["genre", "mood", "style", "album_style", "country", "studio", "edition", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                             if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
                                 tags = library.get_tags(f"episode.{search_tag}")
@@ -1003,6 +1003,8 @@ class MetadataFile(DataFile):
         if title:
             add_edit("title", item, meta, methods, value=title)
         add_edit("sort_title", item, meta, methods, key="titleSort")
+        if self.library.is_movie:
+            add_edit("edition", item, meta, methods, key="editionTitle")
         add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
         if not self.library.is_music:
             add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
