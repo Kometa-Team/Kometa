@@ -471,6 +471,7 @@ libraries:
     - git: PMM/movie/writer
     overlay_path:
     - remove_overlays: false
+    - git: PMM/overlays/age
     - git: PMM/overlays/audio_codec
     - git: PMM/overlays/audio_language
     - git: PMM/overlays/direct_play
@@ -486,6 +487,7 @@ libraries:
     - git: PMM/overlays/resolution
     - git: PMM/overlays/special_release
     - git: PMM/overlays/streaming
+    - git: PMM/overlays/versions
     - git: PMM/overlays/video_format
   TV Shows:
     metadata_path:
@@ -514,6 +516,13 @@ libraries:
     - git: PMM/show/network
     overlay_path:
     - remove_overlays: false
+    - git: PMM/overlays/age
+    - git: PMM/overlays/age
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/age
+      template_variables:
+        overlay_level: season
     - git: PMM/overlays/audio_codec
     - git: PMM/overlays/audio_codec
       template_variables:
@@ -600,6 +609,16 @@ libraries:
       template_variables:
         overlay_level: season
     - git: PMM/overlays/streaming
+    - git: PMM/overlays/versions
+    - git: PMM/overlays/versions
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/versions
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/versions
+      template_variables:
+        overlay_level: show
     - git: PMM/overlays/video_format
     - git: PMM/overlays/video_format
       template_variables:
