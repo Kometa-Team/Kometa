@@ -106,7 +106,7 @@ class DataFile:
                 raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
         return yaml.data
 
-    def apply_template(self, name, mapping_name, data, template_call):
+    def apply_template(self, name, mapping_name, data, template_call, extra_variables):
         if not self.templates:
             raise Failed(f"{self.data_type} Error: No templates found")
         elif not template_call:
@@ -129,13 +129,12 @@ class DataFile:
                     logger.debug(f"Call: {variables}")
 
                     remove_variables = []
+                    optional = []
                     for tm in variables:
                         if variables[tm] is None:
                             remove_variables.append(tm)
-                    optional = []
-                    for remove_variable in remove_variables:
-                        variables.pop(remove_variable)
-                        optional.append(str(remove_variable))
+                            variables.pop(tm)
+                            optional.append(str(tm))
 
                     template, temp_vars = self.templates[variables["name"]]
 
@@ -153,7 +152,13 @@ class DataFile:
                     for temp_key, temp_value in temp_vars.items():
                         if temp_value is None:
                             optional.append(str(temp_key))
-                        else:
+                        elif temp_key not in variables:
+                            variables[temp_key] = temp_value
+
+                    for temp_key, temp_value in extra_variables.items():
+                        if temp_value is None:
+                            optional.append(str(temp_key))
+                        elif temp_key not in variables:
                             variables[temp_key] = temp_value
 
                     for temp_key, temp_value in self.temp_vars.items():

@@ -39,7 +39,7 @@ boolean_details = [
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
-    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "test", "suppress_overlays",
+    "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "variables", "test", "suppress_overlays",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection",
     "allowed_library_types", "delete_playlist", "ignore_blank_results"
@@ -208,9 +208,15 @@ class CollectionBuilder:
             methods["name"] = "name"
 
         if "template" in methods:
+            if "variables" in methods:
+                logger.debug("")
+                logger.debug("Validating Method: variables")
+                if not isinstance(self.data[methods["variables"]], dict):
+                    raise Failed(f"{self.Type} Error: variables must be a dictionary (key: value pairs)")
+                logger.trace(self.data[methods["variables"]])
             logger.debug("")
             name = self.data[methods["name"]] if "name" in methods else None
-            new_attributes = self.metadata.apply_template(name, self.mapping_name, self.data, self.data[methods["template"]])
+            new_attributes = self.metadata.apply_template(name, self.mapping_name, self.data, self.data[methods["template"]], self.data[methods["variables"]])
             for attr in new_attributes:
                 if attr.lower() not in methods:
                     self.data[attr] = new_attributes[attr]
