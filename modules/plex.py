@@ -248,6 +248,7 @@ movie_only_searches = [
     "country", "country.not", "director", "director.not", "producer", "producer.not", "writer", "writer.not",
     "decade", "duplicate", "unplayed", "progress",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte"
+    "edition", "edition.not", "edition.is", "edition.isnot", "edition.begins", "edition.ends"
 ]
 show_only_searches = [
     "network", "network.not",
@@ -265,7 +266,7 @@ show_only_searches = [
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
     "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
 ]
-string_attributes = ["title", "studio", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
+string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 boolean_attributes = [
     "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash", "unplayed_episodes", "episode_unplayed",
@@ -289,7 +290,7 @@ float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
-    "producer", "resolution", "studio", "subtitle_language", "writer", "season_collection", "episode_collection",
+    "producer", "resolution", "studio", "subtitle_language", "writer", "season_collection", "episode_collection", "edition",
     "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_style", "album_genre", "album_mood",
     "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source"
 ]

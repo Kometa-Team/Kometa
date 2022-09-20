@@ -181,6 +181,7 @@ String search can take multiple values **only as a list**.
 | `title`              | Uses the title attribute to match                        |      &#9989;       |      &#9989;      |      &#10060;      |
 | `episode_title`      | Uses the title attribute of the show's episodes to match |      &#10060;      |      &#9989;      |      &#10060;      |
 | `studio`             | Uses the studio attribute to match                       |      &#9989;       |      &#9989;      |      &#10060;      |
+| `edition`            | Uses the edition attribute to match                      |      &#9989;       |     &#10060;      |      &#10060;      |
 | `artist_title`       | Uses the Artist's Title attribute to match               |      &#10060;      |     &#10060;      |      &#9989;       |
 | `album_title`        | Uses the Album's Title attribute to match                |      &#10060;      |     &#10060;      |      &#9989;       |
 | `track_title`        | Uses the Track's Title attribute to match                |      &#10060;      |     &#10060;      |      &#9989;       |
