@@ -172,7 +172,7 @@ class AniDB:
             self._delay = time.time()
         obj = AniDBObj(self, anidb_id, anidb_dict)
         if self.config.Cache and not ignore_cache:
-            self.config.Cache.update_mdb(expired, anidb_id, obj, self.expiration)
+            self.config.Cache.update_anidb(expired, anidb_id, obj, self.expiration)
         return obj
 
     def get_anidb_ids(self, method, data):
