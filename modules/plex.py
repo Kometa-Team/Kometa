@@ -151,6 +151,7 @@ attribute_translation = {
     "episode_number": "episodeNumber",
     "season_number": "seasonNumber",
     "original_title": "originalTitle",
+    "edition": "editionTitle",
     "runtime": "duration",
     "season_title": "parentTitle",
     "episode_count": "leafCount",

@@ -20,12 +20,14 @@ types_for_var = {
     "movie_episode": ["runtime", "versions", "bitrate"],
     "season_episode": ["show_title", "season_number"],
     "show_season": ["episode_count"],
+    "movie": ["edition"],
     "episode": ["season_title", "episode_number"]
 }
 var_mods = {
     "title": ["", "U", "L", "P"],
     "content_rating": ["", "U", "L", "P"],
     "original_title": ["", "U", "L", "P"],
+    "edition": ["", "U", "L", "P"],
     "show_title": ["", "U", "L", "P"],
     "season_title": ["", "U", "L", "P"],
     "bitrate": ["", "H", "L"],
