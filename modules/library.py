@@ -222,7 +222,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True):
+    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True, locked=True, is_locked=None):
         pass
 
     @abstractmethod

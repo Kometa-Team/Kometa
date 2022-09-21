@@ -548,6 +548,10 @@ class Plex(Library):
     def query_data(self, method, data):
         return method(data)
 
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def tag_edit(self, item, attribute, data, locked=True, remove=False):
+        return item.editTags(attribute, data, locked=locked, remove=remove)
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def query_collection(self, item, collection, locked=True, add=True):
         if add:
@@ -975,12 +979,12 @@ class Plex(Library):
             logger.stacktrace()
             return False
 
-    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True):
+    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True, locked=True, is_locked=None):
         display = ""
         final = ""
         key = attribute_translation[attr] if attr in attribute_translation else attr
+        actual = "similar" if attr == "similar_artist" else attr
         attr_display = attr.replace("_", " ").title()
-        attr_call = attr_display.replace(" ", "")
         if add_tags or remove_tags or sync_tags is not None:
             _add_tags = add_tags if add_tags else []
             _remove_tags = remove_tags if remove_tags else []
@@ -993,13 +997,15 @@ class Plex(Library):
             _add = [t for t in _add_tags + _sync_tags if t not in _item_tags]
             _remove = [t for t in _item_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]
             if _add:
-                self.query_data(getattr(obj, f"add{attr_call}"), _add)
+                self.tag_edit(obj, actual, _add, locked=locked)
                 display += f"+{', +'.join(_add)}"
             if _remove:
-                self.query_data(getattr(obj, f"remove{attr_call}"), _remove)
+                self.tag_edit(obj, actual, _remove, locked=locked, remove=True)
                 if display:
                     display += ", "
                 display += f"-{', -'.join(_remove)}"
+            if is_locked is not None and not display and is_locked != locked:
+                self.edit_query(obj, {f"{actual}.locked": 1 if locked else 0})
             final = f"{obj.title[:25]:<25} | {attr_display} | {display}" if display else display
             if do_print and final:
                 logger.info(final)

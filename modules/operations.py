@@ -93,6 +93,8 @@ class Operations:
                 if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels)
 
+                locked_fields = [f.name for f in item.fields if f.locked]
+
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
                 item.batchEdits()
@@ -201,53 +203,75 @@ class Operations:
                         if mdb_item is None:
                             logger.warning(f"No TMDb ID, TVDb ID, or IMDb ID for Guid: {item.guid}")
 
-                def get_rating(attribute):
-                    if tmdb_item and attribute == "tmdb":
-                        found_rating = tmdb_item.vote_average
-                    elif imdb_id and attribute == "imdb":
-                        found_rating = self.config.IMDb.get_rating(imdb_id)
-                    elif attribute == "trakt_user" and self.library.is_movie and tmdb_id in trakt_ratings:
-                        found_rating = trakt_ratings[tmdb_id]
-                    elif attribute == "trakt_user" and self.library.is_show and tvdb_id in trakt_ratings:
-                        found_rating = trakt_ratings[tvdb_id]
-                    elif omdb_item and attribute == "omdb":
-                        found_rating = omdb_item.imdb_rating
-                    elif mdb_item and attribute == "mdb":
-                        found_rating = mdb_item.score / 10 if mdb_item.score else None
-                    elif mdb_item and attribute == "mdb_imdb":
-                        found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
-                    elif mdb_item and attribute == "mdb_metacritic":
-                        found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
-                    elif mdb_item and attribute == "mdb_metacriticuser":
-                        found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
-                    elif mdb_item and attribute == "mdb_trakt":
-                        found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
-                    elif mdb_item and attribute == "mdb_tomatoes":
-                        found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
-                    elif mdb_item and attribute == "mdb_tomatoesaudience":
-                        found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
-                    elif mdb_item and attribute == "mdb_tmdb":
-                        found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
-                    elif mdb_item and attribute == "mdb_letterboxd":
-                        found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
-                    elif mdb_item and attribute == "mdb_myanimelist":
-                        found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
-                    elif anidb_item and attribute == "anidb_rating":
-                        found_rating = anidb_item.rating
-                    elif anidb_item and attribute == "anidb_average":
-                        found_rating = anidb_item.average
-                    elif anidb_item and attribute == "anidb_score":
-                        found_rating = anidb_item.score
-                    else:
-                        found_rating = None
-                    if found_rating is None:
-                        raise Failed
-                    return found_rating
+                def update_rating(attribute, item_attr, display):
+                    current = getattr(item, item_attr)
+                    if attribute in ["remove", "reset"] and current:
+                        item.editField(item_attr, None, locked=attribute == "remove")
+                        return f"\n{display} | None"
+                    elif attribute in ["unlock", "reset"] and item_attr in locked_fields:
+                        self.library.edit_query(item, {f"{item_attr}.locked": 0})
+                    elif attribute in ["lock", "remove"] and item_attr not in locked_fields:
+                        self.library.edit_query(item, {f"{item_attr}.locked": 1})
+                    elif attribute not in ["lock", "unlock", "remove", "reset"]:
+                        if tmdb_item and attribute == "tmdb":
+                            found_rating = tmdb_item.vote_average
+                        elif imdb_id and attribute == "imdb":
+                            found_rating = self.config.IMDb.get_rating(imdb_id)
+                        elif attribute == "trakt_user" and self.library.is_movie and tmdb_id in trakt_ratings:
+                            found_rating = trakt_ratings[tmdb_id]
+                        elif attribute == "trakt_user" and self.library.is_show and tvdb_id in trakt_ratings:
+                            found_rating = trakt_ratings[tvdb_id]
+                        elif omdb_item and attribute == "omdb":
+                            found_rating = omdb_item.imdb_rating
+                        elif mdb_item and attribute == "mdb":
+                            found_rating = mdb_item.score / 10 if mdb_item.score else None
+                        elif mdb_item and attribute == "mdb_imdb":
+                            found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
+                        elif mdb_item and attribute == "mdb_metacritic":
+                            found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
+                        elif mdb_item and attribute == "mdb_metacriticuser":
+                            found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
+                        elif mdb_item and attribute == "mdb_trakt":
+                            found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
+                        elif mdb_item and attribute == "mdb_tomatoes":
+                            found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
+                        elif mdb_item and attribute == "mdb_tomatoesaudience":
+                            found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
+                        elif mdb_item and attribute == "mdb_tmdb":
+                            found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
+                        elif mdb_item and attribute == "mdb_letterboxd":
+                            found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                        elif mdb_item and attribute == "mdb_myanimelist":
+                            found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
+                        elif anidb_item and attribute == "anidb_rating":
+                            found_rating = anidb_item.rating
+                        elif anidb_item and attribute == "anidb_average":
+                            found_rating = anidb_item.average
+                        elif anidb_item and attribute == "anidb_score":
+                            found_rating = anidb_item.score
+                        else:
+                            found_rating = None
+
+                        if found_rating is None:
+                            logger.info(f"No {display} Found")
+                        elif str(current) != str(found_rating):
+                            item.editField(item_attr, found_rating)
+                            return f"\n{display} | {found_rating}"
+                    return ""
+
+                if self.library.mass_audience_rating_update:
+                    batch_display += update_rating(self.library.mass_audience_rating_update, "audienceRating", "Audience Rating")
+
+                if self.library.mass_critic_rating_update:
+                    batch_display += update_rating(self.library.mass_critic_rating_update, "rating", "Critic Rating")
+
+                if self.library.mass_user_rating_update:
+                    batch_display += update_rating(self.library.mass_user_rating_update, "userRating", "User Rating")
 
                 if self.library.mass_genre_update or self.library.genre_mapper:
                     try:
                         new_genres = []
-                        if self.library.mass_genre_update:
+                        if self.library.mass_genre_update and self.library.mass_genre_update not in ["lock", "unlock", "remove", "reset"]:
                             if tmdb_item and self.library.mass_genre_update == "tmdb":
                                 new_genres = tmdb_item.genres
                             elif imdb_id and self.library.mass_genre_update == "imdb" and imdb_id in self.config.IMDb.genres:
@@ -263,7 +287,7 @@ class Operations:
                             if not new_genres:
                                 logger.info(f"No Genres Found")
                         if self.library.genre_mapper:
-                            if not new_genres:
+                            if not new_genres and self.library.mass_genre_update not in ["remove", "reset"]:
                                 new_genres = [g.tag for g in item.genres]
                             mapped_genres = []
                             for genre in new_genres:
@@ -273,43 +297,18 @@ class Operations:
                                 else:
                                     mapped_genres.append(genre)
                             new_genres = mapped_genres
-                        temp_display = self.library.edit_tags('genre', item, sync_tags=new_genres, do_print=False)
+                        temp_display = self.library.edit_tags("genre", item, sync_tags=new_genres, do_print=False,
+                                                              locked=False if self.library.mass_genre_update in ["unlock", "reset"] else True,
+                                                              is_locked="genre" in locked_fields)
                         if temp_display:
                             batch_display += f"\n{temp_display}"
                     except Failed:
                         pass
 
-                if self.library.mass_audience_rating_update:
-                    try:
-                        new_rating = get_rating(self.library.mass_audience_rating_update)
-                        if str(item.audienceRating) != str(new_rating):
-                            item.editField("audienceRating", new_rating)
-                            batch_display += f"\nAudience Rating | {new_rating}"
-                    except Failed:
-                        logger.info(f"No Audience Rating Found")
-
-                if self.library.mass_critic_rating_update:
-                    try:
-                        new_rating = get_rating(self.library.mass_critic_rating_update)
-                        if str(item.rating) != str(new_rating):
-                            item.editField("rating", new_rating)
-                            batch_display += f"\nCritic Rating | {new_rating}"
-                    except Failed:
-                        logger.info(f"No Critic Rating Found")
-
-                if self.library.mass_user_rating_update:
-                    try:
-                        new_rating = get_rating(self.library.mass_user_rating_update)
-                        if str(item.userRating) != str(new_rating):
-                            item.editField("userRating", new_rating)
-                            batch_display += f"\nUser Rating | {new_rating}"
-                    except Failed:
-                        logger.info(f"No User Rating Found")
-
                 if self.library.mass_content_rating_update or self.library.content_rating_mapper:
                     try:
                         new_rating = None
-                        if self.library.mass_content_rating_update:
+                        if self.library.mass_content_rating_update and self.library.mass_genre_update not in ["lock", "unlock", "remove", "reset"]:
                             if omdb_item and self.library.mass_content_rating_update == "omdb":
                                 new_rating = omdb_item.content_rating
                             elif mdb_item and self.library.mass_content_rating_update == "mdb":
@@ -319,58 +318,82 @@ class Operations:
                             else:
                                 raise Failed
                         if self.library.content_rating_mapper:
-                            if new_rating is None:
+                            if new_rating is None and self.library.mass_genre_update not in ["remove", "reset"]:
                                 new_rating = item.contentRating
                             if new_rating in self.library.content_rating_mapper:
                                 new_rating = self.library.content_rating_mapper[new_rating]
-                        if not new_rating:
+
+                        if self.library.mass_content_rating_update in ["remove", "reset"] and item.contentRating:
+                            item.editField("contentRating", None, locked=self.library.mass_content_rating_update == "remove")
+                            batch_display += f"\nContent Rating | None"
+                        elif not new_rating and self.library.mass_genre_update not in ["lock", "unlock", "remove", "reset"]:
                             logger.info(f"No Content Rating Found")
                         elif str(item.contentRating) != str(new_rating):
                             item.editContentRating(new_rating)
                             batch_display += f"\nContent Rating | {new_rating}"
+                        elif self.library.mass_content_rating_update in ["unlock", "reset"] and "contentRating" in locked_fields:
+                            self.library.edit_query(item, {"contentRating.locked": 0})
+                        elif self.library.mass_content_rating_update in ["lock", "remove"] and "contentRating" not in locked_fields:
+                            self.library.edit_query(item, {"contentRating.locked": 1})
                     except Failed:
                         pass
 
                 if self.library.mass_original_title_update:
-                    try:
-                        if anidb_item and self.library.mass_original_title_update == "anidb":
-                            new_original_title = anidb_item.main_title
-                        elif anidb_item and self.library.mass_original_title_update == "anidb_official":
-                            new_original_title = anidb_item.official_title
-                        else:
-                            raise Failed
-                        if not new_original_title:
-                            logger.info(f"No Original Title Found")
-                        elif str(item.originalTitle) != str(new_original_title):
-                            item.editOriginalTitle(new_original_title)
-                            batch_display += f"\nOriginal Title | {new_original_title}"
-                    except Failed:
-                        pass
+                    if self.library.mass_original_title_update in ["remove", "reset"] and item.originalTitle:
+                        item.editField("originalTitle", None, locked=self.library.mass_original_title_update == "remove")
+                        batch_display += f"\nOriginal Title | None"
+                    elif self.library.mass_original_title_update in ["unlock", "reset"] and "originalTitle" in locked_fields:
+                        self.library.edit_query(item, {"originalTitle.locked": 0})
+                    elif self.library.mass_original_title_update in ["lock", "remove"] and "originalTitle" not in locked_fields:
+                        self.library.edit_query(item, {"originalTitle.locked": 1})
+                    elif self.library.mass_original_title_update not in ["lock", "unlock", "remove", "reset"]:
+                        try:
+                            if anidb_item and self.library.mass_original_title_update == "anidb":
+                                new_original_title = anidb_item.main_title
+                            elif anidb_item and self.library.mass_original_title_update == "anidb_official":
+                                new_original_title = anidb_item.official_title
+                            else:
+                                raise Failed
+                            if not new_original_title:
+                                logger.info(f"No Original Title Found")
+                            elif str(item.originalTitle) != str(new_original_title):
+                                item.editOriginalTitle(new_original_title)
+                                batch_display += f"\nOriginal Title | {new_original_title}"
+                        except Failed:
+                            pass
 
                 if self.library.mass_originally_available_update:
-                    try:
-                        if omdb_item and self.library.mass_originally_available_update == "omdb":
-                            new_date = omdb_item.released
-                        elif mdb_item and self.library.mass_originally_available_update == "mdb":
-                            new_date = mdb_item.released
-                        elif tvdb_item and self.library.mass_originally_available_update == "tvdb":
-                            new_date = tvdb_item.release_date
-                        elif tmdb_item and self.library.mass_originally_available_update == "tmdb":
-                            new_date = tmdb_item.release_date if self.library.is_movie else tmdb_item.first_air_date
-                        elif anidb_item and self.library.mass_originally_available_update == "anidb":
-                            new_date = anidb_item.released
-                        else:
-                            raise Failed
-                        if not new_date:
-                            logger.info(f"No Originally Available Date Found")
-                        elif str(item.originallyAvailableAt) != str(new_date):
-                            item.editOriginallyAvailable(new_date)
-                            batch_display += f"\nOriginally Available Date | {new_date.strftime('%Y-%m-%d')}"
-                    except Failed:
-                        pass
+                    if self.library.mass_originally_available_update in ["remove", "reset"] and item.originallyAvailableAt:
+                        item.editField("originallyAvailableAt", None, locked=self.library.mass_originally_available_update == "remove")
+                        batch_display += f"\nOriginally Available Date | None"
+                    elif self.library.mass_originally_available_update in ["unlock", "reset"] and "originallyAvailableAt" in locked_fields:
+                        self.library.edit_query(item, {"originallyAvailableAt.locked": 0})
+                    elif self.library.mass_originally_available_update in ["lock", "remove"] and "originallyAvailableAt" not in locked_fields:
+                        self.library.edit_query(item, {"originallyAvailableAt.locked": 1})
+                    elif self.library.mass_originally_available_update not in ["lock", "unlock", "remove", "reset"]:
+                        try:
+                            if omdb_item and self.library.mass_originally_available_update == "omdb":
+                                new_date = omdb_item.released
+                            elif mdb_item and self.library.mass_originally_available_update == "mdb":
+                                new_date = mdb_item.released
+                            elif tvdb_item and self.library.mass_originally_available_update == "tvdb":
+                                new_date = tvdb_item.release_date
+                            elif tmdb_item and self.library.mass_originally_available_update == "tmdb":
+                                new_date = tmdb_item.release_date if self.library.is_movie else tmdb_item.first_air_date
+                            elif anidb_item and self.library.mass_originally_available_update == "anidb":
+                                new_date = anidb_item.released
+                            else:
+                                raise Failed
+                            if not new_date:
+                                logger.info(f"No Originally Available Date Found")
+                            elif str(item.originallyAvailableAt) != str(new_date):
+                                item.editOriginallyAvailable(new_date)
+                                batch_display += f"\nOriginally Available Date | {new_date.strftime('%Y-%m-%d')}"
+                        except Failed:
+                            pass
 
-                item.saveEdits()
                 if len(batch_display) > 0:
+                    item.saveEdits()
                     logger.info(f"Batch Edits{batch_display}")
 
                 episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
@@ -386,52 +409,45 @@ class Operations:
                         item_title = self.library.get_item_sort_title(ep, atr="title")
                         logger.info("")
                         logger.info(f"Processing {item_title}")
-                        def get_episode_rating(attribute):
-                            if tmdb_item and attribute == "tmdb":
-                                try:
-                                    return self.config.TMDb.get_episode(tmdb_item.tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average
-                                except Failed as er:
-                                    logger.error(er)
-                            elif imdb_id and attribute == "imdb":
-                                return self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
-                            else:
-                                raise Failed
+                        episode_locked_fields = [f.name for f in ep.fields if f.locked]
+
+                        def update_episode_rating(attribute, item_attr, display):
+                            current = getattr(ep, item_attr)
+                            if attribute in ["remove", "reset"] and current:
+                                ep.editField(item_attr, None, locked=attribute == "remove")
+                                return f"\n{display} | None"
+                            elif attribute in ["unlock", "reset"] and item_attr in episode_locked_fields:
+                                self.library.edit_query(ep, {f"{item_attr}.locked": 0})
+                            elif attribute in ["lock", "remove"] and item_attr not in episode_locked_fields:
+                                self.library.edit_query(ep, {f"{item_attr}.locked": 1})
+                            elif attribute not in ["lock", "unlock", "remove", "reset"]:
+                                found_rating = None
+                                if tmdb_item and attribute == "tmdb":
+                                    try:
+                                        found_rating = self.config.TMDb.get_episode(tmdb_item.tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average
+                                    except Failed as er:
+                                        logger.error(er)
+                                elif imdb_id and attribute == "imdb":
+                                    found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
+
+                                if found_rating is None:
+                                    logger.info(f"No {display} Found")
+                                elif str(current) != str(found_rating):
+                                    ep.editField(item_attr, found_rating)
+                                    return f"\n{display} | {found_rating}"
+                            return ""
 
                         if self.library.mass_episode_audience_rating_update:
-                            try:
-                                new_rating = get_episode_rating(self.library.mass_episode_audience_rating_update)
-                                if not new_rating:
-                                    logger.info(f"No Audience Rating Found")
-                                elif str(ep.audienceRating) != str(new_rating):
-                                    ep.editField("audienceRating", new_rating)
-                                    batch_display += f"\nAudience Rating | {new_rating}"
-                            except Failed:
-                                pass
+                            batch_display += update_episode_rating(self.library.mass_episode_audience_rating_update, "audienceRating", "Audience Rating")
 
                         if self.library.mass_episode_critic_rating_update:
-                            try:
-                                new_rating = get_episode_rating(self.library.mass_episode_critic_rating_update)
-                                if not new_rating:
-                                    logger.info(f"No Critic Rating Found")
-                                elif str(ep.rating) != str(new_rating):
-                                    ep.editField("rating", new_rating)
-                                    batch_display += f"\nCritic Rating | {new_rating}"
-                            except Failed:
-                                pass
+                            batch_display += update_episode_rating(self.library.mass_episode_critic_rating_update, "rating", "Critic Rating")
 
                         if self.library.mass_episode_user_rating_update:
-                            try:
-                                new_rating = get_episode_rating(self.library.mass_episode_user_rating_update)
-                                if not new_rating:
-                                    logger.info(f"No User Rating Found")
-                                elif str(ep.userRating) != str(new_rating):
-                                    ep.editField("userRating", new_rating)
-                                    batch_display += f"\nUser Rating | {new_rating}"
-                            except Failed:
-                                pass
+                            batch_display += update_episode_rating(self.library.mass_episode_user_rating_update, "userRating", "User Rating")
 
-                        ep.saveEdits()
                         if len(batch_display) > 0:
+                            ep.saveEdits()
                             logger.info(f"Batch Edits:{batch_display}")
 
             if self.library.Radarr and self.library.radarr_add_all_existing:

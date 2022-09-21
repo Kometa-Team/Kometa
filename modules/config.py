@@ -33,13 +33,32 @@ from retrying import retry
 logger = util.logger
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
-mass_genre_options = {"tmdb": "Use TMDb Metadata", "imdb": "Use IMDb Rating", "omdb": "Use IMDb Metadata through OMDb", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Tag Metadata"}
-mass_content_options = {"omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "mdb_commonsense": "Use Commonsense Rating through MDbList"}
-mass_original_title_options = {"anidb": "Use AniDB Main Title", "anidb_official": "Use AniDB Official Title based on the language attribute in the config file"}
-mass_available_options = {"tmdb": "Use TMDb Metadata", "omdb": "Use IMDb Metadata through OMDb", "mdb": "Use MdbList Metadata", "tvdb": "Use TVDb Metadata", "anidb": "Use AniDB Metadata"}
 imdb_label_options = {"with_none": "Add IMDb Parental Labels including None", "without_none": "Add IMDb Parental Labels including None"}
-mass_episode_rating_options = {"tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating"}
+mass_genre_options = {
+    "lock": "Unlock Genre", "unlock": "Unlock Genre", "remove": "Remove and Lock Genre", "reset": "Remove and Unlock Genre",
+    "tmdb": "Use TMDb Genres", "imdb": "Use IMDb Genres", "omdb": "Use IMDb Genres through OMDb", "tvdb": "Use TVDb Genres", "anidb": "Use AniDB Tags"
+}
+mass_content_options = {
+    "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
+    "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MdbList Rating", "mdb_commonsense": "Use Commonsense Rating through MDbList"
+}
+mass_original_title_options = {
+    "lock": "Unlock Original Title", "unlock": "Unlock Original Title", "remove": "Remove and Lock Original Title", "reset": "Remove and Unlock Original Title",
+    "anidb": "Use AniDB Main Title", "anidb_official": "Use AniDB Official Title based on the language attribute in the config file"
+}
+mass_available_options = {
+    "lock": "Unlock Originally Available", "unlock": "Unlock Originally Available", "remove": "Remove and Lock Originally Available", "reset": "Remove and Unlock Originally Available",
+    "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MdbList Release", "tvdb": "Use TVDb Release", "anidb": "Use AniDB Release"
+}
+mass_episode_rating_options = {
+    "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
+    "tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating"
+}
 mass_rating_options = {
+    "lock": "Lock Rating",
+    "unlock": "Unlock Rating",
+    "remove": "Remove and Lock Rating",
+    "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
     "trakt_user": "Use Trakt User Rating",
