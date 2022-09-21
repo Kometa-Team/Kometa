@@ -318,8 +318,8 @@ class DataFile:
                                 return str(og_txt).replace(f"<<{var}>>", str(actual_value))
                             else:
                                 return og_txt
-                        for i_check in range(6):
-                            if i_check == 2 or i_check == 4:
+                        for i_check in range(8):
+                            if i_check in [2, 4, 6]:
                                 for dm, dd in default.items():
                                     _data = scan_text(_data, dm, dd)
                             else:
