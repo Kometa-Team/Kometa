@@ -83,13 +83,21 @@ class AniDB:
     def authorize(self, client, version, expiration):
         self.client = client
         self.version = version
-        logger.secret(self.client)
         self.expiration = expiration
+        logger.secret(self.client)
+        if self.config.Cache:
+            value1, value2, success = self.config.Cache.query_testing("anidb_login")
+            if str(value1) == str(client) and str(value2) == str(version) and success:
+                return
         try:
             self.get_anime(69, ignore_cache=True)
+            if self.config.Cache:
+                self.config.Cache.update_testing("anidb_login", self.client, self.version, "True")
         except Failed:
             self.client = None
             self.version = None
+            if self.config.Cache:
+                self.config.Cache.update_testing("anidb_login", self.client, self.version, "False")
             raise
 
     @property

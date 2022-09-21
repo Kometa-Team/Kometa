@@ -268,6 +268,14 @@ class Cache:
                     type TEXT,
                     text TEXT)"""
                 )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS testing (
+                    key INTEGER PRIMARY KEY,
+                    name TEXT,
+                    value1 TEXT,
+                    value2 TEXT,
+                    success TEXT)"""
+                )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute(f"SELECT DISTINCT library FROM image_map")
@@ -935,3 +943,26 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO overlay_special_text(rating_key, type) VALUES(?, ?)", (rating_key, data_type))
                 cursor.execute("UPDATE overlay_special_text SET text = ? WHERE rating_key = ? AND type = ?", (text, rating_key, data_type))
+
+    def query_testing(self, name):
+        value1 = None
+        value2 = None
+        success = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM testing WHERE name = ?", (name,))
+                row = cursor.fetchone()
+                if row:
+                    value1 = row["value1"]
+                    value2 = row["value2"]
+                    success = True if row["success"] == "True" else False
+        return value1, value2, success
+
+    def update_testing(self, name, value1, value2, success):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"INSERT OR IGNORE INTO testing(name) VALUES(?)", (name,))
+                sql = f"UPDATE testing SET value1 = ?, value2 = ?, success = ? WHERE name = ?"
+                cursor.execute(sql, (value1, value2, success, name))
