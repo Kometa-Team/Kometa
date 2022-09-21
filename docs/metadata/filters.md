@@ -201,7 +201,9 @@ A few examples are listed below:
 ```yaml
 collections:
   1080p Documentaries:
-    genre: Documentary
+    plex_search:
+      all:
+        genre: Documentary
     summary: A collection of 1080p Documentaries
     filters:
       resolution: 1080
@@ -216,14 +218,18 @@ collections:
 ```yaml
 collections:
   French Romance:
-    genre: Romance
+    plex_search:
+      all:
+        genre: Romance
     filters:
       audio_language: Français
 ```
 ```yaml
 collections:
   Romantic Comedies:
-    genre: Romance
+    plex_search:
+      all:
+        genre: Romance
     filters:
       genre: Comedy
 ```
@@ -253,8 +259,9 @@ collections:
 collections:
   Good Adam Sandler Romantic Comedies:
     plex_search:
-      genre: Romance
-      actor: Adam Sandler
+      all:
+        genre: Romance
+        actor: Adam Sandler
     filters:
       genre: Comedy
       rating.gte: 7
@@ -262,7 +269,7 @@ collections:
 ```yaml
 collections:
   Movies with Commentary:
-    plex: all
+    plex_all: true
     filters:
       audio_track_title: Commentary
 ```
