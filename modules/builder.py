@@ -107,12 +107,14 @@ tmdb_filters = [
     "original_language", "origin_country", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre",
     "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never", "tmdb_status", "tmdb_type", "tmdb_title"
 ]
-string_filters = ["title", "summary", "studio", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title"]
+string_filters = [
+    "title", "summary", "studio", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title",
+    "audio_codec", "audio_profile", "video_codec", "video_profile"
+]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
-    "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre",
-    "audio_codec", "audio_profile", "video_codec", "video_profile"
+    "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre"
 ]
 tag_modifiers = ["", ".not", ".regex", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_overlay", "has_dolby_vision"]
@@ -134,7 +136,8 @@ all_filters = boolean_filters + special_filters + \
 date_attributes = plex.date_attributes + ["first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]
 year_attributes = plex.year_attributes + ["tmdb_year"]
 number_attributes = plex.number_attributes + ["channels", "height", "width"]
-tag_attributes = plex.tag_attributes + ["audio_codec", "audio_profile", "video_codec", "video_profile"]
+tag_attributes = plex.tag_attributes
+string_attributes = plex.string_attributes + string_filters
 float_attributes = plex.float_attributes + ["aspect"]
 boolean_attributes = plex.boolean_attributes + boolean_filters
 smart_invalid = ["collection_order", "builder_level"]
@@ -1957,7 +1960,7 @@ class CollectionBuilder:
             return valid_list
         elif modifier == ".regex":
             return util.validate_regex(data, self.Type, validate=validate)
-        elif attribute in plex.string_attributes + string_filters and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
+        elif attribute in string_attributes and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute == "origin_country":
             return util.get_list(data, upper=True)
