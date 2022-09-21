@@ -1443,12 +1443,7 @@ class Plex(Library):
         elif filter_attr in builder.number_filters or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
             divider = 60000 if filter_attr == "duration" else 1
             test_number = []
-            if filter_attr in ["resolution", "audio_codec", "audio_profile", "video_codec", "video_profile"]:
-                for media in item.media:
-                    attr = getattr(media, filter_actual)
-                    if attr and attr not in test_number:
-                        test_number.append(attr)
-            elif filter_attr in ["channels", "height", "width", "aspect"]:
+            if filter_attr in ["channels", "height", "width", "aspect"]:
                 test_number = 0
                 for media in item.media:
                     attr = getattr(media, filter_actual)
