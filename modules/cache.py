@@ -132,6 +132,23 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS mal_data (
+                    key INTEGER PRIMARY KEY,
+                    mal_id INTEGER UNIQUE,
+                    title TEXT,
+                    title_english TEXT,
+                    title_japanese TEXT,
+                    status TEXT,
+                    airing TEXT,
+                    aired TEXT,
+                    rating TEXT,
+                    score REAL,
+                    rank INTEGER,
+                    popularity TEXT,
+                    genres TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS tmdb_movie_data (
                     key INTEGER PRIMARY KEY,
                     tmdb_id INTEGER UNIQUE,
@@ -525,6 +542,44 @@ class Cache:
                     anidb.main_title, str(anidb.titles), anidb.rating, anidb.average, anidb.score,
                     anidb.released.strftime("%Y-%m-%d") if anidb.released else None, "|".join(anidb.tags),
                     expiration_date.strftime("%Y-%m-%d"), anidb_id
+                ))
+
+    def query_mal(self, mal_id, expiration):
+        mal_dict = {}
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM mal_data WHERE mal_id = ?", (mal_id,))
+                row = cursor.fetchone()
+                if row:
+                    mal_dict["title"] = row["title"]
+                    mal_dict["title_english"] = row["title_english"] if row["title_english"] else None
+                    mal_dict["title_japanese"] = row["title_japanese"] if row["title_japanese"] else None
+                    mal_dict["status"] = row["status"] if row["status"] else None
+                    mal_dict["airing"] = row["airing"] if row["airing"] else None
+                    mal_dict["aired"] = row["aired"] if row["aired"] else None
+                    mal_dict["rating"] = row["rating"] if row["rating"] else None
+                    mal_dict["score"] = row["score"] if row["score"] else None
+                    mal_dict["rank"] = row["rank"] if row["rank"] else None
+                    mal_dict["popularity"] = row["popularity"] if row["popularity"] else None
+                    mal_dict["genres"] = row["genres"] if row["genres"] else None
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    expired = time_between_insertion.days > expiration
+        return mal_dict, expired
+
+    def update_mal(self, expired, mal_id, mal, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO mal_data(mal_id) VALUES(?)", (mal_id,))
+                update_sql = "UPDATE mal_data SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
+                             "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ? , expiration_date = ? WHERE mal_id = ?"
+                cursor.execute(update_sql, (
+                    mal.title, mal.title_english, mal.title_japanese, mal.status, mal.airing, mal.aired.strftime("%Y-%m-%d") if mal.aired else None,
+                    mal.rating, mal.score, mal.rank, mal.popularity, "|".join(mal.genres), expiration_date.strftime("%Y-%m-%d"), mal_id
                 ))
 
     def query_tmdb_movie(self, tmdb_id, expiration):
