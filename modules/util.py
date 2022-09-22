@@ -203,9 +203,9 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
 def add_dict_list(keys, value, dict_map):
     for key in keys:
         if key in dict_map:
-            dict_map[key].append(value)
+            dict_map[key].append(int(value))
         else:
-            dict_map[key] = [value]
+            dict_map[key] = [int(value)]
 
 def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True):
     if split is True:               split = ","
