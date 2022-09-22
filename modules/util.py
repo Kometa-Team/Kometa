@@ -98,14 +98,35 @@ start_time = None
 
 def current_version(version, nightly=False):
     if nightly:
-        return get_version("nightly")
+        return get_nightly()
     elif version[2] > 0:
-        new_version = get_version("develop")
+        new_version = get_develop()
         if version[1] != new_version[1] or new_version[2] >= version[2]:
             return new_version
-        return get_version("nightly")
+        return get_nightly()
     else:
-        return get_version("master")
+        return get_master()
+
+nightly_version = None
+def get_nightly():
+    global nightly_version
+    if nightly_version is None:
+        nightly_version = get_version("nightly")
+    return nightly_version
+
+develop_version = None
+def get_develop():
+    global develop_version
+    if develop_version is None:
+        develop_version = get_version("develop")
+    return develop_version
+
+master_version = None
+def get_master():
+    global master_version
+    if master_version is None:
+        master_version = get_version("master")
+    return master_version
 
 def get_version(level):
     try:
