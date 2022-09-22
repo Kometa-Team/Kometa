@@ -620,13 +620,28 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: collection_order")
             logger.debug(f"Value: {test_sort}")
-            if test_sort.lower() in plex.collection_order_options:
-                self.details["collection_order"] = test_sort.lower()
-                if test_sort.lower() == "custom" and self.build_collection:
+            if test_sort in plex.collection_order_options:
+                self.details["collection_order"] = test_sort
+                if test_sort == "custom" and self.build_collection:
                     self.custom_sort = True
-            elif (self.library.is_movie and test_sort.lower() in plex.movie_sorts) or (self.library.is_show and test_sort.lower() in plex.show_sorts):
-                self.custom_sort = test_sort.lower()
             else:
+                sort_type = self.builder_level
+                if sort_type == "item":
+                    if self.library.is_show:
+                        sort_type = "show"
+                    elif self.library.is_music:
+                        sort_type = "artist"
+                    else:
+                        sort_type = "movie"
+                _, _, sorts = plex.sort_types[sort_type]
+                if not isinstance(test_sort, list):
+                    test_sort = [test_sort]
+                self.custom_sort = []
+                for ts in test_sort:
+                    if ts not in sorts:
+                        raise Failed(f"{self.Type} Error: collection_order: {ts} is invalid. Options: {', '.join(sorts)}")
+                    self.custom_sort.append(ts)
+            if isinstance(self.custom_sort, list) and not self.custom_sort:
                 raise Failed(f"{self.Type} Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
 
         if self.smart_url or self.smart_label_collection:
@@ -1779,13 +1794,19 @@ class CollectionBuilder:
         filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()} {ms[1].capitalize()}\n"
         type_default_sort, type_key, sorts = plex.sort_types[sort_type]
 
-        sort = default_sort if default_sort else type_default_sort
+        sort = []
         if "sort_by" in filter_alias:
-            if plex_filter[filter_alias["sort_by"]] is None:
+            test_sorts = plex_filter[filter_alias["sort_by"]]
+            if test_sorts is None:
                 raise Failed(f"{self.Type} Error: sort_by attribute is blank")
-            if plex_filter[filter_alias["sort_by"]] not in sorts:
-                raise Failed(f"{self.Type} Error: sort_by: {plex_filter[filter_alias['sort_by']]} is invalid. Options: {', '.join(sorts)}")
-            sort = plex_filter[filter_alias["sort_by"]]
+            if not isinstance(test_sorts, list):
+                test_sorts = [test_sorts]
+            for test_sort in test_sorts:
+                if test_sort not in sorts:
+                    raise Failed(f"{self.Type} Error: sort_by: {test_sort} is invalid. Options: {', '.join(sorts)}")
+                sort.append(test_sort)
+        if not sort:
+            sort.append(default_sort if default_sort else type_default_sort)
         filter_details += f"Sort By: {sort}\n"
 
         limit = None
@@ -1929,7 +1950,7 @@ class CollectionBuilder:
         filter_details = f"{filter_details}Filter:{filter_text}"
         if len(built_filter) > 0:
             final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
-            filter_url = f"?type={type_key}&{f'limit={limit}&' if limit else ''}sort={sorts[sort]}&{final_filter}"
+            filter_url = f"?type={type_key}&{f'limit={limit}&' if limit else ''}sort={'%2C'.join([sorts[s] for s in sort])}&{final_filter}"
         else:
             raise Failed(f"{self.Type} Error: No Filter Created")
 
