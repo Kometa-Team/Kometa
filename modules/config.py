@@ -36,19 +36,23 @@ sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": 
 imdb_label_options = {"with_none": "Add IMDb Parental Labels including None", "without_none": "Add IMDb Parental Labels including None"}
 mass_genre_options = {
     "lock": "Unlock Genre", "unlock": "Unlock Genre", "remove": "Remove and Lock Genre", "reset": "Remove and Unlock Genre",
-    "tmdb": "Use TMDb Genres", "imdb": "Use IMDb Genres", "omdb": "Use IMDb Genres through OMDb", "tvdb": "Use TVDb Genres", "anidb": "Use AniDB Tags"
+    "tmdb": "Use TMDb Genres", "imdb": "Use IMDb Genres", "omdb": "Use IMDb Genres through OMDb", "tvdb": "Use TVDb Genres",
+    "anidb": "Use AniDB Tags", "mal": "Use MyAnimeList Genres"
 }
 mass_content_options = {
     "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
-    "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MdbList Rating", "mdb_commonsense": "Use Commonsense Rating through MDbList"
+    "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MdbList Rating", "mdb_commonsense": "Use Commonsense Rating through MDbList",
+    "mal": "Use MyAnimeList Rating"
 }
 mass_original_title_options = {
     "lock": "Unlock Original Title", "unlock": "Unlock Original Title", "remove": "Remove and Lock Original Title", "reset": "Remove and Unlock Original Title",
-    "anidb": "Use AniDB Main Title", "anidb_official": "Use AniDB Official Title based on the language attribute in the config file"
+    "anidb": "Use AniDB Main Title", "anidb_official": "Use AniDB Official Title based on the language attribute in the config file",
+    "mal": "Use MyAnimeList Main Title", "mal_english": "Use MyAnimeList English Title", "mal_japanese": "Use MyAnimeList Japanese Title",
 }
 mass_available_options = {
     "lock": "Unlock Originally Available", "unlock": "Unlock Originally Available", "remove": "Remove and Lock Originally Available", "reset": "Remove and Unlock Originally Available",
-    "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MdbList Release", "tvdb": "Use TVDb Release", "anidb": "Use AniDB Release"
+    "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MdbList Release", "tvdb": "Use TVDb Release",
+    "anidb": "Use AniDB Release", "mal": "Use MyAnimeList Release"
 }
 mass_episode_rating_options = {
     "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
@@ -75,7 +79,8 @@ mass_rating_options = {
     "mdb_myanimelist": "Use MyAnimeList Rating through MDbList",
     "anidb_rating": "Use AniDB Rating",
     "anidb_average": "Use AniDB Average",
-    "anidb_score": "Use AniDB Review Dcore"
+    "anidb_score": "Use AniDB Review Dcore",
+    "mal": "Use MyAnimeList Rating"
 }
 reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
 
@@ -484,6 +489,7 @@ class ConfigFile:
                         "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="mal", throw=True),
                         "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
+                        "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="mal", var_type="int", default=60, int_min=1),
                         "config_path": self.config_path,
                         "authorization": self.data["mal"]["authorization"] if "authorization" in self.data["mal"] else None
                     })
@@ -785,6 +791,8 @@ class ConfigFile:
                         error_check(mass_key, "MdbList")
                     if params[mass_key] and params[mass_key].startswith("anidb") and not self.AniDB.is_authorized:
                         error_check(mass_key, "AniDB")
+                    if params[mass_key] and params[mass_key].startswith("mal") and self.MyAnimeList is None:
+                        error_check(mass_key, "MyAnimeList")
                     if params[mass_key] and params[mass_key].startswith("trakt") and self.Trakt is None:
                         error_check(mass_key, "Trakt")
 

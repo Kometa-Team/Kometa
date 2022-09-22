@@ -1,4 +1,5 @@
 import re, secrets, time, webbrowser
+from datetime import datetime
 from json import JSONDecodeError
 from modules import util
 from modules.util import Failed, TimeoutExpired, YAML
@@ -51,6 +52,31 @@ urls = {
     "user": f"{base_url}users"
 }
 
+
+class MyAnimeListObj:
+    def __init__(self, mal, mal_id, data, cache=False):
+        self.mal = mal
+        self.mal_id = mal_id
+        self._data = data
+        self.title = self._data["title"]
+        self.title_english = self._data["title_english"]
+        self.title_japanese = self._data["title_japanese"]
+        self.status = self._data["status"]
+        self.airing = self._data["airing"]
+        try:
+            if cache:
+                self.aired = datetime.strptime(self._data["aired"], "%Y-%m-%d")
+            else:
+                self.aired = datetime.strptime(self._data["aired"]["from"], "%Y-%m-%dT%H:%M:%S%z")
+        except (ValueError, TypeError):
+            self.aired = None
+        self.rating = self._data["rating"]
+        self.score = self._data["score"]
+        self.rank = self._data["rank"]
+        self.popularity = self._data["popularity"]
+        self.genres = self._data["genres"].split("|") if cache else [g["name"] for g in self._data["genres"]]
+
+
 class MyAnimeList:
     def __init__(self, config, params):
         self.config = config
@@ -58,6 +84,7 @@ class MyAnimeList:
         self.client_secret = params["client_secret"]
         self.localhost_url = params["localhost_url"]
         self.config_path = params["config_path"]
+        self.expiration = params["cache_expiration"]
         self.authorization = params["authorization"]
         logger.secret(self.client_secret)
         if not self._save(self.authorization):
@@ -65,6 +92,7 @@ class MyAnimeList:
                 self._authorization()
         self._genres = {}
         self._studios = {}
+        self._delay = None
 
     @property
     def genres(self):
@@ -172,8 +200,12 @@ class MyAnimeList:
             raise Failed(f"MyAnimeList Error: Connection Failed")
 
     def _jiken_request(self, url, params=None):
+        time_check = time.time()
+        if self._delay is not None:
+            while time_check - self._delay < 1:
+                time_check = time.time()
         data = self.config.get_json(f"{jiken_base_url}{url}", params=params)
-        time.sleep(2)
+        self._delay = time.time()
         return data
 
     def _parse_request(self, url):
@@ -235,6 +267,23 @@ class MyAnimeList:
                 chances += 1
         logger.exorcise()
         return mal_ids
+
+    def get_anime(self, mal_id):
+        expired = None
+        if self.config.Cache:
+            mal_dict, expired = self.config.Cache.query_mal(mal_id, self.expiration)
+            if mal_dict and expired is False:
+                return MyAnimeListObj(self, mal_id, mal_dict, cache=True)
+        try:
+            response = self._jiken_request(f"anime/{mal_id}")
+        except JSONDecodeError:
+            raise Failed("MyAnimeList Error: JSON Decoding Failed")
+        if "data" not in response:
+            raise Failed(f"MyAnimeList Error: No Anime found for MyAnimeList ID: {mal_id}")
+        mal = MyAnimeListObj(self, mal_id, response["data"])
+        if self.config.Cache:
+            self.config.Cache.update_mal(expired, mal_id, mal, self.expiration)
+        return mal
 
     def get_mal_ids(self, method, data):
         if method == "mal_id":

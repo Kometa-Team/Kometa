@@ -12,6 +12,7 @@ class Convert:
         self.config = config
         self._anidb_ids = {}
         self._mal_to_anidb = {}
+        self._anidb_to_mal = {}
         self._anilist_to_anidb = {}
         self._anidb_to_imdb = {}
         self._anidb_to_tvdb = {}
@@ -22,6 +23,7 @@ class Convert:
             anidb_id = int(anidb_id)
             if "mal_id" in ids:
                 self._mal_to_anidb[int(ids["mal_id"])] = anidb_id
+                self._anidb_to_mal[int(anidb_id)] = int(ids["mal_id"])
             if "anilist_id" in ids:
                 self._anilist_to_anidb[int(ids["anilist_id"])] = anidb_id
             if "imdb_id" in ids and str(ids["imdb_id"]).startswith("tt"):

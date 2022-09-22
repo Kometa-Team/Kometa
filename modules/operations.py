@@ -73,9 +73,11 @@ class Operations:
             trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie) if any([o == "trakt_user" for o in self.library.meta_operations]) else []
 
             reverse_anidb = {}
-            if self.library.mass_genre_update == "anidb":
-                for k, v in self.library.anidb_map.items():
-                    reverse_anidb[v] = k
+            for k, v in self.library.anidb_map.items():
+                reverse_anidb[v] = k
+            reverse_mal = {}
+            for k, v in self.library.mal_map.items():
+                reverse_mal[v] = k
 
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
@@ -157,7 +159,8 @@ class Operations:
                         logger.info(f"No TVDb ID for Guid: {item.guid}")
 
                 anidb_item = None
-                if any([o == "anidb" for o in self.library.meta_operations]):
+                mal_item = None
+                if any([o.startswith("anidb") or o.startswith("mal") for o in self.library.meta_operations]):
                     if item.ratingKey in reverse_anidb:
                         anidb_id = reverse_anidb[item.ratingKey]
                     elif tvdb_id in self.config.Convert._tvdb_to_anidb:
@@ -172,6 +175,19 @@ class Operations:
                             anidb_item = self.config.AniDB.get_anime(anidb_id)
                         except Failed as e:
                             logger.error(str(e))
+                    if any([o.startswith("mal") for o in self.library.meta_operations]):
+                        if item.ratingKey in reverse_mal:
+                            mal_id = reverse_mal[item.ratingKey]
+                        elif not anidb_id or anidb_id not in self.config.Convert._anidb_to_mal:
+                            logger.info(f"No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
+                            mal_id = None
+                        else:
+                            mal_id = self.config.Convert._anidb_to_mal[anidb_id]
+                        if mal_id:
+                            try:
+                                mal_item = self.config.MyAnimeList.get_anime(mal_id)
+                            except Failed as e:
+                                logger.error(str(e))
 
                 mdb_item = None
                 if any([o and o.startswith("mdb") for o in self.library.meta_operations]):
@@ -249,6 +265,8 @@ class Operations:
                             found_rating = anidb_item.average
                         elif anidb_item and attribute == "anidb_score":
                             found_rating = anidb_item.score
+                        elif mal_item and attribute == "mal":
+                            found_rating = mal_item.score
                         else:
                             found_rating = None
 
@@ -282,6 +300,8 @@ class Operations:
                                 new_genres = tvdb_item.genres
                             elif anidb_item and self.library.mass_genre_update == "anidb":
                                 new_genres = [str(t).title() for t in anidb_item.tags]
+                            elif mal_item and self.library.mass_genre_update == "mal":
+                                new_genres = mal_item.genres
                             else:
                                 raise Failed
                             if not new_genres:
@@ -315,6 +335,8 @@ class Operations:
                                 new_rating = mdb_item.content_rating if mdb_item.content_rating else None
                             elif mdb_item and self.library.mass_content_rating_update == "mdb_commonsense":
                                 new_rating = mdb_item.commonsense if mdb_item.commonsense else None
+                            elif mal_item and self.library.mass_content_rating_update == "mal":
+                                new_rating = mal_item.rating
                             else:
                                 raise Failed
                         if self.library.content_rating_mapper:
@@ -352,6 +374,12 @@ class Operations:
                                 new_original_title = anidb_item.main_title
                             elif anidb_item and self.library.mass_original_title_update == "anidb_official":
                                 new_original_title = anidb_item.official_title
+                            elif mal_item and self.library.mass_original_title_update == "mal":
+                                new_original_title = mal_item.title
+                            elif mal_item and self.library.mass_original_title_update == "mal_english":
+                                new_original_title = mal_item.title_english
+                            elif mal_item and self.library.mass_original_title_update == "mal_japanese":
+                                new_original_title = mal_item.title_japanese
                             else:
                                 raise Failed
                             if not new_original_title:
@@ -382,6 +410,8 @@ class Operations:
                                 new_date = tmdb_item.release_date if self.library.is_movie else tmdb_item.first_air_date
                             elif anidb_item and self.library.mass_originally_available_update == "anidb":
                                 new_date = anidb_item.released
+                            elif mal_item and self.library.mass_originally_available_update == "mal":
+                                new_date = mal_item.aired
                             else:
                                 raise Failed
                             if not new_date:
