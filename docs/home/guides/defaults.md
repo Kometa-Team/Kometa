@@ -6,6 +6,8 @@ The intention of this directory is to offer easy to use and slightly customizabl
 
 All posters defined in the Metadata Files are stored in the [Plex Meta Manager Images](https://github.com/meisnate12/Plex-Meta-Manager-Images) Repository and all Overlay images are in the [Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Repository at [PMM/overlays/images](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/overlays/images), which allows for changes to be made in one central location that will deploy to all users of this setup when they next run PMM.
 
+It should be noted that users running the on [nightly branch](https://metamanager.wiki/en/nightly/home/kb.html#how-do-i-switch-to-the-nightly-branch) of Plex Meta Manager will receive all updates to the PMM Defaults as soon as they are published via [GitHub](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM), which may at times involve bugs or implementations that need to be further addressed. Users of the [develop](https://metamanager.wiki/en/nightly/home/kb.html#how-do-i-switch-to-the-develop-branch) and [master](https://metamanager.wiki/en/nightly/home/kb.html#how-do-i-switch-back-to-the-master-branch) branches will only receive updated Defaults files when an update to Plex Meta Manager is released - this helps to protect to keep these branches stable and prevent bugs from reaching the wider user-base.
+
 Credits to Bullmoose20 and Yozora for helping drive this entire Default Set of Configs through the concept, design and implementation.
 
 Special thanks to Magic815 for the overlay image inspiration and base template.
