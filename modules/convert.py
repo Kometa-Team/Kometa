@@ -287,12 +287,12 @@ class Convert:
                         tmdb, tmdb_type = self.imdb_to_tmdb(imdb)
                         if tmdb and tmdb_type == "movie":
                             imdb_id.append(imdb)
-                            tmdb_id.append(tmdb)
+                            tmdb_id.append(int(tmdb))
                             added = True
                     if added is False and anidb_id in self._anidb_to_tvdb:
-                        tvdb_id.append(self._anidb_to_tvdb[anidb_id])
+                        tvdb_id.append(int(self._anidb_to_tvdb[anidb_id]))
                 elif anidb_id in self._anidb_to_tvdb:
-                    tvdb_id.append(self._anidb_to_tvdb[anidb_id])
+                    tvdb_id.append(int(self._anidb_to_tvdb[anidb_id]))
                 else:
                     raise Failed(f"AniDB: {anidb_id} not found")
             else:
@@ -300,7 +300,7 @@ class Convert:
                     for imdb in imdb_id:
                         tmdb, tmdb_type = self.imdb_to_tmdb(imdb)
                         if tmdb and ((tmdb_type == "movie" and library.is_movie) or (tmdb_type == "show" and library.is_show)):
-                            tmdb_id.append(tmdb)
+                            tmdb_id.append(int(tmdb))
 
                 if not imdb_id and tmdb_id and library.is_movie:
                     for tmdb in tmdb_id:
@@ -312,7 +312,7 @@ class Convert:
                     for tmdb in tmdb_id:
                         tvdb = self.tmdb_to_tvdb(tmdb)
                         if tvdb:
-                            tvdb_id.append(tvdb)
+                            tvdb_id.append(int(tvdb))
                     if not tvdb_id:
                         raise Failed(f"Unable to convert TMDb ID: {', '.join([str(t) for t in tmdb_id])} to TVDb ID")
 
