@@ -42,7 +42,7 @@ mass_genre_options = {
 mass_content_options = {
     "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
     "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MdbList Rating", "mdb_commonsense": "Use Commonsense Rating through MDbList",
-    "mal": "Use MyAnimeList Rating"
+    "mdb_commonsense0": "Use Commonsense Rating with Zero Padding through MDbList", "mal": "Use MyAnimeList Rating"
 }
 mass_original_title_options = {
     "lock": "Unlock Original Title", "unlock": "Unlock Original Title", "remove": "Remove and Lock Original Title", "reset": "Remove and Unlock Original Title",
