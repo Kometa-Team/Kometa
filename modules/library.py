@@ -117,7 +117,7 @@ class Library(ABC):
         self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
                                  or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False
-        self.meta_operations = [getattr(self, o) for o in operations.meta_operations if o]
+        self.meta_operations = [i for i in [getattr(self, o) for o in operations.meta_operations] if i]
 
         if self.asset_directory:
             logger.info("")
