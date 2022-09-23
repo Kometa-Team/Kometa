@@ -812,66 +812,71 @@ class ConfigFile:
                         params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), lib_vars, None)]
                     else:
                         params["metadata_path"] = []
-                    params["default_dir"] = default_dir
+                except Failed as e:
+                    logger.error(e)
+                params["default_dir"] = default_dir
 
-                    params["skip_library"] = False
-                    if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules:
-                        if not lib["schedule"]:
-                            raise Failed(f"Config Error: schedule attribute is blank")
-                        else:
-                            logger.debug(f"Value: {lib['schedule']}")
-                            try:
-                                util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
-                            except NotScheduled:
-                                params["skip_library"] = True
-
-                    params["overlay_path"] = []
-                    params["remove_overlays"] = False
-                    params["reapply_overlays"] = False
-                    params["reset_overlays"] = None
-                    if lib and "overlay_path" in lib:
+                params["skip_library"] = False
+                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules:
+                    if not lib["schedule"]:
+                        logger.error(f"Config Error: schedule attribute is blank")
+                    else:
+                        logger.debug(f"Value: {lib['schedule']}")
                         try:
-                            if not lib["overlay_path"]:
-                                raise Failed("Config Error: overlay_path attribute is blank")
-                            files = util.load_files(lib["overlay_path"], "overlay_path", lib_vars=lib_vars)
-                            if not files:
-                                logger.error("Config Error: No Paths Found for overlay_path")
-                            for file in util.get_list(lib["overlay_path"], split=False):
-                                if isinstance(file, dict):
-                                    if ("remove_overlays" in file and file["remove_overlays"] is True) \
-                                            or ("remove_overlay" in file and file["remove_overlay"] is True) \
-                                            or ("revert_overlays" in file and file["revert_overlays"] is True):
-                                        params["remove_overlays"] = True
-                                    if ("reapply_overlays" in file and file["reapply_overlays"] is True) \
-                                            or ("reapply_overlay" in file and file["reapply_overlay"] is True):
-                                        params["reapply_overlays"] = True
-                                    if "reset_overlays" in file or "reset_overlay" in file:
-                                        attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"
-                                        if file[attr] and file[attr] in reset_overlay_options:
-                                            params["reset_overlays"] = file[attr]
-                                        else:
-                                            final_text = f"Config Error: reset_overlays attribute {file[attr]} invalid. Options: "
-                                            for option, description in reset_overlay_options.items():
-                                                final_text = f"{final_text}\n    {option} ({description})"
-                                            logger.error(final_text)
-                                    if "schedule" in file and file["schedule"]:
-                                        logger.debug(f"Value: {file['schedule']}")
-                                        err = None
-                                        try:
-                                            util.schedule_check("schedule", file["schedule"], current_time, self.run_hour)
-                                        except NotScheduledRange as e:
-                                            err = e
-                                        except NotScheduled as e:
-                                            if not self.ignore_schedules:
-                                                err = e
-                                        if err:
-                                            raise NotScheduled(f"{err}\n\nOverlays not scheduled to run")
-                            params["overlay_path"] = files
-                        except NotScheduled as e:
-                            logger.info(e)
-                            params["overlay_path"] = []
-                            params["remove_overlays"] = False
+                            util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
+                        except NotScheduled:
+                            params["skip_library"] = True
 
+                params["overlay_path"] = []
+                params["remove_overlays"] = False
+                params["reapply_overlays"] = False
+                params["reset_overlays"] = None
+                if lib and "overlay_path" in lib:
+                    try:
+                        if not lib["overlay_path"]:
+                            raise Failed("Config Error: overlay_path attribute is blank")
+                        files = util.load_files(lib["overlay_path"], "overlay_path", lib_vars=lib_vars)
+                        if not files:
+                            raise Failed("Config Error: No Paths Found for overlay_path")
+                        for file in util.get_list(lib["overlay_path"], split=False):
+                            if isinstance(file, dict):
+                                if ("remove_overlays" in file and file["remove_overlays"] is True) \
+                                        or ("remove_overlay" in file and file["remove_overlay"] is True) \
+                                        or ("revert_overlays" in file and file["revert_overlays"] is True):
+                                    params["remove_overlays"] = True
+                                if ("reapply_overlays" in file and file["reapply_overlays"] is True) \
+                                        or ("reapply_overlay" in file and file["reapply_overlay"] is True):
+                                    params["reapply_overlays"] = True
+                                if "reset_overlays" in file or "reset_overlay" in file:
+                                    attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"
+                                    if file[attr] and file[attr] in reset_overlay_options:
+                                        params["reset_overlays"] = file[attr]
+                                    else:
+                                        final_text = f"Config Error: reset_overlays attribute {file[attr]} invalid. Options: "
+                                        for option, description in reset_overlay_options.items():
+                                            final_text = f"{final_text}\n    {option} ({description})"
+                                        logger.error(final_text)
+                                if "schedule" in file and file["schedule"]:
+                                    logger.debug(f"Value: {file['schedule']}")
+                                    err = None
+                                    try:
+                                        util.schedule_check("schedule", file["schedule"], current_time, self.run_hour)
+                                    except NotScheduledRange as e:
+                                        err = e
+                                    except NotScheduled as e:
+                                        if not self.ignore_schedules:
+                                            err = e
+                                    if err:
+                                        raise NotScheduled(f"{err}\n\nOverlays not scheduled to run")
+                        params["overlay_path"] = files
+                    except NotScheduled as e:
+                        logger.info(e)
+                        params["overlay_path"] = []
+                        params["remove_overlays"] = False
+                    except Failed as e:
+                        logger.error(e)
+
+                try:
                     logger.info("")
                     logger.separator("Plex Configuration", space=False, border=False)
                     params["plex"] = {

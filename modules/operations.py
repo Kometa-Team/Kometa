@@ -8,7 +8,7 @@ logger = util.logger
 meta_operations = [
     "mass_audience_rating_update", "mass_user_rating_update", "mass_critic_rating_update",
     "mass_episode_audience_rating_update", "mass_episode_user_rating_update", "mass_episode_critic_rating_update",
-    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update"
+    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_original_title_update"
 ]
 
 class Operations:
@@ -33,6 +33,7 @@ class Operations:
         logger.debug(f"Mass Episode Critic Rating Update: {self.library.mass_episode_critic_rating_update}")
         logger.debug(f"Mass Episode User Rating Update: {self.library.mass_episode_user_rating_update}")
         logger.debug(f"Mass Content Rating Update: {self.library.mass_content_rating_update}")
+        logger.debug(f"Mass Original Title Update: {self.library.mass_original_title_update}")
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
         logger.debug(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
@@ -226,8 +227,10 @@ class Operations:
                         return f"\n{display} | None"
                     elif attribute in ["unlock", "reset"] and item_attr in locked_fields:
                         self.library.edit_query(item, {f"{item_attr}.locked": 0})
+                        return f"\n{display} | Unlocked"
                     elif attribute in ["lock", "remove"] and item_attr not in locked_fields:
                         self.library.edit_query(item, {f"{item_attr}.locked": 1})
+                        return f"\n{display} | Locked"
                     elif attribute not in ["lock", "unlock", "remove", "reset"]:
                         if tmdb_item and attribute == "tmdb":
                             found_rating = tmdb_item.vote_average
@@ -306,17 +309,18 @@ class Operations:
                                 raise Failed
                             if not new_genres:
                                 logger.info(f"No Genres Found")
-                        if self.library.genre_mapper:
+                        if self.library.genre_mapper or self.library.mass_genre_update in ["lock", "unlock"]:
                             if not new_genres and self.library.mass_genre_update not in ["remove", "reset"]:
                                 new_genres = [g.tag for g in item.genres]
-                            mapped_genres = []
-                            for genre in new_genres:
-                                if genre in self.library.genre_mapper:
-                                    if self.library.genre_mapper[genre]:
-                                        mapped_genres.append(self.library.genre_mapper[genre])
-                                else:
-                                    mapped_genres.append(genre)
-                            new_genres = mapped_genres
+                            if self.library.genre_mapper:
+                                mapped_genres = []
+                                for genre in new_genres:
+                                    if genre in self.library.genre_mapper:
+                                        if self.library.genre_mapper[genre]:
+                                            mapped_genres.append(self.library.genre_mapper[genre])
+                                    else:
+                                        mapped_genres.append(genre)
+                                new_genres = mapped_genres
                         temp_display = self.library.edit_tags("genre", item, sync_tags=new_genres, do_print=False,
                                                               locked=False if self.library.mass_genre_update in ["unlock", "reset"] else True,
                                                               is_locked="genre" in locked_fields)
@@ -328,7 +332,7 @@ class Operations:
                 if self.library.mass_content_rating_update or self.library.content_rating_mapper:
                     try:
                         new_rating = None
-                        if self.library.mass_content_rating_update and self.library.mass_genre_update not in ["lock", "unlock", "remove", "reset"]:
+                        if self.library.mass_content_rating_update and self.library.mass_content_rating_update not in ["lock", "unlock", "remove", "reset"]:
                             if omdb_item and self.library.mass_content_rating_update == "omdb":
                                 new_rating = omdb_item.content_rating
                             elif mdb_item and self.library.mass_content_rating_update == "mdb":
@@ -340,23 +344,24 @@ class Operations:
                             else:
                                 raise Failed
                         if self.library.content_rating_mapper:
-                            if new_rating is None and self.library.mass_genre_update not in ["remove", "reset"]:
+                            if new_rating is None and self.library.mass_content_rating_update not in ["remove", "reset"]:
                                 new_rating = item.contentRating
                             if new_rating in self.library.content_rating_mapper:
                                 new_rating = self.library.content_rating_mapper[new_rating]
-
                         if self.library.mass_content_rating_update in ["remove", "reset"] and item.contentRating:
                             item.editField("contentRating", None, locked=self.library.mass_content_rating_update == "remove")
                             batch_display += f"\nContent Rating | None"
-                        elif not new_rating and self.library.mass_genre_update not in ["lock", "unlock", "remove", "reset"]:
+                        elif not new_rating and self.library.mass_content_rating_update not in ["lock", "unlock", "remove", "reset"]:
                             logger.info(f"No Content Rating Found")
                         elif str(item.contentRating) != str(new_rating):
                             item.editContentRating(new_rating)
                             batch_display += f"\nContent Rating | {new_rating}"
                         elif self.library.mass_content_rating_update in ["unlock", "reset"] and "contentRating" in locked_fields:
                             self.library.edit_query(item, {"contentRating.locked": 0})
+                            batch_display += f"\nContent Rating | Unlocked"
                         elif self.library.mass_content_rating_update in ["lock", "remove"] and "contentRating" not in locked_fields:
                             self.library.edit_query(item, {"contentRating.locked": 1})
+                            batch_display += f"\nContent Rating | Locked"
                     except Failed:
                         pass
 
@@ -366,8 +371,10 @@ class Operations:
                         batch_display += f"\nOriginal Title | None"
                     elif self.library.mass_original_title_update in ["unlock", "reset"] and "originalTitle" in locked_fields:
                         self.library.edit_query(item, {"originalTitle.locked": 0})
+                        batch_display += f"\nOriginal Title | Unlocked"
                     elif self.library.mass_original_title_update in ["lock", "remove"] and "originalTitle" not in locked_fields:
                         self.library.edit_query(item, {"originalTitle.locked": 1})
+                        batch_display += f"\nOriginal Title | Locked"
                     elif self.library.mass_original_title_update not in ["lock", "unlock", "remove", "reset"]:
                         try:
                             if anidb_item and self.library.mass_original_title_update == "anidb":
@@ -396,8 +403,10 @@ class Operations:
                         batch_display += f"\nOriginally Available Date | None"
                     elif self.library.mass_originally_available_update in ["unlock", "reset"] and "originallyAvailableAt" in locked_fields:
                         self.library.edit_query(item, {"originallyAvailableAt.locked": 0})
+                        batch_display += f"\nOriginally Available Date | Unlocked"
                     elif self.library.mass_originally_available_update in ["lock", "remove"] and "originallyAvailableAt" not in locked_fields:
                         self.library.edit_query(item, {"originallyAvailableAt.locked": 1})
+                        batch_display += f"\nOriginally Available Date | Locked"
                     elif self.library.mass_originally_available_update not in ["lock", "unlock", "remove", "reset"]:
                         try:
                             if omdb_item and self.library.mass_originally_available_update == "omdb":
@@ -448,8 +457,10 @@ class Operations:
                                 return f"\n{display} | None"
                             elif attribute in ["unlock", "reset"] and item_attr in episode_locked_fields:
                                 self.library.edit_query(ep, {f"{item_attr}.locked": 0})
+                                return f"\n{display} | Unlocked"
                             elif attribute in ["lock", "remove"] and item_attr not in episode_locked_fields:
                                 self.library.edit_query(ep, {f"{item_attr}.locked": 1})
+                                return f"\n{display} | Locked"
                             elif attribute not in ["lock", "unlock", "remove", "reset"]:
                                 found_rating = None
                                 if tmdb_item and attribute == "tmdb":
