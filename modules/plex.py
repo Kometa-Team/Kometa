@@ -1006,6 +1006,7 @@ class Plex(Library):
                 display += f"-{', -'.join(_remove)}"
             if is_locked is not None and not display and is_locked != locked:
                 self.edit_query(obj, {f"{actual}.locked": 1 if locked else 0})
+                display = "Locked" if locked else "Unlocked"
             final = f"{obj.title[:25]:<25} | {attr_display} | {display}" if display else display
             if do_print and final:
                 logger.info(final)
