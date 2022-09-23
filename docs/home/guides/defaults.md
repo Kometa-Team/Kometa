@@ -473,9 +473,9 @@ libraries:
     - git: PMM/movie/writer
     overlay_path:
     - remove_overlays: false
-    - git: PMM/overlays/age
     - git: PMM/overlays/audio_codec
     - git: PMM/overlays/audio_language
+    - git: PMM/overlays/commonsense
     - git: PMM/overlays/direct_play
     - git: PMM/overlays/mediastinger
     - git: PMM/overlays/imdb_top_250
@@ -518,13 +518,6 @@ libraries:
     - git: PMM/show/network
     overlay_path:
     - remove_overlays: false
-    - git: PMM/overlays/age
-    - git: PMM/overlays/age
-      template_variables:
-        overlay_level: episode
-    - git: PMM/overlays/age
-      template_variables:
-        overlay_level: season
     - git: PMM/overlays/audio_codec
     - git: PMM/overlays/audio_codec
       template_variables:
@@ -537,6 +530,13 @@ libraries:
       template_variables:
         overlay_level: episode
     - git: PMM/overlays/audio_language
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/commonsense
+    - git: PMM/overlays/commonsense
+      template_variables:
+        overlay_level: episode
+    - git: PMM/overlays/commonsense
       template_variables:
         overlay_level: season
     - git: PMM/overlays/direct_play
