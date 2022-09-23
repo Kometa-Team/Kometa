@@ -340,7 +340,7 @@ class Operations:
                             elif mdb_item and self.library.mass_content_rating_update == "mdb_commonsense":
                                 new_rating = mdb_item.commonsense if mdb_item.commonsense else None
                             elif mdb_item and self.library.mass_content_rating_update == "mdb_commonsense0":
-                                new_rating = f"{mdb_item.commonsense:02}" if mdb_item.commonsense else None
+                                new_rating = str(mdb_item.commonsense).rjust(2, "0") if mdb_item.commonsense else None
                             elif mal_item and self.library.mass_content_rating_update == "mal":
                                 new_rating = mal_item.rating
                             else:
