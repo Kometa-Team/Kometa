@@ -7,7 +7,9 @@ For example, an actor collection might look like this:
 ```yaml
 collections:
   Bruce Lee:
-    actor: tmdb
+    plex_search:
+      all:
+        actor: tmdb
     tmdb_person: 19429
     sort_title: !_Bruce Lee
     sync_mode: sync
@@ -19,13 +21,17 @@ Then you add another:
 ```yaml
 collections:
   Bruce Lee:
-    actor: tmdb
+    plex_search:
+      all:
+        actor: tmdb
     tmdb_person: 19429
     sort_title: !_Bruce Lee
     sync_mode: sync
     collection_order: release
   Chris Pratt:
-    actor: tmdb
+    plex_search:
+      all:
+        actor: tmdb
     tmdb_person: 73457
     sort_title: !_Chris Pratt
     sync_mode: sync
@@ -45,7 +51,9 @@ For example, a template for those two collections might look like this:
 ```yaml
 templates:
   Actor:
-    actor: tmdb
+    plex_search:
+      all:
+        actor: tmdb
     tmdb_person: <<person>>
     sort_title: !_<<collection_name>>
     sync_mode: sync
@@ -85,7 +93,9 @@ Here's the full example Actor template and two different ways to use it, as it w
 ```yaml
 templates:
   Actor:
-    actor: tmdb
+    plex_search:
+      all:
+        actor: tmdb
     tmdb_person: <<person>>
     sort_title: !_<<collection_name>>
     sync_mode: sync
@@ -97,6 +107,34 @@ collections:
     template:
       name: Actor
       person: 73457
+```
+
+## Multi-Template Variables
+
+When using multiple Templates in a single definition you can send the same variable to all templates by using the `variables` attribute.
+
+```yaml
+templates:
+  Actor:
+    plex_search:
+      all:
+        actor: tmdb
+    tmdb_person: <<person>>
+    sort_title: !_<<collection_name>>
+  Common:
+    summary: "Movies that <<collection_name>> (TMDb ID: <<person>>) are in"
+    sync_mode: sync
+    collection_order: release
+collections:
+  Bruce Lee:
+    variables: {person: 19429}
+    template: [{name: Actor}, {name: Common}]
+  Chris Pratt:
+    variables:
+      person: 19429
+    template:
+     - name: Actor
+     - name: Common
 ```
 
 ## Special Template Attributes
