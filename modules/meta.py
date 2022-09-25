@@ -631,7 +631,7 @@ class MetadataFile(DataFile):
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
                     for add_key, combined_keys in addons.items():
-                        if add_key not in all_keys:
+                        if add_key not in all_keys and add_key not in og_exclude:
                             final_keys = [ck for ck in combined_keys if ck in all_keys]
                             if final_keys:
                                 if include:
