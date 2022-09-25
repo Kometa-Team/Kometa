@@ -34,7 +34,7 @@ class GitHub:
     def config_tags(self):
         if not self._config_tags:
             try:
-                self._config_tags = [r["ref"][10:] for r in self.config.get_json(f"{base_url}-Configs/git/refs/tags")]
+                self._config_tags = [r["ref"][11:] for r in self.config.get_json(f"{base_url}-Configs/git/refs/tags")]
             except TypeError:
                 pass
         return self._config_tags
@@ -43,10 +43,9 @@ class GitHub:
     def configs_url(self):
         if self._configs_url is None:
             self._configs_url = f"{configs_raw_url}/master/"
-            if self.config.latest_version[1] != self.config.version[1]:
-                if self.config.version[1] in self.config_tags:
-                    self._configs_url = f"{configs_raw_url}/{self.config.version[1]}/"
-            elif not self.config.check_nightly and self.config.version[2] > 0:
-                if util.get_develop()[2] >= self.config.version[2]:
-                    self._configs_url = f"{configs_raw_url}/{self.config.version[1]}/"
+            if self.config.version[1] in self.config_tags and (
+                    self.config.latest_version[1] != self.config.version[1]
+                    or (not self.config.check_nightly and 0 <= self.config.version[2] <= util.get_develop()[2])
+            ):
+                self._configs_url = f"{configs_raw_url}/v{self.config.version[1]}/"
         return self._configs_url
