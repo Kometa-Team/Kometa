@@ -434,9 +434,9 @@ class MetadataFile(DataFile):
                             og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist")
                         include = []
                         if "include" in self.temp_vars:
-                            include = util.parse("Config", "include", self.temp_vars["include"], parent="template_variable", datatype="strlist")
+                            include = [i for i in util.parse("Config", "include", self.temp_vars["include"], parent="template_variable", datatype="strlist") if i not in og_exclude]
                         elif "include" in methods:
-                            include = util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist")
+                            include = [i for i in util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if i not in og_exclude]
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "addons" in methods else {}
                         exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
@@ -708,7 +708,8 @@ class MetadataFile(DataFile):
                     logger.debug(f"Mapping Name: {map_name}")
                     logger.debug(f"Type: {auto_type}")
                     logger.debug(f"Data: {dynamic_data}")
-                    logger.debug(f"Exclude: {exclude}")
+                    logger.debug(f"Exclude: {og_exclude}")
+                    logger.debug(f"Exclude Final: {exclude}")
                     logger.debug(f"Addons: {addons}")
                     logger.debug(f"Template: {template_names}")
                     logger.debug(f"Other Template: {other_templates}")

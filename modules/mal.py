@@ -74,7 +74,7 @@ class MyAnimeListObj:
         self.score = self._data["score"]
         self.rank = self._data["rank"]
         self.popularity = self._data["popularity"]
-        self.genres = self._data["genres"].split("|") if cache else [g["name"] for g in self._data["genres"]]
+        self.genres = [] if not self._data["genres"] else self._data["genres"].split("|") if cache else [g["name"] for g in self._data["genres"]]
 
 
 class MyAnimeList:
