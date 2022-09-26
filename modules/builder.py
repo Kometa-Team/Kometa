@@ -1653,30 +1653,6 @@ class CollectionBuilder:
                                 break
                         if not found and input_id not in self.missing_movies:
                             self.missing_movies.append(input_id)
-                elif id_type in ["tvdb", "tmdb_show", "tvdb_season", "tvdb_episode"] and not self.parts_collection:
-                    if id_type == "tmdb_show":
-                        try:
-                            tvdb_id = self.config.Convert.tmdb_to_tvdb(input_id, fail=True)
-                        except Failed as e:
-                            logger.warning(e)
-                            continue
-                    elif id_type == "tvdb_season":
-                        tvdb_id, _ = input_id.split("_")
-                        tvdb_id = int(tvdb_id)
-                    elif id_type == "tvdb_episode":
-                        tvdb_id, _, _ = input_id.split("_")
-                        tvdb_id = int(tvdb_id)
-                    else:
-                        tvdb_id = int(input_id)
-                    if tvdb_id not in self.ignore_ids:
-                        found = False
-                        for pl_library in self.libraries:
-                            if tvdb_id in pl_library.show_map:
-                                found = True
-                                rating_keys = pl_library.show_map[tvdb_id]
-                                break
-                        if not found and tvdb_id not in self.missing_shows:
-                            self.missing_shows.append(tvdb_id)
                 elif id_type == "tvdb_season" and (self.builder_level == "season" or self.playlist):
                     tvdb_id, season_num = input_id.split("_")
                     tvdb_id = int(tvdb_id)
@@ -1710,6 +1686,30 @@ class CollectionBuilder:
                                 self.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
                     if not found and tvdb_id not in self.missing_shows and self.do_missing:
                         self.missing_shows.append(tvdb_id)
+                elif id_type in ["tvdb", "tmdb_show", "tvdb_season", "tvdb_episode"] and not self.parts_collection:
+                    if id_type == "tmdb_show":
+                        try:
+                            tvdb_id = self.config.Convert.tmdb_to_tvdb(input_id, fail=True)
+                        except Failed as e:
+                            logger.warning(e)
+                            continue
+                    elif id_type == "tvdb_season":
+                        tvdb_id, _ = input_id.split("_")
+                        tvdb_id = int(tvdb_id)
+                    elif id_type == "tvdb_episode":
+                        tvdb_id, _, _ = input_id.split("_")
+                        tvdb_id = int(tvdb_id)
+                    else:
+                        tvdb_id = int(input_id)
+                    if tvdb_id not in self.ignore_ids:
+                        found = False
+                        for pl_library in self.libraries:
+                            if tvdb_id in pl_library.show_map:
+                                found = True
+                                rating_keys = pl_library.show_map[tvdb_id]
+                                break
+                        if not found and tvdb_id not in self.missing_shows:
+                            self.missing_shows.append(tvdb_id)
                 else:
                     continue
 

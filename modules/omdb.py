@@ -1,6 +1,7 @@
 from datetime import datetime
 from modules import util
 from modules.util import Failed
+from json import JSONDecodeError
 
 logger = util.logger
 
@@ -64,7 +65,10 @@ class OMDb:
                 self.config.Cache.update_omdb(expired, omdb, self.expiration)
             return omdb
         else:
-            error = response.json()['Error']
-            if error == "Request limit reached!":
-                self.limit = True
+            try:
+                error = response.json()['Error']
+                if error == "Request limit reached!":
+                    self.limit = True
+            except JSONDecodeError:
+                error = f"Invalid JSON: {response.content}"
             raise Failed(f"OMDb Error: {error}")
