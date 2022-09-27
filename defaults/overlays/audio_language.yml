@@ -38,7 +38,7 @@ templates:
       back_radius: 30
       back_width: 188
       back_height: 105
-    collection_level: <<overlay_level>>
+    overlay_level: <<overlay_level>>
     ignore_blank_results: true
     overlay:
       name: <<overlay_name>>

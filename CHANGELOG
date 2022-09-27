@@ -1,8 +1,31 @@
-# METADATA CHANGES
+# Requirements Update (requirements will need to be reinstalled)
+Updated plexapi requirement to 4.13.0
+Updated num2words requirement to 0.5.12
+Updated pathvalidate requirement to 2.5.2
+
+**New Site to request and vote for Features Requests on at [features.metamanager.wiki](https://features.metamanager.wiki/)**
+
+# New Features
+Added support for editions in `plex_search`, `smart_filter`, special text overlays, and metadata editing.
+Added `item_edition` [item metadata detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html#item-metadata-details) to update the edition of items in a collection
+Added `edition` [dynamic collection type](https://metamanager.wiki/en/latest/metadata/dynamic.html#edition)
+Added `last_episode_aired_or_never` [date filter](https://metamanager.wiki/en/latest/metadata/filters.html#date-filters). thanks @axsuul#0591
+Added `versions` [number filter](https://metamanager.wiki/en/latest/metadata/filters.html#number-filters)
+Added `imdb_watchlist` [builder](https://metamanager.wiki/en/latest/metadata/builders/imdb.html#imdb-watchlist)
+Added `item_genre` [item metadata detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html#item-metadata-details) to update the genres of items in a collection
+Added `plex_watchlist` [Builder](https://metamanager.wiki/en/latest/metadata/builders/plex.html#plex-watchlist)
+Added `stroke_width` and `stroke_color` as options for text overlays
+Added multiple new [special text variables](https://metamanager.wiki/en/latest/metadata/overlay.html#special-text-variables) and modifiers.
+Added support for the [AniDB API](https://metamanager.wiki/en/latest/config/anidb.html)
+Adds `mass_original_title_update` [library operation](https://metamanager.wiki/en/latest/config/operations.html)
+Adds many new options to the various mass_update [library operations](https://metamanager.wiki/en/latest/config/operations.html)
+Added the ability to give a list of sorts with `plex_search` and `smart_filter` to create a tiered sort
+
+# Default Metadata Changes
 Added Common Sense Selection [Movie](https://www.commonsensemedia.org/reviews/category/movie/tag/common-sense-selections-31822)] and [Show](https://www.commonsensemedia.org/reviews/category/tv/tag/common-sense-selections-31822) collections to `PMM/chart/other`
 Added several [visual styles for Separators](https://github.com/meisnate12/Plex-Meta-Manager-Images/tree/master/separators) to match PLEX's Categories theming. Called using `sep_style` template variable
 
-# OVERLAY CHANGES
+# Default Overlay Changes
 Enhanced resolution.yml and special_release.yml to add International Cut, Ultimate Cut, Anniversary Cut, Theatrical Cut, Collectors Edition for both dovetail overlays with resolutions and box overlays
 Enhanced resolution.yml and special_release.yml to support both dovetail overlays with resolutions and box overlays when resolutions are not being used. Regexes were enhanced to support the new TRaSH naming guides with the `{edition-` naming scheme
 Added [Common Sense Age Rating](https://www.commonsensemedia.org/) overlays, called with `- git: PMM/overlays/commonsense` and to be used in combination with operation `mass_content_rating_update: mdb_commonsense`
@@ -16,5 +39,12 @@ Added Oscars Ribbon overlay for [Best Picture Winners](https://www.imdb.com/sear
 Added visual indicator of multiple versions of media, called with `- git: PMM/overlays/versions`
 - See "The Incredible Hulk" and "Thor" in [this image]([https://cdn.discordapp.com/attachments/927936511238869042/1021788091037519892/unknown.png)
 
-# OTHER CHANGES
-Changed various [template names](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/templates.yml). If you are running local copies of the PMM default files which call the git version of the templates file , it is strongly recommended you check template names on all your local file collections. 
+# Other Default Changes
+Changed various [template names](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/templates.yml). If you are running local copies of the PMM default files which call the git version of the templates file , it is strongly recommended you check template names on all your local file collections.
+
+# Bug Fixes
+Fixes Addon Images
+Fix Configs Repo Versioning
+Fixes codec and profile filters
+Fixes Ratings Error
+Various other minor fixes

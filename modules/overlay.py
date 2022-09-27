@@ -227,9 +227,13 @@ class Overlay:
                 temp_path = self.data["pmm"] if "pmm" in self.data and self.data["pmm"] else self.data["git"][4:]
                 if temp_path.startswith("overlays/images/"):
                     temp_path = temp_path[16:]
+                if not temp_path.endswith(".png"):
+                    temp_path = f"{temp_path}.png"
                 images_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults", "overlays", "images")
-                if os.path.exists(os.path.abspath(os.path.join(images_path, temp_path))):
-                    self.path = os.path.abspath(os.path.join(images_path, temp_path))
+                logger.debug(os.path.abspath(os.path.join(images_path, temp_path)))
+                if not os.path.exists(os.path.abspath(os.path.join(images_path, temp_path))):
+                    raise Failed(f"Overlay Error: Overlay Image not found at: {os.path.abspath(os.path.join(images_path, temp_path))}")
+                self.path = os.path.abspath(os.path.join(images_path, temp_path))
             elif "file" in self.data and self.data["file"]:
                 self.path = self.data["file"]
             elif "git" in self.data and self.data["git"]:

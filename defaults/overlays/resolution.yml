@@ -46,7 +46,6 @@ templates:
       - use_<<resolution>>
       - use_<<alt>>
       - all
-      - resolution
     default:
       resolution: ""
       alt: ""

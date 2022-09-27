@@ -125,9 +125,9 @@ templates:
     filters:
       filepath.regex:
         - <<regex1>>
-        - <<regex1>>
-        - "edition-(?i)\b<<search>>\b"           # New TRaSH naming
-        - "(?<=[0-9]{4}[)}>\]]\s)\b<<search>>\b" # Original TRaSH naming
+        - <<regex2>>
+        - 'edition-(?i)\b<<search>>\b'           # New TRaSH naming
+        - '(?<=[0-9]{4}[)}>\]]\s)\b<<search>>\b' # Original TRaSH naming
 
 overlays:
   Directors-Cut:
@@ -186,14 +186,14 @@ overlays:
     template: {name: Edition, weight: 50, slug: ultimate, search: Ultimate, dovetail: true}
 
   IMAX-E:
-    template: {name: Edition, weight: 40, slug: enhanced, dovetail: false, regex1: "(?i)\bIMAX Enhanced\b|^(?=.*(DSNP|Disney\+|CORE(?=[ ._-]web[ ._-]?(dl|rip)\b)|\bBC(?=[ ._-]web[ ._-]?(dl|rip)\b)|IMAX[- .]Enhanced)\b)(?=.*\b(IMAX|IMAX[- .]Enhanced)\b).*"}
+    template: {name: Edition, weight: 40, slug: enhanced, dovetail: false, regex1: '(?i)\bIMAX Enhanced\b|^(?=.*(DSNP|Disney\+|CORE(?=[ ._-]web[ ._-]?(dl|rip)\b)|\bBC(?=[ ._-]web[ ._-]?(dl|rip)\b)|IMAX[- .]Enhanced)\b)(?=.*\b(IMAX|IMAX[- .]Enhanced)\b).*'}
   IMAX-E-Dovetail:
-    template: {name: Edition, weight: 40, slug: enhanced, dovetail: true, regex1: "(?i)\bIMAX Enhanced\b|^(?=.*(DSNP|Disney\+|CORE(?=[ ._-]web[ ._-]?(dl|rip)\b)|\bBC(?=[ ._-]web[ ._-]?(dl|rip)\b)|IMAX[- .]Enhanced)\b)(?=.*\b(IMAX|IMAX[- .]Enhanced)\b).*"}
+    template: {name: Edition, weight: 40, slug: enhanced, dovetail: true, regex1: '(?i)\bIMAX Enhanced\b|^(?=.*(DSNP|Disney\+|CORE(?=[ ._-]web[ ._-]?(dl|rip)\b)|\bBC(?=[ ._-]web[ ._-]?(dl|rip)\b)|IMAX[- .]Enhanced)\b)(?=.*\b(IMAX|IMAX[- .]Enhanced)\b).*'}
 
   IMAX:
-    template: {name: Edition, weight: 30, slug: imax, dovetail: false, regex1: "(?i)\bIMAX\b"}
+    template: {name: Edition, weight: 30, slug: imax, dovetail: false, regex1: '(?i)\bIMAX\b'}
   IMAX-Dovetail:
-    template: {name: Edition, weight: 30, slug: imax, dovetail: true, regex1: "(?i)\bIMAX\b"}
+    template: {name: Edition, weight: 30, slug: imax, dovetail: true, regex1: '(?i)\bIMAX\b'}
 
   Remastered:
     template: {name: Edition, weight: 20, slug: remastered, search: (Remaster|Remastered|4k Remaster|4k Remastered), dovetail: false}
@@ -201,6 +201,6 @@ overlays:
     template: {name: Edition, weight: 20, slug: remastered, search: (Remaster|Remastered|4k Remaster|4k Remastered), dovetail: true}
 
   Criterion:
-    template: {name: Edition, weight: 10, slug: criterion, dovetail: false, regex1: "(?i)Criterion", regex2: "(?i)\[CC\]"}
+    template: {name: Edition, weight: 10, slug: criterion, dovetail: false, regex1: '(?i)Criterion', regex2: '(?i)\[CC\]'}
   Criterion-Dovetail:
-    template: {name: Edition, weight: 10, slug: criterion, dovetail: true, regex1: "(?i)Criterion", regex2: "(?i)\[CC\]"}
+    template: {name: Edition, weight: 10, slug: criterion, dovetail: true, regex1: '(?i)Criterion', regex2: '(?i)\[CC\]'}
