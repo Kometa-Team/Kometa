@@ -6,7 +6,7 @@ Example Collections Created:
 
 ![](images/actor1.png)
 
-The below YAML in your config.yml will create the actor collections:
+The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
