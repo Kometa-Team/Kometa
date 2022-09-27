@@ -87,7 +87,7 @@ templates:
         conditions:
           - style: standard
             value: <<standard_value>>
-    collection_level: <<overlay_level>>
+    overlay_level: <<overlay_level>>
     allowed_library_types: <<use_<<slug>>>>
     ignore_blank_results: true
     overlay:
