@@ -37,10 +37,28 @@ templates:
         conditions:
           - dovetail: true
             value: 189
-      dovetail_overlay:
+      suppress_overlays:
         conditions:
+          - dovetail: true
+            value:
+              - Directors-Cut
+              - Extended-Edition
+              - Uncut-Edition
+              - Unrated-Edition
+              - Special-Edition
+              - Final-Cut
+              - Anniversary-Edition
+              - Collectors-Edition
+              - International-Cut
+              - Theatrical-Cut
+              - Ultimate-Cut
+              - IMAX-E
+              - IMAX
+              - Remastered
+              - Criterion
           - dovetail: false
-            value: <<overlay_name>>-Dovetail
+            value:
+              - <<overlay_name>>-Dovetail
     optional:
       - overlay_level
       - use_<<resolution>>
@@ -61,23 +79,7 @@ templates:
     allowed_library_types:
       - <<use_<<resolution>>>>
       - <<use_<<alt>>>>
-    suppress_overlays:
-      - Directors-Cut
-      - Extended-Edition
-      - Uncut-Edition
-      - Unrated-Edition
-      - Special-Edition
-      - Final-Cut
-      - Anniversary-Edition
-      - Collectors-Edition
-      - International-Cut
-      - Theatrical-Cut
-      - Ultimate-Cut
-      - IMAX-E
-      - IMAX
-      - Remastered
-      - Criterion
-      - <<dovetail_overlay>>
+    suppress_overlays: <<suppress_overlays>>
     overlay:
       name: <<overlay_name>>
       pmm: resolution/<<resolution>><<alt>>

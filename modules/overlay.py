@@ -230,7 +230,6 @@ class Overlay:
                 if not temp_path.endswith(".png"):
                     temp_path = f"{temp_path}.png"
                 images_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults", "overlays", "images")
-                logger.debug(os.path.abspath(os.path.join(images_path, temp_path)))
                 if not os.path.exists(os.path.abspath(os.path.join(images_path, temp_path))):
                     raise Failed(f"Overlay Error: Overlay Image not found at: {os.path.abspath(os.path.join(images_path, temp_path))}")
                 self.path = os.path.abspath(os.path.join(images_path, temp_path))
