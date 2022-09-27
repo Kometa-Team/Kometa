@@ -1,0 +1,304 @@
+#############################################################
+#                Dynamic Network Collections                #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Show only)               #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/show/network                              #
+#        template_variables:                                #
+#          # Turn the separator collection on/off           #
+#          use_separator: true                              #
+#          # Separator style (red, blue, green, gray,       #
+#              purple, stb, orig)                           #
+#          sep_style: orig                                  #
+#          # Turn the other collection on/off               #
+#          use_other: true                                  #
+#          # Sets how the collection is sorted              #
+#          sort_by: release.desc                            #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: "04"                         #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag:                                 #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: "04"
+
+templates:
+  networks_dynamic:
+    default:
+      sort_by: release.desc
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/network/<<key_encoded>>.jpg
+    smart_filter:
+      sort_by: <<sort_by>>
+      any:
+        network: <<value>>
+
+collections:
+  Network Collections:
+    template:
+      - name: separator
+        separator: network
+
+dynamic_collections:
+  Network US:
+    type: network
+    title_format: <<key_name>>
+    template:
+      - networks_dynamic
+      - shared
+    other_template:
+      - networks_dynamic
+      - shared
+    include:
+      - A&E
+      - ABC
+      - Amazon
+      - AMC
+      - Animal Planet
+      - BBC
+      - BET
+      - Cartoon Network
+      - Channel 4
+      - Channel 5 
+      - CBC
+      - CBS
+      - Comedy Central
+      - Discovery
+      - Disney Channel
+      - E!
+      - ESPN
+      - Food Network
+      - FOX
+      - Hallmark
+      - HBO
+      - HGTV
+      - History
+      - ITV
+      - Lifetime
+      - MTV
+      - National Geographic
+      - NBC
+      - Nickelodeon
+      - PBS
+      - Showtime
+      - Sky
+      - Starz
+      - The CW
+      - TLC
+      - TNT
+      - UKTV
+      - USA
+      - YouTube
+
+    addons:
+      A&E:
+        - A+E Networks UK
+      ABC:
+        - ABC (AU)
+        - ABC (US)
+        - ABC Comedy
+        - ABC Family
+        - ABC Kids
+        - ABC Me
+        - ABC Signature
+        - ABC Spark
+        - ABC Studios
+        - ABC.com
+        - Freeform
+      Amazon:
+        - Amazon (Japan)
+        - Amazon Kids+
+        - Amazon Prime Video
+        - Amazon Productions
+        - Amazon Studios
+        - Prime
+        - Prime Video
+      AMC:
+        - AMC+
+      Animal Planet:
+        - Animal Planet (CA)
+        - Animal Planet (UK)
+      BBC:
+        - BBC Alba
+        - BBC America
+        - BBC Choice
+        - BBC First
+        - BBC Four
+        - BBC HD
+        - BBC iPlayer
+        - BBC Kids
+        - BBC Knowledge
+        - BBC News
+        - BBC One
+        - BBC One Northern Ireland
+        - BBC Scotland
+        - BBC Television
+        - BBC Three
+        - BBC Two
+        - BBC UKTV
+        - BBC Wales
+        - BBC World News
+        - CBBC
+        - CBeebies
+      BET:
+        - BET+
+      Cartoon Network:
+        - Cartoonito
+      Channel 4:
+        - 4seven
+        - All 4
+        - E4
+        - More4
+      Channel 5:
+        - Channel 5 (UK)
+        - 5Action
+        - 5Select
+        - 5Star
+        - 5USA
+      CBC:
+        - CBC (CA)
+        - CBC Gem
+        - CBC Television
+      CBS:
+        - CBS All Access
+        - CBS Reality
+        - CBS Reality (UK)
+        - CBS.com
+      Comedy Central:
+        - Comedy Central (UK)
+      Discovery:
+        - Discovery Asia
+        - Discovery Channel
+        - Discovery Channel (Asia)
+        - Discovery Channel (AU)
+        - Discovery Channel (CA)
+        - Discovery Channel (UK)
+        - Discovery Family
+        - Discovery Health Channel
+        - Discovery Kids
+        - Discovery Life
+        - Discovery Real Time
+        - Discovery Turbo
+        - Discovery Turbo UK
+        - discovery+
+        - Discovery+ (IN)
+        - Discovery+ (NO)
+        - Discovery+ (SE)
+        - Discovery+ (UK)
+      Disney Channel:
+        - Disney Channel (CZ)
+        - Disney Channel (UK)
+        - Disney Junior
+        - Disney XD  
+        - Disney+
+        - Playhouse Disney
+        - Toon Disney    
+      E!:
+        - e.tv
+      ESPN:
+        - ESPN+
+      Food Network:
+        - Cooking Channel
+      FOX:
+        - Fox Action Movies
+        - Fox Business Network
+        - FOX España
+        - Fox Kids
+        - Fox Nation
+        - Fox Premium Series
+        - FOX Sports 1
+        - Fox Sports Networks
+        - Fox8
+        - FX
+        - FXX
+      Hallmark:
+        - Hallmark Channel
+        - Hallmark Movies & Mysteries
+        - Hallmark Movies Now
+      HBO:
+        - HBO2
+        - HBO Asia
+        - HBO Canada
+        - HBO Comedy
+        - HBO España
+        - HBO Europe
+        - HBO Family
+        - HBO Latin America
+        - HBO Nordic
+        - HBO Signature
+        - HBO Zone
+      History:
+        - History (CA)
+        - History (UK)
+      ITV:
+        - ITV Encore
+        - ITV Wales
+        - ITV1
+        - ITV2
+        - ITV4
+        - ITVBe
+        - CITV
+        - STV
+      Lifetime:
+        - Lifetime Movies
+      MTV:
+        - MTV (AU/NZ)
+        - MTV (UK)
+        - MTV Japan
+        - MTV Nederland
+        - MTV2
+        - MTV3
+      National Geographic:
+        - Nat Geo Wild
+        - National Geographic Brasil
+        - National Geographic Channel
+        - National Geographic Wild
+      Nickelodeon:
+        - Nick at Nite
+        - Nick Jr.
+        - Nicktoons
+        - TeenNick
+      PBS:
+        - PBS Kids
+      Sky:
+        - Sky 1
+        - Sky Arts
+        - Sky Atlantic
+        - "Sky Atlantic "
+        - Sky Atlantic (UK)
+        - Sky Cinema
+        - Sky Crime
+        - Sky Deutschland
+        - Sky Documentaries
+        - Sky History
+        - Sky Living
+        - Sky Max
+        - Sky Nature
+        - Sky One
+        - Sky Showcase
+        - Sky Sports
+        - Sky Two
+        - Sky Witness
+        - Sky1
+      The CW:
+        - CW seed
+      TLC:
+        - TLC Go
+        - TLC UK
+      TNT:
+        - TNT (US)
+      UKTV:
+        - UKTV Food
+        - UKTV History
+        - UKTV Yesterday
+      USA:
+        - USA Network
+      YouTube:
+        - YouTube Premium

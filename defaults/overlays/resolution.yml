@@ -1,0 +1,191 @@
+#############################################################
+#                    Resolution Overlay                     #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#            Credit to Magic815 for base images             #
+# https://metamanager.wiki/en/latest/defaults/overlays/resolution.html #
+#############################################################
+
+templates:
+  Resolution:
+    conditionals:
+      res:
+        conditions:
+          - resolution: 4k
+            value: "(?i)2160|4k"
+          - resolution: 1080p
+            value: "(?i)1080|2k"
+          - resolution: 720p
+            value: "(?i)720|hd"
+          - resolution: 576p
+            value: "(?i)576"
+          - resolution: 480p
+            value: "(?i)480|sd"
+      dolby_vision:
+        conditions:
+          - alt: dv
+            value: true
+      hdr:
+        conditions:
+          - alt: hdr
+            value: true
+      back_align:
+        conditions:
+          - dovetail: true
+            value: top
+      back_height:
+        default: 105
+        conditions:
+          - dovetail: true
+            value: 189
+      dovetail_overlay:
+        conditions:
+          - dovetail: false
+            value: <<overlay_name>>-Dovetail
+    optional:
+      - overlay_level
+      - use_<<resolution>>
+      - use_<<alt>>
+      - all
+      - resolution
+    default:
+      resolution: ""
+      alt: ""
+      horizontal_offset: 15
+      horizontal_align: left
+      vertical_offset: 15
+      vertical_align: top
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 305
+    collection_level: <<overlay_level>>
+    ignore_blank_results: true
+    allowed_library_types:
+      - <<use_<<resolution>>>>
+      - <<use_<<alt>>>>
+    suppress_overlays:
+      - Directors-Cut
+      - Extended-Edition
+      - Uncut-Edition
+      - Unrated-Edition
+      - Special-Edition
+      - Final-Cut
+      - Anniversary-Edition
+      - Collectors-Edition
+      - International-Cut
+      - Theatrical-Cut
+      - Ultimate-Cut
+      - IMAX-E
+      - IMAX
+      - Remastered
+      - Criterion
+      - <<dovetail_overlay>>
+    overlay:
+      name: <<overlay_name>>
+      pmm: resolution/<<resolution>><<alt>>
+      group: res
+      weight: <<weight>>
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
+      back_color: <<back_color>>
+      back_radius: <<back_radius>>
+      back_width: <<back_width>>
+      back_height: <<back_height>>
+      back_align: <<back_align>>
+    plex_all: <<all>>
+    plex_search:
+      all:
+        resolution.regex: <<res>>
+        hdr: <<hdr>>
+    filters:
+      has_dolby_vision: <<dolby_vision>>
+
+overlays:
+
+  4K-DV:
+    template: {name: Resolution, weight: 150, resolution: 4k, alt: dv, dovetail: false}
+  4K-DV-Dovetail:
+    template: {name: Resolution, weight: 150, resolution: 4k, alt: dv, dovetail: true}
+
+  4K-HDR:
+    template: {name: Resolution, weight: 140, resolution: 4k, alt: hdr, dovetail: false}
+  4K-HDR-Dovetail:
+    template: {name: Resolution, weight: 140, resolution: 4k, alt: hdr, dovetail: true}
+
+  4K:
+    template: {name: Resolution, weight: 130, resolution: 4k, dovetail: false}
+  4K-Dovetail:
+    template: {name: Resolution, weight: 130, resolution: 4k, dovetail: true}
+
+  1080P-DV:
+    template: {name: Resolution, weight: 120, resolution: 1080p, alt: dv, dovetail: false}
+  1080P-DV-Dovetail:
+    template: {name: Resolution, weight: 120, resolution: 1080p, alt: dv, dovetail: true}
+
+  1080P-HDR:
+    template: {name: Resolution, weight: 110, resolution: 1080p, alt: hdr, dovetail: false}
+  1080P-HDR-Dovetail:
+    template: {name: Resolution, weight: 110, resolution: 1080p, alt: hdr, dovetail: true}
+
+  1080P:
+    template: {name: Resolution, weight: 100, resolution: 1080p, dovetail: false}
+  1080P-Dovetail:
+    template: {name: Resolution, weight: 100, resolution: 1080p, dovetail: true}
+
+  720P-DV:
+    template: {name: Resolution, weight: 90, resolution: 720p, alt: dv, dovetail: false}
+  720P-DV-Dovetail:
+    template: {name: Resolution, weight: 90, resolution: 720p, alt: dv, dovetail: true}
+
+  720P-HDR:
+    template: {name: Resolution, weight: 80, resolution: 720p, alt: hdr, dovetail: false}
+  720P-HDR-Dovetail:
+    template: {name: Resolution, weight: 80, resolution: 720p, alt: hdr, dovetail: true}
+
+  720P:
+    template: {name: Resolution, weight: 70, resolution: 720p, dovetail: false}
+  720P-Dovetail:
+    template: {name: Resolution, weight: 70, resolution: 720p, dovetail: true}
+
+  576P-DV:
+    template: {name: Resolution, weight: 60, resolution: 576p, alt: dv, dovetail: false}
+  576P-DV-Dovetail:
+    template: {name: Resolution, weight: 60, resolution: 576p, alt: dv, dovetail: true}
+
+  576P-HDR:
+    template: {name: Resolution, weight: 50, resolution: 576p, alt: hdr, dovetail: false}
+  576P-HDR-Dovetail:
+    template: {name: Resolution, weight: 50, resolution: 576p, alt: hdr, dovetail: true}
+
+  576P:
+    template: {name: Resolution, weight: 40, resolution: 576p, dovetail: false}
+  576P-Dovetail:
+    template: {name: Resolution, weight: 40, resolution: 576p, dovetail: true}
+
+  480P-DV:
+    template: {name: Resolution, weight: 30, resolution: 480p, alt: dv, dovetail: false}
+  480P-DV-Dovetail:
+    template: {name: Resolution, weight: 30, resolution: 480p, alt: dv, dovetail: true}
+
+  480P-HDR:
+    template: {name: Resolution, weight: 20, resolution: 480p, alt: hdr, dovetail: false}
+  480P-HDR-Dovetail:
+    template: {name: Resolution, weight: 20, resolution: 480p, alt: hdr, dovetail: true}
+
+  480P:
+    template: {name: Resolution, weight: 10, resolution: 480p, dovetail: false}
+  480P-Dovetail:
+    template: {name: Resolution, weight: 10, resolution: 480p, dovetail: true}
+
+  DV:
+    template: {name: Resolution, weight: 5, alt: dv, all: true, dovetail: false}
+  DV-Dovetail:
+    template: {name: Resolution, weight: 5, alt: dv, all: true, dovetail: true}
+
+  HDR:
+    template: {name: Resolution, weight: 1, alt: hdr, dovetail: false}
+  HDR-Dovetail:
+    template: {name: Resolution, weight: 1, alt: hdr, dovetail: true}
+
+

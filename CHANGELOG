@@ -1,0 +1,20 @@
+# METADATA CHANGES
+Added Common Sense Selection [Movie](https://www.commonsensemedia.org/reviews/category/movie/tag/common-sense-selections-31822)] and [Show](https://www.commonsensemedia.org/reviews/category/tv/tag/common-sense-selections-31822) collections to `PMM/chart/other`
+Added several [visual styles for Separators](https://github.com/meisnate12/Plex-Meta-Manager-Images/tree/master/separators) to match PLEX's Categories theming. Called using `sep_style` template variable
+
+# OVERLAY CHANGES
+Enhanced resolution.yml and special_release.yml to add International Cut, Ultimate Cut, Anniversary Cut, Theatrical Cut, Collectors Edition for both dovetail overlays with resolutions and box overlays
+Enhanced resolution.yml and special_release.yml to support both dovetail overlays with resolutions and box overlays when resolutions are not being used. Regexes were enhanced to support the new TRaSH naming guides with the `{edition-` naming scheme
+Added [Common Sense Age Rating](https://www.commonsensemedia.org/) overlays, called with `- git: PMM/overlays/commonsense` and to be used in combination with operation `mass_content_rating_update: mdb_commonsense`
+- See [this image](https://media.discordapp.net/attachments/1018513616653262908/1020094756329623624/unknown.png)
+Added Common Sense Selection overlays, called with `- git: PMM/overlays/commonsense_selection`
+- See [this image](https://i.ibb.co/2cyjM1c/Untitled.png)
+Added [mediastinger](http://www.mediastinger.com/) overlays to indicate mid-credits and post-credits scenes, called with `- git: PMM/overlays/mediastinger`
+- See #3 on "Jurassic World: Fallen Kingdom" in [this image](https://metamanager.wiki/en/nightly/_images/movie-overlays1-annotated.png)
+Added Oscars Ribbon overlay for [Best Picture Winners](https://www.imdb.com/search/title/?groups=best_picture_winner), called with `- git: PMM/overlays/oscars`
+- See #11 on "Schindler's List" in [this image](https://metamanager.wiki/en/nightly/_images/movie-overlays1-annotated.png)
+Added visual indicator of multiple versions of media, called with `- git: PMM/overlays/versions`
+- See "The Incredible Hulk" and "Thor" in [this image]([https://cdn.discordapp.com/attachments/927936511238869042/1021788091037519892/unknown.png)
+
+# OTHER CHANGES
+Changed various [template names](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/templates.yml). If you are running local copies of the PMM default files which call the git version of the templates file , it is strongly recommended you check template names on all your local file collections. 

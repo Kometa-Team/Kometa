@@ -1,0 +1,74 @@
+#############################################################
+#                  Audio Language Overlay                   #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#            Credit to Magic815 for base images             #
+#############################################################
+#  Designed for TRaSH Guides filename naming scheme         #
+#  https://trash-guides.info/                               #
+#                                                           #
+#  Call this from your config.yml (Movie or Show):          #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    overlay_path:                                          #
+#      - pmm: audio_language                                #
+#        template_variables:                                #
+#          # Set episode or season to overlay               #
+#          overlay_level:                                   #
+#          # Set the horizontal offset for the overlay      #
+#          horizontal_offset: 0                             #
+#          # Set the horizontal align for the overlay       #
+#          horizontal_align: center                         #
+#          # Set the vertical offset for the overlay        #
+#          vertical_offset: 30                              #
+#          # Set the vertical align for the overlay         #
+#          vertical_align: bottom                           #
+#############################################################
+
+templates:
+  AudioLanguage:
+    optional:
+      - overlay_level
+    default:
+      overlay: <<overlay_name>>
+      horizontal_offset: 0
+      horizontal_align: center
+      vertical_offset: 30
+      vertical_align: bottom
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 188
+      back_height: 105
+    collection_level: <<overlay_level>>
+    ignore_blank_results: true
+    overlay:
+      name: <<overlay_name>>
+      pmm: <<overlay>>
+      group: audio_language
+      weight: <<weight>>
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
+      back_color: <<back_color>>
+      back_radius: <<back_radius>>
+      back_width: <<back_width>>
+      back_height: <<back_height>>
+
+overlays:
+
+  Dual-Audio:
+    template:
+      - name: AudioLanguage
+        weight: 10
+    plex_all: true
+    filters:
+      audio_language.count_gte: 2
+      audio_language.count_lt: 3
+
+  Multi-Audio:
+    template:
+      - name: AudioLanguage
+        weight: 20
+    plex_all: true
+    filters:
+      audio_language.count_gt: 2

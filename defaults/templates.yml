@@ -1,0 +1,105 @@
+templates:
+
+  separator:
+    default:
+      sep_style: orig
+      collection_section: "00"
+    optional:
+      - use_separator
+      - collection_mode
+    allowed_library_types: <<use_separator>>
+    collection_mode: <<collection_mode>>
+    sort_title: "!<<collection_section>>_!<<collection_name>>"
+    blank_collection: true
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
+
+  separator off:
+    default:
+      sep_style: orig
+      collection_section: "00"
+      use_separator: false
+    optional:
+      - collection_mode
+    allowed_library_types: <<use_separator>>
+    collection_mode: <<collection_mode>>
+    sort_title: "!<<collection_section>>_!<<collection_name>>"
+    blank_collection: true
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
+
+  shared:
+    default:
+      collection_section: "00"
+      sort: <<collection_name>>
+      key: <<collection_name>>
+      pre: "_"
+      order_<<key>>: ""
+      image: chart/<<collection_name_encoded>>
+      item_radarr_tag_<<key>>: <<item_radarr_tag>>
+      item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
+    optional:
+      - use_<<key>>
+      - allowed_libraries
+      - collection_mode
+      - visible_library_<<key>>
+      - visible_home_<<key>>
+      - visible_shared_<<key>>
+      - item_radarr_tag
+      - item_sonarr_tag
+    allowed_library_types:
+      - <<use_<<key>>>>
+      - <<allowed_libraries>>
+    ignore_blank_results: true
+    collection_mode: <<collection_mode>>
+    visible_library: <<visible_library_<<key>>>>
+    visible_home: <<visible_home_<<key>>>>
+    visible_shared: <<visible_shared_<<key>>>>
+    item_radarr_tag: <<item_radarr_tag_<<key>>>>
+    item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
+    sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
+
+  arr:
+    default:
+      key: <<collection_name>>
+      radarr_add_missing_<<key>>: <<radarr_add_missing>>
+      sonarr_add_missing_<<key>>: <<sonarr_add_missing>>
+      radarr_folder_<<key>>: <<radarr_folder>>
+      sonarr_folder_<<key>>: <<sonarr_folder>>
+      radarr_tag_<<key>>: <<radarr_tag>>
+      sonarr_tag_<<key>>: <<sonarr_tag>>
+    optional:
+      - radarr_add_missing
+      - sonarr_add_missing
+      - radarr_folder
+      - sonarr_folder
+      - radarr_tag
+      - sonarr_tag
+    radarr_add_missing: <<radarr_add_missing_<<key>>>>
+    sonarr_add_missing: <<sonarr_add_missing_<<key>>>>
+    radarr_folder: <<radarr_folder_<<key>>>>
+    sonarr_folder: <<sonarr_folder_<<key>>>>
+    radarr_tag: <<radarr_tag_<<key>>>>
+    sonarr_tag: <<sonarr_tag_<<key>>>>
+
+  custom:
+    default:
+      collection_order: custom
+      collection_order_<<key>>: <<collection_order>>
+    collection_order: <<collection_order_<<key>>>>
+    sync_mode: sync
+    cache_builders: 1
+
+  other_collection:
+    default:
+      collection_section: "00"
+      sort: <<collection_name>>
+      pre: "_~"
+    optional:
+      - use_other
+    allowed_library_types: <<use_other>>
+    sort_title: "!<<collection_section>><<pre>><<sort>>"
+
+  use_year_collections:
+    optional:
+      - use_year_collections
+    allowed_library_types: <<use_year_collections>>

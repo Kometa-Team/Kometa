@@ -1,0 +1,96 @@
+#############################################################
+#             Basic Tautulli Chart Collections              #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  REQUIRES TAUTULLI AUTHENTICATION                         #
+#  https://metamanager.wiki/en/latest/config/tautulli.html  #
+#                                                           #
+#  Call this from your config.yml (Movie or Show)           #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/chart/tautulli                            #
+#        template_variables:                                #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: "01"                         #
+#                                                           #
+#          # For each collection use the "key" to set       #
+#          # the options.                                   #
+#          # Available collections                          #
+#          #   KEY              COLLECTION                  #
+#          #   popular          Plex Popular                #
+#          #   watched          Plex Watched                #
+#                                                           #
+#          # Available options. Replace "key" with the      #
+#          # desired collection's key from the chart above. #
+#                                                           #
+#          # Customize summary of collection                #
+#          summary_key: A collection of ...                 #
+#          # Turn the collection on/off                     #
+#          use_key: true                                    #
+#          # Determines collection order in its section     #
+#          order_key:                                       #
+#          # Determines collection order of the collection  #
+#          collection_order_key: custom                     #
+#          # Set visible_library for the collection         #
+#          visible_library_key:                             #
+#          # Set visible_home for the collection            #
+#          visible_home_key:                                #
+#          # Set visible_shared for the collection          #
+#          visible_shared_key:                              #
+#          # Set list_days for the collection               #
+#          list_days_key: 30                                #
+#          # Set list_size for the collection               #
+#          list_size_key: 20                                #
+#          item_radarr_tag_key:                             #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag_key:                             #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: "01"
+
+templates:
+  tautulli_popular:
+    default:
+      list_days_popular: 30
+      list_size_popular: 20
+      summary_popular: A collection of <<library_type>>s Popular on Plex
+    summary: <<summary_<<key>>>>
+    tautulli_popular:
+      list_days: <<list_days_popular>>
+      list_size: <<list_size_popular>>
+      list_buffer: 20
+  tautulli_watched:
+    default:
+      list_days_watched: 30
+      list_size_watched: 20
+      summary_watched: A collection of Top <<library_type>>s Watched on Plex
+    summary: <<summary_<<key>>>>
+    tautulli_watched:
+      list_days: <<list_days_watched>>
+      list_size: <<list_size_watched>>
+      list_buffer: 20
+
+collections:
+  Plex Popular:
+    variables:
+      key: popular
+    template:
+      - name: tautulli_popular
+      - name: shared
+      - name: arr
+      - name: custom
+
+  Plex Watched:
+    variables:
+      key: watched
+    template:
+      - name: tautulli_watched
+      - name: shared
+      - name: arr
+      - name: custom

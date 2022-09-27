@@ -1,0 +1,75 @@
+#############################################################
+#             Critics Choice Awards Collections             #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#            Credit to pjcob for the Trakt Lists            #
+#############################################################
+#  REQUIRES TRAKT AUTHENTICATION                            #
+#  https://metamanager.wiki/en/latest/config/trakt.html     #
+#                                                           #
+#  Call this from your config.yml (Movie or Show)           #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/award/choice                              #
+#        template_variables:                                #
+#          # Turn the individual year collections on/off    #
+#          use_year_collections: true                       #
+#          # Sets the collection order of the collection    #
+#          collection_order: custom                         #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: 16                           #
+#          # Adds missing from the collection to radarr     #
+#          radarr_add_missing:                              #
+#          # Adds missing from the collection to sonarr     #
+#          sonarr_add_missing:                              #
+#          # Radarr Folder to add to                        #
+#          radarr_folder:                                   #
+#          # Sonarr Folder to add to                        #
+#          sonarr_folder:                                   #
+#          # Radarr Tag for added missing                   #
+#          radarr_tag:                                      #
+#          # Sonarr Tag for added missing                   #
+#          sonarr_tag:                                      #
+#          # Radarr Tag for existing items                  #
+#          item_radarr_tag:                                 #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag:                                 #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: 16
+
+templates:
+  Choice:
+    default:
+      url: critic-s
+    summary: <<key>> Critics Choice Awards
+    trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-<<url>>-choice
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/choice/<<key>>.jpg
+
+dynamic_collections:
+  Critics Choice Awards:
+    type: number
+    sync: true
+    data:
+      starting: current_year-5
+      ending: current_year
+    title_format: Critics Choice Awards <<key_name>>
+    template:
+      - use_year_collections
+      - Choice
+      - shared
+      - arr
+      - custom
+    template_variables:
+      url:
+        2019: critics
+        2018: critics
+        2017: critics
+        2016: critics
+        2015: critics
+        2014: critics

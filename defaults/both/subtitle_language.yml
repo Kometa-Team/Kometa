@@ -1,0 +1,248 @@
+#############################################################
+#           Dynamic Subtitle Language Collections           #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Movie or Show)           #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/subtitle_language                         #
+#        template_variables:                                #
+#          # Turn the separator collection on/off           #
+#          use_separator: true                              #
+#          # Separator style (red, blue, green, gray,       #
+#              purple, stb, orig)                           #
+#          sep_style: orig                                  #
+#          # Turn the other collection on/off               #
+#          use_other: true                                  #
+#          # Sets how the collection is sorted              #
+#          sort_by: release.desc                            #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: 11                           #
+#          # Radarr Tag for existing items                  #
+#          item_radarr_tag:                                 #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag:                                 #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: 11
+
+templates:
+  subtitle_language_dynamic:
+    default:
+      sort_by: release.desc
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/subtitle_language/<<key>>.jpg
+    smart_filter:
+      sort_by: <<sort_by>>
+      any:
+        subtitle_language: <<value>>
+
+collections:
+  Subtitle Language Collections:
+    template:
+      - name: separator
+        separator: subtitle_language
+
+dynamic_collections:
+  Subtitle Language:
+    type: subtitle_language
+    title_format: <<key_name>> Subtitles
+    other_name: Other Subtitles
+    template:
+      - subtitle_language_dynamic
+      - shared
+    other_template:
+      - other_collection
+      - subtitle_language_dynamic
+      - shared
+    include:
+      - ab     # Abkhazian
+      - aa     # Afar
+      - af     # Afrikaans
+      - ak     # Akan
+      - sq     # Albanian
+      - am     # Amharic
+      - ar     # Arabic
+      - an     # Aragonese
+      - hy     # Armenian
+      - as     # Assamese
+      - av     # Avaric
+      - ae     # Avestan
+      - ay     # Aymara
+      - az     # Azerbaijani
+      - bm     # Bambara
+      - ba     # Bashkir
+      - eu     # Basque
+      - be     # Belarusian
+      - bn     # Bengali
+      - bi     # Bislama
+      - bs     # Bosnian
+      - br     # Breton
+      - bg     # Bulgarian
+      - my     # Burmese
+      - ca     # Catalan, Valencian
+      - km     # Central Khmer
+      - ch     # Chamorro
+      - ce     # Chechen
+      - ny     # Chichewa, Chewa, Nyanja 
+      - zh     # Chinese
+      - cu     # Church Slavic, Old Slavonic, Church Slavonic, Old Bulgarian, Old Church Slavonic
+      - cv     # Chuvash
+      - kw     # Cornish
+      - co     # Corsican
+      - cr     # Cree
+      - hr     # Croatian
+      - cs     # Czech
+      - da     # Danish
+      - dv     # Divehi, Dhivehi, Maldivian
+      - nl     # Dutch, Flemish
+      - dz     # Dzongkha
+      - en     # English
+      - eo     # Esperanto
+      - et     # Estonian
+      - ee     # Ewe
+      - fo     # Faroese
+      - fj     # Fijian
+      - fil    # Filipino
+      - fi     # Finnish
+      - fr     # French
+      - ff     # Fulah
+      - gd     # Gaelic, Scottish Gaelic
+      - gl     # Galician
+      - lg     # Ganda
+      - ka     # Georgian
+      - de     # German
+      - el     # Greek, Modern (1453–)
+      - gn     # Guarani
+      - gu     # Gujarati
+      - ht     # Haitian, Haitian Creole
+      - ha     # Hausa
+      - he     # Hebrew
+      - hz     # Herero
+      - hi     # Hindi
+      - ho     # Hiri Motu
+      - hu     # Hungarian
+      - is     # Icelandic
+      - io     # Ido
+      - ig     # Igbo
+      - id     # Indonesian
+      - ia     # Interlingua (International Auxiliary Language Association)
+      - ie     # Interlingue, Occidental
+      - iu     # Inuktitut
+      - ik     # Inupiaq
+      - ga     # Irish
+      - it     # Italian
+      - ja     # Japanese
+      - jv     # Javanese
+      - kl     # Kalaallisut, Greenlandic
+      - kn     # Kannada
+      - kr     # Kanuri
+      - ks     # Kashmiri
+      - kk     # Kazakh
+      - ki     # Kikuyu, Gikuyu
+      - rw     # Kinyarwanda
+      - ky     # Kirghiz, Kyrgyz
+      - kv     # Komi
+      - kg     # Kongo
+      - ko     # Korean
+      - kj     # Kuanyama, Kwanyama
+      - ku     # Kurdish
+      - lo     # Lao
+      - la     # Latin
+      - lv     # Latvian
+      - li     # Limburgan, Limburger, Limburgish
+      - ln     # Lingala
+      - lt     # Lithuanian
+      - lu     # Luba-Katanga
+      - lb     # Luxembourgish, Letzeburgesch
+      - mk     # Macedonian
+      - mg     # Malagasy
+      - ms     # Malay
+      - ml     # Malayalam
+      - mt     # Maltese
+      - gv     # Manx
+      - mi     # Maori
+      - mr     # Marathi
+      - mh     # Marshallese
+      - mn     # Mongolian
+      - na     # Nauru
+      - nv     # Navajo, Navaho
+      - ng     # Ndonga
+      - ne     # Nepali
+      - nd     # North Ndebele
+      - se     # Northern Sami
+      - no     # Norwegian
+      - nb     # Norwegian Bokmål
+      - nn     # Norwegian Nynorsk
+      - oc     # Occitan
+      - oj     # Ojibwa
+      - or     # Oriya
+      - om     # Oromo
+      - os     # Ossetian, Ossetic
+      - pi     # Pali
+      - ps     # Pashto, Pushto
+      - fa     # Persian
+      - pl     # Polish
+      - pt     # Portuguese
+      - pa     # Punjabi, Panjabi
+      - qu     # Quechua
+      - ro     # Romanian, Moldavian, Moldovan
+      - rm     # Romansh
+      - rn     # Rundi
+      - ru     # Russian
+      - sm     # Samoan
+      - sg     # Sango
+      - sa     # Sanskrit
+      - sc     # Sardinian
+      - sr     # Serbian
+      - sn     # Shona
+      - ii     # Sichuan Yi, Nuosu
+      - sd     # Sindhi
+      - si     # Sinhala, Sinhalese
+      - sk     # Slovak
+      - sl     # Slovenian
+      - so     # Somali
+      - nr     # South Ndebele
+      - st     # Southern Sotho
+      - es     # Spanish, Castilian
+      - su     # Sundanese
+      - sw     # Swahili
+      - ss     # Swati
+      - sv     # Swedish
+      - tl     # Tagalog
+      - ty     # Tahitian
+      - tg     # Tajik
+      - ta     # Tamil
+      - tt     # Tatar
+      - te     # Telugu
+      - th     # Thai
+      - bo     # Tibetan
+      - ti     # Tigrinya
+      - to     # Tonga (Tonga Islands)
+      - ts     # Tsonga
+      - tn     # Tswana
+      - tr     # Turkish
+      - tk     # Turkmen
+      - tw     # Twi
+      - ug     # Uighur, Uyghur
+      - uk     # Ukrainian
+      - ur     # Urdu
+      - uz     # Uzbek
+      - ve     # Venda
+      - vi     # Vietnamese
+      - vo     # Volapük
+      - wa     # Walloon
+      - cy     # Welsh
+      - fy     # Western Frisian
+      - wo     # Wolof
+      - xh     # Xhosa
+      - yi     # Yiddish
+      - yo     # Yoruba
+      - za     # Zhuang, Chuang
+      - zu     # Zulu
+

@@ -1,0 +1,90 @@
+#############################################################
+#                   Franchise Collections                   #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Show only)               #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/show/franchise                            #
+#        template_variables:                                #
+#          # Add Missing Movies to Radarr                   #
+#          sonarr_add_missing: true                         #
+#          # Sets the collection order of the collection    #
+#          collection_order: release                        #
+#          # Sets the sort title                            #
+#          sort_title: "!02_<<collection_name>>"            #
+#          # Sets the minimum items of the collection       #
+#          minimum_items: 2                                 #
+#          # Sets weather to actually build the collection  #
+#          build_collection: true                           #
+#          # Adds missing from the collection to sonarr     #
+#          sonarr_add_missing:                              #
+#          # Sonarr Folder to add to                        #
+#          sonarr_folder:                                   #
+#          # Sonarr Tag for added missing                   #
+#          sonarr_tag:                                      #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag:                                 #
+#############################################################
+
+templates:
+  tmdbshow:
+    default:
+      collection_order: release
+      minimum_items: 2
+    optional:
+      - sonarr_add_missing
+      - sonarr_folder
+      - sonarr_tag
+      - item_sonarr_tag
+      - name_mapping
+      - sort_title
+      - build_collection
+    minimum_items: <<minimum_items>>
+    tmdb_show: <<value>>
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/franchise/<<key_name_encoded>>.jpg
+    name_mapping: <<name_mapping>>
+    sort_title: <<sort_title>>
+    sync_mode: sync
+    collection_order: <<collection_order>>
+    sonarr_add_missing: <<sonarr_add_missing>>
+    sonarr_folder: <<sonarr_folder>>
+    sonarr_tag: <<sonarr_tag>>
+    item_sonarr_tag: <<item_sonarr_tag>>
+
+dynamic_collections:
+  Show Franchise Collections:
+    type: custom
+    data:
+      "44006": One Chicago
+      "75219": 9-1-1
+      "253": Star Trek
+      "1412": Arrowverse
+      "85536": Star Wars
+      "121": Doctor Who
+      "1402": The Walking Dead
+      "4629": Stargate
+      "519": Law & Order
+      "5614": NCIS
+      "1431": CSI
+      "951": Archie Comics
+      "31917": Pretty Little Liars
+      "6357": The Twilight Zone
+    template:
+      - tmdbshow
+    addons:
+      44006: [58841, 62650, 67993] # Chicago Fire: Med, PD, Justice
+      75219: 89393 # 9-1-1: 9-1-1 Lone Star
+      253: [655, 1855, 314, 67198, 85949] # Star Trek, The Next Generation, Voyager, Enterprise, Discovery, Picard
+      1412: [60735, 62688, 62643, 71663, 89247]  # Arrow: The Flash, Supergirl, Legends of Tomorrow, Black Lightning, Batwoman
+      85536: [71412, 3478, 105971, 92830, 83867, 60554, 82856, 115036, 114461, 202879, 114462, 114476, 114478, 79093] # Star Wars Galaxy of Adventures: Forces of Destiny, The Clone Wars, The Bad Batch, Obi-Wan Kenobi, Andor, Rebels, The Mandalorian, The Book of Boba Fett, Ahsoka, Skeleton Crew, Rangers of the New Republic, Lando, Visions, Resistance
+      121: [57243, 1057, 424, 203, 64073]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class
+      1402: [62286, 94305] # The Walking Dead: Fear the Walking Dead, World Beyond
+      4629: [2290, 5148, 72925] # Stargate SG-1: Atlantis, Universe, Origins
+      549: [2734, 4601, 3357, 32632, 72496, 157088, 106158]  #Law & Order, Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Hate Crimes, Organized Crime
+      5614: [17610, 124271, 61387, 4376]  # NCIS, Los Angeles, New Orleans, Hawaii, JAG
+      1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Cyber, Vegas
+      951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
+      31917: [46958, 79863, 110531] # Pretty Little Liars: Ravenswood, The Perfectionists, Original Sin
+      6357: [1918, 83135, 16399]  # The Twilight Zone (multiple)

@@ -1,0 +1,136 @@
+#############################################################
+#                 AniList Chart Collections                 #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Movie or Show)           #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/chart/anilist                             #
+#        template_variables:                                #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: "01"                         #
+#                                                           #
+#          # For each collection use the "key" to set       #
+#          # the options.                                   #
+#          # Available collections                          #
+#          #   KEY              COLLECTION                  #
+#          #   popular          AniList Popular             #
+#          #   top              AniList Top Rated           #
+#          #   trending         AniList Trending            #
+#          #   season           AniList Season              #
+#                                                           #
+#          # Available options. Replace "key" with the      #
+#          # desired collection's key from the chart above. #
+#                                                           #
+#          # Customize summary of collection                #
+#          summary_key: A collection of ...                 #
+#          # Turn the collection on/off                     #
+#          use_key: true                                    #
+#          # Determines collection order in it's section    #
+#          order_key:                                       #
+#          # Determines collection order of the collection  #
+#          collection_order_key: custom                     #
+#          # Set visible_library for the collection         #
+#          visible_library_key:                             #
+#          # Set visible_home for the collection            #
+#          visible_home_key:                                #
+#          # Set visible_shared for the collection          #
+#          visible_shared_key:                              #
+#          # Set limit for the collection                   #
+#          limit_key: 100                                   #
+#          # Adds missing from the collection to radarr     #
+#          radarr_add_missing_key:                          #
+#          # Adds missing from the collection to sonarr     #
+#          sonarr_add_missing_key:                          #
+#          # Radarr Folder to add to                        #
+#          radarr_folder_key:                               #
+#          # Sonarr Folder to add to                        #
+#          sonarr_folder_key:                               #
+#          # Radarr Tag for added missing                   #
+#          radarr_tag_key:                                  #
+#          # Sonarr Tag for added missing                   #
+#          sonarr_tag_key:                                  #
+#          # Radarr Tag for existing items                  #
+#          item_radarr_tag_key:                             #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag_key:                             #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: "01"
+
+templates:
+
+  popular:
+    default:
+      limit_popular: 100
+      summary_popular: A collection of the most popular Anime according to AniList.
+    anilist_popular: <<limit_popular>>
+    summary: <<summary_<<key>>>>
+
+  top:
+    default:
+      limit_top: 100
+      summary_top: A collection of the top rated Anime according to AniList.
+    anilist_top_rated: <<limit_top>>
+    summary: <<summary_<<key>>>>
+
+  trending:
+    default:
+      limit_trending: 100
+      summary_trending: A collection of trending Anime according to AniList.
+    anilist_trending: <<limit_trending>>
+    summary: <<summary_<<key>>>>
+
+  season:
+    default:
+      limit_trending: 100
+      summary_season: A collection of Anime from the Current Season according to AniList.
+    anilist_search:
+      season: current
+      year:
+      sort_by: popular
+    summary: <<summary_<<key>>>>
+
+collections:
+
+  AniList Popular:
+    variables:
+      key: popular
+    template:
+      - name: popular
+      - name: shared
+      - name: arr
+      - name: custom
+
+  AniList Top Rated:
+    variables:
+      key: top
+    template:
+      - name: top
+      - name: shared
+      - name: arr
+      - name: custom
+
+  AniList Trending:
+    variables:
+      key: trending
+    template:
+      - name: trending
+      - name: shared
+      - name: arr
+      - name: custom
+
+  AniList Season:
+    variables:
+      key: season
+    template:
+      - name: season
+      - name: shared
+      - name: arr
+      - name: custom

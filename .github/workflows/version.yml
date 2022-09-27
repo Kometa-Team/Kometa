@@ -80,24 +80,15 @@ jobs:
           token: ${{ secrets.PAT }}
           path: pmmconfigs
 
-      - name: Get Changelog
-        working-directory: ./pmmconfigs
-        id: notes
-        run: echo ::set-output name=notes::$(cat PMM/CHANGELOG)
-
-      - name: Remove Changelog
-        working-directory: ./pmmconfigs
-        run: |
-          git rm PMM/CHANGELOG
-          echo "" >> PMM/CHANGELOG
-          git commit
-          git push origin
-
       - name: Create & Push Tag
         working-directory: ./pmmconfigs
         run: |
           git tag ${{ steps.get_version.outputs.VERSION }}
           git push origin ${{ steps.get_version.outputs.VERSION }}
+
+      - name: Get Changelog
+        id: notes
+        run: echo ::set-output name=notes::$(cat CHANGELOG)
 
       - name: Create release
         id: create_release
@@ -106,4 +97,3 @@ jobs:
           body: ${{ steps.notes.outputs.notes }}
           token: ${{ secrets.PAT }}
           tag_name: ${{ steps.get_version.outputs.VERSION }}
-          repository: meisnate12/Plex-Meta-Manager-Configs

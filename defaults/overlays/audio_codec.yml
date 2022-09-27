@@ -1,0 +1,448 @@
+#############################################################
+#                   Audio Codec Overlays                    #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#            Credit to Magic815 for base images             #
+#############################################################
+#  Designed for TRaSH Guides filename naming scheme         #
+#  https://trash-guides.info/                               #
+#                                                           #
+#  Call this from your config.yml (Movie or Show):          #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    overlay_path:                                          #
+#      - git: PMM/overlays/audio_codec                      #
+#        template_variables:                                #
+#          # Set episode or season to overlay               #
+#          overlay_level:                                   #
+#          # Set the horizontal offset for the overlay      #
+#          horizontal_offset: 0                             #
+#          # Set the horizontal align for the overlay       #
+#          horizontal_align: center                         #
+#          # Set the vertical offset for the overlay        #
+#          vertical_offset: 15                              #
+#          # Set the vertical align for the overlay         #
+#          vertical_align: top                              #
+#          # Set the back color for the overlay             #
+#          back_color: "#00000099"                          #
+#          # Set the back radius for the overlay            #
+#          back_radius: 30                                  #
+#          # Set the back width for the overlay             #
+#          back_width: 300                                  #
+#          # Sets the style of overlay: standard or compact #
+#          style: compact                                   #
+#                                                           #
+#          # Use the Opus overlay                           #
+#          use_opus: true                                   #
+#          # Use the MP3 overlay                            #
+#          use_mp3: true                                    #
+#          # Use the Dolby-Digital overlay                  #
+#          use_digital: true                                #
+#          # Use the AAC overlay                            #
+#          use_aac: true                                    #
+#          # Use the DTS overlay                            #
+#          use_dts: true                                    #
+#          # Use the DTS-ES overlay                         #
+#          use_es: true                                     #
+#          # Use the Dolby-Digital-Plus overlay             #
+#          use_plus: true                                   #
+#          # Use the DTS-HD-HRA overlay                     #
+#          use_hra: true                                    #
+#          # Use the PCM overlay                            #
+#          use_pcm: true                                    #
+#          # Use the FLAC overlay                           #
+#          use_flac: true                                   #
+#          # Use the DTS-HD-MA overlay                      #
+#          use_hd: true                                     #
+#          # Use the Dolby-TrueHD overlay                   #
+#          use_truehd: true                                 #
+#          # Use the DD+/E-AC3 Atmos overlay                #
+#          use_plus-atmos: true                             #
+#          # Use the Dolby-Atmos (undefined) overlay        #
+#          use_atmos: true                                  #
+#          # Use the DTS-X overlay                          #
+#          use_x: true                                      #
+#          # Use the Dolby TrueHD Atmos overlay             #
+#          use_truehd-atmos: true                           #
+#############################################################
+
+templates:
+  AudioCodec:
+    optional:
+      - overlay_level
+      - use_<<slug>>
+    default:
+      overlay: <<overlay_name>>
+      horizontal_offset: 0
+      horizontal_align: center
+      vertical_offset: 15
+      vertical_align: top
+      style: compact
+      standard_value: 105
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 305
+    conditionals:
+      height:
+        default: 105
+        conditions:
+          - style: standard
+            value: <<standard_value>>
+    collection_level: <<overlay_level>>
+    allowed_library_types: <<use_<<slug>>>>
+    ignore_blank_results: true
+    overlay:
+      name: <<overlay_name>>
+      pmm: audio_codec/<<style>>/<<overlay>>
+      group: audio_codec
+      weight: <<weight>>
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
+      back_color: <<back_color>>
+      back_radius: <<back_radius>>
+      back_width: <<back_width>>
+      back_height: <<height>>
+
+overlays:
+
+  Opus:
+    template:
+      - name: AudioCodec
+        weight: 250
+        slug: opus
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)\bOPUS(\b|\d)'
+
+  Opus-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: Opus
+        weight: 250
+        slug: opus
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)\bOPUS(\b|\d)'
+
+  MP3:
+    template:
+      - name: AudioCodec
+        weight: 500
+        slug: mp3
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)\bmp3(\b|\d)'
+
+  MP3-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: MP3
+        weight: 500
+        slug: mp3
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)\bmp3(\b|\d)'
+
+# AAC 2.0 Audio
+  AAC2.0:
+    template:
+      - name: AudioCodec
+        overlay: AAC
+        weight: 700
+        slug: aac
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)(?=.*(\baac[ .]?stereo\b))|(?=.*(\baac[ .]2[ .]0\b))'
+
+  AAC2.0-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: AAC
+        weight: 700
+        slug: aac
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)(?=.*(\baac[ .]?stereo\b))|(?=.*(\baac[ .]2[ .]0\b))'
+
+  Dolby-Digital:
+    template:
+      - name: AudioCodec
+        weight: 750
+        slug: digital
+    plex_all: true
+    filters:
+      audio_track_title.regex:
+        - '(?i)\bDD[^a-z+]|(?<!e)ac3'
+
+  Dolby-Digital-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: Dolby-Digital
+        weight: 750
+        slug: digital
+    plex_all: true
+    filters:
+      filepath.regex:
+        - '(?i)\bDD[^a-z+]|(?<!e)ac3'
+
+# AAC multi channel
+  AAC:
+    template:
+      - name: AudioCodec
+        weight: 1000
+        slug: aac
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)^(?!.*(stereo|2[ .]0))(?=.*\b(aac(\b|\d))).*'
+
+  AAC-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: AAC
+        weight: 1000
+        slug: aac
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)^(?!.*(stereo|2[ .]0))(?=.*\b(aac(\b|\d))).*'
+
+  DTS:
+    template:
+      - name: AudioCodec
+        weight: 1250
+        slug: dts
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)\bDTS(\b|\d)'
+
+  DTS-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: DTS
+        weight: 1250
+        slug: dts
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)\bDTS(\b|\d)'
+
+  DTS-ES:
+    template:
+      - name: AudioCodec
+        weight: 1500
+        slug: es
+    plex_all: true
+    filters:
+      audio_track_title.regex: 'dts[-. ]?es\b'
+
+  DTS-ES-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: DTS-ES
+        weight: 1500
+        slug: es
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)dts[-. ]?es\b'
+
+# Match DD+/E-AC3 without Atmos
+  Dolby-Digital-Plus:
+    template:
+      - name: AudioCodec
+        weight: 1750
+        slug: plus
+    plex_all: true
+    filters:
+      audio_track_title.regex:
+        - '(?i)^(?!.*(atmos))(?=.*\b([^-]DD[P+](?!A)|eac3)\b).*'
+
+  Dolby-Digital-Plus-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: Dolby-Digital-Plus
+        weight: 1750
+        slug: plus
+    plex_all: true
+    filters:
+      filepath.regex:
+        - '(?i)^(?!.*(atmos))(?=.*\b([^-]DD[P+](?!A)|eac3)\b).*'
+
+  DTS-HD-HRA:
+    template:
+      - name: AudioCodec
+        weight: 2000
+        slug: hra
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)dts[ ._-]?(hd[. ]?)?(hr|hi)'
+
+  DTS-HD-HRA-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: DTS-HD-HRA
+        weight: 2000
+        slug: hra
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)dts[ ._-]?(hd[. ]?)?(hr|hi)'
+
+  PCM:
+    template:
+      - name: AudioCodec
+        weight: 2200
+        slug: pcm
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)\b(l?)PCM(\b|\d)'
+
+  PCM-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: PCM
+        weight: 2200
+        slug: pcm
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)\b(l?)PCM(\b|\d)'
+
+  FLAC:
+    template:
+      - name: AudioCodec
+        weight: 2250
+        slug: flac
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)\bFLAC(\b|\d)'
+
+  FLAC-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: FLAC
+        weight: 2250
+        slug: flac
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)\bFLAC(\b|\d)'
+
+  DTS-HD-MA:
+    template:
+      - name: AudioCodec
+        weight: 2500
+        slug: hd
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)dts[ .-]?(ma\b|hd[ .-]?ma|hd)(?!china|r)'
+
+  DTS-HD-MA-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: DTS-HD-MA
+        weight: 2500
+        slug: hd
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)dts[ .-]?(ma\b|hd[ .-]?ma|hd)(?!china|r)'
+
+# Match TrueHD without Atmos
+  Dolby-TrueHD:
+    template:
+      - name: AudioCodec
+        weight: 2750
+        slug: truehd
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'
+
+  Dolby-TrueHD-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: Dolby-TrueHD
+        weight: 2750
+        slug: truehd
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'
+
+# Match DD+/E-AC3 Atmos
+  Dolby-Digital-Plus-Atmos:
+    template:
+      - name: AudioCodec
+        weight: 3000
+        slug: plus-atmos
+        standard_value: 189
+    plex_all: true
+    filters:
+      audio_track_title.regex:
+      - '(?i)((?=.*([^-]DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|(?=.*\b(DDPA(\b|\d)))'
+
+  Dolby-Digital-Plus-Atmos-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: Dolby-Digital-Plus-Atmos
+        weight: 3000
+        slug: plus-atmos
+        standard_value: 189
+    plex_all: true
+    filters:
+      filepath.regex:
+      - '(?i)((?=.*([^-]DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|(?=.*\b(DDPA(\b|\d)))'
+
+# Match ATMOS (undefined), meaning it doesn't know the base audio DD+ or TrueHD
+  Dolby-Atmos:
+    template:
+      - name: AudioCodec
+        weight: 3000
+        slug: atmos
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'
+
+  Dolby-Atmos-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: Dolby-Atmos
+        weight: 3000
+        slug: atmos
+    plex_all: true
+    filters:
+      filepath.regex:
+        - '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'
+
+  DTS-X:
+    template:
+      - name: AudioCodec
+        weight: 4500
+        slug: x
+    plex_all: true
+    filters:
+      audio_track_title.regex: 'dts[-. ]?x(?!\d)'
+
+  DTS-X-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: DTS-X
+        weight: 4500
+        slug: x
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)dts[-. ]?x(?!\d)'
+
+  Dolby-TrueHD-Atmos:
+    template:
+      - name: AudioCodec
+        weight: 5000
+        slug: truehd-atmos
+        standard_value: 189
+    plex_all: true
+    filters:
+      audio_track_title.regex: '(?i)(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d)))'
+
+  Dolby-TrueHD-Atmos-Filepath:
+    template:
+      - name: AudioCodec
+        overlay: Dolby-TrueHD-Atmos
+        weight: 5000
+        slug: truehd-atmos
+        standard_value: 189
+    plex_all: true
+    filters:
+      filepath.regex: '(?i)(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d)))'

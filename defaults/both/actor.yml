@@ -1,0 +1,63 @@
+#############################################################
+#                     Actor Collections                     #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Movie or Show)           #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/actor                                     #
+#        template_variables:                                #
+#          # Sets the style of posters: bw or rainier       #
+#          style: bw                                        #
+#          # Turn the separator collection on/off           #
+#          use_separator: true                              #
+#          # Separator style (red, blue, green, gray,       #
+#              purple, stb, orig)                           #
+#          sep_style: orig                                  #
+#          # Sets how the collection is sorted              #
+#          sort_by: release.desc                            #
+#          # Sets the collection mode of the collections    #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: 17                           #
+#          # Radarr Tag for existing items                  #
+#          item_radarr_tag:                                 #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag:                                 #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: 17
+
+templates:
+  actor_dynamic:
+    default:
+      sort_by: release.desc
+      style: bw
+    tmdb_person: <<value>>
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/people/<<style>>/<<key_encoded>>.jpg
+    smart_filter:
+      sort_by: <<sort_by>>
+      all:
+        actor: tmdb
+
+collections:
+  Actors Collections:
+    template:
+      - name: separator
+        separator: actor
+
+dynamic_collections:
+  Top Actors:
+    type: actor
+    template:
+      - actor_dynamic
+      - shared
+    title_format: <<title>>
+    data:
+      depth: 5
+      limit: 25
+      
