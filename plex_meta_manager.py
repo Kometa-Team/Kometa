@@ -1,10 +1,10 @@
 import argparse, os, sys, time, uuid
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
+from modules.logs import MyLogger
 
 try:
     import plexapi, requests, schedule
-    from modules.logs import MyLogger
     from PIL import ImageFile
     from plexapi import server
     from plexapi.exceptions import NotFound

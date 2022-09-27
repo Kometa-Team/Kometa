@@ -1,0 +1,57 @@
+#############################################################
+#                Dynamic Decade Collections                 #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Movie only)              #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/movie/decade                              #
+#        template_variables:                                #
+#          # Turn the separator collection on/off           #
+#          use_separator: true                              #
+#          # Separator style (red, blue, green, gray,       #
+#              purple, stb, orig)                           #
+#          sep_style: orig                                  #
+#          # Sets how the collection is sorted              #
+#          sort_by: critic_rating.desc                      #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: 12                           #
+#          # Sets the number of items per collection        #
+#          limit: 100                                       #
+#          # Radarr Tag for existing items                  #
+#          item_radarr_tag:                                 #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: 12
+
+templates:
+  decade_dynamic:
+    default:
+      limit: 100
+      sort_by: critic_rating.desc
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/decade/best/<<key>>.jpg
+    smart_filter:
+      sort_by: <<sort_by>>
+      any:
+        decade: <<value>>
+      limit: <<limit>>
+
+collections:
+  Decade Collections:
+    template:
+      - name: separator
+        separator: decade
+
+dynamic_collections:
+  Decade:
+    type: decade
+    title_format: Best of <<key_name>>
+    template:
+      - decade_dynamic
+      - shared

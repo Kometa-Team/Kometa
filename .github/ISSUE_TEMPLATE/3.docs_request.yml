@@ -4,6 +4,12 @@ labels: ['status:not-yet-viewed', 'documentation']
 assignees: 'meisnate12'
 
 body:
+  - type: markdown
+    attributes:
+      value: >
+        **THIS IS NOT THE PLACE TO ASK FOR SUPPORT OR FEATURE REQUESTS!**
+        Please use [Plex Meta Manager Discord](https://discord.gg/NfH6mGFuAB) and post your question under the `pmm-support` channel for support issues.
+        Please use [Plex Meta Manager Features](https://features.metamanager.wiki/) to request and upvote features.
   - type: textarea
     attributes:
       label: What is the improvement or update to the Wiki you wish to see?

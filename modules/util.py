@@ -422,12 +422,16 @@ def load_files(files_to_load, method, schedule=None, lib_vars=None):
             def check_dict(attr, name):
                 if attr in file:
                     if file[attr]:
-                        current.append((name, file[attr], temp_vars, asset_directory))
+                        if attr == "git" and file[attr].startswith("PMM/"):
+                            current.append(("PMM Default", file[attr][4:], temp_vars, asset_directory))
+                        else:
+                            current.append((name, file[attr], temp_vars, asset_directory))
                     else:
                         logger.error(f"Config Error: {method} {attr} is blank")
 
             check_dict("url", "URL")
             check_dict("git", "Git")
+            check_dict("pmm", "PMM Default")
             check_dict("repo", "Repo")
             check_dict("file", "File")
             if "folder" in file:

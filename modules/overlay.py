@@ -223,7 +223,14 @@ class Overlay:
             return image_path
 
         if not self.name.startswith(("blur", "backdrop")):
-            if "file" in self.data and self.data["file"]:
+            if ("pmm" in self.data and self.data["pmm"]) or ("git" in self.data and self.data["git"] and self.data["git"].startswith("PMM/")):
+                temp_path = self.data["pmm"] if "pmm" in self.data and self.data["pmm"] else self.data["git"][4:]
+                if temp_path.startswith("overlays/images/"):
+                    temp_path = temp_path[16:]
+                images_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults", "overlays", "images")
+                if os.path.exists(os.path.abspath(os.path.join(images_path, temp_path))):
+                    self.path = os.path.abspath(os.path.join(images_path, temp_path))
+            elif "file" in self.data and self.data["file"]:
                 self.path = self.data["file"]
             elif "git" in self.data and self.data["git"]:
                 self.path = get_and_save_image(f"{self.config.GitHub.configs_url}{self.data['git']}.png")

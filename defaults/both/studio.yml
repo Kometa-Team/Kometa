@@ -1,0 +1,173 @@
+#############################################################
+#                Dynamic Studio Collections                 #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Movie or Show)           #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/studio                                    #
+#        template_variables:                                #
+#          # Turn the separator collection on/off           #
+#          use_separator: true                              #
+#          # Separator style (red, blue, green, gray,       #
+#              purple, stb, orig)                           #
+#          sep_style: orig                                  #
+#          # Sets how the collection is sorted              #
+#          sort_by: release.desc                            #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: "07"                         #
+#          # Radarr Tag for existing items                  #
+#          item_radarr_tag:                                 #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag:                                 #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: "07"
+
+templates:
+  studio_dynamic:
+    default:
+      sort_by: release.desc
+    optional:
+      - contains
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/studio/<<key_encoded>>.jpg
+    smart_filter:
+      sort_by: <<sort_by>>
+      any:
+        studio.is: <<value>>
+        studio: <<contains>>
+
+collections:
+  Studio Collections:
+    template:
+      - name: separator
+        separator: studio
+
+dynamic_collections:
+  Studio:
+    type: studio
+    title_format: <<key_name>>
+    template:
+      - studio_dynamic
+      - shared
+    include:
+      - 20th Century Studios
+      - Amazon Studios
+      - Amblin Entertainment
+      - Blue Sky Studios
+      - Blumhouse Productions
+      - Chernin Entertainment
+      - Columbia Pictures
+      - Constantin Film
+      - DreamWorks Studios
+      - Grindstone Entertainment Group
+      - Happy Madison Productions
+      - Illumination Entertainment
+      - Ingenious Media
+      - Legendary Pictures
+      - Lionsgate
+      - Lucasfilm Ltd
+      - Malevolent Films
+      - Marvel Studios
+      - Metro-Goldwyn-Mayer
+      - Millennium Films
+      - Miramax
+      - New Line Cinema
+      - Original Film
+      - Orion Pictures
+      - Paramount Pictures
+      - Pixar
+      - PlanB Entertainment
+      - Sony Pictures
+      - Studio Ghibli
+      - Summit Entertainment
+      - Universal Pictures
+      - Village Roadshow Pictures
+      - Walt Disney Pictures
+      - Warner Bros. Pictures
+    addons:
+      20th Century Studios:
+        - 20th Century
+        - 20th Century Animation
+        - 20th Century Fox
+      Amazon Studios:
+        - Amazon
+      Amblin Entertainment:
+        - Amblin Entertainment
+      Blue Sky Studios:
+        - Blue Sky Films
+      Blumhouse Productions:
+        - Blumhouse Productions
+      Chernin Entertainment:
+        - Chernin Entertainment
+      Columbia Pictures:
+        - Columbia TriStar
+        - TriStar
+      Constantin Film:
+        - Constantin Film
+      DreamWorks Studios:
+        - DreamWorks
+        - DreamWorks Animation
+      Grindstone Entertainment Group:
+        - Grindstone Entertainment Group
+      Happy Madison Productions:
+        - Happy Madison Productions
+      Illumination Entertainment:
+        - Illumination Films
+      Ingenious Media:
+        - Ingenious Media
+      Legendary Pictures:
+        - Legendary Pictures
+      Lucasfilm Ltd:
+        - Lucasfilm
+      Malevolent Films:
+        - Malevolent Films
+      Marvel Studios:
+        - Marvel Animation
+        - Marvel Enterprises
+        - Marvel Entertainment
+        - Marvel
+      Metro-Goldwyn-Mayer:
+        - MGM
+      Millennium Films:
+        - Millennium Films
+      Miramax:
+        - Miramax
+      New Line Cinema:
+        - New Line
+      Original Film:
+        - Original Film
+      Orion Pictures:
+        - Orion Pictures
+      Paramount Pictures:
+        - Paramount
+        - Paramount Animation
+      Pixar:
+        - Pixar Animation Studios
+      PlanB Entertainment:
+        - PlanB Entertainment
+      Sony Pictures:
+        - Sony
+        - Sony Pictures Animation
+      Summit Entertainment:
+        - Summit Entertainment
+      Universal Pictures:
+        - Universal
+        - Universal Animation Studios
+      Village Roadshow Pictures:
+        - Village Roadshow Pictures
+      Walt Disney Pictures:
+        - Disney
+        - Walt Disney Animation Studios
+      Warner Bros. Pictures:
+        - Warner
+        - Warner Animation Group
+    template_variables:
+      contains:
+        20th Century Studios: 20th Century

@@ -1,0 +1,178 @@
+#############################################################
+#                    Commonsense Overlay                    #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#             Credit to Magic815 for base images            #
+#############################################################
+#                                                           #
+#  Call this from your config.yml (Movie or Show):          #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    overlay_path:                                          #
+#      - pmm: commonsense                                   #
+#        template_variables:                                #
+#          # Set text you want before the rating            #
+#          pre_text: ""                                     #
+#          # Set episode or season to overlay               #
+#          overlay_level:                                   #
+#          # Set the horizontal offset for the overlay      #
+#          horizontal_offset: 15                            #
+#          # Set the horizontal align for the overlay       #
+#          horizontal_align: left                           #
+#          # Set the vertical offset for the overlay        #
+#          vertical_offset: 270                             #
+#          # Set the vertical align for the overlay         #
+#          vertical_align: bottom                           #
+#          # Set the font for the overlay                   #
+#          font: fonts/Inter-Medium.ttf                     #
+#          # Set the font size for the overlay              #
+#          font_size: 55                                    #
+#          # Set the font color for the overlay             #
+#          font_color: "#FFFFFF"                            #
+#          # Set the back color for the overlay             #
+#          back_color: "#00000099"                          #
+#          # Set the back radius for the overlay            #
+#          back_radius: 30                                  #
+#          # Set the back width for the overlay             #
+#          back_width: 300                                  #
+#          # Set the back height for the overlay            #
+#          back_height: 105                                 #
+#                                                           #
+#          # Use the NR overlay                             #
+#          use_nr: true                                     #
+#                                                           #
+#    operations:                                            #
+#      mass_content_rating_update: mdb_commonsense          #
+#############################################################
+
+templates:
+  Content-Rating:
+    conditionals:
+      pre:
+        default: <<pre_text>>
+        conditions:
+          - overlay_name: NR
+            value: ""
+      rating_style:
+        default: "+"
+        conditions:
+          - overlay_name: NR
+            value: ""
+    optional:
+      - overlay_level
+      - use_<<slug>>
+    default:
+      pre_text: ""
+      overlay: <<overlay_name>>
+      horizontal_offset: 15
+      horizontal_align: left
+      vertical_offset: 270
+      vertical_align: bottom
+      font: fonts/Inter-Medium.ttf
+      font_size: 55
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 300
+      back_height: 105
+    collection_level: <<overlay_level>>
+    allowed_library_types: <<use_<<slug>>>>
+    ignore_blank_results: true
+    overlay:
+      name: text(<<pre>><<overlay_name>><<rating_style>>)
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
+      font: <<font>>
+      font_size: <<font_size>>
+      font_color: <<font_color>>
+      back_color: <<back_color>>
+      back_radius: <<back_radius>>
+      back_width: <<back_width>>
+      back_height: <<back_height>>
+      pmm: Commonsense
+      addon_position: left
+      addon_offset: 15
+    plex_search:
+      validate: false
+      any:
+        content_rating: <<rating>>
+
+overlays:
+  1:
+    template:
+      - name: Content-Rating
+        rating: "1, 0, 01, 00, G, TV-G, TV-Y"
+  2:
+    template:
+      - name: Content-Rating
+        rating: "2, 02"
+  3:
+    template:
+      - name: Content-Rating
+        rating: "3, 03"
+  4:
+    template:
+      - name: Content-Rating
+        rating: "4, 04"
+  5:
+    template:
+      - name: Content-Rating
+        rating: "5, 05"
+  6:
+    template:
+      - name: Content-Rating
+        rating: "6, 06, GP, PG, M/PG, TV-PG"
+  7:
+    template:
+      - name: Content-Rating
+        rating: "7, 07, TV-Y7, TV-Y7-FV"
+  8:
+    template:
+      - name: Content-Rating
+        rating: "8, 08"
+  9:
+    template:
+      - name: Content-Rating
+        rating: "9, 09"
+  10:
+    template:
+      - name: Content-Rating
+        rating: "10"
+  11:
+    template:
+      - name: Content-Rating
+        rating: "11"
+  12:
+    template:
+      - name: Content-Rating
+        rating: "12"
+  13:
+    template:
+      - name: Content-Rating
+        rating: "13, PG-13"
+  14:
+    template:
+      - name: Content-Rating
+        rating: "14, TV-14"
+  15:
+    template:
+      - name: Content-Rating
+        rating: "15"
+  16:
+    template:
+      - name: Content-Rating
+        rating: "16, Passed, Approved, Open"
+  17:
+    template:
+      - name: Content-Rating
+        rating: "17"
+  18:
+    template:
+      - name: Content-Rating
+        rating: "18, NC-17, M, TV-MA, R, X"
+  NR:
+    template:
+      - name: Content-Rating
+        slug: nr
+        rating: "None, NR, Not Rated, Unrated"

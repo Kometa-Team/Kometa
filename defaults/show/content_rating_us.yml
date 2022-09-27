@@ -1,0 +1,108 @@
+#############################################################
+#         Dynamic US TV Content Rating Collections          #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Show only)               #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/show/content_rating_us                    #
+#        template_variables:                                #
+#          # Turn the separator collection on/off           #
+#          use_separator: true                              #
+#          # Separator style (red, blue, green, gray,       #
+#              purple, stb, orig)                           #
+#          sep_style: orig                                  #
+#          # Turn the other collection on/off               #
+#          use_other: true                                  #
+#          # Sets how the collection is sorted              #
+#          sort_by: release.desc                            #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: 14                           #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag:                                 #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: 14
+
+templates:
+  content_rating_dynamic:
+    default:
+      sort_by: release.desc
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/content_rating/us/<<key_name>>.jpg
+    smart_filter:
+      sort_by: <<sort_by>>
+      any:
+        content_rating: <<value>>
+
+  other:
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/content_rating/other.jpg
+
+collections:
+  Ratings Collections:
+    template:
+      - name: separator
+        separator: content_rating
+
+dynamic_collections:
+  US Show Content Rating:
+    type: content_rating
+    title_format: <<key_name>>
+    other_name: Other Ratings
+    template:
+      - content_rating_dynamic
+      - shared
+    other_template:
+      - other
+      - other_collection
+      - content_rating_dynamic
+      - shared
+    include:
+      - TV-G
+      - TV-Y
+      - TV-PG
+      - TV-14
+      - TV-MA
+      - NR
+    addons:
+      TV-G: 
+        - gb/U
+        - gb/0+
+        - U
+        - G
+      TV-Y:
+        - TV-Y7
+        - TV-Y7-FV
+      TV-PG:
+        - gb/PG
+        - gb/9+
+      TV-14:
+        - gb/12A
+        - 12+
+        - PG-13
+        - TV-13
+        - gb/14+
+        - gb/15
+      TV-MA:
+        - 18
+        - gb/18
+        - MA-17
+        - NC-17
+        - R
+        - TVMA
+      NR:
+        - Approved
+        - N/A
+        - NOT RATED
+        - Not Rated
+        - gb/NR
+        - Unrated
+        - gb/Not Rated
+        - gb/Rejected
+        - gb/Unrated
+        - None

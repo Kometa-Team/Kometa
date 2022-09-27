@@ -1,0 +1,64 @@
+#############################################################
+#                     Emmy Collections                      #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#############################################################
+#  Call this from your config.yml (Movie or Show)           #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    metadata_path:                                         #
+#      - git: PMM/award/emmy                                #
+#        template_variables:                                #
+#          # Turn the individual year collections on/off    #
+#          use_year_collections: true                       #
+#          # Sets the sort of the IMDb Search               #
+#          imdb_sort: moviemeter,desc                       #
+#          collection_order: custom                         #
+#          # Sets the collection mode of the collection     #
+#          collection_mode:                                 #
+#          # Sets the value at the start of the sort title  #
+#          collection_section: 16                           #
+#          # Adds missing from the collection to radarr     #
+#          radarr_add_missing:                              #
+#          # Adds missing from the collection to sonarr     #
+#          sonarr_add_missing:                              #
+#          # Radarr Folder to add to                        #
+#          radarr_folder:                                   #
+#          # Sonarr Folder to add to                        #
+#          sonarr_folder:                                   #
+#          # Radarr Tag for added missing                   #
+#          radarr_tag:                                      #
+#          # Sonarr Tag for added missing                   #
+#          sonarr_tag:                                      #
+#          # Radarr Tag for existing items                  #
+#          item_radarr_tag:                                 #
+#          # Sonarr Tag for existing items                  #
+#          item_sonarr_tag:                                 #
+#############################################################
+
+external_templates:
+  git: PMM/templates
+  template_variables:
+    collection_section: 16
+
+templates:
+  Emmy:
+    default:
+      imdb_sort: moviemeter,asc
+    summary: <<key>> Emmy Winners
+    imdb_list: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=emmy_winner&sort=<<imdb_sort>>
+    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/emmys/winner/<<key>>.jpg
+
+dynamic_collections:
+  Emmy Awards:
+    type: number
+    sync: true
+    data:
+      starting: current_year-5
+      ending: current_year
+    title_format: Emmys <<key_name>>
+    template:
+      - use_year_collections
+      - Emmy
+      - shared
+      - arr
+      - custom

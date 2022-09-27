@@ -88,22 +88,38 @@ class DataFile:
         else:
             return data
 
-    def load_file(self, file_type, file_path):
+    def load_file(self, file_type, file_path, library_type=None, overlay=False):
+        if not file_path.endswith(".yml"):
+            file_path = f"{file_path}.yml"
         if file_type in ["URL", "Git", "Repo"]:
             if file_type == "Repo" and not self.config.custom_repo:
                 raise Failed("Config Error: No custom_repo defined")
-            content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else self.config.GitHub.configs_url}{file_path}.yml"
+            content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else self.config.GitHub.configs_url}{file_path}"
             response = self.config.get(content_path)
             if response.status_code >= 400:
                 raise Failed(f"URL Error: No file found at {content_path}")
             yaml = YAML(input_data=response.content, check_empty=True)
         else:
-            if not file_path.endswith(".yml"):
-                file_path = f"{file_path}.yml"
-            if os.path.exists(os.path.abspath(file_path)):
-                yaml = YAML(path=os.path.abspath(file_path), check_empty=True)
-            else:
+            if file_type == "PMM Default":
+                if not overlay and file_path.startswith("movie/"):
+                    file_path = file_path[6:]
+                elif not overlay and file_path.startswith(("show/", "both/")):
+                    file_path = file_path[5:]
+                elif overlay and file_path.startswith("overlays/"):
+                    file_path = file_path[9:]
+
+                defaults_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults")
+                if overlay:
+                    defaults_path = os.path.join(defaults_path, "overlays")
+                if os.path.exists(os.path.abspath(os.path.join(defaults_path, file_path))):
+                    file_path = os.path.abspath(os.path.join(defaults_path, file_path))
+                elif os.path.exists(os.path.abspath(os.path.join(defaults_path, library_type.lower(), file_path))):
+                    file_path = os.path.abspath(os.path.join(defaults_path, library_type.lower(), file_path))
+                elif os.path.exists(os.path.abspath(os.path.join(defaults_path, "both", file_path))):
+                    file_path = os.path.abspath(os.path.join(defaults_path, "movie", file_path))
+            if not os.path.exists(os.path.abspath(file_path)):
                 raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
+            yaml = YAML(path=os.path.abspath(file_path), check_empty=True)
         return yaml.data
 
     def apply_template(self, name, mapping_name, data, template_call, extra_variables):
@@ -399,7 +415,7 @@ class MetadataFile(DataFile):
         else:
             logger.info("")
             logger.separator(f"Loading Metadata {file_type}: {path}")
-            data = self.load_file(self.type, self.path)
+            data = self.load_file(self.type, self.path, library_type=library.type)
             self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
             self.external_templates(data)
@@ -1325,7 +1341,7 @@ class OverlayFile(DataFile):
         self.data_type = "Overlay"
         logger.info("")
         logger.info(f"Loading Overlay {file_type}: {path}")
-        data = self.load_file(self.type, self.path)
+        data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)
         self.queues = get_dict("queues", data, library.queue_names)
