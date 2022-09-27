@@ -1,31 +1,31 @@
-# Actor Default Metadata File
+# Producer Default Metadata File
 
-The `- pmm: actor` Metadata File is used to dynamically create collections based on the most popular actors/actresses in your library.
+The `- pmm: producer` Metadata File is used to dynamically create collections based on the most popular producers in your library.
 
 Example Collections Created:
 
-![](images/actor1.png)
+![](images/producer1.png)
 
-The below YAML in your config.yml will create the actor collections:
+The below YAML in your config.yml will create the producer collections:
 ```yaml
 libraries:
   Movies:
     metadata_path:
-      - pmm: actor
+      - pmm: producer
 ```
 
 ## Rainier Style
 Below is a screenshot of the alternative `Rainier` style which can be set via template variables
 
-![](images/actor2.png)
+![](images/producer2.png)
 
 
 ## Template Variables
-Template Variables can be used to manipulate the actor file from the default settings which are provided. 
+Template Variables can be used to manipulate the producer file from the default settings which are provided. 
 
 Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
 
-Below are the available variables which can be used to customize the actor file.
+Below are the available variables which can be used to customize the file.
 
 
 | Variable           | Usage                                                                          | Default Value  |                                                                             Values                                                                             |
@@ -37,7 +37,6 @@ Below are the available variables which can be used to customize the actor file.
 | use_separator      | Controls whether a separator is created                                        | `true`         |                                                                       `true` or `false`                                                                        |
 | sep_style          | Sets the theme of the separator                                                | `orig`         |                                                    `orig`, `blue`, `gray`, `green`, `purple`, `red`, `stb`                                                     |
 | item_radarr_tag    | Radarr Tag for existing items                                                  |                |                                                         list of tag(s) to be applied to existing items                                                         |
-| item_sonarr_tag    | Sonarr Tag for existing items                                                  |                |                                                        list of tag(s) to be applied to existing items                                                          |
 
 The below shows an example config.yml with all of the template_variables set away from their defaults:
 
@@ -45,7 +44,7 @@ The below shows an example config.yml with all of the template_variables set awa
 libraries:
   Movies:
     metadata_path:
-      - pmm: actor
+      - pmm: producer
         template_variables:
           style: rainier
           sort_by: title.asc
