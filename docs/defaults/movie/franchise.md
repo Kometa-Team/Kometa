@@ -1,6 +1,6 @@
 # Franchise Language Default Metadata File
 
-The `- pmm: franchise` Metadata File is used to  create collections based on popular Movie franchises
+The `- pmm: franchise` Metadata File is used to  create collections based on popular Movie franchises, and can be used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
 
 Unlike most Default Metadata Files, Franchise works by placing collections inline with the main library items if your library allows it. For example, the "Iron Man" franchise collection will appear next to the "Iron Man" movies within your library.
 
