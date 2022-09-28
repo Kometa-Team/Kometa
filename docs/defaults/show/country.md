@@ -1,6 +1,6 @@
 # country Language Default Metadata File
 
-The `- pmm: country` Metadata File is used to dynamically create collections based on the counties available in your library.
+The `- pmm: country` Metadata File is used to dynamically create collections based on the countries available in your library.
 
 Example Collections Created:
 

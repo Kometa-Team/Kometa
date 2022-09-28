@@ -1,19 +1,19 @@
 # BAFTA Default Metadata File
 
-The `- pmm: chart/bafta` Metadata File is used to dynamically create collections based on the genres available in your library.
+The `- pmm: bafta` Metadata File is used to dynamically create collections based on the genres available in your library.
 
 This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci-Fi & Fantasy") into one ("Science Fiction")
 
 Example Collections Created:
 
-![](images/bafta.png)
+![](../images/bafta.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
     metadata_path:
-      - pmm: chart/bafta
+      - pmm: bafta
 ```
 
 
@@ -39,7 +39,7 @@ The below shows an example config.yml with all of the template_variables set awa
 libraries:
   Movies:
     metadata_path:
-      - pmm: chart/bafta
+      - pmm: bafta
         template_variables:
           sort_by: title.asc
           collection_section: 5

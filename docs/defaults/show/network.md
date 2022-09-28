@@ -1,6 +1,6 @@
 # Network Language Default Metadata File
 
-The `- pmm: network` Metadata File is used to dynamically create collections based on the counties available in your library.
+The `- pmm: network` Metadata File is used to dynamically create collections based on the networks available in your library.
 
 Example Collections Created:
 
