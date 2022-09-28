@@ -6,7 +6,7 @@ If you do not use the US-based rating system within Plex, this file will attempt
 
 Example Collections Created:
 
-![](../images/content_rating_us.png)
+![](../images/showcontent_rating_us.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml

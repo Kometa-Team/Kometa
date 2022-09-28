@@ -4,7 +4,7 @@ The `- pmm: producer` Metadata File is used to dynamically create collections ba
 
 Example Collections Created:
 
-![](images/producer1.png)
+![](../images/producer1.png)
 
 The below YAML in your config.yml will create the producer collections:
 ```yaml
@@ -17,7 +17,7 @@ libraries:
 ## Rainier Style
 Below is a screenshot of the alternative `Rainier` style which can be set via template variables
 
-![](images/producer2.png)
+![](../images/producer2.png)
 
 
 ## Template Variables
