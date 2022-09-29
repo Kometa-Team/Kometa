@@ -30,9 +30,9 @@ Below are the available variables which can be used to customize the file.
 | collection_order   | Sets the collection order of the collection  | `alpha`       |             `release`, `alpha` or `custom`              |
 | radarr_add_missing | Adds missing from the collection to radarr   | `false`       |                    `true` or `false`                    |
 | radarr_folder      | Radarr Folder to add to                      |               |             Folder to add missing items to              |
-| radarr_tag         | Radarr Tag for added missing                 |               |     list of tag(s) to be applied to existing items      |
+| radarr_tag         | Radarr Tag for added missing                 |               |      list of tag(s) to be applied to missing items      |
 | item_radarr_tag    | Radarr Tag for existing items                |               |     list of tag(s) to be applied to existing items      |
-| use_separator      | Controls whether a separator is created      | `true`        |                   `true` or `false`                     |
+| use_separator      | Controls whether a separator is created      | `true`        |                    `true` or `false`                    |
 | sep_style          | Sets the theme of the separator              | `orig`        | `orig`, `blue`, `gray`, `green`, `purple`, `red`, `stb` |
 
 The below shows an example config.yml with all the template_variables set away from their defaults:
