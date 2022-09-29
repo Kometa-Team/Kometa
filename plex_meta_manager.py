@@ -660,7 +660,7 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
 
-            if valid and run_item_details and builder.builders and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list):
+            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list):
                 try:
                     builder.load_collection_items()
                 except Failed:

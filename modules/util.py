@@ -717,7 +717,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
                             new_data[str(dict_data_key)] = dict_data_data
                         final_dict[dict_key] = new_data
                     else:
-                        raise Failed(f"{error} Warning: {display} {dict_key} is not a dictionary")
+                        final_dict[dict_key] = dict_data
                 return final_dict
         else:
             raise Failed(f"{error} Error: {display} {value} is not a dictionary")

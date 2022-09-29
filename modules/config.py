@@ -387,8 +387,11 @@ class ConfigFile:
                     "test": check_for_attribute(self.data, "test", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False)
                 })
             except Failed as e:
-                logger.stacktrace()
-                logger.error(e)
+                if str(e).endswith("is blank"):
+                    logger.warning(e)
+                else:
+                    logger.stacktrace()
+                    logger.error(e)
             logger.info(f"Notifiarr Connection {'Failed' if self.NotifiarrFactory is None else 'Successful'}")
         else:
             logger.warning("notifiarr attribute not found")
@@ -438,7 +441,10 @@ class ConfigFile:
                         "expiration": check_for_attribute(self.data, "cache_expiration", parent="omdb", var_type="int", default=60, int_min=1)
                     })
                 except Failed as e:
-                    logger.error(e)
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
                 logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
             else:
                 logger.warning("omdb attribute not found")
@@ -455,7 +461,10 @@ class ConfigFile:
                     )
                     logger.info("Mdblist Connection Successful")
                 except Failed as e:
-                    logger.error(e)
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
                     logger.info("Mdblist Connection Failed")
             else:
                 logger.warning("mdblist attribute not found")
@@ -474,7 +483,10 @@ class ConfigFile:
                         "authorization": self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] else None
                     })
                 except Failed as e:
-                    logger.error(e)
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
                 logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
             else:
                 logger.warning("trakt attribute not found")
@@ -494,7 +506,10 @@ class ConfigFile:
                         "authorization": self.data["mal"]["authorization"] if "authorization" in self.data["mal"] else None
                     })
                 except Failed as e:
-                    logger.error(e)
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
                 logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
             else:
                 logger.warning("mal attribute not found")
@@ -510,7 +525,10 @@ class ConfigFile:
                         check_for_attribute(self.data, "cache_expiration", parent="anidb", var_type="int", default=60, int_min=1)
                     )
                 except Failed as e:
-                    logger.error(e)
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
                 logger.info(f"AniDB API Connection {'Successful' if self.AniDB.is_authorized else 'Failed'}")
                 try:
                     self.AniDB.login(
@@ -518,7 +536,10 @@ class ConfigFile:
                         check_for_attribute(self.data, "password", parent="anidb", throw=True)
                     )
                 except Failed as e:
-                    logger.error(e)
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
                 logger.info(f"AniDB Login {'Successful' if self.AniDB.username else 'Failed Continuing as Guest'}")
 
             logger.separator()

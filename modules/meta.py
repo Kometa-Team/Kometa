@@ -72,6 +72,7 @@ class DataFile:
         self.asset_directory = asset_directory
         self.data_type = ""
         self.templates = {}
+        self.translations = {}
 
     def get_file_name(self):
         data = f"{self.config.GitHub.configs_url}{self.path}.yml" if self.type == "GIT" else self.path
@@ -88,13 +89,18 @@ class DataFile:
         else:
             return data
 
-    def load_file(self, file_type, file_path, library_type=None, overlay=False):
-        if not file_path.endswith(".yml"):
+    def load_file(self, file_type, file_path, library_type=None, overlay=False, translation=False):
+        if translation and file_path.endswith(".yml"):
+            file_path = file_path[:-4]
+        if not translation and not file_path.endswith(".yml"):
             file_path = f"{file_path}.yml"
         if file_type in ["URL", "Git", "Repo"]:
             if file_type == "Repo" and not self.config.custom_repo:
                 raise Failed("Config Error: No custom_repo defined")
             content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else self.config.GitHub.configs_url}{file_path}"
+            dir_path = content_path
+            if translation:
+                content_path = f"{content_path}/default.yml"
             response = self.config.get(content_path)
             if response.status_code >= 400:
                 raise Failed(f"URL Error: No file found at {content_path}")
@@ -117,10 +123,41 @@ class DataFile:
                     file_path = os.path.abspath(os.path.join(defaults_path, library_type.lower(), file_path))
                 elif os.path.exists(os.path.abspath(os.path.join(defaults_path, "both", file_path))):
                     file_path = os.path.abspath(os.path.join(defaults_path, "movie", file_path))
-            if not os.path.exists(os.path.abspath(file_path)):
-                raise Failed(f"File Error: File does not exist {os.path.abspath(file_path)}")
-            yaml = YAML(path=os.path.abspath(file_path), check_empty=True)
-        return yaml.data
+            content_path = os.path.abspath(f"{file_path}/default.yml" if translation else file_path)
+            dir_path = file_path
+            if not os.path.exists(content_path):
+                raise Failed(f"File Error: File does not exist {content_path}")
+            yaml = YAML(path=content_path, check_empty=True)
+        if not translation:
+            return yaml.data
+        if "translations" not in yaml.data:
+            raise Failed(f"URL Error: Top Level translations attribute not found in {content_path}")
+        translations = {k: {"default": v} for k, v in yaml.data["translations"]}
+
+        def add_translation(yaml_path, yaml_key, data=None):
+            yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
+            if "translations" in yaml_content.data:
+                for ky, vy in yaml_content.data["translations"]:
+                    if ky in translations:
+                        translations[ky][yaml_key] = vy
+                    else:
+                        logger.error(f"Config Error: {ky} must have a default value")
+            else:
+                logger.error(f"Config Error: Top Level translations attribute not found in {yaml_path}")
+
+        if file_type in ["URL", "Git", "Repo"]:
+            if "languages" in yaml.data and isinstance(yaml.data["language"], list):
+                for language in yaml.data["language"]:
+                    response = self.config.get(f"{dir_path}/{language}.yml")
+                    if response.status_code < 400:
+                        add_translation(f"{dir_path}/{language}.yml", language, data=response.content)
+                    else:
+                        logger.error(f"URL Error: Language file not found at {dir_path}/{language}.yml")
+        else:
+            for file in os.listdir(dir_path):
+                if file.endswith(".yml") and file != "default.yml":
+                    add_translation(os.path.abspath(f"{dir_path}/{file}"), file[:-4])
+        return translations
 
     def apply_template(self, name, mapping_name, data, template_call, extra_variables):
         if not self.templates:
@@ -182,6 +219,10 @@ class DataFile:
                             optional.append(str(temp_key))
                         else:
                             variables[temp_key] = temp_value
+
+                    language = variables["language"] if "language" in variables else "default"
+                    for temp_key, temp_value in self.translations.items():
+                        variables[temp_key] = temp_value[language if language in temp_value else "default"]
 
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
@@ -400,6 +441,17 @@ class DataFile:
                         if temp_key not in self.templates:
                             self.templates[temp_key] = (temp_value, temp_vars)
 
+    def translation_files(self, data):
+        if data and "translations" in data and data["translations"]:
+            files = util.load_files(data["translations"], "translations")
+            if not files:
+                logger.error("Config Error: No Paths Found for translations")
+            for file_type, template_file, _, _ in files:
+                temp_data = self.load_file(file_type, template_file, translation=True)
+                for k, v in temp_data.items():
+                    if k not in self.translations:
+                        self.translations[k] = v
+
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
@@ -419,6 +471,7 @@ class MetadataFile(DataFile):
             self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
             self.external_templates(data)
+            self.translation_files(data)
             self.collections = get_dict("collections", data, library.collections)
             self.dynamic_collections = get_dict("dynamic_collections", data)
             col_names = library.collections + [c for c in self.collections]
@@ -765,7 +818,9 @@ class MetadataFile(DataFile):
                         used_keys.extend(key_value)
                         og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
-                            if key in v:
+                            if not isinstance(v, dict):
+                                og_call[k] = v
+                            elif key in v:
                                 og_call[k] = v[key]
                         template_call = []
                         for template_name in template_names:
@@ -794,7 +849,9 @@ class MetadataFile(DataFile):
                             auto_type: other_keys, "key_name": other_name, "key": "other"
                         }
                         for k, v in template_variables.items():
-                            if "other" in v:
+                            if not isinstance(v, dict):
+                                og_other[k] = v
+                            elif "other" in v:
                                 og_other[k] = v["other"]
                         other_call = []
                         for other_template in other_templates:
@@ -1330,6 +1387,7 @@ class PlaylistFile(DataFile):
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
         self.external_templates(data)
+        self.translation_files(data)
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info(f"Playlist File Loaded Successfully")
@@ -1346,6 +1404,7 @@ class OverlayFile(DataFile):
         self.templates = get_dict("templates", data)
         self.queues = get_dict("queues", data, library.queue_names)
         self.external_templates(data)
+        self.translation_files(data)
         if not self.overlays:
             raise Failed("YAML Error: overlays attribute is required")
         logger.info(f"Overlay File Loaded Successfully")
