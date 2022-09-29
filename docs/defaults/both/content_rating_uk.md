@@ -52,3 +52,19 @@ libraries:
           sep_style: blue
 ```
 
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `content_rating_uk` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/content_rating_uk.yml)
+
+An example of this is; to map the "de/18" content rating to "18", the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: content_rating_uk
+        template_variables:
+          addons:
+            "18":
+              - "de/18"
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)

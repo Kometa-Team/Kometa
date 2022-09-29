@@ -1,6 +1,6 @@
 # IMDb Chart Default Metadata File
 
-The `- pmm: chart/imdb` Metadata File is used to dynamically create collections based on IMDb Charts.
+The `- pmm: chart/imdb` Metadata File is used to create collections based on IMDb Charts.
 
 Example Collections Created:
 

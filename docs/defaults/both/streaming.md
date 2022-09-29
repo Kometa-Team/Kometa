@@ -94,3 +94,18 @@ libraries:
           use_separator: false
           sep_style: stb
 ```
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `streaming` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/streaming.yml)
+
+An example of this is; to only run the Disney+ collection against the movie library, the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: streaming
+        template_variables:
+          use:
+            disney: movie
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)

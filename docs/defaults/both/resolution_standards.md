@@ -1,19 +1,21 @@
-# Genre Default Metadata File
+# Resolution Standards Default Metadata File
 
-The `- pmm: genre` Metadata File is used to dynamically create collections based on the genres available in your library.
+The `- pmm: resolution_standards` Metadata File is used to dynamically create collections based on the resolutions available in your library.
 
-This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci-Fi & Fantasy") into one ("Science Fiction")
+This file takes the base resolutions ("4K" and "720p") and turns them into the commonly-known standards name ("Ultra HD" and "HD Ready")
+
+To avoid duplication, this file should not be used in combination with `- pmm: resolution`
 
 Example Collections Created:
 
-![](images/genre.png)
+![](images/resolution_standards.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
     metadata_path:
-      - pmm: genre
+      - pmm: resolution_standards
 ```
 
 
@@ -41,12 +43,26 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: genre
+      - pmm: resolution_standards
         template_variables:
           sort_by: title.asc
-          collection_section: 5
+          collection_section: 16
           collection_mode: show_items
           use_separator: false
-          sep_style: red
+          sep_style: stb
+```
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `resolution_standards` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/resolution_standards.yml)
+
+An example of this is; to map the collection title of the "4k" resolution to "4K Ultra HD", the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: resolution_standards
+        template_variables:
+          title_override:
+            4k: 4K Ultra HD
 ```
 
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)

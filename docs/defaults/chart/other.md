@@ -1,6 +1,6 @@
 # Other Chart Default Metadata File
 
-The `- pmm: chart/other` Metadata File is used to dynamically create collections based on other Charts.
+The `- pmm: chart/other` Metadata File is used to create collections based on other Charts.
 
 Example Collections Created:
 

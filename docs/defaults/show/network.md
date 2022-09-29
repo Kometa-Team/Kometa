@@ -1,6 +1,6 @@
 # Network Language Default Metadata File
 
-The `- pmm: network` Metadata File is used to dynamically create collections based on the networks available in your library.
+The `- pmm: show/network` Metadata File is used to dynamically create collections based on the networks available in your library.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: network
+      - pmm: show/network
 ```
 
 
@@ -39,7 +39,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: network
+      - pmm: show/show/network
         template_variables:
           sort_by: title.asc
           collection_section: 07
@@ -49,3 +49,18 @@ libraries:
           sep_style: stb
 ```
 
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `network` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/show/network.yml)
+
+An example of this is; to include the "Adult Swim" network, the following template variables can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: show/show/network
+        template_variables:
+          include:
+            - Adult Swim
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)

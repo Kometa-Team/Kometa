@@ -1,6 +1,6 @@
 # Writer Default Metadata File
 
-The `- pmm: writer` Metadata File is used to dynamically create collections based on the most popular writers in your library.
+The `- pmm: movie/writer` Metadata File is used to dynamically create collections based on the most popular writers in your library.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the writer collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: writer
+      - pmm: movie/writer
 ```
 
 ## Rainier Style
@@ -44,7 +44,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: writer
+      - pmm: movie/writer
         template_variables:
           style: rainier
           sort_by: title.asc
@@ -53,4 +53,20 @@ libraries:
           use_separator: false
           sep_style: purple
 ```
+
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `writer` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/movie/writer.yml)
+
+An example of this is; To amend the maximum amount of collections that are created (default is 25), the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: movie/writer
+        template_variables:
+          data:
+            limit: 25
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)
 
