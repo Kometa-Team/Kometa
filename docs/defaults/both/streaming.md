@@ -67,7 +67,7 @@ Below are the available variables which can be used to customize the file. Note 
 | use_separator              | Controls whether a separator is created                                        | `true`             |                                                                       `true` or `false`                                                                        |
 | sep_style                  | Sets the theme of the separator                                                | `orig`             |                                                    `orig`, `blue`, `gray`, `green`, `purple`, `red`, `stb`                                                     |
 
-The below shows an example config.yml with all of the template_variables set away from their defaults:
+The below shows an example config.yml with all the template_variables set away from their defaults:
 
 ```yaml
 libraries:
@@ -94,3 +94,18 @@ libraries:
           use_separator: false
           sep_style: stb
 ```
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `streaming` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/streaming.yml)
+
+An example of this is; to only run the Disney+ collection against the movie library, the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: streaming
+        template_variables:
+          use:
+            disney: movie
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)

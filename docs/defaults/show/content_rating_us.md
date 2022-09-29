@@ -1,6 +1,6 @@
 # US Content Rating Default Metadata File
 
-The `- pmm: content_rating_us` Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `- pmm: show/content_rating_us` Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
 If you do not use the US-based rating system within Plex, this file will attempt to match the international ratings (such as "gb/12A") to the respective US rating system (such as "TV-14")
 
@@ -13,7 +13,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_us
+      - pmm: show/content_rating_us
 ```
 
 ohhh   
@@ -36,13 +36,13 @@ Below are the available variables which can be used to customize the file.
 | item_radarr_tag    | Radarr Tag for existing items                                                                        |                |                                                         list of tag(s) to be applied to existing items                                                         |
 | item_sonarr_tag    | Sonarr Tag for existing items                                                                        |                |                                                         list of tag(s) to be applied to existing items                                                         |
 
-The below shows an example config.yml with all of the template_variables set away from their defaults:
+The below shows an example config.yml with all the template_variables set away from their defaults:
 
 ```yaml
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_us
+      - pmm: show/content_rating_us
         template_variables:
           sort_by: title.asc
           collection_section: 25
@@ -51,4 +51,22 @@ libraries:
           use_separator: false
           sep_style: blue
 ```
+
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `content_rating_us` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/show/content_rating_us.yml)
+
+An example of this is; to map the "de/18" content rating to "TV-MA", the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: show/content_rating_us
+        template_variables:
+          addons:
+            TV-MA:
+              - "de/18"
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)
+
 

@@ -35,7 +35,7 @@ Below are the available variables which can be used to customize the file.
 | item_radarr_tag    | Radarr Tag for existing items                                                  |                |                                                         list of tag(s) to be applied to existing items                                                         |
 | item_sonarr_tag    | Sonarr Tag for existing items                                                  |                |                                                         list of tag(s) to be applied to existing items                                                         |
 
-The below shows an example config.yml with all of the template_variables set away from their defaults:
+The below shows an example config.yml with all the template_variables set away from their defaults:
 
 ```yaml
 libraries:
@@ -49,3 +49,19 @@ libraries:
           use_separator: false
           sep_style: green
 ```
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `resolution` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/resolution.yml)
+
+An example of this is; to map the "SD" resolution to "480", the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: resolution
+        template_variables:
+          addons:
+            "480":
+              - SD
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)
