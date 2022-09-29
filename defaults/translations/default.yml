@@ -1,0 +1,9 @@
+translations:
+  bafta_best_name: BAFTA Best Films
+  bafta_best_summary: British Academy of Film and Television Arts Best Film Winners
+  bafta_year_name: BAFTA <<key_name>>
+  bafta_year_summary: <<key>> BAFTA Awards
+  cannes_best_name: Cannes Golden Palm Winners
+  cannes_best_summary: Cannes Golden Palm Winners
+  cannes_year_name: Cannes <<key_name>>
+  cannes_year_summary: <<key>> Cannes Awards
