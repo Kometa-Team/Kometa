@@ -49,3 +49,19 @@ libraries:
           use_separator: false
           sep_style: green
 ```
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `resolution` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/resolution.yml)
+
+An example of this is; to map the "SD" resolution to "480", the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: resolution
+        template_variables:
+          addons:
+            "480":
+              - SD
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)

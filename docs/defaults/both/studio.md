@@ -22,7 +22,7 @@ Template Variables can be used to manipulate the file from the default settings 
 
 Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
 
-Below are the available variables which can be used to customize the file.I 
+Below are the available variables which can be used to customize the file.
 
 
 | Variable           | Usage                                                                          | Default Value  |                                                                             Values                                                                             |
@@ -50,3 +50,21 @@ libraries:
           sep_style: gray
 ```
 
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `studio` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/studio.yml)
+
+An example of this is; to include the "ABC Pictures" studio and map the "ABC News" studio to it, the following template variables can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: studio
+        template_variables:
+          include:
+            - ABC Pictures
+          addons:
+            ABC Picture:
+              - ABC News
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)

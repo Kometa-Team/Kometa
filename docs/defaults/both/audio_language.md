@@ -49,4 +49,18 @@ libraries:
           use_separator: false
           sep_style: purple
 ```
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `audio_language` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/audio_language.yml)
 
+An example of this is; to exclude the English Audio collection, the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: audio_language
+        template_variables:
+          exclude:
+            -en
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)
