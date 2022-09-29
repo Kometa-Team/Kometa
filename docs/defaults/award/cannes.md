@@ -1,19 +1,19 @@
-# BAFTA Default Metadata File
+# Cannes Default Metadata File
 
-The `- pmm: award/bafta` Metadata File is used to  create collections based on the British Academy Film Awards.
+The `- pmm: award/cannes` Metadata File is used to  create collections based on the Cannes Film Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 
 Example Collections Created:
 
-![](../images/bafta.png)
+![](../images/cannes.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/bafta
+      - pmm: award/cannes
 ```
 
 
@@ -28,7 +28,7 @@ Below are the available variables which can be used to customize the file.
 | Variable             | Usage                                                                          | Default Value  |                                                                             Values                                                                             |
 |:---------------------|:-------------------------------------------------------------------------------|----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
 | use_year_collections | Turn the individual year collections on/off                                    | `true`         |                                                                       `true` or `false`                                                                        |
-| collection_section   | Controls the sort order of these collections against other default collections | `10`           |                                                                           Any number                                                                           |
+| collection_section   | Controls the sort order of these collections against other default collections | `16`           |                                                                           Any number                                                                           |
 | collection_mode      | Controls the collection mode of these collections                              | `default`      | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
 | collection_order     | Sets the collection order of the collection                                    | `custom`       |                                                                 `alpha`, `release` or `custom`                                                                 |
 | radarr_add_missing   | Adds missing from the collection to Radarr                                     | `false`        |                                                                       `true` or `false`                                                                        |
@@ -42,9 +42,9 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/bafta
+      - pmm: award/cannes
         template_variables:
-          collection_section: 8
+          collection_section: 9
           collection_mode: show_items
           collection_order: alpha
           radarr_add_missing: true

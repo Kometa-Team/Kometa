@@ -1,6 +1,6 @@
 # Decade Language Default Metadata File
 
-The `- pmm: decade` Metadata File is used to dynamically create collections based on the decades available in your library, sorted by critic rating to create a "best of <decade>"
+The `- pmm: show/decade` Metadata File is used to dynamically create collections based on the decades available in your library, sorted by critic rating to create a "best of <decade>"
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: decade
+      - pmm: show/decade
 ```
 
 
@@ -39,7 +39,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: decade
+      - pmm: show/decade
         template_variables:
           sort_by: title.asc
           collection_section: 18
@@ -48,4 +48,19 @@ libraries:
           use_separator: false
           sep_style: purple
 ```
+
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `decade` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/show/decade.yml)
+
+An example of this is; to change the collection titles to "Best Movies of <decade>, the following template variable can be used:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: show/decade
+        template_variables:
+          title_format: Best <<library_type>>s of <<key_name>>
+```
+
+Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)
 
