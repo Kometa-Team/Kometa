@@ -47,16 +47,17 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "01"
+
+translations:
+  pmm: translations
 
 templates:
   released:
     default:
       in_the_last_released: 90
-      summary_released: A collection of newly-released <<library_type>>s
-    summary: <<summary_<<key>>>>
     smart_filter:
       all:
         release: <<in_the_last_released>>
@@ -64,8 +65,6 @@ templates:
   episodes:
     default:
       in_the_last_episodes: 7
-      summary_episodes: A collection of newly-released <<library_type>>s
-    summary: <<summary_<<key>>>>
     smart_filter:
       type: episodes
       all:
@@ -84,6 +83,8 @@ collections:
     template:
       - name: released
       - name: shared
+      - name: translation
+        translation_key: basic_released
 
   New Episodes:
     variables:
@@ -92,3 +93,5 @@ collections:
       - name: episodes
       - name: shared
         allowed_libraries: show
+      - name: translation
+        translation_key: basic_episodes

@@ -61,46 +61,20 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "01"
 
+translations:
+  pmm: translations
+
 templates:
 
-  airing:
+  tmdb:
     default:
-      limit_airing: 100
-      summary_airing: A collection of shows with episodes airing today
-    tmdb_airing_today: <<limit_airing>>
-    summary: <<summary_<<key>>>>
-
-  air:
-    default:
-      limit_air: 100
-      summary_air: A collection of shows that are still activaly airing episodes.
-    tmdb_on_the_air: <<limit_air>>
-    summary: <<summary_<<key>>>>
-
-  popular:
-    default:
-      limit_popular: 100
-      summary_popular: A collection of the most watched <<library_type>>s according to TMDb.
-    tmdb_popular: <<limit_popular>>
-    summary: <<summary_<<key>>>>
-
-  top:
-    default:
-      limit_top: 100
-      summary_top: A collection of the top rated <<library_type>>s according to TMDb.
-    tmdb_top_rated: <<limit_top>>
-    summary: <<summary_<<key>>>>
-
-  trending:
-    default:
-      limit_trending: 100
-      summary_trending: A collection of <<library_type>>s trending on TMDb
-    tmdb_trending_weekly: <<limit_trending>>
-    summary: <<summary_<<key>>>>
+      limit_<<key>>: 100
+      chart: <<key>>
+    tmdb_<<chart>>: <<limit_<<key>>>>
 
 collections:
 
@@ -108,45 +82,59 @@ collections:
     variables:
       key: airing
     template:
-      - name: airing
+      - name: tmdb
+        chart: airing_today
       - name: shared
         allowed_libraries: show
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: tmdb_airing
 
   TMDb On The Air:
     variables:
       key: air
     template:
-      - name: air
+      - name: tmdb
+        chart: on_the_air
       - name: shared
         allowed_libraries: show
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: tmdb_air
 
   TMDb Popular:
     variables:
       key: popular
     template:
-      - name: popular
+      - name: tmdb
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: tmdb_popular
 
   TMDb Top Rated:
     variables:
       key: top
     template:
-      - name: top
+      - name: tmdb
+        chart: top_rated
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: tmdb_top
 
   TMDb Trending:
     variables:
       key: trending
     template:
-      - name: trending
+      - name: tmdb
+        chart: trending_weekly
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: tmdb_trending
