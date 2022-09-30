@@ -51,7 +51,7 @@ libraries:
 
 Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `network` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/show/network.yml)
 
-An example of this is; to include the "Adult Swim" network, the following template variables can be used:
+An example of this is; to rename the "BBC" netowrk to "BBC Worldwide", the following template variables can be used:
 
 ```yaml
 libraries:
@@ -59,8 +59,8 @@ libraries:
     metadata_path:
       - pmm: show/show/network
         template_variables:
-          include:
-            - Adult Swim
+          name_mapping:
+            - BBC: BBC Worldwide
 ```
 
 Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)
