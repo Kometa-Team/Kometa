@@ -75,4 +75,5 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      translation_key: cannes_year
+      translation_key:
+        default: cannes_year

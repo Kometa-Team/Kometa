@@ -129,10 +129,12 @@ class DataFile:
                 raise Failed(f"File Error: File does not exist {content_path}")
             yaml = YAML(path=content_path, check_empty=True)
         if not translation:
+            logger.debug(f"File Loaded From: {content_path}")
             return yaml.data
         if "translations" not in yaml.data:
             raise Failed(f"URL Error: Top Level translations attribute not found in {content_path}")
         translations = {k: {"default": v} for k, v in yaml.data["translations"]}
+        logger.debug(f"Translations Loaded From: {dir_path}")
 
         def add_translation(yaml_path, yaml_key, data=None):
             yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
@@ -818,10 +820,10 @@ class MetadataFile(DataFile):
                         used_keys.extend(key_value)
                         og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
-                            if not isinstance(v, dict):
-                                og_call[k] = v
-                            elif key in v:
+                            if key in v:
                                 og_call[k] = v[key]
+                            elif "default" in v:
+                                og_call[k] = v["default"]
                         template_call = []
                         for template_name in template_names:
                             new_call = og_call.copy()
@@ -849,10 +851,10 @@ class MetadataFile(DataFile):
                             auto_type: other_keys, "key_name": other_name, "key": "other"
                         }
                         for k, v in template_variables.items():
-                            if not isinstance(v, dict):
-                                og_other[k] = v
-                            elif "other" in v:
+                            if "other" in v:
                                 og_other[k] = v["other"]
+                            elif "default" in v:
+                                og_other[k] = v["default"]
                         other_call = []
                         for other_template in other_templates:
                             new_call = og_other.copy()

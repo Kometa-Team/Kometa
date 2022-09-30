@@ -26,9 +26,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 15
+
+translations:
+  pmm: translations
 
 templates:
   resolution_dynamic:
@@ -52,7 +55,11 @@ dynamic_collections:
     title_format: <<key_name>> <<library_type>>s
     template:
       - resolution_dynamic
+      - translation
       - shared
+    template_variables:
+      translation_key:
+        default: resolution
     addons:
       1080:
         - 2k

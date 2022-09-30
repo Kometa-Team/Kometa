@@ -28,9 +28,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 11
+
+translations:
+  pmm: translations
 
 templates:
   subtitle_language_dynamic:
@@ -55,11 +58,17 @@ dynamic_collections:
     other_name: Other Subtitles
     template:
       - subtitle_language_dynamic
+      - translation
       - shared
     other_template:
       - other_collection
       - subtitle_language_dynamic
+      - translation
       - shared
+    template_variables:
+      translation_key:
+        default: subtitle_language
+        other: subtitle_language_other
     include:
       - ab     # Abkhazian
       - aa     # Afar

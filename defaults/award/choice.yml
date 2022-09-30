@@ -69,7 +69,8 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      translation_key: choice_year
+      translation_key:
+        default: choice_year
       url:
         2019: critics
         2018: critics

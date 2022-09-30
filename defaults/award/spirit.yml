@@ -59,4 +59,5 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      translation_key: spirit_year
+      translation_key:
+        default: spirit_year
