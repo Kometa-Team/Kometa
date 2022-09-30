@@ -55,7 +55,7 @@ libraries:
 
 Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `country` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/movie/country.yml)
 
-An example of this is; to include Barbados in the collection list, the following template variable can be used:
+An example of this is; to override the exclude list to only exclude Barbados from the collection list, the following template variable can be used:
 
 ```yaml
 libraries:
@@ -63,7 +63,7 @@ libraries:
     metadata_path:
       - pmm: movie/country
         template_variables:
-          include:
+          exclude:
             - Barbados
 ```
 
