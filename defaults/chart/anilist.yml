@@ -60,42 +60,28 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "01"
 
+translations:
+  pmm: translations
+
 templates:
 
-  popular:
+  anilist:
     default:
-      limit_popular: 100
-      summary_popular: A collection of the most popular Anime according to AniList.
-    anilist_popular: <<limit_popular>>
-    summary: <<summary_<<key>>>>
-
-  top:
-    default:
-      limit_top: 100
-      summary_top: A collection of the top rated Anime according to AniList.
-    anilist_top_rated: <<limit_top>>
-    summary: <<summary_<<key>>>>
-
-  trending:
-    default:
-      limit_trending: 100
-      summary_trending: A collection of trending Anime according to AniList.
-    anilist_trending: <<limit_trending>>
-    summary: <<summary_<<key>>>>
+      limit_<<key>>: 100
+      chart: <<key>>
+    anilist_<<chart>>: <<limit_<<key>>>>
 
   season:
     default:
       limit_trending: 100
-      summary_season: A collection of Anime from the Current Season according to AniList.
     anilist_search:
       season: current
       year:
       sort_by: popular
-    summary: <<summary_<<key>>>>
 
 collections:
 
@@ -103,28 +89,35 @@ collections:
     variables:
       key: popular
     template:
-      - name: popular
+      - name: anilist
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: anilist_popular
 
   AniList Top Rated:
     variables:
       key: top
     template:
-      - name: top
+      - name: anilist
+        chart: top_rated
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: anilist_top_rated
 
   AniList Trending:
     variables:
       key: trending
     template:
-      - name: trending
+      - name: anilist
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: anilist_trending
 
   AniList Season:
     variables:
@@ -134,3 +127,5 @@ collections:
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: anilist_season

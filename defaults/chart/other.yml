@@ -58,33 +58,21 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "01"
+
+translations:
+  pmm: translations
 
 templates:
   anidb:
     default:
       limit_anidb: 30
-      summary_anidb: A collection of Popular Anime on AniDB
-    summary: <<summary_<<key>>>>
     anidb_popular: <<limit_anidb>>
 
   commonsense:
-    default:
-      summary_commonsense: A collection of Common Sense <<library_type>>s. Common Sense recognizes outstanding entertainment with an official seal for quality and impact. Common Sense Selections include age-appropriate media with the potential to spark family conversations, entertain families of all kinds, and have a positive, lasting effect on society.
     mdblist_list: https://mdblist.com/lists/plexmetamanager/cssfamilies<<library_type>>s
-    summary: <<summary_<<key>>>>
-
-  stevenlu:
-    default:
-      summary_stevenlu: A collection of StevenLu's Most Popular Movies
-    summary: <<summary_<<key>>>>
-
-  pirated:
-    default:
-      summary_pirated: TorrentFreak.com's Weekly Top Ten Pirated Movies
-    summary: <<summary_<<key>>>>
 
 collections:
   AniDB Popular:
@@ -95,6 +83,8 @@ collections:
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: anidb_popular
 
   Common Sense Selection:
     variables:
@@ -104,25 +94,29 @@ collections:
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: commonsense_selection
 
   StevenLu's Popular Movies:
     variables:
       key: stevenlu
     stevenlu_popular: true
     template:
-      - name: stevenlu
       - name: shared
         allowed_libraries: movie
       - name: arr
       - name: custom
+      - name: translation
+        translation_key:  stevenlu_popular
 
   Top 10 Pirated Movies of the Week:
     variables:
       key: pirated
     mdblist_list: https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/
     template:
-      - name: pirated
       - name: shared
         allowed_libraries: movie
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: pirated_popular

@@ -50,27 +50,27 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "01"
+
+translations:
+  pmm: translations
 
 templates:
   tautulli_popular:
     default:
       list_days_popular: 30
       list_size_popular: 20
-      summary_popular: A collection of <<library_type>>s Popular on Plex
-    summary: <<summary_<<key>>>>
     tautulli_popular:
       list_days: <<list_days_popular>>
       list_size: <<list_size_popular>>
       list_buffer: 20
+
   tautulli_watched:
     default:
       list_days_watched: 30
       list_size_watched: 20
-      summary_watched: A collection of Top <<library_type>>s Watched on Plex
-    summary: <<summary_<<key>>>>
     tautulli_watched:
       list_days: <<list_days_watched>>
       list_size: <<list_size_watched>>
@@ -85,6 +85,8 @@ collections:
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: tautulli_popular
 
   Plex Watched:
     variables:
@@ -94,3 +96,5 @@ collections:
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: tautulli_watched
