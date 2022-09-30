@@ -34,6 +34,17 @@ external_templates:
     collection_section: 16
 
 collections:
+  Berlinale:
+    variables:
+      key: berlinale
+    template:
+      - name: shared
+        allowed_libraries: movie
+        image: award/berlinale/winner
+      - name: arr
+      - name: custom
+    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/berlin-international-film-festival-golden-bears
+
   Cesar:
     variables:
       key: cesar
@@ -45,16 +56,16 @@ collections:
       - name: custom
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/cesar-award-best-french-film
 
-  Berlinale:
+  Razzies:
     variables:
-      key: berlinale
+      key: razzie
     template:
       - name: shared
         allowed_libraries: movie
-        image: award/berlinale/winner
+        image: award/razzie/winner
       - name: arr
       - name: custom
-    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/berlin-international-film-festival-golden-bears
+    trakt_list_details: https://trakt.tv/users/hdlists/lists/razzie-awards-worst-picture-winners
 
   Venice:
     variables:
