@@ -52,7 +52,7 @@ libraries:
 
 Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `studio` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/studio.yml)
 
-An example of this is; to include the "ABC Pictures" studio and map the "ABC News" studio to it, the following template variables can be used:
+An example of this is; to map the "ABC News" studio to it, the following template variables can be used:
 
 ```yaml
 libraries:
@@ -60,8 +60,6 @@ libraries:
     metadata_path:
       - pmm: studio
         template_variables:
-          include:
-            - ABC Pictures
           addons:
             ABC Picture:
               - ABC News
