@@ -37,15 +37,17 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
+
+translations:
+  pmm: translations
 
 templates:
   Golden:
     default:
       imdb_sort: moviemeter,asc
-    summary: <<key>> Golden Globe Winners
     imdb_list: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=golden_globe_winner&sort=<<imdb_sort>>
     url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/golden/winner/<<key>>.jpg
 
@@ -59,6 +61,8 @@ collections:
         image: award/golden/best_picture_winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: golden_best
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/golden-globe-award-best-motion-picture
 
 dynamic_collections:
@@ -72,6 +76,9 @@ dynamic_collections:
     template:
       - use_year_collections
       - Golden
+      - translation
       - shared
       - arr
       - custom
+    template_variables:
+      translation_key: golden_year

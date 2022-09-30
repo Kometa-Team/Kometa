@@ -36,9 +36,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
+
+translations:
+  pmm: translations
 
 templates:
   Emmy:
@@ -62,3 +65,5 @@ dynamic_collections:
       - shared
       - arr
       - custom
+    template_variables:
+      translation_key: emmy_year

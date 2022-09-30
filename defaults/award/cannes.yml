@@ -31,19 +31,21 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
+
+translations:
+  pmm: translations
 
 templates:
   Cannes:
     allowed_library_types: movie
-    summary: <<key>> Cannes awards
     trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-cannes
     url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/cannes/<<key>>.jpg
 
 collections:
-  Cannes - Palme d'or:
+  Cannes Golden Palm Winners:
     variables:
       key: palme
     template:
@@ -53,6 +55,8 @@ collections:
         image: award/cannes/winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: cannes_best
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/cannes-film-festival-palme-d-or
 
 dynamic_collections:
@@ -66,6 +70,9 @@ dynamic_collections:
     template:
       - use_year_collections
       - Cannes
+      - translation
       - shared
       - arr
       - custom
+    template_variables:
+      translation_key: cannes_year

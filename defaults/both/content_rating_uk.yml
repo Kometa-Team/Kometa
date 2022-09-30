@@ -28,9 +28,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 14
+
+translations:
+  pmm: translations
 
 templates:
   content_rating_dynamic:
@@ -58,12 +61,15 @@ dynamic_collections:
     other_name: Other Ratings
     template:
       - content_rating_dynamic
+      - translation
       - shared
     other_template:
       - other
       - other_collection
       - content_rating_dynamic
       - shared
+    template_variables:
+      translation_key: content_rating_uk
     include:
       - U
       - PG

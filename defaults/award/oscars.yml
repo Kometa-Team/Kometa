@@ -28,16 +28,18 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
+
+translations:
+  pmm: translations
 
 templates:
   Oscars:
     default:
       imdb_sort: moviemeter,asc
     allowed_library_types: movie
-    summary: Academy Awards (Oscars) Winners for <<key>>
     imdb_list: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=oscar_winner&sort=<<imdb_sort>>
     url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/oscars/winner/<<key>>.jpg
 
@@ -53,8 +55,9 @@ collections:
         image: award/oscars/best_picture_winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: oscars_picture
     imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
-    summary: The Academy Award for Best Picture is one of the Academy Awards presented annually by the Academy of Motion Picture Arts and Sciences since the awards debuted in 1929.
 
   Oscars Best Director Winners:
     variables:
@@ -66,8 +69,9 @@ collections:
         image: award/oscars/best_director_winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: oscars_director
     imdb_list: https://www.imdb.com/search/title/?groups=best_director_winner
-    summary: The Academy Award for Best Director is one of the Academy Awards presented annually by the Academy of Motion Picture Arts and Sciences since the awards debuted in 1929.
 
 dynamic_collections:
   Oscars Winners Awards:
@@ -80,6 +84,9 @@ dynamic_collections:
     template:
       - use_year_collections
       - Oscars
+      - translation
       - shared
       - arr
       - custom
+    template_variables:
+      translation_key: oscars_year

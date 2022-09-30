@@ -30,14 +30,16 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
+
+translations:
+  pmm: translations
 
 templates:
   Spirit:
     allowed_library_types: movie
-    summary: <<key>> Independent Spirit Awards
     trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-independent-spirits
     url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/spirit/<<key>>.jpg
 
@@ -52,6 +54,9 @@ dynamic_collections:
     template:
       - use_year_collections
       - Spirit
+      - translation
       - shared
       - arr
       - custom
+    template_variables:
+      translation_key: spirit_year

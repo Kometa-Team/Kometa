@@ -29,12 +29,15 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
 
+translations:
+  pmm: translations
+
 collections:
-  Berlinale:
+  Berlinale Golden Bears:
     variables:
       key: berlinale
     template:
@@ -43,9 +46,11 @@ collections:
         image: award/berlinale/winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: berlinale_best
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/berlin-international-film-festival-golden-bears
 
-  Cesar:
+  César Best Film Winners:
     variables:
       key: cesar
     template:
@@ -54,9 +59,11 @@ collections:
         image: award/cesar/winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: cesar_best
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/cesar-award-best-french-film
 
-  Razzies:
+  Razzies Golden Raspberry Winners:
     variables:
       key: razzie
     template:
@@ -65,9 +72,11 @@ collections:
         image: award/razzie/winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: razzie_worst
     trakt_list_details: https://trakt.tv/users/hdlists/lists/razzie-awards-worst-picture-winners
 
-  Venice:
+  Venice Golden Lions:
     variables:
       key: venice
     template:
@@ -76,4 +85,6 @@ collections:
         image: award/venice/winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: bafta_best
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/venice-film-festival-golden-lion

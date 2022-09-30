@@ -39,15 +39,17 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
+
+translations:
+  pmm: translations
 
 templates:
   Choice:
     default:
       url: critic-s
-    summary: <<key>> Critics Choice Awards
     trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-<<url>>-choice
     url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/choice/<<key>>.jpg
 
@@ -62,10 +64,12 @@ dynamic_collections:
     template:
       - use_year_collections
       - Choice
+      - translation
       - shared
       - arr
       - custom
     template_variables:
+      translation_key: choice_year
       url:
         2019: critics
         2018: critics
