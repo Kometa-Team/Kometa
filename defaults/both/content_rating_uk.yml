@@ -57,7 +57,7 @@ collections:
 dynamic_collections:
   UK Content Rating:
     type: content_rating
-    title_format: <<key_name>>
+    title_format: <<key_name>> <<library_type>>s
     other_name: Other Ratings
     template:
       - content_rating_dynamic
@@ -69,7 +69,9 @@ dynamic_collections:
       - content_rating_dynamic
       - shared
     template_variables:
-      translation_key: content_rating_uk
+      translation_key:
+        default: content_rating_uk
+        other: content_rating_uk_other
     include:
       - U
       - PG

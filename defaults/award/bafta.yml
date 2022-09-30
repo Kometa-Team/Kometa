@@ -49,4 +49,5 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      translation_key: bafta_year
+      translation_key:
+        default: bafta_year

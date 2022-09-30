@@ -30,9 +30,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 13
+
+translations:
+  pmm: translations
 
 templates:
   year_dynamic:
@@ -62,4 +65,8 @@ dynamic_collections:
       ending: current_year
     template:
       - year_dynamic
+      - translation
       - shared
+    template_variables:
+      translation_key:
+        default: year

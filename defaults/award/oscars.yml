@@ -89,4 +89,5 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      translation_key: oscars_year
+      translation_key:
+        default: oscars_year
