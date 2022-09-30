@@ -28,9 +28,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 10
+
+translations:
+  pmm: translations
 
 templates:
   audio_language_dynamic:
@@ -55,7 +58,10 @@ dynamic_collections:
     other_name: Other Audio
     template:
       - audio_language_dynamic
+      - translation
       - shared
+    template_variables:
+      translation_key: audio_language
     other_template:
       - other_collection
       - audio_language_dynamic

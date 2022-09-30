@@ -103,3 +103,13 @@ templates:
     optional:
       - use_year_collections
     allowed_library_types: <<use_year_collections>>
+
+  translation:
+    default:
+      sumamry_<<key>>: <<<<translation_key>>_summary>>
+      name_<<key>>: <<<<translation_key>>_name>>
+    optional:
+      - <<translation_key>>_summary
+      - <<translation_key>>_name
+    summary: <<sumamry_<<key>>>>
+    name: <<name_<<key>>>>

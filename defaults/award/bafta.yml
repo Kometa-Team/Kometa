@@ -1,44 +1,20 @@
 #############################################################
-#                     BAFTA Collections                     #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#     Credit to pjcob & maxwelldeux for the Trakt Lists     #
-#############################################################
-#  REQUIRES TRAKT AUTHENTICATION                            #
-#  https://metamanager.wiki/en/latest/config/trakt.html     #
-#                                                           #
-#  Call this from your config.yml (Movie only)              #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - git: PMM/award/bafta                               #
-#        template_variables:                                #
-#          # Turn the individual year collections on/off    #
-#          use_year_collections: true                       #
-#          # Sets the collection order of the collection    #
-#          collection_order: custom                         #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: 16                           #
-#          # Adds missing from the collection to radarr     #
-#          radarr_add_missing:                              #
-#          # Radarr Folder to add to                        #
-#          radarr_folder:                                   #
-#          # Radarr Tag for added missing                   #
-#          radarr_tag:                                      #
-#          # Radarr Tag for existing items                  #
-#          item_radarr_tag:                                 #
+# BAFTA Collections
+# Created by Yozora, Bullmoose20, & Sohjiro
+# Credit to pjcob & maxwelldeux for the Trakt Lists
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
+
+translations:
+  pmm: translations
 
 templates:
   BAFTA:
     allowed_library_types: movie
-    summary: <<key>> BAFTA awards
     trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-bafta
     url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/bafta/<<key>>.jpg
 
@@ -53,6 +29,8 @@ collections:
         image: award/bafta/winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: bafta_best
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/bafta-award-best-film
 
 dynamic_collections:
@@ -66,6 +44,9 @@ dynamic_collections:
     template:
       - use_year_collections
       - BAFTA
+      - translation
       - shared
       - arr
       - custom
+    template_variables:
+      translation_key: bafta_year

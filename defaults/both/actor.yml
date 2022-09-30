@@ -28,9 +28,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 17
+
+translations:
+  pmm: translations
 
 templates:
   actor_dynamic:
@@ -53,11 +56,14 @@ collections:
 dynamic_collections:
   Top Actors:
     type: actor
-    template:
-      - actor_dynamic
-      - shared
     title_format: <<title>>
     data:
       depth: 5
       limit: 25
+    template:
+      - actor_dynamic
+      - translation
+      - shared
+    template_variables:
+      translation_key: actor
       

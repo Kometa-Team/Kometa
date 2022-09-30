@@ -30,9 +30,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 16
+
+translations:
+  pmm: translations
 
 templates:
   Sundance:
@@ -52,6 +55,8 @@ collections:
         image: award/sundance/grand_jury_winner
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: sundance_best
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/sundance-film-festival-grand-jury-prize
 
 dynamic_collections:
@@ -65,6 +70,9 @@ dynamic_collections:
     template:
       - use_year_collections
       - Sundance
+      - translation
       - shared
       - arr
       - custom
+    template_variables:
+      translation_key: sundance_year
