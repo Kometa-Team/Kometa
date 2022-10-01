@@ -69,7 +69,6 @@ translations:
   pmm: translations
 
 templates:
-
   tmdb:
     default:
       limit_<<key>>: 100
@@ -77,7 +76,6 @@ templates:
     tmdb_<<chart>>: <<limit_<<key>>>>
 
 collections:
-
   TMDb Airing Today:
     variables:
       key: airing

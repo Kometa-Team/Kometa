@@ -12,12 +12,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  BAFTA:
-    allowed_library_types: movie
-    trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-bafta
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/bafta/<<key>>.jpg
-
 collections:
   BAFTA Best Films:
     variables:
@@ -31,7 +25,7 @@ collections:
       - name: custom
       - name: translation
         translation_key: bafta_best
-    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/bafta-award-best-film
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/bafta-award-best-film
 
 dynamic_collections:
   BAFTA Awards:
@@ -40,14 +34,19 @@ dynamic_collections:
     data:
       starting: current_year-5
       ending: current_year
-    title_format: BAFTA <<key_name>>
     template:
       - use_year_collections
-      - BAFTA
+      - trakt
       - translation
       - shared
       - arr
       - custom
     template_variables:
+      trakt_list:
+        default: https://trakt.tv/users/pjcob/lists/<<key>>-bafta
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/bafta/<<key>>
       translation_key:
         default: bafta_year

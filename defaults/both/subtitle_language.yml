@@ -35,16 +35,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  subtitle_language_dynamic:
-    default:
-      sort_by: release.desc
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/subtitle_language/<<key>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        subtitle_language: <<value>>
-
 collections:
   Subtitle Language Collections:
     template:
@@ -57,15 +47,19 @@ dynamic_collections:
     title_format: <<key_name>> Subtitles
     other_name: Other Subtitles
     template:
-      - subtitle_language_dynamic
+      - smart_filter
       - translation
       - shared
     other_template:
       - other_collection
-      - subtitle_language_dynamic
+      - smart_filter
       - translation
       - shared
     template_variables:
+      search_term:
+        default: subtitle_language
+      image:
+        default: subtitle_language/<<key>>
       translation_key:
         default: subtitle_language
         other: subtitle_language_other

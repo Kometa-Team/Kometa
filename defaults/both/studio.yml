@@ -33,19 +33,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  studio_dynamic:
-    default:
-      sort_by: release.desc
-    optional:
-      - contains
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/studio/<<key_encoded>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        studio.is: <<value>>
-        studio: <<contains>>
-
 collections:
   Studio Collections:
     template:
@@ -55,16 +42,21 @@ collections:
 dynamic_collections:
   Studio:
     type: studio
-    title_format: <<key_name>>
     template:
-      - studio_dynamic
+      - smart_filter
       - translation
       - shared
     template_variables:
+      search_term:
+        default: studio.is
+      search_term2:
+        20th Century Studios: studio
+      search_value2:
+        20th Century Studios: 20th Century
+      image:
+        default: studio/<<key_encoded>>
       translation_key:
         default: studio
-      contains:
-        20th Century Studios: 20th Century
     include:
       - 20th Century Studios
       - Amazon Studios

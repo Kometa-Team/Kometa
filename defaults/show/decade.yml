@@ -26,21 +26,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 12
 
-templates:
-  decade_dynamic:
-    default:
-      limit: 100
-      sort_by: critic_rating.desc
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/decade/best/<<key>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        year: <<value>>
-      limit: <<limit>>
+translations:
+  pmm: translations
 
 collections:
   Decade Collections:
@@ -51,7 +42,18 @@ collections:
 dynamic_collections:
   Decade:
     type: decade
-    title_format: Best of <<key_name>>s
     template:
-      - decade_dynamic
+      - smart_filter
+      - translation
       - shared
+    template_variables:
+      search_term:
+        default: year
+      sort_by:
+        default: critic_rating.desc
+      limit:
+        default: 100
+      image:
+        default: decade/best/<<key>>
+      translation_key:
+        default: decade_show

@@ -29,20 +29,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "09"
 
-templates:
-  country_dynamic:
-    default:
-      sort_by: release.desc
-      style: white
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/country/<<style>>/<<key_name_encoded>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        country: <<value>>
+translations:
+  pmm: translations
 
 collections:
   Country Collections:
@@ -53,15 +45,26 @@ collections:
 dynamic_collections:
   Country Color:
     type: country
-    title_format: <<key_name>>
     other_name: Other Countries
     template:
-      - country_dynamic
+      - smart_filter
+      - translation
       - shared
     other_template:
       - other_collection
-      - country_dynamic
+      - smart_filter
+      - translation
       - shared
+    template_variables:
+      search_term:
+        default: country
+      image:
+        default: country/<<style>>/<<key_name_encoded>>
+      style:
+        default: white
+      translation_key:
+        default: country
+        other: country_other
     include:
       # - Afghanistan                   # af
       # - Åland Islands                 # ax

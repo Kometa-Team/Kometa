@@ -68,7 +68,6 @@ translations:
   pmm: translations
 
 templates:
-
   anilist:
     default:
       limit_<<key>>: 100
@@ -84,7 +83,6 @@ templates:
       sort_by: popular
 
 collections:
-
   AniList Popular:
     variables:
       key: popular

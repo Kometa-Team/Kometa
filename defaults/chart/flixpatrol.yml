@@ -1,0 +1,54 @@
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: "01"
+
+translations:
+  pmm: translations
+
+templates:
+  flixpatrol:
+    default:
+      location: united_states
+      location_<<key>>: <<location>>
+      time_window: last_week
+      time_window_<<key>>: <<time_window>>
+      limit: 10
+      limit_<<key>>: <<limit>>
+    flixpatrol_top:
+      platform: <<platform>>
+      location: <<location_<<key>>>>
+      time_window: <<time_window_<<key>>>>
+      limit: <<limit_<<key>>>>
+
+collections:
+  Top 10 Collections:
+    template:
+      - name: separator
+        separator: Top10
+
+dynamic_collections:
+  Top 10:
+    type: custom
+    data:
+      netflix: Netflix
+      disney: Disney
+      hbo: HBO
+      hulu: Hulu
+      paramount: Paramount Plus
+      prime: Prime Video
+    template:
+      - Top10
+      - translation
+      - shared
+      - arr
+      - custom
+    template_variables:
+      platform:
+        default: <<key>>
+        paramount: paramount_plus
+        prime: amazon_prime
+      image:
+        default: chart/<<key>>_top
+      translation_key:
+        default: flixpatrol

@@ -48,7 +48,7 @@ collections:
       - name: custom
       - name: translation
         translation_key: berlinale_best
-    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/berlin-international-film-festival-golden-bears
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/berlin-international-film-festival-golden-bears
 
   César Best Film Winners:
     variables:
@@ -61,7 +61,7 @@ collections:
       - name: custom
       - name: translation
         translation_key: cesar_best
-    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/cesar-award-best-french-film
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/cesar-award-best-french-film
 
   Razzies Golden Raspberry Winners:
     variables:
@@ -74,7 +74,7 @@ collections:
       - name: custom
       - name: translation
         translation_key: razzie_worst
-    trakt_list_details: https://trakt.tv/users/hdlists/lists/razzie-awards-worst-picture-winners
+    trakt_list: https://trakt.tv/users/hdlists/lists/razzie-awards-worst-picture-winners
 
   Venice Golden Lions:
     variables:
@@ -87,4 +87,4 @@ collections:
       - name: custom
       - name: translation
         translation_key: bafta_best
-    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/venice-film-festival-golden-lion
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/venice-film-festival-golden-lion

@@ -81,55 +81,28 @@ templates:
 overlays:
 
   Netflix:
-    template:
-      - name: Streaming
-        weight: 200
-        slug: netflix
+    template: {name: Streaming, weight: 200, slug: netflix}
 
   Prime:
-    template:
-      - name: Streaming
-        weight: 190
-        slug: amazon
+    template: {name: Streaming, weight: 190, slug: amazon}
 
   Disney:
-    template:
-      - name: Streaming
-        weight: 180
-        slug: disney
+    template: {name: Streaming, weight: 180, slug: disney}
 
   HBO-Max:
-    template:
-      - name: Streaming
-        weight: 170
-        slug: hbomax
+    template: {name: Streaming, weight: 170, slug: hbomax}
 
   YouTube:
-    template:
-      - name: Streaming
-        weight: 160
-        slug: youtube
+    template: {name: Streaming, weight: 160, slug: youtube}
 
   Hulu:
-    template:
-      - name: Streaming
-        weight: 150
-        slug: hulu
+    template: {name: Streaming, weight: 150, slug: hulu}
 
   Paramount:
-    template:
-      - name: Streaming
-        weight: 140
-        slug: paramount
+    template: {name: Streaming, weight: 140, slug: paramount}
 
   AppleTV:
-    template:
-      - name: Streaming
-        weight: 130
-        slug: appletv
+    template: {name: Streaming, weight: 130, slug: appletv}
 
   Peacock:
-    template:
-      - name: Streaming
-        weight: 120
-        slug: peacock
+    template: {name: Streaming, weight: 120, slug: peacock}

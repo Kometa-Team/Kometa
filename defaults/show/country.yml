@@ -29,20 +29,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "09"
 
-templates:
-  country_tv_dynamic:
-    default:
-      sort_by: release.desc
-      style: white
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/country/<<style>>/<<key_name_encoded>>.jpg
-    collection_order: <<sort_by>>
-    plex_all: true
-    filters:
-      origin_country: <<value>>
+translations:
+  pmm: translations
 
 collections:
   Country Collections:
@@ -53,15 +45,26 @@ collections:
 dynamic_collections:
   TMDb Country Color:
     type: origin_country
-    title_format: <<key_name>>
     other_name: Other Countries
     template:
-      - country_tv_dynamic
+      - filter
+      - translation
       - shared
     other_template:
       - other_collection
-      - country_tv_dynamic
+      - filter
+      - translation
       - shared
+    template_variables:
+      search_term:
+        default: origin_country
+      image:
+        default: country/<<style>>/<<key_name_encoded>>
+      style:
+        default: white
+      translation_key:
+        default: country
+        other: country_other
     include:
       # - af     # Afghanistan
       # - ax     # Åland Islands

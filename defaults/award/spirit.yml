@@ -37,12 +37,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  Spirit:
-    allowed_library_types: movie
-    trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-independent-spirits
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/spirit/<<key>>.jpg
-
 dynamic_collections:
   Independent Spirit Awards Awards:
     type: number
@@ -53,11 +47,17 @@ dynamic_collections:
     title_format: Independent Spirit Awards <<key_name>>
     template:
       - use_year_collections
-      - Spirit
+      - trakt
       - translation
       - shared
       - arr
       - custom
     template_variables:
+      trakt_list:
+        default: https://trakt.tv/users/pjcob/lists/<<key>>-independent-spirits
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/spirit/<<key>>
       translation_key:
         default: spirit_year

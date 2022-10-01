@@ -58,22 +58,13 @@ translations:
   pmm: translations
 
 templates:
-  tautulli_popular:
+  tautulli:
     default:
       list_days_popular: 30
       list_size_popular: 20
-    tautulli_popular:
+    tautulli_<<type>>:
       list_days: <<list_days_popular>>
       list_size: <<list_size_popular>>
-      list_buffer: 20
-
-  tautulli_watched:
-    default:
-      list_days_watched: 30
-      list_size_watched: 20
-    tautulli_watched:
-      list_days: <<list_days_watched>>
-      list_size: <<list_size_watched>>
       list_buffer: 20
 
 collections:
@@ -81,9 +72,9 @@ collections:
     variables:
       key: popular
     template:
-      - name: tautulli_popular
+      - name: tautulli
+        type: popular
       - name: shared
-      - name: arr
       - name: custom
       - name: translation
         translation_key: tautulli_popular
@@ -92,9 +83,9 @@ collections:
     variables:
       key: watched
     template:
-      - name: tautulli_watched
+      - name: tautulli
+        type: watched
       - name: shared
-      - name: arr
       - name: custom
       - name: translation
         translation_key: tautulli_watched
