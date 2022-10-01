@@ -1,0 +1,235 @@
+version: 1.18.0
+translations:
+  #############################################################
+  #                           Award                           #
+  #############################################################
+  
+  bafta_best_name: BAFTA Beste Filme
+  bafta_best_summary: British Academy of Film and Television Arts Bester Film Gewinner.
+
+  bafta_year_name: BAFTA <<key_name>>
+  bafta_year_summary: <<key_name>> BAFTA Filmpreise.
+
+  cannes_best_name: Cannes Goldene Palme Gewinner
+  cannes_best_summary: Cannes Goldene Palme Gewinner.
+
+  cannes_year_name: Cannes <<key_name>>
+  cannes_year_summary: <<key_name>> Cannes Filmpreise.
+
+  choice_year_name: Critics Choice Filmpreise <<key_name>>
+  choice_year_summary: <<key_name>> Critics Choice Filmpreise.
+
+  emmy_year_name: Emmys <<key_name>>
+  emmy_year_summary: <<key_name>> Emmy Gewinner.
+
+  golden_best_name: Golden Globe Bester Film
+  golden_best_summary: Golden Globe Bester Film.
+
+  golden_year_name: Golden Globe <<key_name>>
+  golden_year_summary: <<key_name>> Golden Globe Gewinner.
+
+  oscars_picture_name: Oscars Bester Film Gewinner
+  oscars_picture_summary: Der Filmpreis der Akademie für Bester Film ist einer der jährlich präsentierten Filmpreise der Akademie für Motion Picture Arts and Sciences seit der ersten Verleihung in 1929.
+
+  oscars_director_name: Oscars Bester Regisseur Gewinner
+  oscars_director_summary: Der Filmpreis der Akademie für Bester Direktor ist einer der jährlich präsentierten Filmpreise der Akademie für Motion Picture Arts and Sciences seit der ersten Verleihung in 1929.
+
+  oscars_year_name: Oscars Gewinner <<key_name>>
+  oscars_year_summary: Academy Filmpreise (Oscars) Gewinner für <<key_name>>.
+
+  berlinale_best_name: Berlinale Goldener Bären
+  berlinale_best_summary: Bis zu 400 Filme werden jedes Jahr als Teil des öffentlichen Programms der Berlinale (Internationales Film Festival Berlin) gezeigt, die meisten davon als Welt oder Europäische Premiere. Filme jeden/jeder Genres, Länge und Formats können eingereicht werden. Der Goldene Bär ist der höchste Preis der für den besten gezeigten Film des Festivals verliehen wird.
+
+  cesar_best_name: César Bester Film Gewinner
+  cesar_best_summary: Der César Filmpreis ist der nationale Film Award Frankreichs und wurde erstmals in 1975 vergeben. Die Nominierungen werden von Mitgliedern der Académie des Arts et Techniques du Cinéma ausgewählt. Der Name des Filmpreises stammt vom Bildhauer César Baldaccini. Sie sind das französische Äquivalent zu den amerikanischen Academy Filmpreisen.
+
+  razzie_worst_name: Razzies Goldene Himbeere Gewinner
+  razzie_worst_summary: Der Goldene Himbeere Filmpreis für Schlechtester Film ist ein Filmpreis verliehen im Rahmen der jährlichen Goldene Himbeere Filmpreise für den schlechtesten Film des vergangenen Jahrs.
+
+  venice_best_name: Venice Goldener Löwe Gewinner
+  venice_best_summary: Die Internationalen Filmfestspiele von Venedig sind die ältesten Filmfestspiele der Welt. Gegründet in 1932 haben sie jedes Jahr in Venedig, Italien, stattgefunden. Sie sind Teil der Biennale di Venezia, einer großen, zweijährlich stattfindenden Ausstellung für zeitgenössische Kunst. Der Leone d'Oro (Goldener Löwe) Filmpreis wird an den besten Film verliehen der während der Filmfestspiele gezeigt wird.
+
+  spirit_year_name: Independent Spirit Filmpreise <<key_name>>
+  spirit_year_summary: <<key_name>> Independent Spirit Filmpreise.
+
+  sundance_best_name: Sundance Grand Jury Gewinner
+  sundance_best_summary: Das Sundance Film Festival ist ein jährlich im US-Bundesstaat Utah stattfindendes Film Festival. Es ist das größte unabhängige Kinofestival in den Vereinigten Staaten. Das Festival im Januar ist die erste Anlaufstelle für neue Arbeiten von amerikanischen und internationalen unabhängigen Filmemachern. Es besteht aus kompetitiven Bereichen für amerikanische und internationale dramaturgische und dokumentarische Filme, sowohl in Spielfilmlänge als auch Kurzfilmlänge. Es gibt auch eine Gruppe nicht kompetitiver Bereiche in denen Filme nur zur Vorstellung gezeigt werden.
+
+  sundance_year_name: Sundance Film Festival <<key_name>>
+  sundance_year_summary: Sundance Film Festival von <<key_name>>.
+
+  #############################################################
+  #                           Chart                           #
+  #############################################################
+
+  anilist_popular_name: AniList Beliebt
+  anilist_popular_summary: Eine Sammlung der laut AniList beliebtesten Anime.
+
+  anilist_top_rated_name: AniList Beste Bewertung
+  anilist_top_rated_summary: Eine Sammlung der laut AniList best bewertesten Anime.
+
+  anilist_trending_name: AniList Aktuell Interessant
+  anilist_trending_summary: Eine Sammlung der laut AniList aktuell interessantesten (Trending) Anime.
+
+  anilist_season_name: AniList Season
+  anilist_season_summary: Eine Sammlung von Anime die laut AniList aus der aktuellen Anime Season stammen.
+
+  basic_released_name: Neue Veröffentlichungen
+  basic_released_summary: Eine Sammlung von neu veröffentlichten <<library_type>>(en/n).
+
+  basic_episodes_name: Neue Episoden
+  basic_episodes_summary: Eine Sammlung von neu veröffentlichten <<library_type>>n.
+
+  flixpatrol_name: <<key_name>> Top <<limit>>
+  flixpatrol_summary: Top <<limit>> <<library_type>>(e/n) zu <<key_name>> laut FlixPatrol.
+
+  imdb_popular_name: IMDb Beliebt
+  imdb_popular_summary: Liste von <<collection_name>> <<library_type>>(en/n).
+
+  imdb_top_name: IMDb Top 250
+  imdb_top_summary: Liste von <<collection_name>> <<library_type>>(en/n).
+
+  imdb_lowest_name: IMDb Schlecht Bewertet
+  imdb_lowest_summary: Liste von <<collection_name>> <<library_type>>(en/n).
+
+  mal_popular_name: MyAnimeList Beliebt
+  mal_popular_summary: Eine Sammlung der laut MyAnimeList beliebtesten Anime.
+
+  mal_favorited_name: MyAnimeList Favorisiert
+  mal_favorited_summary: Eine Sammlung der laut MyAnimeList am meisten favorisierten Anime.
+
+  mal_top_name: MyAnimeList Beste Bewertung
+  mal_top_summary: Eine Sammlung der laut MyAnimeList best bewertesten Anime.
+
+  mal_airing_name: MyAnimeList Top Laufend
+  mal_airing_summary: Eine Sammlung von laut MyAnimeList Animemit besten Bewertungen die aktuall ausgestrahlt werden. A collection of the Top Rated Anime Currently Airing according to MyAnimeList.
+
+  mal_season_name: MyAnimeList Season
+  mal_season_summary: Eine Sammlung von Anime die laut MyAnimeList aus der aktuellen Anime Season stammen.
+
+  anidb_popular_name: AniDB Beliebt
+  anidb_popular_summary: Eine Sammlung der laut AniDB beliebtesten Anime.
+
+  commonsense_selection_name: Common Sense Auswahl
+  commonsense_selection_summary: Eine Sammlung von Common Sense <<library_type>>(en/n). Common Sense zeichnet hervorragende Unterhaltung mit einem offiziellen Siegel für Qualität und Wirkung aus. Common Sense Auswahlen beinhalten altersgerechte Medien mit Potential familiäre Unterhaltung zu entfachen, Familien aller Art zu unterhalten und einen positiven, andauernden Effekt auf die Gesellschaft zu haben.
+
+  stevenlu_popular_name: StevenLu's Beliebte Filme
+  stevenlu_popular_summary: Eine Sammlung von StevenLu's beliebtesten Filmen.
+
+  pirated_popular_name: Top 10 Raubkopierte Filme der Woche
+  pirated_popular_summary: TorrentFreak.com's Wöchentliche Top Zehn Raubkopierter Filme (Weekly Top Ten Pirated Movies).
+
+  tautulli_popular_name: Plex Beliebt
+  tautulli_popular_summary: Eine Sammlung von beliebten <<library_type>>(en/n) auf Plex.
+
+  tautulli_watched_name: Plex Geschaut
+  tautulli_watched_summary: Eine Sammlung der top geschauten <<library_type>>(en/n) auf Plex.
+
+  tmdb_airing_name: TMDb Heute Ausgestrahlt
+  tmdb_airing_summary: Eine Sammlung von Serien mit Episoden die heute ausgestrahlt werden/wurden.
+
+  tmdb_air_name: TMDb On The Air
+  tmdb_air_summary: Eine Sammlung von Serien die aktiv Episoden veröffentlichen.
+
+  tmdb_popular_name: TMDb Beliebt
+  tmdb_popular_summary: Eine Sammlung der laut TMDb am meisten geschauten <<library_type>>(e/n).
+
+  tmdb_top_name: TMDb Beste Bewertung
+  tmdb_top_summary: Eine Sammlung der laut TMDb am besten bewerteten <<library_type>>(en/n).
+
+  tmdb_trending_name: TMDb Aktuell Interessant
+  tmdb_trending_summary: Eine Sammlung von auf TMDb aktuell interessanten (trending) <<library_type>>(en/n).
+
+  trakt_collected_name: Trakt Gesammelt
+  trakt_collected_summary: Eine Sammlung der Trakt Wöchentlich Gesammelt Liste (Weekly Trakt Collected List).
+
+  trakt_popular_name: Trakt Beliebt
+  trakt_popular_summary: Eine Sammlung der auf Trakt Wöchentlich Beliebt Liste (Weekly Trakt Popular List).
+
+  trakt_recommended_name: Trakt Empfohlen
+  trakt_recommended_summary: Eine Sammlung der Trakt Wöchentlich Empfohlen Liste (Weekly Trakt Recommended List).
+
+  trakt_trending_name: Trakt Aktuell Interessant
+  trakt_trending_summary: Eine Sammlung der Trakt Wöchentlich Aktuell Interessant (Trending) Liste (Weekly Trakt Trending List).
+
+  trakt_watched_name: Trakt Geschaut
+  trakt_watched_summary: Eine Sammlung der Trakt Wöchentlich Geschaut Liste (Weekly Trakt Watched List).
+
+  #############################################################
+  #                           Both                            #
+  #############################################################
+
+  actor_name: <<key_name>>
+  actor_summary: <<library_type>>s mit <<key_name>>.
+
+  audio_language_name: <<key_name>> Audio
+  audio_language_summary: <<library_type>>(e/n) in <<key_name>> Sprache gefilmt.
+
+  audio_language_other_name: Anderes Audio
+  audio_language_other_summary: <<library_type>>(e/n) in anderen ungewöhnlichen Sprachen gefilmt.
+
+  content_rating_name: <<key_name>> <<library_type>>(e/n)
+  content_rating_summary: <<library_type>>(e/n) mit <<key_name>> Bewertung.
+
+  content_rating_other_name: Andere Bewertung
+  content_rating_other_summary: <<library_type>>(e/n) mit anderen ungewöhnlichen Bewertungen.
+
+  country_name: <<key_name>> <<library_type>>(e/n)
+  country_summary: <<library_type>>(e/n) in <<key_name>> gefilmt.
+
+  country_other_name: Andere Länder
+  country_other_summary: <<library_type>>(e/n) anderen ungewöhnlichen Ländern gefilmt.
+
+  decade_name: Best of <<key_name>>
+  decade_summary: Top <<limit>> <<library_type>>(e/n) der <<key_name>>.
+
+  decade_show_name: Best of <<key_name>>er
+  decade_show_summary: Top <<limit>> <<library_type>>(e/n) der <<key_name>>er.
+
+  director_name: <<key_name>> (Regisseur)
+  director_summary: <<library_type>>(e/n) mit Regie durch <<key_name>>.
+
+  genre_name: <<key_name>> <<library_type>>(e/n)
+  genre_summary: <<library_type>>(e/n) aus dem Genre <<key_name>>.
+
+  producer_name: <<key_name>> (Produzent)
+  producer_summary: <<library_type>>(e/n) produziert durch <<key_name>>.
+
+  resolution_name: <<key_name>> <<library_type>>(e/n)
+  resolution_summary: <<library_type>>(e/n) mit der Auflösung <<key_name>>.
+
+  resolution_standards_name: <<key_name>> <<library_type>>(e/n)
+  resolution_standards_summary: <<library_type>>(e/n) mit der Auflösung <<key_name>>.
+
+  resolution_standards_other_name: Andere Auflösungen
+  resolution_standards_other_summary: <<library_type>>(e/n) mit anderen ungewöhnlichen Auflösungen.
+
+  seasonal_name: <<key_name>> <<library_type>>(e/n)
+  seasonal_summary: Eine Sammlung von <<key_name>> <<library_type>>(en/n) die zur aktuellen Jahreszeit passen könnten.
+
+  streaming_name: <<key_name>> <<library_type>>(e/n)
+  streaming_summary: <<library_type>>(e/n) die auf <<key_name>> streamen.
+
+  studio_name: <<key_name>>
+  studio_summary: <<library_type>>(e/n) produziert von <<key_name>>.
+
+  subtitle_language_name: <<key_name>> Untertitel
+  subtitle_language_summary: <<library_type>>(e/n) mit <<key_name>> Untertitel.
+
+  subtitle_language_other_name: Andere Untertitel
+  subtitle_language_other_summary: <<library_type>>(e/n) mit anderen ungewöhnlichen Untertiteln.
+
+  writer_name: <<key_name>> (Autor)
+  writer_summary: <<library_type>>(e/n) geschrieben durch <<key_name>>.
+
+  year_name: Best of <<key_name>>
+  year_summary: <<library_type>>(e/n) veröffentlicht in <<key_name>>.
+
+  #############################################################
+  #                           Movie                           #
+  #############################################################
+
+
+  #############################################################
+  #                           Show                            #
+  #############################################################
