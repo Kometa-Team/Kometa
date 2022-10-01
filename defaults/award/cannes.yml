@@ -38,12 +38,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  Cannes:
-    allowed_library_types: movie
-    trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-cannes
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/cannes/<<key>>.jpg
-
 collections:
   Cannes Golden Palm Winners:
     variables:
@@ -57,7 +51,7 @@ collections:
       - name: custom
       - name: translation
         translation_key: cannes_best
-    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/cannes-film-festival-palme-d-or
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/cannes-film-festival-palme-d-or
 
 dynamic_collections:
   Cannes Awards:
@@ -66,14 +60,19 @@ dynamic_collections:
     data:
       starting: current_year-5
       ending: current_year
-    title_format: Cannes <<key_name>>
     template:
       - use_year_collections
-      - Cannes
+      - trakt
       - translation
       - shared
       - arr
       - custom
     template_variables:
+      trakt_list:
+        default: https://trakt.tv/users/pjcob/lists/<<key>>-cannes
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/cannes/<<key>>
       translation_key:
         default: cannes_year

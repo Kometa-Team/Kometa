@@ -35,18 +35,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  actor_dynamic:
-    default:
-      sort_by: release.desc
-      style: bw
-    tmdb_person: <<value>>
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/people/<<style>>/<<key_encoded>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      all:
-        actor: tmdb
-
 collections:
   Actors Collections:
     template:
@@ -56,15 +44,24 @@ collections:
 dynamic_collections:
   Top Actors:
     type: actor
-    title_format: <<title>>
     data:
       depth: 5
       limit: 25
     template:
-      - actor_dynamic
+      - smart_filter
       - translation
       - shared
     template_variables:
+      tmdb_person:
+        default: <<value>>
+      search_term:
+        default: actor
+      search_value:
+        default: tmdb
       translation_key:
         default: actor
+      image:
+        default: people/<<style>>/<<key_encoded>>
+      style:
+        default: bw
       

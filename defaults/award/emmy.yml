@@ -43,14 +43,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  Emmy:
-    default:
-      imdb_sort: moviemeter,asc
-    summary: <<key>> Emmy Winners
-    imdb_list: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=emmy_winner&sort=<<imdb_sort>>
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/emmys/winner/<<key>>.jpg
-
 dynamic_collections:
   Emmy Awards:
     type: number
@@ -58,13 +50,18 @@ dynamic_collections:
     data:
       starting: current_year-5
       ending: current_year
-    title_format: Emmys <<key_name>>
     template:
       - use_year_collections
-      - Emmy
+      - imdb
       - shared
       - arr
       - custom
     template_variables:
+      imdb_list:
+        default: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=emmy_winner&sort=<<imdb_sort>>
+      imdb_sort:
+        default: moviemeter,asc
+      image:
+        default: award/emmys/winner/<<key>>
       translation_key:
         default: emmy_year

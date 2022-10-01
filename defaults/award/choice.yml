@@ -46,13 +46,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  Choice:
-    default:
-      url: critic-s
-    trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-<<url>>-choice
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/choice/<<key>>.jpg
-
 dynamic_collections:
   Critics Choice Awards:
     type: number
@@ -60,7 +53,6 @@ dynamic_collections:
     data:
       starting: current_year-5
       ending: current_year
-    title_format: Critics Choice Awards <<key_name>>
     template:
       - use_year_collections
       - Choice
@@ -69,9 +61,14 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
+      trakt_list:
+        default: https://trakt.tv/users/pjcob/lists/<<key>>-<<url>>-choice
+      image:
+        default: award/choice/<<key>>
       translation_key:
         default: choice_year
       url:
+        default: critic-s
         2019: critics
         2018: critics
         2017: critics

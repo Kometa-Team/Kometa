@@ -37,18 +37,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  year_dynamic:
-    default:
-      limit: 10
-      sort_by: critic_rating.desc
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/year/best/<<key>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        year: <<key>>
-      limit: <<limit>>
-
 collections:
   Year Collections:
     template:
@@ -58,15 +46,22 @@ collections:
 dynamic_collections:
   Year:
     type: number
-    title_format: Best of <<key_name>>
     sync: true
     data:
       starting: current_year-10
       ending: current_year
     template:
-      - year_dynamic
+      - smart_filter
       - translation
       - shared
     template_variables:
+      search_term:
+        default: year
+      sort_by:
+        default: critic_rating.desc
+      limit:
+        default: 10
+      image:
+        default: year/best/<<key>>
       translation_key:
         default: year

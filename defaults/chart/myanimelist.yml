@@ -69,7 +69,6 @@ translations:
   pmm: translations
 
 templates:
-
   mal:
     default:
       limit_<<key>>: 100
@@ -85,7 +84,6 @@ templates:
       limit: <<limit_season>>
 
 collections:
-
   MyAnimeList Popular:
     variables:
       key: popular

@@ -75,24 +75,62 @@ templates:
   trakt:
     default:
       limit_<<key>>: 100
-      summary_<<key>>: A collection of Trakt's Weekly <<collection_name>> List
     trakt_chart:
       chart: <<key>>
       limit: <<limit_<<key>>>>
-    summary: <<summary_<<key>>>>
 
-dynamic_collections:
-  Trakt:
-    type: custom
-    data:
-      collected: Collected
-      popular: Popular
-      recommended: Recommended
-      trending: Trending
-      watched: Watched
-    title_format: Trakt <<key_name>>
+collections:
+  Trakt Collected:
+    variables:
+      key: collected
     template:
-      - trakt
-      - shared
-      - arr
-      - custom
+      - name: trakt
+      - name: shared
+      - name: arr
+      - name: custom
+      - name: translation
+        translation_key: trakt_collected
+
+  Trakt Popular:
+    variables:
+      key: popular
+    template:
+      - name: trakt
+      - name: shared
+      - name: arr
+      - name: custom
+      - name: translation
+        translation_key: trakt_popular
+
+  Trakt Recommended:
+    variables:
+      key: recommended
+    template:
+      - name: trakt
+      - name: shared
+      - name: arr
+      - name: custom
+      - name: translation
+        translation_key: trakt_recommended
+
+  Trakt Trending:
+    variables:
+      key: trending
+    template:
+      - name: trakt
+      - name: shared
+      - name: arr
+      - name: custom
+      - name: translation
+        translation_key: trakt_trending
+
+  Trakt Watched:
+    variables:
+      key: watched
+    template:
+      - name: trakt
+      - name: shared
+      - name: arr
+      - name: custom
+      - name: translation
+        translation_key: trakt_watched

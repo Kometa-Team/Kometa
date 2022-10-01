@@ -87,59 +87,26 @@ templates:
       back_radius: <<back_radius>>
       back_width: <<back_width>>
       back_height: <<back_height>>
+    plex_all: true
+    filters:
+      filepath.regex: <<filepath>>
 
 overlays:
 
   REMUX:
-    template:
-      - name: VideoFormat
-        weight: 50
-        slug: remux
-    plex_all: true
-    filters:
-      filepath.regex: '(?i)\[Remux'
+    template: {name: VideoFormat, weight: 50, slug: remux, filepath: '(?i)\[Remux'}
 
   BLU-RAY:
-    template:
-      - name: VideoFormat
-        weight: 40
-        slug: bluray
-    plex_all: true
-    filters:
-      filepath.regex: '(?i)\[Blu[ ._-]?ray|\[BD|\[BR|\[HD[ ._-]?DVD'
+    template: {name: VideoFormat, weight: 40, slug: bluray, filepath: '(?i)\[Blu[ ._-]?ray|\[BD|\[BR|\[HD[ ._-]?DVD'}
 
   WEB:
-    template:
-      - name: VideoFormat
-        weight: 30
-        slug: web
-    plex_all: true
-    filters:
-      filepath.regex: '(?i)Web[ ._-]?(dl|rip)'
+    template: {name: VideoFormat, weight: 30, slug: web, filepath: '(?i)Web[ ._-]?(dl|rip)'}
 
   HDTV:
-    template:
-      - name: VideoFormat
-        weight: 20
-        slug: hdtv
-    plex_all: true
-    filters:
-      filepath.regex: '(?i)HD[ ._-]?TV'
+    template: {name: VideoFormat, weight: 20, slug: hdtv, filepath: '(?i)HD[ ._-]?TV'}
 
   DVD:
-    template:
-      - name: VideoFormat
-        weight: 10
-        slug: dvd
-    plex_all: true
-    filters:
-      filepath.regex: '(?i)\[DVD'
+    template: {name: VideoFormat, weight: 10, slug: dvd, filepath: '(?i)\[DVD'}
 
   SDTV:
-    template:
-      - name: VideoFormat
-        weight: 5
-        slug: sdtv
-    plex_all: true
-    filters:
-      filepath.regex: '(?i)SD[ ._-]?TV'
+    template: {name: VideoFormat, weight: 5, slug: sdtv, filepath: '(?i)SD[ ._-]?TV'}

@@ -35,19 +35,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  content_rating_dynamic:
-    default:
-      sort_by: release.desc
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/content_rating/uk/<<key_name>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        content_rating: <<value>>
-
-  other:
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/content_rating/other.jpg
-
 collections:
   Ratings Collections:
     template:
@@ -57,21 +44,25 @@ collections:
 dynamic_collections:
   UK Content Rating:
     type: content_rating
-    title_format: <<key_name>> <<library_type>>s
     other_name: Other Ratings
     template:
-      - content_rating_dynamic
+      - smart_filter
       - translation
       - shared
     other_template:
-      - other
       - other_collection
-      - content_rating_dynamic
+      - smart_filter
+      - translation
       - shared
     template_variables:
+      search_term:
+        default: content_rating
+      image:
+        default: content_rating/uk/<<key_name>>
+        other: content_rating/other
       translation_key:
-        default: content_rating_uk
-        other: content_rating_uk_other
+        default: content_rating
+        other: content_rating_other
     include:
       - U
       - PG

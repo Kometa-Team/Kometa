@@ -35,16 +35,7 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  Oscars:
-    default:
-      imdb_sort: moviemeter,asc
-    allowed_library_types: movie
-    imdb_list: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=oscar_winner&sort=<<imdb_sort>>
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/oscars/winner/<<key>>.jpg
-
 collections:
-
   Oscars Best Picture Winners:
     variables:
       key: best_picture
@@ -80,14 +71,21 @@ dynamic_collections:
     data:
       starting: current_year-5
       ending: current_year
-    title_format: Oscars Winners <<key_name>>
     template:
       - use_year_collections
-      - Oscars
+      - imdb
       - translation
       - shared
       - arr
       - custom
     template_variables:
+      imdb_list:
+        default: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=oscar_winner&sort=<<imdb_sort>>
+      imdb_sort:
+        default: moviemeter,asc
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/oscars/winner/<<key>>
       translation_key:
         default: oscars_year

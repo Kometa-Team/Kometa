@@ -26,21 +26,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 18
 
-templates:
-  director_dynamic:
-    default:
-      sort_by: release.desc
-      style: bw
-    tmdb_person: <<value>>
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/people/<<style>>/<<key_encoded>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      all:
-        director: tmdb
+translations:
+  pmm: translations
  
 collections:
   Directors Collections:
@@ -51,11 +42,24 @@ collections:
 dynamic_collections:
   Top Directors:
     type: director
-    template:
-      - director_dynamic
-      - shared
-    title_format: <<title>> (Director)
     data:
       depth: 5
       limit: 25
+    template:
+      - smart_filter
+      - translation
+      - shared
+    template_variables:
+      tmdb_person:
+        default: <<value>>
+      search_term:
+        default: director
+      search_value:
+        default: tmdb
+      translation_key:
+        default: director
+      image:
+        default: people/<<style>>/<<key_encoded>>
+      style:
+        default: bw
       

@@ -65,17 +65,15 @@ translations:
   pmm: translations
 
 templates:
-
-  imdb:
+  imdb_chart:
     imdb_chart: <<chart>>_<<library_type>>s
 
 collections:
-
   IMDb Popular:
     variables:
       key: popular
     template:
-      - name: imdb
+      - name: imdb_chart
         chart: popular
       - name: shared
       - name: arr
@@ -87,7 +85,7 @@ collections:
     variables:
       key: top
     template:
-      - name: imdb
+      - name: imdb_chart
         chart: top
       - name: shared
       - name: arr
