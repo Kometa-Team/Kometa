@@ -26,22 +26,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 14
 
-templates:
-  content_rating_dynamic:
-    default:
-      sort_by: release.desc
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/content_rating/us/<<key_name>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        content_rating: <<value>>
-
-  other:
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/content_rating/other.jpg
+translations:
+  pmm: translations
 
 collections:
   Ratings Collections:
@@ -52,16 +42,25 @@ collections:
 dynamic_collections:
   US Movie Content Ratings:
     type: content_rating
-    title_format: <<key_name>>
     other_name: Other Ratings
     template:
-      - content_rating_dynamic
+      - smart_filter
+      - translation
       - shared
     other_template:
-      - other
       - other_collection
-      - content_rating_dynamic
+      - smart_filter
+      - translation
       - shared
+    template_variables:
+      search_term:
+        default: content_rating
+      image:
+        default: content_rating/us/<<key_name>>
+        other: content_rating/other
+      translation_key:
+        default: content_rating
+        other: content_rating_other
     include:
       - G
       - PG

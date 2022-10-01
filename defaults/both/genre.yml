@@ -33,16 +33,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  genre_dynamic:
-    default:
-      sort_by: release.desc
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/genre/<<key_name_encoded>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        genre: <<value>>
-
 collections:
   Genre Collections:
     template:
@@ -52,12 +42,15 @@ collections:
 dynamic_collections:
   Genre:
     type: genre
-    title_format: <<key_name>> <<library_type>>s
     template:
       - genre_dynamic
       - translation
       - shared
     template_variables:
+      search_term:
+        default: genre
+      image:
+        default: genre/<<key_name_encoded>>
       translation_key:
         default: genre
     title_override:

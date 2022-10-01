@@ -44,13 +44,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  Golden:
-    default:
-      imdb_sort: moviemeter,asc
-    imdb_list: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=golden_globe_winner&sort=<<imdb_sort>>
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/golden/winner/<<key>>.jpg
-
 collections:
   Golden Globe Best Motion Pictures:
     variables:
@@ -63,7 +56,7 @@ collections:
       - name: custom
       - name: translation
         translation_key: golden_best
-    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/golden-globe-award-best-motion-picture
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/golden-globe-award-best-motion-picture
 
 dynamic_collections:
   Golden Globes Awards:
@@ -72,14 +65,19 @@ dynamic_collections:
     data:
       starting: current_year-5
       ending: current_year
-    title_format: Golden Globes <<key_name>>
     template:
       - use_year_collections
-      - Golden
+      - imdb
       - translation
       - shared
       - arr
       - custom
     template_variables:
+      imdb_list:
+        default: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=golden_globe_winner&sort=<<imdb_sort>>
+      imdb_sort:
+        default: moviemeter,asc
+      image:
+        default: award/golden/winner/<<key>>
       translation_key:
         default: golden_year

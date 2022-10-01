@@ -79,18 +79,6 @@ external_templates:
 translations:
   pmm: translations
 
-
-templates:
-  streaming:
-    default:
-      sort_by: release.desc
-    ignore_blank_results: true
-    cache_builders: 1
-    smart_label: <<sort_by_<<key>>>>
-    sync_mode: sync
-    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-<<library_type>>s
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/streaming/<<key_name_encoded>>.jpg
-
 collections:
   Streaming Collections:
     template:
@@ -114,14 +102,17 @@ dynamic_collections:
       paramount: Paramount+
       peacock: Peacock
       amazon: Prime Video
-    title_format: <<key_name>> <<library_type>>s
-    template_variables:
-      translation_key:
-        default: streaming
-      use:
-        hayu: show
     template:
-      - streaming
+      - mdb_smart
       - translation
       - shared
       - arr
+    template_variables:
+      mdblist_list:
+        default: https://mdblist.com/lists/plexmetamanager/<<key>>-<<library_type>>s
+      image:
+        default: streaming/<<key_name_encoded>>
+      allowed_libraries:
+        hayu: show
+      translation_key:
+        default: streaming

@@ -53,36 +53,16 @@ overlays:
 
   Oscars Best Picture:
     imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
-    template:
-      - name: Ribbon
-        key: oscars
-        weight: 40
-        allowed_libraries: movie
+    template: {name: Ribbon, key: oscars, weight: 40, allowed_libraries: movie}
 
   IMDb Top 250:
-    template:
-      - name: Ribbon
-        imdb_key: top
-        key: imdb
-        weight: 30
+    template: {name: Ribbon, imdb_key: top, key: imdb, weight: 30}
 
   Rotten Tomatoes Certified Fresh:
-    template:
-      - name: Ribbon
-        mdb_key: certifiedfresh
-        key: rotten
-        weight: 20
+    template: {name: Ribbon, mdb_key: certifiedfresh, key: rotten, weight: 20}
 
   Metacritic Must See:
-    template:
-      - name: Ribbon
-        mdb_key: metacriticmustsee
-        key: metacritic
-        weight: 10
+    template: {name: Ribbon, mdb_key: metacriticmustsee, key: metacritic, weight: 10}
 
   Commonsense Selection:
-    template:
-      - name: Ribbon
-        mdb_key: cssfamilies
-        key: common
-        weight: 5
+    template: {name: Ribbon, mdb_key: cssfamilies, key: common, weight: 5}

@@ -54,23 +54,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  released:
-    default:
-      in_the_last_released: 90
-    smart_filter:
-      all:
-        release: <<in_the_last_released>>
-      sort_by: release.desc
-  episodes:
-    default:
-      in_the_last_episodes: 7
-    smart_filter:
-      type: episodes
-      all:
-        episode_air_date: <<in_the_last_episodes>>
-      sort_by: release.desc
-
 collections:
   Chart Collections:
     template:
@@ -81,7 +64,10 @@ collections:
     variables:
       key: released
     template:
-      - name: released
+      - name: smart_filter
+        search_term: release
+        search_value: <<in_the_last_released>>
+        in_the_last_released: 90
       - name: shared
       - name: translation
         translation_key: basic_released
@@ -90,7 +76,11 @@ collections:
     variables:
       key: episodes
     template:
-      - name: episodes
+      - name: smart_filter
+        search_term: episode_air_date
+        search_value: <<in_the_last_episodes>>
+        in_the_last_episodes: 7
+        type: episodes
       - name: shared
         allowed_libraries: show
       - name: translation
