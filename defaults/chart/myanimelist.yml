@@ -61,48 +61,28 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "01"
 
+translations:
+  pmm: translations
+
 templates:
 
-  popular:
+  mal:
     default:
-      limit_popular: 100
-      summary_popular: A collection of the most popular Anime according to MyAnimeList.
-    mal_popular: <<limit_popular>>
-    summary: <<summary_<<key>>>>
-
-  favorited:
-    default:
-      limit_favorited: 100
-      summary_favorited: A collection of the Most Favorited Anime according to MyAnimeList.
-    mal_favorite: <<limit_favorited>>
-    summary: <<summary_<<key>>>>
-
-  top:
-    default:
-      limit_top: 100
-      summary_top: A collection of the Top Rated Anime according to MyAnimeList.
-    mal_all: <<limit_top>>
-    summary: <<summary_<<key>>>>
-
-  airing:
-    default:
-      limit_airing: 100
-      summary_airing: A collection of the Top Rated Anime Currently Airing according to MyAnimeList.
-    mal_airing: <<limit_airing>>
-    summary: <<summary_<<key>>>>
+      limit_<<key>>: 100
+      chart: <<key>>
+    mal_<<chart>>: <<limit_<<key>>>>
 
   season:
     default:
-      limit_airing: 100
-      summary_season: A collection of Anime from the Current Season according to MyAnimeList.
+      limit_season: 100
     mal_season:
       season: current
       sort_by: score
-    summary: <<summary_<<key>>>>
+      limit: <<limit_season>>
 
 collections:
 
@@ -110,37 +90,47 @@ collections:
     variables:
       key: popular
     template:
-      - name: popular
+      - name: mal
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: mal_popular
 
   MyAnimeList Favorited:
     variables:
       key: favorited
     template:
-      - name: favorited
+      - name: mal
+        chart: favorite
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: mal_favorited
 
   MyAnimeList Top Rated:
     variables:
       key: top
     template:
-      - name: top
+      - name: mal
+        chart: all
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: mal_top
 
   MyAnimeList Top Airing:
     variables:
       key: airing
     template:
-      - name: airing
+      - name: mal
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: mal_airing
 
   MyAnimeList Season:
     variables:
@@ -150,3 +140,5 @@ collections:
       - name: shared
       - name: arr
       - name: custom
+      - name: translation
+        translation_key: mal_season

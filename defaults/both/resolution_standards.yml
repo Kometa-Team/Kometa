@@ -28,9 +28,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: 15
+
+translations:
+  pmm: translations
 
 templates:
   resolution_dynamic:
@@ -55,11 +58,16 @@ dynamic_collections:
     other_name: Other Resolutions
     template:
       - resolution_dynamic
+      - translation
       - shared
     other_template:
       - other_collection
       - resolution_dynamic
       - shared
+    template_variables:
+      translation_key:
+        default: resolution_standards
+        other: resolution_standards_other
     include:
       - 480
       - 720

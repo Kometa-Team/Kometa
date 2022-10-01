@@ -81,4 +81,5 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      translation_key: golden_year
+      translation_key:
+        default: golden_year

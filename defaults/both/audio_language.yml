@@ -60,12 +60,14 @@ dynamic_collections:
       - audio_language_dynamic
       - translation
       - shared
-    template_variables:
-      translation_key: audio_language
     other_template:
       - other_collection
       - audio_language_dynamic
       - shared
+    template_variables:
+      translation_key:
+        default: audio_language
+        other: audio_language_other
     include:
       - ab     # Abkhazian
       - aa     # Afar

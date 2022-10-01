@@ -75,4 +75,5 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      translation_key: sundance_year
+      translation_key:
+        default: sundance_year

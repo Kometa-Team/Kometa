@@ -72,9 +72,13 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "03"
+
+translations:
+  pmm: translations
+
 
 templates:
   streaming:
@@ -112,9 +116,12 @@ dynamic_collections:
       amazon: Prime Video
     title_format: <<key_name>> <<library_type>>s
     template_variables:
+      translation_key:
+        default: streaming
       use:
         hayu: show
     template:
       - streaming
+      - translation
       - shared
       - arr
