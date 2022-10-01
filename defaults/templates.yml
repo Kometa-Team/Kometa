@@ -45,9 +45,11 @@ templates:
       - visible_shared_<<key>>
       - item_radarr_tag
       - item_sonarr_tag
+      - trakt_list
     allowed_library_types:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
+    trakt_list: <<trakt_list>>
     ignore_blank_results: true
     collection_mode: <<collection_mode>>
     visible_library: <<visible_library_<<key>>>>
@@ -57,6 +59,55 @@ templates:
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
     sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
     url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
+
+  trakt:
+    optional:
+      - trakt_list
+    trakt_list: <<trakt_list>>
+
+  imdb:
+    optional:
+      - imdb_list
+    imdb_list: <<imdb_list>>
+
+  smart_filter:
+    default:
+      sort_by: release.desc
+      search_value: <<value>>
+    optional:
+      - tmdb_person
+      - search_term2
+      - search_value2
+      - limit
+      - type
+    tmdb_person: <<tmdb_person>>
+    smart_filter:
+      sort_by: <<sort_by>>
+      limit: <<limit>>
+      type: <<type>>
+      any:
+        <<search_term>>: <<search_value>>
+        <<search_term2>>: <<search_value2>>
+
+  filter:
+    default:
+      sort_by: release.desc
+      sort_by_<<key>>: <<sort_by>>
+    smart_label: <<sort_by_<<key>>>>
+    sync_mode: sync
+    plex_all: true
+    filters:
+      <<filter_term>>: <<filter_value>>
+      <<filter_term2>>: <<filter_value2>>
+
+  mdb_smart:
+    default:
+      sort_by: release.desc
+      sort_by_<<key>>: <<sort_by>>
+    cache_builders: 1
+    smart_label: <<sort_by_<<key>>>>
+    sync_mode: sync
+    mdblist_list: <<mdblist_list>>
 
   arr:
     default:

@@ -28,6 +28,9 @@ templates:
   AudioLanguage:
     optional:
       - overlay_level
+      - gte
+      - gt
+      - lt
     default:
       overlay: <<overlay_name>>
       horizontal_offset: 0
@@ -53,22 +56,16 @@ templates:
       back_radius: <<back_radius>>
       back_width: <<back_width>>
       back_height: <<back_height>>
+    plex_all: true
+    filters:
+      audio_language.count_gte: <<gte>>
+      audio_language.count_gt: <<gt>>
+      audio_language.count_lt: <<lt>>
 
 overlays:
 
   Dual-Audio:
-    template:
-      - name: AudioLanguage
-        weight: 10
-    plex_all: true
-    filters:
-      audio_language.count_gte: 2
-      audio_language.count_lt: 3
+    template: {name: AudioLanguage, weight: 10, gte: 2, lt: 3}
 
   Multi-Audio:
-    template:
-      - name: AudioLanguage
-        weight: 20
-    plex_all: true
-    filters:
-      audio_language.count_gt: 2
+    template: {name: AudioLanguage, weight: 20, gt: 2}

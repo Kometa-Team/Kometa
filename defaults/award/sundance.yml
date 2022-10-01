@@ -37,13 +37,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  Sundance:
-    allowed_library_types: movie
-    summary: Sundance Film Festival of <<key>>
-    trakt_list: https://trakt.tv/users/pjcob/lists/<<key>>-sundance
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/award/sundance/<<key>>.jpg
-
 collections:
   Sundance Grand Jury Winners:
     variables:
@@ -75,5 +68,11 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
+      trakt_list:
+        default: https://trakt.tv/users/pjcob/lists/<<key>>-sundance
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/sundance/<<key>>
       translation_key:
         default: sundance_year

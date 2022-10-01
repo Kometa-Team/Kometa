@@ -1,4 +1,9 @@
+version: 1.18.0
 translations:
+  #############################################################
+  #                           Award                           #
+  #############################################################
+
   bafta_best_name: BAFTA Best Films
   bafta_best_summary: British Academy of Film and Television Arts Best Film Winners.
 
@@ -53,47 +58,9 @@ translations:
   sundance_year_name: Sundance Film Festival <<key_name>>
   sundance_year_summary: Sundance Film Festival of <<key_name>>.
 
-  actor_name: <<key_name>>
-  actor_summary: <<library_type>>s with <<key_name>>.
-
-  audio_language_name: <<key_name>> Audio
-  audio_language_summary: <<library_type>>s filmed in the <<key_name>> Language.
-
-  audio_language_other_name: Other Audio
-  audio_language_other_summary: <<library_type>>s filmed in other uncommon Languages.
-
-  content_rating_uk: <<key_name>> <<library_type>>s
-  content_rating_uk_summary: <<library_type>>s that are rated <<key_name>>.
-
-  content_rating_uk_other_name: Other Ratings
-  content_rating_uk_other_summary: <<library_type>>s with other uncommon Ratings.
-
-  genre_name: <<key_name>> <<library_type>>s
-  genre_summary: <<library_type>>s that have the genre <<key_name>>.
-
-  resolution_name: <<key_name>> <<library_type>>s
-  resolution_summary: <<library_type>>s that have the resolution <<key_name>>.
-
-  resolution_standards_name: <<key_name>> <<library_type>>s
-  resolution_standards_summary: <<library_type>>s that have the resolution <<key_name>>.
-
-  resolution_standards_other_name: Other Resolutions
-  resolution_standards_other_summary: <<library_type>>s that have other uncommon resolutions.
-
-  streaming_name: <<key_name>> <<library_type>>s
-  streaming_summary: <<library_type>>s streaming on <<key_name>>.
-
-  studio_name: <<key_name>>
-  studio_summary: <<library_type>>s produced by <<key_name>>.
-
-  subtitle_language_name: <<key_name>> Subtitles
-  subtitle_language_summary: <<library_type>>s with <<key_name>> Subtitles.
-
-  subtitle_language_other_name: Other Subtitles
-  subtitle_language_other_summary: <<library_type>>s with other uncommon Subtitles.
-
-  year_name: Best of <<key_name>>
-  year_summary: <<library_type>>s released in <<key_name>>.
+  #############################################################
+  #                           Chart                           #
+  #############################################################
 
   anilist_popular_name: AniList Popular
   anilist_popular_summary: A collection of the most popular Anime according to AniList.
@@ -112,6 +79,9 @@ translations:
 
   basic_episodes_name: New Episodes
   basic_episodes_summary: A collection of newly-released <<library_type>>s.
+
+  flixpatrol_name: <<key_name>> Top <<limit>>
+  flixpatrol_summary: Top <<limit>> <<library_type>>s on <<key_name>> according to FlixPatrol.
 
   imdb_popular_name: IMDb Popular
   imdb_popular_summary: List of <<collection_name>> <<library_type>>s.
@@ -169,3 +139,97 @@ translations:
 
   tmdb_trending_name: TMDb Trending
   tmdb_trending_summary: A collection of <<library_type>>s trending on TMDb.
+
+  trakt_collected_name: Trakt Collected
+  trakt_collected_summary: A collection of Trakt's Weekly Trakt Collected List
+
+  trakt_popular_name: Trakt Popular
+  trakt_popular_summary: A collection of Trakt's Weekly Trakt Popular List
+
+  trakt_recommended_name: Trakt Recommended
+  trakt_recommended_summary: A collection of Trakt's Weekly Trakt Recommended List
+
+  trakt_trending_name: Trakt Trending
+  trakt_trending_summary: A collection of Trakt's Weekly Trakt Trending List
+
+  trakt_watched_name: Trakt Watched
+  trakt_watched_summary: A collection of Trakt's Weekly Trakt Watched List
+
+  #############################################################
+  #                           Both                            #
+  #############################################################
+
+  actor_name: <<key_name>>
+  actor_summary: <<library_type>>s with <<key_name>>.
+
+  audio_language_name: <<key_name>> Audio
+  audio_language_summary: <<library_type>>s filmed in the <<key_name>> Language.
+
+  audio_language_other_name: Other Audio
+  audio_language_other_summary: <<library_type>>s filmed in other uncommon Languages.
+
+  content_rating_name: <<key_name>> <<library_type>>s
+  content_rating_summary: <<library_type>>s that are rated <<key_name>>.
+
+  content_rating_other_name: Other Ratings
+  content_rating_other_summary: <<library_type>>s with other uncommon Ratings.
+
+  country_name: <<key_name>> <<library_type>>s
+  country_summary: <<library_type>>s filmed in <<key_name>>.
+
+  country_other_name: Other Countries
+  country_other_summary: <<library_type>>s filmed in other uncommon Countries.
+
+  decade_name: Best of <<key_name>>
+  decade_summary: Top <<limit>> <<library_type>>s of the <<key_name>>.
+
+  decade_show_name: Best of <<key_name>>s
+  decade_show_summary: Top <<limit>> <<library_type>>s of the <<key_name>>s.
+
+  director_name: <<key_name>> (Director)
+  director_summary: <<library_type>>s Directed by <<key_name>>.
+
+  genre_name: <<key_name>> <<library_type>>s
+  genre_summary: <<library_type>>s that have the genre <<key_name>>.
+
+  producer_name: <<key_name>> (Producer)
+  producer_summary: <<library_type>>s Produced by <<key_name>>.
+
+  resolution_name: <<key_name>> <<library_type>>s
+  resolution_summary: <<library_type>>s that have the resolution <<key_name>>.
+
+  resolution_standards_name: <<key_name>> <<library_type>>s
+  resolution_standards_summary: <<library_type>>s that have the resolution <<key_name>>.
+
+  resolution_standards_other_name: Other Resolutions
+  resolution_standards_other_summary: <<library_type>>s that have other uncommon resolutions.
+
+  seasonal_name: <<key_name>> <<library_type>>s
+  seasonal_summary: A collection of <<key_name>> <<library_type>>s that may relate to the season.
+
+  streaming_name: <<key_name>> <<library_type>>s
+  streaming_summary: <<library_type>>s streaming on <<key_name>>.
+
+  studio_name: <<key_name>>
+  studio_summary: <<library_type>>s produced by <<key_name>>.
+
+  subtitle_language_name: <<key_name>> Subtitles
+  subtitle_language_summary: <<library_type>>s with <<key_name>> Subtitles.
+
+  subtitle_language_other_name: Other Subtitles
+  subtitle_language_other_summary: <<library_type>>s with other uncommon Subtitles.
+
+  writer_name: <<key_name>> (Writer)
+  writer_summary: <<library_type>>s Written by <<key_name>>.
+
+  year_name: Best of <<key_name>>
+  year_summary: <<library_type>>s released in <<key_name>>.
+
+  #############################################################
+  #                           Movie                           #
+  #############################################################
+
+
+  #############################################################
+  #                           Show                            #
+  #############################################################

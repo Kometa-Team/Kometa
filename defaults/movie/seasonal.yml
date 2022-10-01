@@ -71,20 +71,28 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
+
+translations:
+  pmm: translations
 
 templates:
-  Holiday:
+  holiday:
     default:
       key: <<collection_name>>
       sort_by: title.asc
       sort_by_<<key>>: <<sort_by>>
+      schedule_<<key>>: <<schedule>>
     optional:
-      - schedule_<<key>>
+      - schedule
+      - tmdb_collection
+      - tmdb_movie
     schedule: <<schedule_<<key>>>>
     smart_label: <<sort_by_<<key>>>>
-    summary: A collection of <<collection_name>> and other movies that may relate to the season.
     delete_not_scheduled: true
+    tmdb_collection: <<tmdb_collection>>
+    tmdb_movie: <<tmdb_movie>>
+    cache_builders: 1
 
 collections:
   Seasonal Collections:
@@ -92,124 +100,84 @@ collections:
       - name: separator off
         separator: seasonal
 
-  Independence Day:
-    variables:
-      key: independence
+dynamic_collections:
+  Seasonal:
+    type: custom
+    data:
+      years: New Year's Day
+      valentine: Valentine's Day
+      patrick: St. Patrick's Day
+      easter: Easter
+      mother: Mother's Day
+      father: Father's Day
+      independence: Independence Day
+      labor: Labor Day
+      halloween: Halloween
+      thanksgiving: Thanksgiving
+      christmas: Christmas
     template:
-      - name: Holiday
-        schedule_independence: range(06/23-07/11)
-      - name: shared
-        visible_home_<<key>>: true
-        visible_shared_<<key>>: true
-        image: seasonal/<<key>>
-      - name: arr
-    imdb_list: 
-      - https://www.imdb.com/list/ls068664510/
-      - https://www.imdb.com/list/ls080925875/
+      - holiday
+      - translation
+      - shared
+      - arr
+      - imdb
+    template_variables:
+      schedule:
+        years: range(12/26-01/04)
+        valentine: range(02/01-02/29)
+        patrick: range(03/01-03/18)
+        easter: range(03/15-04/30)
+        mother: range(05/05-05-10)
+        father: range(06/15-06/20)
+        independence: range(06/23-07/11)
+        labor: range(09/01-09/10)
+        halloween: range(10/01-10/31)
+        thanksgiving: range(11/01-11/30)
+        christmas: range(12/01-12/31)
+      imdb_list:
+        years: https://www.imdb.com/list/ls066838460/
+        valentine:
+          - https://www.imdb.com/list/ls000094398/
+          - https://www.imdb.com/list/ls057783436/
+          - https://www.imdb.com/list/ls064427905/
+        patrick: https://www.imdb.com/list/ls063934595/
+        easter:
+          - https://www.imdb.com/list/ls062665509/
+          - https://www.imdb.com/list/ls051733651/
+        mother: https://www.imdb.com/list/ls072551197/
+        father: https://www.imdb.com/list/ls020471057/
+        independence:
+          - https://www.imdb.com/list/ls068664510/
+          - https://www.imdb.com/list/ls080925875/
+        labor: https://www.imdb.com/list/ls002014923/
+        halloween:
+          - https://www.imdb.com/list/ls023118929/
+          - https://www.imdb.com/list/ls000099714/
+        thanksgiving:
+          - https://www.imdb.com/list/ls000835734/
+          - https://www.imdb.com/list/ls091597850/
+        christmas: https://www.imdb.com/list/ls000096828/
+      tmdb_collection:
+        halloween:
+          - 185103    # Hotel Transylvania
+          - 11716     # Addams Family
+          - 750822    # Addams Family Animated
+          - 313086    # Conjuring
+          - 91361     # Halloween Collection
+          - 8581      # A Nightmare on Elm Street Collection
+          - 1733      # The Mummy Collection
+          - 8091      # Alien Collection
+          - 2980      # Ghostbusters
+          - 751156    # Hocus Pocus
+      tmdb_movie:
+        halloween:
+          - 23437    # A Nightmare on Elm Street (2010)
+      visible_home_<<key>>:
+        default: true
+      visible_shared_<<key>>:
+        default: true
+      image:
+        default: seasonal/<<key>>
+      translation_key:
+        default: season
 
-  Easter:
-    variables:
-      key: easter
-    template:
-      - name: Holiday
-        schedule_easter: range(03/15-04/30)
-      - name: shared
-        visible_home_<<key>>: true
-        visible_shared_<<key>>: true
-        image: seasonal/<<key>>
-      - name: arr
-    imdb_list: 
-      - https://www.imdb.com/list/ls062665509/
-      - https://www.imdb.com/list/ls051733651/
-
-  Valentine's Day:
-    variables:
-      key: valentine
-    template:
-      - name: Holiday
-        schedule_valentine: range(02/01-02/29)
-      - name: shared
-        visible_home_<<key>>: true
-        visible_shared_<<key>>: true
-        image: seasonal/<<key>>
-      - name: arr
-    imdb_list:
-      - https://www.imdb.com/list/ls000094398/
-      - https://www.imdb.com/list/ls057783436/
-      - https://www.imdb.com/list/ls064427905/
-
-  St. Patrick's Day:
-    variables:
-      key: patrick
-    template:
-      - name: Holiday
-        schedule_patrick: range(03/01-03/18)
-      - name: shared
-        visible_home_<<key>>: true
-        visible_shared_<<key>>: true
-        image: seasonal/<<key>>
-      - name: arr
-    imdb_list: https://www.imdb.com/list/ls063934595/
-
-  Thanksgiving:
-    variables:
-      key: thanksgiving
-    template:
-      - name: Holiday
-        schedule_thanksgiving: range(11/01-11/30)
-      - name: shared
-        visible_home_<<key>>: true
-        visible_shared_<<key>>: true
-        image: seasonal/<<key>>
-      - name: arr
-    imdb_list: 
-      - https://www.imdb.com/list/ls000835734/
-      - https://www.imdb.com/list/ls091597850/
-
-  Halloween:
-    variables:
-      key: halloween
-    template:
-      - name: Holiday
-        schedule_halloween: range(10/01-10/31)
-      - name: shared
-        visible_home_<<key>>: true
-        visible_shared_<<key>>: true
-        image: seasonal/<<key>>
-      - name: arr
-    imdb_list:
-      - https://www.imdb.com/list/ls023118929/
-      - https://www.imdb.com/list/ls000099714/
-    tmdb_collection:
-      - 91361    # Halloween Collection
-      - 8581     # A Nightmare on Elm Street Collection
-      - 1733     # The Mummy Collection
-      - 8091     # Alien Collection
-    tmdb_movie:
-      - 23437    # A Nightmare on Elm Street (2010)
-
-  Christmas:
-    variables:
-      key: christmas
-    template:
-      - name: Holiday
-        schedule_christmas: range(12/01-12/31)
-      - name: shared
-        visible_home_<<key>>: true
-        visible_shared_<<key>>: true
-        image: seasonal/<<key>>
-      - name: arr
-    imdb_list: https://www.imdb.com/list/ls000096828/
-
-  New Year's Day:
-    variables:
-      key: years
-    template:
-      - name: Holiday
-        schedule_years: range(12/26-01/04)
-      - name: shared
-        visible_home_<<key>>: true
-        visible_shared_<<key>>: true
-        image: seasonal/<<key>>
-      - name: arr
-    imdb_list: https://www.imdb.com/list/ls066838460/

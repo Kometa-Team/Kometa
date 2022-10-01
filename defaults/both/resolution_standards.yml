@@ -35,16 +35,6 @@ external_templates:
 translations:
   pmm: translations
 
-templates:
-  resolution_dynamic:
-    default:
-      sort_by: release.desc
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/resolution/standards/<<key>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        resolution: <<value>>
-
 collections:
   Resolution Collections:
     template:
@@ -54,17 +44,21 @@ collections:
 dynamic_collections:
   Resolution Standards:
     type: resolution
-    title_format: <<key_name>> <<library_type>>s
     other_name: Other Resolutions
     template:
-      - resolution_dynamic
+      - smart_filter
       - translation
       - shared
     other_template:
       - other_collection
-      - resolution_dynamic
+      - smart_filter
+      - translation
       - shared
     template_variables:
+      search_term:
+        default: resolution
+      image:
+        default: resolution/standards/<<key>>
       translation_key:
         default: resolution_standards
         other: resolution_standards_other
