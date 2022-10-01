@@ -26,9 +26,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "06"
+
+translations:
+  pmm: translations
 
 templates:
   genre_dynamic:
@@ -49,10 +52,14 @@ collections:
 dynamic_collections:
   Genre:
     type: genre
-    title_format: <<key_name>>
+    title_format: <<key_name>> <<library_type>>s
     template:
       - genre_dynamic
+      - translation
       - shared
+    template_variables:
+      translation_key:
+        default: genre
     title_override:
       Biography: Biopic
     addons:

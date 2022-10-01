@@ -26,9 +26,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "07"
+
+translations:
+  pmm: translations
 
 templates:
   studio_dynamic:
@@ -55,7 +58,13 @@ dynamic_collections:
     title_format: <<key_name>>
     template:
       - studio_dynamic
+      - translation
       - shared
+    template_variables:
+      translation_key:
+        default: studio
+      contains:
+        20th Century Studios: 20th Century
     include:
       - 20th Century Studios
       - Amazon Studios
@@ -168,6 +177,3 @@ dynamic_collections:
       Warner Bros. Pictures:
         - Warner
         - Warner Animation Group
-    template_variables:
-      contains:
-        20th Century Studios: 20th Century

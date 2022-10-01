@@ -65,5 +65,6 @@ dynamic_collections:
       - translation
       - shared
     template_variables:
-      translation_key: actor
+      translation_key:
+        default: actor
       

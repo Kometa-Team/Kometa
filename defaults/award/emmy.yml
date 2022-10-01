@@ -66,4 +66,5 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      translation_key: emmy_year
+      translation_key:
+        default: emmy_year
