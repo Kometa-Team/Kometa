@@ -73,6 +73,7 @@ class DataFile:
         self.data_type = ""
         self.templates = {}
         self.translations = {}
+        self.key_names = {}
 
     def get_file_name(self):
         data = f"{self.config.GitHub.configs_url}{self.path}.yml" if self.type == "GIT" else self.path
@@ -134,7 +135,9 @@ class DataFile:
         if "translations" not in yaml.data:
             raise Failed(f"URL Error: Top Level translations attribute not found in {content_path}")
         translations = {k: {"default": v} for k, v in yaml.data["translations"]}
+        translations["library_type"] = {"default": self.library.type.lower() if self.library else "item"}
         logger.debug(f"Translations Loaded From: {dir_path}")
+        key_names = {}
 
         def add_translation(yaml_path, yaml_key, data=None):
             yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
@@ -146,6 +149,11 @@ class DataFile:
                         logger.error(f"Config Error: {ky} must have a default value")
             else:
                 logger.error(f"Config Error: Top Level translations attribute not found in {yaml_path}")
+            if "key_names" in yaml_content.data:
+                for kn, vn in yaml_content.data["key_names"].items():
+                    if kn not in translations:
+                        key_names[kn] = {}
+                    key_names[kn][yaml_key] = vn
 
         if file_type in ["URL", "Git", "Repo"]:
             if "languages" in yaml.data and isinstance(yaml.data["language"], list):
@@ -159,7 +167,7 @@ class DataFile:
             for file in os.listdir(dir_path):
                 if file.endswith(".yml") and file != "default.yml":
                     add_translation(os.path.abspath(f"{dir_path}/{file}"), file[:-4])
-        return translations
+        return translations, key_names
 
     def apply_template(self, name, mapping_name, data, template_call, extra_variables):
         if not self.templates:
@@ -201,7 +209,8 @@ class DataFile:
                     name_var = f"{self.data_type.lower()}_name"
                     variables[name_var] = str(name)
                     variables["mapping_name"] = mapping_name
-                    variables["library_type"] = self.library.type.lower() if self.library else "items"
+                    variables["library_type"] = self.library.type.lower() if self.library else "item"
+                    variables["library_typeU"] = self.library.type if self.library else "Item"
                     variables["library_name"] = self.library.name if self.library else "playlist"
 
                     for temp_key, temp_value in temp_vars.items():
@@ -225,6 +234,9 @@ class DataFile:
                     language = variables["language"] if "language" in variables else "default"
                     for temp_key, temp_value in self.translations.items():
                         variables[temp_key] = temp_value[language if language in temp_value else "default"]
+                        if temp_key == "library_type":
+                            variables[f"{temp_key}U"] = temp_value[language if language in temp_value else "default"].capitalize()
+
 
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
@@ -449,10 +461,13 @@ class DataFile:
             if not files:
                 logger.error("Config Error: No Paths Found for translations")
             for file_type, template_file, _, _ in files:
-                temp_data = self.load_file(file_type, template_file, translation=True)
+                temp_data, key_data = self.load_file(file_type, template_file, translation=True)
                 for k, v in temp_data.items():
                     if k not in self.translations:
                         self.translations[k] = v
+                for k, v in key_data.items():
+                    if k not in self.key_names:
+                        self.key_names[k] = v
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory):

@@ -1,0 +1,37 @@
+
+1.18.0 -> 1.18.0.1
+
+added library_type
+added key_names
+added comments
+
+imdb_popular_summary: Changed `<<collection_name>>` to `IMDb Popular`
+imdb_top_summary: Changed `<<collection_name>>` to `IMDb Top 250`
+imdb_lowest_summary: Changed `<<collection_name>>` to `IMDb Lowest Rated`
+
+actor_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+audio_language_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+audio_language_other_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+content_rating_name: Changed `<<library_type>>` to `<<library_typeU>>`
+content_rating_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+content_rating_other_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+country_name: Changed `<<library_type>>` to `<<library_typeU>>`
+country_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+country_other_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+director_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+genre_name: Changed `<<library_type>>` to `<<library_typeU>>`
+genre_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+producer_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+resolution_name: Changed `<<library_type>>` to `<<library_typeU>>`
+resolution_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+resolution_standards_name: Changed `<<library_type>>` to `<<library_typeU>>`
+resolution_standards_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+resolution_standards_other_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+seasonal_name: Changed `<<library_type>>` to `<<library_typeU>>`
+streaming_name: Changed `<<library_type>>` to `<<library_typeU>>`
+streaming_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+studio_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+subtitle_language_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+subtitle_language_other_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+writer_summary: Changed `<<library_type>>` to `<<library_typeU>>`
+year_summary: Changed `<<library_type>>` to `<<library_typeU>>`
