@@ -440,11 +440,12 @@ def load_files(files_to_load, method, schedule=None, lib_vars=None):
                 elif not os.path.isdir(file["folder"]):
                     logger.error(f"Config Error: Folder not found: {file['folder']}")
                 else:
-                    yml_files = glob_filter(os.path.join(file["folder"], f"*.yml"))
+                    yml_files = glob_filter(os.path.join(file["folder"], "*.yml"))
+                    yml_files.extend(glob_filter(os.path.join(file["folder"], "*.yaml")))
                     if yml_files:
                         current.extend([("File", yml, temp_vars, asset_directory) for yml in yml_files])
                     else:
-                        logger.error(f"Config Error: No YAML (.yml) files found in {file['folder']}")
+                        logger.error(f"Config Error: No YAML (.yml|.yaml) files found in {file['folder']}")
 
             if schedule and "schedule" in file and file["schedule"]:
                 current_time, run_hour, ignore_schedules = schedule

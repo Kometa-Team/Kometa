@@ -80,20 +80,27 @@ class DataFile:
         if "/" in data:
             if data.endswith(".yml"):
                 return data[data.rfind("/") + 1:-4]
+            elif data.endswith(".yaml"):
+                return data[data.rfind("/") + 1:-5]
             else:
                 return data[data.rfind("/") + 1:]
         elif "\\" in data:
             if data.endswith(".yml"):
                 return data[data.rfind("\\") + 1:-4]
+            elif data.endswith(".yaml"):
+                return data[data.rfind("/") + 1:-5]
             else:
                 return data[data.rfind("\\") + 1:]
         else:
             return data
 
     def load_file(self, file_type, file_path, library_type=None, overlay=False, translation=False):
-        if translation and file_path.endswith(".yml"):
-            file_path = file_path[:-4]
-        if not translation and not file_path.endswith(".yml"):
+        if translation:
+            if file_path.endswith(".yml"):
+                file_path = file_path[:-4]
+            elif file_path.endswith(".yaml"):
+                file_path = file_path[:-5]
+        if not translation and not file_path.endswith((".yml", ".yaml")):
             file_path = f"{file_path}.yml"
         if file_type in ["URL", "Git", "Repo"]:
             if file_type == "Repo" and not self.config.custom_repo:
