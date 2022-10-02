@@ -108,22 +108,22 @@ class DataFile:
             yaml = YAML(input_data=response.content, check_empty=True)
         else:
             if file_type == "PMM Default":
-                if not overlay and file_path.startswith("movie/"):
+                if not overlay and file_path.startswith(("movie/", "chart/", "award/")):
                     file_path = file_path[6:]
                 elif not overlay and file_path.startswith(("show/", "both/")):
                     file_path = file_path[5:]
                 elif overlay and file_path.startswith("overlays/"):
                     file_path = file_path[9:]
-
                 defaults_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults")
                 if overlay:
                     defaults_path = os.path.join(defaults_path, "overlays")
                 if os.path.exists(os.path.abspath(os.path.join(defaults_path, file_path))):
                     file_path = os.path.abspath(os.path.join(defaults_path, file_path))
-                elif os.path.exists(os.path.abspath(os.path.join(defaults_path, library_type.lower(), file_path))):
-                    file_path = os.path.abspath(os.path.join(defaults_path, library_type.lower(), file_path))
-                elif os.path.exists(os.path.abspath(os.path.join(defaults_path, "both", file_path))):
-                    file_path = os.path.abspath(os.path.join(defaults_path, "movie", file_path))
+                else:
+                    for default_folder in [library_type.lower(), "both", "chart", "award"]:
+                        if os.path.exists(os.path.abspath(os.path.join(defaults_path, default_folder, file_path))):
+                            file_path = os.path.abspath(os.path.join(defaults_path, default_folder, file_path))
+                            break
             content_path = os.path.abspath(f"{file_path}/default.yml" if translation else file_path)
             dir_path = file_path
             if not os.path.exists(content_path):
@@ -134,7 +134,7 @@ class DataFile:
             return yaml.data
         if "translations" not in yaml.data:
             raise Failed(f"URL Error: Top Level translations attribute not found in {content_path}")
-        translations = {k: {"default": v} for k, v in yaml.data["translations"]}
+        translations = {k: {"default": v} for k, v in yaml.data["translations"].items()}
         translations["library_type"] = {"default": self.library.type.lower() if self.library else "item"}
         logger.debug(f"Translations Loaded From: {dir_path}")
         key_names = {}
@@ -142,11 +142,11 @@ class DataFile:
         def add_translation(yaml_path, yaml_key, data=None):
             yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
             if "translations" in yaml_content.data:
-                for ky, vy in yaml_content.data["translations"]:
+                for ky, vy in yaml_content.data["translations"].items():
                     if ky in translations:
                         translations[ky][yaml_key] = vy
                     else:
-                        logger.error(f"Config Error: {ky} must have a default value")
+                        logger.error(f"Config Error: {ky} must have a default value in {yaml_path}")
             else:
                 logger.error(f"Config Error: Top Level translations attribute not found in {yaml_path}")
             if "key_names" in yaml_content.data:
@@ -231,12 +231,15 @@ class DataFile:
                         else:
                             variables[temp_key] = temp_value
 
+                    translation_variables = {}
                     language = variables["language"] if "language" in variables else "default"
+                    logger.debug(variables)
                     for temp_key, temp_value in self.translations.items():
-                        variables[temp_key] = temp_value[language if language in temp_value else "default"]
                         if temp_key == "library_type":
+                            variables[temp_key] = temp_value[language if language in temp_value else "default"]
                             variables[f"{temp_key}U"] = temp_value[language if language in temp_value else "default"].capitalize()
-
+                        else:
+                            translation_variables[temp_key] = temp_value[language if language in temp_value else "default"]
 
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
@@ -395,13 +398,15 @@ class DataFile:
                                     _data = scan_text(_data, dm, dd)
                             else:
                                 for option in optional:
-                                    if option not in variables and f"<<{option}>>" in str(_data):
+                                    if option not in variables and option not in translation_variables and f"<<{option}>>" in str(_data):
                                         raise Failed
                                 for variable, variable_data in variables.items():
                                     if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
                                         _data = scan_text(_data, variable, variable_data.replace(",", ""))
                                     elif variable != "name":
                                         _data = scan_text(_data, variable, variable_data)
+                                for variable, variable_data in translation_variables.items():
+                                    _data = scan_text(_data, variable, variable_data)
                         return _data
 
                     def check_data(_method, _data):
