@@ -150,7 +150,7 @@ cd Plex-Meta-Manager
 
 **NOTE: The rest of this walkthrough assumes you are staying in this directory in this terminal/Powershell window.**
 
-**IMPORTANT: In the future, when you want to run PMM at teh command line, you have to be in this directory.**
+**IMPORTANT: In the future, when you want to run PMM at the command line, you have to be in this directory.**
 
 When you open a command window to run PMM, the first step will always be:
 
