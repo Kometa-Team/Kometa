@@ -1,4 +1,4 @@
-# Franchise Language Default Metadata File
+# Franchise Default Metadata File
 
 The `- pmm: show/franchise` Metadata File is used to  create collections based on popular TV franchises
 

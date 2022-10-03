@@ -1,4 +1,4 @@
-# Universe Language Default Metadata File
+# Universe Default Metadata File
 
 The `- pmm: movie/universe` Metadata File is used to  create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World)
 
