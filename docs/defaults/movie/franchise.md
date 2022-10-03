@@ -1,4 +1,4 @@
-# Franchise Language Default Metadata File
+# Franchise Default Metadata File
 
 The `- pmm: movie/franchise` Metadata File is used to  create collections based on popular Movie franchises, and can be used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
 
