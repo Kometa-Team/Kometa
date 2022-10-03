@@ -9,10 +9,10 @@ libraries:
     schedule: weekly(sunday)
     metadata_path:
       - file: config/Movies.yml
-      - git: PMM/chart/imdb
-      - git: PMM/studio
-      - git: PMM/genre
-      - git: PMM/actor
+      - pmm: imdb
+      - pmm: studio
+      - pmm: genre
+      - pmm: actor
     operations:
       mass_critic_rating_update: tmdb
 ```
@@ -24,16 +24,16 @@ libraries:
     metadata_path:
       - file: config/Movies.yml
         schedule: weekly(monday)
-      - git: PMM/chart/imdb
+      - pmm: imdb
         schedule: weekly(tuesday)
-      - git: PMM/studio
+      - pmm: studio
         schedule: weekly(wednesday)
-      - git: PMM/genre
+      - pmm: genre
         schedule: weekly(thursday)
-      - git: PMM/actor
+      - pmm: actor
         schedule: weekly(friday)
     overlay_path:
-      - git: PMM/overlays/imdb
+      - pmm: imdb
         schedule: weekly(saturday)
     operations:
       mass_critic_rating_update: tmdb

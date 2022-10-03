@@ -23,18 +23,18 @@ libraries:
   Movies:
     metadata_path:
       - file: config/Movies.yml
-      - git: PMM/chart/imdb
-      - git: PMM/studio
-      - git: PMM/genre
-      - git: PMM/actor
+      - pmm: imdb
+      - pmm: studio
+      - pmm: genre
+      - pmm: actor
     operations:
       mass_critic_rating_update: tmdb
       split_duplicates: true
   TV Shows:
     metadata_path:
       - file: config/TV Shows.yml
-      - git: PMM/chart/tmdb
-      - git: PMM/show/network
+      - pmm: tmdb
+      - pmm: network
     overlay_path:
       - remove_overlays: false
       - file: config/Overlays.yml
@@ -45,12 +45,12 @@ libraries:
       token: ####################
     metadata_path:
       - file: config/TV Shows.yml
-      - git: PMM/chart/tmdb
-      - git: PMM/show/network
+      - pmm: tmdb
+      - pmm: network
   Anime:
     metadata_path:
       - file: config/Anime.yml
-      - git: PMM/chart/myanimelist
+      - pmm: myanimelist
     radarr:
       url: http://192.168.1.45:7878
       token: ################################
@@ -128,8 +128,8 @@ libraries:
   TV Shows:
     metadata_path:
       - file: config/TV Shows.yml
-      - git: PMM/chart/tmdb
-      - git: PMM/show/network
+      - pmm: tmdb
+      - pmm: network
 ```
 
 By default, when `metadata_path` is missing the script will look within the root PMM directory for a metadata file called `<MAPPING_NAME>.yml`. In this example, Plex Meta Manager will look for a file named `TV Shows.yml`.
@@ -236,5 +236,5 @@ You can define Playlist Files by using `playlist_files` mapper by specifying the
 ```yaml
 playlist_files:
   - file: config/playlists.yml
-  - git: PMM/playlist
+  - pmm: playlist
 ```
