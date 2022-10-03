@@ -74,13 +74,13 @@ templates:
 
 overlays:
   Netflix:
-    template: {name: Top10, weight: 600, key: netflix}
+    template: {name: Top10, weight: 600, key: netflix, slug: netflix}
   Disney:
-    template: {name: Top10, weight: 500, key: disney}
+    template: {name: Top10, weight: 500, key: disney, slug: disney}
   HBO:
-    template: {name: Top10, weight: 400, key: hbo}
+    template: {name: Top10, weight: 400, key: hbo, slug: hbo}
   Hulu:
-    template: {name: Top10, weight: 300, key: hulu}
+    template: {name: Top10, weight: 300, key: hulu, slug: hulu}
   Paramount:
     template: {name: Top10, weight: 200, key: paramount, slug: paramount_plus}
   Prime:
