@@ -37,14 +37,14 @@ Multiple styles are available for Separators, to match Plex's "categories" featu
 The available styles avaiable are:
 
 | Style           | Value  |
-|:----------------|:------:|
-| Original        |  orig  |
-| Blue            |  blue  |
-| Brown           |  stb   |
-| Gray            |  gray  |
+|:----------------|:-------|
+| Original        | orig   |
+| Blue            | blue   |
+| Brown           | stb    |
+| Gray            | gray   |
 | Green           | green  |
 | Purple          | purple |
-| Red             |  red   |
+| Red             | red    |
 
 This image shows an example separator in each of the above styles
 
