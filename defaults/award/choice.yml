@@ -55,7 +55,7 @@ dynamic_collections:
       ending: current_year
     template:
       - use_year_collections
-      - Choice
+      - trakt
       - translation
       - shared
       - arr
