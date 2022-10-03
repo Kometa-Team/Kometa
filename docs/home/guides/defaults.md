@@ -216,19 +216,6 @@ libraries:
 ```
 </details>
 
-## Separators
-
-By default, most metadata files use separators to denote different sections of collection like actor collections vs studio collections.
-
-<details>
-  <summary>Click to expand to see an example of Separators.</summary>
-
-   ![](separators.jpg)
-
-</details>
-
-* Can  be turned off by [customizing your config](#customizing-configs)
-
 ## Collection Section Order
 
 Almost every default metadata file has a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
