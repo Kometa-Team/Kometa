@@ -43,7 +43,6 @@ dynamic_collections:
   Genre:
     type: genre
     template:
-      - genre_dynamic
       - translation
       - shared
     template_variables:
