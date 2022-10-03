@@ -38,7 +38,7 @@ dynamic_collections:
       paramount: Paramount Plus
       prime: Prime Video
     template:
-      - Top10
+      - flixpatrol
       - translation
       - shared
       - arr
