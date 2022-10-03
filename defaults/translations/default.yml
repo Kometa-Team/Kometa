@@ -150,7 +150,7 @@ translations:
   tmdb_airing_summary: A collection of shows with episodes airing today.
 
   tmdb_air_name: TMDb On The Air
-  tmdb_air_summary: A collection of shows that are still activaly airing episodes.
+  tmdb_air_summary: A collection of shows that are still actively airing episodes.
 
   tmdb_popular_name: TMDb Popular
   tmdb_popular_summary: A collection of the most watched <<library_type>>s according to TMDb.
@@ -162,19 +162,19 @@ translations:
   tmdb_trending_summary: A collection of <<library_type>>s trending on TMDb.
 
   trakt_collected_name: Trakt Collected
-  trakt_collected_summary: A collection of Trakt's Weekly Trakt Collected List
+  trakt_collected_summary: A collection of Trakt's Weekly Trakt Collected List.
 
   trakt_popular_name: Trakt Popular
-  trakt_popular_summary: A collection of Trakt's Weekly Trakt Popular List
+  trakt_popular_summary: A collection of Trakt's Weekly Trakt Popular List.
 
   trakt_recommended_name: Trakt Recommended
-  trakt_recommended_summary: A collection of Trakt's Weekly Trakt Recommended List
+  trakt_recommended_summary: A collection of Trakt's Weekly Trakt Recommended List.
 
   trakt_trending_name: Trakt Trending
-  trakt_trending_summary: A collection of Trakt's Weekly Trakt Trending List
+  trakt_trending_summary: A collection of Trakt's Weekly Trakt Trending List.
 
   trakt_watched_name: Trakt Watched
-  trakt_watched_summary: A collection of Trakt's Weekly Trakt Watched List
+  trakt_watched_summary: A collection of Trakt's Weekly Trakt Watched List.
 
   #############################################################
   #                           Both                            #
@@ -215,7 +215,7 @@ translations:
 
   # example key_name: Robin Williams
   director_name: <<key_name>> (Director)
-  director_summary: <<library_typeU>>s Directed by <<key_name>>.
+  director_summary: <<library_typeU>>s directed by <<key_name>>.
 
   # example key_name: Action
   genre_name: <<key_name>> <<library_typeU>>s
@@ -223,7 +223,7 @@ translations:
 
   # example key_name: Robin Williams
   producer_name: <<key_name>> (Producer)
-  producer_summary: <<library_typeU>>s Produced by <<key_name>>.
+  producer_summary: <<library_typeU>>s produced by <<key_name>>.
 
   # example key_name: 1080p
   resolution_name: <<key_name>> <<library_typeU>>s
@@ -257,7 +257,7 @@ translations:
 
   # example key_name: Robin Williams
   writer_name: <<key_name>> (Writer)
-  writer_summary: <<library_typeU>>s Written by <<key_name>>.
+  writer_summary: <<library_typeU>>s written by <<key_name>>.
 
   # example key_name: 2015
   year_name: Best of <<key_name>>
