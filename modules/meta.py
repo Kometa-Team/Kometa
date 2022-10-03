@@ -94,7 +94,7 @@ class DataFile:
         else:
             return data
 
-    def load_file(self, file_type, file_path, library_type=None, overlay=False, translation=False):
+    def load_file(self, file_type, file_path, overlay=False, translation=False):
         if translation:
             if file_path.endswith(".yml"):
                 file_path = file_path[:-4]
@@ -126,8 +126,8 @@ class DataFile:
                     defaults_path = os.path.join(defaults_path, "overlays")
                 if os.path.exists(os.path.abspath(os.path.join(defaults_path, file_path))):
                     file_path = os.path.abspath(os.path.join(defaults_path, file_path))
-                else:
-                    for default_folder in [library_type.lower(), "both", "chart", "award"]:
+                elif self.library:
+                    for default_folder in [self.library.type.lower(), "both", "chart", "award"]:
                         if os.path.exists(os.path.abspath(os.path.join(defaults_path, default_folder, file_path))):
                             file_path = os.path.abspath(os.path.join(defaults_path, default_folder, file_path))
                             break
@@ -496,7 +496,7 @@ class MetadataFile(DataFile):
         else:
             logger.info("")
             logger.separator(f"Loading Metadata {file_type}: {path}")
-            data = self.load_file(self.type, self.path, library_type=library.type)
+            data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
             self.external_templates(data)
