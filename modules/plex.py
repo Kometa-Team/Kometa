@@ -8,7 +8,7 @@ from plexapi import utils
 from plexapi.audio import Artist, Track, Album
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.collection import Collection
-from plexapi.library import Role
+from plexapi.library import Role, FilterChoice
 from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from plexapi.video import Movie, Show, Season, Episode
@@ -652,7 +652,24 @@ class Plex(Library):
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def get_tags(self, tag):
-        return self.Plex.listFilterChoices(field=tag)
+        if isinstance(tag, str):
+            match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+)', tag)
+            if not match:
+                raise BadRequest(f'Invalid filter field: {tag}')
+            _libtype, tag = match.groups()
+            libtype = _libtype or self.Plex.TYPE
+            try:
+                tag = next(f for f in self.Plex.listFilters(libtype) if f.filter == tag)
+            except StopIteration:
+                availableFilters = [f.filter for f in self.Plex.listFilters(libtype)]
+                raise NotFound(f'Unknown filter field "{tag}" for libtype "{libtype}". '
+                               f'Available filters: {availableFilters}') from None
+        items = self.Plex.findItems(self.Plex._server.query(tag.key), FilterChoice)
+        if tag.key.endswith("/collection?type=4"):
+            keys = [k.key for k in items]
+            keys.extend([k.key for k in self.Plex.findItems(self.Plex._server.query(f"{tag.key[:-1]}3"), FilterChoice)])
+            items = [i for i in self.Plex.findItems(self.Plex._server.query(tag.key[:-7]), FilterChoice) if i.key not in keys]
+        return items
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _query(self, key, post=False, put=False):

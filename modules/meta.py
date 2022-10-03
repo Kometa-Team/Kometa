@@ -156,7 +156,7 @@ class DataFile:
                         logger.error(f"Config Error: {ky} must have a default value in {yaml_path}")
             else:
                 logger.error(f"Config Error: Top Level translations attribute not found in {yaml_path}")
-            if "key_names" in yaml_content.data:
+            if "key_names" in yaml_content.data and yaml_content.data["key_names"]:
                 for kn, vn in yaml_content.data["key_names"].items():
                     if kn not in translations:
                         key_names[kn] = {}
