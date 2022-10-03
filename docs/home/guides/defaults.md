@@ -4,7 +4,7 @@ There is a default set of Metadata and Overlay Files located in the [PMM Folder]
 
 The intention of this directory is to offer easy to use and slightly customizable (using [`template_variables`](../../config/paths.md#template-variables)) Metadata and Overlay Files for a general user who wants nice collections but doesn't want to learn all of Plex Meta Manager.
 
-All posters defined in the Metadata Files are stored in the [Plex Meta Manager Images](https://github.com/meisnate12/Plex-Meta-Manager-Images) Repository and all Overlay images are in the [Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Repository at [PMM/overlays/images](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/overlays/images), which allows for changes to be made in one central location that will deploy to all users of this setup when they next run PMM.
+All posters defined in the Metadata Files are stored in the [Plex Meta Manager Images](https://github.com/meisnate12/Plex-Meta-Manager-Images) Repository and all Overlay images are in the [Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Repository at [pmm: images](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/overlays/images), which allows for changes to be made in one central location that will deploy to all users of this setup when they next run PMM.
 
 
 ## Configurations
@@ -19,7 +19,7 @@ libraries:
     - pmm: genre
     overlay_path:
     - remove_overlays: false
-    - pmm: imdb_top_250
+    - pmm: ribbon
     - pmm: ratings
 ```
 
@@ -48,39 +48,29 @@ libraries:
       template_variables:
         rating1: user                                                    # 5 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 5 as this is user and mass_user_rating_update: mdb_tomatoes
-        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 5 local font accessible to PMM
+        rating1_font: config/metadata/pmm: fonts/Adlib.ttf           # 5 local font accessible to PMM
         rating1_font_size: 63                                            # 5 adjusted font size to fit rating
 
         rating2: critic                                                  # 6 as this is critic and mass_critic_rating_update: imdb
         rating2_image: imdb                                              # 6 as this is critic and mass_critic_rating_update: imdb
-        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 6 local font accessible to PMM
+        rating2_font: config/metadata/pmm: fonts/Impact.ttf          # 6 local font accessible to PMM
         rating2_font_size: 70                                            # 6 adjusted font size to fit rating
 
         rating3: audience                                                # 7 as this is audience and mass_audience_rating_update: tmdb
         rating3_image: tmdb                                              # 7 as this is audience and mass_audience_rating_update: tmdb
-        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 7 local font accessible to PMM
+        rating3_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 7 local font accessible to PMM
         rating3_font_size: 70                                            # 7 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
-    - pmm: streaming                                        # 8
-    - pmm: video_format                                     # 9
-    - pmm: audio_language                                   # 10
-    - pmm: oscars                                           # 11
+    - pmm: streaming                                                     # 8
+    - pmm: video_format                                                  # 9
+    - pmm: audio_language                                                # 10
+    - pmm: oscars                                                        # 11
       template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
         weight: 40                                                       # Weight of 40 applies if more than 1 sash is applied in bottom right
-    - pmm: imdb_top_250                                     # 12
+    - pmm: ribbon                                                        # 12, #13
       template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
         weight: 30                                                       # Weight of 30 applies if more than 1 sash is applied in bottom right
-    - pmm: rt_cert_fresh                                    # 13
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 20                                                       # Weight of 20 applies if more than 1 sash is applied in bottom right
-    - pmm: mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
-    - pmm: commonsense_selection                                     # NOT SHOWN, however would apply the "Commonsense Selected Families" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 5                                                        # Weight of 5 applies if more than 1 sash is applied in bottom right
-
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 5 This operation will update the user rating in plex with Rotten Tomatoes ratings information
       mass_critic_rating_update: imdb                                    # 6 This operation will update the critic rating in plex with IMDb ratings information
@@ -107,35 +97,23 @@ libraries:
       template_variables:           
         rating1: user                                                    # 4 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 4 as this is user and mass_user_rating_update: mdb_tomatoes
-        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 4 local font accessible to PMM
+        rating1_font: config/metadata/pmm: fonts/Adlib.ttf           # 4 local font accessible to PMM
         rating1_font_size: 63                                            # 4 adjusted font size to fit rating
 
         rating2: critic                                                  # 5 as this is critic and mass_critic_rating_update: imdb
         rating2_image: imdb                                              # 5 as this is critic and mass_critic_rating_update: imdb
-        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 5 local font accessible to PMM
+        rating2_font: config/metadata/pmm: fonts/Impact.ttf          # 5 local font accessible to PMM
         rating2_font_size: 70                                            # 5 adjusted font size to fit rating
 
         rating3: audience                                                # 6 as this is audience and mass_audience_rating_update: tmdb
         rating3_image: tmdb                                              # 6 as this is audience and mass_audience_rating_update: tmdb
-        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 6 local font accessible to PMM
+        rating3_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 6 local font accessible to PMM
         rating3_font_size: 70                                            # 6 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
-    - pmm: streaming                                        # 7
-    - pmm: video_format                                     # 8
-    - pmm: imdb_top_250                                     # 9
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 30                                                       # Weight of 30 applies if more than 1 sash is applied in bottom right
-    - pmm: rt_cert_fresh                                    # 10
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 20                                                       # Weight of 20 applies if more than 1 sash is applied in bottom right
-    - pmm: mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
-    - pmm: commonsense_selection                                     # NOT SHOWN, however would apply the "Commonsense Selected Families" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 5                                                        # Weight of 5 applies if more than 1 sash is applied in bottom right
-
+    - pmm: streaming                                                     # 7
+    - pmm: video_format                                                  # 8
+    - pmm: ribbon                                                        # 9, #10
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 4 This operation will update the user rating in plex with Rotten Tomatoes ratings information
       mass_critic_rating_update: imdb                                    # 5 This operation will update the critic rating in plex with IMDb ratings information
@@ -190,12 +168,12 @@ libraries:
 
         rating1: critic                                                  # 3 as this is critic and mass_critic_rating_update: imdb
         rating1_image: imdb                                              # 3 as this is critic and mass_critic_rating_update: imdb
-        rating1_font: config/metadata/overlays/fonts/Impact.ttf          # 3 local font accessible to PMM
+        rating1_font: config/metadata/pmm: fonts/Impact.ttf          # 3 local font accessible to PMM
         rating1_font_size: 70                                            # 3 adjusted font size to fit rating
 
         rating2: audience                                                # 4 as this is audience and mass_audience_rating_update: tmdb
         rating2_image: tmdb                                              # 4 as this is audience and mass_audience_rating_update: tmdb
-        rating2_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 4 local font accessible to PMM
+        rating2_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 4 local font accessible to PMM
         rating2_font_size: 70                                            # 4 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
@@ -225,48 +203,48 @@ For example: `collection_section:01` translates to `sort_title: "!<<collection_s
 This is the default PMM collection ordering:
 
 
-| Collection	                       | Order                  |
-|:-------------------------------------|------------------------|
-| `PMM/movie/seasonal.yml`             | collection_section: 00 |
-| `PMM/chart/anilist.yml`              | collection_section: 01 |
-| `PMM/chart/basic.yml`                | collection_section: 01 |
-| `PMM/chart/imdb.yml`                 | collection_section: 01 |
-| `PMM/chart/myanimelist.yml`          | collection_section: 01 |
-| `PMM/chart/other.yml`                | collection_section: 01 |
-| `PMM/chart/tautulli.yml`             | collection_section: 01 |
-| `PMM/chart/tmdb.yml`                 | collection_section: 01 |
-| `PMM/chart/trakt.yml`                | collection_section: 01 |
-| `PMM/movie/universe.yml`             | collection_section: 02 |
-| `PMM/streaming.yml`                  | collection_section: 03 |
-| `PMM/show/network.yml`               | collection_section: 04 |
-| `PMM/genre.yml`                      | collection_section: 06 |
-| `PMM/studio.yml`                     | collection_section: 07 |
-| `PMM/movie/country.yml`              | collection_section: 09 |
-| `PMM/show/country.yml`               | collection_section: 09 |
-| `PMM/audio_language.yml`             | collection_section: 10 |
-| `PMM/subtitle_language.yml`          | collection_section: 11 |
-| `PMM/movie/decade.yml`               | collection_section: 12 |
-| `PMM/show/decade.yml`                | collection_section: 12 |
-| `PMM/year.yml`                       | collection_section: 13 |
-| `PMM/content_rating_uk.yml`          | collection_section: 14 |
-| `PMM/movie/content_rating_us.yml`    | collection_section: 14 |
-| `PMM/show/content_rating_us.yml`     | collection_section: 14 |
-| `PMM/resolution.yml`                 | collection_section: 15 |
-| `PMM/resolution_standards.yml`       | collection_section: 15 |
-| `PMM/award/bafta.yml`                | collection_section: 16 |
-| `PMM/award/cannes.yml`               | collection_section: 16 |
-| `PMM/award/choice.yml`               | collection_section: 16 |
-| `PMM/award/emmy.yml`                 | collection_section: 16 |
-| `PMM/award/golden.yml`               | collection_section: 16 |
-| `PMM/award/oscars.yml`               | collection_section: 16 |
-| `PMM/award/other.yml`                | collection_section: 16 |
-| `PMM/award/separator.yml`            | collection_section: 16 |
-| `PMM/award/spirit.yml`               | collection_section: 16 |
-| `PMM/award/sundance.yml`             | collection_section: 16 |
-| `PMM/actor.yml`                      | collection_section: 17 |
-| `PMM/movie/director.yml`             | collection_section: 18 |
-| `PMM/movie/producer.yml`             | collection_section: 19 |
-| `PMM/movie/writer.yml`               | collection_section: 20 |
+| Collection	                      | Order                  |
+|:---------------------------------|------------------------|
+| `pmm: seasonal.yml`              | collection_section: 00 |
+| `pmm: anilist.yml`               | collection_section: 01 |
+| `pmm: basic.yml`                 | collection_section: 01 |
+| `pmm: imdb.yml`                  | collection_section: 01 |
+| `pmm: myanimelist.yml`           | collection_section: 01 |
+| `pmm: other.yml`                 | collection_section: 01 |
+| `pmm: tautulli.yml`              | collection_section: 01 |
+| `pmm: tmdb.yml`                  | collection_section: 01 |
+| `pmm: trakt.yml`                 | collection_section: 01 |
+| `pmm: universe.yml`               | collection_section: 02 |
+| `pmm: streaming.yml`              | collection_section: 03 |
+| `pmm: show/network.yml`           | collection_section: 04 |
+| `pmm: genre.yml`                  | collection_section: 06 |
+| `pmm: studio.yml`                 | collection_section: 07 |
+| `pmm: country.yml`                | collection_section: 09 |
+| `pmm: show/country.yml`           | collection_section: 09 |
+| `pmm: audio_language.yml`         | collection_section: 10 |
+| `pmm: subtitle_language.yml`      | collection_section: 11 |
+| `pmm: decade.yml`                 | collection_section: 12 |
+| `pmm: show/decade.yml`            | collection_section: 12 |
+| `pmm: year.yml`                   | collection_section: 13 |
+| `pmm: content_rating_uk.yml`      | collection_section: 14 |
+| `pmm: content_rating_us.yml`      | collection_section: 14 |
+| `pmm: show/content_rating_us.yml` | collection_section: 14 |
+| `pmm: resolution.yml`             | collection_section: 15 |
+| `pmm: resolution_standards.yml`   | collection_section: 15 |
+| `pmm: bafta.yml`                  | collection_section: 16 |
+| `pmm: cannes.yml`                 | collection_section: 16 |
+| `pmm: choice.yml`                 | collection_section: 16 |
+| `pmm: emmy.yml`                   | collection_section: 16 |
+| `pmm: golden.yml`                 | collection_section: 16 |
+| `pmm: oscars.yml`                 | collection_section: 16 |
+| `pmm: other.yml`                  | collection_section: 16 |
+| `pmm: separator.yml`              | collection_section: 16 |
+| `pmm: spirit.yml`                 | collection_section: 16 |
+| `pmm: sundance.yml`               | collection_section: 16 |
+| `pmm: actor.yml`                  | collection_section: 17 |
+| `pmm: director.yml`               | collection_section: 18 |
+| `pmm: producer.yml`               | collection_section: 19 |
+| `pmm: writer.yml`                 | collection_section: 20 |
 
 ## Ratings Overlays
 
@@ -311,30 +289,6 @@ libraries:
         overlay_level: episode
 ```
 
-Each file has a comment block at the top showing the available `template_variables` for each file. For example the [`PMM/genre`](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/genre.yml) has this:
-
-```yaml
-#############################################################
-#                 Dynamic Genre Collections                 #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Movie or Show)           #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - pmm: genre                                     #
-#        template_variables:                                #
-#          # Turn the separator collection on/off           #
-#          use_separator: true                              #
-#          # Sets how the collection is sorted              #
-#          sort_by: release.desc                            #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: "06"                         #
-#############################################################
-```
- 
 Each of these when passed will change how the collection runs slightly. 
 * `use_separator` Turn the separator collection on/off
 * `sort_by` Sets how the collection is sorted
@@ -357,7 +311,7 @@ libraries:
           ending: current_year
 ```
 
-Or maybe you want to change the number of actor collections made using PMM/actor.
+Or maybe you want to change the number of actor collections made using pmm: actor.
 
 ```yaml
 libraries:
@@ -371,7 +325,7 @@ libraries:
           limit: 50
 ```
 
-Or maybe you want to change the collection sort order of the genre collections using PMM/genre.
+Or maybe you want to change the collection sort order of the genre collections using pmm: genre.
 
 ```yaml
 libraries:
@@ -460,10 +414,7 @@ libraries:
     - pmm: commonsense
     - pmm: direct_play
     - pmm: mediastinger
-    - pmm: imdb_top_250
-    - pmm: mc_must_see
-    - pmm: rt_cert_fresh
-    - pmm: commonsense_selection
+    - pmm: ribbon
     - pmm: ratings
       template_variables:
         rating1: critic
@@ -538,32 +489,11 @@ libraries:
     - pmm: mediastinger
       template_variables:
         overlay_level: season
-    - pmm: imdb_top_250
-    - pmm: imdb_top_250
+    - pmm: ribbon
+    - pmm: ribbon
       template_variables:
         overlay_level: episode
-    - pmm: imdb_top_250
-      template_variables:
-        overlay_level: season
-    - pmm: mc_must_see
-    - pmm: mc_must_see
-      template_variables:
-        overlay_level: episode
-    - pmm: mc_must_see
-      template_variables:
-        overlay_level: season
-    - pmm: rt_cert_fresh
-    - pmm: rt_cert_fresh
-      template_variables:
-        overlay_level: episode
-    - pmm: rt_cert_fresh
-      template_variables:
-        overlay_level: season
-    - pmm: commonsense_selection
-    - pmm: commonsense_selection
-      template_variables:
-        overlay_level: episode
-    - pmm: commonsense_selection
+    - pmm: ribbon
       template_variables:
         overlay_level: season
     - pmm: ratings

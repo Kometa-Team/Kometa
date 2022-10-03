@@ -1,6 +1,6 @@
 # Country Default Metadata File
 
-The `- pmm: movie/country` Metadata File is used to dynamically create collections based on the countries available in your library.
+The `- pmm: country` Metadata File is used to dynamically create collections based on the countries available in your library.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: movie/country
+      - pmm: country
 ```
 ## Color Style
 Below is a screenshot of the alternative `color` style which can be set via template variables
@@ -43,7 +43,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: movie/country
+      - pmm: country
         template_variables:
           sort_by: title.asc
           collection_section: 8
@@ -53,7 +53,7 @@ libraries:
           sep_style: purple
 ```
 
-Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `country` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/movie/country.yml)
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `country` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/country.yml)
 
 An example of this is; to override the exclude list to only exclude Barbados from the collection list, the following template variable can be used:
 
@@ -61,7 +61,7 @@ An example of this is; to override the exclude list to only exclude Barbados fro
 libraries:
   Movies:
     metadata_path:
-      - pmm: movie/country
+      - pmm: country
         template_variables:
           exclude:
             - Barbados

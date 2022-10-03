@@ -44,7 +44,7 @@ libraries:                                      # This is called out once within
     overlay_path:
       - remove_overlays: false                  # Set this to true to remove all overlays
       - file: config/Overlays.yml               # This is a local file on the system
-      - pmm: imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: ribbon          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   TV Shows:                           
     metadata_path:
       - file: config/TVShows.yml
@@ -54,7 +54,7 @@ libraries:                                      # This is called out once within
     overlay_path:
       - remove_overlays: false                  # Set this to true to remove all overlays
       - file: config/Overlays.yml               # This is a local file on the system
-      - pmm: imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: ribbon          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   Anime:
     metadata_path:
       - file: config/Anime.yml
@@ -212,17 +212,17 @@ Within the above example, PMM will:
 
 * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `TV Shows`, and then load any metadata/YAML files within that directory.
 
-* After that, look at the [PMM/chart folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/chart) within the GitHub Configs Repo for a file called `basic.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/chart/basic.yml).
+* After that, look at the [PMM/chart folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/chart) within the GitHub Configs Repo for a file called `basic.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/basic.yml).
 
-* Finally, look at the [PMM/chart folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/chart) within the GitHub Configs Repo for a file called `imdb.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/chart/imdb.yml).
+* Finally, look at the [PMM/chart folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/chart) within the GitHub Configs Repo for a file called `imdb.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/imdb.yml).
 
-It should be noted that whilst the user should be able to edit any metadata files which are `- file:` or `- folder:` based, they have little to no control over `- git:` metadata files **unless a copy of the YAML file is downloaded and ran locally**. In the above example, if the user downloaded the [basic.yml file](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/chart/basic.yml) from the [GitHub Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) and placed it in the root directory of PMM (`config/`), then the metadata_path mapping would be updated to reflect this as follows:
+It should be noted that whilst the user should be able to edit any metadata files which are `- file:` or `- folder:` based, they have little to no control over `- git:` metadata files **unless a copy of the YAML file is downloaded and ran locally**. In the above example, if the user downloaded the [basic.yml file](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/pmm: basic.yml) from the [GitHub Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) and placed it in the root directory of PMM (`config/`), then the metadata_path mapping would be updated to reflect this as follows:
 ```yaml
   TV Shows:
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - file: PMM/chart/basic        # <------ HERE
+      - file: pmm: basic        # <------ HERE
       - pmm: imdb
 ```
 
