@@ -236,7 +236,7 @@ translations:
   resolution_standards_other_name: Other Resolutions
   resolution_standards_other_summary: <<library_typeU>>s that have other uncommon resolutions.
 
-  # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
+  # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
   seasonal_name: <<key_name>> <<library_typeU>>s
   seasonal_summary: A collection of <<key_name>> <<library_type>>s that may relate to the season.
 
