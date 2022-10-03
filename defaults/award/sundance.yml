@@ -62,7 +62,7 @@ dynamic_collections:
     title_format: Sundance Film Festival <<key_name>>
     template:
       - use_year_collections
-      - Sundance
+      - trakt
       - translation
       - shared
       - arr
