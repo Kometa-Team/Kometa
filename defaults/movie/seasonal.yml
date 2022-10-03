@@ -128,7 +128,7 @@ dynamic_collections:
         valentine: range(02/01-02/29)
         patrick: range(03/01-03/18)
         easter: range(03/20-04/30)
-        mother: range(05/05-05-10)
+        mother: range(05/05-05/10)
         memorial: range(5/18-6/7)
         father: range(06/15-06/20)
         independence: range(06/23-07/11)
