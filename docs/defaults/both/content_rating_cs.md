@@ -1,19 +1,19 @@
-# UK Content Rating Default Metadata File
+# Common Sense Media Content Rating Default Metadata File
 
-The `- pmm: content_rating_uk` Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `- pmm: content_rating_cs` Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
 If you do not use the UK-based rating system within Plex, this file will attempt to match the standard ratings (such as PG-13) to the respective UK rating system (such as 12)
 
 Example Collections Created:
 
-![](../images/content_rating_uk.png)
+![](../images/content_rating_cs.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_cs
 ```
 
 
@@ -42,7 +42,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_cs
         template_variables:
           sort_by: title.asc
           collection_section: 21
@@ -52,7 +52,7 @@ libraries:
           sep_style: blue
 ```
 
-Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `content_rating_uk` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/content_rating_uk.yml)
+Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `content_rating_cs` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/content_rating_cs.yml)
 
 An example of this is; to map the "de/18" content rating to "18", the following template variable can be used:
 
@@ -60,7 +60,7 @@ An example of this is; to map the "de/18" content rating to "18", the following 
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_cs
         template_variables:
           addons:
             "18":

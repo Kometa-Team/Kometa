@@ -4,7 +4,7 @@ The `- pmm: streaming` Metadata File is used to dynamically create collections b
 
 Example Collections Created:
 
-![](images/streaming.png)
+![](../images/streaming.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml

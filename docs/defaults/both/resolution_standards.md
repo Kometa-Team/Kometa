@@ -8,7 +8,7 @@ To avoid duplication, this file should not be used in combination with `- pmm: r
 
 Example Collections Created:
 
-![](images/resolution_standards.png)
+![](../images/resolution_standards.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml
