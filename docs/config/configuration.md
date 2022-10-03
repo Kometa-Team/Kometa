@@ -39,33 +39,33 @@ libraries:                                      # This is called out once within
     metadata_path:
       - file: config/Movies.yml                 # This is a local file on the system
       - folder: config/Movies/                  # This is a local directory on the system
-      - git: PMM/chart/basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - git: PMM/chart/imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
     overlay_path:
       - remove_overlays: false                  # Set this to true to remove all overlays
       - file: config/Overlays.yml               # This is a local file on the system
-      - git: PMM/overlays/imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   TV Shows:                           
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - git: PMM/chart/basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - git: PMM/chart/imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
     overlay_path:
       - remove_overlays: false                  # Set this to true to remove all overlays
       - file: config/Overlays.yml               # This is a local file on the system
-      - git: PMM/overlays/imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   Anime:
     metadata_path:
       - file: config/Anime.yml
-      - git: PMM/chart/basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - git: PMM/chart/anilist                  # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: anilist                  # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   Music:
     metadata_path:
       - file: config/Music.yml
 playlist_files:
   - file: config/playlists.yml       
-  - git: PMM/playlist                           # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+  - pmm: playlist                           # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
 settings:
   cache: true
   cache_expiration: 60
@@ -196,8 +196,8 @@ As can be seen in the original config.yml example, there are three metadata_path
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - git: PMM/chart/basic
-      - git: PMM/chart/imdb
+      - pmm: basic
+      - pmm: imdb
 ```
 
 These path types are outlined as follows:
@@ -223,7 +223,7 @@ It should be noted that whilst the user should be able to edit any metadata file
       - file: config/TVShows.yml
       - folder: config/TV Shows/
       - file: PMM/chart/basic        # <------ HERE
-      - git: PMM/chart/imdb
+      - pmm: imdb
 ```
 
 ## Playlists (`playlist_files:` mappings)
@@ -232,7 +232,7 @@ Playlists can be seen as an extension of Libraries in that they are both handled
 ```yaml
 playlist_files:
   - file: config/playlists.yml
-  - git: PMM/playlists
+  - pmm: playlists
 ```  
 
 As with `libraries:`, YAML files are defined to create the Playlists. It should be noted that whilst in `libraries:` when working with `playlist_files:` you call out the libraries being connected to within the Metadata/YAML file as Playlists can combine media from multiple libraries. You can view an example playlists.yml file as follows:

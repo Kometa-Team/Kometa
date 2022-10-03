@@ -26,11 +26,11 @@ You can define [Template Variables](../metadata/templates.md#template-variables)
 libraries:
   TV Shows:
     metadata_path:
-      - git: PMM/genre
+      - pmm: genre
         template_variables:
           schedule_separator: never
           collection_mode: hide
-      - git: PMM/actor                  # Notice how the `-` starts this "section"
+      - pmm: actor                  # Notice how the `-` starts this "section"
         template_variables:
           schedule_separator: never
           collection_mode: hide
@@ -54,10 +54,10 @@ libraries:
     metadata_path:
       - file: config/Movies.yml
         schedule: weekly(friday)
-      - git: PMM/actors
+      - pmm: actors
         schedule: weekly(saturday)
     overlay_path:
-      - git: PMM/overlays/imdb
+      - pmm: imdb
         schedule: weekly(monday)
 playlist_files:
   - file: config/Playlists.yml
@@ -74,10 +74,10 @@ libraries:
     metadata_path:
       - file: config/Movies.yml
         asset_directory: assets/Movies
-      - git: PMM/actors
+      - pmm: actors
         asset_directory: assets/people
     overlay_path:
-      - git: PMM/overlays/imdb
+      - pmm: imdb
 playlist_files:
   - file: config/Playlists.yml
     asset_directory:
@@ -103,7 +103,7 @@ libraries:
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - git: PMM/chart/tmdb
+      - pmm: tmdb
       - repo: charts
       - url: https://somewhere.com/PopularTV.yml
 ```
@@ -136,7 +136,7 @@ libraries:
     overlay_path:
       - file: config/overlays.yml
       - folder: config/overlay configs/
-      - git: PMM/overlays/imdb
+      - pmm: imdb
       - repo: overlays
       - url: https://somewhere.com/Overlays.yml
 ```
@@ -167,7 +167,7 @@ In this example, multiple `playlist_files` attribute path types are defined:
 playlist_files:
   - file: config/playlists.yml
   - folder: config/Playlists/
-  - git: PMM/playlist
+  - pmm: playlist
   - repo: playlists
   - url: https://somewhere.com/Playlists.yml
 ```
@@ -199,7 +199,7 @@ external_templates:
   - file: config/templates.yml
   - folder: config/templates/
   - url: https://somewhere.com/templates.yml
-  - git: PMM/templates
+  - pmm: templates
   - repo: templates
 ```
 
