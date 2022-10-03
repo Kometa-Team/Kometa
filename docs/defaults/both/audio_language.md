@@ -4,7 +4,7 @@ The `- pmm: audio_language` Metadata File is used to dynamically create collecti
 
 Example Collections Created:
 
-![](images/audio_language.png)
+![](../images/audio_language.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml

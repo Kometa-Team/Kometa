@@ -4,7 +4,7 @@ The `- pmm: year` Metadata File is used to dynamically create collections based 
 
 Example Collections Created:
 
-![](images/year.png)
+![](../images/year.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml
