@@ -1,6 +1,6 @@
 # Universe Default Metadata File
 
-The `- pmm: movie/universe` Metadata File is used to  create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World)
+The `- pmm: universe` Metadata File is used to  create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World)
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 
@@ -13,7 +13,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: movie/universe
+      - pmm: universe
 ```
 
 
@@ -41,7 +41,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: movie/universe
+      - pmm: universe
         template_variables:
           collection_order: release
           radarr_add_missing: true

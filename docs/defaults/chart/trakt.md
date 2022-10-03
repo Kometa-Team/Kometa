@@ -1,6 +1,6 @@
 # Trakt Chart Default Metadata File
 
-The `- pmm: chart/trakt` Metadata File is used to create collections based on Trakt Charts.
+The `- pmm: pmm: trakt` Metadata File is used to create collections based on Trakt Charts.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: chart/trakt
+      - pmm: pmm: trakt
 ```
 
 

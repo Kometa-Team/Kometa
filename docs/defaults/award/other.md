@@ -1,6 +1,6 @@
 # Other Awards Default Metadata File
 
-The `- pmm: award/other` Metadata File is used to  create collections based on numerous other awards.
+The `- pmm: other` Metadata File is used to  create collections based on numerous other awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 
@@ -13,7 +13,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/other
+      - pmm: other
 ```
 
 
@@ -41,7 +41,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/other
+      - pmm: other
         template_variables:
           collection_section: 9
           collection_mode: show_items

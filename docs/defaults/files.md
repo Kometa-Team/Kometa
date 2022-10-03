@@ -36,28 +36,28 @@ These collections are applied by calling the below paths into the `metadata_path
 
 | Award Show     | config.yml entry | Example Collections Created      | Works with Movies | Works with Shows |
 |:---------------|:-----------------|----------------------------------|:-----------------:|:----------------:|
-| BAFTA          | `award/bafta`    | BAFTA Best Films, BAFTA 2021     |      &#9989;      |     &#10060;     |
-| Cannes         | `award/cannes`   | Cannes - Palme d'or, Cannes 2018 |      &#9989;      |     &#10060;     |
-| Critics Choice | `award/choice`   | Critics Choice Awards 2020       |      &#9989;      |     &#9989;      |
-| Emmys          | `award/emmy`     | Emmys 2021                       |      &#9989;      |     &#9989;      |
-| Golden Globes  | `award/golden`   | Best Motion Pictures             |      &#9989;      |     &#9989;      |
-| Oscars         | `award/oscars`   | Best Picture Winners             |      &#9989;      |     &#9989;      |
-| Spirit         | `award/spirit`   | Independent Spirit Awards 2021   |      &#9989;      |     &#10060;     |
-| Sundance       | `award/sundance` | Sundance Grand Jury Winners      |      &#9989;      |     &#9989;      |
+| BAFTA          | `bafta`    | BAFTA Best Films, BAFTA 2021     |      &#9989;      |     &#10060;     |
+| Cannes         | `cannes`   | Cannes - Palme d'or, Cannes 2018 |      &#9989;      |     &#10060;     |
+| Critics Choice | `choice`   | Critics Choice Awards 2020       |      &#9989;      |     &#9989;      |
+| Emmys          | `emmy`     | Emmys 2021                       |      &#9989;      |     &#9989;      |
+| Golden Globes  | `golden`   | Best Motion Pictures             |      &#9989;      |     &#9989;      |
+| Oscars         | `oscars`   | Best Picture Winners             |      &#9989;      |     &#9989;      |
+| Spirit         | `spirit`   | Independent Spirit Awards 2021   |      &#9989;      |     &#10060;     |
+| Sundance       | `sundance` | Sundance Grand Jury Winners      |      &#9989;      |     &#9989;      |
 
 
 ### Chart Collections
 
 | Source      | config.yml entry    | Example Collections Created                 | Works with Movies | Works with Shows |
 |:------------|:--------------------|---------------------------------------------|:-----------------:|:----------------:|
-| AniList     | `chart/anilist`     | AniList Popular, AniList Season             |      &#9989;      |     &#9989;      |
-| Basic       | `chart/basic`       | Newly Released, New Episodes                |      &#9989;      |     &#9989;      |
-| IMDb        | `chart/imdb`        | IMDb Popular, IMDb Top 250                  |      &#9989;      |     &#9989;      |
-| MyAnimeList | `chart/myanimelist` | MyAnimeList Popular, MyAnimeList Top Rated  |      &#9989;      |     &#9989;      |
-| Other       | `chart/other`       | AniDB Popular, Common Sense Selection       |      &#9989;      |     &#9989;      |
-| Tautulli    | `chart/tautulli`    | Plex Popular, Plex Watched                  |      &#9989;      |     &#9989;      |
-| TMDb        | `chart/tmdb`        | TMDb Popular, TMDb Airing Today             |      &#9989;      |     &#9989;      |
-| Trakt       | `chart/trakt`       | Trakt Popular, Trakt Trending               |      &#9989;      |     &#9989;      |
+| AniList     | `pmm: anilist`     | AniList Popular, AniList Season             |      &#9989;      |     &#9989;      |
+| Basic       | `pmm: basic`       | Newly Released, New Episodes                |      &#9989;      |     &#9989;      |
+| IMDb        | `pmm: imdb`        | IMDb Popular, IMDb Top 250                  |      &#9989;      |     &#9989;      |
+| MyAnimeList | `pmm: myanimelist` | MyAnimeList Popular, MyAnimeList Top Rated  |      &#9989;      |     &#9989;      |
+| Other       | `pmm: other`       | AniDB Popular, Common Sense Selection       |      &#9989;      |     &#9989;      |
+| Tautulli    | `pmm: tautulli`    | Plex Popular, Plex Watched                  |      &#9989;      |     &#9989;      |
+| TMDb        | `pmm: tmdb`        | TMDb Popular, TMDb Airing Today             |      &#9989;      |     &#9989;      |
+| Trakt       | `pmm: trakt`       | Trakt Popular, Trakt Trending               |      &#9989;      |     &#9989;      |
 
 
 ## Overlays
@@ -73,21 +73,21 @@ These overlays are applied by calling the below paths into the `overlay_path:` s
 
 | Theme                  | path                       | Example Overlays                               |  Movies  |   Shows   |  Seasons  | Episodes |
 |:-----------------------|:---------------------------|------------------------------------------------|:--------:|:---------:|:---------:|:--------:|
-| Audio Codec            | `overlays/audio_codec`     | Dolby Atmos logo, DTS logo                     | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
-| Audio Language         | `overlays/audio_language`  | French Audio, Korean Audio                     | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
-| CommonSense Age Rating | `overlays/commonsense`     | "3+", "16+"                                    | &#9989;  |  &#9989;  | &#10071;  | &#10071; |
-| Direct Play            | `overlays/direct_play`     | "Direct Play Only"                             | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
-| Editions               | `overlays/editions`        | Director's Cut logo, IMAX logo                 | &#9989;  | &#10060;  | &#10060;  | &#10060; |
-| Episode Info           | `overlays/episode_info`    | "S01E01", "S02E09"                             | &#10060; | &#10060;  | &#10060;  | &#9989;  |
-| Mediastinger           | `overlays/mediastinger`    | Mediastinger logo                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| Ratings                | `overlays/ratings`         | IMDb Audience Rating, Metacritic Critic Rating | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
-| Resolution             | `overlays/resolution`      | 4K Dolby Vision logo, 720P logo                | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
-| Ribbon                 | `overlays/ribbon`          | IMDb Top 250 Ribbon, RT Fresh Ribbon           | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| Runtimes               | `overlays/runtimes`        | "Runtime: 1h 30m"                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| Special Releases       | `overlays/special_release` | "Director's Cut", "Criterion Collection"       | &#9989;  |  &#9989;  | &#10071;  | &#10071; |
-| Streaming              | `overlays/streaming`       | Netflix logo, Hulu logo                        | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| Versions               | `overlays/versions`        | Multiple Versions logo                         | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
-| Video Format           | `overlays/video_format`    | "REMUX", "HDTV"                                | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
+| Audio Codec            | `pmm: audio_codec`     | Dolby Atmos logo, DTS logo                     | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
+| Audio Language         | `pmm: audio_language`  | French Audio, Korean Audio                     | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
+| CommonSense Age Rating | `pmm: commonsense`     | "3+", "16+"                                    | &#9989;  |  &#9989;  | &#10071;  | &#10071; |
+| Direct Play            | `pmm: direct_play`     | "Direct Play Only"                             | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
+| Editions               | `pmm: editions`        | Director's Cut logo, IMAX logo                 | &#9989;  | &#10060;  | &#10060;  | &#10060; |
+| Episode Info           | `pmm: episode_info`    | "S01E01", "S02E09"                             | &#10060; | &#10060;  | &#10060;  | &#9989;  |
+| Mediastinger           | `pmm: mediastinger`    | Mediastinger logo                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| Ratings                | `pmm: ratings`         | IMDb Audience Rating, Metacritic Critic Rating | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
+| Resolution             | `pmm: resolution`      | 4K Dolby Vision logo, 720P logo                | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
+| Ribbon                 | `pmm: ribbon`          | IMDb Top 250 Ribbon, RT Fresh Ribbon           | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| Runtimes               | `pmm: runtimes`        | "Runtime: 1h 30m"                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| Special Releases       | `pmm: special_release` | "Director's Cut", "Criterion Collection"       | &#9989;  |  &#9989;  | &#10071;  | &#10071; |
+| Streaming              | `pmm: streaming`       | Netflix logo, Hulu logo                        | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| Versions               | `pmm: versions`        | Multiple Versions logo                         | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
+| Video Format           | `pmm: video_format`    | "REMUX", "HDTV"                                | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
 
 
 ## Playlists

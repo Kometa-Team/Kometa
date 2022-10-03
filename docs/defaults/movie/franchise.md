@@ -1,6 +1,6 @@
 # Franchise Default Metadata File
 
-The `- pmm: movie/franchise` Metadata File is used to  create collections based on popular Movie franchises, and can be used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
+The `- pmm: franchise` Metadata File is used to  create collections based on popular Movie franchises, and can be used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
 
 Unlike most Default Metadata Files, Franchise works by placing collections inline with the main library items if your library allows it. For example, the "Iron Man" franchise collection will appear next to the "Iron Man" movies within your library.
 
@@ -13,7 +13,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: movie/franchise
+      - pmm: franchise
 ```
 
 
@@ -42,7 +42,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: movie/franchise
+      - pmm: franchise
         template_variables:
           collection_order: alpha
           sort_title: "!10_<<collection_name>>"

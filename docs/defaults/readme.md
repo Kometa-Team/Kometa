@@ -27,7 +27,7 @@ libraries:
     - pmm: genre
     overlay_path:
     - remove_overlays: false
-    - pmm: imdb_top_250
+    - pmm: ribbon
     - pmm: ratings
 ```
 
@@ -56,17 +56,17 @@ libraries:
       template_variables:
         rating1: user                                                    # 5 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 5 as this is user and mass_user_rating_update: mdb_tomatoes
-        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 5 local font accessible to PMM
+        rating1_font: config/metadata/pmm: fonts/Adlib.ttf           # 5 local font accessible to PMM
         rating1_font_size: 63                                            # 5 adjusted font size to fit rating
 
         rating2: critic                                                  # 6 as this is critic and mass_critic_rating_update: imdb
         rating2_image: imdb                                              # 6 as this is critic and mass_critic_rating_update: imdb
-        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 6 local font accessible to PMM
+        rating2_font: config/metadata/pmm: fonts/Impact.ttf          # 6 local font accessible to PMM
         rating2_font_size: 70                                            # 6 adjusted font size to fit rating
 
         rating3: audience                                                # 7 as this is audience and mass_audience_rating_update: tmdb
         rating3_image: tmdb                                              # 7 as this is audience and mass_audience_rating_update: tmdb
-        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 7 local font accessible to PMM
+        rating3_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 7 local font accessible to PMM
         rating3_font_size: 70                                            # 7 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
@@ -76,19 +76,7 @@ libraries:
     - pmm: oscars                                           # 11
       template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
         weight: 40                                                       # Weight of 40 applies if more than 1 sash is applied in bottom right
-    - pmm: imdb_top_250                                     # 12
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 30                                                       # Weight of 30 applies if more than 1 sash is applied in bottom right
-    - pmm: rt_cert_fresh                                    # 13
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 20                                                       # Weight of 20 applies if more than 1 sash is applied in bottom right
-    - pmm: mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
-    - pmm: commonsense_selection                                     # NOT SHOWN, however would apply the "Commonsense Selected Families" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 5                                                        # Weight of 5 applies if more than 1 sash is applied in bottom right
-
+    - pmm: ribbon                                          # 12 & #13
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 5 This operation will update the user rating in plex with Rotten Tomatoes ratings information
       mass_critic_rating_update: imdb                                    # 6 This operation will update the critic rating in plex with IMDb ratings information
@@ -115,35 +103,23 @@ libraries:
       template_variables:           
         rating1: user                                                    # 4 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 4 as this is user and mass_user_rating_update: mdb_tomatoes
-        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 4 local font accessible to PMM
+        rating1_font: config/metadata/pmm: fonts/Adlib.ttf           # 4 local font accessible to PMM
         rating1_font_size: 63                                            # 4 adjusted font size to fit rating
 
         rating2: critic                                                  # 5 as this is critic and mass_critic_rating_update: imdb
         rating2_image: imdb                                              # 5 as this is critic and mass_critic_rating_update: imdb
-        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 5 local font accessible to PMM
+        rating2_font: config/metadata/pmm: fonts/Impact.ttf          # 5 local font accessible to PMM
         rating2_font_size: 70                                            # 5 adjusted font size to fit rating
 
         rating3: audience                                                # 6 as this is audience and mass_audience_rating_update: tmdb
         rating3_image: tmdb                                              # 6 as this is audience and mass_audience_rating_update: tmdb
-        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 6 local font accessible to PMM
+        rating3_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 6 local font accessible to PMM
         rating3_font_size: 70                                            # 6 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
     - pmm: streaming                                        # 7
     - pmm: video_format                                     # 8
-    - pmm: imdb_top_250                                     # 9
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 30                                                       # Weight of 30 applies if more than 1 sash is applied in bottom right
-    - pmm: rt_cert_fresh                                    # 10
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 20                                                       # Weight of 20 applies if more than 1 sash is applied in bottom right
-    - pmm: mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
-    - pmm: commonsense_selection                                     # NOT SHOWN, however would apply the "Commonsense Selected Families" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 5                                                        # Weight of 5 applies if more than 1 sash is applied in bottom right
-
+    - pmm: ribbon                                           # 9, #10
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 4 This operation will update the user rating in plex with Rotten Tomatoes ratings information
       mass_critic_rating_update: imdb                                    # 5 This operation will update the critic rating in plex with IMDb ratings information
@@ -198,12 +174,12 @@ libraries:
 
         rating1: critic                                                  # 3 as this is critic and mass_critic_rating_update: imdb
         rating1_image: imdb                                              # 3 as this is critic and mass_critic_rating_update: imdb
-        rating1_font: config/metadata/overlays/fonts/Impact.ttf          # 3 local font accessible to PMM
+        rating1_font: config/metadata/pmm: fonts/Impact.ttf          # 3 local font accessible to PMM
         rating1_font_size: 70                                            # 3 adjusted font size to fit rating
 
         rating2: audience                                                # 4 as this is audience and mass_audience_rating_update: tmdb
         rating2_image: tmdb                                              # 4 as this is audience and mass_audience_rating_update: tmdb
-        rating2_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 4 local font accessible to PMM
+        rating2_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 4 local font accessible to PMM
         rating2_font_size: 70                                            # 4 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
@@ -284,7 +260,7 @@ This is the default PMM collection ordering:
 | `separator.yml`                   | collection_section: 16 |
 | `spirit.yml`                      | collection_section: 16 |
 | `sundance.yml`                    | collection_section: 16 |
-| `PMM/actor.yml`                   | collection_section: 17 |
+| `pmm: actor.yml`                   | collection_section: 17 |
 | `director.yml`                    | collection_section: 18 |
 | `producer.yml`                    | collection_section: 19 |
 | `writer.yml`                      | collection_section: 20 |
@@ -332,7 +308,7 @@ libraries:
         overlay_level: episode
 ```
 
-Each file has a comment block at the top showing the available `template_variables` for each file. For example the [`PMM/genre`](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/genre.yml) has this:
+Each file has a comment block at the top showing the available `template_variables` for each file. For example the [`pmm: genre`](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/genre.yml) has this:
 
 ```yaml
 #############################################################
@@ -378,7 +354,7 @@ libraries:
           ending: current_year
 ```
 
-Or maybe you want to change the number of actor collections made using PMM/actor.
+Or maybe you want to change the number of actor collections made using pmm: actor.
 
 ```yaml
 libraries:
@@ -392,7 +368,7 @@ libraries:
           limit: 50
 ```
 
-Or maybe you want to change the collection sort order of the genre collections using PMM/genre.
+Or maybe you want to change the collection sort order of the genre collections using pmm: genre.
 
 ```yaml
 libraries:
@@ -459,21 +435,21 @@ libraries:
     - pmm: trakt
     - pmm: actor
     - pmm: audio_language
-    - pmm: movie/content_rating_us           # Choose content_rating_uk or content_rating_us
+    - pmm: content_rating_us           # Choose content_rating_uk or content_rating_us
     - pmm: genre
     - pmm: resolution_standards              # Choose resolution_standards or resolution
     - pmm: streaming
     - pmm: studio
     - pmm: subtitle_language
     - pmm: year
-    - pmm: movie/country
-    - pmm: movie/decade
-    - pmm: movie/director
-    - pmm: movie/franchise
-    - pmm: movie/universe
-    - pmm: movie/producer
-    - pmm: movie/seasonal
-    - pmm: movie/writer
+    - pmm: country
+    - pmm: decade
+    - pmm: director
+    - pmm: franchise
+    - pmm: universe
+    - pmm: producer
+    - pmm: seasonal
+    - pmm: writer
     overlay_path:
     - remove_overlays: false
     - pmm: audio_codec
