@@ -240,6 +240,7 @@ html_theme_options = {
                 ("Year Collections", "defaults/both/year"),
             ]),
             ("Playlists", "defaults/playlists"),
+            ("Separators", "defaults/separators"),
             ("_menu", "Overlays", [
                 ("Default Overlays", "defaults/overlays/readme"),
                 ("Audio Codec Overlay", "defaults/overlays/audio_codec"),
