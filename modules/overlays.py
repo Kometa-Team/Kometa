@@ -392,12 +392,7 @@ class Overlays:
                         raise Failed(f"Overlay Error: Overlay {builder.overlay.mapping_name} already exists")
                     properties[builder.overlay.mapping_name] = builder.overlay
 
-                    if builder.filters or builder.tmdb_filters:
-                        logger.info("")
-                        for filter_key, filter_value in builder.filters:
-                            logger.info(f"Collection Filter {filter_key}: {filter_value}")
-                        for filter_key, filter_value in builder.tmdb_filters:
-                            logger.info(f"Collection Filter {filter_key}: {filter_value}")
+                    builder.display_filters()
 
                     for method, value in builder.builders:
                         logger.debug("")

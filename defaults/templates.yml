@@ -97,8 +97,7 @@ templates:
     sync_mode: sync
     plex_all: true
     filters:
-      <<filter_term>>: <<filter_value>>
-      <<filter_term2>>: <<filter_value2>>
+      <<filter_term>>: <<value>>
 
   mdb_smart:
     default:
