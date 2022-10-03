@@ -44,7 +44,7 @@ templates:
     overlay_level: <<overlay_level>>
     overlay:
       name: <<overlay_name>>
-      git: PMM/overlays/images/raw/<<overlay>>
+      pmm: Mediastinger
       horizontal_offset: <<horizontal_offset>>
       horizontal_align: <<horizontal_align>>
       vertical_offset: <<vertical_offset>>
