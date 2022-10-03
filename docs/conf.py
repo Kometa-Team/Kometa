@@ -239,7 +239,7 @@ html_theme_options = {
                 ("Subtitle Language Collections", "defaults/both/subtitle_language"),
                 ("Year Collections", "defaults/both/year"),
             ]),
-            ("Playlists", "defaults/playlists"),
+            ("Playlists", "defaults/files.html#playlists"),
             ("Separators", "defaults/separators"),
             ("_menu", "Overlays", [
                 ("Default Overlays", "defaults/overlays/readme"),
