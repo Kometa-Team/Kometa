@@ -4,7 +4,7 @@ The `- pmm: subtitle_language` Metadata File is used to dynamically create colle
 
 Example Collections Created:
 
-![](images/subtitle_language.png)
+![](../images/subtitle_language.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml

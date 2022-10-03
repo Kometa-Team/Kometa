@@ -590,12 +590,7 @@ def run_collection(config, library, metadata, requested_collections):
                 if not builder.added_items and builder.ignore_blank_results:
                     raise NonExisting(f"Overlay Warning: No items found")
 
-                if builder.filters or builder.tmdb_filters:
-                    logger.info("")
-                    for filter_key, filter_value in builder.filters:
-                        logger.info(f"Collection Filter {filter_key}: {filter_value}")
-                    for filter_key, filter_value in builder.tmdb_filters:
-                        logger.info(f"Collection Filter {filter_key}: {filter_value}")
+                builder.display_filters()
 
                 if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
@@ -786,14 +781,8 @@ def run_playlists(config):
                 else:
                     ids = builder.gather_ids(method, value)
 
+                builder.display_filters()
                 builder.filter_and_save_items(ids)
-
-                if builder.filters or builder.tmdb_filters:
-                    logger.info("")
-                    for filter_key, filter_value in builder.filters:
-                        logger.info(f"Playlist Filter {filter_key}: {filter_value}")
-                    for filter_key, filter_value in builder.tmdb_filters:
-                        logger.info(f"Playlist Filter {filter_key}: {filter_value}")
 
                 if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum:
                     items_added, items_unchanged = builder.add_to_collection()

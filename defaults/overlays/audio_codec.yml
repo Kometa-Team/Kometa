@@ -70,8 +70,6 @@ templates:
     optional:
       - overlay_level
       - use_<<slug>>
-      - filepath
-      - audio
     default:
       overlay: <<overlay_name>>
       horizontal_offset: 0
@@ -94,7 +92,7 @@ templates:
     ignore_blank_results: true
     overlay:
       name: <<overlay_name>>
-      pmm: audio_codec/<<style>>/<<overlay>>
+      pmm: audio_codec/<<style>>/<<slug>>
       group: audio_codec
       weight: <<weight>>
       horizontal_offset: <<horizontal_offset>>
@@ -107,92 +105,55 @@ templates:
       back_height: <<height>>
     plex_all: true
     filters:
-      audio_track_title.regex: <<audio>>
-      filepath.regex: <<filepath>>
+      - audio_track_title.regex: <<regex>>
+      - filepath.regex: <<regex>>
 
 overlays:
 
   Opus:
-    template: {name: AudioCodec, weight: 250, slug: opus, audio: '(?i)\bOPUS(\b|\d)'}
-  Opus-Filepath:
-    template: {name: AudioCodec, weight: 250, slug: opus, filepath: '(?i)\bOPUS(\b|\d)'}
+    template: {name: AudioCodec, weight: 250, slug: opus, regex: '(?i)\bOPUS(\b|\d)'}
 
   MP3:
-    template: {name: AudioCodec, weight: 500, slug: mp3, audio: '(?i)\bmp3(\b|\d)'}
-  MP3-Filepath:
-    template: {name: AudioCodec, weight: 500, slug: mp3, filepath: '(?i)\bmp3(\b|\d)'}
-
-  AAC2.0:
-    template: {name: AudioCodec, overlay: AAC, weight: 700, slug: aac, audio: '(?i)(?=.*(\baac[ .]?stereo\b))|(?=.*(\baac[ .]2[ .]0\b))'}
-  AAC2.0-Filepath:
-    template: {name: AudioCodec, overlay: AAC, weight: 700, slug: aac, filepath: '(?i)(?=.*(\baac[ .]?stereo\b))|(?=.*(\baac[ .]2[ .]0\b))'}
-
-  Dolby-Digital:
-    template: {name: AudioCodec, weight: 750, slug: digital, audio: '(?i)\bDD[^a-z+]|(?<!e)ac3'}
-  Dolby-Digital-Filepath:
-    template: {name: AudioCodec, weight: 750, slug: digital, filepath: '(?i)\bDD[^a-z+]|(?<!e)ac3'}
+    template: {name: AudioCodec, weight: 500, slug: mp3, regex: '(?i)\bmp3(\b|\d)'}
 
   AAC:
-    template: {name: AudioCodec, weight: 1000, slug: aac, audio: '(?i)^(?!.*(stereo|2[ .]0))(?=.*\b(aac(\b|\d))).*'}
-  AAC-Filepath:
-    template: {name: AudioCodec, weight: 1000, slug: aac, filepath: '(?i)^(?!.*(stereo|2[ .]0))(?=.*\b(aac(\b|\d))).*'}
+    template: {name: AudioCodec, weight: 700, slug: aac, regex: '(?i)\b(aac|stereo|2[ .]0)\b'}
+
+  Dolby-Digital:
+    template: {name: AudioCodec, weight: 750, slug: digital, regex: '(?i)\bDD[^a-z+]|(?<!e)ac3'}
 
   DTS:
-    template: {name: AudioCodec, weight: 1250, slug: dts, audio: '(?i)\bDTS(\b|\d)'}
-  DTS-Filepath:
-    template: {name: AudioCodec, weight: 1250, slug: dts, filepath: '(?i)\bDTS(\b|\d)'}
+    template: {name: AudioCodec, weight: 1250, slug: dts, regex: '(?i)\bDTS(\b|\d)'}
 
   DTS-ES:
-    template: {name: AudioCodec, weight: 1500, slug: es, audio: 'dts[-. ]?es\b'}
-  DTS-ES-Filepath:
-    template: {name: AudioCodec, weight: 1500, slug: es, filepath: 'dts[-. ]?es\b'}
+    template: {name: AudioCodec, weight: 1500, slug: dtses, regex: '(?i)dts[-. ]?es\b'}
 
   Dolby-Digital-Plus:
-    template: {name: AudioCodec, weight: 1750, slug: plus, audio: '(?i)^(?!.*(atmos))(?=.*\b([^-]DD[P+](?!A)|eac3)\b).*'}
-  Dolby-Digital-Plus-Filepath:
-    template: {name: AudioCodec, weight: 1750, slug: plus, filepath: '(?i)^(?!.*(atmos))(?=.*\b([^-]DD[P+](?!A)|eac3)\b).*'}
+    template: {name: AudioCodec, weight: 1750, slug: plus, regex: '(?i)(?!.*(atmos))(?=.*\b([^-]DD[P+](?!A)|eac3)\b).*'}
 
   DTS-HD-HRA:
-    template: {name: AudioCodec, weight: 2000, slug: hra, audio: '(?i)dts[ ._-]?(hd[. ]?)?(hr|hi)'}
-  DTS-HD-HRA-Filepath:
-    template: {name: AudioCodec, weight: 2000, slug: hra, filepath: '(?i)dts[ ._-]?(hd[. ]?)?(hr|hi)'}
+    template: {name: AudioCodec, weight: 2000, slug: hra, regex: '(?i)dts[ ._-]?(hd[. ]?)?(hr|hi)'}
 
   PCM:
-    template: {name: AudioCodec, weight: 2200, slug: pcm, audio: '(?i)\b(l?)PCM(\b|\d)'}
-  PCM-Filepath:
-    template: {name: AudioCodec, weight: 2200, slug: pcm, filepath: '(?i)\b(l?)PCM(\b|\d)'}
+    template: {name: AudioCodec, weight: 2200, slug: pcm, regex: '(?i)\b(l?)PCM(\b|\d)'}
 
   FLAC:
-    template: {name: AudioCodec, weight: 2250, slug: flac, audio: '(?i)\bFLAC(\b|\d)'}
-  FLAC-Filepath:
-    template: {name: AudioCodec, weight: 2250, slug: flac, filepath: '(?i)\bFLAC(\b|\d)'}
+    template: {name: AudioCodec, weight: 2250, slug: flac, regex: '(?i)\bFLAC(\b|\d)'}
 
   DTS-HD-MA:
-    template: {name: AudioCodec, weight: 2500, slug: hd, audio: '(?i)dts[ .-]?(ma\b|hd[ .-]?ma|hd)(?!china|r)'}
-  DTS-HD-MA-Filepath:
-    template: {name: AudioCodec, weight: 2500, slug: hd, filepath: '(?i)dts[ .-]?(ma\b|hd[ .-]?ma|hd)(?!china|r)'}
+    template: {name: AudioCodec, weight: 2500, slug: ma, regex: '(?i)dts[ .-]?(ma\b|hd[ .-]?ma|hd)(?!china|r)'}
 
   Dolby-TrueHD:
-    template: {name: AudioCodec, weight: 2750, slug: truehd, audio: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'}
-  Dolby-TrueHD-Filepath:
-    template: {name: AudioCodec, weight: 2750, slug: truehd, filepath: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'}
+    template: {name: AudioCodec, weight: 2750, slug: truehd, regex: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'}
 
   Dolby-Digital-Plus-Atmos:
-    template: {name: AudioCodec, weight: 3000, slug: plus-atmos, standard_value: 189, audio: '(?i)((?=.*([^-]DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|(?=.*\b(DDPA(\b|\d)))'}
-  Dolby-Digital-Plus-Atmos-Filepath:
-    template: {name: AudioCodec, weight: 3000, slug: plus-atmos, standard_value: 189, filepath: '(?i)((?=.*([^-]DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|(?=.*\b(DDPA(\b|\d)))'}
+    template: {name: AudioCodec, weight: 3000, slug: plus_atmos, standard_value: 189, regex: '(?i)((?=.*([^-]DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|(?=.*\b(DDPA(\b|\d)))'}
 
   Dolby-Atmos:
-    template: {name: AudioCodec, weight: 3000, slug: atmos, audio: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'}
-  Dolby-Atmos-Filepath:
-    template: {name: AudioCodec, weight: 3000, slug: atmos, filepath: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'}
+    template: {name: AudioCodec, weight: 3000, slug: dolby_atmos, regex: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'}
 
   DTS-X:
-    template: {name: AudioCodec, weight: 4500, slug: x, audio: 'dts[-. ]?x(?!\d)'}
-  DTS-X-Filepath:
-    template: {name: AudioCodec, weight: 4500, slug: x, filepath: 'dts[-. ]?x(?!\d)'}
+    template: {name: AudioCodec, weight: 4500, slug: dtsx, regex: 'dts[-. ]?x(?!\d)'}
 
   Dolby-TrueHD-Atmos:
-    template: {name: AudioCodec, weight: 5000, slug: truehd-atmos, standard_value: 189, audio: '(?i)(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d)))'}
-  Dolby-TrueHD-Atmos-Filepath:
-    template: {name: AudioCodec, weight: 5000, slug: truehd-atmos, standard_value: 189, filepath: '(?i)(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d)))'}
+    template: {name: AudioCodec, weight: 5000, slug: truehd_atmos, standard_value: 189, regex: '(?i)(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d)))'}
