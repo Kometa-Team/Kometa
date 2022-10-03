@@ -1,4 +1,4 @@
-# Network Language Default Metadata File
+# Network Default Metadata File
 
 The `- pmm: show/network` Metadata File is used to dynamically create collections based on the networks available in your library.
 

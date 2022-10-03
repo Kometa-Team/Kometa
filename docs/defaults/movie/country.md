@@ -1,4 +1,4 @@
-# country Language Default Metadata File
+# Country Default Metadata File
 
 The `- pmm: movie/country` Metadata File is used to dynamically create collections based on the countries available in your library.
 
