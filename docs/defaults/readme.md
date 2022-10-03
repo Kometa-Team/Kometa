@@ -37,8 +37,8 @@ The default set of overlays are a combination of Positional Overlays and Text Ov
 
 ### Example Poster Overlays
 
-![](movie-overlays1-annotated.png)
-![](movie-overlays2-annotated.png)
+![](images/movie-overlays1-annotated.png)
+![](images/movie-overlays2-annotated.png)
 <details>
   <summary>Click to expand sample config.yml Movies overlays section:</summary>
 
@@ -86,7 +86,7 @@ libraries:
 
 ### Example TV Shows - Show Overlays
 
-![](tvshow-poster-annotated.png)
+![](images/tvshow-poster-annotated.png)
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Show Poster:</summary>
 
@@ -129,7 +129,7 @@ libraries:
 
 ### Example TV Shows - Season Overlays
 
-![](tvshow-poster-season-annotated.png)
+![](images/tvshow-poster-season-annotated.png)
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Season Poster:</summary>
   
@@ -153,7 +153,7 @@ libraries:
 
 ### Example TV Shows - Episode Overlays
 
-![](tvshow-poster-episode-annotated.png)
+![](images/tvshow-poster-episode-annotated.png)
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Episode Poster:</summary>
   
@@ -207,7 +207,7 @@ By default, most metadata files use separators to denote different sections of c
 <details>
   <summary>Click to expand to see an example of Separators.</summary>
 
-   ![](separators.jpg)
+   ![](images/separators.jpg)
 
 </details>
 
@@ -271,23 +271,23 @@ By default for Movies in Plex, the `Ratings Source` dropdown (`#3`) below, can c
 
 **Plex Meta Manager can insert up to three ratings of your choice into the three spots regardless of what you choose in the `Advanced` tab of that Plex library**
 
-![](ratings_source.png)
+![](images/ratings_source.png)
 
 Plex has three available spots in the Plex DB to store ratings and thus Plex Meta Manager can be used to insert ratings sources of your choice into those spots. They are known as the User Rating (`#1`), Critic Rating (`#2`), and Audience Rating (`#3`). 
 
 **Note that the little icons cannot be changed and that the numbers next to the little icons are reflected in the poster ratings overlay**
 
-![](ratings_spot.png)
+![](images/ratings_spot.png)
 
 To be able to insert the ratings you want, Plex Meta Manager operations need to be defined. In this example below, User ratings (`#1`) are being filled with Rotten Tomatoes Critics Ratings. Critic ratings (`#2`) are filled with IMDb, and Audience ratings (`#3`) are filled with TMDb.
 
 **mass_*_rating_update** sources can be found here: [operations](../../config/operations)
 
-![](ratings_operations.png)
+![](images/ratings_operations.png)
 
 Finally, to show the ratings on the poster, the following was added to the `overlay_path` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
 
-![](ratings_overlay_path.png)
+![](images/ratings_overlay_path.png)
 
 
 
