@@ -82,6 +82,7 @@ dynamic_collections:
       - 16
       - 17
       - 18
+      - NR
     title_override:
       1: Age 1+
       2: Age 2+
@@ -110,6 +111,7 @@ dynamic_collections:
         - TV-Y
         - E
         - gb/E
+        - 01
       2:
         - gb/U
         - gb/0+
@@ -117,6 +119,7 @@ dynamic_collections:
         - TV-Y
         - E
         - gb/E
+        - 02
       3:
         - gb/U
         - gb/0+
@@ -125,30 +128,38 @@ dynamic_collections:
         - E
         - gb/E
         - TV-G
+        - 03
       4:
         - TV-G
+        - G
+        - 04
       5:
         - TV-G
+        - G
+        - 05
       6:
-        - TV-G
         - gb/PG
         - TV-PG
+        - 06
       7:
         - gb/PG
         - TV-PG
         - TV-Y7
         - TV-Y7-FV
+        - 07
       8:
         - gb/PG
         - TV-PG
         - TV-Y7
         - TV-Y7-FV
+        - 08
       9:
         - gb/PG
         - TV-PG
         - TV-Y7
         - TV-Y7-FV
         - gb/9+
+        - 09
       10:
         - gb/PG
         - TV-PG
