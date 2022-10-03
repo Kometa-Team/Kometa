@@ -6,7 +6,7 @@ This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci
 
 Example Collections Created:
 
-![](images/genre.png)
+![](../images/genre.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml
@@ -58,7 +58,7 @@ If you do not use the UK-based rating system within Plex, this file will attempt
 
 Example Collections Created:
 
-![](images/content_rating_uk.png)
+![](../images/content_rating_uk.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml

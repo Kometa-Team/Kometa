@@ -6,7 +6,7 @@ This file also merges similarly named studios (such as "20th Century Fox" and "2
 
 Example Collections Created:
 
-![](images/studio.png)
+![](../images/studio.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml

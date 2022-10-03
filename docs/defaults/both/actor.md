@@ -4,7 +4,7 @@ The `- pmm: actor` Metadata File is used to dynamically create collections based
 
 Example Collections Created:
 
-![](images/actor1.png)
+![](../images/actor1.png)
 
 The below YAML in your config.yml will create the collections:
 ```yaml
@@ -17,7 +17,7 @@ libraries:
 ## Rainier Style
 Below is a screenshot of the alternative `Rainier` style which can be set via template variables
 
-![](images/actor2.png)
+![](../images/actor2.png)
 
 
 ## Template Variables

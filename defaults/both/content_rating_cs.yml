@@ -1,12 +1,12 @@
 #############################################################
-#           Dynamic UK Content Rating Collections           #
+#          CommonSense Content Rating Collections           #
 #         Created by Yozora, Bullmoose20, & Sohjiro         #
 #############################################################
 #  Call this from your config.yml (Movie or Show)           #
 #  If nothing is specified these are the defaults           #
 #                                                           #
 #    metadata_path:                                         #
-#      - git: PMM/content_rating_uk                         #
+#      - git: PMM/content_rating_cs                         #
 #        template_variables:                                #
 #          # Turn the separator collection on/off           #
 #          use_separator: true                              #
@@ -42,7 +42,7 @@ collections:
         separator: content_rating
 
 dynamic_collections:
-  UK Content Rating:
+  CommonSense Content Rating:
     type: content_rating
     other_name: Other Ratings
     template:
@@ -58,65 +58,145 @@ dynamic_collections:
       search_term:
         default: content_rating
       image:
-        default: content_rating/uk/<<key_name>>
+        default: content_rating/cs/<<key_name>>
         other: content_rating/other
       translation_key:
         default: content_rating
         other: content_rating_other
     include:
-      - U
-      - PG
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
       - 12
-      - 12A
+      - 13
+      - 14
       - 15
+      - 16
+      - 17
       - 18
-      - R18
-      - NR
+    title_override:
+      1: Age 1+
+      2: Age 2+
+      3: Age 3+
+      4: Age 4+
+      5: Age 5+
+      6: Age 6+
+      7: Age 7+
+      8: Age 8+
+      9: Age 9+
+      10: Age 10+
+      11: Age 11+
+      12: Age 12+
+      13: Age 13+
+      14: Age 14+
+      15: Age 15+
+      16: Age 16+
+      17: Age 17+
+      18: Age 18+
+      NR: Not Rated
     addons:
-      U:
+      1:
         - gb/U
         - gb/0+
         - G
         - TV-Y
-        - TV-G
         - E
         - gb/E
-        - 1
-        - 2
-        - 3
-        - 4
-        - 01
-        - 02
-        - 03
-        - 04
-      PG:
+      2:
+        - gb/U
+        - gb/0+
+        - G
+        - TV-Y
+        - E
+        - gb/E
+      3:
+        - gb/U
+        - gb/0+
+        - G
+        - TV-Y
+        - E
+        - gb/E
+        - TV-G
+      4:
+        - TV-G
+      5:
+        - TV-G
+      6:
+        - TV-G
         - gb/PG
-        - gb/9+
+        - TV-PG
+      7:
+        - gb/PG
         - TV-PG
         - TV-Y7
         - TV-Y7-FV
-        - 5
-        - 6
-        - 7
-        - 8
-        - 9
-        - 05
-        - 06
-        - 07
-        - 08
-        - 09
-        - 10
-        - 11
+      8:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+      9:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - gb/9+
+      10:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - gb/9+
+      11:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - gb/9+
       12:
         - gb/12
         - 12
-      12A:
+        - gb/12A
+        - 12+
+        - 12
+      13:
+        - gb/12
+        - 12
         - gb/12A
         - 12+
         - PG-13
-        - TV-13
+        - 12
+      14:
+        - gb/12
+        - 12
+        - gb/12A
+        - 12+
+        - PG-13
+        - TV-14
         - 12
       15:
+        - gb/15
+        - gb/14+
+        - TV-14
+        - 13
+        - 14
+        - 15
+      16:
+        - gb/15
+        - gb/14+
+        - TV-14
+        - 13
+        - 14
+        - 15
+      17:
         - gb/15
         - gb/14+
         - TV-14
@@ -132,7 +212,6 @@ dynamic_collections:
         - 16
         - 17
         - 18
-      R18:
         - gb/R18
         - gb/X
         - X
