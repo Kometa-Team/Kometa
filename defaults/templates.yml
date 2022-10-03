@@ -157,10 +157,10 @@ templates:
 
   translation:
     default:
-      sumamry_<<key>>: <<<<translation_key>>_summary>>
+      summary_<<key>>: <<<<translation_key>>_summary>>
       name_<<key>>: <<<<translation_key>>_name>>
     optional:
       - <<translation_key>>_summary
       - <<translation_key>>_name
-    summary: <<sumamry_<<key>>>>
+    summary: <<summary_<<key>>>>
     name: <<name_<<key>>>>
