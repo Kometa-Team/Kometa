@@ -29,6 +29,8 @@
 
 templates:
   Ribbon:
+    default:
+      weight_<<key>>: <<weight>>
     optional:
       - mdb_key
       - imdb_key
