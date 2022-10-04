@@ -50,6 +50,7 @@ dynamic_collections:
     data:
       starting: current_year-10
       ending: current_year
+    title_format: Best of <<key_name>>
     template:
       - smart_filter
       - translation

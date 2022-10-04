@@ -1,8 +1,10 @@
-#############################################################
-# BAFTA Collections
-# Created by Yozora, Bullmoose20, & Sohjiro
-# Credit to pjcob & maxwelldeux for the Trakt Lists
-#############################################################
+##############################################################################
+#                             BAFTA Collections                              #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#             Credit to pjcob & maxwelldeux for the Trakt Lists              #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#        https://metamanager.wiki/en/latest/defaults/chart/bafta.html        #
+##############################################################################
 
 external_templates:
   pmm: templates
@@ -34,6 +36,7 @@ dynamic_collections:
     data:
       starting: current_year-5
       ending: current_year
+    title_format: BAFTA <<key_name>>
     template:
       - use_year_collections
       - trakt

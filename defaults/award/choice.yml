@@ -53,6 +53,7 @@ dynamic_collections:
     data:
       starting: current_year-5
       ending: current_year
+    title_format: Critics Choice Awards <<key_name>>
     template:
       - use_year_collections
       - trakt

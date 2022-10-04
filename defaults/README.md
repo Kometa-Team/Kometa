@@ -23,8 +23,8 @@ To run a defaults metadata file, you can simply add it to your `metadata_path` u
 libraries:
   Movies:
     metadata_path:
-    - pmm: chart/tmdb
-    - pmm: awards/bafta
+    - pmm: tmdb
+    - pmm: bafta
 ```
 
 A full list of the available metadata files can be found [HERE](LINK NEEDED)
@@ -38,8 +38,8 @@ libraries:
   Movies:
     overlay_path:
     - remove_overlays: false
-    - pmm: overlays/imdb_top_250
-    - pmm: overlays/ratings
+    - pmm: ribbon
+    - pmm: ratings
 ```
 A full list of the available overlay files can be found [HERE](LINK NEEDED)
 
@@ -56,11 +56,11 @@ libraries:
     overlay_path:
     - remove_overlays: false
     - reapply_overlay: true
-    - pmm: overlays/resolution                                       # 1
-    - pmm: overlays/audio_codec                                      # 2
-    - pmm: overlays/mediastinger                                     # 3
-    - pmm: overlays/special_release                                  # 4
-    - pmm: overlays/ratings                                          # 5,6,7
+    - pmm: resolution                                                    # 1
+    - pmm: audio_codec                                                   # 2
+    - pmm: mediastinger                                                  # 3
+    - pmm: special_release                                               # 4
+    - pmm: ratings                                                       # 5, 6, 7
       template_variables:
         rating1: user                                                    # 5 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 5 as this is user and mass_user_rating_update: mdb_tomatoes
@@ -78,24 +78,10 @@ libraries:
         rating3_font_size: 70                                            # 7 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
-    - pmm: overlays/streaming                                        # 8
-    - pmm: overlays/video_format                                     # 9
-    - pmm: overlays/audio_language                                   # 10
-    - pmm: overlays/oscars                                           # 11
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 40                                                       # Weight of 40 applies if more than 1 sash is applied in bottom right
-    - pmm: overlays/imdb_top_250                                     # 12
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 30                                                       # Weight of 30 applies if more than 1 sash is applied in bottom right
-    - pmm: overlays/rt_cert_fresh                                    # 13
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 20                                                       # Weight of 20 applies if more than 1 sash is applied in bottom right
-    - pmm: overlays/mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
-    - pmm: overlays/commonsense_selection                                     # NOT SHOWN, however would apply the "Commonsense Selected Families" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 5                                                        # Weight of 5 applies if more than 1 sash is applied in bottom right
+    - pmm: streaming                                                     # 8
+    - pmm: video_format                                                  # 9
+    - pmm: audio_language                                                # 10
+    - pmm: ribbon                                                        # 11, 12 Bottom right sash is used by more than one overlay so a weight for priority can be applied 
 
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 5 This operation will update the user rating in plex with Rotten Tomatoes ratings information
@@ -116,10 +102,10 @@ libraries:
     overlay_path:
     - remove_overlays: false
     - reapply_overlay: true
-    - pmm: overlays/resolution                                       # 1
-    - pmm: overlays/audio_codec                                      # 2
-    - pmm: overlays/mediastinger                                     # 3
-    - pmm: overlays/ratings                                          # 4,5,6
+    - pmm: resolution                                                    # 1
+    - pmm: audio_codec                                                   # 2
+    - pmm: mediastinger                                                  # 3
+    - pmm: ratings                                                       # 4, 5, 6
       template_variables:           
         rating1: user                                                    # 4 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 4 as this is user and mass_user_rating_update: mdb_tomatoes
@@ -137,20 +123,9 @@ libraries:
         rating3_font_size: 70                                            # 6 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
-    - pmm: overlays/streaming                                        # 7
-    - pmm: overlays/video_format                                     # 8
-    - pmm: overlays/imdb_top_250                                     # 9
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 30                                                       # Weight of 30 applies if more than 1 sash is applied in bottom right
-    - pmm: overlays/rt_cert_fresh                                    # 10
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 20                                                       # Weight of 20 applies if more than 1 sash is applied in bottom right
-    - pmm: overlays/mc_must_see                                      # NOT SHOWN, however would apply the "MetaCritic Must See" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 10                                                       # Weight of 10 applies if more than 1 sash is applied in bottom right
-    - pmm: overlays/commonsense_selection                                     # NOT SHOWN, however would apply the "Commonsense Selected Families" sash in the bottom right
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 5                                                        # Weight of 5 applies if more than 1 sash is applied in bottom right
+    - pmm: overlays/streaming                                            # 7
+    - pmm: overlays/video_format                                         # 8
+    - pmm: ribbon                                                        # 10, 11 Bottom right sash is used by more than one overlay so a weight for priority can be applied 
 
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 4 This operation will update the user rating in plex with Rotten Tomatoes ratings information
@@ -171,13 +146,13 @@ libraries:
     overlay_path:
     - remove_overlays: false
     - reapply_overlay: true
-    - pmm: overlays/resolution                                       # 1
+    - pmm: resolution                                                    # 1
       template_variables:
         overlay_level: season
-    - pmm: overlays/audio_codec                                      # 2
+    - pmm: audio_codec                                                   # 2
       template_variables:
         overlay_level: season
-    - pmm: overlays/video_format                                     # 3
+    - pmm: video_format                                                  # 3
       template_variables:
         overlay_level: season
 ```
@@ -201,7 +176,7 @@ libraries:
     - pmm: overlays/audio_codec                                      # 2
       template_variables:
         overlay_level: episode
-    - pmm: overlays/ratings                                          # 3,4
+    - pmm: overlays/ratings                                          # 3, 4
       template_variables:
 
         rating1: critic                                                  # 3 as this is critic and mass_critic_rating_update: imdb

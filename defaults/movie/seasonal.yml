@@ -116,6 +116,7 @@ dynamic_collections:
       halloween: Halloween
       thanksgiving: Thanksgiving
       christmas: Christmas
+    title_format: <<key_name>> <<library_typeU>>s
     template:
       - holiday
       - translation

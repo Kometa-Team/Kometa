@@ -134,7 +134,10 @@ class DataFile:
             content_path = os.path.abspath(f"{file_path}/default.yml" if translation else file_path)
             dir_path = file_path
             if not os.path.exists(content_path):
-                raise Failed(f"File Error: File does not exist {content_path}")
+                if file_type == "PMM Default":
+                    raise Failed(f"File Error: Default does not exist {file_path}")
+                else:
+                    raise Failed(f"File Error: File does not exist {content_path}")
             yaml = YAML(path=content_path, check_empty=True)
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
@@ -530,12 +533,22 @@ class MetadataFile(DataFile):
                             og_exclude = util.parse("Config", "exclude", self.temp_vars["exclude"], parent="template_variable", datatype="strlist")
                         elif "exclude" in methods:
                             og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist")
+                        if "append_exclude" in self.temp_vars:
+                            og_exclude.extend(util.parse("Config", "append_exclude", self.temp_vars["append_exclude"], parent="template_variable", datatype="strlist"))
                         include = []
                         if "include" in self.temp_vars:
-                            include = [i for i in util.parse("Config", "include", self.temp_vars["include"], parent="template_variable", datatype="strlist") if i not in og_exclude]
+                            include = util.parse("Config", "include", self.temp_vars["include"], parent="template_variable", datatype="strlist")
                         elif "include" in methods:
                             include = [i for i in util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if i not in og_exclude]
+                        if "append_include" in self.temp_vars:
+                            include.extend(util.parse("Config", "append_include", self.temp_vars["append_include"], parent="template_variable", datatype="strlist"))
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "addons" in methods else {}
+                        if "append_addons" in self.temp_vars:
+                            append_addons = util.parse("Config", "append_addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr")
+                            for k, v in append_addons.items():
+                                if k not in addons:
+                                    addons[k] = []
+                                addons[k].extend(v)
                         exclude = [str(e) for e in og_exclude]
                         for k, v in addons.items():
                             if k in v:

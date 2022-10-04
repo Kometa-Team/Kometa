@@ -1,9 +1,24 @@
+1.18.0.1 -> 1.18.0.2
+
+added `network_name` and `network_summary`
+
 
 1.18.0 -> 1.18.0.1
 
 added library_type
 added key_names
 added comments
+
+tmdb_air_summary: `activaly` -> `actively`
+trakt_collected_summary: Added `.`
+trakt_popular_summary: Added `.`
+trakt_recommended_summary: Added `.`
+trakt_trending_summary: Added `.`
+trakt_watched_summary: Added `.`
+
+director_summary: `Directed` -> `directed`
+producer_summary: `Produced` -> `produced`
+writer_summary: `Written` -> `written`
 
 imdb_popular_summary: Changed `<<collection_name>>` to `IMDb Popular`
 imdb_top_summary: Changed `<<collection_name>>` to `IMDb Top 250`

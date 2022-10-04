@@ -45,6 +45,7 @@ dynamic_collections:
     data:
       depth: 5
       limit: 25
+    title_format: <<key_name>> (Director)
     template:
       - smart_filter
       - translation

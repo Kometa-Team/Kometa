@@ -8,6 +8,33 @@ These files can generally be used on both Movie and Show library-types, or are p
 
 These collections are applied by calling the below paths into the `metadata_path:` section of your config.yml
 
+
+### Chart Collections
+
+| Source      | config.yml entry    | Example Collections Created                 | Works with Movies | Works with Shows |
+|:------------|:--------------------|---------------------------------------------|:-----------------:|:----------------:|
+| AniList     | `anilist`           | AniList Popular, AniList Season             |      &#9989;      |     &#9989;      |
+| Basic       | `basic`             | Newly Released, New Episodes                |      &#9989;      |     &#9989;      |
+| IMDb        | `imdb`              | IMDb Popular, IMDb Top 250                  |      &#9989;      |     &#9989;      |
+| MyAnimeList | `myanimelist`       | MyAnimeList Popular, MyAnimeList Top Rated  |      &#9989;      |     &#9989;      |
+| Other       | `other`             | AniDB Popular, Common Sense Selection       |      &#9989;      |     &#9989;      |
+| Tautulli    | `tautulli`          | Plex Popular, Plex Watched                  |      &#9989;      |     &#9989;      |
+| TMDb        | `tmdb`              | TMDb Popular, TMDb Airing Today             |      &#9989;      |     &#9989;      |
+| Trakt       | `trakt`             | Trakt Popular, Trakt Trending               |      &#9989;      |     &#9989;      |
+
+### Award Collections
+
+| Award Show     | config.yml entry | Example Collections Created      | Works with Movies | Works with Shows |
+|:---------------|:-----------------|----------------------------------|:-----------------:|:----------------:|
+| BAFTA          | `bafta`          | BAFTA Best Films, BAFTA 2021     |      &#9989;      |     &#10060;     |
+| Cannes         | `cannes`         | Cannes - Palme d'or, Cannes 2018 |      &#9989;      |     &#10060;     |
+| Critics Choice | `choice`         | Critics Choice Awards 2020       |      &#9989;      |     &#9989;      |
+| Emmys          | `emmy`           | Emmys 2021                       |      &#9989;      |     &#9989;      |
+| Golden Globes  | `golden`         | Best Motion Pictures             |      &#9989;      |     &#9989;      |
+| Oscars         | `oscars`         | Best Picture Winners             |      &#9989;      |     &#9989;      |
+| Spirit         | `spirit`         | Independent Spirit Awards 2021   |      &#9989;      |     &#10060;     |
+| Sundance       | `sundance`       | Sundance Grand Jury Winners      |      &#9989;      |     &#9989;      |
+
 ### General Collections
 
 | Theme               | config.yml entry                       | Example Collections Created                            | Works with Movies | Works with Shows |
@@ -32,63 +59,34 @@ These collections are applied by calling the below paths into the `metadata_path
 | Year                | `year`                                 | Best of 2010, Best of 2019                             |      &#9989;      |     &#9989;      |
 | Writer              | `writer`                               | James Cameron (Writer), Lilly Wachowski (Writer)       |      &#9989;      |     &#10060;     |
 
-### Award Show Collections
-
-| Award Show     | config.yml entry | Example Collections Created      | Works with Movies | Works with Shows |
-|:---------------|:-----------------|----------------------------------|:-----------------:|:----------------:|
-| BAFTA          | `bafta`    | BAFTA Best Films, BAFTA 2021     |      &#9989;      |     &#10060;     |
-| Cannes         | `cannes`   | Cannes - Palme d'or, Cannes 2018 |      &#9989;      |     &#10060;     |
-| Critics Choice | `choice`   | Critics Choice Awards 2020       |      &#9989;      |     &#9989;      |
-| Emmys          | `emmy`     | Emmys 2021                       |      &#9989;      |     &#9989;      |
-| Golden Globes  | `golden`   | Best Motion Pictures             |      &#9989;      |     &#9989;      |
-| Oscars         | `oscars`   | Best Picture Winners             |      &#9989;      |     &#9989;      |
-| Spirit         | `spirit`   | Independent Spirit Awards 2021   |      &#9989;      |     &#10060;     |
-| Sundance       | `sundance` | Sundance Grand Jury Winners      |      &#9989;      |     &#9989;      |
-
-
-### Chart Collections
-
-| Source      | config.yml entry    | Example Collections Created                 | Works with Movies | Works with Shows |
-|:------------|:--------------------|---------------------------------------------|:-----------------:|:----------------:|
-| AniList     | `pmm: anilist`     | AniList Popular, AniList Season             |      &#9989;      |     &#9989;      |
-| Basic       | `pmm: basic`       | Newly Released, New Episodes                |      &#9989;      |     &#9989;      |
-| IMDb        | `pmm: imdb`        | IMDb Popular, IMDb Top 250                  |      &#9989;      |     &#9989;      |
-| MyAnimeList | `pmm: myanimelist` | MyAnimeList Popular, MyAnimeList Top Rated  |      &#9989;      |     &#9989;      |
-| Other       | `pmm: other`       | AniDB Popular, Common Sense Selection       |      &#9989;      |     &#9989;      |
-| Tautulli    | `pmm: tautulli`    | Plex Popular, Plex Watched                  |      &#9989;      |     &#9989;      |
-| TMDb        | `pmm: tmdb`        | TMDb Popular, TMDb Airing Today             |      &#9989;      |     &#9989;      |
-| Trakt       | `pmm: trakt`       | Trakt Popular, Trakt Trending               |      &#9989;      |     &#9989;      |
-
-
 ## Overlays
 These files apply overlays and can generally be used on both Movie and Show library-types, and often works at the season and episode-level too.
 
-It should be noted that when an overlay has &#10060; for a season or episode, it normally means that whilst the overlay can technically be applied at the level, it wasn't designed for this purpose. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a commonsense age-rating since only Movies and Shows are rated by CommonSense. 
+It should be noted that when an overlay has &#10071; for a season or episode, it normally means that whilst the overlay can technically be applied at the level, it wasn't designed for this purpose. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a commonsense age-rating since only Movies and Shows are rated by CommonSense. 
 
 In the scenario where there is missing data such as age ratings for episodes, then generally the highest-level data available will be applied at the lower level (i.e. a Show's CommonSense age rating would apply to all episodes).
 
-These overlays are applied by calling the below paths into the `overlay_path:` section of your config.yml
+These overlays are applied by calling the below paths into the `overlay_path:` [section](https://metamanager.wiki/en/nightly/config/libraries.html#overlay-path) of your config.yml
 
 ### Overlay Files
 
 | Theme                  | path                       | Example Overlays                               |  Movies  |   Shows   |  Seasons  | Episodes |
 |:-----------------------|:---------------------------|------------------------------------------------|:--------:|:---------:|:---------:|:--------:|
-| Audio Codec            | `pmm: audio_codec`     | Dolby Atmos logo, DTS logo                     | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
-| Audio Language         | `pmm: audio_language`  | French Audio, Korean Audio                     | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
-| CommonSense Age Rating | `pmm: commonsense`     | "3+", "16+"                                    | &#9989;  |  &#9989;  | &#10071;  | &#10071; |
-| Direct Play            | `pmm: direct_play`     | "Direct Play Only"                             | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
-| Editions               | `pmm: editions`        | Director's Cut logo, IMAX logo                 | &#9989;  | &#10060;  | &#10060;  | &#10060; |
-| Episode Info           | `pmm: episode_info`    | "S01E01", "S02E09"                             | &#10060; | &#10060;  | &#10060;  | &#9989;  |
-| Mediastinger           | `pmm: mediastinger`    | Mediastinger logo                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| Ratings                | `pmm: ratings`         | IMDb Audience Rating, Metacritic Critic Rating | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
-| Resolution             | `pmm: resolution`      | 4K Dolby Vision logo, 720P logo                | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
-| Ribbon                 | `pmm: ribbon`          | IMDb Top 250 Ribbon, RT Fresh Ribbon           | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| Runtimes               | `pmm: runtimes`        | "Runtime: 1h 30m"                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| Special Releases       | `pmm: special_release` | "Director's Cut", "Criterion Collection"       | &#9989;  |  &#9989;  | &#10071;  | &#10071; |
-| Streaming              | `pmm: streaming`       | Netflix logo, Hulu logo                        | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| Versions               | `pmm: versions`        | Multiple Versions logo                         | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
-| Video Format           | `pmm: video_format`    | "REMUX", "HDTV"                                | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
-
+| Audio Codec            | `audio_codec`              | Dolby Atmos logo, DTS logo                     | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
+| Audio Language         | `audio_language`           | French Audio, Korean Audio                     | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
+| CommonSense Age Rating | `commonsense`              | "3+", "16+"                                    | &#9989;  |  &#9989;  | &#10071;  | &#10071; |
+| Direct Play            | `direct_play`              | "Direct Play Only"                             | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
+| Editions               | `editions`                 | Director's Cut logo, IMAX logo                 | &#9989;  | &#10060;  | &#10060;  | &#10060; |
+| Episode Info           | `episode_info`             | "S01E01", "S02E09"                             | &#10060; | &#10060;  | &#10060;  | &#9989;  |
+| Mediastinger           | `mediastinger`             | Mediastinger logo                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| Ratings                | `ratings`                  | IMDb Audience Rating, Metacritic Critic Rating | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
+| Resolution             | `resolution`               | 4K Dolby Vision logo, 720P logo                | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
+| Ribbon                 | `ribbon`                   | IMDb Top 250 Ribbon, RT Fresh Ribbon           | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| Runtimes               | `runtimes`                 | "Runtime: 1h 30m"                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| Special Releases       | `special_release`          | "Director's Cut", "Criterion Collection"       | &#9989;  |  &#9989;  | &#10071;  | &#10071; |
+| Streaming              | `streaming`                | Netflix logo, Hulu logo                        | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| Versions               | `versions`                 | Multiple Versions logo                         | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |
+| Video Format           | `video_format`             | "REMUX", "HDTV"                                | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
 
 ## Playlists
 These files apply playlists to the "Playlists" section of Plex and are applied by calling the below paths into the `playlist_files:` section of your config.yml

@@ -43,8 +43,9 @@ collections:
         separator: country
 
 dynamic_collections:
-  TMDb Country Color:
+  Country:
     type: origin_country
+    title_format: <<key_name>> <<library_typeU>>s
     other_name: Other Countries
     template:
       - filter
