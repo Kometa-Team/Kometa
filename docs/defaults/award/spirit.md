@@ -1,6 +1,6 @@
 # Independent Spirit Awards Default Metadata File
 
-The `- pmm: award/spirit` Metadata File is used to  create collections based on the Independent Spirit Awards.
+The `- pmm: spirit` Metadata File is used to  create collections based on the Independent Spirit Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 
@@ -13,7 +13,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/spirit
+      - pmm: spirit
 ```
 
 
@@ -42,7 +42,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/spirit
+      - pmm: spirit
         template_variables:
           collection_section: 9
           collection_mode: show_items

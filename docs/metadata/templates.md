@@ -237,5 +237,5 @@ To load external templates located in another file you can use the `external_tem
 ```yaml
 external_templates:
   - file: config/templates.yml       
-  - git: PMM/templates
+  - pmm: templates
 ```

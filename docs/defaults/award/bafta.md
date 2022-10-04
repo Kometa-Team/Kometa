@@ -1,6 +1,6 @@
 # BAFTA Default Metadata File
 
-The `- pmm: award/bafta` Metadata File is used to  create collections based on the British Academy Film Awards.
+The `- pmm: bafta` Metadata File is used to  create collections based on the British Academy Film Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 
@@ -13,7 +13,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/bafta
+      - pmm: bafta
 ```
 
 
@@ -42,7 +42,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/bafta
+      - pmm: bafta
         template_variables:
           collection_section: 8
           collection_mode: show_items
