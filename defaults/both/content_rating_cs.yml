@@ -176,13 +176,11 @@ dynamic_collections:
         - gb/12
         - gb/12A
         - 12+
-        - "12"
       13:
         - gb/12
         - gb/12A
         - 12+
         - PG-13
-        - "13"
       14:
         - gb/12
         - 12
@@ -190,14 +188,13 @@ dynamic_collections:
         - 12+
         - PG-13
         - TV-14
-        - "14"
+        - 13
       15:
         - gb/15
         - gb/14+
         - TV-14
         - 13
         - 14
-        - 15
       16:
         - gb/15
         - gb/14+
@@ -212,6 +209,7 @@ dynamic_collections:
         - 13
         - 14
         - 15
+        - 16
       18:
         - gb/18
         - MA-17
@@ -220,7 +218,6 @@ dynamic_collections:
         - R
         - 16
         - 17
-        - 18
         - gb/R18
         - gb/X
         - X
