@@ -5,33 +5,33 @@ libraries:                                      # This is called out once within
     metadata_path:
       - file: config/Movies.yml                 # This is a local file on the system
       - folder: config/Movies/                  # This is a local directory on the system
-      - git: PMM/chart/basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - git: PMM/chart/imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: basic                              # This is a file within the defaults folder in the Repository
+      - pmm: imdb                               # This is a file within the defaults folder in the Repository
     overlay_path:
       - remove_overlays: false                  # Set this to true to remove all overlays
       - file: config/Overlays.yml               # This is a local file on the system
-      - git: PMM/overlays/imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: ribbon                             # This is a file within the defaults folder in the Repository
   TV Shows:                           
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - git: PMM/chart/basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - git: PMM/chart/imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: basic                              # This is a file within the defaults folder in the Repository
+      - pmm: imdb                               # This is a file within the defaults folder in the Repository
     overlay_path:
       - remove_overlays: false                  # Set this to true to remove all overlays
       - file: config/Overlays.yml               # This is a local file on the system
-      - git: PMM/overlays/imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: ribbon                             # This is a file within the defaults folder in the Repository
   Anime:
     metadata_path:
       - file: config/Anime.yml
-      - git: PMM/chart/basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - git: PMM/chart/anilist                  # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: basic                              # This is a file within the defaults folder in the Repository
+      - pmm: anilist                            # This is a file within the defaults folder in the Repository
   Music:
     metadata_path:
       - file: config/Music.yml
 playlist_files:
   - file: config/playlists.yml       
-  - git: PMM/playlist                           # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+  - pmm: playlist                               # This is a file within the defaults folder in the Repository
 settings:                                      
   cache: true
   cache_expiration: 60
