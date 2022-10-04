@@ -56,17 +56,17 @@ libraries:
       template_variables:
         rating1: user                                                    # 5 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 5 as this is user and mass_user_rating_update: mdb_tomatoes
-        rating1_font: config/metadata/pmm: fonts/Adlib.ttf           # 5 local font accessible to PMM
+        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 5 local font accessible to PMM
         rating1_font_size: 63                                            # 5 adjusted font size to fit rating
 
         rating2: critic                                                  # 6 as this is critic and mass_critic_rating_update: imdb
         rating2_image: imdb                                              # 6 as this is critic and mass_critic_rating_update: imdb
-        rating2_font: config/metadata/pmm: fonts/Impact.ttf          # 6 local font accessible to PMM
+        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 6 local font accessible to PMM
         rating2_font_size: 70                                            # 6 adjusted font size to fit rating
 
         rating3: audience                                                # 7 as this is audience and mass_audience_rating_update: tmdb
         rating3_image: tmdb                                              # 7 as this is audience and mass_audience_rating_update: tmdb
-        rating3_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 7 local font accessible to PMM
+        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 7 local font accessible to PMM
         rating3_font_size: 70                                            # 7 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
@@ -103,17 +103,17 @@ libraries:
       template_variables:           
         rating1: user                                                    # 4 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 4 as this is user and mass_user_rating_update: mdb_tomatoes
-        rating1_font: config/metadata/pmm: fonts/Adlib.ttf           # 4 local font accessible to PMM
+        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 4 local font accessible to PMM
         rating1_font_size: 63                                            # 4 adjusted font size to fit rating
 
         rating2: critic                                                  # 5 as this is critic and mass_critic_rating_update: imdb
         rating2_image: imdb                                              # 5 as this is critic and mass_critic_rating_update: imdb
-        rating2_font: config/metadata/pmm: fonts/Impact.ttf          # 5 local font accessible to PMM
+        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 5 local font accessible to PMM
         rating2_font_size: 70                                            # 5 adjusted font size to fit rating
 
         rating3: audience                                                # 6 as this is audience and mass_audience_rating_update: tmdb
         rating3_image: tmdb                                              # 6 as this is audience and mass_audience_rating_update: tmdb
-        rating3_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 6 local font accessible to PMM
+        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 6 local font accessible to PMM
         rating3_font_size: 70                                            # 6 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
@@ -174,12 +174,12 @@ libraries:
 
         rating1: critic                                                  # 3 as this is critic and mass_critic_rating_update: imdb
         rating1_image: imdb                                              # 3 as this is critic and mass_critic_rating_update: imdb
-        rating1_font: config/metadata/pmm: fonts/Impact.ttf          # 3 local font accessible to PMM
+        rating1_font: config/metadata/overlays/fonts/Impact.ttf          # 3 local font accessible to PMM
         rating1_font_size: 70                                            # 3 adjusted font size to fit rating
 
         rating2: audience                                                # 4 as this is audience and mass_audience_rating_update: tmdb
         rating2_image: tmdb                                              # 4 as this is audience and mass_audience_rating_update: tmdb
-        rating2_font: config/metadata/pmm: fonts/Avenir_95_Black.ttf # 4 local font accessible to PMM
+        rating2_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 4 local font accessible to PMM
         rating2_font_size: 70                                            # 4 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
