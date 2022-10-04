@@ -44,6 +44,7 @@ collections:
 dynamic_collections:
   CommonSense Content Rating:
     type: content_rating
+    title_format: <<key_name>> <<library_typeU>>s
     other_name: Other Ratings
     template:
       - smart_filter

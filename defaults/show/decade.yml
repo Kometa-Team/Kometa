@@ -42,6 +42,7 @@ collections:
 dynamic_collections:
   Decade:
     type: decade
+    title_format: Best of <<key_name>>s
     template:
       - smart_filter
       - translation

@@ -32,6 +32,7 @@ external_templates:
 
 translations:
   pmm: translations
+
 collections:
   Writers Collections:
     template:
@@ -44,6 +45,7 @@ dynamic_collections:
     data:
       depth: 5
       limit: 25
+    title_format: <<key_name>> (Writer)
     template:
       - smart_filter
       - translation

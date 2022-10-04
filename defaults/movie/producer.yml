@@ -32,6 +32,7 @@ external_templates:
 
 translations:
   pmm: translations
+
 collections:
   Producers Collections:
     template:
@@ -41,6 +42,7 @@ collections:
 dynamic_collections:
   Top Producers:
     type: producer
+    title_format: <<key_name>> (Producer)
     data:
       depth: 5
       limit: 25

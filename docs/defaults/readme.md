@@ -48,35 +48,32 @@ libraries:
     overlay_path:
     - remove_overlays: false
     - reapply_overlay: true
-    - pmm: resolution                                       # 1
-    - pmm: audio_codec                                      # 2
-    - pmm: mediastinger                                     # 3
-    - pmm: special_release                                  # 4
-    - pmm: ratings                                          # 5,6,7
+    - pmm: resolution                                                    # 1
+    - pmm: audio_codec                                                   # 2
+    - pmm: mediastinger                                                  # 3
+    - pmm: special_release                                               # 4
+    - pmm: ratings                                                       # 5, 6, 7
       template_variables:
         rating1: user                                                    # 5 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 5 as this is user and mass_user_rating_update: mdb_tomatoes
-        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 5 local font accessible to PMM
+        rating1_font: config/custom_fonts/Adlib.ttf                      # 5 local font accessible to PMM
         rating1_font_size: 63                                            # 5 adjusted font size to fit rating
 
         rating2: critic                                                  # 6 as this is critic and mass_critic_rating_update: imdb
         rating2_image: imdb                                              # 6 as this is critic and mass_critic_rating_update: imdb
-        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 6 local font accessible to PMM
+        rating2_font: config/custom_fonts/Impact.ttf                     # 6 local font accessible to PMM
         rating2_font_size: 70                                            # 6 adjusted font size to fit rating
 
         rating3: audience                                                # 7 as this is audience and mass_audience_rating_update: tmdb
         rating3_image: tmdb                                              # 7 as this is audience and mass_audience_rating_update: tmdb
-        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 7 local font accessible to PMM
+        rating3_font: config/custom_fonts/Avenir_95_Black.ttf            # 7 local font accessible to PMM
         rating3_font_size: 70                                            # 7 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
-    - pmm: streaming                                        # 8
-    - pmm: video_format                                     # 9
-    - pmm: audio_language                                   # 10
-    - pmm: oscars                                           # 11
-      template_variables:                                                # Bottom right sash is used by more than one overlay so a weight for priority is applied
-        weight: 40                                                       # Weight of 40 applies if more than 1 sash is applied in bottom right
-    - pmm: ribbon                                          # 12 & #13
+    - pmm: streaming                                                     # 8
+    - pmm: video_format                                                  # 9
+    - pmm: audio_language                                                # 10
+    - pmm: ribbon                                                        # 11, 12 Bottom right sash is used by more than one overlay so a weight for priority can be applied 
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 5 This operation will update the user rating in plex with Rotten Tomatoes ratings information
       mass_critic_rating_update: imdb                                    # 6 This operation will update the critic rating in plex with IMDb ratings information
@@ -96,30 +93,30 @@ libraries:
     overlay_path:
     - remove_overlays: false
     - reapply_overlay: true
-    - pmm: resolution                                       # 1
-    - pmm: audio_codec                                      # 2
-    - pmm: mediastinger                                     # 3
-    - pmm: ratings                                          # 4,5,6
+    - pmm: resolution                                                    # 1
+    - pmm: audio_codec                                                   # 2
+    - pmm: mediastinger                                                  # 3
+    - pmm: ratings                                                       # 4, 5, 6
       template_variables:           
         rating1: user                                                    # 4 as this is user and mass_user_rating_update: mdb_tomatoes
         rating1_image: rt_tomato                                         # 4 as this is user and mass_user_rating_update: mdb_tomatoes
-        rating1_font: config/metadata/overlays/fonts/Adlib.ttf           # 4 local font accessible to PMM
+        rating1_font: config/custom_fonts/Adlib.ttf                      # 4 local font accessible to PMM
         rating1_font_size: 63                                            # 4 adjusted font size to fit rating
 
         rating2: critic                                                  # 5 as this is critic and mass_critic_rating_update: imdb
         rating2_image: imdb                                              # 5 as this is critic and mass_critic_rating_update: imdb
-        rating2_font: config/metadata/overlays/fonts/Impact.ttf          # 5 local font accessible to PMM
+        rating2_font: config/custom_fonts/Impact.ttf                     # 5 local font accessible to PMM
         rating2_font_size: 70                                            # 5 adjusted font size to fit rating
 
         rating3: audience                                                # 6 as this is audience and mass_audience_rating_update: tmdb
         rating3_image: tmdb                                              # 6 as this is audience and mass_audience_rating_update: tmdb
-        rating3_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 6 local font accessible to PMM
+        rating3_font: config/custom_fonts/Avenir_95_Black.ttf            # 6 local font accessible to PMM
         rating3_font_size: 70                                            # 6 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
-    - pmm: streaming                                        # 7
-    - pmm: video_format                                     # 8
-    - pmm: ribbon                                           # 9, #10
+    - pmm: streaming                                                     # 7
+    - pmm: video_format                                                  # 8
+    - pmm: ribbon                                                        # 10, 11 Bottom right sash is used by more than one overlay so a weight for priority can be applied 
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 4 This operation will update the user rating in plex with Rotten Tomatoes ratings information
       mass_critic_rating_update: imdb                                    # 5 This operation will update the critic rating in plex with IMDb ratings information
@@ -139,13 +136,13 @@ libraries:
     overlay_path:
     - remove_overlays: false
     - reapply_overlay: true
-    - pmm: resolution                                       # 1
+    - pmm: resolution                                                    # 1
       template_variables:
         overlay_level: season
-    - pmm: audio_codec                                      # 2
+    - pmm: audio_codec                                                   # 2
       template_variables:
         overlay_level: season
-    - pmm: video_format                                     # 3
+    - pmm: video_format                                                  # 3
       template_variables:
         overlay_level: season
 ```
@@ -163,34 +160,34 @@ libraries:
     overlay_path:
     - remove_overlays: false
     - reapply_overlay: true
-    - pmm: resolution                                       # 1
+    - pmm: resolution                                                    # 1
       template_variables:
         overlay_level: episode
-    - pmm: audio_codec                                      # 2
+    - pmm: audio_codec                                                   # 2
       template_variables:
         overlay_level: episode
-    - pmm: ratings                                          # 3,4
+    - pmm: ratings                                                       # 3, 4
       template_variables:
 
         rating1: critic                                                  # 3 as this is critic and mass_critic_rating_update: imdb
         rating1_image: imdb                                              # 3 as this is critic and mass_critic_rating_update: imdb
-        rating1_font: config/metadata/overlays/fonts/Impact.ttf          # 3 local font accessible to PMM
+        rating1_font: config/custom_fonts/Impact.ttf                     # 3 local font accessible to PMM
         rating1_font_size: 70                                            # 3 adjusted font size to fit rating
 
         rating2: audience                                                # 4 as this is audience and mass_audience_rating_update: tmdb
         rating2_image: tmdb                                              # 4 as this is audience and mass_audience_rating_update: tmdb
-        rating2_font: config/metadata/overlays/fonts/Avenir_95_Black.ttf # 4 local font accessible to PMM
+        rating2_font: config/custom_fonts/Avenir_95_Black.ttf            # 4 local font accessible to PMM
         rating2_font_size: 70                                            # 4 adjusted font size to fit rating
 
         horizontal_position: right                                       # the set of ratings is on the right of the poster
         overlay_level: episode
-    - pmm: video_format                                     # 5
+    - pmm: video_format                                                  # 5
       template_variables:
         overlay_level: episode
-    - pmm: episode_info                                     # 6
+    - pmm: episode_info                                                  # 6
       template_variables:
         overlay_level: episode
-    - pmm: runtimes                                         # 7
+    - pmm: runtimes                                                      # 7
       template_variables:
         overlay_level: episode
 
@@ -211,59 +208,55 @@ By default, most metadata files use separators to denote different sections of c
 
 </details>
 
-* Can  be turned off by [customizing your config](#customizing-configs)
+* Can be turned off by [customizing your config](#customizing-configs)
 
 ## Collection Section Order
 
 Almost every default metadata file has a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
 
-For example: `collection_section:01` translates to `sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"` and so for `genre.yml` if you have a `Fantasy` collection, plex is going to show `!06_Fantasy`
+For example: `collection_section: 01` translates to `sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"` and so for `genre.yml` if you have a `Fantasy` collection, plex is going to show `!06_Fantasy`
 
 This is the default PMM collection ordering:
 
-
-| Collection	                       | Order                  |
-|:----------------------------------|:-----------------------|
-| `seasonal.yml`                    | collection_section: 00 |
-| `anilist.yml`                     | collection_section: 01 |
-| `basic.yml`                       | collection_section: 01 |
-| `imdb.yml`                        | collection_section: 01 |
-| `myanimelist.yml`                 | collection_section: 01 |
-| `other_chart.yml`                 | collection_section: 01 |
-| `tautulli.yml`                    | collection_section: 01 |
-| `tmdb.yml`                        | collection_section: 01 |
-| `trakt.yml`                       | collection_section: 01 |
-| `universe.yml`                    | collection_section: 02 |
-| `streaming.yml`                   | collection_section: 03 |
-| `network.yml`                     | collection_section: 04 |
-| `genre.yml`                       | collection_section: 06 |
-| `studio.yml`                      | collection_section: 07 |
-| `country.yml`                     | collection_section: 09 |
-| `country.yml`                     | collection_section: 09 |
-| `audio_language.yml`              | collection_section: 10 |
-| `subtitle_language.yml`           | collection_section: 11 |
-| `decade.yml`                      | collection_section: 12 |
-| `decade.yml`                      | collection_section: 12 |
-| `year.yml`                        | collection_section: 13 |
-| `content_rating_uk.yml`           | collection_section: 14 |
-| `content_rating_us.yml`           | collection_section: 14 |
-| `content_rating_us.yml`           | collection_section: 14 |
-| `resolution.yml`                  | collection_section: 15 |
-| `resolution_standards.yml`        | collection_section: 15 |
-| `bafta.yml`                       | collection_section: 16 |
-| `cannes.yml`                      | collection_section: 16 |
-| `choice.yml`                      | collection_section: 16 |
-| `emmy.yml`                        | collection_section: 16 |
-| `golden.yml`                      | collection_section: 16 |
-| `oscars.yml`                      | collection_section: 16 |
-| `other_awart.yml`                 | collection_section: 16 |
-| `separator.yml`                   | collection_section: 16 |
-| `spirit.yml`                      | collection_section: 16 |
-| `sundance.yml`                    | collection_section: 16 |
-| `pmm: actor.yml`                   | collection_section: 17 |
-| `director.yml`                    | collection_section: 18 |
-| `producer.yml`                    | collection_section: 19 |
-| `writer.yml`                      | collection_section: 20 |
+| Collection                        | Collection Section |
+|:----------------------------------|:-------------------|
+| `seasonal.yml`                    |        `00`        |
+| `anilist.yml`                     |        `01`        |
+| `basic.yml`                       |        `01`        |
+| `imdb.yml`                        |        `01`        |
+| `myanimelist.yml`                 |        `01`        |
+| `other_chart.yml`                 |        `01`        |
+| `tautulli.yml`                    |        `01`        |
+| `tmdb.yml`                        |        `01`        |
+| `trakt.yml`                       |        `01`        |
+| `universe.yml`                    |        `02`        |
+| `streaming.yml`                   |        `03`        |
+| `network.yml`                     |        `04`        |
+| `genre.yml`                       |        `06`        |
+| `studio.yml`                      |        `07`        |
+| `country.yml`                     |        `09`        |
+| `audio_language.yml`              |        `10`        |
+| `subtitle_language.yml`           |        `11`        |
+| `decade.yml`                      |        `12`        |
+| `year.yml`                        |        `13`        |
+| `content_rating_us.yml`           |        `14`        |
+| `content_rating_uk.yml`           |        `14`        |
+| `content_rating_cs.yml`           |        `14`        |
+| `resolution.yml`                  |        `15`        |
+| `resolution_standards.yml`        |        `15`        |
+| `bafta.yml`                       |        `16`        |
+| `cannes.yml`                      |        `16`        |
+| `choice.yml`                      |        `16`        |
+| `emmy.yml`                        |        `16`        |
+| `golden.yml`                      |        `16`        |
+| `oscars.yml`                      |        `16`        |
+| `other_award.yml`                 |        `16`        |  
+| `spirit.yml`                      |        `16`        |
+| `sundance.yml`                    |        `16`        |
+| `actor.yml`                       |        `17`        |
+| `director.yml`                    |        `18`        |
+| `producer.yml`                    |        `19`        |
+| `writer.yml`                      |        `20`        |
 
 ## Ratings Overlays
 

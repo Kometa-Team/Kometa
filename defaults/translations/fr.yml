@@ -1,4 +1,4 @@
-version: 1.18.0
+version: 1.18.0.1
 library_type:
   # For Movie Libraries
   movie: film
