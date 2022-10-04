@@ -1,6 +1,6 @@
 # Other Chart Default Metadata File
 
-The `- pmm: chart/other` Metadata File is used to create collections based on other Charts.
+The `- pmm: other_chart` Metadata File is used to create collections based on other Charts.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: chart/other
+      - pmm: other_chart
 ```
 
 ## Template Variables
@@ -59,7 +59,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: other
+      - pmm: other_chart
         template_variables:
           use_commonsense: false
           order_commonsense: 01

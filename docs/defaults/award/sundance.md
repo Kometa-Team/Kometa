@@ -1,6 +1,6 @@
 # Sundance Film Festival Awards Default Metadata File
 
-The `- pmm: award/sundance` Metadata File is used to  create collections based on the Sundance Film Festival Awards.
+The `- pmm: sundance` Metadata File is used to  create collections based on the Sundance Film Festival Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 
@@ -13,7 +13,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/sundance
+      - pmm: sundance
 ```
 
 
@@ -42,7 +42,7 @@ The below shows an example config.yml with all the template_variables set away f
 libraries:
   Movies:
     metadata_path:
-      - pmm: award/sundance
+      - pmm: sundance
         template_variables:
           collection_section: 9
           collection_mode: show_items

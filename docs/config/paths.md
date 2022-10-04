@@ -26,17 +26,17 @@ You can define [Template Variables](../metadata/templates.md#template-variables)
 libraries:
   TV Shows:
     metadata_path:
-      - git: PMM/genre
+      - pmm: genre
         template_variables:
           schedule_separator: never
           collection_mode: hide
-      - git: PMM/actor                  # Notice how the `-` starts this "section"
+      - pmm: actor                  # Notice how the `-` starts this "section"
         template_variables:
           schedule_separator: never
           collection_mode: hide
 ```
 
-In this example there will be two template variables added to every template in the git file PMM/genre.  
+In this example there will be two template variables added to every template in the git file pmm: genre.  
 
 `schedule_separator` is set to `never` to not show a separator in this section and `collection_mode` is set to `hide`.
 
@@ -54,10 +54,10 @@ libraries:
     metadata_path:
       - file: config/Movies.yml
         schedule: weekly(friday)
-      - git: PMM/actors
+      - pmm: actors
         schedule: weekly(saturday)
     overlay_path:
-      - git: PMM/overlays/imdb
+      - pmm: imdb
         schedule: weekly(monday)
 playlist_files:
   - file: config/Playlists.yml
@@ -74,10 +74,10 @@ libraries:
     metadata_path:
       - file: config/Movies.yml
         asset_directory: assets/Movies
-      - git: PMM/actors
+      - pmm: actors
         asset_directory: assets/people
     overlay_path:
-      - git: PMM/overlays/imdb
+      - pmm: imdb
 playlist_files:
   - file: config/Playlists.yml
     asset_directory:
@@ -103,7 +103,7 @@ libraries:
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - git: PMM/chart/tmdb
+      - pmm: tmdb
       - repo: charts
       - url: https://somewhere.com/PopularTV.yml
 ```
@@ -112,7 +112,7 @@ Within the above example, PMM will:
 
 * First, look within the root of the PMM directory (also known as `config/`) for a metadata file named `TVShows.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
 * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `TV Shows`, and then load any metadata files within that directory.
-* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `MovieCharts.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/chart/imdb.yml).
+* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `MovieCharts.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/imdb.yml).
 * Then, look at the within the Custom Defined Repo for a file called `charts.yml`.
 * Finally, load the metadata file located at `https://somewhere.com/PopularTV.yml`
 
@@ -136,7 +136,7 @@ libraries:
     overlay_path:
       - file: config/overlays.yml
       - folder: config/overlay configs/
-      - git: PMM/overlays/imdb
+      - pmm: imdb
       - repo: overlays
       - url: https://somewhere.com/Overlays.yml
 ```
@@ -145,7 +145,7 @@ Within the above example, PMM will:
 
 * First, look within the root of the PMM directory (also known as `config/`) for a metadata file named `overlays.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
 * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `overlay configs`, and then load any metadata files within that directory.
-* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `PMM/overlays/imdb.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/overlays/imdb.yml).
+* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `pmm: imdb.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/overlays/imdb.yml).
 * Then, look at the within the Custom Defined Repo for a file called `overlays.yml`.
 * Finally, load the metadata file located at `https://somewhere.com/Overlays.yml`
 
@@ -167,7 +167,7 @@ In this example, multiple `playlist_files` attribute path types are defined:
 playlist_files:
   - file: config/playlists.yml
   - folder: config/Playlists/
-  - git: PMM/playlist
+  - pmm: playlist
   - repo: playlists
   - url: https://somewhere.com/Playlists.yml
 ```
@@ -199,7 +199,7 @@ external_templates:
   - file: config/templates.yml
   - folder: config/templates/
   - url: https://somewhere.com/templates.yml
-  - git: PMM/templates
+  - pmm: templates
   - repo: templates
 ```
 

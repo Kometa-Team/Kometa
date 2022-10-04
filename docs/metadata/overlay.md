@@ -116,7 +116,7 @@ overlays:
     imdb_chart: top_movies
     overlay:
       name: IMDB-Top-250
-      git: PMM/overlays/images/IMDB-Top-250
+      pmm: images/IMDB-Top-250
       horizontal_offset: 0
       horizontal_align: right
       vertical_offset: 0
@@ -291,7 +291,7 @@ overlays:
       back_radius: 30
       back_width: 300
       back_height: 105
-      git: PMM/overlays/images/raw/IMDB_Rating
+      pmm: images/raw/IMDB_Rating
       addon_position: left
       addon_offset: 25
 ```
@@ -307,7 +307,7 @@ overlays:
   Dual-Audio:
     overlay:
       name: Dual-Audio
-      git: PMM/overlays/images/Dual-Audio
+      pmm: images/Dual-Audio
       group: audio_language
       weight: 10
       horizontal_offset: 0
@@ -320,7 +320,7 @@ overlays:
   Multi-Audio:
     overlay:
       name: Multi-Audio
-      git: PMM/overlays/images/Multi-Audio
+      pmm: images/Multi-Audio
       group: audio_language
       weight: 20
       horizontal_offset: 0
@@ -455,7 +455,7 @@ overlays:
   HDR:
     overlay:
       name: HDR
-      git: PMM/overlays/HDR
+      pmm: HDR
     plex_search:
       all:
         hdr: true
