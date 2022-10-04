@@ -26,19 +26,12 @@
 #############################################################
 
 external_templates:
-  git: PMM/templates
+  pmm: templates
   template_variables:
     collection_section: "04"
 
-templates:
-  networks_dynamic:
-    default:
-      sort_by: release.desc
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/network/<<key_encoded>>.jpg
-    smart_filter:
-      sort_by: <<sort_by>>
-      any:
-        network: <<value>>
+translations:
+  pmm: translations
 
 collections:
   Network Collections:
@@ -47,15 +40,22 @@ collections:
         separator: network
 
 dynamic_collections:
-  Network US:
+  Network:
     type: network
     title_format: <<key_name>>
     template:
-      - networks_dynamic
+      - smart_filter
       - shared
     other_template:
-      - networks_dynamic
+      - smart_filter
       - shared
+    template_variables:
+      search_term:
+        default: network
+      image:
+        default: network/<<key_encoded>>
+      translation_key:
+        default: network
     include:
       - A&E
       - ABC

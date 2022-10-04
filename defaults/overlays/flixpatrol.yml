@@ -14,7 +14,7 @@ queues:
       vertical_align: top
 
 templates:
-  Top10:
+  FlixPatrol:
     optional:
       - use_<<key>>
       - time_window_<<key>>
@@ -22,6 +22,7 @@ templates:
     default:
       style: round
       overlay: <<overlay_name>>
+      slug: <<key>>
       horizontal_offset: 15
       horizontal_align: left
       vertical_offset: 15
@@ -74,14 +75,14 @@ templates:
 
 overlays:
   Netflix:
-    template: {name: Top10, weight: 600, key: netflix}
+    template: {name: FlixPatrol, weight: 600, key: netflix}
   Disney:
-    template: {name: Top10, weight: 500, key: disney}
+    template: {name: FlixPatrol, weight: 500, key: disney}
   HBO:
-    template: {name: Top10, weight: 400, key: hbo}
+    template: {name: FlixPatrol, weight: 400, key: hbo}
   Hulu:
-    template: {name: Top10, weight: 300, key: hulu}
+    template: {name: FlixPatrol, weight: 300, key: hulu}
   Paramount:
-    template: {name: Top10, weight: 200, key: paramount, slug: paramount_plus}
+    template: {name: FlixPatrol, weight: 200, key: paramount, slug: paramount_plus}
   Prime:
-    template: {name: Top10, weight: 100, key: prime, slug: amazon_prime}
+    template: {name: FlixPatrol, weight: 100, key: prime, slug: amazon_prime}
