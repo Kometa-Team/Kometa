@@ -2,6 +2,7 @@ external_templates:
   pmm: templates
   template_variables:
     collection_section: "01"
+    sort_title: "!<<collection_section>>_!TOP<<collection_name>>"
 
 translations:
   pmm: translations
