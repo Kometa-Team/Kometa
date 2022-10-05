@@ -1,4 +1,4 @@
-version: 1.18.0.1
+version: 1.18.0.2
 library_type:
   # For Movie Libraries
   movie: film
@@ -220,6 +220,10 @@ translations:
   # example key_name: Action
   genre_name: <<library_typeU>>s de <<key_name>> 
   genre_summary: <<library_typeU>>s qui ont le genre <<key_name>>.
+
+  # example key_name: NBC
+  network_name: <<key_name>>
+  network_summary: <<library_typeU>>s diffusés sur <<key_name>>.
 
   # example key_name: Robin Williams
   producer_name: <<key_name>> (Producteur)
