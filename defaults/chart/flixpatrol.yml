@@ -1,3 +1,86 @@
+###################################################################################################
+#                                 FlixPatrol Collection                                           #
+#                  Created by Yozora, Bullmoose20, Sohjiro & anon_fawkes                          #
+#                         Credit to Magic815 for base images                                      #
+###################################################################################################
+#                  Call this from your config.yml (Movie or Show):                                #
+#                  If nothing is specified these are the defaults                                 #
+#                                                                                                 #
+#       Flixpatrol monitors multiple platforms to pull data from. Use the "KEY" to disable        #
+#                          the platform you dont want to pull from                                #
+#                                                                                                 #
+#                                                                                                 #
+#                           # Available Platforms                                                 #
+#                           #   KEY              PLATFORM                                         #
+#                           #   netflix          Netflix                                          #
+#                           #   disney           Disney+                                          #
+#                           #   paramount        Paramount Plus                                   #
+#                           #   hbo              HBO                                              #
+#                           #   hulu             Hulu                                             #
+#                           #   prime            Amazon Prime                                     #
+#                                                                                                 #
+#       You can also change the location pull data from                                           #
+#                                                                                                 #
+#       Please visit the following to see location values you can use                             #
+#  https://metamanager.wiki/en/nightly/metadata/builders/flixpatrol.html#top-platform-attributes  #
+#                                                                                                 #
+#   To change the time windows to pull top movies/show from                                       #
+#   use the following "KEYS"                                                                      #
+#                                                                                                 #
+#                           # Available Times                                                     #
+#                           #   KEY              TIME                                             #
+#                           #   today            Today                                            #
+#                           #   yesterday        Yesterday                                        #
+#                           #   this_week        This Week                                        #
+#                           #   last_week        Last Week                                        #
+#                           #   this_month       This Month                                       #
+#                           #   last_month       Last Month                                       #
+#                           #   this_year        This Year                                        #
+#                           #   last_year        Last Year                                        #
+#                                                                                                 #
+#    Style variable can be "square" or "round"                                                    #
+#                                                                                                 #
+#    metadata_path:                                                                               #
+#      - pmm: flixpatrol                                                                          #
+#        template_variables:                                                                      #
+#          # Customize summary of collection                                                      #
+#          summary_key: A collection of ...                                                       #
+#          # Turn the collection on/off                                                           #
+#          use_key: true                                                                          #
+#          # Determines collection order in its section                                           #
+#          order_key:                                                                             #
+#          # Determines collection order of the collection                                        #
+#          collection_order_key: custom                                                           #
+#          # Set visible_library for the collection                                               #
+#          visible_library_key:                                                                   #
+#          # Set visible_home for the collection                                                  #
+#          visible_home_key:                                                                      #
+#          # Set visible_shared for the collection                                                #
+#          visible_shared_key:                                                                    #
+#          # Adds missing from the collection to radarr                                           #
+#          radarr_add_missing_key:                                                                #
+#          # Adds missing from the collection to sonarr                                           #
+#          sonarr_add_missing_key:                                                                #
+#          # Radarr Folder to add to                                                              #
+#          radarr_folder_key:                                                                     #
+#          # Sonarr Folder to add to                                                              #
+#          sonarr_folder_key:                                                                     #
+#          # Radarr Tag for added missing                                                         #
+#          radarr_tag_key:                                                                        #
+#          # Sonarr Tag for added missing                                                         #
+#          sonarr_tag_key:                                                                        #
+#          # Radarr Tag for existing items                                                        #
+#          item_radarr_tag_key:                                                                   #
+#          # Sonarr Tag for existing items                                                        #
+#          item_sonarr_tag_key:                                                                   #
+#          # Change the time window of FlixPatrol                                                 #
+#          time_window_key: last_week                                                             #
+#          # Change the location of FlixPatrol                                                    #
+#          location_key: united_states                                                            #
+#          # Change amount of Top movies/shows                                                    #
+#          limit_key: 10                                                                          #
+###################################################################################################
+
 external_templates:
   pmm: templates
   template_variables:
