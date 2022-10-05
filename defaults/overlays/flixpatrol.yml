@@ -1,17 +1,31 @@
 queues:
-  top10:
-    - horizontal_offset: 30         # This is the first position
-      horizontal_align: right
-      vertical_offset: 465
-      vertical_align: top
-    - horizontal_offset: 30         # This is the second position
-      horizontal_align: right
-      vertical_offset: 670
-      vertical_align: top
-    - horizontal_offset: 30         # This is the third position
-      horizontal_align: right
-      vertical_offset: 875
-      vertical_align: top
+  flixpatrol_position:
+    right:
+      - horizontal_offset: 30         # This is the first position
+        horizontal_align: right
+        vertical_offset: 465
+        vertical_align: top
+      - horizontal_offset: 30         # This is the second position
+        horizontal_align: right
+        vertical_offset: 670
+        vertical_align: top
+      - horizontal_offset: 30         # This is the third position
+        horizontal_align: right
+        vertical_offset: 875
+        vertical_align: top
+    left:
+      - horizontal_offset: 30         # This is the first position
+        horizontal_align: left
+        vertical_offset: 465
+        vertical_align: top
+      - horizontal_offset: 30         # This is the second position
+        horizontal_align: left
+        vertical_offset: 670
+        vertical_align: top
+      - horizontal_offset: 30         # This is the third position
+        horizontal_align: left
+        vertical_offset: 875
+        vertical_align: top
 
 templates:
   FlixPatrol:
@@ -49,7 +63,7 @@ templates:
     allowed_library_types: <<use_<<key>>>>
     overlay:
       name: text(TOP<<limit>>)
-      queue: top10
+      queue: flixpatrol_position
       weight: <<weight_<<key>>>>
       horizontal_offset: <<horizontal_offset>>
       horizontal_align: <<horizontal_align>>
