@@ -14,7 +14,7 @@ These collections are applied by calling the below paths into the `metadata_path
 |:------------|:--------------------|----------------------------------------------|:-----------------:|:----------------:|
 | AniList     | `anilist`           | AniList Popular, AniList Season              |      &#9989;      |     &#9989;      |
 | Basic       | `basic`             | Newly Released, New Episodes                 |      &#9989;      |     &#9989;      |
-| FlixPatrol  | `flixpatrol`        | Top Disney, Hbo, Hulu, Netflix, Prime, Para+ |      &#9989;      |     &#9989;      |
+| FlixPatrol  | `flixpatrol`        | Top Disney, Top Hbo, Top Hulu, Top Netflix   |      &#9989;      |     &#9989;      |
 | IMDb        | `imdb`              | IMDb Popular, IMDb Top 250                   |      &#9989;      |     &#9989;      |
 | MyAnimeList | `myanimelist`       | MyAnimeList Popular, MyAnimeList Top Rated   |      &#9989;      |     &#9989;      |
 | Other       | `other`             | AniDB Popular, Common Sense Selection        |      &#9989;      |     &#9989;      |

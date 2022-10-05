@@ -145,13 +145,21 @@ class DataFile:
         if "translations" not in yaml.data:
             raise Failed(f"URL Error: Top Level translations attribute not found in {content_path}")
         translations = {k: {"default": v} for k, v in yaml.data["translations"].items()}
-        translations["library_type"] = {"default": self.library.type.lower() if self.library else "item"}
+        lib_type = self.library.type.lower() if self.library else "item"
+        translations["library_type"] = {"default": lib_type}
         logger.debug(f"Translations Loaded From: {dir_path}")
         key_names = {}
 
         def add_translation(yaml_path, yaml_key, data=None):
             yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
-            if "translations" in yaml_content.data:
+            if "variables" in yaml_content.data and yaml_content.data["variables"]:
+                for var_key, var_value in yaml_content.data["variables"]:
+                    if lib_type in var_value:
+                        if var_key not in key_names:
+                            key_names[var_key] = {}
+                        key_names[var_key][yaml_key] = var_value[lib_type]
+
+            if "translations" in yaml_content.data and yaml_content.data["translations"]:
                 for ky, vy in yaml_content.data["translations"].items():
                     if ky in translations:
                         translations[ky][yaml_key] = vy
@@ -161,7 +169,7 @@ class DataFile:
                 logger.error(f"Config Error: Top Level translations attribute not found in {yaml_path}")
             if "key_names" in yaml_content.data and yaml_content.data["key_names"]:
                 for kn, vn in yaml_content.data["key_names"].items():
-                    if kn not in translations:
+                    if kn not in key_names:
                         key_names[kn] = {}
                     key_names[kn][yaml_key] = vn
 
@@ -241,15 +249,14 @@ class DataFile:
                         else:
                             variables[temp_key] = temp_value
 
-                    translation_variables = {}
                     language = variables["language"] if "language" in variables else "default"
-                    logger.debug(variables)
-                    for temp_key, temp_value in self.translations.items():
-                        if temp_key == "library_type":
-                            variables[temp_key] = temp_value[language if language in temp_value else "default"]
-                            variables[f"{temp_key}U"] = temp_value[language if language in temp_value else "default"].capitalize()
-                        else:
-                            translation_variables[temp_key] = temp_value[language if language in temp_value else "default"]
+                    translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items()}
+                    for var_key, var_value in self.key_names.items():
+                        if var_key == "library_type" and language in var_value:
+                            variables[var_key] = var_value[language].lower()
+                            variables[f"{var_key}U"] = var_value[language]
+                        elif language in var_value:
+                            translation_variables[var_key] = var_value[language]
 
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
@@ -775,9 +782,9 @@ class MetadataFile(DataFile):
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
-                        title_format = title_format.replace("<<library_type>>", library.type)
+                        title_format = title_format.replace("<<library_type>>", library.type.lower())
                     if "<<library_typeU>>" in title_format:
-                        title_format = title_format.replace("<<library_typeU>>", library.type.capitalize())
+                        title_format = title_format.replace("<<library_typeU>>", library.type)
                     if "limit" in self.temp_vars and "<<limit>>" in title_format:
                         title_format = title_format.replace("<<limit>>", self.temp_vars["limit"])
                     template_variables = util.parse("Config", "template_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "template_variables" in methods else {}

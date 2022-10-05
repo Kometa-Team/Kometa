@@ -1,15 +1,16 @@
 version: 1.18.0.2
-library_type:
-  # For Movie Libraries
-  movie: film
-  # For Show Libraries
-  show: émission
-  # For Music Libraries
-  artist: artiste
-  # For Other Video Libraries
-  video: vidéo
-  # For Playlists
-  item: article
+variables:
+  library_type:
+    # For Movie Libraries
+    movie: Film
+    # For Show Libraries
+    show: Émission
+    # For Music Libraries
+    artist: Artiste
+    # For Other Video Libraries
+    video: Vidéo
+    # For Playlists
+    item: Article
 key_names:
 
 translations:

@@ -623,7 +623,7 @@ class Operations:
                     yaml.data["metadata"][map_key] = loop_dict(attrs, og_dict)
             logger.exorcise()
             yaml.save()
-            logger.info(f"{len(yaml.data['metadata'])} {self.library.type.capitalize()}{'s' if len(yaml.data['metadata']) > 1 else ''} Backed Up")
+            logger.info(f"{len(yaml.data['metadata'])} {self.library.type}{'s' if len(yaml.data['metadata']) > 1 else ''} Backed Up")
 
         operation_run_time = str(datetime.now() - operation_start).split('.')[0]
         logger.info("")
