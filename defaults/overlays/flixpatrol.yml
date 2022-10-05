@@ -1,3 +1,85 @@
+###################################################################################################
+#                                 FlixPatrol Overlay                                              #
+#                  Created by Yozora, Bullmoose20, Sohjiro & anon_fawkes                          #
+#                         Credit to Magic815 for base images                                      #
+###################################################################################################
+#                  Call this from your config.yml (Movie or Show):                                #
+#                  If nothing is specified these are the defaults                                 #
+#                                                                                                 #
+#       Flixpatrol monitors multiple platforms to pull data from. Use the "KEY" to disable        #
+#                          the platform you dont want to pull from                                #
+#                                                                                                 #
+#                           # Available Platforms                                                 #
+#                           #   KEY              PLATFORM                                         #
+#                           #   netflix          Netflix                                          #
+#                           #   disney           Disney+                                          #
+#                           #   paramount        Paramount Plus                                   #
+#                           #   hbo              HBO                                              #
+#                           #   hulu             Hulu                                             #
+#                           #   prime            Amazon Prime                                     #
+#                                                                                                 #
+#       You can also change the location pull data from                                           #
+#                                                                                                 #
+#       Please visit the following to see location values you can use                             #
+#  https://metamanager.wiki/en/nightly/metadata/builders/flixpatrol.html#top-platform-attributes  #
+#                                                                                                 #
+#   To change the time windows to pull top movies/show from                                       #
+#   use the following "KEYS"                                                                      #
+#                                                                                                 #
+#                           # Available Times                                                     #
+#                           #   KEY              TIME                                             #
+#                           #   today            Today                                            #
+#                           #   yesterday        Yesterday                                        #
+#                           #   this_week        This Week                                        #
+#                           #   last_week        Last Week                                        #
+#                           #   this_month       This Month                                       #
+#                           #   last_month       Last Month                                       #
+#                           #   this_year        This Year                                        #
+#                           #   last_year        Last Year                                        #
+#                                                                                                 #
+#    Style variable can be "square" or "round"                                                    #
+#                                                                                                 #
+#    overlay_path:                                                                                #
+#      - pmm: flixpatrol                                                                          #
+#        template_variables:                                                                      #
+#          # Set the horizontal align for the overlay                                             #
+#          flixpatrol_position: right                                                             #
+#          # Set the back color for the overlay                                                   #
+#          back_color: "#00000099"                                                                #
+#          # Set the back radius for the overlay                                                  #
+#          back_radius: 30                                                                        #
+#          # Set the back width for the overlay                                                   #
+#          back_width: 165                                                                        #
+#          # Set the back height for the overlay                                                  #
+#          back_height: 165                                                                       #
+#          # Set the back width for the overlay                                                   #
+#          back_width: 165                                                                        #
+#          # Set the back align for the overlay                                                   #
+#          back_align: center                                                                     #
+#          # Set the back padding for the overlay                                                 #
+#          back_padding: 15                                                                       #
+#          # Set the addon position for the overlay                                               #
+#          addon_position: top                                                                    #
+#          # Set the addon offset for the overlay                                                 #
+#          addon_offset: 30                                                                       #
+#          #Set the font for the overlay                                                          #
+#          font: fonts/Inter-Bold.ttf                                                             #
+#          #Set the font size for the overlay                                                     #
+#          font_size: 50                                                                          #
+#          #Set the font color for the overlay                                                    #
+#          font_color: "#FFFFFF"                                                                  #
+#          # Use the "KEY" overlay                                                                #
+#          use_key: true                                                                          #
+#          # Change the time window of FlixPatrol                                                 #
+#          time_window_key: last_week                                                             #
+#          # Change the location of FlixPatrol                                                    #
+#          location_key: united_states                                                            #
+#          # Change amount of Top movies/shows                                                    #
+#          limit_key: 10                                                                          #
+#          # Change style of the logo                                                             #
+#          style: round                                                                           #
+###################################################################################################
+
 queues:
   flixpatrol_position:
     right:
