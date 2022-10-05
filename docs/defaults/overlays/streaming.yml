@@ -1,0 +1,108 @@
+#############################################################
+#                    Streaming Overlay                      #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#            Credit to Magic815 for base images             #
+#############################################################
+#  Call this from your config.yml (Movie or Show):          #
+#  If nothing is specified these are the defaults           #
+#                                                           #
+#    overlay_path:                                          #
+#      - git: PMM/overlays/streaming                        #
+#        template_variables:                                #
+#          # Set the horizontal offset for the overlay      #
+#          horizontal_offset: 15                            #
+#          # Set the horizontal align for the overlay        #
+#          horizontal_align: left                           #
+#          # Set the vertical offset for the overlay        #
+#          vertical_offset: 150                             #
+#          # Set the vertical align for the overlay         #
+#          vertical_align: bottom                           #
+#          # Set the back color for the overlay             #
+#          back_color: "#00000099"                          #
+#          # Set the back radius for the overlay            #
+#          back_radius: 30                                  #
+#          # Set the back width for the overlay             #
+#          back_width: 305                                  #
+#          # Set the back height for the overlay            #
+#          back_height: 105                                 #
+#                                                           #
+#          # Use the Amazon overlay                         #
+#          use_amazon: true                                 #
+#          # Use the AppleTV overlay                        #
+#          use_appletv: true                                #
+#          # Use the Disney overlay                         #
+#          use_disney: true                                 #
+#          # Use the HBO-Max overlay                        #
+#          use_hbomax: true                                 #
+#          # Use the Hulu overlay                           #
+#          use_hulu: true                                   #
+#          # Use the Netflix overlay                        #
+#          use_netflix: true                                #
+#          # Use the Paramount overlay                      #
+#          use_paramount: true                              #
+#          # Use the Peacock overlay                        #
+#          use_peacock: true                                #
+#          # Use the YouTube overlay                        #
+#          use_youtube: true                                #
+#############################################################
+
+templates:
+  Streaming:
+    optional:
+      - overlay_level
+      - use_<<slug>>
+    default:
+      overlay: <<overlay_name>>
+      horizontal_offset: 15
+      horizontal_align: left
+      vertical_offset: 150
+      vertical_align: bottom
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 305
+      back_height: 105
+    allowed_library_types: <<use_<<slug>>>>
+    ignore_blank_results: true
+    overlay:
+      name: <<overlay_name>>
+      pmm: streaming/<<overlay>>
+      group: streaming
+      weight: <<weight>>
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
+      back_color: <<back_color>>
+      back_radius: <<back_radius>>
+      back_width: <<back_width>>
+      back_height: <<back_height>>
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<slug>>-<<library_type>>s
+
+overlays:
+
+  Netflix:
+    template: {name: Streaming, weight: 200, slug: netflix}
+
+  Prime:
+    template: {name: Streaming, weight: 190, slug: amazon}
+
+  Disney:
+    template: {name: Streaming, weight: 180, slug: disney}
+
+  HBO-Max:
+    template: {name: Streaming, weight: 170, slug: hbomax}
+
+  YouTube:
+    template: {name: Streaming, weight: 160, slug: youtube}
+
+  Hulu:
+    template: {name: Streaming, weight: 150, slug: hulu}
+
+  Paramount:
+    template: {name: Streaming, weight: 140, slug: paramount}
+
+  AppleTV:
+    template: {name: Streaming, weight: 130, slug: appletv}
+
+  Peacock:
+    template: {name: Streaming, weight: 120, slug: peacock}

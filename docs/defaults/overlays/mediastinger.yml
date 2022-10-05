@@ -1,0 +1,63 @@
+#############################################################
+#                Mediastinger Overlay                       #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#            Credit to Magic815 for base images             #
+#############################################################
+#  Call this from your config.yml (Movie or Show):          #
+#    overlay_path:                                          #
+#      - git: PMM/overlays/mediastinger                     #
+#        template_variables:                                #
+#          # Set episode or season to overlay               #
+#          overlay_level:                                   #
+#          # Set the horizontal offset for the overlay      #
+#          horizontal_offset: 200                           #
+#          # Set the horizontal align for the overlay       #
+#          horizontal_align: right                          #
+#          # Set the vertical offset for the overlay        #
+#          vertical_offset: 15                              #
+#          # Set the vertical align for the overlay         #
+#          vertical_align: top                              #
+#          # Set the back color for the overlay             #
+#          back_color: "#00000099"                          #
+#          # Set the back radius for the overlay            #
+#          back_radius: 30                                  #
+#          # Set the back width for the overlay             #
+#          back_width: 105                                  #
+#          # Set the back height for the overlay            #
+#          back_height: 105                                 #
+#############################################################
+
+templates:
+  stinger:
+    optional:
+      - overlay_level
+    default:
+      overlay: <<overlay_name>>
+      horizontal_offset: 200
+      horizontal_align: right
+      vertical_offset: 15
+      vertical_align: top
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 105
+      back_height: 105
+    overlay_level: <<overlay_level>>
+    overlay:
+      name: <<overlay_name>>
+      pmm: Mediastinger
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
+      back_color: <<back_color>>
+      back_radius: <<back_radius>>
+      back_width: <<back_width>>
+      back_height: <<back_height>>
+
+overlays:
+  Mediastinger:
+    template:
+      - name: stinger
+    plex_all: true
+    filters:
+      tmdb_keyword: aftercreditsstinger, duringcreditsstinger
