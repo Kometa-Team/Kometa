@@ -97,7 +97,9 @@ templates:
       horizontal_position: left
       vertical_position: center
       rating_alignment: vertical
-      rating<<rating_num>>: none
+      rating1: none
+      rating2: none
+      rating3: none
       center_offset: 0
       standard_offset: 30
       v2_offset: 235
