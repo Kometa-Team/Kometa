@@ -153,7 +153,7 @@ class DataFile:
         def add_translation(yaml_path, yaml_key, data=None):
             yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
             if "variables" in yaml_content.data and yaml_content.data["variables"]:
-                for var_key, var_value in yaml_content.data["variables"]:
+                for var_key, var_value in yaml_content.data["variables"].items():
                     if lib_type in var_value:
                         if var_key not in key_names:
                             key_names[var_key] = {}
