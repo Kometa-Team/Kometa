@@ -21,12 +21,6 @@ templates:
       time_window: <<time_window_<<key>>>>
       limit: <<limit_<<key>>>>
 
-collections:
-  Chart Collections:
-    template:
-      - name: separator
-        separator: Top10
-
 dynamic_collections:
   Top 10:
     type: custom
