@@ -10,16 +10,17 @@ These collections are applied by calling the below paths into the `metadata_path
 
 ### Chart Collections
 
-| Source      | config.yml entry    | Example Collections Created                 | Works with Movies | Works with Shows |
-|:------------|:--------------------|---------------------------------------------|:-----------------:|:----------------:|
-| AniList     | `anilist`           | AniList Popular, AniList Season             |      &#9989;      |     &#9989;      |
-| Basic       | `basic`             | Newly Released, New Episodes                |      &#9989;      |     &#9989;      |
-| IMDb        | `imdb`              | IMDb Popular, IMDb Top 250                  |      &#9989;      |     &#9989;      |
-| MyAnimeList | `myanimelist`       | MyAnimeList Popular, MyAnimeList Top Rated  |      &#9989;      |     &#9989;      |
-| Other       | `other`             | AniDB Popular, Common Sense Selection       |      &#9989;      |     &#9989;      |
-| Tautulli    | `tautulli`          | Plex Popular, Plex Watched                  |      &#9989;      |     &#9989;      |
-| TMDb        | `tmdb`              | TMDb Popular, TMDb Airing Today             |      &#9989;      |     &#9989;      |
-| Trakt       | `trakt`             | Trakt Popular, Trakt Trending               |      &#9989;      |     &#9989;      |
+| Source      | config.yml entry    | Example Collections Created                  | Works with Movies | Works with Shows |
+|:------------|:--------------------|----------------------------------------------|:-----------------:|:----------------:|
+| AniList     | `anilist`           | AniList Popular, AniList Season              |      &#9989;      |     &#9989;      |
+| Basic       | `basic`             | Newly Released, New Episodes                 |      &#9989;      |     &#9989;      |
+| FlixPatrol  | `flixpatrol`        | Top Disney, Hbo, Hulu, Netflix, Prime, Para+ |      &#9989;      |     &#9989;      |
+| IMDb        | `imdb`              | IMDb Popular, IMDb Top 250                   |      &#9989;      |     &#9989;      |
+| MyAnimeList | `myanimelist`       | MyAnimeList Popular, MyAnimeList Top Rated   |      &#9989;      |     &#9989;      |
+| Other       | `other`             | AniDB Popular, Common Sense Selection        |      &#9989;      |     &#9989;      |
+| Tautulli    | `tautulli`          | Plex Popular, Plex Watched                   |      &#9989;      |     &#9989;      |
+| TMDb        | `tmdb`              | TMDb Popular, TMDb Airing Today              |      &#9989;      |     &#9989;      |
+| Trakt       | `trakt`             | Trakt Popular, Trakt Trending                |      &#9989;      |     &#9989;      |
 
 ### Award Collections
 
