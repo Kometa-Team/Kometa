@@ -250,7 +250,7 @@ html_theme_options = {
                 ("Edition Overlay", "defaults/overlays/edition"),
                 ("Episode Info Overlay", "defaults/overlays/episode_info"),
                 ("After Credit Overlay", "defaults/overlays/mediastinger"),
-                ("Ratings Overlay", "defaults/overlays/resolution"),
+                ("Ratings Overlay", "defaults/overlays/ratings"),
                 ("Resolution Overlay", "defaults/overlays/resolution"),
                 ("Ribbon Overlay", "defaults/overlays/ribbon"),
                 ("Runtimes Overlay", "defaults/overlays/runtimes"),

@@ -1,0 +1,70 @@
+#############################################################
+#                      Ribbon Overlay                       #
+#         Created by Yozora, Bullmoose20, & Sohjiro         #
+#            Credit to Magic815 for base images             #
+#############################################################
+#  Call this from your config.yml (Movie or Show):          #
+#      - pmm: ribbon                                        #
+#        template_variables:                                #
+#                                                           #
+#          # For each overlay use the "key" to set          #
+#          # the options.                                   #
+#          # Available overlays                             #
+#          #   KEY              COLLECTION                  #
+#          #   oscars           Academy Awards (Oscars)     #
+#          #   imdb             IMDb Top 250                #
+#          #   rotten           Rotten Tomatoes Certified Fresh#
+#          #   metacritic       Metacritic Must See         #
+#          #   common           Commonsense Selection       #
+#                                                           #
+#          # Available options. Replace "key" with the      #
+#          # desired collection's key from the chart above. #
+#                                                           #
+#          # Turn the collection on/off                     #
+#          use_key: true                                    #
+#          # Determines collection order in its section     #
+#          # Sets the weight for that overlay               #
+#          weight_key:                                      #
+#############################################################
+
+templates:
+  Ribbon:
+    default:
+      weight_<<key>>: <<weight>>
+    optional:
+      - mdb_key
+      - imdb_key
+      - allowed_libraries
+      - use_<<key>>
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<mdb_key>><<library_type>>s
+    imdb_chart: <<imdb_key>>_<<library_type>>s
+    allowed_library_types:
+      - <<use_<<key>>>>
+      - <<allowed_libraries>>
+    overlay:
+      name: <<overlay_name>>
+      pmm: ribbon/<<key>>
+      group: ribbon
+      weight: <<weight_<<key>>>>
+      horizontal_offset: 0
+      horizontal_align: right
+      vertical_offset: 0
+      vertical_align: bottom
+
+overlays:
+
+  Oscars Best Picture:
+    imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
+    template: {name: Ribbon, key: oscars, weight: 40, allowed_libraries: movie}
+
+  IMDb Top 250:
+    template: {name: Ribbon, imdb_key: top, key: imdb, weight: 30}
+
+  Rotten Tomatoes Certified Fresh:
+    template: {name: Ribbon, mdb_key: certifiedfresh, key: rotten, weight: 20}
+
+  Metacritic Must See:
+    template: {name: Ribbon, mdb_key: metacriticmustsee, key: metacritic, weight: 10}
+
+  Commonsense Selection:
+    template: {name: Ribbon, mdb_key: cssfamilies, key: common, weight: 5}

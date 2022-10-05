@@ -1,0 +1,102 @@
+queues:
+  flixpatrol_position:
+    right:
+      - horizontal_offset: 30         # This is the first position
+        horizontal_align: right
+        vertical_offset: 465
+        vertical_align: top
+      - horizontal_offset: 30         # This is the second position
+        horizontal_align: right
+        vertical_offset: 670
+        vertical_align: top
+      - horizontal_offset: 30         # This is the third position
+        horizontal_align: right
+        vertical_offset: 875
+        vertical_align: top
+    left:
+      - horizontal_offset: 30         # This is the first position
+        horizontal_align: left
+        vertical_offset: 465
+        vertical_align: top
+      - horizontal_offset: 30         # This is the second position
+        horizontal_align: left
+        vertical_offset: 670
+        vertical_align: top
+      - horizontal_offset: 30         # This is the third position
+        horizontal_align: left
+        vertical_offset: 875
+        vertical_align: top
+
+templates:
+  FlixPatrol:
+    optional:
+      - use_<<key>>
+      - time_window_<<key>>
+      - location_<<key>>
+    default:
+      style: round
+      overlay: <<overlay_name>>
+      slug: <<key>>
+      horizontal_offset: 15
+      horizontal_align: left
+      vertical_offset: 15
+      vertical_align: top
+      font: fonts/Inter-Bold.ttf
+      font_size: 50
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 165
+      back_height: 165
+      back_align: center
+      back_padding: 15
+      addon_position: top
+      addon_offset: 30
+      time_window: last_week
+      time_window_<<key>>: <<time_window>>
+      location: united_states
+      location_<<key>>: <<location>>
+      limit: 10
+      limit_<<key>>: <<limit>>
+      weight_<<key>>: <<weight>>
+    ignore_blank_results: true
+    allowed_library_types: <<use_<<key>>>>
+    overlay:
+      name: text(TOP<<limit>>)
+      queue: flixpatrol_position
+      weight: <<weight_<<key>>>>
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
+      font: <<font>>
+      font_size: <<font_size>>
+      font_color: <<font_color>>
+      back_radius: <<back_radius>>
+      back_color: <<back_color>>
+      back_width: <<back_width>>
+      back_height: <<back_height>>
+      back_align: <<back_align>>
+      back_padding: <<back_padding>>
+      pmm: logo/<<style>>/<<key>>
+      addon_position: <<addon_position>>
+      addon_offset: <<addon_offset>>
+    flixpatrol_top:
+      platform: <<slug>>
+      location: <<location_<<key>>>>
+      time_window: <<time_window_<<key>>>>
+      limit: <<limit_<<key>>>>
+
+overlays:
+  Netflix:
+    template: {name: FlixPatrol, weight: 600, key: netflix}
+  Disney:
+    template: {name: FlixPatrol, weight: 500, key: disney}
+  HBO:
+    template: {name: FlixPatrol, weight: 400, key: hbo}
+  Hulu:
+    template: {name: FlixPatrol, weight: 300, key: hulu}
+  Paramount:
+    template: {name: FlixPatrol, weight: 200, key: paramount, slug: paramount_plus}
+  Prime:
+    template: {name: FlixPatrol, weight: 100, key: prime, slug: amazon_prime}
