@@ -79,6 +79,7 @@ These overlays are applied by calling the below paths into the `overlay_path:` [
 | Direct Play            | `direct_play`              | "Direct Play Only"                             | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
 | Editions               | `editions`                 | Director's Cut logo, IMAX logo                 | &#9989;  | &#10060;  | &#10060;  | &#10060; |
 | Episode Info           | `episode_info`             | "S01E01", "S02E09"                             | &#10060; | &#10060;  | &#10060;  | &#9989;  |
+| FlixPatrol             | `flixpatrol`               | "Streaming service logo with words "TOP"       | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
 | Mediastinger           | `mediastinger`             | Mediastinger logo                              | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
 | Ratings                | `ratings`                  | IMDb Audience Rating, Metacritic Critic Rating | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
 | Resolution             | `resolution`               | 4K Dolby Vision logo, 720P logo                | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
