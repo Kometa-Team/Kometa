@@ -224,6 +224,7 @@ This is the default PMM collection ordering:
 | `anilist.yml`                     |        `01`        |
 | `basic.yml`                       |        `01`        |
 | `imdb.yml`                        |        `01`        |
+| `flixpatrol.yml`                  |        `01`        |
 | `myanimelist.yml`                 |        `01`        |
 | `other_chart.yml`                 |        `01`        |
 | `tautulli.yml`                    |        `01`        |
