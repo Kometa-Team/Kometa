@@ -22,7 +22,7 @@ templates:
       limit: <<limit_<<key>>>>
 
 collections:
-  Top 10 Collections:
+  Chart Collections:
     template:
       - name: separator
         separator: Top10
