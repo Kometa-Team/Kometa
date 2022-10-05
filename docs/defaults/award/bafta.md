@@ -20,7 +20,7 @@ libraries:
 | `BAFTA Best Films` |   `best`   | Collection of British Academy of Film Best Film Award Winners           |
 | `BAFTA <<year>>`   | `<<year>>` | Collection of British Academy of Film Award Winners for the given year. |
 
-## Example Collections
+### Examples
 
 ![](../images/bafta.png)
 
