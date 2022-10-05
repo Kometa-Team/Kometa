@@ -1448,7 +1448,17 @@ class OverlayFile(DataFile):
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)
-        self.queues = get_dict("queues", data, library.queue_names)
+        queues = get_dict("queues", data, library.queue_names)
+        self.queues = {}
+        for queue_name, queue in queues.items():
+            if isinstance(queue, list):
+                self.queues[queue_name] = queue
+            elif queue_name in temp_vars and temp_vars[queue_name] and temp_vars[queue_name] in queue:
+                self.queues[queue_name] = queue[temp_vars[queue_name]]
+            else:
+                for dq, dv in queue.items():
+                    self.queues[queue_name] = dv
+                    break
         self.external_templates(data)
         self.translation_files(data)
         if not self.overlays:
