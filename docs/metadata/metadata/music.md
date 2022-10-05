@@ -73,7 +73,7 @@ The available attributes for editing artists, albums, and tracks are as follows
 | `sort_title`           | Text to change Sort Title                                     | &#9989;  | &#9989;  | &#9989;  |
 | `user_rating`          | Number to change User Rating                                  | &#9989;  | &#9989;  | &#9989;  |
 | `critic_rating`        | Number to change Critic Rating                                | &#10060; | &#9989;  | &#10060; |
-| `originally_available` | Date to change Originally Available<hr>**Format:** YYYY-MM-DD | &#10060; | &#9989;  | &#10060; |
+| `originally_available` | Date to change Originally Available<br>**Format:** YYYY-MM-DD | &#10060; | &#9989;  | &#10060; |
 | `record_label`         | Text to change Record Label                                   | &#10060; | &#9989;  | &#10060; |
 | `summary`              | Text to change Summary                                        | &#9989;  | &#9989;  | &#9989;  |
 | `track`                | Text to change Track                                          | &#10060; | &#10060; | &#9989;  |
