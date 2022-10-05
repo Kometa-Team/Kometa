@@ -21,14 +21,8 @@ templates:
       time_window: <<time_window_<<key>>>>
       limit: <<limit_<<key>>>>
 
-collections:
-  Top 10 Collections:
-    template:
-      - name: separator
-        separator: Top10
-
 dynamic_collections:
-  Top 10:
+  FlixPatrol:
     type: custom
     data:
       netflix: Netflix
@@ -44,6 +38,8 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
+      limit:
+        default: 10
       platform:
         default: <<key>>
         paramount: paramount_plus
