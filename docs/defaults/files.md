@@ -2,12 +2,11 @@
 
 The below table outlines the available Defaults files which can be called via `metadata_path` (for Collections), `overlay_path` (for Overlays) and `playlist_files` (for Playlists).
 
-
 ## Collections
+
 These files can generally be used on both Movie and Show library-types, or are part of a category of collection (such as Award Shows.)
 
 These collections are applied by calling the below paths into the `metadata_path:` section of your config.yml
-
 
 ### Chart Collections
 
@@ -60,6 +59,7 @@ These collections are applied by calling the below paths into the `metadata_path
 | Writer              | `writer`                               | James Cameron (Writer), Lilly Wachowski (Writer)       |      &#9989;      |     &#10060;     |
 
 ## Overlays
+
 These files apply overlays and can generally be used on both Movie and Show library-types, and often works at the season and episode-level too.
 
 It should be noted that when an overlay has &#10071; for a season or episode, it normally means that whilst the overlay can technically be applied at the level, it wasn't designed for this purpose. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a commonsense age-rating since only Movies and Shows are rated by CommonSense. 
@@ -89,6 +89,7 @@ These overlays are applied by calling the below paths into the `overlay_path:` [
 | Video Format           | `video_format`             | "REMUX", "HDTV"                                | &#9989;  | &#10071;  | &#10071;  | &#9989;  |
 
 ## Playlists
+
 These files apply playlists to the "Playlists" section of Plex and are applied by calling the below paths into the `playlist_files:` section of your config.yml
 
 ### Playlist Files

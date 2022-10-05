@@ -2,6 +2,7 @@ external_templates:
   pmm: templates
   template_variables:
     collection_section: "01"
+    pre: "_#"
 
 translations:
   pmm: translations
@@ -31,6 +32,7 @@ dynamic_collections:
       hulu: Hulu
       paramount: Paramount Plus
       prime: Prime Video
+    title_format: <<key_name>> Top <<limit>>
     template:
       - flixpatrol
       - translation

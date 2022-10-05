@@ -219,7 +219,7 @@ For example: `collection_section: 01` translates to `sort_title: "!<<collection_
 This is the default PMM collection ordering:
 
 | Collection                        | Collection Section |
-|:----------------------------------|:-------------------|
+|:----------------------------------|:------------------:|
 | `seasonal.yml`                    |        `00`        |
 | `anilist.yml`                     |        `01`        |
 | `basic.yml`                       |        `01`        |
@@ -258,7 +258,7 @@ This is the default PMM collection ordering:
 | `producer.yml`                    |        `19`        |
 | `writer.yml`                      |        `20`        |
 
-## Ratings Overlays
+## Rating Overlays
 
 By default for Movies in Plex, the `Ratings Source` dropdown (`#3`) below, can come from Rotten Tomatoes (and includes Critic Ratings and Audience Ratings) or IMDb (Audience Ratings). This only changes the tiny icons displayed and where Plex will retrieve the ratings from upon initial scan and import of the media metadata.
 
@@ -281,9 +281,6 @@ To be able to insert the ratings you want, Plex Meta Manager operations need to 
 Finally, to show the ratings on the poster, the following was added to the `overlay_path` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
 
 ![](images/ratings_overlay_path.png)
-
-
-
 
 
 ## Customizing Configs

@@ -776,6 +776,10 @@ class MetadataFile(DataFile):
                     sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
                     if "<<library_type>>" in title_format:
                         title_format = title_format.replace("<<library_type>>", library.type)
+                    if "<<library_typeU>>" in title_format:
+                        title_format = title_format.replace("<<library_typeU>>", library.type.capitalize())
+                    if "limit" in self.temp_vars and "<<limit>>" in title_format:
+                        title_format = title_format.replace("<<limit>>", self.temp_vars["limit"])
                     template_variables = util.parse("Config", "template_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "template_variables" in methods else {}
                     if "template" in methods:
                         template_names = util.parse("Config", "template", dynamic, parent=map_name, methods=methods, datatype="strlist")
