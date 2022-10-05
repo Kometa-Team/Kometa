@@ -141,7 +141,7 @@ libraries:
 
 ### Overlay Path
 
-The `overlay_path` attribute is used to define [Overlay Files](../metadata/metadata) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them.
+The `overlay_path` attribute is used to define [Overlay Files](../metadata/overlay) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths) for how to define them.
 
 ```yaml
 libraries:

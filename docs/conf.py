@@ -179,7 +179,7 @@ html_theme_options = {
                 ("Awards Separator", "defaults/award/separator"),
                 ("_divider", ),
                 ("Academy Awards (Oscars)", "defaults/award/oscars"),
-                ("British Academy of Film and Television Arts Awards", "defaults/award/bafta"),
+                ("British Academy of Film Awards", "defaults/award/bafta"),
                 ("Cannes File Festival Awards", "defaults/award/cannes"),
                 ("Critics Choice Awards", "defaults/award/choice"),
                 ("Emmy Awards", "defaults/award/emmy"),

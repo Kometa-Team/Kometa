@@ -4,17 +4,25 @@ The `bafta` Metadata File is used to create collections based on the British Aca
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 
-Example Collections Created:
-
-![](../images/bafta.png)
-
 The below YAML in your config.yml will create the collections:
+
 ```yaml
 libraries:
   Movies:
     metadata_path:
       - pmm: bafta
 ```
+
+## Collections
+
+| Collection         |    Key     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+|:-------------------|:----------:|:------------------------------------------------------------------------|
+| `BAFTA Best Films` |   `best`   | Collection of British Academy of Film Best Film Award Winners           |
+| `BAFTA <<year>>`   | `<<year>>` | Collection of British Academy of Film Award Winners for the given year. |
+
+## Example Collections
+
+![](../images/bafta.png)
 
 ## Template Variables
 
@@ -28,6 +36,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 |:-----------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `use_year_collections` | **Description:** Turn the individual year collections off<br>**Values:** `false` to turn of the collections                                                                                                                                                                                                                                                                                                                                                |
 | `collection_order`     | **Description:** Changes the Collection Order<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table> |
+| `data`                 | **Description:** Changes the Collection Order<br>**Values:**<pre>data:<br>&nbsp;&nbsp;starting: current_year-5<br>&nbsp;&nbsp;ending: current_year</pre>                                                                                                                                                                                                                                                                                                   |
 
 The below shows an example config.yml with all the template_variables set away from their defaults:
 
