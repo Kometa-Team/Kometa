@@ -1,6 +1,6 @@
 # TMDb Chart Default Metadata File
 
-The `- pmm: pmm: tmdb` Metadata File is used to create collections based on TMDb Charts.
+The `- pmm: tmdb` Metadata File is used to create collections based on TMDb Charts.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: pmm: tmdb
+      - pmm: tmdb
 ```
 
 
