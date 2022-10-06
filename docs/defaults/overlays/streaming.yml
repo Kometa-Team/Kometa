@@ -61,6 +61,7 @@ templates:
       back_radius: 30
       back_width: 305
       back_height: 105
+    overlay_level: <<overlay_level>>
     allowed_library_types: <<use_<<slug>>>>
     ignore_blank_results: true
     overlay:

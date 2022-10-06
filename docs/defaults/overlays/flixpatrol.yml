@@ -33,6 +33,7 @@ templates:
       - use_<<key>>
       - time_window_<<key>>
       - location_<<key>>
+      - overlay_level
     default:
       style: round
       overlay: <<overlay_name>>
@@ -59,6 +60,7 @@ templates:
       limit: 10
       limit_<<key>>: <<limit>>
       weight_<<key>>: <<weight>>
+    overlay_level: <<overlay_level>>
     ignore_blank_results: true
     allowed_library_types: <<use_<<key>>>>
     overlay:
