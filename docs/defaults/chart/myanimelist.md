@@ -1,6 +1,6 @@
 # MyAnimeList Chart Default Metadata File
 
-The `- pmm: pmm: myanimelist` Metadata File is used to create collections based on MyAnimeList Charts.
+The `- pmm: myanimelist` Metadata File is used to create collections based on MyAnimeList Charts.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: pmm: myanimelist
+      - pmm: myanimelist
 ```
 
 

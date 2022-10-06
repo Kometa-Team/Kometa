@@ -1,6 +1,6 @@
 # Tautulli Chart Default Metadata File
 
-The `- pmm: pmm: tautulli` Metadata File is used to create collections based on Tautulli/Plex Charts.
+The `- pmm: tautulli` Metadata File is used to create collections based on Tautulli/Plex Charts.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: pmm: tautulli
+      - pmm: tautulli
 ```
 
 ## Template Variables

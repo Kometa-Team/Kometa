@@ -23,16 +23,13 @@ Note that the `templates_variables:` section only needs to be used if you do NOT
 Below are the available variables which can be used to customize the file.
 
 
-| Variable            | Usage                                                                                                | Default Value  |                                                                             Values                                                                             |
-|:--------------------|:-----------------------------------------------------------------------------------------------------|----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| sort_by             | Controls the sort method for the collections                                                         | `release.desc` |                                                  Any sort method in the [Sorts Options Table](#sort-options)                                                   |
-| collection_section  | Controls the sort order of these collections against other default collections                       | `10`           |                                                                           Any number                                                                           |
-| collection_mode     | Controls the collection mode of these collections                                                    | `default`      | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
-| use_other           | Controls whether an "Other" collection is created for any items not included in the initial criteria | `true`         |                                                                       `true` or `false`                                                                        |
-| use_separator       | Controls whether a separator is created                                                              | `true`         |                                                                       `true` or `false`                                                                        |
-| sep_style           | Sets the theme of the separator                                                                      | `orig`         |                                                    `orig`, `blue`, `gray`, `green`, `purple`, `red`, `stb`                                                     |
-| item_radarr_tag     | Radarr Tag for existing items                                                                        |                |                                                         list of tag(s) to be applied to existing items                                                         |
-| item_sonarr_tag     | Sonarr Tag for existing items                                                                        |                |                                                         list of tag(s) to be applied to existing items                                                         |
+| Variable         | Description & Values                                                                                                                                                |
+|:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sort_by`        | **Description:** Controls the sort method for the collections<br>**Values:** Any sort method in the [Sorts Options Table](#sort-options)                            |
+| `include`        | **Description:** Overrides the default include list<br>**Values:** Any list of [two-digit ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)   |
+| `exclude`        | **Description:** Overrides the default exclude list<br>**Values:** Any list of [two-digit ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)   |
+| `append_include` | **Description:** Appends to the existing include list<br>**Values:** Any list of [two-digit ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) |
+| `append_exclude` | **Description:** Appends to the existing exclude list<br>**Values:** Any list of [two-digit ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) |
 
 The below shows an example config.yml with all the template_variables set away from their defaults:
 
@@ -42,6 +39,8 @@ libraries:
     metadata_path:
       - pmm: audio_language
         template_variables:
+          exclude:
+            - fr  # exclude French
           sort_by: title.asc
           collection_section: 20
           collection_mode: show_items
@@ -49,18 +48,3 @@ libraries:
           use_separator: false
           sep_style: purple
 ```
-Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `audio_language` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/both/audio_language.yml)
-
-An example of this is; to exclude the English Audio collection, the following template variable can be used:
-
-```yaml
-libraries:
-  Movies:
-    metadata_path:
-      - pmm: audio_language
-        template_variables:
-          exclude:
-            -en
-```
-
-Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)

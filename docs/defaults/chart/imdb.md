@@ -1,6 +1,6 @@
 # IMDb Chart Default Metadata File
 
-The `- pmm: pmm: imdb` Metadata File is used to create collections based on IMDb Charts.
+The `- pmm: imdb` Metadata File is used to create collections based on IMDb Charts.
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: pmm: imdb
+      - pmm: imdb
 ```
 
 

@@ -1,6 +1,6 @@
 # Anilist Chart Default Metadata File
 
-The `- pmm: pmm: anilist` Metadata File is used to create collections based on Anilist charts
+The `- pmm: anilist` Metadata File is used to create collections based on Anilist charts
 
 Example Collections Created:
 
@@ -11,7 +11,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: pmm: anilist
+      - pmm: anilist
 ```
 
 
