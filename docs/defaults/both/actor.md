@@ -24,7 +24,7 @@ Template Variables can be used to manipulate the actor file from the default set
 
 Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
 
-Below are the available variables which can be used to customize the actor file.
+All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
 
 | Variable      | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
