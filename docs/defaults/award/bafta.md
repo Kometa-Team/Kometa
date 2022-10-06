@@ -24,18 +24,6 @@ libraries:
 
 ![](../images/bafta.png)
 
-## Collection Builder
-
-Below is the default Dynamic Collection that is used to create the collections:
-```yaml
-dynamic_collections:
-  Top Actors:
-    type: actor
-    data:
-      depth: 5
-      limit: 25
-```
-
 ## Template Variables
 
 Template Variables can be used to manipulate the file from the default settings which are provided. 
