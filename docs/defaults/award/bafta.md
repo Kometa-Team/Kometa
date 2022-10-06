@@ -1,6 +1,6 @@
-# British Academy Film Default Metadata File
+# British Academy of Film and Television Arts Default Metadata File
 
-The `bafta` Metadata File is used to create collections based on the British Academy Film Awards.
+The `bafta` Metadata File is used to create collections based on the British Academy of Film and Television Arts Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 
@@ -17,10 +17,10 @@ libraries:
 
 ## Collections
 
-| Collection         |    Key     | Description                                                             |
-|:-------------------|:----------:|:------------------------------------------------------------------------|
-| `BAFTA Best Films` |   `best`   | Collection of British Academy of Film Best Film Award Winners.          |
-| `BAFTA <<year>>`   | `<<year>>` | Collection of British Academy of Film Award Winners for the given year. |
+| Collection         |    Key     | Description                                                                                 |
+|:-------------------|:----------:|:--------------------------------------------------------------------------------------------|
+| `BAFTA Best Films` |   `best`   | Collection of British Academy of Film and Television Arts Best Film Award Winners.          |
+| `BAFTA <<year>>`   | `<<year>>` | Collection of British Academy of Film and Television Arts Award Winners for the given year. |
 
 ### Examples
 
