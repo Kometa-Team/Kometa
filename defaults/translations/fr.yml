@@ -218,11 +218,11 @@ translations:
   country_other_summary: <<library_translationU>>s filmés dans d'autres pays peu communs.
 
   # example key_name: 2010s
-  decade_name: Le meilleur des années <<key_name>>
+  decade_name: Les meilleurs des années <<key_name>>
   decade_summary: Top <<limit>> des <<library_translation>>s des années <<key_name>>.
 
   # example key_name: 2010
-  decade_show_name: Le meilleur des années <<key_name>>
+  decade_show_name: Les meilleurs des années <<key_name>>
   decade_show_summary: Top <<limit>> des <<library_translation>>s des années <<key_name>>.
 
   # example key_name: Robin Williams
@@ -276,5 +276,5 @@ translations:
   writer_summary: <<library_translationU>> écrits par <<key_name>>.
 
   # example key_name: 2015
-  year_name: Le meilleur de <<key_name>>
+  year_name: Les meilleurs de <<key_name>>
   year_summary: <<library_translationU>>s sortis en <<key_name>>.
