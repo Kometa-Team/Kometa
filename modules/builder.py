@@ -1692,7 +1692,8 @@ class CollectionBuilder:
                                 self.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
                     if not found and tvdb_id not in self.missing_shows and self.do_missing:
                         self.missing_shows.append(tvdb_id)
-                elif id_type in ["tvdb", "tmdb_show", "tvdb_season", "tvdb_episode"] and not self.parts_collection:
+                elif id_type in ["tvdb", "tmdb_show", "tvdb_season", "tvdb_episode"]:
+                    tvdb_season = None
                     if id_type == "tmdb_show":
                         try:
                             tvdb_id = self.config.Convert.tmdb_to_tvdb(input_id, fail=True)
@@ -1700,22 +1701,38 @@ class CollectionBuilder:
                             logger.warning(e)
                             continue
                     elif id_type == "tvdb_season":
-                        tvdb_id, _ = input_id.split("_")
+                        tvdb_id, tvdb_season = input_id.split("_")
                         tvdb_id = int(tvdb_id)
+                        tvdb_season = int(tvdb_season)
                     elif id_type == "tvdb_episode":
                         tvdb_id, _, _ = input_id.split("_")
                         tvdb_id = int(tvdb_id)
                     else:
                         tvdb_id = int(input_id)
                     if tvdb_id not in self.ignore_ids:
-                        found = False
+                        found_keys = None
                         for pl_library in self.libraries:
                             if tvdb_id in pl_library.show_map:
-                                found = True
-                                rating_keys = pl_library.show_map[tvdb_id]
+                                found_keys = pl_library.show_map[tvdb_id]
                                 break
-                        if not found and tvdb_id not in self.missing_shows:
+                        if not found_keys and tvdb_id not in self.missing_shows:
                             self.missing_shows.append(tvdb_id)
+                        if found_keys:
+                            if self.parts_collection:
+                                rating_keys = []
+                                for rk in found_keys:
+                                    try:
+                                        item = self.fetch_item(rk)
+                                        if self.builder_level == "episode" and isinstance(item, Show):
+                                            if tvdb_season is not None:
+                                                item = item.season(season=tvdb_season)
+                                            rating_keys.extend([k.ratingKey for k in item.episodes()])
+                                        elif self.builder_level == "season" and isinstance(item, Show):
+                                            rating_keys.extend([k.ratingKey for k in item.seasons()])
+                                    except Failed as e:
+                                        logger.error(e)
+                            else:
+                                rating_keys = found_keys
                 else:
                     continue
 
