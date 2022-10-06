@@ -74,8 +74,8 @@ class Overlays:
             logger.separator(f"{'Re-' if self.library.reapply_overlays else ''}Applying Overlays for the {self.library.name} Library")
             logger.info("")
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
+                item_title = self.library.get_item_sort_title(item, atr="title")
                 try:
-                    item_title = self.library.get_item_sort_title(item, atr="title")
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item_title}")
                     image_compare = None
                     overlay_compare = None
@@ -359,7 +359,7 @@ class Overlays:
                     if self.config.Cache and poster_compare:
                         self.config.Cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
-                    logger.error(e)
+                    logger.error(f"{e}\nOverlays Attempted on {item_title}: {', '.join(over_names)}")
         logger.exorcise()
         overlay_run_time = str(datetime.now() - overlay_start).split('.')[0]
         logger.info("")

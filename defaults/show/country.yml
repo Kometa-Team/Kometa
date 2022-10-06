@@ -57,7 +57,7 @@ dynamic_collections:
       - translation
       - shared
     template_variables:
-      search_term:
+      filter_term:
         default: origin_country
       image:
         default: country/<<style>>/<<key_name_encoded>>
