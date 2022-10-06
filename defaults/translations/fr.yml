@@ -1,6 +1,17 @@
 version: 1.18.0.2
 variables:
-  library_type:
+  library_translation:
+    # For Movie Libraries
+    movie: film
+    # For Show Libraries
+    show: émission
+    # For Music Libraries
+    artist: artiste
+    # For Other Video Libraries
+    video: vidéo
+    # For Playlists
+    item: article
+  library_translationU:
     # For Movie Libraries
     movie: Film
     # For Show Libraries
@@ -96,23 +107,23 @@ translations:
   anilist_season_summary: Une collection d’anime de la saison en cours selon AniList.
 
   basic_released_name: Nouvellement publié
-  basic_released_summary: Une collection de <<library_type>>s nouvellement sortis.
+  basic_released_summary: Une collection de <<library_translation>>s nouvellement sortis.
 
   basic_episodes_name: Nouveaux épisodes
-  basic_episodes_summary: Une collection de <<library_type>>s nouvellement sortis.
+  basic_episodes_summary: Une collection de <<library_translation>>s nouvellement sortis.
 
   # possible key_name: Netflix, Disney, HBO, Hulu, Paramount Plus, Prime Video
   flixpatrol_name: Top <<limit>> <<key_name>>
-  flixpatrol_summary: Top <<limit>> des <<library_type>>s sur <<key_name>> selon FlixPatrol.
+  flixpatrol_summary: Top <<limit>> des <<library_translation>>s sur <<key_name>> selon FlixPatrol.
 
   imdb_popular_name: IMDb Populaire
-  imdb_popular_summary: Liste des <<library_type>>s IMDb Popular.
+  imdb_popular_summary: Liste des <<library_translation>>s IMDb Popular.
 
   imdb_top_name: IMDb Top 250
-  imdb_top_summary: Liste des 250 meilleurs <<library_type>>s IMDb.
+  imdb_top_summary: Liste des 250 meilleurs <<library_translation>>s IMDb.
 
   imdb_lowest_name: IMDb Le moins bien noté
-  imdb_lowest_summary: Liste des <<library_type>>s IMDb les moins bien notés.
+  imdb_lowest_summary: Liste des <<library_translation>>s IMDb les moins bien notés.
 
   mal_popular_name: MyAnimeList Populaire
   mal_popular_summary: Une collection des anime les plus populaires selon MyAnimeList.
@@ -133,7 +144,7 @@ translations:
   anidb_popular_summary: Une collection d’anime populaire sur AniDB.
 
   commonsense_selection_name: Sélection de Common Sense
-  commonsense_selection_summary: Une collection de <<library_type>>s de Common Sense. Common Sense reconnaît les divertissements exceptionnels avec un sceau officiel de qualité et d’impact. Les sélections de bon sens comprennent des médias adaptés à l’âge qui ont le potentiel de susciter des conversations familiales, de divertir les familles de toutes sortes et d’avoir un effet positif et durable sur la société.
+  commonsense_selection_summary: Une collection de <<library_translation>>s de Common Sense. Common Sense reconnaît les divertissements exceptionnels avec un sceau officiel de qualité et d’impact. Les sélections de bon sens comprennent des médias adaptés à l’âge qui ont le potentiel de susciter des conversations familiales, de divertir les familles de toutes sortes et d’avoir un effet positif et durable sur la société.
 
   stevenlu_popular_name: Les films populaires de StevenLu
   stevenlu_popular_summary: Une collection des films les plus populaires de StevenLu.
@@ -142,10 +153,10 @@ translations:
   pirated_popular_summary: Top 10 des films piratés hebdomadaires de TorrentFreak.com.
 
   tautulli_popular_name: Plex Populaire
-  tautulli_popular_summary: Une collection de <<library_type>>s populaires sur Plex.
+  tautulli_popular_summary: Une collection de <<library_translation>>s populaires sur Plex.
 
   tautulli_watched_name: Plex regardé
-  tautulli_watched_summary: Une collection des meilleurs <<library_type>>s regardés sur Plex.
+  tautulli_watched_summary: Une collection des meilleurs <<library_translation>>s regardés sur Plex.
 
   tmdb_airing_name: TMDb diffusé aujourd’hui
   tmdb_airing_summary: Une collection d’émissions avec des épisodes diffusés aujourd’hui.
@@ -154,13 +165,13 @@ translations:
   tmdb_air_summary: Une collection d’émissions qui diffusent encore activement des épisodes.
 
   tmdb_popular_name: TMDb Populaire
-  tmdb_popular_summary: Une collection des <<library_type>>s les plus regardés selon TMDb.
+  tmdb_popular_summary: Une collection des <<library_translation>>s les plus regardés selon TMDb.
 
   tmdb_top_name: TMDb le mieux noté
-  tmdb_top_summary: Une collection des <<library_type>>s les mieux notés selon TMDb.
+  tmdb_top_summary: Une collection des <<library_translation>>s les mieux notés selon TMDb.
 
   tmdb_trending_name: Tendances TMDb
-  tmdb_trending_summary: Une collection de <<library_type>>s tendance sur TMDb.
+  tmdb_trending_summary: Une collection de <<library_translation>>s tendance sur TMDb.
 
   trakt_collected_name: Trakt collecté
   trakt_collected_summary: Une collection de la liste hebdomadaire collectée de Trakt.
@@ -183,87 +194,87 @@ translations:
 
   # example key_name: Robin Williams
   actor_name: <<key_name>>
-  actor_summary: <<library_typeU>>s avec <<key_name>>.
+  actor_summary: <<library_translationU>>s avec <<key_name>>.
 
   # example key_name: English
   audio_language_name: Audio <<key_name>>
-  audio_language_summary: <<library_typeU>>s tournés en langue <<key_name>>.
+  audio_language_summary: <<library_translationU>>s tournés en langue <<key_name>>.
 
   audio_language_other_name: Autres audio
-  audio_language_other_summary: <<library_typeU>>s tournés dans d’autres langues peu communes.
+  audio_language_other_summary: <<library_translationU>>s tournés dans d’autres langues peu communes.
 
   # example key_name: TV-MA
-  content_rating_name: <<library_typeU>>s <<key_name>>
-  content_rating_summary: <<library_typeU>>s classés <<key_name>>.
+  content_rating_name: <<library_translationU>>s <<key_name>>
+  content_rating_summary: <<library_translationU>>s classés <<key_name>>.
 
   content_rating_other_name: Autres évaluations
-  content_rating_other_summary: <<library_typeU>>s avec d’autres classements inhabituels.
+  content_rating_other_summary: <<library_translationU>>s avec d’autres classements inhabituels.
 
   # example key_name: United States
-  country_name: <<library_typeU>>s <<key_name>>
-  country_summary: <<library_typeU>>s filmés dans <<key_name>>.
+  country_name: <<library_translationU>>s <<key_name>>
+  country_summary: <<library_translationU>>s filmés dans <<key_name>>.
 
   country_other_name: Autres pays
-  country_other_summary: <<library_typeU>>s filmés dans d'autres pays peu communs.
+  country_other_summary: <<library_translationU>>s filmés dans d'autres pays peu communs.
 
   # example key_name: 2010s
   decade_name: Le meilleur des années <<key_name>>
-  decade_summary: Top <<limit>> des <<library_type>>s des années <<key_name>>.
+  decade_summary: Top <<limit>> des <<library_translation>>s des années <<key_name>>.
 
   # example key_name: 2010
   decade_show_name: Le meilleur des années <<key_name>>
-  decade_show_summary: Top <<limit>> des <<library_type>>s des années <<key_name>>.
+  decade_show_summary: Top <<limit>> des <<library_translation>>s des années <<key_name>>.
 
   # example key_name: Robin Williams
   director_name: <<key_name>> (Réalisateur)
-  director_summary: <<library_typeU>>s réalisés par <<key_name>>.
+  director_summary: <<library_translationU>>s réalisés par <<key_name>>.
 
   # example key_name: Action
-  genre_name: <<library_typeU>>s de <<key_name>> 
-  genre_summary: <<library_typeU>>s qui ont le genre <<key_name>>.
+  genre_name: <<library_translationU>>s de <<key_name>>
+  genre_summary: <<library_translationU>>s qui ont le genre <<key_name>>.
 
   # example key_name: NBC
   network_name: <<key_name>>
-  network_summary: <<library_typeU>>s diffusés sur <<key_name>>.
+  network_summary: <<library_translationU>>s diffusés sur <<key_name>>.
 
   # example key_name: Robin Williams
   producer_name: <<key_name>> (Producteur)
-  producer_summary: <<library_typeU>>s produits par <<key_name>>.
+  producer_summary: <<library_translationU>>s produits par <<key_name>>.
 
   # example key_name: 1080p
-  resolution_name: <<library_typeU>>s de <<key_name>>
-  resolution_summary: <<library_typeU>>s ayant la résolution <<key_name>>.
+  resolution_name: <<library_translationU>>s de <<key_name>>
+  resolution_summary: <<library_translationU>>s ayant la résolution <<key_name>>.
 
   # example key_name: 1080p
-  resolution_standards_name: <<library_typeU>>s de <<key_name>>
-  resolution_standards_summary: <<library_typeU>>s ayant la résolution <<key_name>>.
+  resolution_standards_name: <<library_translationU>>s de <<key_name>>
+  resolution_standards_summary: <<library_translationU>>s ayant la résolution <<key_name>>.
 
   resolution_standards_other_name: Autres résolutions
-  resolution_standards_other_summary: <<library_typeU>>s qui ont d’autres résolutions inhabituelles
+  resolution_standards_other_summary: <<library_translationU>>s qui ont d’autres résolutions inhabituelles
 
   # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
-  seasonal_name: <<library_typeU>>s <<key_name>>
-  seasonal_summary: Une collection de <<library_type>> <<key_name>> qui peuvent se rapporter à la saison.
+  seasonal_name: <<library_translationU>>s <<key_name>>
+  seasonal_summary: Une collection de <<library_translation>> <<key_name>> qui peuvent se rapporter à la saison.
 
   # possible key_names: All 4, Apple TV+, BET+, BritBox, Disney+, hayu, HBO Max, Hulu, Netflix, NOW, Paramount+, Peacock, Prime Video
-  streaming_name: <<library_typeU>>s de <<key_name>>
-  streaming_summary: <<library_typeU>>s en streaming sur <<key_name>>.
+  streaming_name: <<library_translationU>>s de <<key_name>>
+  streaming_summary: <<library_translationU>>s en streaming sur <<key_name>>.
 
   # example key_name: Studio Ghibli
   studio_name: <<key_name>>
-  studio_summary: <<library_typeU>>s produits par <<key_name>>.
+  studio_summary: <<library_translationU>>s produits par <<key_name>>.
 
   # example key_name: English
   subtitle_language_name: Sous-titres <<key_name>>
-  subtitle_language_summary: <<library_typeU>>s  avec sous-titres <<key_name>>.
+  subtitle_language_summary: <<library_translationU>>s  avec sous-titres <<key_name>>.
 
   subtitle_language_other_name: Autres sous-titres
-  subtitle_language_other_summary: <<library_typeU>>s avec d’autres sous-titres inhabituels.
+  subtitle_language_other_summary: <<library_translationU>>s avec d’autres sous-titres inhabituels.
 
   # example key_name: Robin Williams
   writer_name: <<key_name>> (scénariste)
-  writer_summary: <<library_typeU>> écrits par <<key_name>>.
+  writer_summary: <<library_translationU>> écrits par <<key_name>>.
 
   # example key_name: 2015
   year_name: Le meilleur de <<key_name>>
-  year_summary: <<library_typeU>>s sortis en <<key_name>>.
+  year_summary: <<library_translationU>>s sortis en <<key_name>>.

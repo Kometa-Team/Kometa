@@ -146,7 +146,6 @@ class DataFile:
             raise Failed(f"URL Error: Top Level translations attribute not found in {content_path}")
         translations = {k: {"default": v} for k, v in yaml.data["translations"].items()}
         lib_type = self.library.type.lower() if self.library else "item"
-        translations["library_type"] = {"default": lib_type}
         logger.debug(f"Translations Loaded From: {dir_path}")
         key_names = {}
 
