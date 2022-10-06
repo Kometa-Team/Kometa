@@ -64,5 +64,5 @@ collections:
       - name: arr
       - name: custom
       - name: translation
-        translation_key: bafta_best
+        translation_key: venice_best
     trakt_list: https://trakt.tv/users/maxwelldeux/lists/venice-film-festival-golden-lion
