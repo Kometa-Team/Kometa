@@ -1,6 +1,6 @@
 # Producer Default Metadata File
 
-The `- pmm: producer` Metadata File is used to dynamically create collections based on the most popular producers in your library.
+The `producer` Metadata File is used to dynamically create collections based on the most popular producers in your library.
 
 Example Collections Created:
 

@@ -1,6 +1,6 @@
 # Genre Default Metadata File
 
-The `- pmm: genre` Metadata File is used to dynamically create collections based on the genres available in your library.
+The `genre` Metadata File is used to dynamically create collections based on the genres available in your library.
 
 This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci-Fi & Fantasy") into one ("Science Fiction")
 

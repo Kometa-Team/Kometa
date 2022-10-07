@@ -1,6 +1,6 @@
 # Audio Codec Default Overlay File
 
-The `- pmm: audio_codec` Overlay File is used to create an overlay based on the audio codec available on each item within your library.
+The `audio_codec` Overlay File is used to create an overlay based on the audio codec available on each item within your library.
 
 
 Example Overlays Created:

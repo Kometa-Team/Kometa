@@ -1,6 +1,6 @@
 # Tautulli Chart Default Metadata File
 
-The `- pmm: tautulli` Metadata File is used to create collections based on Tautulli/Plex Charts.
+The `tautulli` Metadata File is used to create collections based on Tautulli/Plex Charts.
 
 Example Collections Created:
 

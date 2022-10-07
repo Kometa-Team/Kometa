@@ -1,6 +1,6 @@
 # TMDb Chart Default Metadata File
 
-The `- pmm: tmdb` Metadata File is used to create collections based on TMDb Charts.
+The `tmdb` Metadata File is used to create collections based on TMDb Charts.
 
 Example Collections Created:
 

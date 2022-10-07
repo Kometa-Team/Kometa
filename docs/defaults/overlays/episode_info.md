@@ -1,6 +1,6 @@
 # Episode Info Default Overlay File
 
-The `- pmm: episode_info` Overlay File is used to create an overlay based on the episode numbering within a given series in your library.
+The `episode_info` Overlay File is used to create an overlay based on the episode numbering within a given series in your library.
 
 Note that this file should only be used against show libraries and is not expected to work against movie libraries. 
 

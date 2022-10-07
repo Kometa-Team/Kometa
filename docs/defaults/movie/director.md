@@ -1,6 +1,6 @@
 # Director Default Metadata File
 
-The `- pmm: director` Metadata File is used to dynamically create collections based on the most popular directors in your library.
+The `director` Metadata File is used to dynamically create collections based on the most popular directors in your library.
 
 Example Collections Created:
 

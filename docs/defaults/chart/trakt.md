@@ -1,6 +1,6 @@
 # Trakt Chart Default Metadata File
 
-The `- pmm: trakt` Metadata File is used to create collections based on Trakt Charts.
+The `trakt` Metadata File is used to create collections based on Trakt Charts.
 
 Example Collections Created:
 

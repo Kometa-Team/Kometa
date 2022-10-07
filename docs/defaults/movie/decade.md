@@ -1,6 +1,6 @@
 # Decade Default Metadata File
 
-The `- pmm: decade` Metadata File is used to dynamically create collections based on the decades available in your library, sorted by critic rating to create a "best of <decade>"
+The `decade` Metadata File is used to dynamically create collections based on the decades available in your library, sorted by critic rating to create a "best of <decade>"
 
 Example Collections Created:
 

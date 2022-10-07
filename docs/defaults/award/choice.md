@@ -1,6 +1,6 @@
 # Critics Choice Default Metadata File
 
-The `- pmm: choice` Metadata File is used to create collections based on the Critics Choice Awards.
+The `choice` Metadata File is used to create collections based on the Critics Choice Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 

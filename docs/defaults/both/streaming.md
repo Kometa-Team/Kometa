@@ -1,6 +1,6 @@
 # Streaming Default Metadata File
 
-The `- pmm: streaming` Metadata File is used to dynamically create collections based on the streaming Services that your media is available on.
+The `streaming` Metadata File is used to dynamically create collections based on the streaming Services that your media is available on.
 
 Example Collections Created:
 

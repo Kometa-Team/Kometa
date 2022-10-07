@@ -1,6 +1,6 @@
 # Anilist Chart Default Metadata File
 
-The `- pmm: anilist` Metadata File is used to create collections based on Anilist charts
+The `anilist` Metadata File is used to create collections based on Anilist charts
 
 Example Collections Created:
 

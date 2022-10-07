@@ -1,6 +1,6 @@
 # CommonSense Age Rating Default Overlay File
 
-The `- pmm: commonsense` Overlay File is used to create an overlay based on the CommonSense Age Rating on each item within your library.
+The `commonsense` Overlay File is used to create an overlay based on the CommonSense Age Rating on each item within your library.
 
 Note that this file requires the `mass_content_rating: mdb_commonsense` operation to be set against your library so that the content ratings are taken from CommonSense.
 

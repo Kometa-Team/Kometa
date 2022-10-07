@@ -1,6 +1,6 @@
 # Universe Default Metadata File
 
-The `- pmm: universe` Metadata File is used to  create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World)
+The `universe` Metadata File is used to  create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World)
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 

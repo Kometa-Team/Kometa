@@ -1,6 +1,6 @@
 # Actor Default Metadata File
 
-The `- pmm: actor` Metadata File is used to dynamically create collections based on the most popular actors/actresses in your library.
+The `actor` Metadata File is used to dynamically create collections based on the most popular actors/actresses in your library.
 
 Example Collections Created:
 

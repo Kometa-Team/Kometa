@@ -1,6 +1,6 @@
 # Cannes Default Metadata File
 
-The `- pmm: cannes` Metadata File is used to create collections based on the Cannes Film Awards.
+The `cannes` Metadata File is used to create collections based on the Cannes Film Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 

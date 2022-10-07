@@ -1,6 +1,6 @@
 # Studio Default Metadata File
 
-The `- pmm: studio` Metadata File is used to dynamically create collections based on the studios available in your library.
+The `studio` Metadata File is used to dynamically create collections based on the studios available in your library.
 
 This file also merges similarly named studios (such as "20th Century Fox" and "20th Century Animation") into one ("20th Century Studios")
 

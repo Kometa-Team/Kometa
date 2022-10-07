@@ -1,6 +1,6 @@
 # Common Sense Media Content Rating Default Metadata File
 
-The `- pmm: content_rating_cs` Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_cs` Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
 If you do not use the UK-based rating system within Plex, this file will attempt to match the standard ratings (such as PG-13) to the respective UK rating system (such as 12)
 

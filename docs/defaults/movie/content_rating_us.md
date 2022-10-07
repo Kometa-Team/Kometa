@@ -1,6 +1,6 @@
 # US Content Rating Default Metadata File
 
-The `- pmm: content_rating_us` Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_us` Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
 If you do not use the US-based rating system within Plex, this file will attempt to match the international ratings (such as "gb/12A") to the respective US rating system (such as "PG-13")
 

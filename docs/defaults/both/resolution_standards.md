@@ -1,6 +1,6 @@
 # Resolution Standards Default Metadata File
 
-The `- pmm: resolution_standards` Metadata File is used to dynamically create collections based on the resolutions available in your library.
+The `resolution_standards` Metadata File is used to dynamically create collections based on the resolutions available in your library.
 
 This file takes the base resolutions ("4K" and "720p") and turns them into the commonly-known standards name ("Ultra HD" and "HD Ready")
 
