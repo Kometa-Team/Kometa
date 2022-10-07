@@ -1,6 +1,6 @@
 # Basic Chart Default Metadata File
 
-The `- pmm: basic` Metadata File is used to create collections based on recently released media in your library.
+The `basic` Metadata File is used to create collections based on recently released media in your library.
 
 Example Collections Created:
 
@@ -40,7 +40,7 @@ Below are the available variables which can be used to customize the file. Note 
 | order_key              | Determine collection order in its section                                      | Alphabetical Order |                                    Any number (i.e. `01` for `order_released` to put released first in the list of charts)                                     |
 | summary_key            | Determines summary of collection                                               |                    |                                                                        Any summary text                                                                        |
 | limit_key              | Determines limit of collection                                                 | `100`              |                                                                           Any number                                                                           |
-| collection_order_key   | Determines collection order of the collection                                  |                    |                                                                                                                                                                |
+| collection_order   | Determines collection order of the collection                                  |                    |                                                                                                                                                                |
 | visible_library_key    | Set visible_library for the collection                                         | `false`            |                                                                       `true` or `false`                                                                        |
 | visible_home_key       | Set visible_home for the collection                                            | `false`            |                                                                       `true` or `false`                                                                        |
 | visible_shared_key     | Set visible_shared for the collection                                          | `false`            |                                                                       `true` or `false`                                                                        |
@@ -49,7 +49,7 @@ Below are the available variables which can be used to customize the file. Note 
 | collection_section     | Controls the sort order of these collections against other default collections | `01`               |                                                                           Any number                                                                           |
 | collection_mode        | Controls the collection mode of these collections                              | `default`          | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:

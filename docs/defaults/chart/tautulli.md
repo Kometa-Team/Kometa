@@ -1,6 +1,6 @@
 # Tautulli Chart Default Metadata File
 
-The `- pmm: tautulli` Metadata File is used to create collections based on Tautulli/Plex Charts.
+The `tautulli` Metadata File is used to create collections based on Tautulli/Plex Charts.
 
 Example Collections Created:
 
@@ -40,7 +40,7 @@ Below are the available variables which can be used to customize the file. Note 
 | limit_key              | Determines limit of collection                                                    | `100`              |                                                                           Any number                                                                           |
 | list_days_key          | Set list_days for the collection                                                  | `30`               |                                                                           Any number                                                                           |
 | list_size_key          | Set list_size for the collection                                                  | `20`               |                                                                           Any number                                                                           |
-| collection_order_key   | Determines collection order of the collection                                     |                    |                                                                                                                                                                |
+| collection_order   | Determines collection order of the collection                                     |                    |                                                                                                                                                                |
 | visible_library_key    | Set visible_library for the collection                                            | `false`            |                                                                       `true` or `false`                                                                        |
 | visible_home_key       | Set visible_home for the collection                                               | `false`            |                                                                       `true` or `false`                                                                        |
 | visible_shared_key     | Set visible_shared for the collection                                             | `false`            |                                                                       `true` or `false`                                                                        |
@@ -49,7 +49,7 @@ Below are the available variables which can be used to customize the file. Note 
 | collection_section     | Controls the sort order of these collections against tautulli default collections | `01`               |                                                                           Any number                                                                           |
 | collection_mode        | Controls the collection mode of these collections                                 | `default`          | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:

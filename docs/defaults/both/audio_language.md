@@ -1,6 +1,6 @@
 # Audio Language Default Metadata File
 
-The `- pmm: audio_language` Metadata File is used to dynamically create collections based on the audio languages available in your library.
+The `audio_language` Metadata File is used to dynamically create collections based on the audio languages available in your library.
 
 Example Collections Created:
 
@@ -30,7 +30,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 | `append_include` | **Description:** Appends to the existing include list<br>**Values:** Any list of [two-digit ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) |
 | `append_exclude` | **Description:** Appends to the existing exclude list<br>**Values:** Any list of [two-digit ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:
