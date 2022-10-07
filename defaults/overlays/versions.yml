@@ -10,11 +10,11 @@
 #          # Set episode or season or show to overlay       #
 #          overlay_level:                                   #
 #          # Set the horizontal offset for the overlay      #
-#          horizontal_offset: 80                            #
+#          horizontal_offset: 15                            #
 #          # Set the horizontal align for the overlay       #
 #          horizontal_align: right                          #
 #          # Set the vertical offset for the overlay        #
-#          vertical_offset: 15                              #
+#          vertical_offset: 150                             #
 #          # Set the vertical align for the overlay         #
 #          vertical_align: top                              #
 #          # Set the back color for the overlay             #
@@ -41,9 +41,9 @@ templates:
     optional:
       - overlay_level
     default:
-      horizontal_offset: 80
+      horizontal_offset: 15
       horizontal_align: right
-      vertical_offset: 15
+      vertical_offset: 150
       vertical_align: top
       back_color: "#00000099"
       back_radius: 30
