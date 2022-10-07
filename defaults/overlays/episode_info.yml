@@ -28,7 +28,7 @@
 #          # Set the back radius for the overlay            #
 #          back_radius: 30                                  #
 #          # Set the back width for the overlay             #
-#          back_width: 300                                  #
+#          back_width: 305                                  #
 #          # Set the back height for the overlay            #
 #          back_height: 105                                 #
 #############################################################
@@ -48,7 +48,7 @@ templates:
       font_color: "#FFFFFF"
       back_color: "#00000099"
       back_radius: 30
-      back_width: 300
+      back_width: 305
       back_height: 105
     overlay_level: <<overlay_level>>
     overlay:
