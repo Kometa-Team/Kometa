@@ -1,6 +1,6 @@
 # Other Awards Default Metadata File
 
-The `other_award` Metadata File is used to  create collections based on numerous other awards.
+The `- pmm: other_award` Metadata File is used to  create collections based on numerous other awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 

@@ -22,20 +22,10 @@ Template Variables can be used to manipulate the file from the default settings 
 
 Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
 
-Below are the available variables which can be used to customize the file.
+All [Shared Variables](../variables) are available
 
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
-| Variable           | Usage                                        | Default Value |                         Values                          |
-|:-------------------|:---------------------------------------------|---------------|:-------------------------------------------------------:|
-| collection_order   | Sets the collection order of the collection  | `alpha`       |             `release`, `alpha` or `custom`              |
-| radarr_add_missing | Adds missing from the collection to radarr   | `false`       |                    `true` or `false`                    |
-| radarr_folder      | Radarr Folder to add to                      |               |             Folder to add missing items to              |
-| radarr_tag         | Radarr Tag for added missing                 |               |      list of tag(s) to be applied to missing items      |
-| item_radarr_tag    | Radarr Tag for existing items                |               |     list of tag(s) to be applied to existing items      |
-| use_separator      | Controls whether a separator is created      | `true`        |                    `true` or `false`                    |
-| sep_style          | Sets the theme of the separator              | `orig`        | `orig`, `blue`, `gray`, `green`, `purple`, `red`, `stb` |
-
-The below shows an example config.yml with all the template_variables set away from their defaults:
 
 ```yaml
 libraries:
@@ -45,7 +35,7 @@ libraries:
         template_variables:
           collection_order: release
           radarr_add_missing: true
-          radarr_folder: /mnt/local/Media/TV
+          radarr_folder: /mnt/local/Media/Movies
           radarr_tag: <<collection_name>>
           item_radarr_tag: <<collection_name>>
           use_separator: false

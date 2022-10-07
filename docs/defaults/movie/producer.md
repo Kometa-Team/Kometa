@@ -25,38 +25,17 @@ Template Variables can be used to manipulate the producer file from the default 
 
 Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
 
-Below are the available variables which can be used to customize the file.
+All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
 
-| Variable           | Usage                                                                          | Default Value  |                                                                             Values                                                                             |
-|:-------------------|:-------------------------------------------------------------------------------|----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| style              | Controls the visual theme of the collections created                           | `bw`           |                                                 `bw` - Black and white theme or<br/>`rainier` - Rainier theme                                                  |
-| sort_by            | Controls the sort method for the collections                                   | `release.desc` |                                                  Any sort method in the [Sorts Options Table](#sort-options)                                                   |
-| collection_section | Controls the sort order of these collections against other default collections | `17`           |                                                                           Any number                                                                           |
-| collection_mode    | Controls the collection mode of these collections                              | `default`      | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
-| use_separator      | Controls whether a separator is created                                        | `true`         |                                                                       `true` or `false`                                                                        |
-| sep_style          | Sets the theme of the separator                                                | `orig`         |                                                    `orig`, `blue`, `gray`, `green`, `purple`, `red`, `stb`                                                     |
-| item_radarr_tag    | Radarr Tag for existing items                                                  |                |                                                         list of tag(s) to be applied to existing items                                                         |
+| Variable      | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `style `      | **Description:** Controls the visual theme of the collections created<br>**Values:**`bw` - Black and white theme or</br>`rainier` - Rainier theme                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `sort_by`     | **Description:** Controls the sort method for the collections<br>**Values:** Any sort method in the [Sorts Options Table](#sort-options)                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `data`        | **Description:** Changes the following values of the collection builder<br>**Values:**<br><table class="clearTable"><tr><th>Attribute</th><th>Description & Values</th></tr><tr><td><code>depth</code></td><td>Controls the depth within the casting credits to search for common actors</br><strong>Values:</strong> Number greater than 0</td><td><strong>Default:</strong> 5</td></tr><tr><td><code>limit</code></td><td>Controls the maximum number of collections to create</br><strong>Values:</strong> Number greater than 0</td><td><strong>Default:</strong> 25</td></tr></table> |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
 
-```yaml
-libraries:
-  Movies:
-    metadata_path:
-      - pmm: producer
-        template_variables:
-          style: rainier
-          sort_by: title.asc
-          collection_section: 12
-          collection_mode: show_items
-          use_separator: false
-          sep_style: purple
-```
-
-Dynamic Collections attributes can also be edited to tweak the setup of the collections. The YAML file which creates the `producer` collections can be found [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/defaults/defaults/producer.yml)
-
-An example of this is; To amend the maximum amount of collections that are created (default is 25), the following template variable can be used:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:
@@ -65,8 +44,12 @@ libraries:
       - pmm: producer
         template_variables:
           data:
-            limit: 25
+            depth: 10
+            limit: 20
+          style: rainier
+          sort_by: title.asc
+          collection_section: 12
+          collection_mode: show_items
+          use_separator: false
+          sep_style: purple
 ```
-
-Further information on editing Dynamic Collections using template variables can be found [here](https://metamanager.wiki/en/latest/home/guides/defaults.html#customizing-configs)
-
