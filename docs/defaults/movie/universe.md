@@ -24,7 +24,7 @@ Note that the `templates_variables:` section only needs to be used if you do NOT
 
 All [Shared Variables](../variables) are available
 
-The below is an example config.yml extract with some template_variables changed  from their defaults.
+The below is an example config.yml extract with some template_variables changed from their defaults.
 
 
 ```yaml
