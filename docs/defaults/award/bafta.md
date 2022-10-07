@@ -1,6 +1,6 @@
 # British Academy of Film and Television Arts Default Metadata File
 
-The `- pmm: bafta` Metadata File is used to create collections based on the British Academy of Film and Television Arts Awards.
+The `bafta` Metadata File is used to create collections based on the British Academy of Film and Television Arts Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 

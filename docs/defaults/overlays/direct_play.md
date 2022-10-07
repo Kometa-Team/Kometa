@@ -1,6 +1,6 @@
 # Direct Play Default Overlay File
 
-The `- pmm: direct_play` Overlay File is used to create an overlay to indicate items that cannot be transcoded and instead only support Direct Play (i.e. if you use Tautulli to kill 4K transcoding)
+The `direct_play` Overlay File is used to create an overlay to indicate items that cannot be transcoded and instead only support Direct Play (i.e. if you use Tautulli to kill 4K transcoding)
 
 Example Overlays Created:
 

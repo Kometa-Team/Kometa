@@ -1,6 +1,6 @@
 # Academy Awards (Oscars) Default Metadata File
 
-The `- pmm: oscars` Metadata File is used to create collections based on the Academy Awards (Oscars).
+The `oscars` Metadata File is used to create collections based on the Academy Awards (Oscars).
 
 This file only works with Movie Libraries.
 

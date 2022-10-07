@@ -1,6 +1,6 @@
 # Independent Spirit Awards Default Metadata File
 
-The `- pmm: spirit` Metadata File is used to  create collections based on the Independent Spirit Awards.
+The `spirit` Metadata File is used to  create collections based on the Independent Spirit Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 

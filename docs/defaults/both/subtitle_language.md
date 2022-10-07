@@ -1,6 +1,6 @@
 # Subtitle Language Default Metadata File
 
-The `- pmm: subtitle_language` Metadata File is used to dynamically create collections based on the subtitle languages available in your library.
+The `subtitle_language` Metadata File is used to dynamically create collections based on the subtitle languages available in your library.
 
 Example Collections Created:
 

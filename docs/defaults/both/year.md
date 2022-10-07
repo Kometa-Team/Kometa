@@ -1,6 +1,6 @@
 # Year Language Default Metadata File
 
-The `- pmm: year` Metadata File is used to dynamically create collections based on the years available in your library, sorted by critic rating to create a "best of <year>"
+The `year` Metadata File is used to dynamically create collections based on the years available in your library, sorted by critic rating to create a "best of <year>"
 
 Example Collections Created:
 

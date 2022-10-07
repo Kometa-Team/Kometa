@@ -1,6 +1,6 @@
 # Golden Globes Default Metadata File
 
-The `- pmm: golden` Metadata File is used to create collections based on the Golden Globe Awards.
+The `golden` Metadata File is used to create collections based on the Golden Globe Awards.
 
 The `Golden Globe Best Motion Pictures` only works with Movie Libraries but the year collections work with both Movie and TV libraries.
 

@@ -1,6 +1,6 @@
 # MyAnimeList Chart Default Metadata File
 
-The `- pmm: myanimelist` Metadata File is used to create collections based on MyAnimeList Charts.
+The `myanimelist` Metadata File is used to create collections based on MyAnimeList Charts.
 
 Example Collections Created:
 

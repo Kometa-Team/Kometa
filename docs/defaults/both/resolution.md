@@ -1,6 +1,6 @@
 # Resolution Default Metadata File
 
-The `- pmm: resolution` Metadata File is used to dynamically create collections based on the resolutions available in your library.
+The `resolution` Metadata File is used to dynamically create collections based on the resolutions available in your library.
 
 To avoid duplication, this file should not be used in combination with `- pmm: resolution_standards`
 

@@ -1,6 +1,6 @@
 # Emmys Default Metadata File
 
-The `- pmm: emmy` Metadata File is used to create collections based on the Emmy Awards.
+The `emmy` Metadata File is used to create collections based on the Emmy Awards.
 
 This file works with Movie and TV Libraries.
 

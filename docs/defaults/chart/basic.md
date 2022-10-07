@@ -1,6 +1,6 @@
 # Basic Chart Default Metadata File
 
-The `- pmm: basic` Metadata File is used to create collections based on recently released media in your library.
+The `basic` Metadata File is used to create collections based on recently released media in your library.
 
 Example Collections Created:
 

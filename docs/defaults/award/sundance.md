@@ -1,6 +1,6 @@
 # Sundance Film Festival Awards Default Metadata File
 
-The `- pmm: sundance` Metadata File is used to  create collections based on the Sundance Film Festival Awards.
+The `sundance` Metadata File is used to  create collections based on the Sundance Film Festival Awards.
 
 This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
 

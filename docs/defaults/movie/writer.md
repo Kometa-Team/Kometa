@@ -1,6 +1,6 @@
 # Writer Default Metadata File
 
-The `- pmm: writer` Metadata File is used to dynamically create collections based on the most popular writers in your library.
+The `writer` Metadata File is used to dynamically create collections based on the most popular writers in your library.
 
 Example Collections Created:
 

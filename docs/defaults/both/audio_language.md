@@ -1,6 +1,6 @@
 # Audio Language Default Metadata File
 
-The `- pmm: audio_language` Metadata File is used to dynamically create collections based on the audio languages available in your library.
+The `audio_language` Metadata File is used to dynamically create collections based on the audio languages available in your library.
 
 Example Collections Created:
 
