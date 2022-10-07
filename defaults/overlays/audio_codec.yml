@@ -27,7 +27,7 @@
 #          # Set the back radius for the overlay            #
 #          back_radius: 30                                  #
 #          # Set the back width for the overlay             #
-#          back_width: 300                                  #
+#          back_width: 305                                  #
 #          # Sets the style of overlay: standard or compact #
 #          style: compact                                   #
 #                                                           #
