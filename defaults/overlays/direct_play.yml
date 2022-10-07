@@ -35,7 +35,7 @@ templates:
       vertical_align: bottom
       back_color: "#00000099"
       back_radius: 30
-      back_width: 290
+      back_width: 305
       back_height: 170
     collection_level: <<overlay_level>>
     overlay:
