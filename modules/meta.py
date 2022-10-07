@@ -147,7 +147,7 @@ class DataFile:
         translations = {k: {"default": v} for k, v in yaml.data["translations"].items()}
         lib_type = self.library.type.lower() if self.library else "item"
         logger.debug(f"Translations Loaded From: {dir_path}")
-        key_names = {}
+        key_names = {k: {"default": v[lib_type]} for k, v in yaml.data["variables"].items()}
 
         def add_translation(yaml_path, yaml_key, data=None):
             yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
@@ -397,6 +397,8 @@ class DataFile:
                     logger.debug(f"Defaults: {default}")
                     logger.debug("")
                     logger.debug(f"Optional: {optional}")
+                    logger.trace("")
+                    logger.trace(f"Translation: {translation_variables}")
 
                     def check_for_var(_method, _data):
                         def scan_text(og_txt, var, actual_value):
