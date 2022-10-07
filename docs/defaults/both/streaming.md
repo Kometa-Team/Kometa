@@ -1,6 +1,6 @@
 # Streaming Default Metadata File
 
-The `- pmm: streaming` Metadata File is used to dynamically create collections based on the streaming Services that your media is available on.
+The `streaming` Metadata File is used to dynamically create collections based on the streaming Services that your media is available on.
 
 Example Collections Created:
 
@@ -40,7 +40,7 @@ All [Shared Variables](../variables) are available using the below keys.
 | paramount | Paramount+        |
 | peacock   | Peacock           |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:

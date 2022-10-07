@@ -1,6 +1,6 @@
 # Studio Default Metadata File
 
-The `- pmm: studio` Metadata File is used to dynamically create collections based on the studios available in your library.
+The `studio` Metadata File is used to dynamically create collections based on the studios available in your library.
 
 This file also merges similarly named studios (such as "20th Century Fox" and "20th Century Animation") into one ("20th Century Studios")
 
@@ -34,7 +34,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 | `append_exclude` | **Description:** Appends to the existing exclude list<br>**Values:** Any Studio found in your library                                                                                |
 | `append_addons`  | **Description:** Appends to the existing addons list<br>**Values:** Any Studio found in your library                                                                                 |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:

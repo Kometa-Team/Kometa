@@ -1,6 +1,6 @@
 # UK Content Rating Default Metadata File
 
-The `- pmm: content_rating_uk` Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_uk` Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
 If you do not use the UK-based rating system within Plex, this file will attempt to match the standard ratings (such as PG-13) to the respective UK rating system (such as 12)
 
@@ -34,7 +34,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 | `append_exclude` | **Description:** Appends to the existing exclude list<br>**Values:** Any Content Rating found in your library                                                                                 |
 | `append_addons`  | **Description:** Appends to the existing addons list<br>**Values:** Any Content Rating found in your library                                                                                  |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:

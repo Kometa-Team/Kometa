@@ -1,6 +1,6 @@
 # Resolution Standards Default Metadata File
 
-The `- pmm: resolution_standards` Metadata File is used to dynamically create collections based on the resolutions available in your library.
+The `resolution_standards` Metadata File is used to dynamically create collections based on the resolutions available in your library.
 
 This file takes the base resolutions ("4K" and "720p") and turns them into the commonly-known standards name ("Ultra HD" and "HD Ready")
 
@@ -36,7 +36,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 | `append_exclude` | **Description:** Appends to the existing exclude list<br>**Values:** Any Resolution found in your library                                                                                |
 | `append_addons`  | **Description:** Appends to the existing addons list<br>**Values:** Any Resolution found in your library                                                                                 |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:

@@ -1,6 +1,6 @@
 # Resolution Default Metadata File
 
-The `- pmm: resolution` Metadata File is used to dynamically create collections based on the resolutions available in your library.
+The `resolution` Metadata File is used to dynamically create collections based on the resolutions available in your library.
 
 To avoid duplication, this file should not be used in combination with `- pmm: resolution_standards`
 
@@ -34,7 +34,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 | `append_exclude` | **Description:** Appends to the existing exclude list<br>**Values:** Any Resolution found in your library                                                                                |
 | `append_addons`  | **Description:** Appends to the existing addons list<br>**Values:** Any Resolution found in your library                                                                                 |
 
-The below shows an example config.yml with all the template_variables set away from their defaults:
+The below is an example config.yml extract with some template_variables changed  from their defaults.
 
 ```yaml
 libraries:
