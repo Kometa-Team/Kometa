@@ -46,8 +46,8 @@ templates:
       font_color: "#FFFFFF"
       back_color: "#00000099"
       back_radius: 30
-      back_width: 165
-      back_height: 165
+      back_width: 160
+      back_height: 160
       back_align: center
       back_padding: 15
       addon_position: top
