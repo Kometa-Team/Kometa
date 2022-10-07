@@ -125,6 +125,7 @@ html_theme_options = {
                 ("Local Walkthrough", "home/guides/local"),
                 ("Docker Walkthrough", "home/guides/docker"),
                 ("QNAP Walkthrough", "home/guides/qnap"),
+                ("Synology Walkthrough", "home/guides/synology"),
                 ("unRAID Walkthrough", "home/guides/unraid"),
                 ("Kubernetes Walkthrough", "home/guides/kubernetes"),
                 ("Docker images", "home/guides/alternative-docker"),

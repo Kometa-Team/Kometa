@@ -1,63 +1,50 @@
 # Anilist Chart Default Metadata File
 
-The `anilist` Metadata File is used to create collections based on Anilist charts
+The `anilist` Metadata File is used to create collections based on Anilist charts.
 
-Example Collections Created:
-
-![](../images/anilist.png)
+This file works with Movie and TV Libraries.
 
 The below YAML in your config.yml will create the collections:
+
 ```yaml
 libraries:
   Movies:
     metadata_path:
       - pmm: anilist
+  TV Shows:
+    metadata_path:
+      - pmm: anilist
 ```
 
+## Collections
+
+| Collection          |    Key     | Description                                          |
+|:--------------------|:----------:|:-----------------------------------------------------|
+| `AniList Popular`   |  `popular` | Collection of the most Popular Anime on AniList.     |
+| `AniList Top Rated` |    `top`   | Collection of the Top Rated Anime on AniList.        |
+| `AniList Trending`  | `trending` | Collection of the Trending Anime on AniList.         |
+| `AniList Season`    |  `season`  | Collection of the Current Season's Anime on AniList. |
+
+### Examples
+
+![](../images/anilist.png)
 
 ## Template Variables
-Template Variables can be used to manipulate the file from the default settings which are provided. 
 
-Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-As this file is more complex than others, a key system is used to control each collection that is created by the file. Each key refers to one Anilist chart and is used to control multiple template variables.
+Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is just ignored.
 
-Below are the keys and what they refer to:
+All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
-| Key       | Anilist Chart     |
-|:----------|:------------------|
-| popular   | AniList Popular   |
-| season    | AniList Season    |
-| top       | AniList Top Rated |
-| trending  | AniList Trending  |
+| Variable                   | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+|:---------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `limit`                    | **Description:** Changes the number of items in a collection for all collections in a Defaults file.<br>**Values:** Number greater then 0                                                                                                                                                                                                                                                                                                                                                          |
+| `limit_<<key>>`            | **Description:** Changes the number of items in a collection of the specified key's Collection.<br>**Values:** Number greater then 0                                                                                                                                                                                                                                                                                                                                                               |
+| `collection_order`         | **Description:** Changes the Collection Order for all collections in a Defaults file.<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table> |
+| `collection_order_<<key>>` | **Description:** Changes the Collection Order of the specified key's Collection.<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table>      |
 
-
-
-Below are the available variables which can be used to customize the file. Note that any use of `key` within the variable should be replaced with the `key` from the above table (i.e. `use_top` instead of `use_key`, `order_popular` instead of `order_key`)
-
-
-| Variable               | Usage                                                                          | Default Value      |                                                                             Values                                                                             |
-|:-----------------------|:-------------------------------------------------------------------------------|--------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| use_key                | Turn the collection on/off                                                     | `true`             |                                                                       `true` or `false`                                                                        |
-| order_key              | Determine collection order in its section                                      | Alphabetical Order |                                 Any number (i.e. `01` for `order_popular` to put popular first in the list of anilist charts)                                  |
-| summary_key            | Determines summary of collection                                               |                    |                                                                        Any summary text                                                                        |
-| limit_key              | Determines limit of collection                                                 | `100`              |                                                                           Any number                                                                           |
-| collection_order   | Determines collection order of the collection                                  |                    |                                                                                                                                                                |
-| visible_library_key    | Set visible_library for the collection                                         | `false`            |                                                                       `true` or `false`                                                                        |
-| visible_home_key       | Set visible_home for the collection                                            | `false`            |                                                                       `true` or `false`                                                                        |
-| visible_shared_key     | Set visible_shared for the collection                                          | `false`            |                                                                       `true` or `false`                                                                        |
-| sonarr_add_missing_key | Adds missing from the collection to sonarr                                     | `false`            |                                                                       `true` or `false`                                                                        |
-| sonarr_folder_key      | Sonarr Folder to add to                                                        |                    |                                                                 Folder to add missing items to                                                                 |
-| sonarr_tag_key         | Sonarr Tag for added missing                                                   |                    |                                                                 Tag(s) to add to missing items                                                                 |
-| item_sonarr_tag_key    | Sonarr Tag for existing items                                                  | `false`            |                                                                Tag(s) to add to existing items                                                                 |
-| radarr_add_missing_key | Adds missing from the collection to radarr                                     |                    |                                                                       `true` or `false`                                                                        |
-| radarr_folder_key      | Radarr Folder to add to                                                        |                    |                                                                 Folder to add missing items to                                                                 |
-| radarr_tag_key         | Radarr Tag for added missing                                                   |                    |                                                                 Tag(s) to add to missing items                                                                 |
-| item_radarr_tag_key    | Radarr Tag for existing items                                                  |                    |                                                                Tag(s) to add to existing items                                                                 |
-| collection_section     | Controls the sort order of these collections against other default collections | `01`               |                                                                           Any number                                                                           |
-| collection_mode        | Controls the collection mode of these collections                              | `default`          | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
-
-The below is an example config.yml extract with some template_variables changed  from their defaults.
+The below is an example config.yml extract with some template_variables changed from their defaults.
 
 ```yaml
 libraries:
@@ -65,21 +52,14 @@ libraries:
     metadata_path:
       - pmm: anilist
         template_variables:
-          use_top: false
+          use_popular: false
           order_top: 01
           summary_top: "Top 10 Rated movies on AniList"
           limit_top: 10
           visible_library_popular: true
           visible_home_popular: true
           visible_shared_popular: true
-          sonarr_add_missing_trending: true
-          sonarr_folder_trending: /mnt/local/Media/TV/
-          sonarr_tag_trending: trending Shows
-          item_sonarr_tag_trending: trending Shows
-          radarr_add_missing_season: true
-          sonarr_folder_season: /mnt/local/Media/TV/Prime Video Shows/
-          sonarr_tag_season: Prime Video Shows
-          item_sonarr_tag_season: Prime Video Shows
+          sonarr_add_missing: true
           collection_section: 09
           collection_mode: show_items
 ```

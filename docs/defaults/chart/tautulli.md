@@ -49,7 +49,7 @@ Below are the available variables which can be used to customize the file. Note 
 | collection_section     | Controls the sort order of these collections against tautulli default collections | `01`               |                                                                           Any number                                                                           |
 | collection_mode        | Controls the collection mode of these collections                                 | `default`          | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
 
-The below is an example config.yml extract with some template_variables changed  from their defaults.
+The below is an example config.yml extract with some template_variables changed from their defaults.
 
 ```yaml
 libraries:

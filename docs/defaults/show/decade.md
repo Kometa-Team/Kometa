@@ -26,7 +26,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 |:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `sort_by`        | **Description:** Controls the sort method for the collections<br>**Values:** Any sort method in the [Sorts Options Table](#sort-options)                            |
 
-The below is an example config.yml extract with some template_variables changed  from their defaults.
+The below is an example config.yml extract with some template_variables changed from their defaults.
 
 ```yaml
 libraries:
