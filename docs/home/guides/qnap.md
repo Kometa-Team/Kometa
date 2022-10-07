@@ -1,4 +1,4 @@
-# QNAP setup
+# QNAP Walkthrough
 
 This is a quick walkthrough of setting up the Plex-Meta-Manager Docker container in the QNAP "Container Station" UI.
 
@@ -6,7 +6,7 @@ Steps.
 1. Open Container Station; click "Create" in the left column.
 
 
-   ![](QNAP-01.png)
+   ![](qnap/qnap1.png)
 
 
 2. Search for `meisnate12/plex-meta-manager`.
@@ -14,18 +14,18 @@ Steps.
    On the "Docker Hub" tab you should see the image; click on it and click "Install".
 
 
-   ![](QNAP-02.png)
+   ![](qnap/qnap2.png)
 
 
 1. Select the version you want to run from the dropdown and click "Next".
 
    The options are:
-    - 'latest' - most recent official release; typically the most stable
-    - 'develop' - development release, contains new features that haven't made it to latest yet, but may have minor problems
-    - 'nightly' - bleeding-edge development version; latest fixes go here , but breakage should be expected.
+    - `latest`: most recent official release; typically the most stable
+    - `develop`: development release, contains new features that haven't made it to latest yet, but may have minor problems
+    - `nightly`: bleeding-edge development version; latest fixes go here, but breakage should be expected.
 
 
-   ![](QNAP-03.png)
+   ![](qnap/qnap3.png)
 
 
 2. Change the container name if you wish.
@@ -39,7 +39,7 @@ Steps.
    Click "Advanced Settings >>"
 
 
-   ![](QNAP-04.png)
+   ![](qnap/qnap4.png)
 
 
 3. Environment Variables can be added here:
@@ -47,7 +47,7 @@ Steps.
    Information on available Environment Variables can be found [here](../environmental.md)
 
 
-   ![](QNAP-05.png)
+   ![](qnap/qnap5.png)
 
 
 4. Click Shared Folders Tab:
@@ -60,5 +60,5 @@ Steps.
    When finished, click "Create".
 
 
-   ![](QNAP-07.png)
+   ![](qnap/qnap7.png)
 
