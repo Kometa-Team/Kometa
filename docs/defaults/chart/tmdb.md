@@ -1,64 +1,51 @@
-# TMDb Chart Default Metadata File
+# TMDb Charts Default Metadata File
 
 The `tmdb` Metadata File is used to create collections based on TMDb Charts.
 
-Example Collections Created:
-
-![](../images/tmdb.png)
+The `TMDb Airing Today` and `TMDb On The Air` Collections only work with TV Libraries but the rest of the collections work with both Movie and TV libraries.
 
 The below YAML in your config.yml will create the collections:
+
 ```yaml
 libraries:
   Movies:
     metadata_path:
       - pmm: tmdb
+  TV Shows:
+    metadata_path:
+      - pmm: tmdb
 ```
 
+## Collections
+
+| Collection          |    Key     | Description                                          |
+|:--------------------|:----------:|:-----------------------------------------------------|
+| `TMDb Popular`      | `popular`  | Collection of the Most Popular Movies/Shows on TMDb. |
+| `TMDb Top Rated`    |   `top`    | Collection of the Top Rated Movies/Shows on TMDb.    |
+| `TMDb Trending`     | `trending` | Collection of Trending Movies/Shows on TMDb.         |
+| `TMDb Airing Today` |  `airing`  | Collection of Shows Airing Today on TMDb.            |
+| `TMDb On The Air`   |   `air`    | Collection of Shows currently On The Air on TMDb.    |
+
+### Examples
+
+![](../images/tmdb.png)
 
 ## Template Variables
-Template Variables can be used to manipulate the file from the default settings which are provided. 
 
-Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-As this file is more complex than others, a key system is used to control each collection that is created by the file. Each key refers to one tmdb chart and is used to control multiple template variables.
+Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-Below are the keys and what they refer to:
+All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
-| Key      | Chart             |
-|:---------|:------------------|
-| air      | TMDb On The Air   |
-| airing   | TMDb Airing Today |
-| popular  | TMDb Popular      |
-| top      | TMDb Top Rated    |
-| trending | TMDb Trending     |
+| Variable                   | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|:---------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `limit`                    | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Default:** `100`<br>**Values:** Number Greater then 0                                                                                                                                                                                                                                                                                                                                                                                                |
+| `limit_<<key>>`            | **Description:** Changes the Builder Limit of the specified key's Collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `collection_order`         | **Description:** Changes the Collection Order for all collections in a Defaults file.<br>**Default:** `custom`<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../../metadata/builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table>      |
+| `collection_order_<<key>>` | **Description:** Changes the Collection Order of the specified key's Collection.<br>**Default:** `collection_order`<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../../metadata/builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table> |
 
-
-
-Below are the available variables which can be used to customize the file. Note that any use of `key` within the variable should be replaced with the `key` from the above table (i.e. `use_top` instead of `use_key`, `order_popular` instead of `order_key`)
-
-
-| Variable               | Usage                                                                          | Default Value      |                                                                             Values                                                                             |
-|:-----------------------|:-------------------------------------------------------------------------------|--------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| use_key                | Turn the collection on/off                                                     | `true`             |                                                                       `true` or `false`                                                                        |
-| order_key              | Determine collection order in its section                                      | Alphabetical Order |                                   Any number (i.e. `01` for `order_popular` to put popular first in the list of tmdb charts)                                   |
-| summary_key            | Determines summary of collection                                               |                    |                                                                        Any summary text                                                                        |
-| limit_key              | Determines limit of collection                                                 | `100`              |                                                                           Any number                                                                           |
-| collection_order   | Determines collection order of the collection                                  |                    |                                                                                                                                                                |
-| visible_library_key    | Set visible_library for the collection                                         | `false`            |                                                                       `true` or `false`                                                                        |
-| visible_home_key       | Set visible_home for the collection                                            | `false`            |                                                                       `true` or `false`                                                                        |
-| visible_shared_key     | Set visible_shared for the collection                                          | `false`            |                                                                       `true` or `false`                                                                        |
-| sonarr_add_missing_key | Adds missing from the collection to sonarr                                     | `false`            |                                                                       `true` or `false`                                                                        |
-| sonarr_folder_key      | Sonarr Folder to add to                                                        |                    |                                                                 Folder to add missing items to                                                                 |
-| sonarr_tag_key         | Sonarr Tag for added missing                                                   |                    |                                                                 Tag(s) to add to missing items                                                                 |
-| item_sonarr_tag_key    | Sonarr Tag for existing items                                                  | `false`            |                                                                Tag(s) to add to existing items                                                                 |
-| radarr_add_missing_key | Adds missing from the collection to radarr                                     |                    |                                                                       `true` or `false`                                                                        |
-| radarr_folder_key      | Radarr Folder to add to                                                        |                    |                                                                 Folder to add missing items to                                                                 |
-| radarr_tag_key         | Radarr Tag for added missing                                                   |                    |                                                                 Tag(s) to add to missing items                                                                 |
-| item_radarr_tag_key    | Radarr Tag for existing items                                                  |                    |                                                                Tag(s) to add to existing items                                                                 |
-| collection_section     | Controls the sort order of these collections against other default collections | `01`               |                                                                           Any number                                                                           |
-| collection_mode        | Controls the collection mode of these collections                              | `default`          | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
-
-The below is an example config.yml extract with some template_variables changed from their defaults.
+The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 ```yaml
 libraries:
@@ -66,15 +53,9 @@ libraries:
     metadata_path:
       - pmm: tmdb
         template_variables:
-          use_popular: false
-          order_popular: 01
-          summary_popular: "Popular movies on TMDb right now"
-          limit_popular: 10
+          use_trending false
+          limit_popular: 20
           visible_library_popular: true
           visible_home_popular: true
           visible_shared_popular: true
-          item_sonarr_tag_popular: New Episodes
-          item_radarr_tag_season: Newly popular
-          collection_section: 09
-          collection_mode: show_items
 ```

@@ -2,9 +2,7 @@
 
 The `actor` Metadata File is used to dynamically create collections based on the most popular actors/actresses in your library.
 
-Example Collections Created:
-
-![](../images/actor1.png)
+This file works with Movie and TV Libraries.
 
 The below YAML in your config.yml will create the collections:
 ```yaml
@@ -13,6 +11,16 @@ libraries:
     metadata_path:
       - pmm: actor
 ```
+
+## Collections
+
+| Collection |    Key     | Description                                           |
+|:-----------|:----------:|:------------------------------------------------------|
+| `<<year>>` | `<<year>>` | Collection of Emmys Award Winners for the given year. |
+
+Example Collections Created:
+
+![](../images/actor1.png)
 
 ## Rainier Style
 Below is a screenshot of the alternative `Rainier` style which can be set via template variables
@@ -34,7 +42,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 | `data`        | **Description:** Changes the following values of the collection builder<br>**Values:**<br><table class="clearTable"><tr><th>Attribute</th><th>Description & Values</th></tr><tr><td><code>depth</code></td><td>Controls the depth within the casting credits to search for common actors</br><strong>Values:</strong> Number greater than 0</td><td><strong>Default:</strong> 5</td></tr><tr><td><code>limit</code></td><td>Controls the maximum number of collections to create</br><strong>Values:</strong> Number greater than 0</td><td><strong>Default:</strong> 25</td></tr></table> |
 
 
-The below is an example config.yml extract with some template_variables changed from their defaults.
+The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 ```yaml
 libraries:

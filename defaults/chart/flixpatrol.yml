@@ -1,3 +1,10 @@
+##############################################################################
+#                       FlixPatrol Charts Collections                        #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#     https://metamanager.wiki/en/latest/defaults/chart/flixpatrol.html      #
+##############################################################################
+
 external_templates:
   pmm: templates
   template_variables:
@@ -10,7 +17,7 @@ translations:
 templates:
   flixpatrol:
     default:
-      location: united_states
+      location: world
       location_<<key>>: <<location>>
       time_window: last_week
       time_window_<<key>>: <<time_window>>

@@ -1,55 +1,51 @@
-# Basic Chart Default Metadata File
+# Basic Charts Default Metadata File
 
 The `basic` Metadata File is used to create collections based on recently released media in your library.
 
-Example Collections Created:
-
-![](../images/basic.png)
+This file works with Movie and TV Libraries.
 
 The below YAML in your config.yml will create the collections:
+
 ```yaml
 libraries:
   Movies:
     metadata_path:
       - pmm: basic
+  TV Shows:
+    metadata_path:
+      - pmm: basic
 ```
 
+## Collections
+
+| Collection       |    Key     | Description                                                    |
+|:-----------------|:----------:|:---------------------------------------------------------------|
+| `Newly Released` | `released` | Collection of Movies or TV Shows released in the last 90 days. |
+| `New Episodes`   | `episodes` | Collection of Episodes released in the last 7 days.            |
+
+### Examples
+
+Example Collections Created:
+
+![](../images/basic.png)
 
 ## Template Variables
-Template Variables can be used to manipulate the file from the default settings which are provided. 
 
-Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-As this file is more complex than others, a key system is used to control each collection that is created by the file. Each key refers to one chart and is used to control multiple template variables.
+Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-Below are the keys and what they refer to:
+All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
-| Key      | Chart          |
-|:---------|:---------------|
-| released | Newly Released |
-| episodes | New Episodes   |
+| Variable              | Description & Values                                                                                                                                                                                                                  |
+|:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `limit`               | **Description:** Changes the Smart Filter Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                          |
+| `limit_<<key>>`       | **Description:** Changes the Smart Filter Limit of the specified key's Collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                       |
+| `sort_by`             | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                  |
+| `sort_by_<<key>>`     | **Description:** Changes the Smart Filter Sort of the specified key's Collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                            |
+| `in_the_last_<<key>>` | **Description:** Changes how far back the Smart Filter looks.<br>**Default:**<table class="clearTable"><tr><td>`released`</td><td>`90`</td></tr><tr><td>`episodes`</td><td>`7`</td></tr></table><br>**Values:** Number Greater then 0 |
 
-
-
-Below are the available variables which can be used to customize the file. Note that any use of `key` within the variable should be replaced with the `key` from the above table (i.e. `use_episodes` instead of `use_key`, `order_released` instead of `order_key`)
-
-
-| Variable               | Usage                                                                          | Default Value      |                                                                             Values                                                                             |
-|:-----------------------|:-------------------------------------------------------------------------------|--------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| use_key                | Turn the collection on/off                                                     | `true`             |                                                                       `true` or `false`                                                                        |
-| order_key              | Determine collection order in its section                                      | Alphabetical Order |                                    Any number (i.e. `01` for `order_released` to put released first in the list of charts)                                     |
-| summary_key            | Determines summary of collection                                               |                    |                                                                        Any summary text                                                                        |
-| limit_key              | Determines limit of collection                                                 | `100`              |                                                                           Any number                                                                           |
-| collection_order   | Determines collection order of the collection                                  |                    |                                                                                                                                                                |
-| visible_library_key    | Set visible_library for the collection                                         | `false`            |                                                                       `true` or `false`                                                                        |
-| visible_home_key       | Set visible_home for the collection                                            | `false`            |                                                                       `true` or `false`                                                                        |
-| visible_shared_key     | Set visible_shared for the collection                                          | `false`            |                                                                       `true` or `false`                                                                        |
-| item_sonarr_tag_key    | Sonarr Tag for existing items                                                  | `false`            |                                                                Tag(s) to add to existing items                                                                 |
-| item_radarr_tag_key    | Radarr Tag for existing items                                                  |                    |                                                                Tag(s) to add to existing items                                                                 |
-| collection_section     | Controls the sort order of these collections against other default collections | `01`               |                                                                           Any number                                                                           |
-| collection_mode        | Controls the collection mode of these collections                              | `default`          | `default` - Library default<br/>`hide` - Hide Collection<br/>`hide_items`- Hide Items in this Collection<br/>`show_items` - Show this Collection and its Items |
-
-The below is an example config.yml extract with some template_variables changed from their defaults.
+The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 ```yaml
 libraries:
@@ -58,14 +54,8 @@ libraries:
       - pmm: basic
         template_variables:
           use_released: false
-          order_released: 01
-          summary_released: "Newly Released items"
-          limit_released: 10
+          in_the_last_episodes: 14
           visible_library_released: true
           visible_home_released: true
           visible_shared_released: true
-          item_sonarr_tag_released: New Episodes
-          item_radarr_tag_season: Newly Released
-          collection_section: 09
-          collection_mode: show_items
 ```

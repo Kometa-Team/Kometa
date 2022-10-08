@@ -2,7 +2,7 @@
 
 The `universe` Metadata File is used to  create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World)
 
-This Default file requires [Trakt Authentication](https://metamanager.wiki/en/latest/config/trakt.html)
+This Default file requires [Trakt Authentication](../../config/trakt)
 
 Example Collections Created:
 
@@ -24,7 +24,7 @@ Note that the `templates_variables:` section only needs to be used if you do NOT
 
 All [Shared Variables](../variables) are available
 
-The below is an example config.yml extract with some template_variables changed from their defaults.
+The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 
 ```yaml

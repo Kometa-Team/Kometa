@@ -30,6 +30,36 @@ libraries:
           use_separator: false
 ```
 
+
+
+
+
+
+
+##############################################################################
+
+|                                    Key                                     |
+|:--------------------------------------------------------------------------:|
+|                          IMDb Charts Collections                           |
+|                 Created by Yozora, Bullmoose20, & Sohjiro                  |
+|          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           |
+|        https://metamanager.wiki/en/latest/defaults/chart/imdb.html         |
+|                       FlixPatrol Charts Collections                        |
+|                 Created by Yozora, Bullmoose20, & Sohjiro                  |
+|          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           |
+|     https://metamanager.wiki/en/latest/defaults/chart/flixpatrol.html      |
+
+
+
+
+
+|                         IMDb Charts Collections                         |
+|                 Created by Yozora, Bullmoose20, & Sohjiro                  |
+|          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           |
+|       https://metamanager.wiki/en/latest/defaults/chart/imdb.html       |
+
+
+
 ## Separator Files
 
 These are all the files that contain a separator.

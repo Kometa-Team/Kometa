@@ -73,6 +73,8 @@ templates:
   smart_filter:
     default:
       sort_by: release.desc
+      sort_by_<<key>>: <<sort_by>>
+      limit_<<key>>: <<limit>>
       search_value: <<value>>
     optional:
       - tmdb_person
@@ -82,8 +84,8 @@ templates:
       - type
     tmdb_person: <<tmdb_person>>
     smart_filter:
-      sort_by: <<sort_by>>
-      limit: <<limit>>
+      sort_by: <<sort_by_<<key>>>>
+      limit: <<limit_<<key>>>>
       type: <<type>>
       any:
         <<search_term>>: <<search_value>>
