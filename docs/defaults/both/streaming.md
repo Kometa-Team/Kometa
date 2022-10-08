@@ -40,7 +40,7 @@ All [Shared Variables](../variables) are available using the below keys.
 | paramount | Paramount+        |
 | peacock   | Peacock           |
 
-The below is an example config.yml extract with some template_variables changed from their defaults.
+The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 ```yaml
 libraries:

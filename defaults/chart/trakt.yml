@@ -74,7 +74,8 @@ translations:
 templates:
   trakt:
     default:
-      limit_<<key>>: 100
+      limit: 100
+      limit_<<key>>: <<limit>>
     trakt_chart:
       chart: <<key>>
       limit: <<limit_<<key>>>>

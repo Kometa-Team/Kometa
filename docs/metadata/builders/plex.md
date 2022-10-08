@@ -32,7 +32,7 @@ Finds every item in your Watchlist.
 
 The expected input is the sort you want returned. It defaults to `added.asc`.
 
-### Sort Options
+### Watchlist Sort Options
 
 | Sort Option                                 | Description                                 |
 |:--------------------------------------------|:--------------------------------------------|
