@@ -2,7 +2,7 @@
 
 The `flixpatrol` Metadata File is used to create collections based on FlixPatrol Charts.
 
-The `IMDb Lowest Rated` Collection only works with Movie Libraries but the rest of the collections work with both Movie and TV libraries.
+This file works with Movie and TV Libraries.
 
 The below YAML in your config.yml will create the collections:
 

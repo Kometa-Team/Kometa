@@ -49,7 +49,6 @@ libraries:
     metadata_path:
       - pmm: other_award
         template_variables:
-          collection_section: 8
           collection_mode: show_items
           collection_order: alpha
           radarr_add_missing: true
