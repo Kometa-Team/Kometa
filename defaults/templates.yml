@@ -13,19 +13,6 @@ templates:
     blank_collection: true
     url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
 
-  separator off:
-    default:
-      sep_style: orig
-      collection_section: "00"
-      use_separator: false
-    optional:
-      - collection_mode
-    allowed_library_types: <<use_separator>>
-    collection_mode: <<collection_mode>>
-    sort_title: "!<<collection_section>>_!<<collection_name>>"
-    blank_collection: true
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
-
   shared:
     default:
       collection_section: "00"
