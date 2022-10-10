@@ -1,18 +1,12 @@
-# Trakt Charts Default Metadata File
+# Trakt Charts Collections
 
-The `trakt` Metadata File is used to create collections based on Trakt Charts.
+The `trakt` Default Metadata File is used to create collections based on Trakt Charts.
 
-This file works with Movie and TV Libraries.
+**This file works with Movie and TV Libraries.**
 
-The below YAML in your config.yml will create the collections:
-```yaml
-libraries:
-  Movies:
-    metadata_path:
-      - pmm: trakt
-```
+![](../images/trakt.png)
 
-## Collections
+## Collections Section 01
 
 | Collection          |      Key      | Description                                             |
 |:--------------------|:-------------:|:--------------------------------------------------------|
@@ -22,9 +16,19 @@ libraries:
 | `Trakt Trending`    |  `trending`   | Collection of Trending Movies/Shows on Trakt.           |
 | `Trakt Watched`     |   `watched`   | Collection of the Most Watched Movies/Shows on Trakt.   |
 
-### Examples
+## Config
 
-![](../images/trakt.png)
+The below YAML in your config.yml will create the collections:
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: trakt
+  TV Shows:
+    metadata_path:
+      - pmm: trakt
+```
 
 ## Template Variables
 

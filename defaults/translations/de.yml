@@ -245,12 +245,8 @@ translations:
   resolution_name: <<key_name>> <<library_translationU>>(e/n)
   resolution_summary: <<library_translationU>>(e/n) mit der Auflösung <<key_name>>.
 
-  # Beispiel key_name: 1080p
-  resolution_standards_name: <<key_name>> <<library_translationU>>(e/n)
-  resolution_standards_summary: <<library_translationU>>(e/n) mit der Auflösung <<key_name>>.
-
-  resolution_standards_other_name: Andere Auflösungen
-  resolution_standards_other_summary: <<library_translationU>>(e/n) mit anderen ungewöhnlichen Auflösungen.
+  resolution_other_name: Andere Auflösungen
+  resolution_other_summary: <<library_translationU>>(e/n) mit anderen ungewöhnlichen Auflösungen.
 
   # Beispiele key_name: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
   seasonal_name: <<key_name>> <<library_translationU>>(e/n)

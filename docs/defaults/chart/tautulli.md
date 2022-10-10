@@ -1,10 +1,21 @@
-# Tautulli Charts Default Metadata File
+# Tautulli Charts Collections
 
-The `tautulli` Metadata File is used to create collections based on Tautulli/Plex Charts.
+The `tautulli` Default Metadata File is used to create collections based on Tautulli/Plex Charts.
 
 This Default file requires [Tautulli Authentication](../../config/tautulli)
 
-This file works with Movie and TV Libraries.
+**This file works with Movie and TV Libraries.**
+
+![](../images/tautulli.png)
+
+## Collections Section 01
+
+| Collection     |    Key    | Description                                          |
+|:---------------|:---------:|:-----------------------------------------------------|
+| `Plex Popular` | `popular` | Collection of the most Popular Movies/Shows on Plex. |
+| `Plex Watched` | `watched` | Collection of the most Watched Movies/Shows on Plex. |
+
+## Config
 
 The below YAML in your config.yml will create the collections:
 
@@ -17,17 +28,6 @@ libraries:
     metadata_path:
       - pmm: tautulli
 ```
-
-## Collections
-
-| Collection     |    Key    | Description                                          |
-|:---------------|:---------:|:-----------------------------------------------------|
-| `Plex Popular` | `popular` | Collection of the most Popular Movies/Shows on Plex. |
-| `Plex Watched` | `watched` | Collection of the most Watched Movies/Shows on Plex. |
-
-### Examples
-
-![](../images/tautulli.png)
 
 ## Template Variables
 

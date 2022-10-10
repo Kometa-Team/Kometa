@@ -1,12 +1,12 @@
-# UK Content Rating Collections
+# US Content Rating Collections
 
-The `content_rating_uk` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_us` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
-If you do not use the UK-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
+If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
 **This file works with Movie and TV Libraries.**
 
-![](../images/content_rating_uk.png)
+![](../images/moviecontent_rating_us.png)
 
 ## Collections Section 14
 
@@ -24,10 +24,10 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_us
   TV Shows:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_us
 ```
 
 ## Template Variables
@@ -60,38 +60,68 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_us
         template_variables:
+          use_other: false
           use_separator: false
           sep_style: blue
-          use_other: false
           append_addons:
-            15:
-              - de/15 # adds "de/15" to the existing "15" addon list
+            R:
+              - "de/18"
           sort_by: title.asc
 ```
 
 ## Default `include`
 
+<table class="clearTable">
+  <tr>
+  <th>Movies</th>
+  <th>TV SHows</th>
+  </tr>
+  <tr>
+    <td>
+
 ```yaml
 include:
-  - U
+  - G
   - PG
-  - 12
-  - 12A
-  - 15
-  - 18
-  - R18
+  - PG-13
+  - R
+  - NC-17
 ```
+
+</td>
+    <td>
+
+```yaml
+include:
+  - TV-G
+  - TV-Y
+  - TV-PG
+  - TV-14
+  - TV-MA
+```
+
+</td>
+  </tr>
+</table>
 
 ## Default `addons`
 
+<table class="clearTable">
+  <tr>
+  <th>Movies</th>
+  <th>TV SHows</th>
+  </tr>
+  <tr>
+    <td>
+
 ```yaml
 addons:
-  U:
+  G: 
     - gb/U
     - gb/0+
-    - G
+    - U
     - TV-Y
     - TV-G
     - E
@@ -114,43 +144,99 @@ addons:
     - TV-PG
     - TV-Y7
     - TV-Y7-FV
-    - PG
     - 7
     - 8
     - 9
-    - 10
-    - 11
     - "07"
     - "08"
     - "09"
-  12:
-    - gb/12
-    - 12
-  12A:
+    - "10"
+    - "11"
+  PG-13:
     - gb/12A
+    - gb/12
     - 12+
-    - PG-13
     - TV-13
     - 12
-  15:
-    - gb/15
-    - gb/14+
-    - TV-14
     - 13
     - 14
     - 15
-  18:
+    - 16
+  R:
+    - 17
+    - 18
     - gb/18
     - MA-17
     - TVMA
     - TV-MA
-    - R
-    - 16
-    - 17
-    - 18
-  R18:
+    - gb/14+
+    - gb/15
+    - TV-14
+  NC-17:
     - gb/R18
     - gb/X
+    - R18
     - X
-    - NC-17
 ```
+
+</td>
+    <td>
+
+```yaml
+addons:
+  TV-G: 
+    - gb/U
+    - gb/0+
+    - U
+    - G
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - "01"
+    - "02"
+    - "03"
+    - "04"
+    - "05"
+    - "06"
+  TV-Y:
+    - TV-Y7
+    - TV-Y7-FV
+    - 7
+    - 8
+    - 9
+    - "07"
+    - "08"
+    - "09"
+  TV-PG:
+    - gb/PG
+    - gb/9+
+    - 10
+    - 11
+    - 12
+    - 13
+  TV-14:
+    - gb/12A
+    - 12+
+    - PG-13
+    - TV-13
+    - gb/14+
+    - gb/15
+    - 14
+    - 15
+    - 16
+    - 17
+  TV-MA:
+    - 18
+    - gb/18
+    - MA-17
+    - NC-17
+    - R
+    - TVMA
+```
+
+</td>
+  </tr>
+</table>

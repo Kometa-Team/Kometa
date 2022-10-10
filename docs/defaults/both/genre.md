@@ -1,38 +1,53 @@
-# Genre Default Metadata File
+# Genre Collections
 
-The `genre` Metadata File is used to dynamically create collections based on the genres available in your library.
+The `genre` Default Metadata File is used to dynamically create collections based on the genres available in your library.
 
 This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci-Fi & Fantasy") into one ("Science Fiction")
 
-Example Collections Created:
+**This file works with Movie and TV Libraries.**
 
 ![](../images/genre.png)
 
+## Collections Section 06
+
+| Collection                                               |               Key                | Description                                                |
+|:---------------------------------------------------------|:--------------------------------:|:-----------------------------------------------------------|
+| `Genre Collections`                                      |           `separator`            | Separator Collection to denote the Section of Collections. |
+| `<<Genre>> Movies/Shows`<br>**Example:** `Action Movies` | `<<Number>>`<br>**Example:** `5` | Collection of Movies/Shows that have this Genre.           |
+
+## Config
+
 The below YAML in your config.yml will create the collections:
+
 ```yaml
 libraries:
   Movies:
     metadata_path:
       - pmm: genre
+  TV Shows:
+    metadata_path:
+      - pmm: genre
 ```
 
-
 ## Template Variables
-Template Variables can be used to manipulate the file from the default settings which are provided. 
 
-Note that the `templates_variables:` section only needs to be used if you do NOT want to use the default settings.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+
+Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
 All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
-| Variable         | Description & Values                                                                                                                                                                |
-|:-----------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `sort_by`        | **Description:** Controls the sort method for the collections<br>**Values:** Any sort method in the [Sorts Options Table](#sort-options)                                            |
-| `include`        | **Description:** Overrides the default include list<br>**Values:** Any Genre found in your library                                                                                  |
-| `exclude`        | **Description:** Overrides the default exclude list<br>**Values:** Any Genre found in your library                                                                                  |
-| `addons`         | **Description:** Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Any Genre found in your library  |
-| `append_include` | **Description:** Appends to the existing include list<br>**Values:** Any Genre found in your library                                                                                |
-| `append_exclude` | **Description:** Appends to the existing exclude list<br>**Values:** Any Genre found in your library                                                                                |
-| `append_addons`  | **Description:** Appends to the existing addons list<br>**Values:** Any Genre found in your library                                                                                 |
+| Variable          | Description & Values                                                                                                                                                                                                                      |
+|:------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `use_separator`   | **Description:** Turn the separator collection off.<br>**Values:** `false` to turn of the collection                                                                                                                                      |
+| `sep_style`       | **Description:** Separator Style.<br>**Default:** `orig`<br>**Values:** `orig`, red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                                         |
+| `sort_by`         | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                      |
+| `sort_by_<<key>>` | **Description:** Changes the Smart Filter Sort of the specified key's Collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                |
+| `exclude`         | **Description:** Exclude these Genres from creating a Dynamic Collection.<br>**Values:** List of Genres found in your library                                                                                                             |
+| `addons`          | **Description:** Overrides the [default addons list](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Any Genres found in your library |
+| `append_addons`   | **Description:** Appends to the [default addons list](#default-addons).<br>**Values:** Any Genres found in your library                                                                                                                   |
+| `genre_name`      | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                       |
+| `genre_summary`   | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that have the genre <<key_name>>.`<br>**Values:** Any string.                                                          |
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
@@ -42,15 +57,57 @@ libraries:
     metadata_path:
       - pmm: genre
         template_variables:
+          use_separator: false
+          sep_style: red
           exclude:
             - Politics
             - News
-          addons:
+          append_addons:
             Horror:
               - Thriller  # Adds all thriller items to the Horror collection
           sort_by: title.asc
-          collection_section: 5
-          collection_mode: show_items
-          use_separator: false
-          sep_style: red
+```
+
+## Default `addons`
+
+```yaml
+addons:
+  Action:
+    - Action/Adventure
+    - Action/adventure
+    - Action & Adventure
+    - Action & adventure
+    - Action and Adventure
+    - Action and adventure
+  Adventure:
+    - Action/Adventure
+    - Action/adventure
+    - Action & Adventure
+    - Action & adventure
+    - Action and Adventure
+    - Action and adventure
+  Biopic:
+    - Biography
+  Family:
+    - Kids & Family
+  Fantasy:
+    - SciFi & Fantasy
+    - Science Fiction & Fantasy
+    - Science-Fiction & Fantasy
+    - Sci-Fi & Fantasy
+  Film Noir:
+    Film-Noir
+  Politics:
+    - War & Politics
+  Science Fiction:
+    - SciFi
+    - Sci-Fi
+    - Science-Fiction
+    - SciFi & Fantasy
+    - Science Fiction & Fantasy
+    - Sci-Fi & Fantasy
+  Talk Show:
+    - Talk
+  War:
+    - War & Politics
 ```

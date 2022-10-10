@@ -46,7 +46,7 @@ dynamic_collections:
   Country:
     type: country
     title_format: <<key_name>> <<library_typeU>>s
-    other_name: Other Countries
+    other_name: Other Countries <<library_typeU>>s
     template:
       - smart_filter
       - translation

@@ -1,8 +1,21 @@
-# Other Charts Default Metadata File
+# Other Charts Collections
 
-The `other_chart` Metadata File is used to create collections based on other Charts.
+The `other_chart` Default Metadata File is used to create collections based on other Charts.
 
-The `StevenLu's Popular Movies` and `Top 10 Pirated Movies of the Week` Collections only work with Movie Libraries but the rest of the collections work with both Movie and TV libraries.
+**The `StevenLu's Popular Movies` and `Top 10 Pirated Movies of the Week` Collections only work with Movie Libraries but the rest of the collections work with both Movie and TV libraries.**
+
+![](../images/chartother.png)
+
+## Collections Section 01
+
+| Collection                          |      Key      | Description                                          |
+|:------------------------------------|:-------------:|:-----------------------------------------------------|
+| `AniDB Popular`                     |    `anidb`    | Collection of the most Popular Anime on AniDB.       |
+| `Common Sense Selection`            | `commonsense` | Collection of Common Sense Selection Movies/Shows.   |
+| `StevenLu's Popular Movies`         |  `stevenlu`   | Collection of StevenLu's Popular Movies.             |
+| `Top 10 Pirated Movies of the Week` |   `pirated`   | Collection of the Top 10 Pirated Movies of the Week. |
+
+## Config
 
 The below YAML in your config.yml will create the collections:
 
@@ -15,19 +28,6 @@ libraries:
     metadata_path:
       - pmm: other_chart
 ```
-
-## Collections
-
-| Collection                          |      Key      | Description                                          |
-|:------------------------------------|:-------------:|:-----------------------------------------------------|
-| `AniDB Popular`                     |    `anidb`    | Collection of the most Popular Anime on AniDB.       |
-| `Common Sense Selection`            | `commonsense` | Collection of Common Sense Selection Movies/Shows.   |
-| `StevenLu's Popular Movies`         |  `stevenlu`   | Collection of StevenLu's Popular Movies.             |
-| `Top 10 Pirated Movies of the Week` |   `pirated`   | Collection of the Top 10 Pirated Movies of the Week. |
-
-### Examples
-
-![](../images/chartother.png)
 
 ## Template Variables
 

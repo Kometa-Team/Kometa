@@ -1,8 +1,23 @@
-# FlixPatrol Charts Default Metadata File
+# FlixPatrol Charts Collections
 
-The `flixpatrol` Metadata File is used to create collections based on FlixPatrol Charts.
+The `flixpatrol` Default Metadata File is used to create collections based on FlixPatrol Charts.
 
-This file works with Movie and TV Libraries.
+**This file works with Movie and TV Libraries.**
+
+![](../images/flixpatrol.png)
+
+## Collections Section 01
+
+| Collection                          |     Key     | Description                                                                   |
+|:------------------------------------|:-----------:|:------------------------------------------------------------------------------|
+| `Netflix Top 10 Moves/Shows`        |  `netflix`  | Collection of the Top Movies/Shows on Netflix according to FlixPatrol.        |
+| `Disney Top 10 Moves/Shows`         |  `disney`   | Collection of the Top Movies/Shows on Disney Plus according to FlixPatrol.    |
+| `HBO Top 10 Moves/Shows`            |    `hbo`    | Collection of the Top Movies/Shows on HBO according to FlixPatrol.            |
+| `Hulu Top 10 Moves/Shows`           |   `hulu`    | Collection of the Top Movies/Shows on Hulu according to FlixPatrol.           |
+| `Paramount Plus Top 10 Moves/Shows` | `paramount` | Collection of the Top Movies/Shows on Paramount Plus according to FlixPatrol. |
+| `Prime Video Top 10 Moves/Shows`    |   `prime`   | Collection of the Top Movies/Shows on Prime Video according to FlixPatrol.    |
+
+## Config
 
 The below YAML in your config.yml will create the collections:
 
@@ -15,21 +30,6 @@ libraries:
     metadata_path:
       - pmm: flixpatrol
 ```
-
-## Collections
-
-| Collection                          |     Key     | Description                                                                   |
-|:------------------------------------|:-----------:|:------------------------------------------------------------------------------|
-| `Netflix Top 10 Moves/Shows`        |  `netflix`  | Collection of the Top Movies/Shows on Netflix according to FlixPatrol.        |
-| `Disney Top 10 Moves/Shows`         |  `disney`   | Collection of the Top Movies/Shows on Disney Plus according to FlixPatrol.    |
-| `HBO Top 10 Moves/Shows`            |    `hbo`    | Collection of the Top Movies/Shows on HBO according to FlixPatrol.            |
-| `Hulu Top 10 Moves/Shows`           |   `hulu`    | Collection of the Top Movies/Shows on Hulu according to FlixPatrol.           |
-| `Paramount Plus Top 10 Moves/Shows` | `paramount` | Collection of the Top Movies/Shows on Paramount Plus according to FlixPatrol. |
-| `Prime Video Top 10 Moves/Shows`    |   `prime`   | Collection of the Top Movies/Shows on Prime Video according to FlixPatrol.    |
-
-### Examples
-
-![](../images/flixpatrol.png)
 
 ## Template Variables
 

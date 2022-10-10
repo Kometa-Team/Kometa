@@ -1,8 +1,22 @@
-# MyAnimeList Charts Default Metadata File
+# MyAnimeList Charts Collections
 
-The `myanimelist` Metadata File is used to create collections based on MyAnimeList Charts.
+The `myanimelist` Default Metadata File is used to create collections based on MyAnimeList Charts.
 
-This file works with Movie and TV Libraries.
+**This file works with Movie and TV Libraries.**
+
+![](../images/myanimelist.png)
+
+## Collections Section 01
+
+| Collection               |     Key     | Description                                             |
+|:-------------------------|:-----------:|:--------------------------------------------------------|
+| `MyAnimeList Popular`    |  `popular`  | Collection of the most Popular Anime on MyAnimeList.    |
+| `MyAnimeList Favorited`  | `favorited` | Collection of most Favorited Anime on MyAnimeList.      |
+| `MyAnimeList Top Rated`  |    `top`    | Collection of the Top Rated Anime on MyAnimeList.       |
+| `MyAnimeList Top Airing` |  `airing`   | Collection of the Top Rated Airing on MyAnimeList.      |
+| `MyAnimeList Season`     |  `season`   | Collection of the Current Seasons Anime on MyAnimeList. |
+
+## Config
 
 The below YAML in your config.yml will create the collections:
 
@@ -15,20 +29,6 @@ libraries:
     metadata_path:
       - pmm: myanimelist
 ```
-
-## Collections
-
-| Collection               |     Key     | Description                                             |
-|:-------------------------|:-----------:|:--------------------------------------------------------|
-| `MyAnimeList Popular`    |  `popular`  | Collection of the most Popular Anime on MyAnimeList.    |
-| `MyAnimeList Favorited`  | `favorited` | Collection of most Favorited Anime on MyAnimeList.      |
-| `MyAnimeList Top Rated`  |    `top`    | Collection of the Top Rated Anime on MyAnimeList.       |
-| `MyAnimeList Top Airing` |  `airing`   | Collection of the Top Rated Airing on MyAnimeList.      |
-| `MyAnimeList Season`     |  `season`   | Collection of the Current Seasons Anime on MyAnimeList. |
-
-### Examples
-
-![](../images/myanimelist.png)
 
 ## Template Variables
 

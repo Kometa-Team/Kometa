@@ -1,10 +1,23 @@
-# Other Awards Default Metadata File
+# Other Awards Collections
 
-The `other_award` Metadata File is used to  create collections based on numerous other awards.
+The `other_award` Default Metadata File is used to  create collections based on numerous other awards.
 
 This Default file requires [Trakt Authentication](../../config/trakt)
 
-This file only works with Movie Libraries.
+**This file only works with Movie Libraries.**
+
+![](../images/awardother.png)
+
+## Collections Section 16
+
+| Collection                         |     Key     | Description                                                   |
+|:-----------------------------------|:-----------:|:--------------------------------------------------------------|
+| `Berlinale Golden Bears`           | `berlinale` | Collection of Berlinale Golden Bears Award Winners.           |
+| `César Best Film Winners`          |   `cesar`   | Collection of César Best Film Winners Award Winners.          |
+| `Razzies Golden Raspberry Winners` |  `razzie`   | Collection of Razzies Golden Raspberry Winners Award Winners. |
+| `Venice Golden Lions`              |  `venice`   | Collection of Venice Golden Lions Award Winners.              |
+
+## Config
 
 The below YAML in your config.yml will create the collections:
 
@@ -14,19 +27,6 @@ libraries:
     metadata_path:
       - pmm: other_award
 ```
-
-## Collections
-
-| Collection                         |     Key     | Description                                                   |
-|:-----------------------------------|:-----------:|:--------------------------------------------------------------|
-| `Berlinale Golden Bears`           | `berlinale` | Collection of Berlinale Golden Bears Award Winners.           |
-| `César Best Film Winners`          |   `cesar`   | Collection of César Best Film Winners Award Winners.          |
-| `Razzies Golden Raspberry Winners` |  `razzie`   | Collection of Razzies Golden Raspberry Winners Award Winners. |
-| `Venice Golden Lions`              |  `venice`   | Collection of Venice Golden Lions Award Winners.              |
-
-### Examples
-
-![](../images/awardother.png)
 
 ## Template Variables
 
