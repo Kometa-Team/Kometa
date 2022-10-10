@@ -1,32 +1,10 @@
-#############################################################
-#                Dynamic Country Collections                # 
-#         Created by Yozora, Bullmoose20, & Sohjiro         # 
-#                 Artwork Credit to Duhniel                 # 
-#############################################################
-#  Call this from your config.yml (Show only)               #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         # 
-#      - git: PMM/show/country                              # 
-#        template_variables:                                # 
-#          # Turn the separator collection on/off           #
-#          use_separator: true                              #
-#          # Separator style (red, blue, green, gray,       #
-#              purple, stb, orig)                           #
-#          sep_style: orig                                  #
-#          # Turn the other collection on/off               #
-#          use_other: true                                  #
-#          # Sets the style of posters: color or white      #
-#          style: white                                     #
-#          # Sets how the collection is sorted              #
-#          sort_by: release.desc                            #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: "09"                         #
-#          # Sonarr Tag for existing items                  #
-#          item_sonarr_tag:                                 #
-#############################################################
+##############################################################################
+#                            Country Collections                             #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#                         Artwork Credit to Duhniel                          #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#       https://metamanager.wiki/en/latest/defaults/show/country.html        #
+##############################################################################
 
 external_templates:
   pmm: templates
@@ -45,7 +23,7 @@ collections:
 dynamic_collections:
   Country:
     type: origin_country
-    title_format: <<key_name>> <<library_typeU>>s
+    title_format: <<key_name>>
     other_name: Other Countries
     template:
       - filter

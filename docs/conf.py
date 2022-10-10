@@ -206,7 +206,7 @@ html_theme_options = {
             ("_menu", "Movie Collections", [
                 ("Actor Collections", "defaults/both/actor"),
                 ("Audio Language Collections", "defaults/both/audio_language"),
-                ("Content Ratings (US) Collections", "defaults/both/content_rating_us"),
+                ("Content Ratings (US) Collections", "defaults/movie/content_rating_us"),
                 ("Content Ratings (UK) Collections", "defaults/both/content_rating_uk"),
                 ("Country Collections", "defaults/movie/country"),
                 ("Decade Collections", "defaults/movie/decade"),
@@ -227,7 +227,7 @@ html_theme_options = {
             ("_menu", "Show Collections", [
                 ("Actor Collections", "defaults/both/actor"),
                 ("Audio Language Collections", "defaults/both/audio_language"),
-                ("Content Ratings (US) Collections", "defaults/both/content_rating_us"),
+                ("Content Ratings (US) Collections", "defaults/show/content_rating_us"),
                 ("Content Ratings (UK) Collections", "defaults/both/content_rating_uk"),
                 ("Country Collections", "defaults/show/country"),
                 ("Decade Collections", "defaults/show/decade"),

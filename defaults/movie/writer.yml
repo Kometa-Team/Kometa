@@ -1,29 +1,9 @@
-#############################################################
-#                    Writer Collections                     #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Movie only)              #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - git: PMM/writer                                    #
-#        template_variables:                                #
-#          # Sets the style of posters: bw or rainier       #
-#          style: bw                                        #
-#          # Turn the separator collection on/off           #
-#          use_separator: true                              #
-#          # Separator style (red, blue, green, gray,       #
-#              purple, stb, orig)                           #
-#          sep_style: orig                                  #
-#          # Sets how the collection is sorted              #
-#          sort_by: release.desc                            #
-#          # Sets the collection mode of the collections    #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: 20                           #
-#          # Radarr Tag for existing items                  #
-#          item_radarr_tag:                                 #
-#############################################################
+##############################################################################
+#                             Writer Collections                             #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#       https://metamanager.wiki/en/latest/defaults/movie/writer.html        #
+##############################################################################
 
 external_templates:
   pmm: templates
