@@ -82,7 +82,14 @@ templates:
     default:
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
-    smart_label: <<sort_by_<<key>>>>
+      limit_<<key>>: <<limit>>
+    optional:
+      - limit
+    smart_label:
+      sort_by: <<sort_by_<<key>>>>
+      limit: <<limit_<<key>>>>
+      all:
+        label: <<smart_label>>
     sync_mode: sync
     plex_all: true
     filters:

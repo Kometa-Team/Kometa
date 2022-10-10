@@ -53,7 +53,7 @@ libraries:
     metadata_path:
       - pmm: tmdb
         template_variables:
-          use_trending false
+          use_trending: false
           limit_popular: 20
           visible_library_popular: true
           visible_home_popular: true

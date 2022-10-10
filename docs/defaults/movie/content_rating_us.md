@@ -1,20 +1,20 @@
-# UK Content Rating Collections
+# US Content Rating Collections
 
-The `content_rating_uk` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_us` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
-If you do not use the UK-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
+If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie Libraries, but has a TV Library [Counterpart](../show/content_rating_us).**
 
-![](../images/content_rating_uk.png)
+![](../images/moviecontent_rating_us.png)
 
 ## Collections Section 14
 
-| Collection                                                    |                    Key                    | Description                                                                           |
-|:--------------------------------------------------------------|:-----------------------------------------:|:--------------------------------------------------------------------------------------|
-| `Ratings Collections`                                         |                `separator`                | Separator Collection to denote the Section of Collections.                            |
-| `<<Content Rating>> Movies/Shows`<br>**Example:** `15 Movies` | `<<Content Rating>>`<br>**Example:** `15` | Collection of Movies/Shows that have this Content Rating.                             |
-| `Not Rated Movies/Shows`                                      |                  `other`                  | Collection of Movies/Shows that are Unrated, Not Rated or any other uncommon Ratings. |
+| Collection                                             |                   Key                    | Description                                                                     |
+|:-------------------------------------------------------|:----------------------------------------:|:--------------------------------------------------------------------------------|
+| `Country Collections`                                  |               `separator`                | Separator Collection to denote the Section of Collections.                      |
+| `<<Content Rating>> Movies`<br>**Example:** `R Movies` | `<<Content Rating>>`<br>**Example:** `R` | Collection of Movies that have this Content Rating.                             |
+| `Not Rated Movies`                                     |                 `other`                  | Collection of Movies that are Unrated, Not Rated or any other uncommon Ratings. |
 
 ## Config
 
@@ -24,10 +24,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_uk
-  TV Shows:
-    metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_us
 ```
 
 ## Template Variables
@@ -47,7 +44,7 @@ All [Shared Variables](../variables) are available as well as the additional Var
 | `sort_by`                      | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                    |
 | `sort_by_<<key>>`              | **Description:** Changes the Smart Filter Sort of the specified key's Collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                              |
 | `include`                      | **Description:** Overrides the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                   |
-| `exclude`                      | **Description:** Exclude these Content Ratings from creating a Dynamic Collection.<br>**Values:** List of Content Ratings found in your library                                                                                                                         |
+| `exclude`                      | **Description:** Exclude these Content Ratings from creating a Dynamic Collection.<br>**Values:** List of of Content Ratings found in your library                                                                                                                      |
 | `addons`                       | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Content Ratings found in your library |
 | `append_include`               | **Description:** Appends to the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                  |
 | `append_addons`                | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Content Ratings found in your library                                                                                                                   |
@@ -62,14 +59,14 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_us
         template_variables:
+          use_other: false
           use_separator: false
           sep_style: blue
-          use_other: false
           append_addons:
-            15:
-              - de/15 # adds "de/15" to the existing "15" addon list
+            R:
+              - "de/18"
           sort_by: title.asc
 ```
 
@@ -77,23 +74,21 @@ libraries:
 
 ```yaml
 include:
-  - U
+  - G
   - PG
-  - 12
-  - 12A
-  - 15
-  - 18
-  - R18
+  - PG-13
+  - R
+  - NC-17
 ```
 
 ## Default `addons`
 
 ```yaml
 addons:
-  U:
+  G: 
     - gb/U
     - gb/0+
-    - G
+    - U
     - TV-Y
     - TV-G
     - E
@@ -116,43 +111,37 @@ addons:
     - TV-PG
     - TV-Y7
     - TV-Y7-FV
-    - PG
     - 7
     - 8
     - 9
-    - 10
-    - 11
     - "07"
     - "08"
     - "09"
-  12:
-    - gb/12
-    - 12
-  12A:
+    - "10"
+    - "11"
+  PG-13:
     - gb/12A
+    - gb/12
     - 12+
-    - PG-13
     - TV-13
     - 12
-  15:
-    - gb/15
-    - gb/14+
-    - TV-14
     - 13
     - 14
     - 15
-  18:
+    - 16
+  R:
+    - 17
+    - 18
     - gb/18
     - MA-17
     - TVMA
     - TV-MA
-    - R
-    - 16
-    - 17
-    - 18
-  R18:
+    - gb/14+
+    - gb/15
+    - TV-14
+  NC-17:
     - gb/R18
     - gb/X
+    - R18
     - X
-    - NC-17
 ```

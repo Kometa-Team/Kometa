@@ -215,10 +215,10 @@ translations:
   content_rating_other_summary: <<library_translationU>>s that are Unrated, Not Rated or any other uncommon Ratings.
 
   # example key_name: United States
-  country_name: <<key_name>> <<library_translationU>>s
+  country_name: <<key_name>>
   country_summary: <<library_translationU>>s filmed in <<key_name>>.
 
-  country_other_name: Other Countries <<library_translationU>>s
+  country_other_name: Other Countries
   country_other_summary: <<library_translationU>>s filmed in other uncommon Countries.
 
   # example key_name: 2010s

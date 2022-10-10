@@ -1,20 +1,20 @@
-# UK Content Rating Collections
+# US Content Rating Collections
 
-The `content_rating_uk` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_us` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
-If you do not use the UK-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
+If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-**This file works with Movie and TV Libraries.**
+**This file works with TV Libraries, but has a Movie Library [Counterpart](../movie/content_rating_us).**
 
-![](../images/content_rating_uk.png)
+![](../images/moviecontent_rating_us.png)
 
 ## Collections Section 14
 
-| Collection                                                    |                    Key                    | Description                                                                           |
-|:--------------------------------------------------------------|:-----------------------------------------:|:--------------------------------------------------------------------------------------|
-| `Ratings Collections`                                         |                `separator`                | Separator Collection to denote the Section of Collections.                            |
-| `<<Content Rating>> Movies/Shows`<br>**Example:** `15 Movies` | `<<Content Rating>>`<br>**Example:** `15` | Collection of Movies/Shows that have this Content Rating.                             |
-| `Not Rated Movies/Shows`                                      |                  `other`                  | Collection of Movies/Shows that are Unrated, Not Rated or any other uncommon Ratings. |
+| Collection                                               |                     Key                      | Description                                                                    |
+|:---------------------------------------------------------|:--------------------------------------------:|:-------------------------------------------------------------------------------|
+| `Ratings Collections`                                    |                 `separator`                  | Separator Collection to denote the Section of Collections.                     |
+| `<<Content Rating>> Shows`<br>**Example:** `TV-14 Shows` | `<<Content Rating>>`<br>**Example:** `TV-14` | Collection of Shows that have this Content Rating.                             |
+| `Not Rated Shows`                                        |                   `other`                    | Collection of Shows that are Unrated, Not Rated or any other uncommon Ratings. |
 
 ## Config
 
@@ -22,12 +22,9 @@ The below YAML in your config.yml will create the collections:
 
 ```yaml
 libraries:
-  Movies:
-    metadata_path:
-      - pmm: content_rating_uk
   TV Shows:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_us
 ```
 
 ## Template Variables
@@ -62,14 +59,14 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_uk
+      - pmm: content_rating_us
         template_variables:
+          use_other: false
           use_separator: false
           sep_style: blue
-          use_other: false
           append_addons:
-            15:
-              - de/15 # adds "de/15" to the existing "15" addon list
+            R:
+              - "de/18"
           sort_by: title.asc
 ```
 
@@ -77,27 +74,22 @@ libraries:
 
 ```yaml
 include:
-  - U
-  - PG
-  - 12
-  - 12A
-  - 15
-  - 18
-  - R18
+  - TV-G
+  - TV-Y
+  - TV-PG
+  - TV-14
+  - TV-MA
 ```
 
 ## Default `addons`
 
 ```yaml
 addons:
-  U:
+  TV-G: 
     - gb/U
     - gb/0+
+    - U
     - G
-    - TV-Y
-    - TV-G
-    - E
-    - gb/E
     - 1
     - 2
     - 3
@@ -110,49 +102,38 @@ addons:
     - "04"
     - "05"
     - "06"
-  PG:
-    - gb/PG
-    - gb/9+
-    - TV-PG
+  TV-Y:
     - TV-Y7
     - TV-Y7-FV
-    - PG
     - 7
     - 8
     - 9
-    - 10
-    - 11
     - "07"
     - "08"
     - "09"
-  12:
-    - gb/12
+  TV-PG:
+    - gb/PG
+    - gb/9+
+    - 10
+    - 11
     - 12
-  12A:
+    - 13
+  TV-14:
     - gb/12A
     - 12+
     - PG-13
     - TV-13
-    - 12
-  15:
-    - gb/15
     - gb/14+
-    - TV-14
-    - 13
+    - gb/15
     - 14
     - 15
-  18:
-    - gb/18
-    - MA-17
-    - TVMA
-    - TV-MA
-    - R
     - 16
     - 17
+  TV-MA:
     - 18
-  R18:
-    - gb/R18
-    - gb/X
-    - X
+    - gb/18
+    - MA-17
     - NC-17
+    - R
+    - TVMA
 ```
