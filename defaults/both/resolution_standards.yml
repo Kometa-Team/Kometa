@@ -1,31 +1,9 @@
-#############################################################
-#              Dynamic Resolution Collections               #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Movie or Show)           #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - git: PMM/resolution_standards                      #
-#        template_variables:                                #
-#          # Turn the separator collection on/off           #
-#          use_separator: true                              #
-#          # Separator style (red, blue, green, gray,       #
-#              purple, stb, orig)                           #
-#          sep_style: orig                                  #
-#          # Turn the other collection on/off               #
-#          use_other: true                                  #
-#          # Sets how the collection is sorted              #
-#          sort_by: release.desc                            #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: 15                           #
-#          # Radarr Tag for existing items                  #
-#          item_radarr_tag:                                 #
-#          # Sonarr Tag for existing items                  #
-#          item_sonarr_tag:                                 #
-#############################################################
+##############################################################################
+#                      Standard Resolution Collections                       #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+# https://metamanager.wiki/en/latest/defaults/both/resolution_standards.html #
+##############################################################################
 
 external_templates:
   pmm: templates
@@ -45,7 +23,7 @@ dynamic_collections:
   Resolution Standards:
     type: resolution
     title_format: <<key_name>> <<library_typeU>>s
-    other_name: Other Resolutions
+    other_name: Other Resolutions <<library_typeU>>s
     template:
       - smart_filter
       - translation
@@ -61,28 +39,26 @@ dynamic_collections:
       image:
         default: resolution/standards/<<key>>
       translation_key:
-        default: resolution_standards
-        other: resolution_standards_other
+        default: resolution
+        other: resolution_other
     include:
-      - 480
-      - 720
-      - 1080
-      - 4k
-      - 8k
+      - SD
+      - HD Ready
+      - Full HD
+      - Ultra HD
     addons:
-      480:
+      SD:
         - 144
         - 240
         - 360
         - 576
         - sd
-      1080:
+      HD Ready:
+        - 720
+      Full HD:
+        - 1080
         - 2k
-      4k:
+      Ultra HD:
+        - 4k
         - 8k
-    title_override:
-      480: SD
-      720: HD Ready
-      1080: Full HD
-      4k: Ultra HD
       

@@ -1,33 +1,9 @@
-#############################################################
-#                 Dynamic Year Collections                  #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Movie or Show)           #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - git: PMM/year                                      #
-#        template_variables:                                #
-#          # Turn the separator collection on/off           #
-#          use_separator: true                              #
-#          # Separator style (red, blue, green, gray,       #
-#              purple, stb, orig)                           #
-#          sep_style: orig                                  #
-#          # Turn the other collection on/off               #
-#          use_other: true                                  #
-#          # Sets how the collection is sorted              #
-#          sort_by: critic_rating.desc                      #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: 13                           #
-#          # Sets the number of items per collection        #
-#          limit: 10                                        #
-#          # Radarr Tag for existing items                  #
-#          item_radarr_tag:                                 #
-#          # Sonarr Tag for existing items                  #
-#          item_sonarr_tag:                                 #
-#############################################################
+##############################################################################
+#                              Year Collections                              #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#         https://metamanager.wiki/en/latest/defaults/both/year.html         #
+##############################################################################
 
 external_templates:
   pmm: templates

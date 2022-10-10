@@ -1,3 +1,11 @@
+1.18.0.2 -> 1.18.0.3
+
+content_rating_other_name: Changed `Other Ratings` to `Not Rated <<library_translationU>>s`
+content_rating_other_summary: Changed `<<library_translationU>>s with other uncommon Ratings.` to `<<library_translationU>>s that are Unrated, Not Rated or any other uncommon Ratings.`
+resolution_other_name: Changed `Other Resolution` to `Other Resolution <<library_translationU>>s`
+country_other_name: Changed `Other Countries` to `Other Countries <<library_translationU>>s`
+Added content_rating_cs_name and content_rating_cs_summary
+
 1.18.0.1 -> 1.18.0.2
 
 added variables

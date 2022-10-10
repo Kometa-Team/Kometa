@@ -1,29 +1,9 @@
-#############################################################
-#                 Dynamic Genre Collections                 #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Movie or Show)           #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - git: PMM/genre                                     #
-#        template_variables:                                #
-#          # Turn the separator collection on/off           #
-#          use_separator: true                              #
-#          # Separator style (red, blue, green, gray,       #
-#              purple, stb, orig)                           #
-#          sep_style: orig                                  #
-#          # Sets how the collection is sorted              #
-#          sort_by: release.desc                            #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: "06"                         #
-#          # Radarr Tag for existing items                  #
-#          item_radarr_tag:                                 #
-#          # Sonarr Tag for existing items                  #
-#          item_sonarr_tag:                                 #
-#############################################################
+##############################################################################
+#                             Genre Collections                              #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#        https://metamanager.wiki/en/latest/defaults/both/genre.html         #
+##############################################################################
 
 external_templates:
   pmm: templates
@@ -54,8 +34,6 @@ dynamic_collections:
         default: genre/<<key_name_encoded>>
       translation_key:
         default: genre
-    title_override:
-      Biography: Biopic
     addons:
       Action:
         - Action/Adventure
@@ -71,8 +49,8 @@ dynamic_collections:
         - Action & adventure
         - Action and Adventure
         - Action and adventure
-      Biography:
-        - Biopic
+      Biopic:
+        - Biography
       Family:
         - Kids & Family
       Fantasy:

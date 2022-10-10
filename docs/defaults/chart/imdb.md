@@ -1,8 +1,20 @@
-# IMDb Charts Default Metadata File
+# IMDb Charts Collections
 
-The `imdb` Metadata File is used to create collections based on IMDb Charts.
+The `imdb` Default Metadata File is used to create collections based on IMDb Charts.
 
-The `IMDb Lowest Rated` Collection only works with Movie Libraries but the rest of the collections work with both Movie and TV libraries.
+**The `IMDb Lowest Rated` Collection only works with Movie Libraries but the rest of the collections work with both Movie and TV libraries.**
+
+![](../images/imdb.png)
+
+## Collections Section 01
+
+| Collection          |    Key    | Description                                          |
+|:--------------------|:---------:|:-----------------------------------------------------|
+| `IMDb Popular`      | `popular` | Collection of the most Popular Movies/Shows on IMDb. |
+| `IMDb Top 250`      |   `top`   | Collection of Top 250 Movies/Shows on IMDb.          |
+| `IMDb Lowest Rated` | `lowest`  | Collection of the lowest Rated Movies on IMDb.       |
+
+## Config
 
 The below YAML in your config.yml will create the collections:
 
@@ -15,18 +27,6 @@ libraries:
     metadata_path:
       - pmm: imdb
 ```
-
-## Collections
-
-| Collection          |    Key    | Description                                          |
-|:--------------------|:---------:|:-----------------------------------------------------|
-| `IMDb Popular`      | `popular` | Collection of the most Popular Movies/Shows on IMDb. |
-| `IMDb Top 250`      |   `top`   | Collection of Top 250 Movies/Shows on IMDb.          |
-| `IMDb Lowest Rated` | `lowest`  | Collection of the lowest Rated Movies on IMDb.       |
-
-### Examples
-
-![](../images/imdb.png)
 
 ## Template Variables
 

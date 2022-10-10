@@ -1,4 +1,4 @@
-version: 1.18.0.2
+version: 1.18.0.3
 variables:
   library_translation:
     # For Movie Libraries
@@ -207,14 +207,18 @@ translations:
   content_rating_name: <<key_name>> <<library_translationU>>s
   content_rating_summary: <<library_translationU>>s that are rated <<key_name>>.
 
-  content_rating_other_name: Other Ratings
-  content_rating_other_summary: <<library_translationU>>s with other uncommon Ratings.
+  # example key_name: TV-MA
+  content_rating_cs_name: Age <<key_name>>+ <<library_translationU>>s
+  content_rating_cs_summary: <<library_translationU>>s that are rated <<key_name>> accorfing to the Common Sense Rating System.
+
+  content_rating_other_name: Not Rated <<library_translationU>>s
+  content_rating_other_summary: <<library_translationU>>s that are Unrated, Not Rated or any other uncommon Ratings.
 
   # example key_name: United States
   country_name: <<key_name>> <<library_translationU>>s
   country_summary: <<library_translationU>>s filmed in <<key_name>>.
 
-  country_other_name: Other Countries
+  country_other_name: Other Countries <<library_translationU>>s
   country_other_summary: <<library_translationU>>s filmed in other uncommon Countries.
 
   # example key_name: 2010s
@@ -245,12 +249,8 @@ translations:
   resolution_name: <<key_name>> <<library_translationU>>s
   resolution_summary: <<library_translationU>>s that have the resolution <<key_name>>.
 
-  # example key_name: 1080p
-  resolution_standards_name: <<key_name>> <<library_translationU>>s
-  resolution_standards_summary: <<library_translationU>>s that have the resolution <<key_name>>.
-
-  resolution_standards_other_name: Other Resolutions
-  resolution_standards_other_summary: <<library_translationU>>s that have other uncommon resolutions.
+  resolution_other_name: Other Resolution <<library_translationU>>s
+  resolution_other_summary: <<library_translationU>>s that have other uncommon resolutions.
 
   # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
   seasonal_name: <<key_name>> <<library_translationU>>s

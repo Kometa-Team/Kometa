@@ -1,8 +1,21 @@
-# Anilist Charts Default Metadata File
+# Anilist Charts Collections
 
-The `anilist` Metadata File is used to create collections based on Anilist charts.
+The `anilist` Default Metadata File is used to create collections based on Anilist charts.
 
-This file works with Movie and TV Libraries.
+**This file works with Movie and TV Libraries.**
+
+![](../images/anilist.png)
+
+## Collections Section 01
+
+| Collection          |    Key     | Description                                          |
+|:--------------------|:----------:|:-----------------------------------------------------|
+| `AniList Popular`   | `popular`  | Collection of the most Popular Anime on AniList.     |
+| `AniList Top Rated` |   `top`    | Collection of the Top Rated Anime on AniList.        |
+| `AniList Trending`  | `trending` | Collection of the Trending Anime on AniList.         |
+| `AniList Season`    |  `season`  | Collection of the Current Season's Anime on AniList. |
+
+## Config
 
 The below YAML in your config.yml will create the collections:
 
@@ -15,19 +28,6 @@ libraries:
     metadata_path:
       - pmm: anilist
 ```
-
-## Collections
-
-| Collection          |    Key     | Description                                          |
-|:--------------------|:----------:|:-----------------------------------------------------|
-| `AniList Popular`   | `popular`  | Collection of the most Popular Anime on AniList.     |
-| `AniList Top Rated` |   `top`    | Collection of the Top Rated Anime on AniList.        |
-| `AniList Trending`  | `trending` | Collection of the Trending Anime on AniList.         |
-| `AniList Season`    |  `season`  | Collection of the Current Season's Anime on AniList. |
-
-### Examples
-
-![](../images/anilist.png)
 
 ## Template Variables
 

@@ -112,6 +112,9 @@ table.clearTable {
 table.clearTable td {
   padding: 3px 3px 3px 15px;
 }
+table.clearTable th {
+  text-align: center;
+}
 table.clearTable, table.clearTable tbody, table.clearTable tr, table.clearTable td, table.clearTable th {
   background-color: rgba(0, 0, 0, 0.0) !important;
 }

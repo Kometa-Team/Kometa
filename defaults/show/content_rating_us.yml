@@ -1,29 +1,9 @@
-#############################################################
-#         Dynamic US TV Content Rating Collections          #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Show only)               #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - git: PMM/show/content_rating_us                    #
-#        template_variables:                                #
-#          # Turn the separator collection on/off           #
-#          use_separator: true                              #
-#          # Separator style (red, blue, green, gray,       #
-#              purple, stb, orig)                           #
-#          sep_style: orig                                  #
-#          # Turn the other collection on/off               #
-#          use_other: true                                  #
-#          # Sets how the collection is sorted              #
-#          sort_by: release.desc                            #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: 14                           #
-#          # Sonarr Tag for existing items                  #
-#          item_sonarr_tag:                                 #
-#############################################################
+##############################################################################
+#                       US Content Rating Collections                        #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#  https://metamanager.wiki/en/latest/defaults/both/content_rating_us.html   #
+##############################################################################
 
 external_templates:
   pmm: templates
@@ -43,7 +23,7 @@ dynamic_collections:
   US Show Content Rating:
     type: content_rating
     title_format: <<key_name>> <<library_typeU>>s
-    other_name: Other Ratings
+    other_name: Not Rated <<library_typeU>>s
     template:
       - smart_filter
       - translation
@@ -68,7 +48,6 @@ dynamic_collections:
       - TV-PG
       - TV-14
       - TV-MA
-      - NR
     addons:
       TV-G: 
         - gb/U
@@ -81,21 +60,21 @@ dynamic_collections:
         - 4
         - 5
         - 6
-        - 01
-        - 02
-        - 03
-        - 04
-        - 05
-        - 06
+        - "01"
+        - "02"
+        - "03"
+        - "04"
+        - "05"
+        - "06"
       TV-Y:
         - TV-Y7
         - TV-Y7-FV
         - 7
         - 8
         - 9
-        - 07
-        - 08
-        - 09
+        - "07"
+        - "08"
+        - "09"
       TV-PG:
         - gb/PG
         - gb/9+
@@ -121,14 +100,3 @@ dynamic_collections:
         - NC-17
         - R
         - TVMA
-      NR:
-        - Approved
-        - N/A
-        - NOT RATED
-        - Not Rated
-        - gb/NR
-        - Unrated
-        - gb/Not Rated
-        - gb/Rejected
-        - gb/Unrated
-        - None
