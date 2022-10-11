@@ -31,29 +31,48 @@ templates:
     default:
       collection_order: release
       minimum_items: 2
+      name_mapping_<<key>>: <<name_mapping>>
+      movie_<<key>>: <<movie>>
+      pre: "_"
+      order_<<key>>: ""
+      sort: <<collection_name>>
+      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
+      sort_title_<<key>>: <<sort_title>>
+      radarr_add_missing_<<key>>: <<radarr_add_missing>>
+      radarr_folder_<<key>>: <<radarr_folder>>
+      radarr_tag_<<key>>: <<radarr_tag>>
+      item_radarr_tag_<<key>>: <<item_radarr_tag>>
+      collection_order_<<key>>: <<collection_order>>
     optional:
-      - collection
+      - summary_<<key>>
+      - name_<<key>>
       - movie
-      - radarr_add_missing
       - name_mapping
       - sort_title
       - build_collection
+      - collection_mode
+      - collection_order
+      - collection_section
+      - radarr_add_missing
       - radarr_folder
       - radarr_tag
       - item_radarr_tag
+    summary: <<summary_<<key>>>>
+    name: <<name_<<key>>>>
     cache_builders: 1
     minimum_items: <<minimum_items>>
     tmdb_collection_details: <<value>>
-    tmdb_movie: <<movie>>
-    name_mapping: <<name_mapping>>
-    sort_title: <<sort_title>>
+    tmdb_movie: <<movie_<<key>>>>
+    name_mapping: <<name_mapping_<<key>>>>
+    sort_title: <<sort_title_<<key>>>>
     build_collection: <<build_collection>>
     sync_mode: sync
-    collection_order: <<collection_order>>
-    radarr_add_missing: <<radarr_add_missing>>
-    radarr_folder: <<radarr_folder>>
-    radarr_tag: <<radarr_tag>>
-    item_radarr_tag: <<item_radarr_tag>>
+    collection_mode: <<collection_mode>>
+    collection_order: <<collection_order_<<key>>>>
+    radarr_add_missing: <<radarr_add_missing_<<key>>>>
+    radarr_folder: <<radarr_folder_<<key>>>>
+    radarr_tag: <<radarr_tag_<<key>>>>
+    item_radarr_tag: <<item_radarr_tag_<<key>>>>
 
 dynamic_collections:
   TMDb Collections:
