@@ -2,7 +2,7 @@
 
 The `country` Default Metadata File is used to dynamically create collections based on the countries available in your library.
 
-**This file works with TV Libraries, but has a Movie Library [Counterpart](../movie/content_rating_us).**
+**This file works with TV Libraries, but has a Movie Library [Counterpart](../movie/country).**
 
 ![](../images/country1.png)
 

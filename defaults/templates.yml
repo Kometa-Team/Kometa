@@ -23,6 +23,7 @@ templates:
       image: chart/<<collection_name_encoded>>
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
+      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
     optional:
       - use_<<key>>
       - allowed_libraries
@@ -45,7 +46,7 @@ templates:
     item_radarr_tag: <<item_radarr_tag_<<key>>>>
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
     sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
+    url_poster: <<url_poster_<<key>>>>
 
   trakt:
     optional:

@@ -78,7 +78,6 @@ dynamic_collections:
       - holiday
       - shared
       - arr
-      - imdb
     template_variables:
       emoji:
         years: "🎊 "
