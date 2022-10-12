@@ -57,10 +57,12 @@ templates:
       - radarr_folder
       - radarr_tag
       - item_radarr_tag
+      - url_poster_<<key>>
     summary: <<summary_<<key>>>>
     name: <<name_<<key>>>>
     cache_builders: 1
     minimum_items: <<minimum_items>>
+    url_poster: <<url_poster_<<key>>>>
     tmdb_collection_details: <<value>>
     tmdb_movie: <<movie_<<key>>>>
     name_mapping: <<name_mapping_<<key>>>>
