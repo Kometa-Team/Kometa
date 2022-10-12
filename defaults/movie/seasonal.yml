@@ -23,8 +23,8 @@ templates:
       tmdb_movie_<<key>>: <<tmdb_movie>>
       imdb_list_<<key>>: <<imdb_list>>
       trakt_list_<<key>>: <<trakt_list>>
-      summary_<<key>>: <<season_summary>>
-      name_<<key>>: <<season_name>>
+      summary_<<key>>: <<seasonal_summary>>
+      name_<<key>>: <<seasonal_name>>
       emoji_<<key>>: <<emoji>>
     optional:
       - schedule
@@ -33,8 +33,6 @@ templates:
       - limit
       - imdb_list
       - trakt_list
-      - season_summary
-      - season_name
     smart_label:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>
