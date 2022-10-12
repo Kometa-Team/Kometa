@@ -19,11 +19,22 @@ templates:
       sort_by_<<key>>: <<sort_by>>
       schedule_<<key>>: <<schedule>>
       limit_<<key>>: <<limit>>
+      tmdb_collection_<<key>>: <<tmdb_collection>>
+      tmdb_movie_<<key>>: <<tmdb_movie>>
+      imdb_list_<<key>>: <<imdb_list>>
+      trakt_list_<<key>>: <<trakt_list>>
+      summary_<<key>>: <<season_summary>>
+      name_<<key>>: <<season_name>>
+      emoji_<<key>>: <<emoji>>
     optional:
       - schedule
       - tmdb_collection
       - tmdb_movie
       - limit
+      - imdb_list
+      - trakt_list
+      - season_summary
+      - season_name
     smart_label:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>
@@ -31,40 +42,57 @@ templates:
         label: <<smart_label>>
     schedule: <<schedule_<<key>>>>
     delete_not_scheduled: true
-    tmdb_collection: <<tmdb_collection>>
-    tmdb_movie: <<tmdb_movie>>
+    tmdb_collection: <<tmdb_collection_<<key>>>>
+    tmdb_movie: <<tmdb_movie_<<key>>>>
+    imdb_list: <<imdb_list_<<key>>>>
+    trakt_list: <<trakt_list_<<key>>>>
     cache_builders: 1
+    summary: <<summary_<<key>>>>
+    name: <<emoji_<<key>>>><<name_<<key>>>>
 
 collections:
   Seasonal Collections:
     template:
-      - name: separator off
+      - name: separator
         separator: seasonal
+        use_separator: false
 
 dynamic_collections:
   Seasonal:
     type: custom
     data:
-      years: 🎊 New Year's Day
-      valentine: 💘 Valentine's Day
-      patrick: ☘ St. Patrick's Day
-      easter: 🐰 Easter
-      mother: 🤱 Mother's Day
-      memorial: 🪖 Memorial Day
-      father: 👨 Father's Day
-      independence: 🎆 Independence Day
-      labor: ⚒ Labor Day
-      halloween: 🎃 Halloween
-      thanksgiving: 🦃 Thanksgiving
-      christmas: 🎅 Christmas
+      years: New Year's Day
+      valentine: Valentine's Day
+      patrick: St. Patrick's Day
+      easter: Easter
+      mother: Mother's Day
+      memorial: Memorial Day
+      father: Father's Day
+      independence: Independence Day
+      labor: Labor Day
+      halloween: Halloween
+      thanksgiving: Thanksgiving
+      christmas: Christmas
     title_format: <<key_name>> <<library_typeU>>s
     template:
       - holiday
-      - translation
       - shared
       - arr
       - imdb
     template_variables:
+      emoji:
+        years: "🎊 "
+        valentine: "💘 "
+        patrick: "☘ "
+        easter: "🐰 "
+        mother: "🤱 "
+        memorial: "🪖 "
+        father: "👨 "
+        independence: "🎆 "
+        labor: "⚒ "
+        halloween: "🎃 "
+        thanksgiving: "🦃 "
+        christmas: "🎅 "
       schedule:
         years: range(12/26-01/04)
         valentine: range(02/01-02/29)
@@ -125,6 +153,4 @@ dynamic_collections:
         default: seasonal/<<key>>
       translation_key:
         default: season
-      use_separator:
-        default: false
 
