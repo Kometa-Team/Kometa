@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: audio_language
+      - name: translation
+        key_name: Audio Language
+        translation_key: separator
 
 dynamic_collections:
   Audio Language:

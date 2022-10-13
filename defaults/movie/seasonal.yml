@@ -14,7 +14,6 @@ translations:
 templates:
   holiday:
     default:
-      key: <<collection_name>>
       sort_by: title.asc
       sort_by_<<key>>: <<sort_by>>
       schedule_<<key>>: <<schedule>>
@@ -54,6 +53,9 @@ collections:
       - name: separator
         separator: seasonal
         use_separator: false
+      - name: translation
+        key_name: Seasonal
+        translation_key: separator
 
 dynamic_collections:
   Seasonal:

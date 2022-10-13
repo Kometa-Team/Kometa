@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: director
+      - name: translation
+        key_name: Directors
+        translation_key: separator
 
 dynamic_collections:
   Top Directors:

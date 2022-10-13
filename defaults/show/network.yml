@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: network
+      - name: translation
+        key_name: Network
+        translation_key: separator
 
 dynamic_collections:
   Network:

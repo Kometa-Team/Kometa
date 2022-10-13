@@ -977,10 +977,12 @@ class Plex(Library):
     def get_tvdb_from_map(self, item):
         return self.show_rating_key_map[item.ratingKey] if item.ratingKey in self.show_rating_key_map else None
 
-    def search_item(self, data, year=None):
+    def search_item(self, data, year=None, edition=None):
         kwargs = {}
         if year is not None:
             kwargs["year"] = year
+        if edition is not None:
+            kwargs["editionTitle"] = edition
         for d in self.search(title=str(data), **kwargs):
             if d.title == data:
                 return d

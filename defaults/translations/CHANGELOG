@@ -1,3 +1,8 @@
+1.18.0.3 -> 1.18.0.4
+
+basic_episodes_summary: Changed `A collection of newly-released <<library_translation>>s.` to `A collection of newly-released Episodes.`
+Added separator_name and separator_summary
+
 1.18.0.2 -> 1.18.0.3
 
 content_rating_other_name: Changed `Other Ratings` to `Not Rated <<library_translationU>>s`

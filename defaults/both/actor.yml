@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: actor
+      - name: translation
+        key_name: Actors
+        translation_key: separator
 
 dynamic_collections:
   Top Actors:

@@ -1019,6 +1019,12 @@ class MetadataFile(DataFile):
                     if year is None:
                         raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
 
+                edition_title = None
+                if "edition_filter" in methods and self.library.is_movie:
+                    edition_title = str(meta[methods["edition_filter"]])
+                    if not edition_title:
+                        edition_title = ""
+
                 title = mapping_name
                 if "title" in methods:
                     if meta[methods["title"]] is None:
@@ -1026,16 +1032,16 @@ class MetadataFile(DataFile):
                     else:
                         title = meta[methods["title"]]
 
-                item = self.library.search_item(title, year=year)
+                item = self.library.search_item(title, year=year, edition=edition_title)
 
                 if item is None and "alt_title" in methods:
                     if meta[methods["alt_title"]] is None:
                         logger.error("Metadata Error: alt_title attribute is blank")
                     else:
                         alt_title = meta[methods["alt_title"]]
-                        item = self.library.search_item(alt_title, year=year)
+                        item = self.library.search_item(alt_title, year=year, edition=edition_title)
                         if item is None:
-                            item = self.library.search_item(alt_title)
+                            item = self.library.search_item(alt_title, edition=edition_title)
 
                 if item is None:
                     logger.error(f"Skipping {mapping_name}: Item {title} not found")

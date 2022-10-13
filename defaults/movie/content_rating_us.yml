@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: content_rating
+      - name: translation
+        key_name: Ratings
+        translation_key: separator
 
 dynamic_collections:
   US Movie Content Ratings:

@@ -1,23 +1,9 @@
-#############################################################
-#                Awards Separator Collection                #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Movie or Show)           #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - git: PMM/award/separator                           #
-#        template_variables:                                #
-#          # Turn the separator collection on/off           #
-#          use_separator: true                              #
-#          # Separator style (red, blue, green, gray,       #
-#              purple, stb, orig)                           #
-#          sep_style: orig                                  #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: 16                           #
-#############################################################
+##############################################################################
+#                        Chart Separator Collections                         #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/award/separator_chart.html   #
+##############################################################################
 
 external_templates:
   pmm: templates
@@ -25,7 +11,10 @@ external_templates:
     collection_section: 16
 
 collections:
-  Award Collections:
+  Chart Collections:
     template:
       - name: separator
-        separator: award
+        separator: chart
+      - name: translation
+        key_name: Chart
+        translation_key: separator

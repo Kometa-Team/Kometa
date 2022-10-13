@@ -312,7 +312,7 @@ Each file has a comment block at the top showing the available `template_variabl
 #    metadata_path:                                         #
 #      - pmm: genre                                     #
 #        template_variables:                                #
-#          # Turn the separator collection on/off           #
+#          # Turn the [Separator Collection](../separators) on/off           #
 #          use_separator: true                              #
 #          # Sets how the collection is sorted              #
 #          sort_by: release.desc                            #
@@ -324,7 +324,7 @@ Each file has a comment block at the top showing the available `template_variabl
 ```
  
 Each of these when passed will change how the collection runs slightly. 
-* `use_separator` Turn the separator collection on/off
+* `use_separator` Turn the [Separator Collection](../separators) on/off
 * `sort_by` Sets how the collection is sorted
 * `collection_mode` Sets the collection mode of the collection 
 * `collection_section` Sets the value at the start of the sort title

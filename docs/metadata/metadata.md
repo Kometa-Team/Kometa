@@ -140,9 +140,9 @@ metadata:
     # ... details to change for this item
 ```
 
-### Title & Year
+### Title, Year, & Edition
 
-YAML files cannot have two items with the same mapping name so if you have two movies with the same name you define each one with a name of your choosing. Then use the `title` attribute to specify the real title and the `year` attribute to specify which of the multiple movies is for this mapping.
+YAML files cannot have two items with the same mapping name so if you have two movies with the same name you define each one with a name of your choosing. Then use the `title` attribute to specify the real title and the `year` and/or `edition_filter` attribute to specify which of the multiple movies is for this mapping.
 
 ```yaml
 metadata:
@@ -154,7 +154,14 @@ metadata:
     title: Godzilla
     year: 1998
     content_rating: PG-13
+  Godzilla3:
+    title: Godzilla
+    year: 1954
+    edition: Extended
+    content_rating: R
 ```
+
+**Note: `edition_filter` only works with Movies**
 
 ### Alt Title
 

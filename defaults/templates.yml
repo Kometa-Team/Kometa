@@ -4,6 +4,7 @@ templates:
     default:
       sep_style: orig
       collection_section: "00"
+      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
     optional:
       - use_separator
       - collection_mode
@@ -11,7 +12,7 @@ templates:
     collection_mode: <<collection_mode>>
     sort_title: "!<<collection_section>>_!<<collection_name>>"
     blank_collection: true
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
+    url_poster: <<url_poster_<<key>>>>
 
   shared:
     default:
@@ -34,9 +35,13 @@ templates:
       - item_radarr_tag
       - item_sonarr_tag
       - trakt_list
+      - ignore_ids
+      - ignore_imdb_ids
     allowed_library_types:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
+    ignore_ids: <<ignore_ids>>
+    ignore_imdb_ids: <<ignore_imdb_ids>>
     trakt_list: <<trakt_list>>
     ignore_blank_results: true
     collection_mode: <<collection_mode>>

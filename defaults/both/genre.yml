@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: genre
+      - name: translation
+        key_name: Genre
+        translation_key: separator
 
 dynamic_collections:
   Genre:

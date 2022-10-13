@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: streaming
+      - name: translation
+        key_name: Streaming
+        translation_key: separator
 
 dynamic_collections:
   Streaming:

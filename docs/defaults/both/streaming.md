@@ -8,22 +8,22 @@ The `streaming` Default Metadata File is used to dynamically create collections 
 
 ## Collections Section 03
 
-| Collection                 |     Key     | Description                                                |
-|:---------------------------|:-----------:|:-----------------------------------------------------------|
-| `Streaming Collections`    | `separator` | Separator Collection to denote the Section of Collections. |
-| `All 4 Movies/Shows`       |   `all4`    | Collection of Movies/Shows Streaming on All 4.             |
-| `Apple TV+ Movies/Shows`   |  `appletv`  | Collection of Movies/Shows Streaming on Apple TV+.         |
-| `BET+ Movies/Shows`        |    `bet`    | Collection of Movies/Shows Streaming on BET+.              |
-| `BritBox Movies/Shows`     |  `britbox`  | Collection of Movies/Shows Streaming on BritBox.           |
-| `Disney+ Movies/Shows`     |  `disney`   | Collection of Movies/Shows Streaming on Disney+.           |
-| `hayu Movies/Shows`        |   `hayu`    | Collection of Movies/Shows Streaming on hayu.              |
-| `HBO Max Movies/Shows`     |  `hbomax`   | Collection of Movies/Shows Streaming on HBO Max.           |
-| `Hulu Movies/Shows`        |   `hulu`    | Collection of Movies/Shows Streaming on Hulu.              |
-| `Netflix Movies/Shows`     |  `netflix`  | Collection of Movies/Shows Streaming on Netflix.           |
-| `NOW Movies/Shows`         |    `now`    | Collection of Movies/Shows Streaming on NOW.               |
-| `Paramount+ Movies/Shows`  | `paramount` | Collection of Movies/Shows Streaming on Paramount+.        |
-| `Peacock Movies/Shows`     |  `peacock`  | Collection of Movies/Shows Streaming on Peacock.           |
-| `Prime Video Movies/Shows` |  `amazon`   | Collection of Movies/Shows Streaming on Prime Video.       |
+| Collection                 |     Key     | Description                                                                 |
+|:---------------------------|:-----------:|:----------------------------------------------------------------------------|
+| `Streaming Collections`    | `separator` | [Separator Collection](../separators) to denote the Section of Collections. |
+| `All 4 Movies/Shows`       |   `all4`    | Collection of Movies/Shows Streaming on All 4.                              |
+| `Apple TV+ Movies/Shows`   |  `appletv`  | Collection of Movies/Shows Streaming on Apple TV+.                          |
+| `BET+ Movies/Shows`        |    `bet`    | Collection of Movies/Shows Streaming on BET+.                               |
+| `BritBox Movies/Shows`     |  `britbox`  | Collection of Movies/Shows Streaming on BritBox.                            |
+| `Disney+ Movies/Shows`     |  `disney`   | Collection of Movies/Shows Streaming on Disney+.                            |
+| `hayu Movies/Shows`        |   `hayu`    | Collection of Movies/Shows Streaming on hayu.                               |
+| `HBO Max Movies/Shows`     |  `hbomax`   | Collection of Movies/Shows Streaming on HBO Max.                            |
+| `Hulu Movies/Shows`        |   `hulu`    | Collection of Movies/Shows Streaming on Hulu.                               |
+| `Netflix Movies/Shows`     |  `netflix`  | Collection of Movies/Shows Streaming on Netflix.                            |
+| `NOW Movies/Shows`         |    `now`    | Collection of Movies/Shows Streaming on NOW.                                |
+| `Paramount+ Movies/Shows`  | `paramount` | Collection of Movies/Shows Streaming on Paramount+.                         |
+| `Peacock Movies/Shows`     |  `peacock`  | Collection of Movies/Shows Streaming on Peacock.                            |
+| `Prime Video Movies/Shows` |  `amazon`   | Collection of Movies/Shows Streaming on Prime Video.                        |
 
 ## Config
 
@@ -49,8 +49,8 @@ All [Shared Variables](../variables) are available as well as the additional Var
 
 | Variable            | Description & Values                                                                                                                                                                                                 |
 |:--------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_separator`     | **Description:** Turn the separator collection off.<br>**Values:** `false` to turn of the collection                                                                                                                 |
-| `sep_style`         | **Description:** Separator Style.<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                   |
+| `use_separator`     | **Description:** Turn the [Separator Collection](../separators) off.<br>**Values:** `false` to turn of the collection                                                                                                |
+| `sep_style`         | **Description:** Choose the [Separator Style](../separators.md#separator-styles).<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                   |
 | `limit`             | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                              |
 | `limit_<<key>>`     | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                           |
 | `sort_by`           | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options) |
