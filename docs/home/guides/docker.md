@@ -13,7 +13,7 @@ The specific steps you will be taking:
 2. Use `docker` to retrieve the PMM Docker image
 3. Create a directory for your config files and learn how to tell Docker to use it
 4. Gather two things that the script requires:
-   1. TMDB API Key
+   1. TMDb API Key
    2. Plex URL and Token
 5. Then, iteratively:
    1. use `docker` to run the image

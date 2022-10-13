@@ -13,7 +13,7 @@ The specific steps you will be taking:
 3. Use `git` to retrieve the code
 4. Install requirements [extra bits of code required for PMM]
 5. Gather two things that the script requires:
-   1. TMDB API Key
+   1. TMDb API Key
    2. Plex URL and Token
 6. Then, iteratively:
    1. use `python` to run the script
