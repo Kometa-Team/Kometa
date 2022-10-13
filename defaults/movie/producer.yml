@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: producer
+      - name: translation
+        key_name: Producers
+        translation_key: separator
 
 dynamic_collections:
   Top Producers:

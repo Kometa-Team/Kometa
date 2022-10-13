@@ -8,11 +8,11 @@ The `audio_language` Default Metadata File is used to dynamically create collect
 
 ## Collections Section 10
 
-| Collection                                            |                    Key                    | Description                                                |
-|:------------------------------------------------------|:-----------------------------------------:|:-----------------------------------------------------------|
-| `Audio Language Collections`                          |                `separator`                | Separator Collection to denote the Section of Collections. |
-| `<<Audio Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` | Collection of Movies/Shows that have this Audio Language.  |
-| `Other Audio`                                         |                  `other`                  | Collection of Movies/Shows that are less common Languages. |
+| Collection                                            |                    Key                    | Description                                                                 |
+|:------------------------------------------------------|:-----------------------------------------:|:----------------------------------------------------------------------------|
+| `Audio Language Collections`                          |                `separator`                | [Separator Collection](../separators) to denote the Section of Collections. |
+| `<<Audio Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` | Collection of Movies/Shows that have this Audio Language.                   |
+| `Other Audio`                                         |                  `other`                  | Collection of Movies/Shows that are less common Languages.                  |
 
 ## Config
 
@@ -38,8 +38,8 @@ All [Shared Variables](../variables) are available as well as the additional Var
 
 | Variable                       | Description & Values                                                                                                                                                                                                 |
 |:-------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_separator`                | **Description:** Turn the separator collection off.<br>**Values:** `false` to turn of the collection                                                                                                                 |
-| `sep_style`                    | **Description:** Separator Style.<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                   |         
+| `use_separator`                | **Description:** Turn the [Separator Collection](../separators) off.<br>**Values:** `false` to turn of the collection                                                                                                |
+| `sep_style`                    | **Description:** Choose the [Separator Style](../separators.md#separator-styles).<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                   |         
 | `limit`                        | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                              |
 | `limit_<<key>>`                | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                           |
 | `sort_by`                      | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options) |

@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: resolution
+      - name: translation
+        key_name: Resolution
+        translation_key: separator
 
 dynamic_collections:    
   Resolution:

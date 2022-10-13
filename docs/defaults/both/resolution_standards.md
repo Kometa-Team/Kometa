@@ -12,11 +12,11 @@ To avoid duplication, this file should not be used in combination with [`resolut
 
 ## Collections Section 15
 
-| Collection                                                     |                  Key                   | Description                                                |
-|:---------------------------------------------------------------|:--------------------------------------:|:-----------------------------------------------------------|
-| `Resolution Collections`                                       |              `separator`               | Separator Collection to denote the Section of Collections. |
-| `<<Resolution>> Movies/Shows`<br>**Example:** `Full HD Movies` | `<<Number>>`<br>**Example:** `Full HD` | Collection of Movies/Shows that have this Resolution.      |
-| `Other Resolution Movies/Shows`                                |                `other`                 | Collection of Movies/Shows that not a standard Resolution. |
+| Collection                                                     |                  Key                   | Description                                                                 |
+|:---------------------------------------------------------------|:--------------------------------------:|:----------------------------------------------------------------------------|
+| `Resolution Collections`                                       |              `separator`               | [Separator Collection](../separators) to denote the Section of Collections. |
+| `<<Resolution>> Movies/Shows`<br>**Example:** `Full HD Movies` | `<<Number>>`<br>**Example:** `Full HD` | Collection of Movies/Shows that have this Resolution.                       |
+| `Other Resolution Movies/Shows`                                |                `other`                 | Collection of Movies/Shows that not a standard Resolution.                  |
 
 ## Config
 
@@ -42,8 +42,8 @@ All [Shared Variables](../variables) are available as well as the additional Var
 
 | Variable                   | Description & Values                                                                                                                                                                                                                                                |
 |:---------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_separator`            | **Description:** Turn the separator collection off.<br>**Values:** `false` to turn of the collection                                                                                                                                                                |
-| `sep_style`                | **Description:** Separator Style.<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                                                                  |
+| `use_separator`            | **Description:** Turn the [Separator Collection](../separators) off.<br>**Values:** `false` to turn of the collection                                                                                                                                               |
+| `sep_style`                | **Description:** Choose the [Separator Style](../separators.md#separator-styles).<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                  |
 | `limit`                    | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                                                             |
 | `limit_<<key>>`            | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                          |
 | `sort_by`                  | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                |

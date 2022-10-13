@@ -20,6 +20,7 @@ Added support for the [AniDB API](https://metamanager.wiki/en/latest/config/anid
 Adds `mass_original_title_update` [library operation](https://metamanager.wiki/en/latest/config/operations.html)
 Adds many new options to the various mass_update [library operations](https://metamanager.wiki/en/latest/config/operations.html)
 Added the ability to give a list of sorts with `plex_search` and `smart_filter` to create a tiered sort
+Added `edition_filter` to [Movie metadata edits](https://metamanager.wiki/en/latest/metadata/metadata/movie.html#special-attributes) to allow searching for an item to include an edition.
 
 # Default Metadata Changes
 Added Common Sense Selection [Movie](https://www.commonsensemedia.org/reviews/category/movie/tag/common-sense-selections-31822)] and [Show](https://www.commonsensemedia.org/reviews/category/tv/tag/common-sense-selections-31822) collections to `PMM/chart/other`

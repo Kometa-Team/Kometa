@@ -31,7 +31,7 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
+**[Shared Variables](../variables) are NOT available to this default file.**
 
 | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 |:-----------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

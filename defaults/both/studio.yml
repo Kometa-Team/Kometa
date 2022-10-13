@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: studio
+      - name: translation
+        key_name: Studio
+        translation_key: separator
 
 dynamic_collections:
   Studio:

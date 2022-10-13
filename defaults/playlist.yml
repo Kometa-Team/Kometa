@@ -1,58 +1,9 @@
-#############################################################
-#                         Playlist                          #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  REQUIRES TRAKT AUTHENTICATION                            #
-#  https://metamanager.wiki/en/latest/config/trakt.html     #
-#                                                           #
-#  Use the libraries template variable to adjust the names  #
-#                                                           #
-#  Call this from your config.yml (Movie or Show)           #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    playlist_files:                                        #
-#      - git: PMM/playlist                                  #
-#        template_variables:                                #
-#          # Sets the names of the libraries to use         #
-#          libraries: Movies, TV Shows                      #
-#                                                           #
-#          # For each playlist use the "key" to set         #
-#          # the options.                                   #
-#          # Available collections                          #
-#          #   KEY              PLAYLIST                    #
-#          #   arrow            Arrowverse                  #
-#          #   mcu              Marvel Cinematic Universe   #
-#          #   dcau             DC Animated Universe        #
-#          #   pokemon          Pokémon                     #
-#          #   startrek         Star Trek                   #
-#          #   starwars         Star Wars                   #
-#          #   clonewars        Star Wars The Clone Wars    #
-#          #   xmen             X-Men                       #
-#                                                           #
-#          # Available options. Replace "key" with the      #
-#          # desired playlist's key from the chart above.   #
-#                                                           #
-#          # Turn the playlist on/off                       #
-#          use_key: true                                    #
-#          # Change the lists URL                           #
-#          url_key: https://trakt.tv/users/...              #
-#          # Radarr Add Missing                             #
-#          radarr_add_missing_key: true                     #
-#          # Sonarr Add Missing                             #
-#          sonarr_add_missing_key: true                     #
-#          # Radarr Folder to add to                        #
-#          radarr_folder_key:                               #
-#          # Sonarr Folder to add to                        #
-#          sonarr_folder_key:                               #
-#          # Radarr Tag for missing items                   #
-#          radarr_tag_key:                                  #
-#          # Sonarr Tag for missing items                   #
-#          sonarr_tag_key:                                  #
-#          # Radarr Tag for existing items                  #
-#          item_radarr_tag_key:                             #
-#          # Sonarr Tag for existing items                  #
-#          item_sonarr_tag_key:                             #
-#############################################################
+##############################################################################
+#                                 Playlists                                  #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#         https://metamanager.wiki/en/latest/defaults/playlist.html          #
+##############################################################################
 
 external_templates:
   pmm: templates
@@ -63,21 +14,28 @@ templates:
       libraries: Movies, TV Shows
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
-      url_<<key>>: <<trakt_url>>
+      trakt_url_<<key>>: <<trakt_url>>
+      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/playlist/<<playlist_name_encoded>>.jpg
     optional:
       - use_<<key>>
       - item_radarr_tag
       - item_sonarr_tag
+      - ignore_ids
+      - ignore_imdb_ids
     allowed_library_types:
       - <<use_<<key>>>>
+    ignore_ids: <<ignore_ids>>
+    ignore_imdb_ids: <<ignore_imdb_ids>>
     item_radarr_tag: <<item_radarr_tag_<<key>>>>
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
-    trakt_list: <<url_<<key>>>>
+    trakt_list: <<trakt_url_<<key>>>>
     cache_builders: 1
     sync_to_users: all
     sync_mode: sync
     libraries: <<libraries>>
-    url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/playlist/<<playlist_name_encoded>>.jpg
+    url_poster: <<url_poster_<<key>>>>
+    summary: <<summary_<<key>>>>
+    name: <<name_<<key>>>>
 
 playlists:
   Arrowverse (Timeline Order):
@@ -86,8 +44,8 @@ playlists:
     template:
       - name: playlist
         trakt_url: https://trakt.tv/users/donxy/lists/arrowverse
+        summary_arrow: The Arrowverse is an American superhero media franchise and a shared universe that is centered on various interconnected television series based on DC Comics superhero characters, primarily airing on The CW as well as web series on CW Seed.
       - name: arr
-    summary: The Arrowverse is an American superhero media franchise and a shared universe that is centered on various interconnected television series based on DC Comics superhero characters, primarily airing on The CW as well as web series on CW Seed.
 
   Marvel Cinematic Universe (Timeline Order):
     variables:
@@ -95,8 +53,8 @@ playlists:
     template:
       - name: playlist
         trakt_url: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
+        summary_mcu: The Marvel Cinematic Universe (MCU) is a collection of movies and television series that tell a singular narrative related to Marvel characters, settings and stories. The MCU is a product from Disney and Marvel that brings us heroes from Black Panther and Doctor Strange to Spider-Man and Iron Man.
       - name: arr
-    summary: The Marvel Cinematic Universe (MCU) is a collection of movies and television series that tell a singular narrative related to Marvel characters, settings and stories. The MCU is a product from Disney and Marvel that brings us heroes from Black Panther and Doctor Strange to Spider-Man and Iron Man.
 
   DC Animated Universe (Timeline Order):
     variables:
@@ -104,8 +62,8 @@ playlists:
     template:
       - name: playlist
         trakt_url: https://trakt.tv/users/donxy/lists/dc-animated-series-universe
+        summary_dcau: "The DC Animated Universe (DCAU) is a shared universe consisting primarily of superhero-based animated television series, produced by Warner Bros. Animation and based on characters that appear in American comic books published by DC Comics. The first TV series set in the DCAU was Batman: The Animated Series, which premiered in 1992; the last TV series was Justice League Unlimited, which ended its run in 2006."
       - name: arr
-    summary: "The DC Animated Universe (DCAU) is a shared universe consisting primarily of superhero-based animated television series, produced by Warner Bros. Animation and based on characters that appear in American comic books published by DC Comics. The first TV series set in the DCAU was Batman: The Animated Series, which premiered in 1992; the last TV series was Justice League Unlimited, which ended its run in 2006."
 
   Pokémon (Timeline Order):
     variables:
@@ -113,8 +71,8 @@ playlists:
     template:
       - name: playlist
         trakt_url: https://trakt.tv/users/munch54/lists/pokemon-watching-order
+        summary_pokemon: Ash Ketchum, his yellow pet Pikachu, and his human friends explore a world of powerful creatures. Ten-year-old Ash aspires to be the greatest Pokémon (pocket monster) trainer in the world. To do this, he enlists the help of many friends, and his own Pokémon, Pikachu.
       - name: arr
-    summary: Ash Ketchum, his yellow pet Pikachu, and his human friends explore a world of powerful creatures. Ten-year-old Ash aspires to be the greatest Pokémon (pocket monster) trainer in the world. To do this, he enlists the help of many friends, and his own Pokémon, Pikachu.
 
   Star Trek (Timeline Order):
     variables:
@@ -122,8 +80,8 @@ playlists:
     template:
       - name: playlist
         trakt_url: https://trakt.tv/users/pedrohcramos/lists/star-trek-timeline
+        summary_startrek: Few film franchises have lasted as long as Star Trek. Through five decades and three different crews, the Star Trek films have saved more than a few worlds (and the whales), traveling through time more than once to do it. With them being set in so many different time periods, their actual chronological order might get a little confusing. No need to fret as this is the proper order… in linear time, anyway. On a quantum level is a whole other thing.
       - name: arr
-    summary: Few film franchises have lasted as long as Star Trek. Through five decades and three different crews, the Star Trek films have saved more than a few worlds (and the whales), traveling through time more than once to do it. With them being set in so many different time periods, their actual chronological order might get a little confusing. No need to fret as this is the proper order… in linear time, anyway. On a quantum level is a whole other thing.
 
   Star Wars (Timeline Order):
     variables:
@@ -131,8 +89,9 @@ playlists:
     template:
       - name: playlist
         trakt_url: https://trakt.tv/users/ruben_vw_/lists/star-wars-canon-timeline
+        summary_starwars: A long time ago in a galaxy far, far away, a farm boy on a desert planet dreamed of joining a rebellion and saving a princess from a dark lord, and thus, one of the most successful cinematic sagas of all time was born. What began with one space opera in 1977 quickly grew into a media empire that included toys, comic books, video games, TV series, and memorabilia in every possible form. Today, more than 40 years after it first arrived, Star Wars remains a global pop culture phenomenon, and the story still isn't over.
       - name: arr
-    summary: A long time ago in a galaxy far, far away, a farm boy on a desert planet dreamed of joining a rebellion and saving a princess from a dark lord, and thus, one of the most successful cinematic sagas of all time was born. What began with one space opera in 1977 quickly grew into a media empire that included toys, comic books, video games, TV series, and memorabilia in every possible form. Today, more than 40 years after it first arrived, Star Wars remains a global pop culture phenomenon, and the story still isn't over. 
+
 
   Star Wars The Clone Wars (Timeline Order):
     variables:
@@ -140,8 +99,9 @@ playlists:
     template:
       - name: playlist
         trakt_url: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
+        summary_clonewars: As more star systems get swept into the Clone Wars, the valiant Jedi knights struggle to maintain order. Anakin Skywalker and his Padawan learner Ahsoka Tano embark on a mission that brings them face-to-face with Jabba the Hutt. Plotting against them is evil Count Dooku and his agent, Asajj Ventress, who would ensure that the Jedis fail. Meanwhile, Yoda and Obi-Wan Kenobi lead the clone army against the forces of the Dark Side.
       - name: arr
-    summary: As more star systems get swept into the Clone Wars, the valiant Jedi knights struggle to maintain order. Anakin Skywalker and his Padawan learner Ahsoka Tano embark on a mission that brings them face-to-face with Jabba the Hutt. Plotting against them is evil Count Dooku and his agent, Asajj Ventress, who would ensure that the Jedis fail. Meanwhile, Yoda and Obi-Wan Kenobi lead the clone army against the forces of the Dark Side.
+
 
   X-Men (Timeline Order):
     variables:
@@ -149,5 +109,5 @@ playlists:
     template:
       - name: playlist
         trakt_url: https://trakt.tv/users/heyitsbea/lists/x-men
+        summary_xmen: The X-Men are a fictional team of superheroes appearing in American comic books published by Marvel Comics, first appearing in The X-Men Issue 1. Although initially cancelled in 1970, following its 1975 revival and subsequent direction under writer Chris Claremont, it became one of the most recognizable and successful franchises of Marvel Comics.
       - name: arr
-    summary: The X-Men are a fictional team of superheroes appearing in American comic books published by Marvel Comics, first appearing in The X-Men Issue 1. Although initially cancelled in 1970, following its 1975 revival and subsequent direction under writer Chris Claremont, it became one of the most recognizable and successful franchises of Marvel Comics.

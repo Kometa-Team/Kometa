@@ -8,11 +8,11 @@ The `country` Default Metadata File is used to dynamically create collections ba
 
 ## Collections Section 09
 
-| Collection                              |                        Key                         | Description                                                  |
-|:----------------------------------------|:--------------------------------------------------:|:-------------------------------------------------------------|
-| `Country Collections`                   |                    `separator`                     | Separator Collection to denote the Section of Collections.   |
-| `<<Country>>`<br>**Example:** `Germany` | `<<2 digit ISO 3166-1 code>>`<br>**Example:** `de` | Collection of TV Shows that have this Country.               |
-| `Other Countries`                       |                      `other`                       | Collection of TV Shows that are in other uncommon Countries. |
+| Collection                              |                        Key                         | Description                                                                 |
+|:----------------------------------------|:--------------------------------------------------:|:----------------------------------------------------------------------------|
+| `Country Collections`                   |                    `separator`                     | [Separator Collection](../separators) to denote the Section of Collections. |
+| `<<Country>>`<br>**Example:** `Germany` | `<<2 digit ISO 3166-1 code>>`<br>**Example:** `de` | Collection of TV Shows that have this Country.                              |
+| `Other Countries`                       |                      `other`                       | Collection of TV Shows that are in other uncommon Countries.                |
 
 ## Config
 
@@ -41,8 +41,8 @@ All [Shared Variables](../variables) are available as well as the additional Var
 
 | Variable                | Description & Values                                                                                                                                                                                                                                           |
 |:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_separator`         | **Description:** Turn the separator collection off.<br>**Values:** `false` to turn of the collection                                                                                                                                                           |
-| `sep_style`             | **Description:** Separator Style.<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                                                             |         
+| `use_separator`         | **Description:** Turn the [Separator Collection](../separators) off.<br>**Values:** `false` to turn of the collection                                                                                                                                          |
+| `sep_style`             | **Description:** Choose the [Separator Style](../separators.md#separator-styles).<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                             |         
 | `style `                | **Description:** Controls the visual theme of the collections created<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>white</code></td><td>White Theme</td></tr><tr><td><code>color</code></td><td>Color Theme</td></tr></table>               |
 | `limit`                 | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                                                        |
 | `limit_<<key>>`         | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                     |

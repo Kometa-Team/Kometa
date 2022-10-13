@@ -1,4 +1,4 @@
-version: 1.18.0.3
+version: 1.18.0.4
 variables:
   library_translation:
     # For Movie Libraries
@@ -110,7 +110,7 @@ translations:
   basic_released_summary: A collection of newly-released <<library_translation>>s.
 
   basic_episodes_name: New Episodes
-  basic_episodes_summary: A collection of newly-released <<library_translation>>s.
+  basic_episodes_summary: A collection of newly-released Episodes.
 
   # possible key_name: Netflix, Disney, HBO, Hulu, Paramount Plus, Prime Video
   flixpatrol_name: <<key_name>> Top <<limit>>
@@ -191,6 +191,10 @@ translations:
   #############################################################
   #                           Both                            #
   #############################################################
+
+  # possible key_names: Seasonal, Chart, Universe, Streaming, Network, Genre, Studio, Country, Audio Language, Subtitle Language, Decade, Year, Ratings, Resolution, Award, Actors, Directors, Producers, Writers
+  separator_name: <<key_name>> Collections
+  separator_summary: Section separator for <<key_name>> Collections
 
   # example key_name: Robin Williams
   actor_name: <<key_name>>

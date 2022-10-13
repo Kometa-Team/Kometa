@@ -8,11 +8,11 @@ The `country` Default Metadata File is used to dynamically create collections ba
 
 ## Collections Section 09
 
-| Collection                              |                   Key                   | Description                                                |
-|:----------------------------------------|:---------------------------------------:|:-----------------------------------------------------------|
-| `Country Collections`                   |               `separator`               | Separator Collection to denote the Section of Collections. |
-| `<<Country>>`<br>**Example:** `Germany` | `<<Country>>`<br>**Example:** `Germany` | Collection of Movies that have this Country.               |
-| `Other Countries`                       |                 `other`                 | Collection of Movies that are in other uncommon Countries. |
+| Collection                              |                   Key                   | Description                                                                 |
+|:----------------------------------------|:---------------------------------------:|:----------------------------------------------------------------------------|
+| `Country Collections`                   |               `separator`               | [Separator Collection](../separators) to denote the Section of Collections. |
+| `<<Country>>`<br>**Example:** `Germany` | `<<Country>>`<br>**Example:** `Germany` | Collection of Movies that have this Country.                                |
+| `Other Countries`                       |                 `other`                 | Collection of Movies that are in other uncommon Countries.                  |
 
 ## Config
 
@@ -33,18 +33,6 @@ Below is a screenshot of the alternative Color (`color`) style which can be set 
 
 ## Template Variables
 
-
- ##############################################################################
-
-|                                    KEY                                     |
-|:--------------------------------------------------------------------------:|
-|                            Network Collections                             |
-|                 Created by Yozora, Bullmoose20, & Sohjiro                  |
-|          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           |
-|      https://metamanager.wiki/en/latest/defaults/movie/director.html       |
-||
-
- ##############################################################################
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
 Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
@@ -53,8 +41,8 @@ All [Shared Variables](../variables) are available as well as the additional Var
 
 | Variable                | Description & Values                                                                                                                                                                                                                                              |
 |:------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_separator`         | **Description:** Turn the separator collection off.<br>**Values:** `false` to turn of the collection                                                                                                                                                              |
-| `sep_style`             | **Description:** Separator Style.<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                                                                |         
+| `use_separator`         | **Description:** Turn the [Separator Collection](../separators) off.<br>**Values:** `false` to turn of the collection                                                                                                                                             |
+| `sep_style`             | **Description:** Choose the [Separator Style](../separators.md#separator-styles).<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                |         
 | `style `                | **Description:** Controls the visual theme of the collections created<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>white</code></td><td>White Theme</td></tr><tr><td><code>color</code></td><td>Color Theme</td></tr></table>                  |
 | `limit`                 | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                                                           |
 | `limit_<<key>>`         | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                        |

@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: decade
+      - name: translation
+        key_name: Decade
+        translation_key: separator
 
 dynamic_collections:
   Decade:

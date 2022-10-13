@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: writer
+      - name: translation
+        key_name: Writers
+        translation_key: separator
 
 dynamic_collections:
   Top Writers:

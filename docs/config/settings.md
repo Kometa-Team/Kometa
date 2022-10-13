@@ -487,7 +487,7 @@ Set a list or comma-separated string of TMDb/TVDb IDs to ignore in all collectio
 </table>
 
 ## Ignore IMDb IDs
-Set alist or comma-separated string of IMDb IDs to ignore in all collections.
+Set a list or comma-separated string of IMDb IDs to ignore in all collections.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>

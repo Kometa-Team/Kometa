@@ -18,6 +18,9 @@ collections:
     template:
       - name: separator
         separator: subtitle_language
+      - name: translation
+        key_name: Subtitle Language
+        translation_key: separator
 
 dynamic_collections:
   Subtitle Language:
