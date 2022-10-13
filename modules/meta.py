@@ -186,7 +186,7 @@ class DataFile:
                     add_translation(os.path.abspath(f"{dir_path}/{file}"), file[:-4])
         return translations, key_names
 
-    def apply_template(self, name, mapping_name, data, template_call, extra_variables):
+    def apply_template(self, call_name, mapping_name, data, template_call, extra_variables):
         if not self.templates:
             raise Failed(f"{self.data_type} Error: No templates found")
         elif not template_call:
@@ -218,9 +218,11 @@ class DataFile:
 
                     template, temp_vars = self.templates[variables["name"]]
 
-                    if not name and "name" in template:
+                    if call_name:
+                        name = call_name
+                    elif "name" in template:
                         name = template["name"]
-                    elif not name:
+                    else:
                         name = mapping_name
 
                     name_var = f"{self.data_type.lower()}_name"
@@ -229,6 +231,10 @@ class DataFile:
                     variables["library_type"] = self.library.type.lower() if self.library else "item"
                     variables["library_typeU"] = self.library.type if self.library else "Item"
                     variables["library_name"] = self.library.name if self.library else "playlist"
+
+                    logger.trace(f"External: {temp_vars}")
+                    logger.trace(f"Definition: {extra_variables}")
+                    logger.trace(f"Config: {self.temp_vars}")
 
                     for temp_key, temp_value in temp_vars.items():
                         if temp_value is None:
@@ -279,12 +285,11 @@ class DataFile:
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
                         if not isinstance(template["default"], dict):
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
-                        for dv in template["default"]:
-                            ini_default[replace_var(dv, variables)] = replace_var(template["default"][dv], variables)
+                        ini_default = {replace_var(dv, variables): replace_var(template["default"][dv], variables) for dv in template["default"] if dv not in variables}
                     for dkey, dvalue in ini_default.items():
                         final_key = replace_var(dkey, ini_default)
                         final_value = replace_var(dvalue, ini_default)
-                        if final_key not in optional:
+                        if final_key not in optional and final_key not in variables:
                             default[final_key] = final_value
                             default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
 
@@ -411,20 +416,18 @@ class DataFile:
                             else:
                                 return og_txt
                         for i_check in range(8):
-                            if i_check in [2, 4, 6]:
-                                for dm, dd in default.items():
-                                    _data = scan_text(_data, dm, dd)
-                            else:
-                                for option in optional:
-                                    if option not in variables and option not in translation_variables and f"<<{option}>>" in str(_data):
-                                        raise Failed
-                                for variable, variable_data in variables.items():
-                                    if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                        _data = scan_text(_data, variable, variable_data.replace(",", ""))
-                                    elif variable != "name":
-                                        _data = scan_text(_data, variable, variable_data)
-                                for variable, variable_data in translation_variables.items():
+                            for option in optional:
+                                if option not in variables and option not in translation_variables and f"<<{option}>>" in str(_data):
+                                    raise Failed
+                            for variable, variable_data in variables.items():
+                                if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                    _data = scan_text(_data, variable, variable_data.replace(",", ""))
+                                elif variable != "name":
                                     _data = scan_text(_data, variable, variable_data)
+                            for variable, variable_data in translation_variables.items():
+                                _data = scan_text(_data, variable, variable_data)
+                            for dm, dd in default.items():
+                                _data = scan_text(_data, dm, dd)
                         return _data
 
                     def check_data(_method, _data):
