@@ -18,7 +18,7 @@ Plex Meta Manager is an open source Python 3 project that has been designed to e
 
 1. Install Plex Meta Manager; this process is described [here](https://metamanager.wiki/en/latest/home/installation.html).
 
-2. Once installed, you have to create a [Configuration File](https://metamanager.wiki/en/latest/config/configuration.html), which contains URLs and credentials and the like which are used to connect to services like Plex and TMDB.
+2. Once installed, you have to create a [Configuration File](https://metamanager.wiki/en/latest/config/configuration.html), which contains URLs and credentials and the like which are used to connect to services like Plex and TMDb.
 
 3. After that you can start updating Metadata and building automatic Collections by creating a [Metadata File](https://metamanager.wiki/en/latest/metadata/metadata.html) for each Library you want to interact with.
 

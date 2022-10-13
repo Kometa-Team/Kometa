@@ -1,32 +1,9 @@
-#############################################################
-#                   Franchise Collections                   #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Show only)               #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - git: PMM/show/franchise                            #
-#        template_variables:                                #
-#          # Add Missing Movies to Radarr                   #
-#          sonarr_add_missing: true                         #
-#          # Sets the collection order of the collection    #
-#          collection_order: release                        #
-#          # Sets the sort title                            #
-#          sort_title: "!02_<<collection_name>>"            #
-#          # Sets the minimum items of the collection       #
-#          minimum_items: 2                                 #
-#          # Sets weather to actually build the collection  #
-#          build_collection: true                           #
-#          # Adds missing from the collection to sonarr     #
-#          sonarr_add_missing:                              #
-#          # Sonarr Folder to add to                        #
-#          sonarr_folder:                                   #
-#          # Sonarr Tag for added missing                   #
-#          sonarr_tag:                                      #
-#          # Sonarr Tag for existing items                  #
-#          item_sonarr_tag:                                 #
-#############################################################
+##############################################################################
+                           #Franchise Collections                            #
+                 #Created by Yozora, Bullmoose20, & Sohjiro                  #
+          #EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+      #https://metamanager.wiki/en/latest/defaults/movi/franchise.html       #
+##############################################################################
 
 templates:
   tmdbshow:
