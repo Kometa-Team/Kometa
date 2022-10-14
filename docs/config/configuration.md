@@ -98,6 +98,7 @@ settings:
   item_refresh_delay: 0
   playlist_sync_to_users: all
   verify_ssl: true
+  max_list_display_size: 
 webhooks:
   error:
   run_start:
