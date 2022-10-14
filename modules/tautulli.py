@@ -13,6 +13,7 @@ class Tautulli:
         self.library = library
         self.url = params["url"]
         self.apikey = params["apikey"]
+        self.maxitems = 10
         logger.secret(self.url)
         logger.secret(self.apikey)
         try:
@@ -56,7 +57,10 @@ class Tautulli:
                     else:
                         logger.error(f"Plex Error: Item not found {item}")
         logger.debug("")
-        logger.debug(f"{len(rating_keys)} Keys Found: {rating_keys}")
+        if len(rating_keys) > self.maxitems:
+            logger.debug(f"{len(rating_keys)} Keys Found")
+        else:
+            logger.debug(f"{len(rating_keys)} Keys Found: {rating_keys}")
         return rating_keys
 
     def _request(self, url):

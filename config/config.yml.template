@@ -68,6 +68,7 @@ settings:
   verify_ssl: true
   custom_repo:
   check_nightly: false
+  max_list_display_size: 
 webhooks:                                       # Can be individually specified per library as well
   error:
   version:

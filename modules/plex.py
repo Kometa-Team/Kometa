@@ -427,6 +427,11 @@ class Plex(Library):
         self.url = params["plex"]["url"]
         self.token = params["plex"]["token"]
         self.timeout = params["plex"]["timeout"]
+        try:
+            self.maxitems = config.data['settings']['max_list_display_size']
+        except:
+            self.maxitems = 99999
+
         logger.secret(self.url)
         logger.secret(self.token)
         try:
@@ -949,7 +954,10 @@ class Plex(Library):
             raise Failed("Plex Error: No Items found in Plex")
         ids = [(item.ratingKey, "ratingKey") for item in items]
         logger.debug("")
-        logger.debug(f"{len(ids)} Keys Found: {ids}")
+        if self.maxitems is not None and len(ids) > self.maxitems:
+            logger.debug(f"{len(ids)} Keys Found")
+        else:
+            logger.debug(f"{len(ids)} Keys Found: {ids}")
         return ids
 
     def get_collection_items(self, collection, smart_label_collection):

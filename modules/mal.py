@@ -86,6 +86,10 @@ class MyAnimeList:
         self.config_path = params["config_path"]
         self.expiration = params["cache_expiration"]
         self.authorization = params["authorization"]
+        try:
+            self.maxitems = config.data['settings']['max_list_display_size']
+        except:
+            self.maxitems = 99999
         logger.secret(self.client_secret)
         if not self._save(self.authorization):
             if not self._refresh():
@@ -313,5 +317,10 @@ class MyAnimeList:
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
         logger.debug("")
-        logger.debug(f"{len(mal_ids)} MyAnimeList IDs Found: {mal_ids}")
+        id_count = len(mal_ids)
+        if id_count > 0:
+            if self.maxitems is not None and id_count > self.maxitems:
+                logger.debug(f"{id_count} MyAnimeList IDs Found.")
+            else:
+                logger.debug(f"{id_count} MyAnimeList IDs Found: {mal_ids}")
         return mal_ids

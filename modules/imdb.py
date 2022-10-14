@@ -33,6 +33,10 @@ class IMDb:
         self._ratings = None
         self._genres = None
         self._episode_ratings = None
+        try:
+            self.maxitems = config.data['settings']['max_list_display_size']
+        except:
+            self.maxitems = 99999
 
     def validate_imdb_lists(self, err_type, imdb_lists, language):
         valid_lists = []
@@ -150,8 +154,12 @@ class IMDb:
             imdb_ids.extend(ids_found)
             time.sleep(2)
         logger.exorcise()
-        if len(imdb_ids) > 0:
-            logger.debug(f"{len(imdb_ids)} IMDb IDs Found: {imdb_ids}")
+        id_count = len(imdb_ids)
+        if id_count > 0:
+            if self.maxitems is not None and id_count > self.maxitems:
+                logger.debug(f"{id_count} IMDb IDs Found")
+            else:
+                logger.debug(f"{id_count} IMDb IDs Found: {imdb_ids}")
             return imdb_ids
         raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 

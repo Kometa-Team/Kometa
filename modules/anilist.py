@@ -60,6 +60,11 @@ class AniList:
     def __init__(self, config):
         self.config = config
         self._options = None
+        try:
+            self.maxitems = config.data['settings']['max_list_display_size']
+        except:
+            self.maxitems = 99999
+
 
     @property
     def options(self):
@@ -319,5 +324,10 @@ class AniList:
             logger.info(message)
             anilist_ids = self._search(**data)
         logger.debug("")
-        logger.debug(f"{len(anilist_ids)} AniList IDs Found: {anilist_ids}")
+        id_count = len(anilist_ids)
+        if self.maxitems is not None and id_count > self.maxitems:
+            logger.debug(f"{id_count} AniList IDs Found")
+        else:
+            logger.debug(f"{id_count} AniList IDs Found: {anilist_ids}")
+        
         return anilist_ids

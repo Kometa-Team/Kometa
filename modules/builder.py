@@ -1,4 +1,5 @@
 import os, re, time
+import json
 from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, NonExisting, NotScheduled, NotScheduledRange, Deleted
@@ -188,6 +189,10 @@ class CollectionBuilder:
         self.libraries = []
         self.playlist = library is None
         self.overlay = overlay
+        try:
+            self.maxitems = config.data['settings']['max_list_display_size']
+        except:
+            self.maxitems = 99999
         methods = {m.lower(): m for m in self.data}
         if self.playlist:
             self.type = "playlist"
@@ -1585,7 +1590,10 @@ class CollectionBuilder:
         if len(ids) > 0:
             total_ids = len(ids)
             logger.debug("")
-            logger.debug(f"{total_ids} IDs Found: {ids}")
+            if self.maxitems is not None and total_ids > self.maxitems:
+                logger.debug(f"{total_ids} IDs Found")
+            else:
+                logger.debug(f"{total_ids} IDs Found: {ids}")
             logger.debug("")
             for i, input_data in enumerate(ids, 1):
                 input_id, id_type = input_data

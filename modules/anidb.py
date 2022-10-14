@@ -79,6 +79,11 @@ class AniDB:
         self.username = None
         self.password = None
         self._delay = None
+        try:
+            self.maxitems = config.data['settings']['max_list_display_size']
+        except:
+            self.maxitems = 99999
+
 
     def authorize(self, client, version, expiration):
         self.client = client
@@ -200,5 +205,10 @@ class AniDB:
         else:
             raise Failed(f"AniDB Error: Method {method} not supported")
         logger.debug("")
-        logger.debug(f"{len(anidb_ids)} AniDB IDs Found: {anidb_ids}")
+        id_count = len(anidb_ids)
+        if id_count > 0:
+            if self.maxitems is not None and id_count > self.maxitems:
+                logger.debug(f"{id_count} AniDB IDs Found")
+            else:
+                logger.debug(f"{id_count} AniDB IDs Found: {anidb_ids}")
         return anidb_ids
