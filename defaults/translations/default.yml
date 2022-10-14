@@ -213,7 +213,7 @@ translations:
 
   # example key_name: TV-MA
   content_rating_cs_name: Age <<key_name>>+ <<library_translationU>>s
-  content_rating_cs_summary: <<library_translationU>>s that are rated <<key_name>> accorfing to the Common Sense Rating System.
+  content_rating_cs_summary: <<library_translationU>>s that are rated <<key_name>> according to the Common Sense Rating System.
 
   content_rating_other_name: Not Rated <<library_translationU>>s
   content_rating_other_summary: <<library_translationU>>s that are Unrated, Not Rated or any other uncommon Ratings.
