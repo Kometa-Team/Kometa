@@ -1,10 +1,9 @@
 import argparse, os, sys, time, uuid
 from concurrent.futures import ProcessPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from modules.logs import MyLogger
 
 from  requests_cache import install_cache
-from datetime import datetime, timedelta
 install_cache(
     'config/http_cache',
     expire_after=timedelta(days=1),  # Otherwise expire responses after one day
