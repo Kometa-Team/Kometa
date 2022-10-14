@@ -3,6 +3,15 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from modules.logs import MyLogger
 
+from  requests_cache import install_cache
+from datetime import datetime, timedelta
+install_cache(
+    'config/http_cache',
+    expire_after=timedelta(days=1),  # Otherwise expire responses after one day
+    allowable_methods=['GET', 'POST'],  # Cache POST requests to avoid sending the same data twice
+    allowable_codes=[200],
+    match_headers=True,
+)
 try:
     import plexapi, requests, schedule
     from PIL import ImageFile
