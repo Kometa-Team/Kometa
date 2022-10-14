@@ -33,30 +33,30 @@ The available setting attributes which can be set at each level are outlined bel
 | [`show_missing_season_assets`](#show-missing-season-assets)   |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`show_missing_episode_assets`](#show-missing-episode-assets) |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`show_asset_not_needed`](#show-asset-not-needed)             |   &#9989;    |    &#9989;    |         &#10060;          |
-| [`sync_mode`](#sync-mode)                                     |   &#9989;    |    &#9989;    |          &#9989;          |
+| [`sync_mode`](#sync-mode)                                     |   &#9989;    |    &#9989;    |         &#9989;          |
 | [`default_collection_order`](#default-collection-order)       |   &#9989;    |    &#9989;    |         &#10060;          |
-| [`minimum_items`](#minimum-items)                             |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`delete_below_minimum`](#delete-below-minimum)               |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`delete_not_scheduled`](#delete-not-scheduled)               |   &#9989;    |    &#9989;    |          &#9989;          |
+| [`minimum_items`](#minimum-items)                             |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`delete_below_minimum`](#delete-below-minimum)               |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`delete_not_scheduled`](#delete-not-scheduled)               |   &#9989;    |    &#9989;    |         &#9989;          |
 | [`run_again_delay`](#run-again-delay)                         |   &#9989;    |   &#10060;    |         &#10060;          |
-| [`missing_only_released`](#missing-only-released)             |   &#9989;    |    &#9989;    |          &#9989;          |
+| [`missing_only_released`](#missing-only-released)             |   &#9989;    |    &#9989;    |         &#9989;          |
 | [`show_unmanaged`](#show-unmanaged-collections)               |   &#9989;    |    &#9989;    |         &#10060;          |
-| [`show_filtered`](#show-filtered)                             |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`show_options`](#show-options)                               |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`show_missing`](#show-missing)                               |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`only_filter_missing`](#only-filter-missing)                 |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`show_missing_assets`](#show-missing-assets)                 |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`save_report`](#save-report)                                 |   &#9989;    |    &#9989;    |          &#9989;          |
+| [`show_filtered`](#show-filtered)                             |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`show_options`](#show-options)                               |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`show_missing`](#show-missing)                               |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`only_filter_missing`](#only-filter-missing)                 |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`show_missing_assets`](#show-missing-assets)                 |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`save_report`](#save-report)                                 |   &#9989;    |    &#9989;    |         &#9989;          |
 | [`tvdb_language`](#tvdb-language)                             |   &#9989;    |   &#10060;    |         &#10060;          |
-| [`ignore_ids`](#ignore-ids)                                   |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`ignore_imdb_ids`](#ignore-imdb-ids)                         |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`item_refresh_delay`](#item-refresh-delay)                   |   &#9989;    |    &#9989;    |          &#9989;          |
-| [`playlist_sync_to_users`](#playlist-sync-to-users)           |   &#9989;    |   &#10060;    |          &#9989;          |
+| [`ignore_ids`](#ignore-ids)                                   |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`ignore_imdb_ids`](#ignore-imdb-ids)                         |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`item_refresh_delay`](#item-refresh-delay)                   |   &#9989;    |    &#9989;    |         &#9989;          |
+| [`playlist_sync_to_users`](#playlist-sync-to-users)           |   &#9989;    |   &#10060;    |         &#9989;          |
 | [`playlist_report`](#playlist-report)                         |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`custom_repo`](#custom-repo)                                 |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`verify_ssl`](#verify-ssl)                                   |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`check_nightly`](#check-nightly)                             |   &#9989;    |   &#10060;    |         &#10060;          |
-| [`max_list_display_size`](#max_list_display_size)                             |   &#9989;    |   &#10060;    |         &#10060;          | 
+| [`max_list_display_size`](#max_list_display_size)             |   &#9989;    |    &#9989;    |         &#9989;          | 
 
 ## Cache
 Cache the Plex GUID and associated IDs for each library item for faster subsequent processing. The cache file is created in the same directory as the configuration file.
