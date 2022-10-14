@@ -1,4 +1,4 @@
-version: 1.18.0.2
+version: 1.18.0.3
 variables:
   library_translation:
     # For Movie Libraries
@@ -207,11 +207,15 @@ translations:
   content_rating_name: <<key_name>> <<library_translationU>>(e/n)
   content_rating_summary: <<library_translationU>>(e/n) mit <<key_name>> Bewertung.
 
-  content_rating_other_name: Andere Bewertung
-  content_rating_other_summary: <<library_translationU>>(e/n) mit anderen ungewöhnlichen Bewertungen.
+  # Beispiel key_name: de/16
+  content_rating_cs_name: Alter <<key_name>>+ <<library_translationU>>(e/n)
+  content_rating_cs_summary: <<library_translationU>>(e/n) die durch das Common Sense Rating System als <<key_name>> bewertet wurden.
+
+  content_rating_other_name: Nicht bewertete <<library_translationU>>(e/n)
+  content_rating_other_summary: <<library_translationU>>(e/n) die nicht bewertet oder mit anderen ungewöhnlichen Bewertungen bewertet sind.
 
   # Beispiel key_name: Deutschland
-  country_name: <<key_name>> <<library_translationU>>(e/n)
+  country_name: <<key_name>>
   country_summary: <<library_translationU>>(e/n) in <<key_name>> gefilmt.
 
   country_other_name: Andere Länder
