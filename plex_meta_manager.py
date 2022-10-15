@@ -3,6 +3,40 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timedelta
 from modules.logs import MyLogger
 
+urls_expire_after = {
+    '*.imdb.com': 60 * 60 * 6,
+    'www.omdbapi.com/': 60 * 60 * 24,
+    'ergast.com/api/f1/': 60 * 60 * 24,
+    'anidb.net': 60 * 60 * 24,
+    'api.anidb.net:9001/httpapi': 60 * 60 * 24,
+    'graphql.anilist.co': 60 * 60 * 24,
+    'raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Anime-IDs/master/pmm_anime_ids.json': 60 * 60 * 24,
+    'flixpatrol.com': 60 * 60 * 24,
+    'www.themoviedb.org': 60 * 60 * 24,
+    'api.github.com/repos/meisnate12/Plex-Meta-Manager': 60 * 60 * 24,
+    'raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs': 60 * 60 * 24,
+    'www.icheckmovies.com/lists/': 60 * 60 * 24,
+    'letterboxd.com': 60 * 60 * 24,
+    'api.myanimelist.net/v2/': 60 * 60 * 24,
+    'api.jikan.moe/v4/': 60 * 60 * 24,
+    'api.trakt.tv': 60 * 60 * 24,
+    'www.thetvdb.com': 60 * 60 * 6,
+    'thetvdb.com': 60 * 60 * 6,
+    's3.amazonaws.com/popular-movies/movies.json': 60 * 60 * 24,
+    'mdblist.com/lists': 60 * 60 * 12,
+    'mdblist.com/api': 60 * 60 * 1,
+    'api.github.com/repos/meisnate12/Plex-Meta-Manager': 60 * 60 * 1,
+    'raw.githubusercontent.com/meisnate12/': 60 * 60 * 1,
+
+    
+    'notifiarr.com/api/v1': 0
+    'dev.notifiarr.com/api/v1': 0
+    'discord.com': 0
+    'hooks.slack.com': 0
+    'raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/**/VERSION': 0
+    '*': 60 * 60 * 24,
+}
+
 from  requests_cache import install_cache
 install_cache(
     'config/http_cache',
@@ -10,6 +44,7 @@ install_cache(
     allowable_methods=['GET', 'POST'],  # Cache POST requests to avoid sending the same data twice
     allowable_codes=[200],
     match_headers=True,
+    urls_expire_after=urls_expire_after,
 )
 try:
     import plexapi, requests, schedule
