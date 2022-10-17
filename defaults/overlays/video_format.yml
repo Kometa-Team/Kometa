@@ -15,6 +15,7 @@ external_templates:
     horizontal_align: left
     vertical_offset: 30
     vertical_align: bottom
+    back_color: "#00000099"
     back_width: 305
     back_height: 105
     final_name: text(<<text_<<key>>>>)

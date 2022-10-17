@@ -14,6 +14,7 @@ external_templates:
     horizontal_align: center
     vertical_offset: 30
     vertical_align: bottom
+    back_color: "#00000099"
     back_width: 188
     back_height: 105
     pmm: <<overlay_name>>

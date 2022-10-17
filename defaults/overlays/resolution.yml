@@ -49,21 +49,40 @@ external_templates:
               - IMAX
               - Remastered
               - Criterion
+      horizontal_offset:
+        default: 15
+        conditions:
+          - type: resolution_dovetail
+            value: 45
       vertical_offset:
         default: 15
         conditions:
           - type: edition_dovetail
-            value: 99
+            value: 79
+          - type: resolution_dovetail
+            value: 45
       back_width:
         conditions:
-          - type: [edition, resolution, resolution_dovetail]
+          - type: [edition, resolution, edition_dovetail]
             value: 305
+          - type: resolution_dovetail
+            value: 245
       back_height:
         conditions:
           - type: [edition, resolution]
             value: 105
+          - type: [resolution_dovetail, edition_dovetail]
+            value: 129
+      back_color:
+        conditions:
+          - type: [edition, resolution, resolution_dovetail]
+            value: "#00000099"
+          - type: edition_dovetail
+            value: "#00000000"
+      back_padding:
+        conditions:
           - type: resolution_dovetail
-            value: 189
+            value: 30
       back_align:
         conditions:
           - type: resolution_dovetail
@@ -80,7 +99,7 @@ external_templates:
             value: edition
           - type: [resolution, resolution_dovetail]
             value: resolution
-    horizontal_offset: 15
+
     horizontal_align: left
     vertical_align: top
 
@@ -155,7 +174,8 @@ templates:
     plex_all: <<all>>
     plex_search:
       all:
-        resolution.regex: <<res>>
+        any:
+          resolution.regex: <<res>>
         hdr: <<hdr>>
     filters:
       has_dolby_vision: <<dolby_vision>>
@@ -257,7 +277,7 @@ overlays:
     variables: {key: remastered, weight: 20, search: Remaster, type: edition_dovetail, allowed_libraries: movie}
     template: [name: standard, name: edition]
   Criterion-Dovetail:
-    variables: {key: criterion, weight: 10, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: criterion, weight: 10, search: Criterion, type: edition_dovetail, allowed_libraries: movie}
     template: [name: standard, name: edition]
 
   4K-DV:
@@ -355,5 +375,5 @@ overlays:
     variables: {key: remastered, weight: 20, search: Remaster, type: edition, allowed_libraries: movie}
     template: [name: standard, name: edition]
   Criterion:
-    variables: {key: criterion, weight: 10, type: edition, allowed_libraries: movie}
+    variables: {key: criterion, weight: 10, search: Criterion, type: edition, allowed_libraries: movie}
     template: [name: standard, name: edition]

@@ -15,6 +15,7 @@ external_templates:
     vertical_offset: 330
     vertical_align: top
     font_size: 50
+    back_color: "#00000099"
     back_width: 305
     back_height: 105
     allowed_libraries: show

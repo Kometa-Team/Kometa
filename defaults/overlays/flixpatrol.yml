@@ -13,6 +13,7 @@ external_templates:
     limit_<<key>>: <<limit>>
     pre_text: TOP
     style: round
+    back_color: "#00000099"
     back_width: 160
     back_height: 160
     font_size: 50
