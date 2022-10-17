@@ -23,18 +23,37 @@ variables:
     # For Playlists
     item: Article
 key_names:
+  Actors: Acteurs et actrices
+  Audio Language: Langue audio
+  Award: Prix
+  Chart: Graphique
   Christmas: Noël
+  Country: Pays
+  Decade: Décennie
+  Directors: Directeurs et Directrices
   Easter: Pâques
   Father's Day: Fête des pères
+  Genre: Genre
   Halloween: Halloween
   Independence Day: Le jour de l'indépendance
   Labor Day: Fête du travail
   Memorial Day: Jour du souvenir
   Mother's Day: Fête des mères
+  Network: Réseau
   New Year's Day: Le jour de l'An
+  Producers: Producteurs et Productrices
+  Resolution: Résolution
+  Ratings: Notes
+  Seasonal: Saisonnier
   St. Patrick's Day: Le jour de la Saint-Patrick
+  Streaming: Diffusion
+  Studio: Studio
+  Subtitle Language: Langue des sous-titres
   Thanksgiving: Action de grâces
+  Universe: Univers
   Valentine's Day: La Saint-Valentin
+  Writers: Écrivains et Écrivaines
+  Year: de l'année
 
 translations:
   #############################################################
