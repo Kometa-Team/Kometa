@@ -4,7 +4,7 @@ The `content_rating_uk` Default Metadata File is used to dynamically create coll
 
 If you do not use the UK-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/content_rating_uk.png)
 

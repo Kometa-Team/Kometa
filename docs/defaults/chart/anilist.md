@@ -2,7 +2,7 @@
 
 The `anilist` Default Metadata File is used to create collections based on Anilist charts.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/anilist.png)
 

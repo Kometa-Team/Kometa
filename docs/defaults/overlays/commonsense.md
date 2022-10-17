@@ -4,7 +4,7 @@ The `commonsense` Default Overlay File is used to create an overlay based on the
 
 Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](images/commonsense.png)
 

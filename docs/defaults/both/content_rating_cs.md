@@ -6,7 +6,7 @@ If you do not use the Common Sense-based rating system within Plex, this file wi
 
 Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/content_rating_cs.png)
 

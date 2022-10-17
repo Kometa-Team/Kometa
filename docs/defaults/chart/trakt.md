@@ -2,7 +2,7 @@
 
 The `trakt` Default Metadata File is used to create collections based on Trakt Charts.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/trakt.png)
 
