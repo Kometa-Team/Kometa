@@ -1195,7 +1195,7 @@ class MetadataFile(DataFile):
 
         logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-        asset_location, folder_name = self.library.item_images(item, meta, methods)
+        asset_location, folder_name = self.library.item_images(item, meta, methods, initial=True, asset_location=self.asset_directory if self.asset_directory else None)
 
         if "seasons" in methods and self.library.is_show:
             if not meta[methods["seasons"]]:
