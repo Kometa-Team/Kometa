@@ -17,7 +17,7 @@ translations:
 templates:
   flixpatrol:
     default:
-      location: world
+      location: united_states
       location_<<key>>: <<location>>
       time_window: last_week
       time_window_<<key>>: <<time_window>>
