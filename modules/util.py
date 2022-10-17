@@ -18,6 +18,9 @@ logger = logging.getLogger("Plex Meta Manager")
 class TimeoutExpired(Exception):
     pass
 
+class LimitReached(Exception):
+    pass
+
 class Failed(Exception):
     pass
 
@@ -459,9 +462,10 @@ def load_files(files_to_load, method, schedule=None, lib_vars=None):
                     if not ignore_schedules:
                         err = e
                 if err:
-                    logger.warning(f"{err}\n\nMetadata File{'s' if len(current) > 1 else ''} not scheduled to run")
+                    logger.warning(f"Metadata Schedule:{err}\n\nMetadata File{'s' if len(current) > 1 else ''} not scheduled to run")
                     for file_type, file_path, temp_vars, asset_directory in current:
                         logger.warning(f"{file_type}: {file_path}")
+                    logger.info("")
                     continue
             files.extend(current)
         else:

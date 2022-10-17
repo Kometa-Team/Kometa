@@ -407,7 +407,8 @@ html_theme_options = {
                 ("_menu", "FlixPatrol Builders", "metadata/builders/flixpatrol", [
                     ("FlixPatrol Top Platform", "metadata/builders/flixpatrol", "#flixpatrol-top"),
                     ("FlixPatrol Popular", "metadata/builders/flixpatrol", "#flixpatrol-popular"),
-                    ("FlixPatrol demographicURLTop Platform", "metadata/builders/flixpatrol", "#flixpatrol-url"),
+                    ("FlixPatrol Demographics", "metadata/builders/flixpatrol", "#flixpatrol-demographics"),
+                    ("FlixPatrol URL", "metadata/builders/flixpatrol", "#flixpatrol-url"),
                 ]),
                 ("_menu", "Reciperr Builders", "metadata/builders/reciperr", [
                     ("Reciperr List", "metadata/builders/reciperr", "#reciperr-list"),

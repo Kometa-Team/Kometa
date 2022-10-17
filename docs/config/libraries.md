@@ -194,6 +194,22 @@ libraries:
       - file: config/Overlays.yml
 ```
 
+#### Schedule Overlays
+
+You can schedule all overlays from a library by adding `schedule` to `overlay_path` and setting it to [Any Schedule Option](../metadata/details/schedule).
+
+**You cannot schedule individual Overlay Files.** 
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_path:
+      - file: config/TV Shows.yml
+    overlay_path:
+      - schedule: weekly(sunday)
+      - file: config/Overlays.yml
+```
+
 ### Report Path
 
 The `report_path` attribute is used to define where to save the YAML Report file. This file is used to store information about what media is added, removed, filtered, and missing from the Plex library compared to what is expected from the Metadata file.

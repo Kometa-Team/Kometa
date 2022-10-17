@@ -821,6 +821,8 @@ class ConfigFile:
                 if lib and "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):
                     lib_vars = lib["template_variables"]
 
+                logger.separator("Metadata Files", space=False, border=False)
+
                 try:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
@@ -847,6 +849,8 @@ class ConfigFile:
                             util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
                         except NotScheduled:
                             params["skip_library"] = True
+
+                logger.separator("Overlay Files", space=False, border=False)
 
                 params["overlay_path"] = []
                 params["remove_overlays"] = False
@@ -888,9 +892,10 @@ class ConfigFile:
                                         if not self.ignore_schedules:
                                             err = e
                                     if err:
-                                        raise NotScheduled(f"{err}\n\nOverlays not scheduled to run")
+                                        raise NotScheduled(f"Overlay Schedule:{err}\n\nOverlays not scheduled to run")
                         params["overlay_path"] = files
                     except NotScheduled as e:
+                        logger.info("")
                         logger.info(e)
                         params["overlay_path"] = []
                         params["remove_overlays"] = False

@@ -1,7 +1,7 @@
 from datetime import datetime
 from json import JSONDecodeError
 from modules import util
-from modules.util import Failed
+from modules.util import Failed, LimitReached
 from urllib.parse import urlparse
 
 logger = util.logger
@@ -73,6 +73,8 @@ class Mdblist:
         self.expiration = expiration
         try:
             self._request(imdb_id="tt0080684", ignore_cache=True)
+        except LimitReached:
+            self.limit = True
         except Failed:
             self.apikey = None
             raise
@@ -110,6 +112,7 @@ class Mdblist:
         if "response" in response and response["response"] is False:
             if response["error"] == "API Limit Reached!":
                 self.limit = True
+                raise LimitReached(f"MdbList Error: {response['error']}")
             raise Failed(f"MdbList Error: {response['error']}")
         else:
             mdb = MDbObj(response)
