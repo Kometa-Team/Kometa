@@ -6,7 +6,7 @@ This file takes the base resolutions ("4K" and "720p") and turns them into the c
 
 To avoid duplication, this file should not be used in combination with [`resolution`](resolution).
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/resolution_standards.png)
 

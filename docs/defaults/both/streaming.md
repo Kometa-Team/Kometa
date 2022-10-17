@@ -2,7 +2,7 @@
 
 The `streaming` Default Metadata File is used to dynamically create collections based on the streaming Services that your media is available on.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/streaming.png)
 

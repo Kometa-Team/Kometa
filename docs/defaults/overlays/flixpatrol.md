@@ -2,7 +2,7 @@
 
 The `flixpatrol` Default Overlay File is used to create an overlay based on the Top Lists from FlixPatrol on items within your library.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](images/flixpatrol.png)
 

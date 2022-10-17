@@ -4,7 +4,7 @@ The `tautulli` Default Metadata File is used to create collections based on Taut
 
 This Default file requires [Tautulli Authentication](../../config/tautulli)
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/tautulli.png)
 

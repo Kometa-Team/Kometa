@@ -2,7 +2,7 @@
 
 The `versions` Default Overlay File is used to create an overlay based on if there's multiple versions on each item within your library.
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](images/versions.png)
 

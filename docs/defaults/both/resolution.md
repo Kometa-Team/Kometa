@@ -4,7 +4,7 @@ The `resolution` Default Metadata File is used to dynamically create collections
 
 To avoid duplication, this file should not be used in combination with [`resolution_standards`](resolution_standards).
 
-**This file works with Movie and TV Libraries.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/resolution.png)
 
