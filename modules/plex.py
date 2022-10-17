@@ -1029,7 +1029,7 @@ class Plex(Library):
                 logger.info(final)
         return final[28:] if final else final
 
-    def item_images(self, item, group, alias, asset_location=None, title=None, image_name=None, folder_name=None):
+    def item_images(self, item, group, alias, initial=False, asset_location=None, title=None, image_name=None, folder_name=None):
         if title is None:
             title = item.title
         posters, backgrounds = util.get_image_dicts(group, alias)
@@ -1039,7 +1039,7 @@ class Plex(Library):
                 posters["asset_directory"] = asset_poster
             if asset_background:
                 backgrounds["asset_directory"] = asset_background
-            if asset_location is None:
+            if asset_location is None or initial:
                 asset_location = item_dir
         except Failed as e:
             logger.warning(e)

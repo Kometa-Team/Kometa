@@ -3,6 +3,7 @@
 The script is designed to run continuously and certain attributes can be scheduled using these attributes.
 
 Below is an example of a scheduled library: 
+
 ```yaml
 libraries:
   Movies:
@@ -17,7 +18,10 @@ libraries:
       mass_critic_rating_update: tmdb
 ```
 
-Below is an example of a scheduled Metadata File, Overlay File, and Playlist File: 
+Below is an example of scheduling Metadata Files, Playlist Files, and Overlay Files: 
+
+**Note: Overlay Files cannot be individually Scheduled.**
+
 ```yaml
 libraries:
   Movies:
@@ -37,14 +41,15 @@ libraries:
       - pmm: audio_codec
       - pmm: resolution
       - pmm: video_format
-    operations:
-      mass_critic_rating_update: tmdb
 playlist_files:
   - file: config/Playlists.yml
     schedule: weekly(sunday)
+  - file: config/Playlists2.yml
+    schedule: weekly(monday)
 ```
 
 Below is an example of a scheduled collection: 
+
 ```yaml
 collections:
   TMDb Trending Weekly:
@@ -60,6 +65,7 @@ collections:
 ```
 
 Below is an example of a scheduled pinning collection: 
+
 ```yaml
 collections:
   Christmas Movies:
