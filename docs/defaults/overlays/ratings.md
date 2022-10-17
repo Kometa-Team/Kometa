@@ -109,11 +109,21 @@ The below is an example config.yml extract with some Template Variables added in
       - pmm: ratings
         template_variables:
           rating1: critic
-          rating2: audience
-          rating3: user
           rating1_image: imdb
+          rating1_font: config/metadata/fonts/Impact.ttf
+          rating1_font_size: 70
+
+          rating2: audience
           rating2_image: rt_popcorn
+          rating2_font: config/metadata/fonts/Adlib.ttf
+          rating2_font_size: 63
+
+          rating3: user
           rating3_image: tmdb
+          rating3_font: config/metadata/fonts/Avenir_95_Black.ttf
+          rating3_font_size: 70
+
+          horizontal_position: right
     operations:
       mass_critic_rating_update: imdb
       mass_audience_rating_update: mdb_tomatoesaudience
@@ -123,18 +133,36 @@ The below is an example config.yml extract with some Template Variables added in
       - pmm: ratings
         template_variables:
           rating1: critic
-          rating2: audience
-          rating3: user
           rating1_image: imdb
+          rating1_font: config/metadata/fonts/Impact.ttf
+          rating1_font_size: 70
+
+          rating2: audience
           rating2_image: rt_popcorn
+          rating2_font: config/metadata/fonts/Adlib.ttf
+          rating2_font_size: 63
+
+          rating3: user
           rating3_image: tmdb
+          rating3_font: config/metadata/fonts/Avenir_95_Black.ttf
+          rating3_font_size: 70
+
+          horizontal_position: right
       - pmm: ratings
         template_variables:
           overlay_level: episode
+          
           rating1: critic
-          rating2: audience
           rating1_image: imdb
+          rating1_font: config/metadata/fonts/Impact.ttf
+          rating1_font_size: 70
+
+          rating2: audience
           rating2_image: tmdb
+          rating2_font: config/metadata/fonts/Avenir_95_Black.ttf
+          rating2_font_size: 70
+
+          horizontal_position: right
     operations:
       mass_critic_rating_update: imdb
       mass_audience_rating_update: mdb_tomatoesaudience

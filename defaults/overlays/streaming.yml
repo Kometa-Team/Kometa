@@ -14,6 +14,7 @@ external_templates:
     horizontal_align: left
     vertical_offset: 150
     vertical_align: bottom
+    back_color: "#00000099"
     back_width: 305
     back_height: 105
     pmm: streaming/<<overlay_name>>
