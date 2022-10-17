@@ -1,6 +1,6 @@
 # Shared Collection Template Variables
 
-There are some `templates_variables` that all the PMM Defaults expect `franchise` can use to manipulate the file from the default settings which are provided. 
+There are some `templates_variables` that all the PMM Defaults except `franchise` can use to manipulate the file from the default settings which are provided. 
 
 Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 

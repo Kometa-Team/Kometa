@@ -41,9 +41,9 @@ All [Shared Collection Variables](../variables) are available as well as the add
 | `use_separator`                | **Description:** Turn the [Separator Collection](../separators) off.<br>**Values:** `false` to turn of the collection                                                                                                |
 | `sep_style`                    | **Description:** Choose the [Separator Style](../separators.md#separator-styles).<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                   |         
 | `limit`                        | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                              |
-| `limit_<<key>>`                | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                           |
+| `limit_<<key>>`<sup>1</sup>                | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                           |
 | `sort_by`                      | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options) |
-| `sort_by_<<key>>`              | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)           |
+| `sort_by_<<key>>`<sup>1</sup>              | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)           |
 | `include`                      | **Description:** Overrides the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                              |
 | `exclude`                      | **Description:** Exclude these Audio Languages from creating a Dynamic Collection.<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                   |
 | `append_include`               | **Description:** Appends to the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                             |
@@ -51,6 +51,8 @@ All [Shared Collection Variables](../variables) are available as well as the add
 | `audio_language_other_name`    | **Description:** Changes the Other Collection name.<br>**Default:** `Other Audio`<br>**Values:** Any string.                                                                                                         |
 | `audio_language_summary`       | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in the <<key_name>> Language.`<br>**Values:** Any string.                                  |
 | `audio_language_other_summary` | **Description:** Changes the Other Collection summary.<br>**Default:** `<<library_translationU>>s filmed in other uncommon Languages.`<br>**Values:** Any string.                                                    |
+
+1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
