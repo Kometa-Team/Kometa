@@ -9,7 +9,6 @@
 external_templates:
   pmm: templates
   template_variables:
-    group: streaming
     horizontal_offset: 15
     horizontal_align: right
     vertical_offset: 150

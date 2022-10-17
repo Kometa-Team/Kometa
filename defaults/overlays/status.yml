@@ -39,7 +39,7 @@ templates:
         episode_air_date: <<last>>
     plex_all: <<all>>
     filters:
-      status: <<tmdb>>
+      tmdb_status1: <<tmdb>>
 
 overlays:
 
