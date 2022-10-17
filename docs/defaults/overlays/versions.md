@@ -45,9 +45,9 @@ All [Shared Overlay Variables](variables) are available with the default values 
 | `back_width`        |    `105`    |
 | `back_height`       |    `105`    |
 
-| Variable         | Description & Values                                                                                         |
-|:-----------------|:-------------------------------------------------------------------------------------------------------------|
-| `overlay_level`  | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                              |
+| Variable        | Description & Values                                                            |
+|:----------------|:--------------------------------------------------------------------------------|
+| `overlay_level` | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode` |
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
