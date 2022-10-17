@@ -33,8 +33,10 @@ libraries:
       - pmm: actor
         schedule: weekly(friday)
     overlay_path:
-      - pmm: imdb
-        schedule: weekly(saturday)
+      - schedule: weekly(saturday)
+      - pmm: audio_codec
+      - pmm: resolution
+      - pmm: video_format
     operations:
       mass_critic_rating_update: tmdb
 playlist_files:

@@ -486,8 +486,11 @@ def run_libraries(config):
                 logger.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
                 logger.info("")
                 for collection in library.get_all_collections():
-                    logger.info(f"Collection {collection.title} Deleted")
-                    library.query(collection.delete)
+                    try:
+                        library.query(collection.delete)
+                        logger.info(f"Collection {collection.title} Deleted")
+                    except NotFound:
+                        logger.error(f"Collection {collection.title} Failed to Delete")
                 library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split('.')[0]
 
             time_start = datetime.now()
