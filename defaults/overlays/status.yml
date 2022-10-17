@@ -1,41 +1,29 @@
-#############################################################
-#                     Status Overlays                       #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#            Credit to Magic815 for base images             #
-#############################################################
-#  Call this from your config.yml (Show):                   #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    overlay_path:                                          #
-#      - pmm: status                                        #
-#        template_variables:                                #
-#          # Set the horizontal offset for the overlay      #
-#          horizontal_offset: 15                            #
-#          # Set the horizontal align for the overlay       #
-#          horizontal_align: left                           #
-#          # Set the vertical offset for the overlay        #
-#          vertical_offset: 330                             #
-#          # Set the vertical align for the overlay         #
-#          vertical_align: top                              #
-#          # Set the back color for the overlay             #
-#          back_color: "#00000099"                          #
-#          # Set the back radius for the overlay            #
-#          back_radius: 30                                  #
-#          # Set the back width for the overlay             #
-#          back_width: 305                                  #
-#                                                           #
-#          # Use the ended overlay                          #
-#          use_ended: true                                  #
-#          # Use the airing overlay                         #
-#          use_airing: true                                 #
-#          # Use the canceled overlay                       #
-#          use_canceled: true                               #
-#          # Number of days since last episode air date     #
-#          last: 14                                         #
-#############################################################
+##############################################################################
+#                               Status Overlay                               #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#      https://metamanager.wiki/en/latest/defaults/overlays/status.html      #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    text_<<key>>: <<text>>
+    group: status
+    horizontal_offset: 15
+    horizontal_align: left
+    vertical_offset: 330
+    vertical_align: top
+    font_size: 50
+    back_width: 305
+    back_height: 105
+    allowed_libraries: show
+    final_name: text(<<text_<<key>>>>)
 
 templates:
-  tmdb_status:
+  status:
+    optional:
+      - last
     conditionals:
       all:
         conditions:
@@ -45,59 +33,28 @@ templates:
         conditions:
           - key: [ended, returning, canceled]
             value: <<key>>
-    optional:
-      - use_<<key>>
-      - back_width
-      - last
-    default:
-      key: <<tmdb>>
-      horizontal_offset: 15
-      horizontal_align: left
-      vertical_offset: 330
-      vertical_align: top
-      font: fonts/Inter-Medium.ttf
-      font_size: 50
-      font_color: "#FFFFFF"
-      back_color: "#00000099"
-      back_radius: 30
-      back_width: 305
-      back_height: 105
-      weight_<<key>>: <<weight>>
-      text_<<key>>: <<text>>
-      all: true
     ignore_blank_results: true
-    allowed_library_types: <<use_<<key>>>>
-    overlay:
-      name: text(<<text_<<key>>>>)
-      group: tmdb_status
-      weight: <<weight_<<key>>>>
-      horizontal_offset: <<horizontal_offset>>
-      horizontal_align: <<horizontal_align>>
-      vertical_offset: <<vertical_offset>>
-      vertical_align: <<vertical_align>>
-      font: <<font>>
-      font_size: <<font_size>>
-      font_color: <<font_color>>
-      back_color: <<back_color>>
-      back_radius: <<back_radius>>
-      back_width: <<back_width>>
-      back_height: <<back_height>>
     plex_search:
       any:
         episode_air_date: <<last>>
     plex_all: <<all>>
     filters:
-      tmdb_status: <<tmdb>>
+      status: <<tmdb>>
 
 overlays:
-  ended_shows:
-    template: {name: tmdb_status, key: ended, text: ENDED, weight: 30}
-    
-  canceled_shows:
-    template: {name: tmdb_status, key: canceled, text: CANCELED, weight: 40}
+
+  airing_shows:
+    variables: {key: airing, weight: 40, text: AIRING, last: 14}
+    template: [name: standard, name: status]
 
   returning_shows:
-    template: {name: tmdb_status, key: returning, text: RETURNING, weight: 50}
-    
-  airing_shows:
-    template: {name: tmdb_status, key: airing, last: 14, text: AIRING, weight: 60}
+    variables: {key: returning, weight: 30, text: RETURNING}
+    template: [name: standard, name: status]
+
+  canceled_shows:
+    variables: {key: canceled, weight: 20, text: CANCELED}
+    template: [name: standard, name: status]
+
+  ended_shows:
+    variables: {key: ended, weight: 10, text: ENDED}
+    template: [name: standard, name: status]

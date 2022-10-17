@@ -313,5 +313,6 @@ class MyAnimeList:
         else:
             raise Failed(f"MyAnimeList Error: Method {method} not supported")
         logger.debug("")
-        logger.debug(f"{len(mal_ids)} MyAnimeList IDs Found: {mal_ids}")
+        logger.debug(f"{len(mal_ids)} MyAnimeList IDs Found")
+        logger.trace(f"IDs: {mal_ids}")
         return mal_ids

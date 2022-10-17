@@ -1,0 +1,62 @@
+# Ribbon Overlays
+
+The `ribbon` Default Overlay File is used to create a ribbon overlay based on the Top Lists of various sites on each item within your library.
+
+**This file works with Movie and TV Libraries.**
+
+![](images/ribbon.png)
+
+## Supported Ribbon
+
+| Ribbon                          |     Key      | Weight |
+|:--------------------------------|:------------:|:------:|
+| Oscars Best Picture             |   `oscars`   |  `50`  |
+| IMDb Top 250                    |    `imdb`    |  `40`  |
+| Rotten Tomatoes Certified Fresh |   `rotten`   |  `30`  |
+| Metacritic Must See             | `metacritic` |  `20`  |
+| Commonsense Selection           |   `common`   |  `10`  |
+
+## Config
+
+The below YAML in your config.yml will create the overlays:
+
+```yaml
+libraries:
+  Movies:
+    overlay_path:
+      - pmm: ribbon
+  TV Shows:
+    overlay_path:
+      - pmm: ribbon
+```
+
+## Template Variables
+
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+
+Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
+
+All [Shared Overlay Variables](variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
+
+| Variable            | Default  |
+|:--------------------|:--------:|
+| `horizontal_offset` |   `0`    |
+| `horizontal_align`  | `right`  |
+| `vertical_offset`   |   `0`    |
+| `vertical_align`    | `bottom` |
+
+| Variable         | Description & Values                                                                                         |
+|:-----------------|:-------------------------------------------------------------------------------------------------------------|
+| `weight_<<key>>` | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
+
+The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+```yaml
+libraries:
+  Movies:
+    overlay_path:
+      - pmm: ribbon
+        template_variables:
+          weight_metacritic: 35
+          use_common: false
+```

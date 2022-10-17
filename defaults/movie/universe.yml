@@ -60,7 +60,7 @@ dynamic_collections:
       - custom
     template_variables:
       trakt_list:
-        star: https://trakt.tv/users/donxy/lists/dc-animated-movie-universe
+        star: https://trakt.tv/users/zorge88/lists/star-wars
         dca: https://trakt.tv/users/donxy/lists/dc-animated-movie-universe
         dcu: https://trakt.tv/users/donxy/lists/dc-extended-universe
         mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe

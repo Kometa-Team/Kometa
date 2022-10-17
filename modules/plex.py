@@ -588,6 +588,7 @@ class Plex(Library):
                                    includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
                                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
                                    includeRelatedCount=0, includeReviews=False, includeStations=False)
+                cached_item._initpath = cached_item._details_key
                 self.cached_items[cached_item.ratingKey] = (cached_item, True)
             return cached_item
         except (BadRequest, NotFound) as e:
@@ -947,10 +948,7 @@ class Plex(Library):
             raise Failed(f"Plex Error: Method {method} not supported")
         if not items:
             raise Failed("Plex Error: No Items found in Plex")
-        ids = [(item.ratingKey, "ratingKey") for item in items]
-        logger.debug("")
-        logger.debug(f"{len(ids)} Keys Found: {ids}")
-        return ids
+        return [(item.ratingKey, "ratingKey") for item in items]
 
     def get_collection_items(self, collection, smart_label_collection):
         if smart_label_collection:

@@ -4,7 +4,7 @@ The `content_rating_cs` Default Metadata File is used to dynamically create coll
 
 If you do not use the Common Sense-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-Use the [Library Operation](../../config/operations) `mass_content_rating_update` with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating.
+Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating.
 
 **This file works with Movie and TV Libraries.**
 
@@ -38,7 +38,7 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
+All [Shared Collection Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
 | Variable                       | Description & Values                                                                                                                                                                                                                                                    |
 |:-------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

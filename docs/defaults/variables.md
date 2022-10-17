@@ -1,4 +1,4 @@
-# Shared Template Variables
+# Shared Collection Template Variables
 
 There are some `templates_variables` that all the PMM Defaults expect `franchise` can use to manipulate the file from the default settings which are provided. 
 

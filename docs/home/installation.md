@@ -20,13 +20,13 @@ For those who need full installation walkthroughs, please refer to the following
   * [Local Walkthrough](guides/local)
   * [Docker Walkthrough](guides/docker)
 
-If you are using unRAID, a basic guide to container setup can be found here [this doesn't cover the PMM setup specifics found in the guides above]:
+If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following basic guide to container setup for each system:
+**this doesn't cover the PMM setup specifics found in the guides above**
 
   * [unRAID Walkthrough](guides/unraid)
-
-If you want to set PMM up under Kubernetes, see this article. As with the unRAID guide, this covers *only* the Kubernetes portion of the setup.
-
   * [Kubernetes Walkthrough](guides/kubernetes)
+  * [QNAP Walkthrough](guides/qnap)
+  * [Synology Walkthrough](guides/synology)
 
 ## Local Install Overview
 

@@ -1,34 +1,25 @@
-#############################################################
-#                    Versions Overlay                       #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#            Credit to Magic815 for base images             #
-#############################################################
-#  Call this from your config.yml (Movie or Show):          #
-#    overlay_path:                                          #
-#      - git: PMM/overlays/versions                         #
-#        template_variables:                                #
-#          # Set episode or season or show to overlay       #
-#          overlay_level:                                   #
-#          # Set the horizontal offset for the overlay      #
-#          horizontal_offset: 15                            #
-#          # Set the horizontal align for the overlay       #
-#          horizontal_align: right                          #
-#          # Set the vertical offset for the overlay        #
-#          vertical_offset: 150                             #
-#          # Set the vertical align for the overlay         #
-#          vertical_align: top                              #
-#          # Set the back color for the overlay             #
-#          back_color: "#00000099"                          #
-#          # Set the back radius for the overlay            #
-#          back_radius: 30                                  #
-#          # Set the back width for the overlay             #
-#          back_width: 105                                  #
-#          # Set the back height for the overlay            #
-#          back_height: 105                                 #
-#############################################################
+##############################################################################
+#                              Versions Overlay                              #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#                     Credit to Magic815 for base images                     #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#     https://metamanager.wiki/en/latest/defaults/overlays/versions.html     #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    group: streaming
+    horizontal_offset: 15
+    horizontal_align: right
+    vertical_offset: 150
+    vertical_align: top
+    back_width: 105
+    back_height: 105
+    pmm: <<overlay_name>>
 
 templates:
-  Versions:
+  versions:
     conditionals:
       version_style:
         default: "duplicate"
@@ -38,32 +29,8 @@ templates:
     plex_search:
       all:
         <<version_style>>: true
-    optional:
-      - overlay_level
-    default:
-      horizontal_offset: 15
-      horizontal_align: right
-      vertical_offset: 150
-      vertical_align: top
-      back_color: "#00000099"
-      back_radius: 30
-      back_width: 105
-      back_height: 105
-    overlay_level: <<overlay_level>>
     ignore_blank_results: true
-    overlay:
-      name: versions
-      horizontal_offset: <<horizontal_offset>>
-      horizontal_align: <<horizontal_align>>
-      vertical_offset: <<vertical_offset>>
-      vertical_align: <<vertical_align>>
-      back_color: <<back_color>>
-      back_radius: <<back_radius>>
-      back_width: <<back_width>>
-      back_height: <<back_height>>
-      pmm: versions
       
 overlays:
-  Duplicate Versions:
-    template:
-      - name: Versions
+  versions:
+    template: [name: standard, name: versions]

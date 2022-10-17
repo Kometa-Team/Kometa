@@ -1,98 +1,43 @@
-#############################################################
-#                      Ratings Overlay                      #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#            Credit to Magic815 for base images             #
-#############################################################
-#  Call this from your config.yml (Movie or Show):          #
-#  If nothing is specified nothing will show up at least    #
-#  one rating# must be set                                  #
-#                                                           #
-#    overlay_path:                                          #
-#      - git: PMM/overlays/ratings                          #
-#        template_variables:                                #
-#                                                           #
-#          # Set rating type for rating1, rating2, and/or   #
-#                rating3                                    #
-#          # Rating Types: critic, audience, user           #
-#                                                           #
-#          rating1: critic                                  #
-#          rating2: audience                                #
-#          rating3: user                                    #
-#                                                           #
-#          # Set rating image for rating1, rating2, and/or  #
-#                rating3                                    #
-#          # Rating Images: anidb, imdb, letterboxd, tmdb,  #
-#                metacritic, rt_popcorn, rt_tomato, trakt,  #
-#                mal                                        #
-#                                                           #
-#          rating1_image: imdb                              #
-#          rating2_image: rt_popcorn                        #
-#          rating3_image: tmdb                              #
-#                                                           #
-#          # Sets the position to display the ratings       #
-#          # horizontal_position: left, right, center       #
-#          # vertical_position: top, bottom, center         #
-#                                                           #
-#          horizontal_position: left                        #
-#          vertical_position: center                        #
-#                                                           #
-#          # Sets the alignment to display the ratings      #
-#          # rating_alignment: horizontal, vertical         #
-#                                                           #
-#          rating_alignment: vertical                       #
-#                                                           #
-#          # Set as 'episode' to overlay episodes           #
-#                                                           #
-#          overlay_level:                                   #
-#                                                           #
-#  Movies:                                                  #
-#    overlay_path:                                          #
-#      - git: PMM/overlays/ratings                          #
-#        template_variables:                                #
-#          rating1: critic                                  #
-#          rating2: audience                                #
-#          rating3: user                                    #
-#          rating1_image: imdb                              #
-#          rating2_image: rt_popcorn                        #
-#          rating3_image: tmdb                              #
-#    operations:                                            #
-#      mass_critic_rating_update: imdb                      #
-#      mass_audience_rating_update: mdb_tomatoesaudience    #
-#      mass_user_rating_update: tmdb                        #
-#  TV Shows:                                                #
-#    overlay_path:                                          #
-#      - git: PMM/overlays/ratings                          #
-#        template_variables:                                #
-#          rating1: critic                                  #
-#          rating2: audience                                #
-#          rating3: user                                    #
-#          rating1_image: imdb                              #
-#          rating2_image: rt_popcorn                        #
-#          rating3_image: tmdb                              #
-#      - git: PMM/overlays/ratings                          #
-#        template_variables:                                #
-#          rating1: critic                                  #
-#          rating2: audience                                #
-#          rating1_image: imdb                              #
-#          rating2_image: tmdb                              #
-#    operations:                                            #
-#      mass_critic_rating_update: imdb                      #
-#      mass_audience_rating_update: mdb_tomatoesaudience    #
-#      mass_user_rating_update: tmdb                        #
-#      mass_episode_critic_rating_update: imdb              #
-#      mass_episode_audience_rating_update: tmdb            #
-#############################################################
+##############################################################################
+#                              Ratings Overlays                              #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#     https://metamanager.wiki/en/latest/defaults/overlays/ratings.html      #
+##############################################################################
 
 templates:
   Rating:
-    optional:
-      - overlay_level
     default:
-      font: fonts/Inter-Bold.ttf
-      font_size: 63
-      rating<<rating_num>>_font: <<font>>
-      rating<<rating_num>>_font_size: <<font_size>>
+      rating<<rating_num>>_file: <<file>>
+      rating<<rating_num>>_url: <<url>>
+      rating<<rating_num>>_git: <<git>>
+      rating<<rating_num>>_repo: <<repo>>
+      pmm: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
+      rating<<rating_num>>_pmm: <<pmm>>
       weight: 100
+      font: fonts/Inter-Bold.ttf
+      rating<<rating_num>>_font: <<font>>
+      rating<<rating_num>>_font_style: <<font_style>>
+      font_size: 63
+      rating<<rating_num>>_font_size: <<font_size>>
+      font_color: "#FFFFFF"
+      rating<<rating_num>>_font_color: <<font_color>>
+      rating<<rating_num>>_stroke_width: <<stroke_width>>
+      rating<<rating_num>>_stroke_color: <<stroke_color>>
+      back_color: "#00000099"
+      rating<<rating_num>>_back_color: <<back_color>>
+      rating<<rating_num>>_back_width: <<back_width>>
+      rating<<rating_num>>_back_height: <<back_height>>
+      rating<<rating_num>>_back_align: <<back_align>>
+      back_padding: 15
+      rating<<rating_num>>_back_padding: <<back_padding>>
+      back_radius: 30
+      rating<<rating_num>>_back_radius: <<back_radius>>
+      rating<<rating_num>>_back_line_color: <<back_line_color>>
+      rating<<rating_num>>_back_line_width: <<back_line_width>>
+      addon_offset: 15
+      rating<<rating_num>>_addon_offset: <<addon_offset>>
+      rating<<rating_num>>_addon_position: <<addon_position>>
       side: left
       horizontal_position: left
       vertical_position: center
@@ -110,6 +55,18 @@ templates:
       h3_offset: 660
       ch2_offset: 160
       ch3_offset: 335
+    optional:
+      - file
+      - url
+      - git
+      - repo
+      - overlay_level
+      - font_style
+      - back_align
+      - stroke_width
+      - stroke_color
+      - back_line_color
+      - back_line_width
     conditionals:
       mdblist_top:
         conditions:
@@ -472,29 +429,38 @@ templates:
         <<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
     mdblist_list: <<mdblist_top>>
     imdb_chart: <<imdb_top>>
-    collection_level: <<overlay_level>>
+    overlay_level: <<overlay_level>>
     allowed_library_types: <<run_this>>
     ignore_blank_results: true
     overlay:
       name: text(<<rating<<rating_num>>>>_rating<<rating<<rating_num>>_style>>)
+      file: <<rating<<rating_num>>_file>>
+      url: <<rating<<rating_num>>_url>>
+      git: <<rating<<rating_num>>_git>>
+      repo: <<rating<<rating_num>>_repo>>
+      pmm: <<rating<<rating_num>>_pmm>>
+      group: rating<<rating_num>>_group
+      weight: <<weight>>
       horizontal_offset: <<rating<<rating_num>>_horizontal_offset>>
       horizontal_align: <<rating<<rating_num>>_horizontal_align>>
       vertical_offset: <<rating<<rating_num>>_vertical_offset>>
       vertical_align: <<rating<<rating_num>>_vertical_align>>
-      group: rating<<rating_num>>_group
-      weight: <<weight>>
       font: <<rating<<rating_num>>_font>>
+      font_style: <<rating<<rating_num>>_font_style>>
       font_size: <<rating<<rating_num>>_font_size>>
-      font_color: "#FFFFFF"
-      back_color: "#00000099"
-      back_radius: 30
-      back_width: <<back_width>>
-      back_height: <<back_height>>
-      back_align: center
-      back_padding: 15
-      pmm: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
-      addon_position: <<addon_position>>
-      addon_offset: 15
+      font_color: <<rating<<rating_num>>_font_color>>
+      stroke_width: <<rating<<rating_num>>_stroke_width>>
+      stroke_color: <<rating<<rating_num>>_stroke_color>>
+      back_color: <<rating<<rating_num>>_back_color>>
+      back_width: <<rating<<rating_num>>_back_width>>
+      back_height: <<rating<<rating_num>>_back_height>>
+      back_align: <<rating<<rating_num>>_back_align>>
+      back_padding: <<rating<<rating_num>>_back_padding>>
+      back_radius: <<rating<<rating_num>>_back_radius>>
+      back_line_color: <<rating<<rating_num>>_back_line_color>>
+      back_line_width: <<rating<<rating_num>>_back_line_width>>
+      addon_offset: <<rating<<rating_num>>_addon_offset>>
+      addon_position: <<rating<<rating_num>>_addon_position>>
 
 overlays:
 

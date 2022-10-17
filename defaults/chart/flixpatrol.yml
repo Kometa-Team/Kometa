@@ -34,10 +34,10 @@ dynamic_collections:
     type: custom
     data:
       netflix: Netflix
-      disney: Disney
+      disney: Disney+
       hbo: HBO
       hulu: Hulu
-      paramount: Paramount Plus
+      paramount: Paramount+
       prime: Prime Video
     title_format: <<key_name>> Top <<limit>>
     template:

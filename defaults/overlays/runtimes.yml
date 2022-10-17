@@ -1,72 +1,28 @@
-#############################################################
-#                Episodes Runtime Overlay                   #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#            Credit to Magic815 for base images             #
-#############################################################
-#  Call this from your config.yml (Show):                   #
-#    overlay_path:                                          #
-#      - pmm: runtimes                                      #
-#        template_variables:                                #
-#          # Set episode or season to overlay               #
-#          overlay_level:                                   #
-#          # Set the horizontal offset for the overlay      #
-#          horizontal_offset: 15                            #
-#          # Set the horizontal align for the overlay       #
-#          horizontal_align: right                          #
-#          # Set the vertical offset for the overlay        #
-#          vertical_offset: 30                              #
-#          # Set the vertical align for the overlay         #
-#          vertical_align: bottom                           #
-#          # Set the font for the overlay                   #
-#          font: fonts/Inter-Medium.ttf                     #
-#          # Set the font size for the overlay              #
-#          font_size: 55                                    #
-#          # Set the font color for the overlay             #
-#          font_color: "#FFFFFF"                            #
-#          # Set the back color for the overlay             #
-#          back_color: "#00000099"                          #
-#          # Set the back radius for the overlay            #
-#          back_radius: 30                                  #
-#          # Set the back width for the overlay             #
-#          back_width: 600                                  #
-#          # Set the back height for the overlay            #
-#          back_height: 105                                 #
-#############################################################
+##############################################################################
+#                              Runtimes Overlay                              #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#     https://metamanager.wiki/en/latest/defaults/overlays/runtimes.html     #
+##############################################################################
 
-templates:
-  text_runtime_info:
-    optional:
-      - overlay_level
-    default:
-      overlay: <<overlay_name>>
-      horizontal_offset: 15
-      horizontal_align: right
-      vertical_offset: 30
-      vertical_align: bottom
-      font: fonts/Inter-Medium.ttf
-      font_size: 55
-      font_color: "#FFFFFF"
-      back_color: "#00000099"
-      back_radius: 30
-      back_width: 600
-      back_height: 105
-    collection_level: <<overlay_level>>
-    overlay:
-      name: "text(Runtime: <<runtimeH>>h <<runtimeM>>m)"
-      horizontal_offset: <<horizontal_offset>>
-      horizontal_align: <<horizontal_align>>
-      vertical_offset: <<vertical_offset>>
-      vertical_align: <<vertical_align>>
-      font: <<font>>
-      font_size: <<font_size>>
-      font_color: <<font_color>>
-      back_color: <<back_color>>
-      back_radius: <<back_radius>>
-      back_width: <<back_width>>
-      back_height: <<back_height>>
+external_templates:
+  pmm: templates
+  template_variables:
+    conditionals:
+      overlay_level:
+        conditions:
+          - library_type: show
+            value: episode
+    horizontal_offset: 15
+    horizontal_align: right
+    vertical_offset: 30
+    vertical_align: bottom
+    back_width: 600
+    back_height: 105
+    final_name: "text(Runtime: <<runtimeH>>h <<runtimeM>>m)"
 
 overlays:
   runtime_info:
-    template:
-      - name: text_runtime_info
     plex_all: true
+    template:
+      name: standard

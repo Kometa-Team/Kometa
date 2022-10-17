@@ -442,6 +442,10 @@ class Overlays:
         for over_key, (item, over_names) in key_to_overlays.items():
             group_status = {}
             for over_name in over_names:
+                for suppress_name in properties[over_name].suppress:
+                    if suppress_name in over_names:
+                        key_to_overlays[over_key][1].remove(suppress_name)
+            for over_name in over_names:
                 for overlay_group, group_names in overlay_groups.items():
                     if over_name in group_names:
                         if overlay_group not in group_status:
@@ -456,10 +460,6 @@ class Overlays:
                     for v in gv:
                         if final != v:
                             key_to_overlays[over_key][1].remove(v)
-            for over_name in over_names:
-                for suppress_name in properties[over_name].suppress:
-                    if suppress_name in over_names:
-                        key_to_overlays[over_key][1].remove(suppress_name)
         return key_to_overlays, properties, queues
 
     def find_poster_url(self, item):
