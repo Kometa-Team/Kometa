@@ -1,12 +1,15 @@
 # Schedule Detail
 
-The script is designed to run continuously and certain attributes can be scheduled using these attributes.
+Libraries, Collections and individual Metadata/ Playlist files can be individually scheduled to only run when scheduled.
 
-Below is an example of a scheduled library: 
+**NOTE** Overlay files cannot be individually scheduled, and are designed to run in an all-or-nothing fashion. Trying to individually schedule one Overlay file will result in all Overlay files within the library adopting the same schedule.
+
+The below demonstrates a library will not run any metadata/overlay/operations on any day of the week apart from a Friday.
+
 ```yaml
 libraries:
   Movies:
-    schedule: weekly(sunday)
+    schedule: weekly(friday)
     metadata_path:
       - file: config/Movies.yml
       - pmm: imdb
@@ -17,7 +20,7 @@ libraries:
       mass_critic_rating_update: tmdb
 ```
 
-Below is an example of a scheduled Metadata File, Overlay File, and Playlist File: 
+The below showcases a library which has different Metadata files run on each day of the week, and a Playlist file which will run on a Saturday only.
 ```yaml
 libraries:
   Movies:
@@ -32,16 +35,29 @@ libraries:
         schedule: weekly(thursday)
       - pmm: actor
         schedule: weekly(friday)
-    overlay_path:
-      - schedule: weekly(saturday)
-      - pmm: audio_codec
-      - pmm: resolution
-      - pmm: video_format
-    operations:
-      mass_critic_rating_update: tmdb
 playlist_files:
   - file: config/Playlists.yml
+    schedule: weekly(saturday)
+```
+
+Below is an example of scheduling overlays to only run on a Sunday by utilizing the library_name attribute.
+
+```yaml
+libraries:
+  Movies:
+    schedule: weekly(friday)
+    metadata_path:
+      - file: config/Movies.yml
+      - pmm: imdb
+      - pmm: studio
+      - pmm: genre
+      - pmm: actor
+  Movies Overlays:
+    library_name: Movies
     schedule: weekly(sunday)
+    overlay_path:
+      - pmm: resolution
+      - pmm: mediastinger
 ```
 
 Below is an example of a scheduled collection: 
