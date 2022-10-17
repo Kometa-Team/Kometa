@@ -53,9 +53,11 @@ All [Shared Overlay Variables](variables) are available with the default values 
 | `back_width`        |    `305`    |
 | `back_height`       |    `105`    |
 
-| Variable         | Description & Values                                                                                         |
-|:-----------------|:-------------------------------------------------------------------------------------------------------------|
-| `weight_<<key>>` | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
+| Variable                       | Description & Values                                                                                         |
+|:-------------------------------|:-------------------------------------------------------------------------------------------------------------|
+| `weight_<<key>>`<sup>1</sup>   | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
+
+1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

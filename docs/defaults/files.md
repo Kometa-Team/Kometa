@@ -103,14 +103,3 @@ These files apply playlists to the "Playlists" section of Plex and are applied b
 | Default              |    path    | Example Overlays                                       |
 |:---------------------|:----------:|:-------------------------------------------------------|
 | [Playlist](playlist) | `playlist` | Arrowverse (Timeline Order), Pokémon (Timeline Order)  |
-
-
-|                                    greg                                    |
-|:--------------------------------------------------------------------------:|
-|                            Video Format Overlay                            |
-|                 Created by Yozora, Bullmoose20, & Sohjiro                  |
-|          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           |
-|     https://metamanager.wiki/en/latest/defaults/overlays/ratings.html      |
-||
- ##############################################################################
-

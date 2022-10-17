@@ -8,7 +8,7 @@ Below are the available variables which can be used to customize the file.
 
 | Variable                  | Description & Values                                                                                                                                                                                           |
 |:--------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_<<key>>`<sup>1</sup> | **Description:** Turns off individual Overlays in a Defaults file.<br>**Values:** `false` to turn off the overlay                                                                                              |
+| `use_<<key>>`<sup>1</sup><sup>1</sup> | **Description:** Turns off individual Overlays in a Defaults file.<br>**Values:** `false` to turn off the overlay                                                                                              |
 | `file`                    | **Description:** Controls the image associated with the Overlay to a local file. Use `pmm: null` with this to no use the default image.<br>**Values:** Filepath to Overlay Image                               |
 | `url`                     | **Description:** Controls the image associated with the Overlay to a url. Use `pmm: null` with this to no use the default image.<br>**Values:** URL to Overlay Image                                           |
 | `git`                     | **Description:** Controls the image associated with the Overlay to the git repo. Use `pmm: null` with this to no use the default image.<br>**Values:** Git Path to Overlay Image                               |
@@ -27,4 +27,4 @@ Below are the available variables which can be used to customize the file.
 | `back_line_color`         | **Description:** Controls the Backdrop Line Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                                                      |
 | `back_line_width`         | **Description:** Controls the Backdrop Line Width for the Text Overlay.<br>**Values:** Any Number greater then 0                                                                                               |
 
-1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
