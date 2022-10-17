@@ -1987,7 +1987,7 @@ class CollectionBuilder:
             final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
             filter_url = f"?type={type_key}&{f'limit={limit}&' if limit else ''}sort={'%2C'.join([sorts[s] for s in sort])}&{final_filter}"
         else:
-            raise Failed(f"{self.Type} Error: No Filter Created")
+            raise Failed(f"{self.Type} Error: No Plex Filter Created")
 
         if display:
             logger.debug(f"Smart URL: {filter_url}")

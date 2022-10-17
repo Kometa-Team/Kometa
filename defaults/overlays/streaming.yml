@@ -16,7 +16,7 @@ external_templates:
     vertical_align: bottom
     back_width: 305
     back_height: 105
-    pmm: streaming/<<overlay>>
+    pmm: streaming/<<overlay_name>>
 
 templates:
   streaming:
