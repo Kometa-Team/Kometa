@@ -54,10 +54,10 @@ All [Shared Overlay Variables](variables) are available with the default values 
 | `back_width`        |    `188`    |
 | `back_height`       |    `105`    |
 
-| Variable         | Description & Values                                                                                         |
-|:-----------------|:-------------------------------------------------------------------------------------------------------------|
-| `minimum`        | **Description:** Choose the minimum for the `multi` Overlay.<br>**Default:** `2` <br>**Values:** Any Number  |
-| `overlay_level`  | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                              |
+| Variable                     | Description & Values                                                                                         |
+|:-----------------------------|:-------------------------------------------------------------------------------------------------------------|
+| `minimum`                    | **Description:** Choose the minimum for the `multi` Overlay.<br>**Default:** `2` <br>**Values:** Any Number  |
+| `overlay_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                              |
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
 
 1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.

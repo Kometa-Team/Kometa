@@ -8,7 +8,6 @@ Below is an example of a separator, which can be seen surrounded by a red square
 
 ![](images/separators.jpg)
 
-
 ## Separator Files
 
 These are all the files that contain a separator.
@@ -118,5 +117,3 @@ libraries:
         template_variables:
           sep_style: stb
 ```
-
-

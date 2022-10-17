@@ -2,7 +2,7 @@
 
 The `imdb` Default Metadata File is used to create collections based on IMDb Charts.
 
-**The `IMDb Lowest Rated` Collection only works with Movie Libraries but the rest of the collections work with both Movie and TV libraries.**
+**The `IMDb Lowest Rated` Collection only works with Movie Libraries but the rest of the collections work with both Movie and Show libraries.**
 
 ![](../images/imdb.png)
 

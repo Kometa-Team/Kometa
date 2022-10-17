@@ -4,7 +4,7 @@ The `franchise` Default Metadata File is used to create collections based on pop
 
 Unlike most Default Metadata Files, Franchise works by placing collections inline with the main library items if your library allows it. For example, the "Iron Man" franchise collection will appear next to the "Iron Man" movies within your library.
 
-**This file works with Movie Libraries, but has a TV Library [Counterpart](../show/franchise).**
+**This file works with Movie Libraries, but has a Show Library [Counterpart](../show/franchise).**
 
 ![](../images/moviefranchise.png)
 

@@ -65,7 +65,7 @@ Note that the `templates_variables:` section only needs to be used if you do wan
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
-2. The below is an example config.yml extract with some Template Variables added in to change how the file works.
+The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 ```yaml
 playlist_files:
@@ -74,7 +74,7 @@ playlist_files:
       radarr_add_missing: true
 ```
 
-## Default Trakt Lists
+## Default `trakt_list`
 
 The below Trakt lists are used to populate the playlists associated with the keys.
 
