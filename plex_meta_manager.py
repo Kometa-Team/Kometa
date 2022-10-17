@@ -27,13 +27,11 @@ urls_expire_after = {
     'mdblist.com/api': 60 * 60 * 1,
     'api.github.com/repos/meisnate12/Plex-Meta-Manager': 60 * 60 * 1,
     'raw.githubusercontent.com/meisnate12/': 60 * 60 * 1,
-
-    
-    'notifiarr.com/api/v1': 0
-    'dev.notifiarr.com/api/v1': 0
-    'discord.com': 0
-    'hooks.slack.com': 0
-    'raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/**/VERSION': 0
+    'notifiarr.com/api/v1': 0,
+    'dev.notifiarr.com/api/v1': 0,
+    'discord.com': 0,
+    'hooks.slack.com': 0,
+    'raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/**/VERSION': 0,
     '*': 60 * 60 * 24,
 }
 
